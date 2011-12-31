@@ -19,7 +19,7 @@ import akinator
 from akinator.async_aki import Akinator
 import emojis as emoji
 import emojis
-import chess
+
 from aiofile import async_open
 
 
@@ -1928,78 +1928,4 @@ class Games(Cog):
         main_game = SokobanGameView(game, ctx.author)
         await main_game.start(ctx)
 
-    @commands.command()
-    async def chess(self, ctx: Context, *, member: discord.Member=None):
-        """To play chess game on discord.
-        While playing, if you wish to see the board, type: `Show board`
-        Each Player will get exact 5m to move
-        """
-        if not member:
-            announcement = await ctx.send(
-                "**Chess**: A new game is about to start!\n"
-                f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
-                f"(Cancel the game with {CROSS_EMOJI}.)"
-            )
-            self.waiting.append(ctx.author)
-            await announcement.add_reaction(HAND_RAISED_EMOJI)
-            await announcement.add_reaction(CROSS_EMOJI)
-
-            try:
-                reaction, user = await self.bot.wait_for(
-                    "reaction_add",
-                    check=partial(self.predicate, ctx, announcement),
-                    timeout=60.0
-                )
-            except asyncio.TimeoutError:
-                self.waiting.remove(ctx.author)
-                await announcement.delete()
-                await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
-                return
-        
-            if str(reaction.emoji) == CROSS_EMOJI:
-                await announcement.delete()
-                await ctx.send(f"{ctx.author.mention} Game cancelled.")
-                return
-    
-        def check_p1(m: discord.Message) -> bool:
-            return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
-        
-        def check_p2(m: discord.Message) -> bool:
-            return m.channel.id == ctx.channel.id and m.author.id == user.id
-        
-        board = chess.Board()
-        while not (board.is_checkmate() or board.is_stalemate() or board.is_insufficient_material()):
-            while True:
-                try:
-                    msg_p1 = await self.bot.wait_for('message', check=check_p1, timeout=300)
-                except Exception:
-                    return ctx.send(f"**Chess Game Over!** Timeout! Winner: {user.mention} against {ctx.author.mention}")
-                if msg_p1.content.lower() == "resign":
-                    return await ctx.send(f"{user.mention} & {ctx.author.mention} good game! shake hands") 
-                if msg_p1.content.lower() == "show board":
-                    await ctx.send(embed=discord.Embed(description=f"```\n{str(board)}\n```"))
-                else:
-                    try:
-                        board.push_san(msg_p1.content)
-                        break
-                    except ValueError:
-                        await ctx.send(f"{ctx.author.mention} Illegal move!", delete_after=5)
-            
-            while True:
-                try:
-                    msg_p2 = await self.bot.wait_for('message', check=check_p2, timeout=300)
-                except Exception:
-                    return ctx.send(f"**Chess Game Over!** Timeout! Winner: {ctx.author.mention} against {user.mention}")
-                if msg_p2.content.lower() == "resign":
-                    return await ctx.send(f"{user.mention} & {ctx.author.mention} good game! shake hands")
-                if msg_p2.content.lower() == "show board":
-                    await ctx.send(embed=discord.Embed(description=f"```\n{str(board)}\n```"))
-                else:
-                    try:
-                        board.push_san(msg_p2.content)
-                        break
-                    except ValueError:
-                        await ctx.send(f"{user.mention} Illegal move!", delete_after=5)
-    
-        m = await ctx.send(f"{user.mention} & {ctx.author.mention} good game! shake hands")
-        await m.add_reaction(emojis.encode(':handshake:'))
+  

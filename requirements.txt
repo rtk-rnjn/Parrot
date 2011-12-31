@@ -34,4 +34,3 @@ aiodns
 orjson
 cchardet
 rapidfuzz
-chess

@@ -7,7 +7,7 @@ class OnGuildJoin(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
-		with open("data.json") as f:
+		with open("json/data.json") as f:
 			data = json.load(f)
 
 		data['guild'].append(
@@ -21,7 +21,7 @@ class OnGuildJoin(commands.Cog):
 			}
 		)
 
-		with open("data.json", "w+") as f:
+		with open("json/data.json", "w+") as f:
 			json.dump(data, f)
 
 		for channel in guild.text_channels:

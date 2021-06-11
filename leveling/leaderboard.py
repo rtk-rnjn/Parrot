@@ -22,7 +22,7 @@ class Leveling(commands.Cog, name="Leveling"):
 		Permissions:
 		Need Embed Links permission for the bot.
 		"""
-		with open("config.json") as f:
+		with open("json/config.json") as f:
 			guilds = json.load(f)
 
 		if ctx.guild.id in guilds['guilds']: return
@@ -44,7 +44,7 @@ class Leveling(commands.Cog, name="Leveling"):
 				'lvl': 1
 			})
 			await ctx.send(embed=discord.Embed(title=f"{target.name}", description=f"`{target.name}` Chat experience is **10** and on level **0**! GG!"), timestamp=datetime.datetime.utcnow())
-		with open('level.json', 'w+') as f:
+		with open('json/level.json', 'w+') as f:
 			json.dump(level, f)
 
 
@@ -64,7 +64,7 @@ class Leveling(commands.Cog, name="Leveling"):
 		Permissions:
 		Need Embed Links permission for the bot.
 		"""
-		with open("level.json") as f:
+		with open("json/level.json") as f:
 			level = json.load(f)
 		
 		lb = []
@@ -128,7 +128,7 @@ class Leveling(commands.Cog, name="Leveling"):
 		Need Manage Server permissions for the user.
 		"""
 
-		with open("config.json") as f:
+		with open("json/config.json") as f:
 			guild = json.load(f)
 
 		if ctx.guild.id in guild['guilds']:
@@ -136,7 +136,7 @@ class Leveling(commands.Cog, name="Leveling"):
 
 		guild['guilds'].append(ctx.guild.id)
 
-		with open("config.json", "w+") as f:
+		with open("json/config.json", "w+") as f:
 			json.dump(guild, f)
 
 		await ctx.reply(f"{ctx.author.mention} Successfully disabled `leveling system` in this server.")
@@ -159,7 +159,7 @@ class Leveling(commands.Cog, name="Leveling"):
                 Need Manage Server permissions for the user.
                 """
 
-		with open("config.json") as f:
+		with open("json/config.json") as f:
 			guild = json.load(f)
 
 		if ctx.guild.id not in guild['guilds']:
@@ -167,7 +167,7 @@ class Leveling(commands.Cog, name="Leveling"):
 
 		guild['guilds'].remove(ctx.guild.id)
 
-		with open("config.json", "w+") as f:
+		with open("json/config.json", "w+") as f:
 			json.dump(guild, f)
 
 		await ctx.reply(f"{ctx.author.mention} Successfully enabled `leveling system` in this server.")

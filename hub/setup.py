@@ -22,7 +22,7 @@ class hubsetup(commands.Cog):
         Permissions:
         Need Manage Channels, Manage Roles, and Manage Permissions permissions for the bot, and Manage Server permissions for the user.
         """
-        with open("hub.json") as f:
+        with open("json/hub.json") as f:
             hub = json.load(f)
 
         for current_guild in hub['guilds']:
@@ -39,7 +39,7 @@ class hubsetup(commands.Cog):
             )
             await ctx.send(f"{ctx.author.mention} successfully created **{channel.name}**")
 
-        with open("hub.json", "w") as f:
+        with open("json/hub.json", "w") as f:
             json.dump(hub, f)
 
 def setup(bot):

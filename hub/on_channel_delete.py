@@ -17,7 +17,7 @@ class event(commands.Cog):
             None
             """
 
-            with open("hub.json") as f:
+            with open("json/hub.json") as f:
                 hub = json.load(f)
 
             for current_guild in hub['guilds']:

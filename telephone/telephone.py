@@ -26,7 +26,7 @@ class Telephone(commands.Cog, name="Telephone"):
         Need Manage Server permission for the user.
         """
         if channel is None: channel = ctx.channel
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         for current_guild in tel['guilds']:
@@ -45,7 +45,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 }
             )
             await ctx.send(f"{ctx.author.mention} successfully added **{channel.name} ({channel.id})** to the telephone line.")
-        with open("tel.json", "w+") as f:
+        with open("json/tel.json", "w+") as f:
             json.dump(tel, f)
 
     @commands.command()
@@ -65,12 +65,12 @@ class Telephone(commands.Cog, name="Telephone"):
         Need Manage Server permission for the user.
         """
         if channel is None: channel = ctx.channel
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         for current_guild in tel['guilds']:
             if current_guild['id'] == ctx.guild.id:
-                current_guildp['channel'] = channel.id
+                current_guild['channel'] = channel.id
                 await ctx.send(f"{ctx.author.mention} **{channel.name} ({channel.id})** is now your telephone line.")
                 break
         else:
@@ -85,7 +85,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 }
             )
             await ctx.send(f"{ctx.author.mention} **{channel.name} ({channel.id})** is now your telephone line.")
-        with open("tel.json", "w+") as f:
+        with open("json/tel.json", "w+") as f:
             json.dump(tel, f)
 
     @commands.command()
@@ -104,19 +104,19 @@ class Telephone(commands.Cog, name="Telephone"):
         Permissions:
         Need Manage Server permission for the user.
         """
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         for current_guild in tel['guilds']:
             if current_guild['id'] == ctx.guild.id:
-                current_guildp['pingrole'] = role.id
+                current_guild['pingrole'] = role.id
                 await ctx.send(f"{ctx.author.mention} **{role.name} ({role.id})** is now your telephone line ringing role.")
                 break
         else:
             tel['guilds'].append(
                 {
                     "id": ctx.guild.id,
-                    "channels": channel.id,
+                    "channels": ctx.channel.id,
                     "guildnumbers": True,
                     "pingrole": role.id,
                     "memberping": None,
@@ -125,7 +125,7 @@ class Telephone(commands.Cog, name="Telephone"):
             )
             await ctx.send(f"{ctx.author.mention} **{role.name} ({role.id})** is now your telephone line ringing role.")
 
-        with open("tel.json", "w+") as f:
+        with open("json/tel.json", "w+") as f:
             json.dump(tel, f)
 
     @commands.command()
@@ -144,19 +144,19 @@ class Telephone(commands.Cog, name="Telephone"):
         Permissions:
         Need Manage Server permission for the user.
         """
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         for current_guild in tel['guilds']:
             if current_guild['id'] == ctx.guild.id:
-                current_guildp['memberping'] = member.id
+                current_guild['memberping'] = member.id
                 await ctx.send(f"{ctx.author.mention} **{member.name} ({member.id})** is now your telephone line ringing member.")
                 break
         else:
             tel['guilds'].append(
                 {
                     "id": ctx.guild.id,
-                    "channels": channel.id,
+                    "channels": ctx.channel.id,
                     "guildnumbers": True,
                     "pingrole": None,
                     "memberping": member.id,
@@ -165,7 +165,7 @@ class Telephone(commands.Cog, name="Telephone"):
             )
             await ctx.send(f"{ctx.author.mention} **{member.name} ({member.id})** is now your telephone line ringing member.")
 
-        with open("tel.json", "w+") as f:
+        with open("json/tel.json", "w+") as f:
             json.dump(tel, f)
 
     @commands.command()
@@ -185,7 +185,7 @@ class Telephone(commands.Cog, name="Telephone"):
         Permissions:
         Need Manage Server permission for the user.
         """
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         if args.lower() == "all":
@@ -198,7 +198,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 tel['guilds'].append(
                     {
                         "id": ctx.guild.id,
-                        "channels": channel.id,
+                        "channels": ctx.channel.id,
                         "guildnumbers": True,
                         "pingrole": None,
                         "memberping": None,
@@ -217,7 +217,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 tel['guilds'].append(
                     {
                         "id": ctx.guild.id,
-                        "channels": channel.id,
+                        "channels": ctx.channel.id,
                         "guildnumbers": True,
                         "pingrole": None,
                         "memberping": None,
@@ -238,7 +238,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 tel['guilds'].append(
                     {
                         "id": ctx.guild.id,
-                        "channels": channel.id,
+                        "channels": ctx.channel.id,
                         "guildnumbers": True,
                         "pingrole": None,
                         "memberping": None,
@@ -249,7 +249,7 @@ class Telephone(commands.Cog, name="Telephone"):
         except Exception as e:
             pass
 
-        with open("tel.json", "w+") as f:
+        with open("json/tel.json", "w+") as f:
             json.dump(tel, f)
 
     @commands.command()
@@ -299,7 +299,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
         Cooldown of 60 seconds after one time use, per guild.
         """
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         for current_guild in tel['guilds']:
@@ -348,7 +348,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
             target_guild['guildnumbers'] = True
             current_guild['guildnumbers'] = True
-            with open("tel.json", "w+") as f:
+            with open("json/tel.json", "w+") as f:
                 json.dump(tel, f)
             return
 
@@ -358,7 +358,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
             target_guild['guildnumbers'] = True
             current_guild['guildnumbers'] = True
-            with open("tel.json", "w+") as f:
+            with open("json/tel.json", "w+") as f:
                 json.dump(tel, f)
 
             return
@@ -370,7 +370,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
             current_guild['guildnumbers'] = False
             target_guild['guildnumbers'] = False
-            with open("tel.json", "w+") as f:
+            with open("json/tel.json", "w+") as f:
                 json.dump(tel, f)
 
             while True:
@@ -388,7 +388,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
                     target_guild['guildnumbers'] = True
                     current_guild['guildnumbers'] = True
-                    with open("tel.json", "w+") as f:
+                    with open("json/tel.json", "w+") as f:
                         json.dump(tel, f)
                     return
 
@@ -399,7 +399,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
                     current_guild['guildnumbers'] = True
                     target_guild['guildnumbers'] = True
-                    with open("tel.json", "w+") as f:
+                    with open("json/tel.json", "w+") as f:
                         json.dump(tel, f)
 
                     return
@@ -430,7 +430,7 @@ class Telephone(commands.Cog, name="Telephone"):
         """
         em_list = []
 
-        with open("tel.json") as f:
+        with open("json/tel.json") as f:
             tel = json.load(f)
 
         for guild in tel['guilds']:

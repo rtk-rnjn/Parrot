@@ -15,7 +15,7 @@ class MessageLevel(commands.Cog, name="Leveling"):
 
 		if ctx.guild.id in guild['guilds']: return
 
-		with open('level.json', encoding='utf-8') as f:
+		with open('json/level.json', encoding='utf-8') as f:
 			level = json.load(f)
 
 		for current_guild in level['levels']:
@@ -25,7 +25,7 @@ class MessageLevel(commands.Cog, name="Leveling"):
 				xp = current_guild['xp']
 				current_guild['lvl']  = current_guild['lvl'] + int(((xp + xp_to_add)//420) ** 0.05)
 				current_guild['xp'] = current_guild['xp'] + xp_to_add
-				with open('level.json', 'w+') as f:
+				with open('json/level.json', 'w+') as f:
 					json.dump(level, f)
 				break
 		else:
@@ -35,7 +35,7 @@ class MessageLevel(commands.Cog, name="Leveling"):
 				'xp': 10,
 				'lvl': 1
 			})
-		with open('level.json', 'w+') as f:
+		with open('json/level.json', 'w+') as f:
 			json.dump(level, f)
 		return
 def setup(bot):

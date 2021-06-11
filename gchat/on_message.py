@@ -14,7 +14,7 @@ class MessageEvents(commands.Cog, name="Global Chat"):
 		async def on_message(self, message):
 				if not message.guild:
 						return
-				with open("wchat.json") as f:
+				with open("json/wchat.json") as f:
 					channels_ = json.load(f)
 
 
@@ -58,7 +58,7 @@ class MessageEvents(commands.Cog, name="Global Chat"):
 				except:
 						return await message.channel.send("Bot requires **Manage Messages** permission(s) to function properly.")
 
-				with open("webhook.json") as g:
+				with open("json/webhook.json") as g:
 					webhooks = json.load(g)
 				for hook in webhooks:
 						try:

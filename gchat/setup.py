@@ -22,10 +22,10 @@ class WorldChatSetup(commands.Cog, name="Global Chat"):
 		Permissions:
 		Need Manage Channels, Manage Webhook, and Manage Roles permissions for the bot, and Manage Server permission for the user.
 		"""
-		with open("wchat.json") as f:
+		with open("jsonwchat.json") as f:
 			wchat = json.load(f)
 		
-		with open("webhook.json") as g:
+		with open("json/webhook.json") as g:
 			hook = json.load(g) 
 		
 		guild = ctx.guild
@@ -41,7 +41,7 @@ class WorldChatSetup(commands.Cog, name="Global Chat"):
 		wchat.append(channel.id)
 		hook.append(f"{webhook.url}")
 
-		with open("webhook.json", "w+") as f:
+		with open("json/webhook.json", "w+") as f:
 			json.dump(hook, f)
 
 		with open("wchat.json", "w+") as g:

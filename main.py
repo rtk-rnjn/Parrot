@@ -35,7 +35,7 @@ cogs = [
 		'cogs.applymod', 'telephone.telephone', 'cogs.unbiboat', 'gchat.setup', 'gchat.on_message',
 		'leveling.on_message', 'leveling.leaderboard',
 		'events.on_command_error', 'events.on_member_join', 'events.on_guild_join',
-		'economy.balance', 'economy.beg', 'economy.deposit', 'economy.slots', 'economy.steal', 'economy.withdraw',
+		'cogs.economy',
 		'nasa.nasasearch', 'nasa.nasa', 'nasa.mars', 'nasa.findasteroidid', 'nasa.findasteroid', 'nasa.epic', 'nasa.apod',
 		'jishaku'
 ]

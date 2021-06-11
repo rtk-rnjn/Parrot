@@ -486,7 +486,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 				'name':member.id,
 				'reasons': [reason,]
 			})
-		with open('reports.json', 'w+') as f:
+		with open('json/reports.json', 'w+') as f:
 			json.dump(report, f)
 
 		try:
@@ -511,7 +511,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 		Permissions:
 		Need Kick Members permission, for the user and Embed Links for the bot.
 		"""
-		with open('reports.json', encoding='utf-8') as f:
+		with open('json/reports.json', encoding='utf-8') as f:
 			report = json.load(f)
 		for current_guild in report['reports']:
 			if ( current_guild['guild_id'] == ctx.guild.id ) and ( current_guild['name'] == member.id ):
@@ -536,7 +536,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 		Permissions:
 		Need Kick Members permission, for the user and Embed Links for the bot.
 		"""
-		with open('reports.json', 'r', encoding='utf-8') as f:
+		with open('json/reports.json', 'r', encoding='utf-8') as f:
 			report = json.load(f)
 		for current_guild in report['reports']:
 			if member.id == current_guild['name']:
@@ -546,7 +546,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 					break
 			else:
 				await ctx.send(f"{ctx.author.mention} {member.name} never being reported")
-		with open('reports.json','w+') as f:
+		with open('json/reports.json','w+') as f:
 			json.dump(report,f)
 
 

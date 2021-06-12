@@ -10,7 +10,7 @@ class MessageLevel(commands.Cog, name="Leveling"):
 	async def on_message(self, ctx):
 		if ctx.author.bot: return
 		if ctx.author.dm_channel: return
-		with open("config.json") as f:
+		with open("json/config.json") as f:
 			guild = json.load(f)
 
 		if ctx.guild.id in guild['guilds']: return

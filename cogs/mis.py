@@ -2,10 +2,7 @@ from discord.ext import commands
 from youtube_search import YoutubeSearch
 import urllib.parse, aiohttp
 import os
-# from os import system as s
-# s('pip install truth-table-generator')
-# s('pip install editdistance')
-# s('pip install wikipedia')
+
 import requests, discord, re, editdistance, wikipedia, json, ttg, io, datetime
 from pygicord import Paginator
 from discord import Embed

@@ -21,3 +21,4 @@ PyYAML==5.4.1
 ttg==0.1.dev3
 PyNacl
 mee6_py_api
+akinator.py==4.1.0

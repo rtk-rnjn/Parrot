@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-from os import system as s
-s('pip install pygicord')
+
 from pygicord import Paginator
 
 class HelpCommand(commands.HelpCommand):

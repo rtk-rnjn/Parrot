@@ -1,6 +1,5 @@
 import asyncio
-from os import system as sys
-sys("pip install akinator.py")
+
 import akinator
 from akinator.async_aki import Akinator
 from discord.ext.commands import BucketType, cooldown

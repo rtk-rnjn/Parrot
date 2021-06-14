@@ -1,4 +1,4 @@
-import discord, json
+import json
 from random import randint 
 from discord.ext import commands
 

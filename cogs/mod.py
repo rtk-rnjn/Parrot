@@ -32,7 +32,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 		try:
 			await member.add_roles(role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 			await ctx.send(f"{ctx.author.mention} given {role.name}({role.id}) to {member.name}")
-		except Exception as e:
+		except Exception:
 			pass
 
 
@@ -41,7 +41,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	@commands.guild_only()
-	async def ban(self, ctx, member : commands.Greedy[discord.User], days:typing.Optional[int]=None, *, reason:str=None):
+	async def ban(self, ctx, member : commands.Greedy[discord.User]=None, days:typing.Optional[int]=None, *, reason:str=None):
 		"""
 		To ban a member from guild.
 		
@@ -53,12 +53,15 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: The bot will ban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return 
 		if days is None: days = 1
 		for member in member:
 			try:
 				await ctx.guild.ban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}', delete_message_days=days)
 				await ctx.send(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
-			except Exception as e:
+			except Exception:
 				pass # if something went wrong then it will silently ignores it
 			await asyncio.sleep(0.25)
 
@@ -67,7 +70,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	@commands.guild_only()
-	async def block(self, ctx, member : commands.Greedy[discord.Member], *, reason : str=None):
+	async def block(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason : str=None):
 		"""
 		Blocks a user from sending message in that channel.
 		
@@ -79,14 +82,17 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: The bot will block indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the block. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		guild = ctx.guild
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return
+
 		if (member.id == self.bot.user.id) or (member == ctx.author): return await ctx.send(f"{ctx.author.mention} :\ don't do that, I am only trying to help!")
 
 		for member in member:
 			try:
 				await ctx.channel.set_permissions(member, send_messages=False, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 				await ctx.send(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been created! **View Channel, and Send Messages** is denied!')
-			except Exception as e:
+			except Exception:
 				pass # if something went wrong then it will silently ignores it
 			await asyncio.sleep(0.25)
 
@@ -118,7 +124,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.guild_only()
-	async def kick(self, ctx, member : commands.Greedy[discord.Member], *, reason:str=None):
+	async def kick(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To kick a member from guild.
 		
@@ -130,11 +136,15 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: The bot will kick indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the kick. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return
+
 		for member in member:
 			try:
 				await member.kick(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
 				await ctx.send(f'**`{member.name}#{member.discriminator}`** is kicked! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**')
-			except Exception as e:
+			except Exception:
 				pass  # if something went wrong then it will silently ignores it
 			await asyncio.sleep(0.25)
 
@@ -156,6 +166,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: This command will deny the server default role (`@everyone`) from sending message in the specified channel. To reverse the change, use `unlock` command. `[p]help unlock` for more info.
 		"""
+		
 		if channel is None:
 			channel = ctx.channel
 			overwrite = channel.overwrites_for(ctx.guild.default_role)
@@ -170,7 +181,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 				overwrite.send_messages = False
 				await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=overwrite)
 				await ctx.send(f'{ctx.author.mention} channel locked.')
-			except Exception as e:
+			except Exception:
 				pass  # if something went wrong then it will silently ignores it
 			await asyncio.sleep(0.25)
 
@@ -179,7 +190,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	@commands.guild_only()
 	@commands.command(brief="To restrict a member to sending message in the Server")
-	async def mute(self, ctx, member : commands.Greedy[discord.Member], *, reason:str=None):
+	async def mute(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To restrict a member to sending message in the Server
 		
@@ -191,9 +202,12 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: The Mute command will only work if the any role exists with exact name `Muted` else Bot will create a role name `Muted`, and create overwrite (Send Messages=False, Read Message History=False) for all the text channels.
 		"""
-
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return 
+	
 		if ctx.author == member:
-			return	await ctx.send(f"{ctx.author.mention} you cannot mute yourself.")
+			return await ctx.send(f"{ctx.author.mention} you cannot mute yourself.")
 
 		muted = discord.utils.get(ctx.guild.roles, name="Muted")
 
@@ -207,7 +221,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 				await member.add_roles(muted, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 				await ctx.send(f'{ctx.author.mention} **{member.name}** has been successfully muted till death!')
 			except Exception as e:
-				pass  # if something went wrong then it will silently ignores it
+				print(e)  # if something went wrong then it will silently ignores it
 			await asyncio.sleep(0.25)
 
 
@@ -274,7 +288,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 			if channel is None: channel = ctx.channel 
 			await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 			await ctx.send(f"{ctx.author.mention} {channel} is not in slowmode, to reverse type [p]slowmode 0")
-		if seconds == 0:
+		elif seconds == 0:
 			await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 		else: 
 			await ctx.send(f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds")
@@ -286,7 +300,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
-	async def softban(self, ctx, member : commands.Greedy[discord.Member], *, reason:str=None):
+	async def softban(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To Ban a member from a guild then immediately unban
 		
@@ -298,6 +312,10 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: The bot will softban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return
+
 		for member in member:
 			try:
 				await member.ban(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
@@ -310,7 +328,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 						await ctx.guild.unban(user)
 
 				await ctx.send(f'**`{member.name}#{member.discriminator}`** is banned then unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.authoe.discriminator}`**! Reason: **{reason}**')
-			except Exception as e:
+			except Exception:
 				pass  # if something went wrong then it will silently ignores it
 
 			await asyncio.sleep(0.25)
@@ -341,7 +359,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	@commands.guild_only()
-	async def unblock(self, ctx, member: commands.Greedy[discord.Member], *, reason:str=None):
+	async def unblock(self, ctx, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		Unblocks a user from the text channel.
 
@@ -353,13 +371,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		NOTE: The bot will unblock indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the unblock. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return
 
 		for member in member:
 			try:
 				if member.permissions_in(ctx.channel).send_messages: await ctx.send(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
 				else: await ctx.channel.set_permissions(member, view_channel=None, send_messages=None, overwrite=None, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 				await ctx.send(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been deleted!')
-			except Exception as e:
+			except Exception:
 				pass  # if something went wrong then it will silently ignores it
 			await asyncio.sleep(0.25)
 
@@ -392,7 +413,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 			try:
 				await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=None)
 				await ctx.send(f'{ctx.author.mention} channel unlocked.')
-			except Exception as e:
+			except Exception:
 				pass
 		await asyncio.sleep(0.25)
 
@@ -401,7 +422,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
 	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def unmute(self, ctx, member: commands.Greedy[discord.Member], *, reason:str=None):
+	async def unmute(self, ctx, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To allow a member to sending message in the Text Channels, if muted.
 		
@@ -411,6 +432,10 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 		Permissions:
 		Need Manage Roles permission for the bot, and Kick Members permission for the user.
 		"""
+		if member is None: 
+			raise commands.MissingRequiredArgument
+			return
+
 		Muted = "Muted"
 
 		rolem = discord.utils.get(ctx.message.guild.roles, name=Muted)
@@ -421,7 +446,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 					await member.remove_roles(rolem, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
 				else:
 					await ctx.send(f"{ctx.author.mention} **{member.name}** already unmuted :')")
-			except Exception as e:
+			except Exception:
 				pass
 
 			await asyncio.sleep(0.25)

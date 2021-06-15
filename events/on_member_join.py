@@ -19,7 +19,7 @@ class OnMemberJoin(commands.Cog, name="Member Join"):
             guild = member.guild
 
             embed = Embed(
-                title=f"{member.name} welcome to {member.guild.name}",
+                title=f"{member.name}#{member.discriminator} welcome to {member.guild.name}",
                 description=
                 "We glad to see you here. Check out <#785803322136592394> and enjoy!",
                 timestamp=member.created_at)

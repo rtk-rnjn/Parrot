@@ -516,7 +516,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 		try:
 			await member.send(f"{member.name}#{member.discriminator} you are being warned for {reason}")
-		except Exception as e:
+		except Exception:
 			await ctx.send(f"{member.name}#{member.discriminator} you are being warned for {reason}")
 			pass
 

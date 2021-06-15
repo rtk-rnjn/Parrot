@@ -64,7 +64,7 @@ class CommandErrorHandler(commands.Cog, name="Error Handler"):
 			return
 			
 		elif isinstance(error, commands.PrivateMessageOnly):
-			await ctx.reply(f"Error: Private Message Only. This comamnd will only work in DM messages")
+			return await ctx.reply(f"Error: Private Message Only. This comamnd will only work in DM messages")
 
 		elif isinstance(error, commands.BadArgument):
 			if isinstance(error, commands.MessageNotFound):

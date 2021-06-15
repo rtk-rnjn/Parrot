@@ -458,7 +458,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	async def unrole(self, ctx, member: discord.Member, role: discord.Role, *, reason:str=None):
 		"""
-		Remove the mentioned to role to mentioned/id member
+		Remove the mentioned role from mentioned/id member
 
 		Syntax:
 		`Unrole <User:Mention/ID> <Role:Mention/ID> [Reason:Text]`
@@ -484,7 +484,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.cooldown(3, 30, commands.BucketType.guild)
 	@commands.guild_only()
-	async def warn(self, ctx, member:discord.User, *, reason:str):
+	async def warn(self, ctx, member:discord.Member, *, reason:str):
 		"""
 		To warn a user
 
@@ -526,7 +526,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
 	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def warnings(self, ctx, member:discord.User):
+	async def warnings(self, ctx, member:discord.Member):
 		"""
 		To see the number of times the user is being warned
 
@@ -551,7 +551,7 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
 	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def clearwarn(self, ctx, member:discord.User):
+	async def clearwarn(self, ctx, member:discord.Member):
 		"""
 		To clear all the warning from the user
 

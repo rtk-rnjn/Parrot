@@ -2,7 +2,7 @@ import discord, aiohttp, datetime, os
 from discord.ext import commands
 from pygicord import Paginator
 
-token = os.environ['token']
+token = os.environ['UB_TOKEN']
 
 class UnbelievaBoatIntegration(commands.Cog, name="UnbelievaBoat Integration"):
 		def __init__(self, bot):

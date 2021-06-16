@@ -314,7 +314,7 @@ class Telephone(commands.Cog, name="Telephone"):
         else: # if dialing server channel is not exists, then exit
             return await ctx.send(f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server, or the server is deleted!")
 
-        if target_guild['guildnumbers'] is True: # if telephone line is busy, then exit
+        if not target_guild['guildnumbers']: # if telephone line is busy, then exit
             return await ctx.send(f"Can not make a connection to **{number} ({self.bot.get_guild(target_guild['id']).name})**. Line busy!")
 
         channel = ctx.channel

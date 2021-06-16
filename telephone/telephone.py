@@ -246,7 +246,7 @@ class Telephone(commands.Cog, name="Telephone"):
                     }
                 )
                 await ctx.send(f"{ctx.author.mention} **{', '.join(numbers)}** are blocked! They can't call you, neither you can! To revert the change type `[p]telblock none`")
-        except Exception as e:
+        except Exception:
             pass
 
         with open("json/tel.json", "w+") as f:
@@ -331,7 +331,7 @@ class Telephone(commands.Cog, name="Telephone"):
             t_message = await target_channel.send(f"{self.bot.get_guild(target_guild['id']).get_role(target_guild['pingrole']).mention} {self.bot.get_user(target_guild['memberping']).mention} ...")
             await asyncio.sleep(0.25)
             await t_message.edit(content=f"Incoming call from **{current_guild['id']} ({self.bot.get_guild(current_guild['id']).name})** ...```\n`pickup` to accept``` ```\n`hungup` to reject```")
-        except Exception as e:
+        except Exception:
             t_message = await target_channel.send(f"Incoming call from **{current_guild['id']} ({self.bot.get_guild(current_guild['id']).name})** ...```\n`pickup` to accept``` ```\n`hungup` to reject```")
 
         def check(m):
@@ -341,7 +341,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
         try:
             _talk = await self.bot.wait_for('message', check=check, timeout=60)
-        except Exception as e:
+        except Exception:
             await asyncio.sleep(0.5)
             await t_message.edit(content=f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds")
             await message.edit(content=f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds")
@@ -381,7 +381,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
                 try:
                     talk = await self.bot.wait_for('message', check=check, timeout=60)
-                except Exception as e:
+                except Exception:
                     await asyncio.sleep(0.5)
                     await t_message.edit(content=f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds")
                     await message.edit(content=f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds")
@@ -443,7 +443,7 @@ class Telephone(commands.Cog, name="Telephone"):
         paginator = Paginator(pages=em_list, timeout=60.0)
         try:
             await paginator.start(ctx)
-        except Exception as e:
+        except Exception:
             pass
 
 def setup(bot):

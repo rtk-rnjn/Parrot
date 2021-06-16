@@ -146,7 +146,7 @@ class Economy(commands.Cog, name="Economy"):
 					await ctx.send(embed=embed)
 			for target in bank['users']:
 					if target['name'] == user.id:
-							if target['name'] == None:
+							if not target['name']:
 									await ctx.send(
 											f"{ctx.author.mention} that user don't have parrot economy"
 									)

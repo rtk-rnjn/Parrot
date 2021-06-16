@@ -614,6 +614,7 @@ class meme(commands.Cog, name="Meme Generator"):
 			"font": font,
 			"max_font_size": fontsize
 		}
+		url = "https://api.imgflip.com/caption_image"
 		async with aiohttp.ClientSession() as session:
 			async with session.get(url, params=params) as r:
 				if r.status == 200:

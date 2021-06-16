@@ -375,11 +375,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 						link = item['link']
 						displaylink = item['displayLink']
 						snippet = item['snippet']
-						img = item['pagemap']['cse_thumbnail'][0]['src']
+						try: img = item['pagemap']['cse_thumbnail'][0]['src']
+						except KeyError: img = None
 						em = discord.Embed(title=f"{title}", description=f"{displaylink}```\n{snippet}```",
 															timestamp=datetime.datetime.utcnow(), url=f"{link}")
 						em.set_footer(text=f"{ctx.author.name}")
-						em.set_thumbnail(url=img)
+						if not img: pass
+						else: em.set_thumbnail(url=img)
 						pages.append(em)
 
 				paginator = Paginator(pages=pages, timeout=60.0)

@@ -375,7 +375,7 @@ class Telephone(commands.Cog, name="Telephone"):
 
             while True:
                 def check(m):
-                    if m.channel == target_channel or m.channel == target_channel: return True
+                    if (m.channel == target_channel) or (m.channel == channel): return True
                     if m.author.bot: return False
                     return False
 
@@ -409,10 +409,10 @@ class Telephone(commands.Cog, name="Telephone"):
                 if talk.channel == target_channel:
                     await channel.send(f"**{talk.author.name}#{talk.author.discriminator}** {talk_msg}")
 
-                if talk.channel.id == channel.id:
+                if talk.channel == channel:
                     await target_channel.send(f"**{talk.author.name}#{talk.author.discriminator}** {talk_msg}")
 
-    @commands.command()
+    @commands.command()	
     @commands.guild_only()
     @commands.cooldown(1, 10, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)

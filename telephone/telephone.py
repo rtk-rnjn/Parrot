@@ -38,7 +38,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 {
                     "id": ctx.guild.id,
                     "channels": channel.id,
-                    "guildnumbers": True,
+                    "is_line_busy": False,
                     "pingrole": None,
                     "memberping": None,
                     "blocked": []
@@ -78,7 +78,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 {
                     "id": ctx.guild.id,
                     "channels": channel.id,
-                    "guildnumbers": True,
+                    "is_line_busy": False,
                     "pingrole": None,
                     "memberping": None,
                     "blocked": []
@@ -117,7 +117,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 {
                     "id": ctx.guild.id,
                     "channels": ctx.channel.id,
-                    "guildnumbers": True,
+                    "is_line_busy": False,
                     "pingrole": role.id,
                     "memberping": None,
                     "blocked": []
@@ -131,7 +131,7 @@ class Telephone(commands.Cog, name="Telephone"):
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.guild)
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_permissions(manage_guild=False)
     async def telpingmember(self, ctx, member: discord.Member):
         """
         A normal phone call usually rings when someone calls, isn't it? Set the ping member (optional) to know someone is calling and we need to pick that up! LOL
@@ -157,7 +157,7 @@ class Telephone(commands.Cog, name="Telephone"):
                 {
                     "id": ctx.guild.id,
                     "channels": ctx.channel.id,
-                    "guildnumbers": True,
+                    "is_line_busy": False,
                     "pingrole": None,
                     "memberping": member.id,
                     "blocked": []
@@ -199,7 +199,7 @@ class Telephone(commands.Cog, name="Telephone"):
                     {
                         "id": ctx.guild.id,
                         "channels": ctx.channel.id,
-                        "guildnumbers": True,
+                        "is_line_busy": False,
                         "pingrole": None,
                         "memberping": None,
                         "blocked": False
@@ -218,7 +218,7 @@ class Telephone(commands.Cog, name="Telephone"):
                     {
                         "id": ctx.guild.id,
                         "channels": ctx.channel.id,
-                        "guildnumbers": True,
+                        "is_line_busy": False,
                         "pingrole": None,
                         "memberping": None,
                         "blocked": []
@@ -239,7 +239,7 @@ class Telephone(commands.Cog, name="Telephone"):
                     {
                         "id": ctx.guild.id,
                         "channels": ctx.channel.id,
-                        "guildnumbers": True,
+                        "is_line_busy": False,
                         "pingrole": None,
                         "memberping": None,
                         "blocked": numbers
@@ -314,7 +314,7 @@ class Telephone(commands.Cog, name="Telephone"):
         else: # if dialing server channel is not exists, then exit
             return await ctx.send(f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server, or the server is deleted!")
 
-        if not target_guild['guildnumbers']: # if telephone line is busy, then exit
+        if target_guild['is_line_busy']: # if telephone line is busy, then exit
             return await ctx.send(f"Can not make a connection to **{number} ({self.bot.get_guild(target_guild['id']).name})**. Line busy!")
 
         channel = ctx.channel
@@ -346,8 +346,8 @@ class Telephone(commands.Cog, name="Telephone"):
             await t_message.edit(content=f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds")
             await message.edit(content=f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds")
 
-            target_guild['guildnumbers'] = True
-            current_guild['guildnumbers'] = True
+            target_guild['is_line_busy'] = False
+            current_guild['is_line_busy'] = False
             with open("json/tel.json", "w+") as f:
                 json.dump(tel, f)
             return
@@ -356,8 +356,8 @@ class Telephone(commands.Cog, name="Telephone"):
             await asyncio.sleep(0.5)
             await message.edit(content=f"{ctx.author.mention} **{number} {self.bot.get_guild(number).name}** is busy! Please Try later")
 
-            target_guild['guildnumbers'] = True
-            current_guild['guildnumbers'] = True
+            target_guild['is_line_busy'] = False
+            current_guild['is_line_busy'] = False
             with open("json/tel.json", "w+") as f:
                 json.dump(tel, f)
 
@@ -368,8 +368,8 @@ class Telephone(commands.Cog, name="Telephone"):
             await message.edit(content=f"{ctx.author.mention} **{number}** picked up the phone! Say Hi")
             await t_message.edit(content="Line connected! Say Hi")
 
-            current_guild['guildnumbers'] = False
-            target_guild['guildnumbers'] = False
+            current_guild['is_line_busy'] = True
+            target_guild['is_line_busy'] = True
             with open("json/tel.json", "w+") as f:
                 json.dump(tel, f)
 
@@ -386,8 +386,8 @@ class Telephone(commands.Cog, name="Telephone"):
                     await t_message.edit(content=f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds")
                     await message.edit(content=f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds")
 
-                    target_guild['guildnumbers'] = True
-                    current_guild['guildnumbers'] = True
+                    target_guild['is_line_busy'] = True
+                    current_guild['is_line_busy'] = True
                     with open("json/tel.json", "w+") as f:
                         json.dump(tel, f)
                     return
@@ -397,8 +397,8 @@ class Telephone(commands.Cog, name="Telephone"):
                     await channel.send(content=f"Line **{number} {self.bot.get_guild(number).name}** disconnected!")
                     await target_channel.send(content=f"Line **{ctx.guild.id} {ctx.guild.name}** disconnected!")
 
-                    current_guild['guildnumbers'] = True
-                    target_guild['guildnumbers'] = True
+                    current_guild['is_line_busy'] = True
+                    target_guild['is_line_busy'] = True
                     with open("json/tel.json", "w+") as f:
                         json.dump(tel, f)
 

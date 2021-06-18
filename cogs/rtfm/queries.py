@@ -97,7 +97,7 @@ class Coding(commands.Cog, name="RTFM Bot"):
 		async def run(self, ctx, language, *, code=''):
 				"""Execute code in a given programming language"""
 				# Powered by tio.run
-				with open('default_langs.yml', 'r') as file: default = yaml_load(file)
+				with open('extra/default_langs.yml', 'r') as file: default = yaml_load(file)
 				options = {
 						'--stats': False,
 						'--wrapped': False
@@ -389,7 +389,7 @@ class Coding(commands.Cog, name="RTFM Bot"):
 								description=''.join(codes))
 						emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
 						await ctx.send(embed=emb)
-				except ValueError as e:
+				except ValueError:
 						await ctx.send("Invalid sequence. Example usage : `[p]unascii 104 101 121`")
 		
 

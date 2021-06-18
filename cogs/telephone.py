@@ -332,7 +332,7 @@ class Telephone(commands.Cog, name="Telephone"):
             await asyncio.sleep(0.25)
             await t_message.edit(content=f"Incoming call from **{current_guild['id']} ({self.bot.get_guild(current_guild['id']).name})** ...```\n`pickup` to accept``` ```\n`hungup` to reject```")
         except Exception:
-            t_message = await target_channel.send(f"Incoming call from **{current_guild['id']} ({self.bot.get_guild(current_guild['id']).name})** ...```\n`pickup` to accept``` ```\n`hungup` to reject```")
+            t_message = await target_channel.send(f"Incoming call from **{current_guild['id']} ({self.bot.get_guild(current_guild['id']).name})** ...```\n`pickup` to accept``````\n`hungup` to reject```")
 
         def check(m):
             if (m.content.lower() == "pickup" and m.channel == target_channel) or (m.content.lower() == "hangup" and m.channel == target_channel): return True
@@ -383,22 +383,22 @@ class Telephone(commands.Cog, name="Telephone"):
                     talk = await self.bot.wait_for('message', check=check, timeout=60)
                 except Exception:
                     await asyncio.sleep(0.5)
-                    await t_message.edit(content=f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds")
-                    await message.edit(content=f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds")
+                    await target_channel.send(content=f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds")
+                    await channel.send(content=f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds")
 
-                    target_guild['is_line_busy'] = True
-                    current_guild['is_line_busy'] = True
+                    target_guild['is_line_busy'] = False
+                    current_guild['is_line_busy'] = False
                     with open("json/tel.json", "w+") as f:
                         json.dump(tel, f)
                     return
 
-                if talk.content.lower() == "hangup":
+                if str(talk.content).lower() == "hangup":
                     await asyncio.sleep(0.5)
                     await channel.send(content=f"Line **{number} {self.bot.get_guild(number).name}** disconnected!")
                     await target_channel.send(content=f"Line **{ctx.guild.id} {ctx.guild.name}** disconnected!")
 
-                    current_guild['is_line_busy'] = True
-                    target_guild['is_line_busy'] = True
+                    current_guild['is_line_busy'] = False
+                    target_guild['is_line_busy'] = False
                     with open("json/tel.json", "w+") as f:
                         json.dump(tel, f)
 

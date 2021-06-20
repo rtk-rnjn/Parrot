@@ -22,7 +22,7 @@ class NotPremiumUser(ParrotError):
 class NotPremiumGuild(ParrotError):
     def __init__(self):
         super().__init__(
-            "Error: Not Premium Guild. This server muse be premium as to use this command."
+            "Error: Not Premium Guild. This server must be premium as to use this command."
         )
 
 

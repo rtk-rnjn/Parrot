@@ -39,38 +39,37 @@ def is_me():
 
 def is_user_premium():
 		def predicate(ctx):
-				data = list(
-						collection_pr_user.find({
-								"_id": ctx.message.author.id
-						}).distinct('_id'))
-				if ctx.message.author.id in data:
+				user = collection_pr_user.find({"_id": ctx.message.author.id})
+				if not user:
+						raise ex.NotPremiumUser()
+				elif user:
 						return True
-				else:
-						raise ex.NotPremiumUser
 		return commands.check(predicate)
 
+
+def is_guild_premium():
+		def predicate(ctx):
+				guild = collection_pre_guild.find({"_id": ctx.guild.id})
+				if guild:
+						return True
+				elif not guild:
+						raise ex.NotPremiumGuild()
 
 def user_premium_cd():
 		def predicate(ctx):
-				data = list(
-						collection_pr_user.find({
-								"_id": ctx.message.author.id
-						}).distinct('_id'))
-				if ctx.message.author.id in data:
+				user = collection_pr_user.find({"_id": ctx.message.author.id})
+				if user:
 						return commands.cooldown(0, 0, commands.BucketType.member)
 				else:
-						return commands.cooldown(1, 2, commands.BucketType.member)
+						return commands.cooldown(1, 5, commands.BucketType.member)
 
 		return commands.check(predicate)
 
 
-def mod_premium_cd():
+def mod_cd():
 		def predicate(ctx):
-				data = list(
-						collection_pre_guild.find({
-								"_id": ctx.guild.id
-						}).distinct('_id'))
-				if ctx.guild.id in data:
+				guild = collection_pre_guild.find({"_id": ctx.guild.id})
+				if guild:
 						return commands.cooldown(0, 0, commands.BucketType.guild)
 				else:
 						return commands.cooldown(3, 30, commands.BucketType.guild)

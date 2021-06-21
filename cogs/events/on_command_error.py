@@ -1,8 +1,12 @@
 import discord, traceback, sys, math, random
 from discord.ext import commands
 from datetime import datetime
-from utils.exceptions import NukeBotError
-from discord.ext.commands import Cog
+
+from utilities.exceptions import ParrotError
+
+from core.cog import Cog
+from core.ctx import Context
+from core.bot import Parrot
 
 with open("storing/quote.txt") as f:
     quote = f.read()
@@ -12,11 +16,11 @@ quote = quote.split('\n')
 
 class CommandErrorHandler(Cog):
     """This category is of no use for you, ignore it."""
-    def __init__(self, bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
 
     @Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: Context, error):
         # if command has local error handler, return
         if hasattr(ctx.command, 'on_error'): return
 
@@ -130,7 +134,7 @@ class CommandErrorHandler(Cog):
                 f"{random.choice(quote)}\n\nMax Concurrenry Reached. This command is already running in this server. You have wait for it to finish."
             )
 
-        elif isinstance(error, NukeBotError):
+        elif isinstance(error, ParrotError):
             return await ctx.send(error.__str__().format(ctx=ctx))
 
         else:

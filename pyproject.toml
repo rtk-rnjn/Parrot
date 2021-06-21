@@ -18,6 +18,7 @@ discord = "^1.0.1"
 jishaku = "^1.20.0"
 utils = "^1.0.1"
 editdistance = "^0.5.3"
+pymongo = "^3.11.4"
 
 [tool.poetry.dev-dependencies]
 

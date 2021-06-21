@@ -29,10 +29,10 @@ def is_guild_owner():
 
 def is_me():
 		def predicate(ctx):
-				if ctx.message.author.id == SUPER_USER:
+				if ctx.message.author.id == SUPER_USER: # !! Ritik Ranjan [*.*]#9230
 						return True
 				else:
-						raise ex.NotMe()  # !! Ritik Ranjan [*.*]#9230
+						raise ex.NotMe()  
 
 		return commands.check(predicate)
 
@@ -41,9 +41,22 @@ def is_user_premium():
 		def predicate(ctx):
 				data = list(
 						collection_pr_user.find({
-								"_id": ctx.guild.id
+								"_id": ctx.message.author.id
 						}).distinct('_id'))
-				if ctx.guild.id in data:
+				if ctx.message.author.id in data:
+						return True
+				else:
+						raise ex.NotPremiumUser
+		return commands.check(predicate)
+
+
+def user_premium_cd():
+		def predicate(ctx):
+				data = list(
+						collection_pr_user.find({
+								"_id": ctx.message.author.id
+						}).distinct('_id'))
+				if ctx.message.author.id in data:
 						return commands.cooldown(0, 0, commands.BucketType.member)
 				else:
 						return commands.cooldown(1, 2, commands.BucketType.member)
@@ -51,7 +64,7 @@ def is_user_premium():
 		return commands.check(predicate)
 
 
-def mod_premium():
+def mod_premium_cd():
 		def predicate(ctx):
 				data = list(
 						collection_pre_guild.find({

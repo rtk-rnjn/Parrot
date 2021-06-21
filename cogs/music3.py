@@ -1,4 +1,4 @@
-import  math
+'''import  math
 import discord
 import aiohttp
 import lavalink
@@ -318,4 +318,4 @@ class Music(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Music(bot))
+    bot.add_cog(Music(bot))'''

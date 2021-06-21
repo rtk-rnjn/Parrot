@@ -1,28 +1,21 @@
-from discord.ext import commands 
+from core.cog import Cog 
+from core.bot import Parrot 
 import json
-class OnGuildJoin(commands.Cog):
 
-	def __init__(self, bot):
+from database.global_chat import gchat_on_join
+from database.telephone import telephone_on_join
+from database.ticket import ticket_on_join
+
+class OnGuildJoin(Cog):
+
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
-	@commands.Cog.listener()
+	@Cog.listener()
 	async def on_guild_join(self, guild):
-		with open("json/data.json") as f:
-			data = json.load(f)
-
-		data['guild'].append(
-			{
-				"id": guild.id,
-				"ticket-counter": 0,
-				"valid-roles": [],
-				"pinged-roles": [],
-				"ticket-channel-ids": [],
-				"verified-roles": []
-			}
-		)
-
-		with open("json/data.json", "w+") as f:
-			json.dump(data, f)
+		await gchat_on_join(guild.id)
+		await telephone_on_join(guild.id)
+		await ticket_on_join(guild.id)
 
 		for channel in guild.text_channels:
 			if channel.permission_for(guild.me).send_messages:

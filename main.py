@@ -1,7 +1,8 @@
 import jishaku
 
 from keep_alive import keep_alive
-from utils.config import EXTENSIONS, TOKEN
+from utilities.config import EXTENSIONS
+from utilities.config import TOKEN
 from core.bot import Parrot
 from utils.extra import load_ext
 

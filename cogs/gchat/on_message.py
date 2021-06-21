@@ -1,35 +1,33 @@
-import discord
-import aiohttp
-import re
-import asyncio, json
-from discord.ext import commands
+import aiohttp, re, asyncio
+
 from discord import Webhook, AsyncWebhookAdapter
 
+from database.global_chat import collection
 
-class MessageEvents(commands.Cog, name="Global Chat"):
-		def __init__(self, bot):
+from core.bot import Parrot 
+from core.cog import Cog
+
+class MessageEvents(Cog, name="Global Chat"):
+		def __init__(self, bot: Parrot):
 				self.bot = bot
 
-		@commands.Cog.listener()
+		@Cog.listener()
 		async def on_message(self, message):
-				if not message.guild:
+				if not message.guild or message.author.bot:
 						return
-				with open("json/wchat.json") as f:
-					channels_ = json.load(f)
+				
+				channel = collection.find({'_id': message.guild.id, 'channel_id': message.channel.id})
+				if not channel: return
 
+				guild = collection.find_one({'_id': message.guild.id})
+				data = collection.find({})
 
-				if not message.channel.id in channels_:
-						return
-
-				if message.author.bot:
-						return
-
-				role = discord.utils.get(message.guild.roles, name="gc-ignore")
+				role = message.guild.get_role(guild['ignore-role'])
 				if role != None:
 						if role in message.author.roles:
 								return
 
-				if message.content.startswith("w!"):
+				if message.content.startswith("$"):
 						return
 
 				urls = re.findall(
@@ -58,9 +56,9 @@ class MessageEvents(commands.Cog, name="Global Chat"):
 				except:
 						return await message.channel.send("Bot requires **Manage Messages** permission(s) to function properly.")
 
-				with open("json/webhook.json") as g:
-					webhooks = json.load(g)
-				for hook in webhooks:
+				
+				for webhook in data:
+						hook = webhook['webhook']
 						try:
 								async def send_webhook():
 										async with aiohttp.ClientSession() as session:

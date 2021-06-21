@@ -1,13 +1,15 @@
-from discord.ext import commands
 from discord import Embed
 import datetime
 
+from core.cog import Cog
+from core.bot import Parrot
 
-class OnMemberJoin(commands.Cog, name="Member Join"):
-    def __init__(self, bot):
+
+class OnMemberJoin(Cog):
+    def __init__(self, bot: Parrot):
         self.bot = bot
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_member_join(self, member):
         if member.guild.id == 741614680652644382:
 
@@ -19,7 +21,8 @@ class OnMemberJoin(commands.Cog, name="Member Join"):
             guild = member.guild
 
             embed = Embed(
-                title=f"{member.name}#{member.discriminator} welcome to {member.guild.name}",
+                title=
+                f"{member.name}#{member.discriminator} welcome to {member.guild.name}",
                 description=
                 "We glad to see you here. Check out <#785803322136592394> and enjoy!",
                 timestamp=member.created_at)

@@ -1,11 +1,12 @@
 from datetime import datetime
-import discord, requests
-from discord.ext.commands import Cog
 
-class SupportMail(Cog, name="Moderator Mail"):
+from core.cog import Cog
+from core.bot import Parrot
+
+class SupportMail(Cog):
 	"""No commands in this category, you can actually send message to owner directly by DMing the bot. Mainly for complains"""
 
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
 	@Cog.listener()

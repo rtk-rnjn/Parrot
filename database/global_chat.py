@@ -27,11 +27,11 @@ async def gchat_on_join(guild_id: int):
         return str(e)
 
 
-async def gchat_update(guild_id: int, event: str, value):
+async def gchat_update(guild_id: int, post:dict):
     post = {
         '_id': guild_id,
     }
-    new_post = {"$set": {event: value}}
+    new_post = {"$set": post}
 
     try:
         collection.update_one(post, new_post)
@@ -50,3 +50,5 @@ async def gchat_on_remove(guild_id: int):
         return "OK"
     except Exception as e:
         return str(e)
+
+

@@ -1,5 +1,6 @@
 from discord.ext import commands
-import discord, json
+import discord, json, aiohttp
+from discord import Webhook, AsyncWebhookAdapter
 
 class commands(commands.Cog, name="Global Chat"):
     def __init__(self, bot):
@@ -17,7 +18,7 @@ class commands(commands.Cog, name="Global Chat"):
         with open("webhook.json") as f:
             webhooks = json.load(f)
 
-        async for hook in webhooks:
+        for hook in webhooks:
             try:
                 async def send_webhook():
                     async with aiohttp.ClientSession() as session:

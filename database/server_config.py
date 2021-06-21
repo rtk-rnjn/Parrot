@@ -13,7 +13,7 @@ db = cluster['parrot_db']
 collection = db['server_config']
 
 
-async def guild_on_join(guild_id: int):
+async def guild_join(guild_id: int):
     post = {
         '_id': guild_id,
         'prefix': '$',

@@ -27,7 +27,7 @@
 		"cogs.leveling.leaderboard",
 		"cogs.events.on_command_error",
 		"cogs.events.on_member_join",
-		"cogs.events.on_guild_join",
+		"cogs.events.on_guild",
 		"cogs.economy",
 		"cogs.nasa.nasasearch",
 		"cogs.nasa.nasa",

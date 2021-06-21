@@ -1,4 +1,5 @@
 # Author: https://github.com/davidetacchini
+from utilities.emotes import PREVIOUS, BACK, STOP, FORWARD, NEXT
 
 import asyncio
 from typing import List, Union, Optional
@@ -34,8 +35,8 @@ class Paginator:
                  pages: Optional[Union[List[discord.Embed],
                                        discord.Embed]] = None,
                  compact: bool = False,
-                 timeout: float = 90.0,
-                 has_input: bool = True,
+                 timeout: float = 60.0,
+                 has_input: bool = False,
                  has_lock: bool = False):
         self.pages = pages
         self.compact = compact
@@ -52,11 +53,11 @@ class Paginator:
         self._previous = 0
         self._end = 0
         self._reactions = {
-            "⏮": 0.0,
-            "◀": -1,
-            "⏹️": "stop",
-            "▶": +1,
-            "⏭": None,
+            PREVIOUS: 0.0,
+            BACK: -1,
+            STOP: "stop",
+            FORWARD: +1,
+            NEXT: None,
         }
 
         self.__tasks = []
@@ -76,7 +77,7 @@ class Paginator:
                 self.has_input = False
 
         if self.compact is True:
-            keys = ("⏮", "⏭")
+            keys = (PREVIOUS, NEXT)
             for key in keys:
                 del self._reactions[key]
 

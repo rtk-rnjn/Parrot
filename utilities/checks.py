@@ -2,8 +2,8 @@ from discord.ext import commands
 from pymongo import MongoClient
 from os import environ
 
-from utils import exceptions as ex 
-from utils.config import SUPER_USER
+from utilities import exceptions as ex 
+from utilities.config import SUPER_USER
 
 my_secret = environ['pass']
 

@@ -24,3 +24,10 @@ WARNING = ":warning:"
 
 NO_ENTRY = ":no_entry:"
 NO_ENTRY_SIGN = ":no_entry_sign:"
+
+#Pagination
+PREVIOUS = ":track_previous:"
+BACK = ":arrow_backward:"
+STOP = PARROT_LOGO
+FORWARD = ":arrow_forward:"
+NEXT = ":track_next:"

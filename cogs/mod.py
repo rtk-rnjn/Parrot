@@ -1,18 +1,24 @@
 from discord.ext import commands
 import discord, json, datetime, typing, asyncio
 
-class mod(commands.Cog, name="Moderator", description="A simple moderator's tool for managing the server."):
+from core.bot import Parrot 
+from core.cog import Cog
+from core.ctx import Context
+
+from utilities.checks import mod_cd
+
+class mod(Cog, name="Moderator", description="A simple moderator's tool for managing the server."):
 	"""A simple moderator's tool for managing the server."""
 	
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
 	@commands.command(aliases=['arole', 'giverole', 'grole'], brief="Gives a role to the specified member")
 	@commands.has_permissions(manage_roles=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.bot_has_permissions(manage_roles=True)
-	async def addrole(self, ctx, member: discord.Member, role: discord.Role, *, reason:str=None):
+	async def addrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:str=None):
 		"""
 		Gives a role to the specified member(s).
 
@@ -32,16 +38,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 		try:
 			await member.add_roles(role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 			await ctx.send(f"{ctx.author.mention} given {role.name}({role.id}) to {member.name}")
-		except Exception:
-			pass
+		except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 
 	@commands.command(aliases=['hackban'], brief='To ban a member from guild')
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.guild_only()
-	async def ban(self, ctx, member : commands.Greedy[discord.User]=None, days:typing.Optional[int]=None, *, reason:str=None):
+	async def ban(self, ctx: Context, member : commands.Greedy[discord.User], days:typing.Optional[int]=None, *, reason:str=None):
 		"""
 		To ban a member from guild.
 		
@@ -61,16 +67,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 			try:
 				await ctx.guild.ban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}', delete_message_days=days)
 				await ctx.send(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
-			except Exception:
-				pass # if something went wrong then it will silently ignores it
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role") 
 			await asyncio.sleep(0.25)
 
 	@commands.command(hidden=False, brief="Blocks a user from sending message in that channel.")
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.guild_only()
-	async def block(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason : str=None):
+	async def block(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason : str=None):
 		"""
 		Blocks a user from sending message in that channel.
 		
@@ -92,16 +98,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 			try:
 				await ctx.channel.set_permissions(member, send_messages=False, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 				await ctx.send(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been created! **View Channel, and Send Messages** is denied!')
-			except Exception:
-				pass # if something went wrong then it will silently ignores it
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
 
 	@commands.command(aliases=['nuke'], hidden=False, brief="To clone the channel or to nukes the channel (clones and delete).")
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def clone(self, ctx, channel : discord.TextChannel=None, *, reason:str=None):
+	@mod_cd
+	async def clone(self, ctx: Context, channel : discord.TextChannel=None, *, reason:str=None):
 		"""
 		To clone the channel or to nukes the channel (clones and delete).
 
@@ -121,10 +127,10 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 	@commands.command(brief='To kick a member form guild')
 	@commands.has_permissions(kick_members=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.guild_only()
-	async def kick(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def kick(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To kick a member from guild.
 		
@@ -144,16 +150,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 			try:
 				await member.kick(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
 				await ctx.send(f'**`{member.name}#{member.discriminator}`** is kicked! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**')
-			except Exception:
-				pass  # if something went wrong then it will silently ignores it
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")  
 			await asyncio.sleep(0.25)
 
 	@commands.command(hidden=False, brief="To lock the channel (Text channel)")
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.guild_only()
-	async def lock(self, ctx, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
+	async def lock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
 		"""
 		To lock the channel (Text channel)
 		
@@ -181,16 +187,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 				overwrite.send_messages = False
 				await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=overwrite)
 				await ctx.send(f'{ctx.author.mention} channel locked.')
-			except Exception:
-				pass  # if something went wrong then it will silently ignores it
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}")
 			await asyncio.sleep(0.25)
 
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_roles=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.guild_only()
 	@commands.command(brief="To restrict a member to sending message in the Server")
-	async def mute(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def mute(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To restrict a member to sending message in the Server
 		
@@ -221,16 +227,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 				await member.add_roles(muted, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 				await ctx.send(f'{ctx.author.mention} **{member.name}** has been successfully muted till death!')
 			except Exception as e:
-				print(e)  # if something went wrong then it will silently ignores it
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
 
 
 	@commands.command(brief='To delete bulk message')
 	@commands.has_permissions(manage_messages=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-	async def purge(self, ctx, amount : int):
+	async def purge(self, ctx: Context, amount : int):
 		"""
 		To delete bulk message.
 		
@@ -249,9 +255,9 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.command(brief='To delete bulk message, of a specified user')
 	@commands.has_permissions(manage_messages=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
-	async def purgeuser(self, ctx, member:discord.Member, amount : int):
+	async def purgeuser(self, ctx: Context, member:discord.Member, amount : int):
 		"""
 		To delete bulk message, of a specified user. 
 		
@@ -272,8 +278,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def slowmode(self, ctx, seconds : int, channel:discord.TextChannel=None, *, reason:str=None):
+	@mod_cd
+	async def slowmode(self, ctx: Context, seconds : int, channel:discord.TextChannel=None, *, reason:str=None):
 		"""
 		To set slowmode in the specified channel.
 		
@@ -296,11 +302,11 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 
 
 	@commands.command(aliases=['softkill'], brief='To Ban a member from a guild then immediately unban')
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
-	async def softban(self, ctx, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def softban(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To Ban a member from a guild then immediately unban
 		
@@ -328,8 +334,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 						await ctx.guild.unban(user)
 
 				await ctx.send(f'**`{member.name}#{member.discriminator}`** is banned then unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.authoe.discriminator}`**! Reason: **{reason}**')
-			except Exception:
-				pass  # if something went wrong then it will silently ignores it
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 			await asyncio.sleep(0.25)
 
@@ -338,8 +344,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def unban(self, ctx, member:discord.User, *, reason:str=None):
+	@mod_cd
+	async def unban(self, ctx: Context, member:discord.User, *, reason:str=None):
 		"""
 		To Unban a member from a guild.
 		
@@ -357,9 +363,9 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.command(hidden=False, brief='Unblocks a user from the text channel.')
 	@commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.guild_only()
-	async def unblock(self, ctx, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason:str=None):
 		"""
 		Unblocks a user from the text channel.
 
@@ -380,8 +386,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 				if member.permissions_in(ctx.channel).send_messages: await ctx.send(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
 				else: await ctx.channel.set_permissions(member, view_channel=None, send_messages=None, overwrite=None, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 				await ctx.send(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been deleted!')
-			except Exception:
-				pass  # if something went wrong then it will silently ignores it
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
 
 
@@ -389,8 +395,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_roles=True, manage_permissions=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def unlock(self, ctx, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
+	@mod_cd
+	async def unlock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
 		"""
 		To unlock the channel (Text channel)
 
@@ -413,16 +419,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 			try:
 				await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=None)
 				await ctx.send(f'{ctx.author.mention} channel unlocked.')
-			except Exception:
-				pass
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}")
 		await asyncio.sleep(0.25)
 
 	@commands.command(brief='To allow a member to sending message in the Text Channels, if muted')
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def unmute(self, ctx, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
+	@mod_cd
+	async def unmute(self, ctx: Context, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To allow a member to sending message in the Text Channels, if muted.
 		
@@ -446,8 +452,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 					await member.remove_roles(rolem, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
 				else:
 					await ctx.send(f"{ctx.author.mention} **{member.name}** already unmuted :')")
-			except Exception:
-				pass
+			except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 			await asyncio.sleep(0.25)
 
@@ -455,8 +461,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(manage_roles=True)
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def unrole(self, ctx, member: discord.Member, role: discord.Role, *, reason:str=None):
+	@mod_cd
+	async def unrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:str=None):
 		"""
 		Remove the mentioned role from mentioned/id member
 
@@ -475,16 +481,16 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 		try:
 			await member.remove_roles(role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 			await ctx.send(f"{ctx.author.mention} removed {role.name}({role.id}) from {member.name}")
-		except Exception:
-			pass
+		except Exception as e:
+				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 
 	@commands.command(pass_context = True,)
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(3, 30, commands.BucketType.guild)
+	@mod_cd
 	@commands.guild_only()
-	async def warn(self, ctx, member:discord.Member, *, reason:str):
+	async def warn(self, ctx: Context, member:discord.Member, *, reason:str):
 		"""
 		To warn a user
 
@@ -525,8 +531,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def warnings(self, ctx, member:discord.Member):
+	@mod_cd
+	async def warnings(self, ctx: Context, member:discord.Member):
 		"""
 		To see the number of times the user is being warned
 
@@ -550,8 +556,8 @@ class mod(commands.Cog, name="Moderator", description="A simple moderator's tool
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
-	@commands.cooldown(3, 30, commands.BucketType.guild)
-	async def clearwarn(self, ctx, member:discord.Member):
+	@mod_cd
+	async def clearwarn(self, ctx: Context, member:discord.Member):
 		"""
 		To clear all the warning from the user
 

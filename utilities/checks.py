@@ -65,7 +65,7 @@ def user_premium_cd():
 				if user:
 						return commands.cooldown(0, 0, commands.BucketType.member)
 				else:
-						return commands.cooldown(1, 5, commands.BucketType.member)
+						return commands.cooldown(1, 10, commands.BucketType.member)
 
 		return commands.check(predicate)
 

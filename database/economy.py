@@ -12,9 +12,9 @@ db = cluster["economy"]
 collection = db["global_economy"]
 
 
-async def ge_update(user_id: int, start_bank: int, start_wallet: int, items):
+async def ge_update(user_id: int, bank: int, wallet: int):
     pre_post = {"_id": user_id}
-    post = {'bank': start_bank, 'wallet': start_wallet, "items": items}
+    post = {'bank': bank, 'wallet': wallet}
 
     try:
         collection.update_one(pre_post, {"$set": post})
@@ -24,11 +24,10 @@ async def ge_update(user_id: int, start_bank: int, start_wallet: int, items):
 
 
 async def ge_on_join(user_id: int):
-    post = {'_id': user_id, 'bank': 0, 'wallet': 400, "items": []}
+    post = {'_id': user_id, 'bank': 0, 'wallet': 400}
 
     try:
         collection.insert_one(post)
         return "OK"
     except Exception as e:
         return str(e)
-

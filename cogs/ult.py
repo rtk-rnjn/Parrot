@@ -7,9 +7,11 @@ from psutil import Process, virtual_memory
 from discord import __version__ as discord_version
 from platform import python_version
 
-class ult(commands.Cog, name="Utilities", description="Basic commands for the bots."):
+from core.cog import Cog
+from core.bot import Parrot
+class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	'''Basic commands for the bots.'''
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
 	@commands.command(name="ping")

@@ -16,7 +16,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(aliases=['arole', 'giverole', 'grole'], brief="Gives a role to the specified member")
 	@commands.has_permissions(manage_roles=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	@commands.bot_has_permissions(manage_roles=True)
 	async def addrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:str=None):
 		"""
@@ -45,7 +45,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(aliases=['hackban'], brief='To ban a member from guild')
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
-	@mod_cd
+	@mod_cd()
 	@commands.guild_only()
 	async def ban(self, ctx: Context, member : commands.Greedy[discord.User], days:typing.Optional[int]=None, *, reason:str=None):
 		"""
@@ -74,7 +74,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(hidden=False, brief="Blocks a user from sending message in that channel.")
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
-	@mod_cd
+	@mod_cd()
 	@commands.guild_only()
 	async def block(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason : str=None):
 		"""
@@ -106,7 +106,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def clone(self, ctx: Context, channel : discord.TextChannel=None, *, reason:str=None):
 		"""
 		To clone the channel or to nukes the channel (clones and delete).
@@ -127,7 +127,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 	@commands.command(brief='To kick a member form guild')
 	@commands.has_permissions(kick_members=True)
-	@mod_cd
+	@mod_cd()
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.guild_only()
 	async def kick(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
@@ -157,7 +157,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(hidden=False, brief="To lock the channel (Text channel)")
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
-	@mod_cd
+	@mod_cd()
 	@commands.guild_only()
 	async def lock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
 		"""
@@ -193,7 +193,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_roles=True)
-	@mod_cd
+	@mod_cd()
 	@commands.guild_only()
 	@commands.command(brief="To restrict a member to sending message in the Server")
 	async def mute(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
@@ -234,7 +234,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(brief='To delete bulk message')
 	@commands.has_permissions(manage_messages=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	@commands.bot_has_permissions(read_message_history=True, manage_messages=True)
 	async def purge(self, ctx: Context, amount : int):
 		"""
@@ -255,7 +255,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(brief='To delete bulk message, of a specified user')
 	@commands.has_permissions(manage_messages=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
 	async def purgeuser(self, ctx: Context, member:discord.Member, amount : int):
 		"""
@@ -278,7 +278,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def slowmode(self, ctx: Context, seconds : int, channel:discord.TextChannel=None, *, reason:str=None):
 		"""
 		To set slowmode in the specified channel.
@@ -302,7 +302,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(aliases=['softkill'], brief='To Ban a member from a guild then immediately unban')
-	@mod_cd
+	@mod_cd()
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
@@ -344,7 +344,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def unban(self, ctx: Context, member:discord.User, *, reason:str=None):
 		"""
 		To Unban a member from a guild.
@@ -363,7 +363,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(hidden=False, brief='Unblocks a user from the text channel.')
 	@commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
-	@mod_cd
+	@mod_cd()
 	@commands.guild_only()
 	async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason:str=None):
 		"""
@@ -395,7 +395,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_roles=True, manage_permissions=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def unlock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
 		"""
 		To unlock the channel (Text channel)
@@ -427,7 +427,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def unmute(self, ctx: Context, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
 		"""
 		To allow a member to sending message in the Text Channels, if muted.
@@ -461,7 +461,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(manage_roles=True)
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def unrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:str=None):
 		"""
 		Remove the mentioned role from mentioned/id member
@@ -488,7 +488,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.command(pass_context = True,)
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(embed_links=True)
-	@mod_cd
+	@mod_cd()
 	@commands.guild_only()
 	async def warn(self, ctx: Context, member:discord.Member, *, reason:str):
 		"""
@@ -531,7 +531,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def warnings(self, ctx: Context, member:discord.Member):
 		"""
 		To see the number of times the user is being warned
@@ -556,7 +556,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
-	@mod_cd
+	@mod_cd()
 	async def clearwarn(self, ctx: Context, member:discord.Member):
 		"""
 		To clear all the warning from the user

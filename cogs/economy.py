@@ -13,7 +13,7 @@ class Economy(Cog, name="economy"):
 				self.bot = bot
 
 		@commands.command(aliases=["with"])
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def withdraw(self, ctx: Context, money: int):
 				'''Withdraw your money, from your bank account'''
@@ -49,7 +49,7 @@ class Economy(Cog, name="economy"):
 						await ctx.send(embed=embed)
 
 		@commands.command(aliases=['rob'])
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def steal(self, ctx, *, member: discord.Member):
 				'''Want more money? Try stealing others.'''
@@ -92,7 +92,7 @@ class Economy(Cog, name="economy"):
 						await ctx.send(embed=embed)
 
 		@commands.command()
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def slots(self, ctx: Context, money: int):
 				'''Want more money? Try gambling slots.'''
@@ -139,7 +139,7 @@ class Economy(Cog, name="economy"):
 						await ctx.send(embed=embed)
 
 		@commands.command(aliases=['send'])
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def give(self, ctx: Context, member: discord.Member, money: int):
 				'''You can give your Parrot coins to other user too'''
@@ -183,7 +183,7 @@ class Economy(Cog, name="economy"):
 						await ctx.send(embed=embed)
 
 		@commands.command(aliases=["dep"])
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def deposit(self, ctx: Context, money: int):
 				'''Save your money by depositing all the money in the bank'''
@@ -220,7 +220,7 @@ class Economy(Cog, name="economy"):
 						await ctx.send(embed=embed)
 
 		@commands.command()
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def beg(self, ctx: Context):
 				'''Beg from internet, hope someone will give you money'''
@@ -258,7 +258,7 @@ class Economy(Cog, name="economy"):
 						await ctx.send(embed=embed)
 
 		@commands.command(aliases=['bal'])
-		@user_premium_cd
+		@user_premium_cd()
 		@commands.guild_only()
 		async def balance(self, ctx: Context, member: discord.User = None):
 				'''To check your balance, if not, then it will open a Parrot Economy bank account for you'''

@@ -6,20 +6,25 @@ import discord, aiohttp
 from discord.ext import commands
 import urllib.parse
 
-from utils.paginator import Paginator
+from utilities.paginator import Paginator
+from utilities.checks import user_premium_cd
+
+from core.cog import Cog
+from core.bot import Parrot 
+from core.ctx import Context
 
 NASA_KEY = os.environ['NASA_KEY']
 
-class NASA(commands.Cog, name='NASA'):
+class NASA(Cog, name='nasa'):
 	'''Incridible NASA API Integration'''
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
 	@commands.command(aliases=['sat', 'satelite'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def nasa(self, ctx, longitute:float, latitude:float, date:str = "2021-01-01"):
+	async def nasa(self, ctx: Context, longitute:float, latitude:float, date:str = "2021-01-01"):
 
 		"""Satelite Imagery - NASA"""
 		
@@ -42,9 +47,9 @@ class NASA(commands.Cog, name='NASA'):
 
 	@commands.command()
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def apod(self, ctx):
+	async def apod(self, ctx: Context):
 		'''Asteroid Picture of the Day'''
 		link = f'https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}'
 		
@@ -73,11 +78,11 @@ class NASA(commands.Cog, name='NASA'):
 
 	@commands.command(aliases=['earth'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def epic(self, ctx, index:int = 0, _date:str = "2021-01-01"):
+	async def epic(self, ctx: Context, index:int = 0, date:str = "2021-01-01"):
 		'''Earth Polychromatic Imaging Camera'''
-		s_link = 'https://epic.gsfc.nasa.gov/api/images.php?date=' + _date 
+		s_link = 'https://epic.gsfc.nasa.gov/api/images.php?date=' + date 
 		
 		async with aiohttp.ClientSession() as session:
 						async with session.get(s_link) as r:
@@ -97,16 +102,14 @@ class NASA(commands.Cog, name='NASA'):
 		embed.set_image(url=f"{link}")
 		embed.set_footer(text=f"Date of imagery: {date__} | {ctx.author.name}")
 
-		try:
-			await ctx.send(embed=embed)
-		except:
-			await ctx.send(f'```\nHTTP Response: 404\n```{ctx.author.mention} can not find the image in `{_date}` database. Use some other date, in `YYYY-MM-DD` format.')
+		await ctx.send(embed=embed)
+	
 
 	@commands.command(aliases=['finda', 'asteroid'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def findasteroid(self, ctx, start:str, end:str):
+	async def findasteroid(self, ctx: Context, start:str, end:str):
 		'''You can literally find any asteroid in the space by date. "$help finda" for syntax'''
 		link = f'https://api.nasa.gov/neo/rest/v1/feed?start_date={start}&end_date={end}&api_key={NASA_KEY}'
 		
@@ -148,9 +151,9 @@ class NASA(commands.Cog, name='NASA'):
 
 	@commands.command(aliases=['findaid', 'asteroidid'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def findasteroididid(self, ctx, _id:int):
+	async def findasteroididid(self, ctx: Context, _id:int):
 		'''Find any asteroid in the space by ID. "$help findaid" for syntax'''
 		link = 'https://api.nasa.gov/neo/rest/v1/neo/' + str(_id) + '?api_key=qFkn3NAu3LfQL4IKKCXWQYDZhHaaJdEw6QqP7vSC'
 
@@ -184,9 +187,9 @@ class NASA(commands.Cog, name='NASA'):
 
 	@commands.command(aliases=['mrp'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def mars(self, ctx, index:int = 0, _date:str = "2021-01-02"):
+	async def mars(self, ctx:Context, index:int = 0, _date:str = "2021-01-02"):
 		"""Mars Rovers Pictures"""
 		link = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date='+ _date +'&api_key=qFkn3NAu3LfQL4IKKCXWQYDZhHaaJdEw6QqP7vSC'
 
@@ -208,9 +211,9 @@ class NASA(commands.Cog, name='NASA'):
 
 	@commands.command(aliases=['nsearch', 'ns'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, commands.BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def nasasearch(self, ctx, *, string:str):
+	async def nasasearch(self, ctx:Context, *, string:str):
 		'''NASA Image and Video Library'''
 		new_text = urllib.parse.quote(string)
 		link = 'https://images-api.nasa.gov/search?q=' + new_text

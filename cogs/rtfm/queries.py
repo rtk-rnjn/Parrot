@@ -31,7 +31,7 @@ with open("extra/lang.txt") as f:
 		languages = f.read()
 
 
-class Coding(Cog, name="RTFM Bot"):
+class Coding(Cog, name="rtfm"):
 		"""To test code and check docs"""
 		def __init__(self, bot: Parrot):
 				self.bot = bot

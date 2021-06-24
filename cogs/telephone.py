@@ -4,7 +4,7 @@ from utilities.paginator import Paginator
 
 from core.bot import Parrot
 from core.ctx import Context
-from core.Cog import Cog
+from core.cog import Cog
 
 class Telephone(Cog, name="Telephone"):
 		"""Fun cog to make real calls over the server"""

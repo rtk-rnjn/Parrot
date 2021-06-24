@@ -1,7 +1,7 @@
 from discord.ext import commands as cmd
 import random
 
-with open("storing/quote.txt") as f:
+with open("extra/quote.txt") as f:
     quote = f.read()
 
 quote = quote.split('\n')

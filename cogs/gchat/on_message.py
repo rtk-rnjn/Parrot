@@ -15,8 +15,10 @@ class MessageEvents(Cog, name="Global Chat"):
 		async def on_message(self, message):
 				if not message.guild or message.author.bot:
 						return
-				
-				channel = collection.find({'_id': message.guild.id, 'channel_id': message.channel.id})
+				try:
+					channel = collection.find({'_id': message.guild.id, 'channel_id': message.channel.id})
+				except Exception:
+					return
 				if not channel: return
 
 				guild = collection.find_one({'_id': message.guild.id})

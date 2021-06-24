@@ -352,7 +352,7 @@ class Telephone(Cog, name="Telephone"):
 						with open("json/tel.json", "w+") as f:
 								json.dump(tel, f)
 						return
-
+				print(_talk.content.lower())
 				if _talk.content.lower() == "hangup":
 						print("hungup detected")
 						await asyncio.sleep(0.5)
@@ -395,7 +395,7 @@ class Telephone(Cog, name="Telephone"):
 										return
 
 								talk_msg = (str(talk.content).replace("@", "@\u200b").replace("&", "&\u200b").replace("!", "!\u200b"))[:300:]  # to prevent mentions
-								
+								print(talk_msg.lower())
 								if talk_msg.lower() == "hangup":
 										print("YES")
 										current_guild['is_line_busy'] = False

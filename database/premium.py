@@ -1,11 +1,9 @@
-import os
-import pymongo
 
 from pymongo import MongoClient
 from utilities.config import my_secret
 
 cluster = MongoClient(
-    f"mongodb+srv://ritikranjan:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
 db = cluster["premium"]
 collection_guild = db["premium_guild"]

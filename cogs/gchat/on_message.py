@@ -15,17 +15,16 @@ class MessageEvents(Cog, name="Global Chat"):
 		async def on_message(self, message):
 				if not message.guild or message.author.bot:
 						return
-				try:
-					channel = collection.find({'_id': message.guild.id, 'channel_id': message.channel.id})
-				except Exception:
-					return
+				
+				channel = collection.find_one({'_id': message.guild.id, 'channel_id': message.channel.id})
+				
 				if not channel: return
 
 				guild = collection.find_one({'_id': message.guild.id})
 				data = collection.find({})
 
 				role = message.guild.get_role(guild['ignore-role'])
-				if role != None:
+				if role:
 						if role in message.author.roles:
 								return
 

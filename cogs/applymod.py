@@ -1,18 +1,21 @@
 from discord.ext import commands
 import discord, asyncio, time, datetime, aiohttp
 
+from core.bot import Parrot
+from core.cog import Cog
+from core.ctx import Context
 
-class dm_mod(commands.Cog):
+class dm_mod(Cog):
     """This Section will only used in support server for asking for moderation!"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
    
             
     @commands.command(hidden=True)
     @commands.guild_only()
     @commands.cooldown(1, 900, commands.BucketType.user)
-    async def applymod(self, ctx):
+    async def applymod(self, ctx: Context):
         """
         Want mod? Consider asking us out!
 
@@ -75,9 +78,9 @@ class dm_mod(commands.Cog):
             temp_msg = await ctx.author.send(f'{question}')
             try:
                 msg = await self.bot.wait_for('message', timeout=300.0, check=check)
-            except Exception as e:
+            except Exception:
                 await ctx.author.send(f"```\nError: You didn't answer on time.```")
-                return ctx.author.send(f"Try again after a while")
+                return await ctx.author.send(f"Try again after a while")
 
             temp_time_fin = time.time()
             ans.append(f"{msg.content}\n\nTime Taken: {round(temp_time_fin - temp_time_ini, 3)}s")

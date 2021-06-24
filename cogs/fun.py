@@ -1,11 +1,17 @@
-import discord, random, requests, io, base64, datetime, aiohttp, urllib
+import discord, random, io, base64, datetime, aiohttp, urllib
 from discord.ext import commands
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
 from random import choice
 from discord import Embed 
 from aiohttp import request
-from pygicord import Paginator
 
+from utilities.paginator import Paginator
+
+from core.cog import Cog
+from core.bot import Parrot
+from core.ctx import Context
+
+from utilities.checks import user_premium_cd
 with open("extra/truth.txt") as f:
 	_truth = f.read()
 
@@ -13,15 +19,15 @@ with open("extra/dare.txt") as g:
 	_dare = g.read()
 
 
-class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of fun commands, so that you won't get bored."):
+class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun commands, so that you won't get bored."):
 	'''Parrot gives you huge amount of fun commands, so that you won't get bored.'''
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 		
 	@command(name='8ball')
 	@guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def _8ball(self, ctx, *, question:commands.clean_content):
+	@user_premium_cd()
+	async def _8ball(self, ctx: Context, *, question:commands.clean_content):
 		'''
 		8ball Magic, nothing to say much.
 		
@@ -36,8 +42,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command()
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def choose(self, ctx, *, options:commands.clean_content):
+	@user_premium_cd()
+	async def choose(self, ctx: Context, *, options:commands.clean_content):
 		'''
 		Confuse something with your decision? Let Parrot choose from your choice. 
 		
@@ -54,9 +60,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command(aliases=['colours', 'colour'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def color(self, ctx, colour):
+	async def color(self, ctx: Context, colour):
 		'''
 		To get colour information using the hexademical codes.
 		
@@ -124,9 +130,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	
 	@command()
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@bot_has_permissions(embed_links=True)
-	async def decode(self, ctx, *, string:str):
+	async def decode(self, ctx: Context, *, string:str):
 		'''
 		Decode the code to text from Base64 encryption
 		
@@ -144,7 +150,7 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 		sample_string_bytes = base64.b64decode(base64_bytes) 
 		sample_string = sample_string_bytes.decode("ascii") 
 		
-		embed = discord.Embed(title="Decoding...", colour=discord.Colour.red())
+		embed = discord.Embed(title="Decoding...", colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
 		embed.add_field(name="Encoded text:", value=f'```\n{base64_string}\n```', inline=False)
 		embed.add_field(name="Decoded text:", value=f'```\n{sample_string}\n```', inline=False)
 		embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
@@ -156,8 +162,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@command()
 	@bot_has_permissions(embed_links=True)
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def encode(self, ctx, *, string:str):
+	@user_premium_cd()
+	async def encode(self, ctx: Context, *, string:str):
 		'''
 		Encode the text to Base64 Encryption and in Binary
 		
@@ -175,7 +181,7 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 		base64_bytes = base64.b64encode(sample_string_bytes) 
 		base64_string = base64_bytes.decode("ascii") 
 		
-		embed = discord.Embed(title="Encoding...", colour=discord.Colour.red())
+		embed = discord.Embed(title="Encoding...", colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
 		embed.add_field(name="Normal [string] text:", value=f'```\n{sample_string}\n```', inline=False)
 		embed.add_field(name="Encoded [base64]:", value=f'```\n{base64_string}\n```', inline=False)
 		embed.add_field(name="Encoded [binary]:", value=f'```\n{str(res)}\n```', inline=False)
@@ -186,10 +192,10 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	
 			
 	@command(name="fact")
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@bot_has_permissions(embed_links=True)
 	@commands.guild_only()
-	async def animal_fact(self, ctx, animal: str):
+	async def animal_fact(self, ctx: Context, *, animal: str):
 		'''
 		Return a random Fact. It's useless command, I know
 		
@@ -233,9 +239,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command()
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	async def gay(self, ctx, member:discord.Member=None):
+	async def gay(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Image Generator. Gay Pride.
 
@@ -260,8 +266,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command()
 	@commands.guild_only()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.cooldown(1, 5, BucketType.member)
-	async def glass(self, ctx, member:discord.Member=None):
+	@user_premium_cd()
+	async def glass(self, ctx: Context, *, member:discord.Member=None):
 		'''
 		Provide a glass filter on your profile picture, try it!
 		
@@ -285,9 +291,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command()
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	async def horny(self, ctx, member:discord.Member=None):
+	async def horny(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Image generator, Horny card generator.
 		
@@ -311,8 +317,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command(aliases=['insult'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def roast(self, ctx, member: discord.Member = None):
+	@user_premium_cd()
+	async def roast(self, ctx: Context, *, member: discord.Member = None):
 		'''
 		Insult your enemy, Ugh!
 		
@@ -331,7 +337,7 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command(aliases=['its-so-stupid'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	async def itssostupid(self, ctx, *, comment:str):
 		"""
@@ -360,8 +366,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def jail(self, ctx, member:discord.Member=None):
+	@user_premium_cd()
+	async def jail(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Image generator. Makes you behind the bars. Haha
 		
@@ -386,8 +392,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def lolice(self, ctx, member:discord.Member=None):
+	@user_premium_cd()
+	async def lolice(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		This command is not made by me. :\
 		
@@ -414,8 +420,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command(name='meme')
 	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(1, 5, BucketType.member)
-	async def meme(self, ctx):
+	@user_premium_cd()
+	async def meme(self, ctx: Context):
 		'''
 		Random meme generator.
 		
@@ -439,7 +445,7 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 		downs = res["downs"]
 		sub = res["subreddit"]
 
-		embed = discord.Embed(title=f'{title}', discription=f"{sub}")
+		embed = discord.Embed(title=f'{title}', discription=f"{sub}", timestamp=datetime.datetime.utcnow())
 		embed.set_image(url = res["image"])
 		embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}") 
 
@@ -447,10 +453,10 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 			
 
 	@commands.command()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
-	async def fakepeople(self, ctx):
+	async def fakepeople(self, ctx: Context):
 		'''
 		Fake Identity generator.
 		
@@ -523,9 +529,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.guild_only()
-	async def simpcard(self, ctx, member:discord.Member=None):
+	async def simpcard(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Good for those, who are hell simp! LOL
 		
@@ -550,8 +556,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@command(name="slap", aliases=["hit"])
 	@commands.guild_only()
 	@commands.bot_has_permissions(manage_messages=True)
-	@commands.cooldown(1, 5, BucketType.member)
-	async def slap_member(self, ctx, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
+	@user_premium_cd()
+	async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
 		'''
 		Slap virtually with is shit command.
 		
@@ -571,8 +577,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command(aliases=['trans'])
 	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(1, 5, BucketType.member)
-	async def translate(self, ctx, from_lang:str, to_lang:str, *, text:str):
+	@user_premium_cd()
+	async def translate(self, ctx: Context, from_lang:str, to_lang:str, *, text:str):
 		"""
 		This command is useful, to be honest, if and only if you use correctly, else it gives error. Not my fault.
 		
@@ -604,9 +610,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command(aliases=['triggered'])
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.guild_only()
-	async def trigger(self, ctx, member:discord.Member=None):
+	async def trigger(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		User Triggered!
 
@@ -631,9 +637,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command(aliases=['def', 'urban'])
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def urbandictionary(self, ctx, *, text:str):
+	async def urbandictionary(self, ctx: Context, *, text:str):
 		'''
 		LOL. This command is insane.
 		
@@ -665,7 +671,7 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 			author = res['list'][i]['author']
 			example = res['list'][i]['example']
 			word = res['list'][i]['word'].capitalize()	
-			embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}")
+			embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}", timestamp=datetime.datetime.utcnow())
 			embed.add_field(name="Example", value=f"{example}")
 			embed.set_author(name=f"Author: {author}")
 			embed.set_footer(text=f"👍 {thumbs_up} | 👎 {thumbs_down}")
@@ -679,8 +685,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
-	async def wasted(self, ctx, member:discord.Member=None):
+	@user_premium_cd()
+	async def wasted(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Overlay 'WASTED' on your profile picture, just like GTA:SA
 		
@@ -705,7 +711,8 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	@commands.command(aliases=['youtube-comment'])
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@commands.guild_only()
-	async def ytcomment(self, ctx, *, comment:str):
+	@user_premium_cd()
+	async def ytcomment(self, ctx: Context, *, comment:str):
 		'''
 		Makes a comment in YT. Best ways to fool your fool friends. :')
 		
@@ -732,9 +739,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 	
 	@commands.command() 
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def dare(self, ctx, member:discord.Member=None):
+	async def dare(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		I dared you to use this command.
 		
@@ -758,9 +765,9 @@ class fun(commands.Cog, name="Fun", description="Parrot gives you huge amount of
 
 	@commands.command() 
 	@commands.guild_only()
-	@commands.cooldown(1, 5, BucketType.member)
+	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
-	async def truth(self, ctx, member:discord.Member=None):
+	async def truth(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Truth: Who is your crush?
 		

@@ -1,9 +1,11 @@
 import jishaku
 
 from keep_alive import keep_alive
+
 from utilities.config import EXTENSIONS, TOKEN
-from core.bot import Parrot
 from utilities.extra import load_ext
+
+from core.bot import Parrot
 
 bot = Parrot()
 

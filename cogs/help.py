@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from pygicord import Paginator
+from utilities.paginator import Paginator
 
 class HelpCommand(commands.HelpCommand):
 		def __init__(self):

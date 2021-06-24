@@ -20,7 +20,7 @@ class Mee6Integration(commands.Cog, name="MEE6 Integration"):
 		if message.guild.id != 741614680652644382: return
 		user_level = await mee6API.levels.get_user_level(message.author.id)
 		
-		
+		if user_level is None: return
 		
 		if user_level >= 50: 
 			if message.guild.get_role(842781615120711680) not in message.author.roles:

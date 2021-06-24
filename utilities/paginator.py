@@ -1,5 +1,4 @@
-# Author: https://github.com/davidetacchini
-from utilities.emotes import PREVIOUS, BACK, STOP, FORWARD, NEXT
+#AUTHOR: https://github.com/davidetacchini/
 
 import asyncio
 from typing import List, Union, Optional
@@ -9,6 +8,7 @@ import discord
 
 
 class Paginator:
+  
 
     __slots__ = (
         "pages",
@@ -30,14 +30,15 @@ class Paginator:
         "__mutex",
     )
 
-    def __init__(self,
-                 *,
-                 pages: Optional[Union[List[discord.Embed],
-                                       discord.Embed]] = None,
-                 compact: bool = False,
-                 timeout: float = 60.0,
-                 has_input: bool = False,
-                 has_lock: bool = False):
+    def __init__(
+        self,
+        *,
+        pages: Optional[Union[List[discord.Embed], discord.Embed]] = None,
+        compact: bool = False,
+        timeout: float = 90.0,
+        has_input: bool = True,
+        has_lock: bool = False
+    ):
         self.pages = pages
         self.compact = compact
         self.timeout = timeout
@@ -53,11 +54,11 @@ class Paginator:
         self._previous = 0
         self._end = 0
         self._reactions = {
-            PREVIOUS: 0.0,
-            BACK: -1,
-            STOP: "stop",
-            FORWARD: +1,
-            NEXT: None,
+            "⏮": 0.0,
+            "◀": -1,
+            "⏹️": "stop",
+            "▶": +1,
+            "⏭": None,
         }
 
         self.__tasks = []
@@ -77,7 +78,7 @@ class Paginator:
                 self.has_input = False
 
         if self.compact is True:
-            keys = (PREVIOUS, NEXT)
+            keys = ("⏮", "⏭")
             for key in keys:
                 del self._reactions[key]
 
@@ -104,12 +105,11 @@ class Paginator:
             return True
 
         try:
-            message = await self._bot.wait_for("message",
-                                               check=check,
-                                               timeout=30.0)
+            message = await self._bot.wait_for("message", check=check, timeout=30.0)
         except asyncio.TimeoutError:
             to_delete.append(
-                await self._ctx.send("You took too long to enter a number."))
+                await self._ctx.send("You took too long to enter a number.")
+            )
             await asyncio.sleep(5)
         else:
             to_delete.append(message)
@@ -124,11 +124,9 @@ class Paginator:
             return
         self.__is_locked = not self.__is_locked
         if self.__is_locked:
-            await self._ctx.send(
-                "Session locked. Only you can interact with it.")
+            await self._ctx.send("Session locked. Only you can interact with it.")
         else:
-            await self._ctx.send(
-                "Session unlocked. Everyone can interact with it.")
+            await self._ctx.send("Session unlocked. Everyone can interact with it.")
 
     async def controller(self, reaction, user_id):
         if self.__mutex.locked():
@@ -171,17 +169,16 @@ class Paginator:
             with suppress(Exception):
                 tasks = [
                     asyncio.ensure_future(
-                        self._bot.wait_for("raw_reaction_add",
-                                           check=self.check)),
+                        self._bot.wait_for("raw_reaction_add", check=self.check)
+                    ),
                     asyncio.ensure_future(
-                        self._bot.wait_for("raw_reaction_remove",
-                                           check=self.check)),
+                        self._bot.wait_for("raw_reaction_remove", check=self.check)
+                    ),
                 ]
 
                 done, pending = await asyncio.wait(
-                    tasks,
-                    timeout=self.timeout,
-                    return_when=asyncio.FIRST_COMPLETED)
+                    tasks, timeout=self.timeout, return_when=asyncio.FIRST_COMPLETED
+                )
 
                 for task in pending:
                     task.cancel()
@@ -216,7 +213,7 @@ class Paginator:
             self.__tasks.clear()
 
     async def start(self, ctx):
-
+        
         self._ctx = ctx
         self._bot = ctx.bot
         self._loop = ctx.bot.loop
@@ -225,8 +222,10 @@ class Paginator:
             return await self._ctx.send(embed=self.pages)
 
         if not isinstance(self.pages, (list, discord.Embed)):
-            raise TypeError("Can't paginate an instance of <class '%s'>." %
-                            self.pages.__class__.__name__)
+            raise TypeError(
+                "Can't paginate an instance of <class '%s'>."
+                % self.pages.__class__.__name__
+            )
 
         if len(self.pages) == 0:
             raise RuntimeError("Can't paginate an empty list.")

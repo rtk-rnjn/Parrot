@@ -338,9 +338,7 @@ class Telephone(Cog, name="Telephone"):
 						t_message = await target_channel.send(f"Incoming call from **{current_guild['id']} ({self.bot.get_guild(current_guild['id']).name})** ...```\n`pickup` to accept``````\n`hungup` to reject```")
 
 				def check(m):
-						if (m.content.lower() == "pickup" and m.channel == target_channel) or (m.content.lower() == "hangup" and m.channel == target_channel): return True
-						if m.author.bot: return False
-						return False
+						return (m.content.lower() == "pickup" or m.content.lower() == "hangup") and (m.channel == target_channel or m.channel == target_channel)
 
 				try:
 						_talk = await self.bot.wait_for('message', check=check, timeout=60)
@@ -400,14 +398,14 @@ class Telephone(Cog, name="Telephone"):
 								
 								if talk_msg.lower() == "hangup":
 										print("YES")
-										await asyncio.sleep(0.5)
-										await channel.send(content=f"Line **{number} {self.bot.get_guild(number).name}** disconnected!")
-										await target_channel.send(content=f"Line **{ctx.guild.id} {ctx.guild.name}** disconnected!")
-
 										current_guild['is_line_busy'] = False
 										target_guild['is_line_busy'] = False
 										with open("json/tel.json", "w+") as f:
 												json.dump(tel, f)
+
+										await asyncio.sleep(0.5)
+										await channel.send(content=f"Line **{number} {self.bot.get_guild(number).name}** disconnected!")
+										await target_channel.send(content=f"Line **{ctx.guild.id} {ctx.guild.name}** disconnected!")
 
 										return								
 								

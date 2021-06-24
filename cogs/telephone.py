@@ -377,7 +377,7 @@ class Telephone(Cog, name="Telephone"):
 
 						while True:
 								def check(m):
-										if (m.channel == target_channel) or (m.channel == channel): return True
+										if (m.channel == target_channel) or (m.channel == channel) or (m.content.lower() == "pickup" or m.content.lower() == "hangup"): return True
 										if m.author.bot: return False
 										return False
 

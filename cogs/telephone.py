@@ -1,19 +1,22 @@
 from discord.ext import commands
 import discord, json, asyncio, datetime
-from pygicord import Paginator
+from utilities.paginator import Paginator
 
+from core.bot import Parrot
+from core.ctx import Context
+from core.Cog import Cog
 
-class Telephone(commands.Cog, name="Telephone"):
+class Telephone(Cog, name="Telephone"):
 		"""Fun cog to make real calls over the server"""
 
-		def __init__(self, bot):
+		def __init__(self, bot: Parrot):
 				self.bot = bot
 
 		@commands.command()
 		@commands.cooldown(1, 30, commands.BucketType.guild)
 		@commands.guild_only()
 		@commands.has_permissions(manage_guild=True)
-		async def settelchannel(self, ctx, channel: discord.TextChannel = None):
+		async def settelchannel(self, ctx: Context, channel: discord.TextChannel = None):
 				"""
 				To set the telephone phone line, in the server to call and receive the call from other server.
 
@@ -52,7 +55,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.cooldown(1, 30, commands.BucketType.guild)
 		@commands.guild_only()
 		@commands.has_permissions(manage_guild=True)
-		async def edittelchannel(self, ctx, channel: discord.TextChannel = None):
+		async def edittelchannel(self, ctx: Context, channel: discord.TextChannel = None):
 				"""
 				To edit the already set the telephone line, in the server to call and receive the call from other server.
 
@@ -92,7 +95,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.cooldown(1, 30, commands.BucketType.guild)
 		@commands.guild_only()
 		@commands.has_permissions(manage_guild=True)
-		async def telpingrole(self, ctx, role: discord.Role):
+		async def telpingrole(self, ctx: Context, role: discord.Role):
 				"""
 				A normal phone call usually rings when someone calls, isn't it? Set the ping role (optional) to know someone is calling and we need to pick that up! LOL
 
@@ -132,7 +135,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.cooldown(1, 30, commands.BucketType.guild)
 		@commands.guild_only()
 		@commands.has_permissions(manage_guild=False)
-		async def telpingmember(self, ctx, member: discord.Member):
+		async def telpingmember(self, ctx: Context, member: discord.Member):
 				"""
 				A normal phone call usually rings when someone calls, isn't it? Set the ping member (optional) to know someone is calling and we need to pick that up! LOL
 
@@ -172,7 +175,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.cooldown(1, 30, commands.BucketType.guild)
 		@commands.guild_only()
 		@commands.has_permissions(manage_guild=True)
-		async def telblock(self, ctx, *, args):
+		async def telblock(self, ctx: Context, *, args):
 				"""
 				To block the specific incoming number or, blocks all the call.
 
@@ -255,7 +258,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.guild_only()
-		async def telnumber(self, ctx):
+		async def telnumber(self, ctx: Context):
 				"""
 				To display the telephone number. Basically return the Server ID.
 
@@ -269,7 +272,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.guild_only()
-		async def telchannel(self, ctx):
+		async def telchannel(self, ctx: Context):
 				"""
 				To display the telephone line channel.
 
@@ -290,7 +293,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.command()
 		@commands.cooldown(1, 60, commands.BucketType.guild)
 		@commands.guild_only()
-		async def dial(self, ctx, number: int):
+		async def dial(self, ctx: Context, number: int):
 				"""
 				To dial to other server. :|
 
@@ -393,7 +396,9 @@ class Telephone(commands.Cog, name="Telephone"):
 												json.dump(tel, f)
 										return
 
-								if str(talk.content).lower() == "hangup":
+								talk_msg = (str(talk.content).replace("@", "@\u200b").replace("&", "&\u200b").replace("!", "!\u200b"))[:300:]  # to prevent mentions
+								
+								if talk_msg.lower() == "hangup":
 										print("YES")
 										await asyncio.sleep(0.5)
 										await channel.send(content=f"Line **{number} {self.bot.get_guild(number).name}** disconnected!")
@@ -404,9 +409,7 @@ class Telephone(commands.Cog, name="Telephone"):
 										with open("json/tel.json", "w+") as f:
 												json.dump(tel, f)
 
-										break
-
-								talk_msg = (str(talk.content).replace("@", "@\u200b").replace("&", "&\u200b").replace("!", "!\u200b"))[:300:]  # to prevent mentions
+										return								
 								
 								if talk.channel == target_channel:
 										await channel.send(f"**{talk.author.name}#{talk.author.discriminator}** {talk_msg}")
@@ -418,7 +421,7 @@ class Telephone(commands.Cog, name="Telephone"):
 		@commands.guild_only()
 		@commands.cooldown(1, 10, commands.BucketType.guild)
 		@commands.bot_has_permissions(embed_links=True)
-		async def phonebook(self, ctx):
+		async def phonebook(self, ctx: Context):
 				"""
 				To get the list of all the telephone lines, basically the servers connected to the telephone.
 

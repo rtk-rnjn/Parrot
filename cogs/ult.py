@@ -9,6 +9,8 @@ from platform import python_version
 
 from core.cog import Cog
 from core.bot import Parrot
+from core.ctx import Context
+
 class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	'''Basic commands for the bots.'''
 	def __init__(self, bot: Parrot):
@@ -17,7 +19,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.command(name="ping")
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
-	async def ping(self, ctx):
+	async def ping(self, ctx: Context):
 		'''
 		Get the latency of bot.
 		
@@ -39,7 +41,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def avatar(self, ctx, *, member: discord.Member= None):
+	async def avatar(self, ctx: Context, *, member: discord.Member= None):
 			'''
 			Get the avatar of the user. Make sure you don't misuse.
 			
@@ -64,7 +66,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def owner(self, ctx):
+	async def owner(self, ctx: Context):
 		'''
 		Get the freaking bot owner name.
 		
@@ -83,7 +85,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
-	async def guildicon(self, ctx):
+	async def guildicon(self, ctx: Context, server:int=None):
 			'''
 			Get the freaking server icon
 			
@@ -94,16 +96,18 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 			Permissions:
 			Need Embed Links permission for the bot
 			'''
+			guild = self.bot.get_guild(server) or ctx.guild
 			embed = discord.Embed(timestamp=datetime.utcnow())
-			embed.set_image(url = ctx.guild.icon_url)
+			embed.set_image(url = guild.icon_url)
+			embed.set_footer(text=f"{ctx.author.name}")
 			await ctx.reply(embed=embed)
 
 
 	@commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])
-	@commands.bot_has_permissions(view_audit_log=True, embed_links=True)
+	@commands.bot_has_permissions(	embed_links=True)
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.guild_only()
-	async def server_info(self, ctx):
+	async def server_info(self, ctx: Context):
 		'''
 		Get the basic stats about the server
 		
@@ -132,7 +136,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 					("Total Members", f'Members: {len(ctx.guild.members)}\nHumans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\nBots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))} ', True),
 					("Humans", len(list(filter(lambda m: not m.bot, ctx.guild.members))), True),
 					("Bots", len(list(filter(lambda m: m.bot, ctx.guild.members))), True),
-					("Statuses", f"ðŸŸ¢ {statuses[0]} ðŸŸ  {statuses[1]} ðŸ”´ {statuses[2]} âšª {statuses[3]}", True),
+					("Statuses", f":green_circle: {statuses[0]} :yellow_circle:  {statuses[1]} :red_circle: {statuses[2]} :black_circle: {statuses[3]}", True),
 					("Total channels", f'Categories:{len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}', True),
 					#("Banned members", len(await ctx.guild.bans()), True),
 					("Roles", len(ctx.guild.roles), True),
@@ -150,7 +154,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def show_bot_stats(self, ctx):
+	async def show_bot_stats(self, ctx: Context):
 		'''
 		Get the bot stats
 		
@@ -196,7 +200,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.guild_only()
-	async def user_info(self, ctx, *, target:discord.Member=None):
+	async def user_info(self, ctx: Context, *, member:discord.User=None):
 		'''
 		Get the basic stats about the user
 		
@@ -208,7 +212,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		Permissions:
 		Need Embed Links permission for the bot.
 		'''
-		target = target or ctx.author
+		target = member or ctx.author
 		roles = [role for role in target.roles]
 		embed = discord.Embed(title="User information",
 						colour=target.colour,
@@ -236,7 +240,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def invite(self, ctx):
+	async def invite(self, ctx: Context):
 		"""
 		Get the invite of the bot! Thanks for seeing this command
 
@@ -256,7 +260,7 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.guild_only()
 	@commands.cooldown(1, 120, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def feedback(self, ctx, *, remark:str):
+	async def feedback(self, ctx: Context, *, remark:str):
 		"""
 		To reply the feedback to the developers. Kindly do not spam this command. Else ^^
 

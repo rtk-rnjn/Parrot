@@ -1,14 +1,12 @@
 from discord.ext import commands
 from pymongo import MongoClient
-from os import environ
+
 
 from utilities import exceptions as ex
-from utilities.config import SUPER_USER
-
-my_secret = environ['pass']
+from utilities.config import SUPER_USER, my_secret
 
 cluster = MongoClient(
-		f"mongodb+srv://ritikranjan:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+		f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
 
 db_pre = cluster["premium"]

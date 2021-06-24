@@ -18,7 +18,7 @@ class Economy(Cog, name="economy"):
 		async def withdraw(self, ctx: Context, money: int):
 				'''Withdraw your money, from your bank account'''
 				if money < 0:
-						return await ctx.send(
+						return await ctx.reply(
 								f'{ctx.author.mention} money can not be negative')
 
 				x = collection.find_one({'_id': ctx.author.id})
@@ -27,14 +27,14 @@ class Economy(Cog, name="economy"):
 						coins_bank = x['bank']
 
 						if coins_bank - money < 0:
-								return await ctx.send(
+								return await ctx.reply(
 										f'{ctx.author.mention} you do not have enough money to withdraw money'
 								)
 						else:
 								coins_walt += money
 								coins_bank -= money
 								await ge_update(ctx.author.id, coins_bank, coins_walt)
-								return await ctx.send(
+								return await ctx.reply(
 										f"{ctx.author.mention} deposited **{money}** coins in the bank"
 								)
 				else:
@@ -46,7 +46,7 @@ class Economy(Cog, name="economy"):
 								colour=ctx.author.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						await ctx.send(embed=embed)
+						await ctx.reply(embed=embed)
 
 		@commands.command(aliases=['rob'])
 		@user_premium_cd()
@@ -63,7 +63,7 @@ class Economy(Cog, name="economy"):
 						coins_walt_y = y['wallet']
 						coins_bank_y = y['bank']
 						if coins_walt_y == 0:
-								return await ctx.send(
+								return await ctx.reply(
 										f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have enough money to be robbed."
 								)
 						money = random.randint(0, coins_walt_y)
@@ -73,11 +73,11 @@ class Economy(Cog, name="economy"):
 						await ge_update(member.id, coins_bank_y, coins_walt_y)
 						await ge_update(ctx.author.id, coins_bank_x, coins_walt_x)
 
-						return await ctx.send(
+						return await ctx.reply(
 								f"{ctx.author.mention} you robbed **{member.name}#{member.discriminator}** and recieved **{money}**"
 						)
 				if not y:
-						return await ctx.send(
+						return await ctx.reply(
 								f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
 						)
 				if not x:
@@ -89,7 +89,7 @@ class Economy(Cog, name="economy"):
 								colour=ctx.author.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						await ctx.send(embed=embed)
+						await ctx.reply(embed=embed)
 
 		@commands.command()
 		@user_premium_cd()
@@ -98,7 +98,7 @@ class Economy(Cog, name="economy"):
 				'''Want more money? Try gambling slots.'''
 
 				if money < 0:
-						return await ctx.send(
+						return await ctx.reply(
 								f'{ctx.author.mention} money can not be negative')
 
 				x = collection.find({'_id': ctx.author.id})
@@ -107,7 +107,7 @@ class Economy(Cog, name="economy"):
 						coins_walt = x['wallet']
 						coins_bank = x['bank']
 						if coins_walt - money < 0:
-								return await ctx.send(
+								return await ctx.reply(
 										f"{ctx.author.mention} you don't have enough money to slots"
 								)
 
@@ -116,12 +116,12 @@ class Economy(Cog, name="economy"):
 						second = random.choice(emoji)
 						third = random.choice(emoji)
 						if first == second == third:
-								await ctx.send(
+								await ctx.reply(
 										f"{ctx.author.mention}\n\nYour slots results:\n> |{first}|{second}|{third}|\n\nYayy!! you won **{money*10}** money"
 								)
 								coins_walt['wallet'] += (money * 10)
 						else:
-								await ctx.send(
+								await ctx.reply(
 										f"{ctx.author.mention}\n\nYour slots results:\n> |{first}|{second}|{third}|\n\nYou lost {money} money :'("
 								)
 								coins_walt['wallet'] -= money
@@ -136,7 +136,7 @@ class Economy(Cog, name="economy"):
 								colour=ctx.author.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						await ctx.send(embed=embed)
+						await ctx.reply(embed=embed)
 
 		@commands.command(aliases=['send'])
 		@user_premium_cd()
@@ -145,7 +145,7 @@ class Economy(Cog, name="economy"):
 				'''You can give your Parrot coins to other user too'''
 
 				if money < 0:
-						return await ctx.send(
+						return await ctx.reply(
 								f'{ctx.author.mention} money can not be negative')
 
 				x = collection.find({'_id': ctx.author.id})
@@ -155,7 +155,7 @@ class Economy(Cog, name="economy"):
 						coins_walt_x = x['wallet'] - money
 						coins_bank_x = x['bank']
 						if coins_walt_x < 0:
-								return await ctx.send(
+								return await ctx.reply(
 										f"{ctx.author.mention} you don't have **{money}** in your wallet to send it to **{member.name}#{member.discriminator}**"
 								)
 						coins_walt_y = y['wallet'] + money
@@ -164,11 +164,11 @@ class Economy(Cog, name="economy"):
 						await ge_update(member.id, coins_bank_y, coins_walt_y)
 						await ge_update(ctx.author.id, coins_bank_x, coins_walt_x)
 
-						return await ctx.send(
+						return await ctx.reply(
 								f"{ctx.author.mention} **{member.name}#{member.discriminator}** recieved **{money}** from you"
 						)
 				if not y:
-						return await ctx.send(
+						return await ctx.reply(
 								f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
 						)
 				if not x:
@@ -180,7 +180,7 @@ class Economy(Cog, name="economy"):
 								colour=ctx.author.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						await ctx.send(embed=embed)
+						await ctx.reply(embed=embed)
 
 		@commands.command(aliases=["dep"])
 		@user_premium_cd()
@@ -189,7 +189,7 @@ class Economy(Cog, name="economy"):
 				'''Save your money by depositing all the money in the bank'''
 
 				if money < 0:
-						return await ctx.send(
+						return await ctx.reply(
 								f'{ctx.author.mention} money can not be negative')
 
 				x = collection.find_one({'_id': ctx.author.id})
@@ -198,14 +198,14 @@ class Economy(Cog, name="economy"):
 						coins_bank = x['bank']
 
 						if coins_walt - money < 0:
-								return await ctx.send(
+								return await ctx.reply(
 										f'{ctx.author.mention} you do not have enough money to deposit money'
 								)
 						else:
 								coins_walt -= money
 								coins_bank += money
 								await ge_update(ctx.author.id, coins_bank, coins_walt)
-								return await ctx.send(
+								return await ctx.reply(
 										f"{ctx.author.mention} deposited **{money}** coins in the bank"
 								)
 				else:
@@ -217,7 +217,7 @@ class Economy(Cog, name="economy"):
 								colour=ctx.author.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						await ctx.send(embed=embed)
+						await ctx.reply(embed=embed)
 
 		@commands.command()
 		@user_premium_cd()
@@ -241,7 +241,7 @@ class Economy(Cog, name="economy"):
 				if x:
 						coins_walt = x['wallet'] + inc
 						coins_bank = x['bank']
-						await ctx.send(
+						await ctx.reply(
 								f"{ctx.author.mention} {random.choice(someone)} {random.choice(gives)} **{inc}** coins to you"
 						)
 						await ge_update(ctx.author.id, coins_bank, coins_walt)
@@ -255,7 +255,7 @@ class Economy(Cog, name="economy"):
 								colour=ctx.author.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						await ctx.send(embed=embed)
+						await ctx.reply(embed=embed)
 
 		@commands.command(aliases=['bal'])
 		@user_premium_cd()
@@ -276,7 +276,7 @@ class Economy(Cog, name="economy"):
 																	colour=target.colour)
 						embed.add_field(name="Wallet", value=400)
 						embed.add_field(name="Bank", value=0)
-						return await ctx.send(embed=embed)
+						return await ctx.reply(embed=embed)
 				elif target == ctx.author:
 						coins_bank = x['bank']
 						coins_walt = x['wallet']
@@ -285,9 +285,9 @@ class Economy(Cog, name="economy"):
 																	colour=target.colour)
 						embed.add_field(name="Wallet", value=coins_walt)
 						embed.add_field(name="Bank", value=coins_bank)
-						return await ctx.send(embed=embed)
+						return await ctx.reply(embed=embed)
 				else:
-						return await ctx.send(
+						return await ctx.reply(
 								f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
 						)
 

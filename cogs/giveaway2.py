@@ -151,13 +151,6 @@ class Giveaway(Cog):
 						embed = Embed(title="Failure!", description="Cannot cancel Giveaway")
 						await ctx.send(emebed=embed)
 
-
-		@Cog.listener()
-		async def on_ready(self):
-				# await self.bot.stdout.send("Command Cog ready")
-				if not self.bot.ready:
-						self.bot.command_ready.ready_up("giveaway")
-
 def setup(bot):
 		bot.add_cog(Giveaway(bot))
 		print("giveaway.py successfully loaded. Status OK")

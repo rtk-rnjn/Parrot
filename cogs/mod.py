@@ -33,13 +33,13 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		guild = ctx.guild
 	
 		if guild.me.top_role < member.top_role:
-			await ctx.send(f"{ctx.author.mention} can't give the role to {member.name} as it's role is above the bot")
+			await ctx.reply(f"{ctx.author.mention} can't give the role to {member.name} as it's role is above the bot")
 
 		try:
 			await member.add_roles(role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-			await ctx.send(f"{ctx.author.mention} given {role.name}({role.id}) to {member.name}")
+			await ctx.reply(f"{ctx.author.mention} given {role.name}({role.id}) to {member.name}")
 		except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 
 	@commands.command(aliases=['hackban'], brief='To ban a member from guild')
@@ -66,19 +66,19 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		for member in member:
 			try:
 				await ctx.guild.ban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}', delete_message_days=days)
-				await ctx.send(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
+				await ctx.reply(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role") 
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role") 
 			await asyncio.sleep(0.25)
 
-	@commands.command(hidden=False, brief="Blocks a user from sending message in that channel.")
+	@commands.command(hidden=False, brief="Blocks a user from replying message in that channel.")
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
 	async def block(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason : str=None):
 		"""
-		Blocks a user from sending message in that channel.
+		Blocks a user from replying message in that channel.
 		
 		Syntax:
 		`Block <User:Mention/ID> [Reason:Text]`
@@ -92,14 +92,14 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			raise commands.MissingRequiredArgument
 			return
 
-		if (member.id == self.bot.user.id) or (member == ctx.author): return await ctx.send(f"{ctx.author.mention} :\ don't do that, I am only trying to help!")
+		if (member.id == self.bot.user.id) or (member == ctx.author): return await ctx.reply(f"{ctx.author.mention} :\ don't do that, I am only trying to help!")
 
 		for member in member:
 			try:
 				await ctx.channel.set_permissions(member, send_messages=False, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-				await ctx.send(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been created! **View Channel, and Send Messages** is denied!')
+				await ctx.reply(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been created! **View Channel, and Send Messages** is denied!')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
 
 	@commands.command(aliases=['nuke'], hidden=False, brief="To clone the channel or to nukes the channel (clones and delete).")
@@ -122,7 +122,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		
 		new_channel = await channel.clone(reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 		await channel.delete(reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-		await new_channel.send(f"{ctx.author.mention}", delete_after=5)
+		await new_channel.reply(f"{ctx.author.mention}", delete_after=5)
 		
 
 	@commands.command(brief='To kick a member form guild')
@@ -149,9 +149,9 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		for member in member:
 			try:
 				await member.kick(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
-				await ctx.send(f'**`{member.name}#{member.discriminator}`** is kicked! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**')
+				await ctx.reply(f'**`{member.name}#{member.discriminator}`** is kicked! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")  
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")  
 			await asyncio.sleep(0.25)
 
 	@commands.command(hidden=False, brief="To lock the channel (Text channel)")
@@ -176,9 +176,9 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		if channel is None:
 			channel = ctx.channel
 			overwrite = channel.overwrites_for(ctx.guild.default_role)
-			overwrite.send_messages = False
+			overwrite.reply_messages = False
 			await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=overwrite)
-			await ctx.send(f'{ctx.author.mention} channel locked.')
+			await ctx.reply(f'{ctx.author.mention} channel locked.')
 			return
 
 		for channel in channel:
@@ -186,9 +186,9 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 				overwrite = channel.overwrites_for(ctx.guild.default_role)
 				overwrite.send_messages = False
 				await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=overwrite)
-				await ctx.send(f'{ctx.author.mention} channel locked.')
+				await ctx.reply(f'{ctx.author.mention} channel locked.')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}")
+				await ctx.reply(f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}")
 			await asyncio.sleep(0.25)
 
 	@commands.has_permissions(kick_members=True)
@@ -213,7 +213,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			return 
 	
 		if ctx.author == member:
-			return await ctx.send(f"{ctx.author.mention} you cannot mute yourself.")
+			return await ctx.reply(f"{ctx.author.mention} you cannot mute yourself.")
 
 		muted = discord.utils.get(ctx.guild.roles, name="Muted")
 
@@ -225,9 +225,9 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		for member in member:
 			try:
 				await member.add_roles(muted, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-				await ctx.send(f'{ctx.author.mention} **{member.name}** has been successfully muted till death!')
+				await ctx.reply(f'{ctx.author.mention} **{member.name}** has been successfully muted till death!')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
 
 
@@ -248,7 +248,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		"""
 
 		deleted = await ctx.channel.purge(limit=amount + 1, bulk=True)
-		await ctx.send(f"{ctx.author.mention} {len(deleted)} message deleted :')", delete_after=5)
+		await ctx.reply(f"{ctx.author.mention} {len(deleted)} message deleted :')", delete_after=5)
 	
 
 
@@ -271,7 +271,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			return m.author == member
 
 		await ctx.channel.purge(limit=amount, bulk=True, check=check_usr)
-		await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
+		await ctx.reply(f"{ctx.author.mention} message deleted :')", delete_after=5)
 	
 
 	@commands.command(brief='To set slowmode in the specified channel.')
@@ -293,11 +293,11 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		if (seconds <= 21600) and (seconds > 0):
 			if channel is None: channel = ctx.channel 
 			await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-			await ctx.send(f"{ctx.author.mention} {channel} is not in slowmode, to reverse type [p]slowmode 0")
+			await ctx.reply(f"{ctx.author.mention} {channel} is not in slowmode, to reverse type [p]slowmode 0")
 		elif seconds == 0:
 			await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
 		else: 
-			await ctx.send(f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds")
+			await ctx.reply(f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds")
 
 
 
@@ -333,9 +333,9 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 					if (user.name, user.discriminator) == (member_n, member_d):
 						await ctx.guild.unban(user)
 
-				await ctx.send(f'**`{member.name}#{member.discriminator}`** is banned then unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.authoe.discriminator}`**! Reason: **{reason}**')
+				await ctx.reply(f'**`{member.name}#{member.discriminator}`** is banned then unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.authoe.discriminator}`**! Reason: **{reason}**')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 			await asyncio.sleep(0.25)
 
@@ -358,7 +358,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		"""
 		
 		await ctx.guild.unban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
-		await ctx.send(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
+		await ctx.reply(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
 		
 	@commands.command(hidden=False, brief='Unblocks a user from the text channel.')
 	@commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True)
@@ -383,11 +383,11 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		for member in member:
 			try:
-				if member.permissions_in(ctx.channel).send_messages: await ctx.send(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
+				if member.permissions_in(ctx.channel).send_messages: await ctx.reply(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
 				else: await ctx.channel.set_permissions(member, view_channel=None, send_messages=None, overwrite=None, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-				await ctx.send(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been deleted!')
+				await ctx.reply(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been deleted!')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
 
 
@@ -412,15 +412,15 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		if channel is None:
 			channel = ctx.channel
 			await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=None)
-			await ctx.send(f'{ctx.author.mention} channel unlocked.')
+			await ctx.reply(f'{ctx.author.mention} channel unlocked.')
 			return
 
 		for channel in channel:
 			try:
 				await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=None)
-				await ctx.send(f'{ctx.author.mention} channel unlocked.')
+				await ctx.reply(f'{ctx.author.mention} channel unlocked.')
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}")
+				await ctx.reply(f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}")
 		await asyncio.sleep(0.25)
 
 	@commands.command(brief='To allow a member to sending message in the Text Channels, if muted')
@@ -448,12 +448,12 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		for member in member:
 			try:
 				if rolem in member.roles:
-					await ctx.send(f'{ctx.author.mention} **{member.name}** has been unmuted now!')
+					await ctx.reply(f'{ctx.author.mention} **{member.name}** has been unmuted now!')
 					await member.remove_roles(rolem, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
 				else:
-					await ctx.send(f"{ctx.author.mention} **{member.name}** already unmuted :')")
+					await ctx.reply(f"{ctx.author.mention} **{member.name}** already unmuted :')")
 			except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 			await asyncio.sleep(0.25)
 
@@ -477,12 +477,12 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		guild = ctx.guild
 	
 		if guild.me.top_role < member.top_role:
-			await ctx.send(f"{ctx.author.mention} can't give the role to {member.name} as it's role is above the bot")
+			await ctx.reply(f"{ctx.author.mention} can't give the role to {member.name} as it's role is above the bot")
 		try:
 			await member.remove_roles(role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-			await ctx.send(f"{ctx.author.mention} removed {role.name}({role.id}) from {member.name}")
+			await ctx.reply(f"{ctx.author.mention} removed {role.name}({role.id}) from {member.name}")
 		except Exception as e:
-				await ctx.send(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
+				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 
 
 	@commands.command(pass_context = True,)
@@ -523,7 +523,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		try:
 			await member.send(f"{member.name}#{member.discriminator} you are being warned for {reason}")
 		except Exception:
-			await ctx.send(f"{member.name}#{member.discriminator} you are being warned for {reason}")
+			await ctx.reply(f"{member.name}#{member.discriminator} you are being warned for {reason}")
 			pass
 
 
@@ -546,10 +546,10 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			report = json.load(f)
 		for current_guild in report['reports']:
 			if ( current_guild['guild_id'] == ctx.guild.id ) and ( current_guild['name'] == member.id ):
-				await ctx.send(f"{member.name} has been reported {len(current_guild['reasons'])} times : {', '.join(current_guild['reasons'])}")
+				await ctx.reply(f"{member.name} has been reported {len(current_guild['reasons'])} times : {', '.join(current_guild['reasons'])}")
 				break
 		else:
-			await ctx.send(f"{member.name} has never been reported")
+			await ctx.reply(f"{member.name} has never been reported")
 
 
 	@commands.command()
@@ -573,10 +573,10 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			if member.id == current_guild['name']:
 				if ( current_guild['guild_id'] == ctx.guild.id ) and ( current_guild['name'] == member.id ):
 					current_guild['reasons'] = []
-					await ctx.send(f"{ctx.author.mention} cleared all the warning from {member.name}")
+					await ctx.reply(f"{ctx.author.mention} cleared all the warning from {member.name}")
 					break
 			else:
-				await ctx.send(f"{ctx.author.mention} {member.name} never being reported")
+				await ctx.reply(f"{ctx.author.mention} {member.name} never being reported")
 		with open('json/reports.json','w+') as f:
 			json.dump(report,f)
 

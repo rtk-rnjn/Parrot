@@ -4,18 +4,23 @@ import urllib.parse, aiohttp
 import os
 
 import requests, discord, re, editdistance, wikipedia, json, ttg, io, datetime
-from pygicord import Paginator
+from utilities.paginator import Paginator
 from discord import Embed
+
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
+
 
 invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"
 # my own regex	
 invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\/)?([A-Za-z0-9\-]+)(\/)?"
 
 
-class miscl(commands.Cog, name="Miscellaneous", description="Those commands which can't be listed"):
+class miscl(Cog, name="miscellaneous", description="Those commands which can't be listed"):
 		"""Those commands which can't be listed"""
 
-		def __init__(self, bot):
+		def __init__(self, bot: Parrot):
 				self.bot = bot
 				self.snipes = {}
 
@@ -82,7 +87,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 
 		@commands.group(pass_context=True, aliases=['emote'], invoke_without_command=True)
 		@commands.cooldown(1, 60, commands.BucketType.user)
-		async def emoji(self, ctx, *, msg):
+		async def emoji(self, ctx: Context, *, msg):
 				"""
 				View, copy, add or remove emoji.
 				Usage:
@@ -104,17 +109,17 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 						get_guild = False
 
 				if len(emojis) > 5:
-						return await ctx.send("Maximum of 5 emojis at a time.")
+						return await ctx.reply("Maximum of 5 emojis at a time.")
 
 				images = []
 				for emoji in emojis:
 						name, url, id, guild = self.find_emoji(emoji)
 						if url == "":
-								await ctx.send("[p]Could not find {}. Skipping.".format(emoji))
+								await ctx.reply("[p]Could not find {}. Skipping.".format(emoji))
 								continue
 						response = requests.get(url, stream=True)
 						if response.status_code == 404:
-								await ctx.send("Emoji {} not available. Open an issue on <https://github.com/astronautlevel2/twemoji> with the name of the missing emoji".format(emoji))
+								await ctx.reply("Emoji {} not available. Open an issue on <https://github.com/astronautlevel2/twemoji> with the name of the missing emoji".format(emoji))
 								continue
 
 						img = io.BytesIO()
@@ -128,14 +133,14 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				for (guild, id, url, file) in images:
 						if ctx.channel.permissions_for(ctx.author).attach_files:
 								if get_guild:
-										await ctx.send(content='**ID:** {}\n**Server:** {}'.format(id, guild), file=file)
+										await ctx.reply(content='**ID:** {}\n**Server:** {}'.format(id, guild), file=file)
 								else:
-										await ctx.send(file=file)
+										await ctx.reply(file=file)
 						else:
 								if get_guild:
-										await ctx.send('**ID:** {}\n**Server:** {}\n**URL: {}**'.format(id, guild, url))
+										await ctx.reply('**ID:** {}\n**Server:** {}\n**URL: {}**'.format(id, guild, url))
 								else:
-										await ctx.send(url)
+										await ctx.reply(url)
 						file.close()
 
 
@@ -143,7 +148,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 		@commands.has_permissions(manage_emojis=True)
 		@commands.bot_has_permissions(manage_emojis=True)
 		@commands.cooldown(1, 5, commands.BucketType.user)
-		async def copy(self, ctx, *, msg):
+		async def copy(self, ctx: Context, *, msg):
 				try:
 						await ctx.message.delete()
 				except:
@@ -164,18 +169,18 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 								break
 
 				if not match:
-						return await ctx.send('Could not find emoji.')
+						return await ctx.reply('Could not find emoji.')
 
 				response = requests.get(match.url)
 				emoji = await ctx.guild.create_custom_emoji(name=match.name, image=response.content)
-				await ctx.send(
+				await ctx.reply(
 						"Successfully added the emoji {0.name} <{1}:{0.name}:{0.id}>!".format(emoji, "a" if emoji.animated else ""))
 
 		@emoji.command(pass_context=True)
 		@commands.has_permissions(manage_emojis=True)
 		@commands.bot_has_permissions(manage_emojis=True)
 		@commands.cooldown(1, 5, commands.BucketType.user)
-		async def add(self, ctx, name, url):
+		async def add(self, ctx: Context, name, url):
 				try:
 						await ctx.message.delete()
 				except:
@@ -184,14 +189,14 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 						response = requests.get(url)
 				except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema,
 								requests.exceptions.ConnectionError):
-						return await ctx.send("The URL you have provided is invalid.")
+						return await ctx.reply("The URL you have provided is invalid.")
 				if response.status_code == 404:
-						return await ctx.send("The URL you have provided leads to a 404.")
+						return await ctx.reply("The URL you have provided leads to a 404.")
 				try:
 						emoji = await ctx.guild.create_custom_emoji(name=name, image=response.content)
 				except discord.InvalidArgument:
-						return await ctx.send("Invalid image type. Only PNG, JPEG and GIF are supported.")
-				await ctx.send(
+						return await ctx.reply("Invalid image type. Only PNG, JPEG and GIF are supported.")
+				await ctx.reply(
 						"Successfully added the emoji {0.name} <{1}:{0.name}:{0.id}>!".format(emoji, "a" if emoji.animated else ""))
 
 
@@ -199,7 +204,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 		@commands.bot_has_permissions(manage_emojis=True)
 		@commands.has_permissions(manage_emojis=True)
 		@commands.cooldown(1, 5, commands.BucketType.user)
-		async def remove(self, ctx, name):
+		async def remove(self, ctx: Context, name):
 				try:
 						await ctx.message.delete()
 				except:
@@ -207,13 +212,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				emotes = [x for x in ctx.guild.emojis if x.name == name]
 				emote_length = len(emotes)
 				if not emotes:
-						return await ctx.send("No emotes with that name could be found on this server.")
+						return await ctx.reply("No emotes with that name could be found on this server.")
 				for emote in emotes:
 						await emote.delete()
 				if emote_length == 1:
-						await ctx.send("Successfully removed the {} emoji!".format(name))
+						await ctx.reply("Successfully removed the {} emoji!".format(name))
 				else:
-						await ctx.send("Successfully removed {} emoji with the name {}.".format(emote_length, name))
+						await ctx.reply("Successfully removed {} emoji with the name {}.".format(emote_length, name))
 
 		### todo: error handing in emoji
 
@@ -221,7 +226,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 		@commands.guild_only()
 		@commands.cooldown(1, 5, commands.BucketType.user)
 		@commands.bot_has_permissions(embed_links=True)
-		async def calculator(self, ctx, *, text: str):
+		async def calculator(self, ctx: Context, *, text: str):
 				'''
 				This is basic calculator with all the expression supported. Syntax is similar to python math module.
 				
@@ -245,13 +250,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 															timestamp=datetime.datetime.utcnow())
 				embed.set_footer(f"{ctx.author.name}")
 
-				await ctx.send(embed=embed)
+				await ctx.reply(embed=embed)
 
 		@commands.command()
 		@commands.guild_only()
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
-		async def maths(self, ctx, operation: str, *, expression: str):
+		async def maths(self, ctx: Context, operation: str, *, expression: str):
 				'''
 				Another calculator but quite advance one
 				
@@ -272,16 +277,16 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 						async with session.get(link) as r:
 								if r.status == 200:
 										res = await r.json()
-								else: return await ctx.send(f"{ctx.author.mention} invalid **{expression}** or either **{operation}**")
+								else: return await ctx.reply(f"{ctx.author.mention} invalid **{expression}** or either **{operation}**")
 				result = res['result']
 				embed = discord.Embed(title="Calculated!!", description=f"```\nAnswer is: {result}```", timestamp=datetime.datetime.utcnow())
-				await ctx.send(embed=embed)
+				await ctx.reply(embed=embed)
 
 		@commands.command()
 		@commands.guild_only()
 		@commands.cooldown(1, 60, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
-		async def news(self, ctx, nat: str):
+		async def news(self, ctx: Context, nat: str):
 				'''
 				This command will fetch the latest news from all over the world.
 				
@@ -303,7 +308,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 								if r.status == 200:
 										res = await r.json()
 
-				if res['totalResults'] == 0: return await ctx.send(f"{ctx.author.mention} :\ **{nat}** is nothing, please provide a valid country code.")
+				if res['totalResults'] == 0: return await ctx.reply(f"{ctx.author.mention} :\ **{nat}** is nothing, please provide a valid country code.")
 				em_list = []
 				for data in range(0, len(res['articles'])):
 
@@ -332,7 +337,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 		@commands.guild_only()
 		@commands.cooldown(1, 60, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
-		async def search(self, ctx, *, search: str):
+		async def search(self, ctx: Context, *, search: str):
 				"""
 				Simple google search Engine.
 
@@ -355,7 +360,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 								if response.status == 200:
 										json_ = await response.json()
 								else:
-										return await ctx.send(f"{ctx.author.mention} No results found.```\n{search}```")
+										return await ctx.reply(f"{ctx.author.mention} No results found.```\n{search}```")
 
 				searchInfoTime = round(json_['searchInformation']['searchTime'])
 				context = json_['context']['title']
@@ -389,7 +394,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 
 		@commands.command()
 		@commands.bot_has_permissions(read_message_history=True, embed_links=True)
-		async def snipe(self, ctx):
+		async def snipe(self, ctx: Context):
 				'''
 				"Snipes" someone\'s message that\'s deleted.
 
@@ -402,9 +407,9 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				try:
 						snipe = self.snipes[ctx.channel.id]
 				except KeyError:
-						return await ctx.send(f'{ctx.author.mention} no snipes in this channel!')
+						return await ctx.reply(f'{ctx.author.mention} no snipes in this channel!')
 				if snipe is None:
-						return await ctx.send(f'{ctx.author.mention} no snipes in this channel!')
+						return await ctx.reply(f'{ctx.author.mention} no snipes in this channel!')
 				# there's gonna be a snipe after this point
 				emb = discord.Embed()
 				if type(snipe) == list:  # edit snipe
@@ -429,13 +434,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 						emb.colour = snipe.author.colour
 						emb.timestamp = snipe.created_at
 						emb.set_footer(text=f'Message sniped by {str(ctx.author)}', icon_url=ctx.author.avatar_url)
-				await ctx.send(embed=emb)
+				await ctx.reply(embed=emb)
 				self.snipes[ctx.channel.id] = None
 
 		@commands.command(aliases=['trutht', 'tt', 'ttable'])
 		@commands.guild_only()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		async def truthtable(self, ctx, *, data: commands.clean_content):
+		async def truthtable(self, ctx: Context, *, data: commands.clean_content):
 				"""
 				A simple command to generate Truth Table of given data. Make sure you use proper syntax.
 				
@@ -454,13 +459,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 
 				table = ttg.Truths(var, con, ints=False).as_prettytable()
 
-				await ctx.send(f"```\n{table}```")
+				await ctx.reply(f"```\n{table}```")
 
 		@commands.command(aliases=['w'])
 		@commands.guild_only()
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
-		async def weather(self, ctx, *, location: str):
+		async def weather(self, ctx: Context, *, location: str):
 				'''
 				Weather API, for current weather forecast, supports almost every city.
 				
@@ -484,7 +489,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 								if r.status == 200:
 										res = await r.json()
 								else:
-										return await ctx.send(f"{ctx.author.mention} no location named, **{location}**")
+										return await ctx.reply(f"{ctx.author.mention} no location named, **{location}**")
 
 				lat = res['coord']['lat']
 				lon = res['coord']['lon']
@@ -519,13 +524,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				embed.add_field(name="Loaction ID", value=f"{loc}: {loc_id}", inline=True)
 				embed.set_footer(text=f"{ctx.author.name}")
 
-				await ctx.send(embed=embed)
+				await ctx.reply(embed=embed)
 
 		@commands.command(aliases=['wiki'])
 		@commands.guild_only()
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
-		async def wikipedia(self, ctx, *, text: str):
+		async def wikipedia(self, ctx: Context, *, text: str):
 				"""
 				Web articles from Wikipedia.
 				
@@ -541,7 +546,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				try:
 						summary = str(wikipedia.summary(text, sentences=3)).replace("\n", "")
 				except wikipedia.exceptions.DisambiguationError as e:
-						return await ctx.send(f'{ctx.author.mention} please provide more arguments, like {e.options[0]}')
+						return await ctx.reply(f'{ctx.author.mention} please provide more arguments, like {e.options[0]}')
 				title = str(wikipedia.page(text).title)
 				image = wikipedia.page(text).images[0]
 
@@ -549,13 +554,13 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				embed.set_footer(text=f"{ctx.author.name}")
 				embed.set_image(url=image)
 
-				await ctx.send(embed=embed)
+				await ctx.reply(embed=embed)
 
 		@commands.command(aliases=['yt'])
 		@commands.guild_only()
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
-		async def youtube(self, ctx, *, query: str):
+		async def youtube(self, ctx: Context, *, query: str):
 				"""
 				Search for videos on YouTube. 
 				
@@ -599,7 +604,7 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.guild_only()
 		@commands.bot_has_permissions(embed_links=True)
-		async def embed(self, ctx, *, data):
+		async def embed(self, ctx: Context, *, data):
 				"""
 				A nice command to make custom embeds, from a `Python Dictionary` or form `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
 
@@ -613,11 +618,11 @@ class miscl(commands.Cog, name="Miscellaneous", description="Those commands whic
 				Need Embed Links permisssion for the bot.
 				"""
 				if type(data) is dict:
-						await ctx.send(embed=discord.Embed.from_dict(data))
+						await ctx.reply(embed=discord.Embed.from_dict(data))
 				else:
 						try:
 								data = json.loads(data)
-								await ctx.send(embed=discord.Embed.from_dict(data))
+								await ctx.reply(embed=discord.Embed.from_dict(data))
 						except Exception:
 								pass
 

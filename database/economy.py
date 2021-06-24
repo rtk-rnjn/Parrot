@@ -2,8 +2,8 @@ import os
 import pymongo
 
 from pymongo import MongoClient
+from utilities.congif import my_secret
 
-my_secret = os.environ['pass']
 
 cluster = MongoClient(
     f"mongodb+srv://ritikranjan:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"

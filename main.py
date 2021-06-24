@@ -8,7 +8,6 @@ from utilities.extra import load_ext
 from core.bot import Parrot
 
 bot = Parrot()
-
 load_ext(bot, EXTENSIONS)
 
 keep_alive()

@@ -14,3 +14,5 @@ VERSION = "v3.1"
 SUPPORT_SERVER = data['support_server']
 INVITE = data['invite']
 DEV_LOGO = data['dev_logo']
+DATABASE_KEY = os.environ['DATABASE']
+my_secret = DATABASE_KEY

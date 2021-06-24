@@ -2,7 +2,7 @@ import os
 import pymongo
 
 from pymongo import MongoClient
-from utilities.congif import my_secret
+from utilities.config import my_secret
 
 
 cluster = MongoClient(

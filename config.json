@@ -15,7 +15,7 @@
 		"cogs.ticket",
 		"cogs.mis",
 		"cogs.nsfw",
-		"rtfm.queries",
+		"cogs.rtfm.queries",
 		"cogs.help",
 		"cogs.mee6",
 		"cogs.applymod",

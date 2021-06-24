@@ -8,7 +8,7 @@ from core.cog import Cog
 from core.ctx import Context
 from core.bot import Parrot
 
-with open("storing/quote.txt") as f:
+with open("extra/quote.txt") as f:
     quote = f.read()
 
 quote = quote.split('\n')

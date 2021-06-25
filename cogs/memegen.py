@@ -1,16 +1,21 @@
-import requests, discord, aiohttp
+import discord, aiohttp
 from discord.ext import commands 
 from datetime import datetime 
-from time import time 
 
-class meme(commands.Cog, name="Meme Generator"):
-	def __init__(self, bot):
+from core.ctx import Context 
+from core.cog import Cog
+from core.bot import Parrot 
+
+from utilities.checks import user_premium_cd
+
+class meme(Cog, name="Meme Generator"):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
 	@commands.command()
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(1, 5, commands.BucketType.member)
-	async def thefact(self, ctx, *, text:str=None):
+	@user_premium_cd()
+	async def thefact(self, ctx: Context, *, text:str=None):
 		#if member is None: member = ctx.author
 		params = {
 			"type": "fact",
@@ -31,8 +36,8 @@ class meme(commands.Cog, name="Meme Generator"):
 
 	@commands.command()
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(1, 5, commands.BucketType.member)
-	async def stickbug(self, ctx, member:discord.Member=None):
+	@user_premium_cd()
+	async def stickbug(self, ctx: Context, *, member:discord.Member=None):
 		if member is None: member = ctx.author
 		params = {
 			"type": "stickbug",
@@ -54,8 +59,8 @@ class meme(commands.Cog, name="Meme Generator"):
 
 	@commands.command()
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(1, 5, commands.BucketType.member)
-	async def trash(self, ctx, member:discord.Member=None):
+	@user_premium_cd()
+	async def trash(self, ctx: Context, *, member:discord.Member=None):
 		if member is None: member = ctx.author
 		params = {
 			"type": "trash",
@@ -77,8 +82,8 @@ class meme(commands.Cog, name="Meme Generator"):
 
 	@commands.command()
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.cooldown(1, 5, commands.BucketType.member)
-	async def magik(self, ctx, member:discord.Member=None, intensity:int=None):
+	@user_premium_cd()
+	async def magik(self, ctx: Context, member:discord.Member=None, intensity:int=None):
 		if member is None: member = ctx.author
 		if intensity is None: intensity = 5
 		params = {

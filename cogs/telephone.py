@@ -12,7 +12,7 @@ from core.cog import Cog
 from core.bot import Parrot
 from core.ctx import Context
 
-from database.telephone import collection, telephone_update
+from database.telephone import collection, telephone_update, telephone_on_join
 
 class Telephone(Cog, name='telephone'):
 	"""Fun cog to make real calls over the server"""
@@ -38,13 +38,15 @@ class Telephone(Cog, name='telephone'):
 		"""
 		settings = ['channel', 'pingrole', 'memberping']
 
+		if not collection.find_one({'_id': ctx.guild.id}):
+			await telephone_on_join(ctx.guild.id)
+
 		if arg is None:
 			return await ctx.reply(f'{ctx.author.mention} Invalid setting. Available setting type: channel, pingrole, memberping, block')
 
 		if (setting.lower() in settings) and (type(arg) in [discord.TextChannel, discord.Role, discord.Member]):
-			await telephone_update(ctx.guild.id, setting.lower(), arg.id)
-			await ctx.reply(f'{ctx.author.mention} Success! {setting.lower()}: {arg.name} ({arg.id})')
-			return
+				await telephone_update(ctx.guild.id, setting.lower(), arg.id)
+				await ctx.reply(f'{ctx.author.mention} Success! {setting.lower()}: {arg.name} ({arg.id})')
 
 		if setting.lower() == 'block' and (type(arg) == int):
 			collection.update_one({'_id': ctx.guild.id}, { '$addToSet': { 'blocked': int(arg) } })

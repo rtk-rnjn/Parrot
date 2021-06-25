@@ -12,6 +12,7 @@ from core.bot import Parrot
 from core.ctx import Context
 
 from utilities.checks import user_premium_cd
+
 with open("extra/truth.txt") as f:
 	_truth = f.read()
 

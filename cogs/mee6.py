@@ -1,21 +1,20 @@
-from discord.ext import commands
+
 from mee6_py_api import API
 
 mee6API = API(741614680652644382)
 
-class Mee6Integration(commands.Cog, name="MEE6 Integration"):
+from core.cog import Cog
+from core.bot import Parrot
+
+class Mee6Integration(Cog, name="MEE6 Integration"):
 	"""MEE6 Inetration for level rewards"""
 	
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 	
-	@commands.Cog.listener()
+	@Cog.listener()
 	async def on_message(self, message):
-		"""
-		MESSAGE HANDLER
-		"""
-		
-		
+			
 		if message.author.bot or (str(message.channel.type) == "private"): return
 		if message.guild.id != 741614680652644382: return
 		user_level = await mee6API.levels.get_user_level(message.author.id)

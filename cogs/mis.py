@@ -117,18 +117,18 @@ class miscl(Cog,
 						get_guild = False
 
 				if len(emojis) > 5:
-						return await ctx.reply("Maximum of 5 emojis at a time.")
+						return await ctx.send("Maximum of 5 emojis at a time.")
 
 				images = []
 				for emoji in emojis:
 						name, url, id, guild = self.find_emoji(emoji)
 						if url == "":
-								await ctx.reply("[p]Could not find {}. Skipping.".format(emoji)
+								await ctx.send("[p]Could not find {}. Skipping.".format(emoji)
 																)
 								continue
 						response = requests.get(url, stream=True)
 						if response.status_code == 404:
-								await ctx.reply(
+								await ctx.send(
 										"Emoji {} not available. Open an issue on <https://github.com/astronautlevel2/twemoji> with the name of the missing emoji"
 										.format(emoji))
 								continue
@@ -144,18 +144,18 @@ class miscl(Cog,
 				for (guild, id, url, file) in images:
 						if ctx.channel.permissions_for(ctx.author).attach_files:
 								if get_guild:
-										await ctx.reply(
+										await ctx.send(
 												content='**ID:** {}\n**Server:** {}'.format(id, guild),
 												file=file)
 								else:
-										await ctx.reply(file=file)
+										await ctx.send(file=file)
 						else:
 								if get_guild:
-										await ctx.reply(
+										await ctx.send(
 												'**ID:** {}\n**Server:** {}\n**URL: {}**'.format(
 														id, guild, url))
 								else:
-										await ctx.reply(url)
+										await ctx.send(url)
 						file.close()
 
 		@emoji.command(pass_context=True, aliases=["steal"])
@@ -183,12 +183,12 @@ class miscl(Cog,
 								break
 
 				if not match:
-						return await ctx.reply('Could not find emoji.')
+						return await ctx.send('Could not find emoji.')
 
 				response = requests.get(match.url)
 				emoji = await ctx.guild.create_custom_emoji(name=match.name,
 																										image=response.content)
-				await ctx.reply(
+				await ctx.send(
 						"Successfully added the emoji {0.name} <{1}:{0.name}:{0.id}>!".
 						format(emoji, "a" if emoji.animated else ""))
 
@@ -207,16 +207,16 @@ class miscl(Cog,
 								requests.exceptions.InvalidURL,
 								requests.exceptions.InvalidSchema,
 								requests.exceptions.ConnectionError):
-						return await ctx.reply("The URL you have provided is invalid.")
+						return await ctx.send("The URL you have provided is invalid.")
 				if response.status_code == 404:
-						return await ctx.reply("The URL you have provided leads to a 404.")
+						return await ctx.send("The URL you have provided leads to a 404.")
 				try:
 						emoji = await ctx.guild.create_custom_emoji(name=name,
 																												image=response.content)
 				except discord.InvalidArgument:
-						return await ctx.reply(
+						return await ctx.send(
 								"Invalid image type. Only PNG, JPEG and GIF are supported.")
-				await ctx.reply(
+				await ctx.send(
 						"Successfully added the emoji {0.name} <{1}:{0.name}:{0.id}>!".
 						format(emoji, "a" if emoji.animated else ""))
 
@@ -232,14 +232,14 @@ class miscl(Cog,
 				emotes = [x for x in ctx.guild.emojis if x.name == name]
 				emote_length = len(emotes)
 				if not emotes:
-						return await ctx.reply(
+						return await ctx.send(
 								"No emotes with that name could be found on this server.")
 				for emote in emotes:
 						await emote.delete()
 				if emote_length == 1:
-						await ctx.reply("Successfully removed the {} emoji!".format(name))
+						await ctx.send("Successfully removed the {} emoji!".format(name))
 				else:
-						await ctx.reply(
+						await ctx.send(
 								"Successfully removed {} emoji with the name {}.".format(
 										emote_length, name))
 

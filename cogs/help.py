@@ -3,6 +3,9 @@ from discord.ext import commands
 
 from utilities.paginator import Paginator
 
+from core.cog import Cog
+from core.bot import Parrot
+
 class HelpCommand(commands.HelpCommand):
 		def __init__(self):
 				super().__init__(command_attrs={'cooldown': commands.Cooldown(1, 3.0, commands.BucketType.member), 'help': 'Shows help about the bot, a command, or a category'})
@@ -86,9 +89,9 @@ class HelpCommand(commands.HelpCommand):
 			paginator = Paginator(pages=em_list)
 			await paginator.start(self.context)
 			
-class Meta(commands.Cog):
+class Meta(Cog):
 
-		def __init__(self, bot):
+		def __init__(self, bot: Parrot):
 				self.bot = bot
 				self.old_help_command = bot.help_command
 				bot.help_command = HelpCommand()

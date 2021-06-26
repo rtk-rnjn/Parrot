@@ -31,8 +31,6 @@ class Telephone(Cog, name='telephone'):
 		Syntax:
 		`Telsetup <Settings:Text> <Arguments:Text>`
 
-		Cooldown of 30 seconds after one time use, per guild.
-
 		Permissions:
 		Need Manage Server permission for the user.
 		"""
@@ -63,8 +61,6 @@ class Telephone(Cog, name='telephone'):
 
 		Syntax:
 		`Dial <Number:Whole Number>`
-
-		Cooldown of 30 seconds after one time use, per guild.
 		"""
 		channel = ctx.channel
 		self_guild = collection.find_one({'_id': ctx.guild.id})

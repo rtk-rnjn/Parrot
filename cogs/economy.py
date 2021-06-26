@@ -16,7 +16,12 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def withdraw(self, ctx: Context, money: int):
-				'''Withdraw your money, from your bank account'''
+				'''
+				Withdraw your money, from your bank account
+				
+				Syntax:
+				`Withdraw <Money:Whole Number>`
+				'''
 				if money < 0:
 						return await ctx.reply(
 								f'{ctx.author.mention} money can not be negative')
@@ -52,7 +57,12 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def steal(self, ctx, *, member: discord.Member):
-				'''Want more money? Try stealing others.'''
+				'''
+				Want more money? Try stealing others.
+				
+				Syntax:
+				`Steal <Member:Mention/ID>`
+				'''
 
 				x = collection.find({'_id': ctx.author.id})
 				y = collection.find({'_id': member.id})
@@ -95,7 +105,12 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def slots(self, ctx: Context, money: int):
-				'''Want more money? Try gambling slots.'''
+				'''
+				Want more money? Try gambling slots.
+				
+				Syntax:
+				`Slots <Money:Whole Number>
+				'''
 
 				if money < 0:
 						return await ctx.reply(
@@ -142,7 +157,11 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def give(self, ctx: Context, member: discord.Member, money: int):
-				'''You can give your Parrot coins to other user too'''
+				'''
+				You can give your Parrot coins to other user too.
+
+				`Give <Member:Mention/ID> <Money:Whole Number>`
+				'''
 
 				if money < 0:
 						return await ctx.reply(
@@ -186,7 +205,12 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def deposit(self, ctx: Context, money: int):
-				'''Save your money by depositing all the money in the bank'''
+				'''
+				Save your money by depositing all the money in the bank
+				
+				Syntax:
+				`Deposit <Money:Whole Number>`
+				'''
 
 				if money < 0:
 						return await ctx.reply(
@@ -223,7 +247,12 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def beg(self, ctx: Context):
-				'''Beg from internet, hope someone will give you money'''
+				'''
+				Beg from internet, hope someone will give you money
+				
+				Syntax:
+				`Beg`
+				'''
 
 				inc = random.randint(0, 100)
 				someone = [
@@ -261,7 +290,11 @@ class Economy(Cog, name="economy"):
 		@user_premium_cd()
 		@commands.guild_only()
 		async def balance(self, ctx: Context, member: discord.User = None):
-				'''To check your balance, if not, then it will open a Parrot Economy bank account for you'''
+				'''
+				To check your balance, if not, then it will open a Parrot Economy bank account for you
+				
+				`Balance [Member:Mention/ID]`
+				'''
 				if member.bot: return
 
 				if member is None:

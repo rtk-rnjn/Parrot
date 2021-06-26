@@ -2,23 +2,26 @@ from discord.ext import commands
 import discord, json, asyncio
 
 import chat_exporter, io
-class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
-	"""A simple ticket serverive, trust me it's better than YAG. LOL!"""
-	def __init__(self, bot):
+
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
+
+class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
+	"""A simple ticket service, trust me it's better than YAG. LOL!"""
+	def __init__(self, bot: Parrot):
 		self.bot = bot 
 
 	@commands.command(hidden=False)
 	@commands.guild_only()
 	@commands.cooldown(1, 60, commands.BucketType.member)
 	@commands.bot_has_permissions(manage_channels=True, embed_links=True)
-	async def new(self, ctx, *, args = None):
+	async def new(self, ctx: Context, *, args = None):
 			'''
 			This creates a new ticket. Add any words after the command if you'd like to send a message when we initially create your ticket.
 			
 			Syntax:
 			`New [Argument:Text]`
-
-			Cooldown is of 60 seconds after one time use, per member
 
 			Permissions:
 			Need Manage Channels and Embed Links permissions for the bot.
@@ -87,7 +90,7 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 			
 			created_em = discord.Embed(title="Parrot Ticket Bot", description="Your ticket has been created at {}".format(ticket_channel.mention), color=discord.Color.blue())
 			
-			await ctx.send(embed=created_em)
+			await ctx.reply(embed=created_em)
 
 
 	@commands.command(hidden=False)
@@ -121,7 +124,7 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 
 							em = discord.Embed(title="Parrot Ticket Bot", description="Are you sure you want to close this ticket? Reply with `close` if you are sure.", color=discord.Color.blue())
 					
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 							await self.bot.wait_for('message', check=check, timeout=60)
 							await ctx.channel.delete()
 
@@ -133,7 +136,7 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 					
 					except asyncio.TimeoutError:
 							em = discord.Embed(title="Parrot Ticket Bot", description="You have run out of time to close this ticket. Please run the command again.", color=discord.Color.blue())
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 
 	
 	@commands.command(hidden=False)
@@ -166,18 +169,18 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 
 							em = discord.Embed(title="Parrot Ticket Bot", description="Are you sure you want to save the transcript of this ticket? Reply with `save` if you are sure.", color=discord.Color.blue())
 					
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 							await self.bot.wait_for('message', check=check, timeout=60)
 							transcript = await chat_exporter.export(ctx.channel)
 							if transcript is None: return
 
 							transcript_file = discord.File(io.BytesIO(transcript.encode()), filename=f"transcript-{ctx.channel.name}.html")
 
-							await ctx.send(file=transcript_file)
+							await ctx.reply(file=transcript_file)
 
 					except asyncio.TimeoutError:
 							em = discord.Embed(title="Parrot Ticket Bot", description="You have run out of time to save the transcript of this ticket. Please run the command again.", color=discord.Color.blue())
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 
 
 
@@ -185,14 +188,12 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
-	async def addaccess(self,ctx, role:discord.Role=None):
+	async def addaccess(self,ctx: Context, role:discord.Role=None):
 			'''
 			This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
 			
 			Syntax:
 			`Addaccess <Role:Mention/ID>`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -239,33 +240,31 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 									
 									em = discord.Embed(title="Parrot Ticket Bot", description="You have successfully added `{}` to the list of roles with access to tickets.".format(role.name), color=discord.Color.blue())
 
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 
 							except:
 									em = discord.Embed(title="Parrot Ticket Bot", description="That isn't a valid role ID. Please try again with a valid role ID.")
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 					
 					else:
 							em = discord.Embed(title="Parrot Ticket Bot", description="That role already has access to tickets!", color=discord.Color.blue())
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 			
 			else:
 					em = discord.Embed(title="Parrot Ticket Bot", description="Sorry, you don't have permission to run that command.", color=discord.Color.blue())
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 
 
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.command(hidden=False)
 	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
-	async def delaccess(self,ctx, role:discord.Role=None):
+	async def delaccess(self,ctx: Context, role:discord.Role=None):
 			'''
 			This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
 			
 			Syntax:
 			`Delaccess <Role:Mention/ID>`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -316,34 +315,32 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 
 									em = discord.Embed(title="Parrot Ticket Bot", description="You have successfully removed `{}` from the list of roles with access to tickets.".format(role.name), color=discord.Color.blue())
 
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 							
 							else:
 									
 									em = discord.Embed(title="Parrot Ticket Bot", description="That role already doesn't have access to tickets!", color=discord.Color.blue())
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 
 					except:
 							em = discord.Embed(title="Parrot Ticket Bot", description="That isn't a valid role ID. Please try again with a valid role ID.")
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 			
 			else:
 					em = discord.Embed(title="Parrot Ticket Bot", description="Sorry, you don't have permission to run that command.", color=discord.Color.blue())
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 
 
 	@commands.command(hidden=False)
 	@commands.guild_only()
 	@commands.has_permissions(administrator=True)
 	@commands.bot_has_permissions(embed_links=True)
-	async def addadminrole(self, ctx, role:discord.Role=None):
+	async def addadminrole(self, ctx: Context, role:discord.Role=None):
 			'''
 			This command gives all users with a specific role access to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`.
 			
 			Syntax:
 			`Addadminrole <Role:Mention/ID>`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot and Administrator permission for the user.
@@ -366,25 +363,23 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 							json.dump(data, f)
 					
 					em = discord.Embed(title="Parrot Ticket Bot", description="You have successfully added `{}` to the list of roles that can run admin-level commands!".format(role.name), color=discord.Color.blue())
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 
 			except:
 					em = discord.Embed(title="Parrot Ticket Bot", description="That isn't a valid role ID. Please try again with a valid role ID.")
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 
 
 	@commands.command(hidden=False)
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def addpingedrole(self, ctx, role:discord.Role=None):
+	async def addpingedrole(self, ctx: Context, role:discord.Role=None):
 			'''
 			This command adds a role to the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot.
 			
 			Syntax:
 			`Addpingedrole <Role:Mention/ID>`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -430,19 +425,19 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 
 									em = discord.Embed(title="Parrot Ticket Bot", description="You have successfully added `{}` to the list of roles that get pinged when new tickets are created!".format(role.name), color=discord.Color.blue())
 
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 
 							except:
 									em = discord.Embed(title="Parrot Ticket Bot", description="That isn't a valid role ID. Please try again with a valid role ID.")
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 							
 					else:
 							em = discord.Embed(title="Parrot Ticket Bot", description="That role already receives pings when tickets are created.", color=discord.Color.blue())
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 			
 			else:
 					em = discord.Embed(title="Parrot Ticket Bot", description="Sorry, you don't have permission to run that command.", color=discord.Color.blue())
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 
 
 	@commands.command()
@@ -450,14 +445,12 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.has_permissions(administrator=True)
 	@commands.bot_has_permissions(embed_links=True)
-	async def deladminrole(self, ctx, role:discord.Role=None):
+	async def deladminrole(self, ctx: Context, role:discord.Role=None):
 			"""
 			This command removes access for all users with the specified role to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`.
 			
 			Syntax:
 			`Deladminrole <Role:Mention/ID>`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot and Administrator permission for the user.
@@ -488,29 +481,27 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 							
 							em = discord.Embed(title="Parrot Ticket Bot", description="You have successfully removed `{}` from the list of roles that get pinged when new tickets are created.".format(role.name), color=discord.Color.blue())
 
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 					
 					else:
 							em = discord.Embed(title="Parrot Ticket Bot", description="That role isn't getting pinged when new tickets are created!", color=discord.Color.blue())
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 
 			except:
 					em = discord.Embed(title="Parrot Ticket Bot", description="That isn't a valid role ID. Please try again with a valid role ID.")
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
-	async def delpingedrole(self, ctx, role:discord.Role=None):
+	async def delpingedrole(self, ctx: Context, role:discord.Role=None):
 			'''
 			This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot.
 			
 			Syntax:
 			`Delpingedrole <Role:Mention/ID>`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -558,19 +549,19 @@ class ticket(commands.Cog, name="Ticket", command_attrs=dict(hidden=False)):
 											json.dump(data, f)
 
 									em = discord.Embed(title="Parrot Ticket Bot", description="You have successfully removed `{}` from the list of roles that get pinged when new tickets are created.".format(role.name), color=discord.Color.blue())
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 							
 							else:
 									em = discord.Embed(title="Parrot Ticket Bot", description="That role already isn't getting pinged when new tickets are created!", color=discord.Color.blue())
-									await ctx.send(embed=em)
+									await ctx.reply(embed=em)
 
 					except:
 							em = discord.Embed(title="Parrot Ticket Bot", description="That isn't a valid role ID. Please try again with a valid role ID.")
-							await ctx.send(embed=em)
+							await ctx.reply(embed=em)
 			
 			else:
 					em = discord.Embed(title="Parrot Ticket Bot", description="Sorry, you don't have permission to run that command.", color=discord.Color.blue())
-					await ctx.send(embed=em)
+					await ctx.reply(embed=em)
 		
 def setup(bot):
 	bot.add_cog(ticket(bot))

@@ -26,8 +26,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		Syntax:
 		`Ping`
 
-		Cooldown of 5 seconds after one time use, per member.
-
 		Permissions:
 		Need Embed Links permission for the bot
 		'''
@@ -47,8 +45,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 			
 			Syntax:
 			`Avatar [User:Mention/ID]`
-
-			Cooldown of 5 seconds after one time use, per member.
 
 			Permissions:
 			Need Embed Links permission for the bot
@@ -73,8 +69,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		Syntax:
 		`Owner`
 
-		Cooldown of 5 seconds after one time use, per member.
-
 		Permissions:
 		Need Embed Links permission for the bot
 		'''
@@ -91,8 +85,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 			
 			Syntax:
 			`Guildicon`
-			Cooldown of 5 seconds after one time use, per member.
-
 			Permissions:
 			Need Embed Links permission for the bot
 			'''
@@ -113,8 +105,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		
 		Syntax:
 		`Serverinfo`
-
-		Cooldown of 5 seconds after one time use, per member.
 
 		Permissions:
 		Need Embed Links permission for the bot. It will be better if you give Ban Member permission too for counting the number of bans.
@@ -161,8 +151,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		Syntax:
 		`Stats`
 		
-		Cooldown of 5 seconds after one time use, per member.
-
 		Permissions:
 		Need Embed Links permission for the bot.
 		'''
@@ -207,8 +195,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		Syntax:
 		`Userinfo`
 
-		Cooldown of 5 seconds after one time use, per member.
-
 		Permissions:
 		Need Embed Links permission for the bot.
 		'''
@@ -246,8 +232,6 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 
 		Syntax:
 		`Invite`
-
-		Cooldown of 5 seconds after one time use, per member.
 
 		Permissions:
 		Need Embed Links permission for the bot.

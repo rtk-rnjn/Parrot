@@ -1,16 +1,20 @@
 import discord, aiohttp, datetime, time
 from discord.ext import commands
 
-class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best commands! :')"):
+from core.bot import Parrot 
+from core.ctx import Context
+from core.cog import Cog
+
+class nsfw(Cog, name="nsfw", description="Want some fun? These are best commands! :')"):
 	'''Want some fun? These are best commands! :')'''
-	def __init__(self, bot):
+	def __init__(self, bot: Parrot):
 		self.bot = bot
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def anal(self, ctx):
+	async def anal(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -39,14 +43,14 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def gonewild(self, ctx):
+	async def gonewild(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -74,13 +78,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hanal(self, ctx):
+	async def hanal(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -108,13 +112,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hentai(self, ctx):
+	async def hentai(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -142,14 +146,14 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def holo(self, ctx):
+	async def holo(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -177,13 +181,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def neko(self, ctx):
+	async def neko(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -211,13 +215,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hneko(self, ctx):
+	async def hneko(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -245,13 +249,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hkitsune(self, ctx):
+	async def hkitsune(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -279,13 +283,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def kemonomimi(self, ctx):
+	async def kemonomimi(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -313,13 +317,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def pgif(self, ctx):
+	async def pgif(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -347,13 +351,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command(name="4k")
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def _4k(self, ctx):
+	async def _4k(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -383,13 +387,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def kanna(self, ctx):
+	async def kanna(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -419,13 +423,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def ass(self, ctx):
+	async def ass(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -454,13 +458,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def pussy(self, ctx):
+	async def pussy(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -488,13 +492,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def thigh(self, ctx):
+	async def thigh(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -522,13 +526,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hthigh(self, ctx):
+	async def hthigh(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -558,13 +562,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def gah(self, ctx):
+	async def gah(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -592,14 +596,14 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def paizuri(self, ctx):
+	async def paizuri(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -627,13 +631,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def tentacle(self, ctx):
+	async def tentacle(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -661,13 +665,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def boobs(self, ctx):
+	async def boobs(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -695,13 +699,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hboobs(self, ctx):
+	async def hboobs(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -729,13 +733,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def yaoi(self, ctx):
+	async def yaoi(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -763,13 +767,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hmidriff(self, ctx):
+	async def hmidriff(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -797,13 +801,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 
 	@commands.command()
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def hass(self, ctx):
+	async def hass(self, ctx: Context):
 		"""
 		To get Random ^^.
 		
@@ -831,13 +835,13 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 	
 	@commands.command(aliases=['randnsfw'])
 	@commands.guild_only()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
-	async def randomnsfw(self, ctx, *, subreddit:str=None):
+	async def randomnsfw(self, ctx: Context, *, subreddit:str=None):
 		"""
 		To get Random ^^ from subreddit.
 		
@@ -867,12 +871,12 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 		
 		
 	@commands.command(aliases=['nsfwdm'])
 	@commands.dm_only()
-	async def n(self, ctx, search:str=None):
+	async def n(self, ctx: Context):
 		"""
 		Best command I guess. It return random ^^
 		
@@ -895,7 +899,7 @@ class nsfw(commands.Cog, name="NSFW", description="Want some fun? These are best
 		em.set_footer(text=f"{ctx.author.name}")
 		em.set_image(url=img)
 
-		await ctx.send(embed=em)
+		await ctx.reply(embed=em)
 		
 def setup(bot):
 	bot.add_cog(nsfw(bot))

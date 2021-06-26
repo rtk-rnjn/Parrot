@@ -16,3 +16,4 @@ INVITE = data['invite']
 DEV_LOGO = data['dev_logo']
 DATABASE_KEY = os.environ['DATABASE']
 my_secret = DATABASE_KEY
+MEME_PASS = "***qwerty123"

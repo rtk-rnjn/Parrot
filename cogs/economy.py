@@ -289,16 +289,14 @@ class Economy(Cog, name="economy"):
 		@commands.command(aliases=['bal'])
 		@user_premium_cd()
 		@commands.guild_only()
-		async def balance(self, ctx: Context, member: discord.User = None):
+		async def balance(self, ctx: Context, *, member: discord.User = None):
 				'''
 				To check your balance, if not, then it will open a Parrot Economy bank account for you
 				
 				`Balance [Member:Mention/ID]`
 				'''
-				if member.bot: return
-
-				if member is None:
-						target = ctx.author
+				target = ctx.author or member
+				if target.bot: return
 
 				x = collection.find_one({'_id': target.id})
 

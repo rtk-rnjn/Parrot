@@ -1,21 +1,12 @@
 from discord.ext import commands
-from pymongo import MongoClient
-
 
 from utilities import exceptions as ex
-from utilities.config import SUPER_USER, my_secret
+from utilities.config import SUPER_USER
 
-cluster = MongoClient(
-		f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-)
-
-db_pre = cluster["premium"]
-collection_pre_user = db_pre["premium_user"]
-collection_pre_guild = db_pre["premium_guild"]
-
-db = cluster['parrot_db']
-collection = db['server_config']
-
+from database.ticket import collection as c, ticket_on_join
+from database.premium import collection_guild as collection_pre_guild
+from database.premium import collection_user as collection_pre_user
+from database.server_config import collection as collection
 
 def is_guild_owner():
 		def predicate(ctx):
@@ -83,7 +74,7 @@ def id_cmd_disabled():
 		def predicate(ctx):
 				data = collection.find({"_id": ctx.guild.id})
 				if ctx.command.name in data['disabled_cmds']:
-						raise commands.DisabledCommand
+						raise commands.DisabledCommand()
 				else:
 						return True
 
@@ -94,8 +85,17 @@ def id_cog_disabled():
 		def predicate(ctx):
 				data = collection.find({"_id": ctx.guild.id})
 				if ctx.command.name in data['disabled_cogs']:
-						raise commands.DisabledCommand
+						raise commands.DisabledCommand()
 				else:
 						return True
+
+		return commands.check(predicate)
+
+def has_verified_role_ticket():
+		def predicate(ctx):
+				data = c.find_one({'_id': ctx.guild.id})
+				if not data: await ticket_on_join(ctx.guild.id)
+				roles = data['verified-roles']
+				return commands.check_any(commands.has_any_role(*roles), commands.has_permissions(administrator=True))
 
 		return commands.check(predicate)

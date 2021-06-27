@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, json, datetime, typing, asyncio
+import discord, json, typing, asyncio
 
 from core.bot import Parrot 
 from core.cog import Cog
@@ -18,7 +18,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.guild_only()
 	@mod_cd()
 	@commands.bot_has_permissions(manage_roles=True)
-	async def addrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:str=None):
+	async def addrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:commands.clean_content=None):
 		"""
 		Gives a role to the specified member(s).
 
@@ -47,7 +47,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(ban_members=True)
 	@mod_cd()
 	@commands.guild_only()
-	async def ban(self, ctx: Context, member : commands.Greedy[discord.User], days:typing.Optional[int]=None, *, reason:str=None):
+	async def ban(self, ctx: Context, member : commands.Greedy[discord.User], days:typing.Optional[int]=None, *, reason:commands.clean_content=None):
 		"""
 		To ban a member from guild.
 		
@@ -76,7 +76,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
-	async def block(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason : str=None):
+	async def block(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason : commands.clean_content=None):
 		"""
 		Blocks a user from replying message in that channel.
 		
@@ -107,7 +107,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def clone(self, ctx: Context, channel : discord.TextChannel=None, *, reason:str=None):
+	async def clone(self, ctx: Context, channel : discord.TextChannel, *, reason:commands.clean_content=None):
 		"""
 		To clone the channel or to nukes the channel (clones and delete).
 
@@ -130,7 +130,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@mod_cd()
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.guild_only()
-	async def kick(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def kick(self, ctx: Context, member : commands.Greedy[discord.Member], *, reason:commands.clean_content=None):
 		"""
 		To kick a member from guild.
 		
@@ -159,7 +159,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
-	async def lock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
+	async def lock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel], *, reason:commands.clean_content=None):
 		"""
 		To lock the channel (Text channel)
 		
@@ -196,7 +196,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@mod_cd()
 	@commands.guild_only()
 	@commands.command(brief="To restrict a member to sending message in the Server")
-	async def mute(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def mute(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:commands.clean_content=None):
 		"""
 		To restrict a member to sending message in the Server
 		
@@ -279,7 +279,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def slowmode(self, ctx: Context, seconds : int, channel:discord.TextChannel=None, *, reason:str=None):
+	async def slowmode(self, ctx: Context, seconds : int, channel:discord.TextChannel=None, *, reason:commands.clean_content=None):
 		"""
 		To set slowmode in the specified channel.
 		
@@ -306,7 +306,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
-	async def softban(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def softban(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:commands.clean_content=None):
 		"""
 		To Ban a member from a guild then immediately unban
 		
@@ -345,7 +345,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def unban(self, ctx: Context, member:discord.User, *, reason:str=None):
+	async def unban(self, ctx: Context, member:discord.User, *, reason:commands.clean_content=None):
 		"""
 		To Unban a member from a guild.
 		
@@ -365,7 +365,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
-	async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason:str=None):
+	async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason:commands.clean_content=None):
 		"""
 		Unblocks a user from the text channel.
 
@@ -396,7 +396,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True, manage_roles=True, manage_permissions=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def unlock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:str=None):
+	async def unlock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:commands.clean_content=None):
 		"""
 		To unlock the channel (Text channel)
 
@@ -428,7 +428,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def unmute(self, ctx: Context, member: commands.Greedy[discord.Member]=None, *, reason:str=None):
+	async def unmute(self, ctx: Context, member: commands.Greedy[discord.Member]=None, *, reason:commands.clean_content=None):
 		"""
 		To allow a member to sending message in the Text Channels, if muted.
 		
@@ -462,7 +462,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def unrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:str=None):
+	async def unrole(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason:commands.clean_content=None):
 		"""
 		Remove the mentioned role from mentioned/id member
 
@@ -490,7 +490,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(embed_links=True)
 	@mod_cd()
 	@commands.guild_only()
-	async def warn(self, ctx: Context, member:discord.Member, *, reason:str):
+	async def warn(self, ctx: Context, member:discord.Member, *, reason:commands.clean_content):
 		"""
 		To warn a user
 

@@ -57,7 +57,7 @@ class Telephone(Cog, name='telephone'):
 	@commands.cooldown(1, 30, commands.BucketType.guild)
 	async def dial(self, ctx: Context, number: int):
 		"""
-		To dial to other server. :|
+		To dial to other server. Do not misuse this. Else you RIP :|
 
 		Syntax:
 		`Dial <Number:Whole Number>`
@@ -79,7 +79,7 @@ class Telephone(Cog, name='telephone'):
 		if (target_guild['_id'] in self_guild['blocked']) or (self_guild['_id'] in target_guild['blocked']):
 			return await ctx.reply(f'Calling failed! Possible reasons: They blocked You, You blocked Them.')
 
-		await target_channel.send(f"**Incomming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hungup` to reject")
+		await target_channel.send(f"**Incomming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject")
 		try:
 			temp_message = target_channel.send(f'{self.bot.get_guild(target_guild["_id"]).get_role(target_guild["pingrole"]).mention} {self.bot.get_user(target_guild["memberping"]).mention}')
 			await temp_message.delete()

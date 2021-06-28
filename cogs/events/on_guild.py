@@ -22,9 +22,7 @@ class OnGuildJoin(Cog):
 
 				for channel in guild.text_channels:
 						if channel.permission_for(guild.me).send_messages:
-								channel.send(
-										"Thank you for adding me to this server! Default prefix are `$` and `@Parrot` (Mention)!
-								)
+								channel.send("Thank you for adding me to this server! Default prefix are `$` and `@Parrot` (Mention)!")
 								break
 
 		@Cog.listener()

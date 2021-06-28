@@ -279,7 +279,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def slowmode(self, ctx: Context, seconds : int, channel:discord.TextChannel=None, *, reason:commands.clean_content=None):
+	async def slowmode(self, ctx: Context, seconds : typing.Union[int, str], channel:discord.TextChannel=None, *, reason:commands.clean_content=None):
 		"""
 		To set slowmode in the specified channel.
 		
@@ -290,15 +290,18 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		Permissions: 
 		Need Manage Channels permission, for both bot and the user.
 		"""
-		if (seconds <= 21600) and (seconds > 0):
-			if channel is None: channel = ctx.channel 
-			await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-			await ctx.reply(f"{ctx.author.mention} {channel} is not in slowmode, to reverse type [p]slowmode 0")
-		elif seconds == 0:
-			await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-		else: 
-			await ctx.reply(f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds")
-
+		channel = channel or ctx.channel
+		if seconds:
+			if (seconds <= 21600) and (seconds > 0):
+				await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
+				await ctx.reply(f"{ctx.author.mention} {channel} is now in slowmode of **{seconds}**, to reverse type [p]slowmode 0")
+			elif seconds == 0 or seconds.lower() == 'off':
+				await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
+				await ctx.reply(f"{ctx.author.mention} {channel} is now not in slowmode.")
+			elif (seconds >= 21600) or (seconds < 0): 
+				await ctx.reply(f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds")
+			else: return # I dont want to tell error
+			
 
 
 	@commands.command(aliases=['softkill'], brief='To Ban a member from a guild then immediately unban')

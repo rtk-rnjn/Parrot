@@ -23,7 +23,7 @@ class OnGuildJoin(Cog):
 				for channel in guild.text_channels:
 						if channel.permission_for(guild.me).send_messages:
 								channel.send(
-										"Thank you for adding me to this server! Default prefix are `$` and `@Parrot` (Mention)! Consider connecting to global chat, by [p]setupgchat\nFor any feedback consider DMing the bot!"
+										"Thank you for adding me to this server! Default prefix are `$` and `@Parrot` (Mention)!
 								)
 								break
 

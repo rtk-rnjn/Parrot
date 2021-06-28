@@ -92,7 +92,7 @@ def id_cog_disabled():
 		return commands.check(predicate)
 
 def has_verified_role_ticket():
-		def predicate(ctx):
+		async def predicate(ctx):
 				data = c.find_one({'_id': ctx.guild.id})
 				if not data: await ticket_on_join(ctx.guild.id)
 				roles = data['verified-roles']

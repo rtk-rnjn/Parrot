@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from utilities.paginator import Paginator
+from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO
 
 from core.cog import Cog
 from core.bot import Parrot
@@ -34,14 +35,14 @@ class HelpCommand(commands.HelpCommand):
 				
 				em_list = []
 
-				get_bot = f"[Add me to your server](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot)"
-				support_server = f"[Support Server](https://discord.gg/NEyJxM7G7f)"
+				get_bot = f"[Add me to your server]({INVITE})"
+				support_server = f"[Support Server]({SUPPORT_SERVER})"
 				
-				embed = discord.Embed(description="```\nPrefixes are '$' and '@Parrot'\n```", color=discord.Colour(0x55ddff))
-				embed.set_author(name=f"Server: {self.context.guild.name}", icon_url=self.context.guild.icon_url)
+				embed = discord.Embed(description=f"```\nPrefixes are '{self.context.prefix}' and '@{bot.name}'\n```", color=discord.Colour(0x55ddff))
+				embed.set_author(name=f"Server: {self.context.guild.name or self.context.author.name}", icon_url=self.context.guild.icon_url or self.context.me.icon_url)
 				
 				embed.add_field(name="Get Parrot", value=f"• {get_bot}\n• {support_server}", inline=False)
-				embed.set_footer(text="Built with ❤️ and `discord.py`", icon_url="https://res.cloudinary.com/teepublic/image/private/s--YEWJeY8b--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1506698819/production/designs/1938379_1.jpg")
+				embed.set_footer(text="Built with ❤️ and `discord.py`", icon_url=f"{DEV_LOGO}")
 				
 				em_list.append(embed)
 
@@ -50,7 +51,7 @@ class HelpCommand(commands.HelpCommand):
 																				 f"**Commands**```\n{', '.join([cmd.name for cmd in bot.cogs[cog].get_commands()])}\n```", 
 																				 color=discord.Colour(0x55ddff))
 					em.set_author(name=f"COG: {cog}")
-					em.set_footer(text="Built with ❤️ and `discord.py`", icon_url="https://res.cloudinary.com/teepublic/image/private/s--YEWJeY8b--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1506698819/production/designs/1938379_1.jpg")
+					em.set_footer(text="Built with ❤️ and `discord.py`", icon_url=f"{DEV_LOGO}")
 					em_list.append(em)
 				
 				paginator = Paginator(pages=em_list)
@@ -75,7 +76,7 @@ class HelpCommand(commands.HelpCommand):
 			embed = discord.Embed(title='{0.qualified_name} Commands'.format(cog), 
 														description=f"```\n{cog.description if cog.description else 'NA'}\n```", 
 														color=discord.Colour(0x55ddff))
-			embed.set_footer(text="Built with ❤️ and `discord.py`", icon_url="https://res.cloudinary.com/teepublic/image/private/s--YEWJeY8b--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1506698819/production/designs/1938379_1.jpg")
+			embed.set_footer(text="Built with ❤️ and `discord.py`", icon_url=f"{DEV_LOGO}")
 			em_list.append(embed)
 			
 			for cmd in cog.get_commands():

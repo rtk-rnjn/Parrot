@@ -39,8 +39,14 @@ class Telephone(Cog, name='telephone'):
 		if not collection.find_one({'_id': ctx.guild.id}):
 			await telephone_on_join(ctx.guild.id)
 
-		if arg is None:
-			return await ctx.reply(f'{ctx.author.mention} Invalid setting. Available setting type: channel, pingrole, memberping, block')
+		if not arg or not settings:
+			data = collection.find_one({'_id': ctx.guild.id})
+			await ctx.send(f"Invalid setting. Available setting type: `channel`, `pingrole`, `memberping`, `block`. This server current Telephone Settings are:-\n"
+										 f"> Telephone Channel:\n`{data['channel']}`\n"
+										 f"> Telephone Pingrole:\n`{data['pingrole']}`\n"
+										 f"> Telephone Memberping:\n`{data['memberping']}`\n"
+										 f"> Telephone Blocked:\n`{', '.join(data['blocked'])}`\n"
+										 f"> Is your line busy:\n`{data['is_line_busy']}`")
 
 		if (setting.lower() in settings) and (type(arg) in [discord.TextChannel, discord.Role, discord.Member]):
 				await telephone_update(ctx.guild.id, setting.lower(), arg.id)
@@ -55,7 +61,7 @@ class Telephone(Cog, name='telephone'):
 	@commands.max_concurrency(1, commands.BucketType.guild)
 	@commands.guild_only()
 	@commands.cooldown(1, 30, commands.BucketType.guild)
-	async def dial(self, ctx: Context, number: int):
+	async def dial(self, ctx: Context, number: typing.Union[discord.Guild, int]):
 		"""
 		To dial to other server. Do not misuse this. Else you RIP :|
 
@@ -74,7 +80,7 @@ class Telephone(Cog, name='telephone'):
 		await ctx.reply(f"Calling to **{number} ({self.bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ...")
 		
 		target_channel = self.bot.get_channel(target_guild['channel'])
-		if target_channel is None: return await ctx.reply("Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission.")
+		if not target_channel: return await ctx.reply("Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission.")
 
 		if (target_guild['_id'] in self_guild['blocked']) or (self_guild['_id'] in target_guild['blocked']):
 			return await ctx.reply(f'Calling failed! Possible reasons: They blocked You, You blocked Them.')

@@ -5,7 +5,7 @@ with open('config.json') as f:
 
 OWNER_IDS = data['owner_ids']
 PREFIX = data['prefix']
-CASE_SENSITIVE = data['case_insensitive']
+CASE_INSENSITIVE = data['case_insensitive']
 STRIP_AFTER_PREFIX = data['strip_after_prefix']
 SUPER_USER = data['super_user']
 EXTENSIONS = data['extensions']

@@ -213,3 +213,5 @@ class BotConfig(Cog, name="config"):
 						except:
 								continue
 		
+def setup(bot):
+		bot.add_cog(BotConfig(bot))

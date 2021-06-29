@@ -109,3 +109,4 @@ def is_mod():
 				data = collection.find_one({'_id': ctx.guild.id})
 				role_id = data['mod_role']
 				return commands.has_any_role(role_id)
+		return commands.check(predicate)

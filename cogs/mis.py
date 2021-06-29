@@ -91,9 +91,7 @@ class miscl(Cog,
 				name = "emoji.png"
 				return name, url, "N/A", "Official"
 
-		@commands.group(pass_context=True,
-										aliases=['emote'],
-										invoke_without_command=True)
+		@commands.group(aliases=['emote'])
 		@user_premium_cd()
 		async def emoji(self, ctx: Context, *, msg):
 				"""

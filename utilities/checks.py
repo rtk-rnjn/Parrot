@@ -6,7 +6,7 @@ from utilities.config import SUPER_USER
 from database.ticket import collection as c, ticket_on_join
 from database.premium import collection_guild as collection_pre_guild
 from database.premium import collection_user as collection_pre_user
-from database.server_config import collection as collection
+from database.server_config import collection, guild_join
 
 def is_guild_owner():
 		def predicate(ctx):
@@ -69,7 +69,7 @@ def mod_cd():
 
 		return commands.check(predicate)
 
-
+ # [{"cmd": ctx.command.name, "channel": []}]
 def id_cmd_disabled():
 		def predicate(ctx):
 				data = collection.find({"_id": ctx.guild.id})
@@ -91,11 +91,21 @@ def id_cog_disabled():
 
 		return commands.check(predicate)
 
+
 def has_verified_role_ticket():
 		async def predicate(ctx):
 				data = c.find_one({'_id': ctx.guild.id})
 				if not data: await ticket_on_join(ctx.guild.id)
+				data = c.find_one({'_id': ctx.guild.id})
 				roles = data['verified-roles']
 				return commands.check_any(commands.has_any_role(*roles), commands.has_permissions(administrator=True))
 
 		return commands.check(predicate)
+
+
+def is_mod():
+		async def predicate(ctx):
+				if not collection.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
+				data = collection.find_one({'_id': ctx.guild.id})
+				role_id = data['mod_role']
+				return commands.has_role(role_id)

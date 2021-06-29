@@ -1,8 +1,15 @@
+import jishaku
+import os
+
 from discord.ext import commands
 import discord, traceback
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX
 from database.server_config import collection, guild_join
 
+
+os.environ["JISHAKU_HIDE"] = "True"
+# os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
+# os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 class Parrot(commands.AutoShardedBot):
 		"""A custom way to organise a commands.AutoSharedBot."""
@@ -11,10 +18,11 @@ class Parrot(commands.AutoShardedBot):
 						command_prefix=self.get_prefix,
 						case_insensitive=CASE_INSENSITIVE,
 						intents=discord.Intents.all(),
+						activity=discord.Activity(type=discord.ActivityType.listening, name="$help"),
 						strip_after_prefix=STRIP_AFTER_PREFIX,
 						owner_ids=OWNER_IDS,
 						allowed_mentions=discord.AllowedMentions(everyone=False,
-																										roles=False,
+																										roles=True,
 																										replied_user=True,
 																										users=True),
 						member_cache_flags=discord.MemberCacheFlags.from_intents(

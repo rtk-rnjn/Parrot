@@ -16,7 +16,7 @@ async def guild_join(guild_id: int):
         'prefix': '$',
         'disabled_cogs': [],
         'disabled_cmds': [],
-        'mod_role': [],
+        'mod_role': None,
         'action_log': None,
 				'mute_role': None
     }
@@ -28,12 +28,12 @@ async def guild_join(guild_id: int):
         return str(e)
 
 
-async def guild_update(guild_id: int, event: str, value):
+async def guild_update(guild_id: int, post:dict):
     post = {
         '_id': guild_id,
     }
 
-    new_post = {"$set": {event: value}}
+    new_post = {"$set": post}
 
     try:
         collection.update_one(post, new_post)

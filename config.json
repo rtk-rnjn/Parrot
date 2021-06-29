@@ -3,7 +3,7 @@
 		741614468546560092,
 		813647101392846848
 	],
-	"prefix": "n!",
+	"prefix": "$",
 	"case_insensitive": true,
 	"strip_after_prefix": true,
 	"super_user": 741614468546560092,
@@ -21,7 +21,7 @@
 		"cogs.applymod",
 		"cogs.telephone",
 		"cogs.unbiboat",
-		"cogs.gchat.setup",
+		"cogs.config",
 		"cogs.gchat.on_message",
 		"cogs.leveling.on_message",
 		"cogs.leveling.leaderboard",
@@ -32,6 +32,6 @@
 		"jishaku"
 	],
 	"support_server": "https://discord.gg/NEyJxM7G7f",
-	"invite": "https://discord.com/api/oauth2/authorize?client_id=825011717284036608&permissions=8&scope=bot",
+	"invite": "https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot",
 	"dev_logo": "https://res.cloudinary.com/teepublic/image/private/s--YEWJeY8b--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1506698819/production/designs/1938379_1.jpg"
 }

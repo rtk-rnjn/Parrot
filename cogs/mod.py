@@ -5,7 +5,7 @@ from core.bot import Parrot
 from core.cog import Cog
 from core.ctx import Context
 
-from utilities.checks import mod_cd
+from utilities.checks import mod_cd, is_mod
 
 class mod(Cog, name="Moderator", description="A simple moderator's tool for managing the server."):
 	"""A simple moderator's tool for managing the server."""
@@ -14,7 +14,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		self.bot = bot
 
 	@commands.command(aliases=['arole', 'giverole', 'grole'], brief="Gives a role to the specified member")
-	@commands.has_permissions(manage_roles=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
 	@commands.guild_only()
 	@mod_cd()
 	@commands.bot_has_permissions(manage_roles=True)
@@ -43,7 +43,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(aliases=['hackban'], brief='To ban a member from guild')
-	@commands.has_permissions(ban_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
 	@commands.bot_has_permissions(ban_members=True)
 	@mod_cd()
 	@commands.guild_only()
@@ -59,8 +59,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will ban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return 
 		if days is None: days = 1
 		for member in member:
@@ -72,11 +72,11 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			await asyncio.sleep(0.25)
 
 	@commands.command(hidden=False, brief="Blocks a user from replying message in that channel.")
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
-	async def block(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason : commands.clean_content=None):
+	async def block(self, ctx: Context, member : commands.Greedy[discord.Member], *, reason : commands.clean_content=None):
 		"""
 		Blocks a user from replying message in that channel.
 		
@@ -88,8 +88,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will block indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the block. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return
 
 		if (member.id == self.bot.user.id) or (member == ctx.author): return await ctx.reply(f"{ctx.author.mention} :\ don't do that, I am only trying to help!")
@@ -103,7 +103,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			await asyncio.sleep(0.25)
 
 	@commands.command(aliases=['nuke'], hidden=False, brief="To clone the channel or to nukes the channel (clones and delete).")
-	@commands.has_permissions(manage_channels=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
 	@mod_cd()
@@ -126,7 +126,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		
 
 	@commands.command(brief='To kick a member form guild')
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@mod_cd()
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.guild_only()
@@ -142,8 +142,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will kick indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the kick. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return
 
 		for member in member:
@@ -155,7 +155,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			await asyncio.sleep(0.25)
 
 	@commands.command(hidden=False, brief="To lock the channel (Text channel)")
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
@@ -192,11 +192,11 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			await asyncio.sleep(0.25)
 
 	@commands.has_permissions(kick_members=True)
-	@commands.bot_has_permissions(manage_roles=True)
+	@commands.check_any(is_mod(), commands.bot_has_permissions(manage_roles=True))
 	@mod_cd()
 	@commands.guild_only()
 	@commands.command(brief="To restrict a member to sending message in the Server")
-	async def mute(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:commands.clean_content=None):
+	async def mute(self, ctx: Context, member : commands.Greedy[discord.Member], *, reason:commands.clean_content=None):
 		"""
 		To restrict a member to sending message in the Server
 		
@@ -208,8 +208,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The Mute command will only work if the any role exists with exact name `Muted` else Bot will create a role name `Muted`, and create overwrite (Send Messages=False, Read Message History=False) for all the text channels.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return 
 	
 		if ctx.author == member:
@@ -232,7 +232,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(brief='To delete bulk message')
-	@commands.has_permissions(manage_messages=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
 	@commands.guild_only()
 	@mod_cd()
 	@commands.bot_has_permissions(read_message_history=True, manage_messages=True)
@@ -253,7 +253,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(brief='To delete bulk message, of a specified user')
-	@commands.has_permissions(manage_messages=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
 	@commands.guild_only()
 	@mod_cd()
 	@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
@@ -275,7 +275,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 	
 
 	@commands.command(brief='To set slowmode in the specified channel.')
-	@commands.has_permissions(manage_channels=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
 	@commands.bot_has_permissions(manage_channels=True)
 	@commands.guild_only()
 	@mod_cd()
@@ -291,6 +291,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		Need Manage Channels permission, for both bot and the user.
 		"""
 		channel = channel or ctx.channel
+		if not seconds: raise commands.MissingRequiredArgument()
 		if seconds:
 			if (seconds <= 21600) and (seconds > 0):
 				await channel.edit(slowmode_delay=seconds, reason=f"Action Requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
@@ -306,10 +307,10 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 	@commands.command(aliases=['softkill'], brief='To Ban a member from a guild then immediately unban')
 	@mod_cd()
-	@commands.has_permissions(ban_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
-	async def softban(self, ctx: Context, member : commands.Greedy[discord.Member]=None, *, reason:commands.clean_content=None):
+	async def softban(self, ctx: Context, member : commands.Greedy[discord.Member], *, reason:commands.clean_content=None):
 		"""
 		To Ban a member from a guild then immediately unban
 		
@@ -321,8 +322,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will softban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return
 
 		for member in member:
@@ -344,7 +345,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(brief='To Unban a member from a guild')
-	@commands.has_permissions(ban_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.guild_only()
 	@mod_cd()
@@ -364,7 +365,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		await ctx.reply(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
 		
 	@commands.command(hidden=False, brief='Unblocks a user from the text channel.')
-	@commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True))
 	@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 	@mod_cd()
 	@commands.guild_only()
@@ -380,8 +381,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will unblock indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the unblock. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return
 
 		for member in member:
@@ -395,11 +396,11 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(hidden=False, brief="To unlock the channel (Text channel)")
-	@commands.has_permissions(manage_channels=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
 	@commands.bot_has_permissions(manage_channels=True, manage_roles=True, manage_permissions=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def unlock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel]=None, *, reason:commands.clean_content=None):
+	async def unlock(self, ctx: Context, channel : commands.Greedy[discord.TextChannel], *, reason:commands.clean_content=None):
 		"""
 		To unlock the channel (Text channel)
 
@@ -412,7 +413,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: This command will allow the server default role (`@everyone`) from sending message in the specified channel. To reverse the change, use `lock` command. `[p]help lock` for more info.
 		"""
-		if channel is None:
+		if not channel:
 			channel = ctx.channel
 			await channel.set_permissions(ctx.guild.default_role, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}", overwrite=None)
 			await ctx.reply(f'{ctx.author.mention} channel unlocked.')
@@ -427,11 +428,11 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		await asyncio.sleep(0.25)
 
 	@commands.command(brief='To allow a member to sending message in the Text Channels, if muted')
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
 	@mod_cd()
-	async def unmute(self, ctx: Context, member: commands.Greedy[discord.Member]=None, *, reason:commands.clean_content=None):
+	async def unmute(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason:commands.clean_content=None):
 		"""
 		To allow a member to sending message in the Text Channels, if muted.
 		
@@ -441,8 +442,8 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		Permissions:
 		Need Manage Roles permission for the bot, and Kick Members permission for the user.
 		"""
-		if member is None: 
-			raise commands.MissingRequiredArgument
+		if not member: 
+			raise commands.MissingRequiredArgument()
 			return
 
 		Muted = "Muted"
@@ -461,7 +462,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			await asyncio.sleep(0.25)
 
 	@commands.command(brief="Remove the mentioned to role to mentioned/id member")
-	@commands.has_permissions(manage_roles=True)
+	@commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
 	@commands.bot_has_permissions(manage_roles=True)
 	@commands.guild_only()
 	@mod_cd()
@@ -489,7 +490,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(pass_context = True,)
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@commands.bot_has_permissions(embed_links=True)
 	@mod_cd()
 	@commands.guild_only()
@@ -531,7 +532,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command(pass_context = True)
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
 	@mod_cd()
@@ -556,7 +557,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 
 	@commands.command()
-	@commands.has_permissions(kick_members=True)
+	@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.guild_only()
 	@mod_cd()

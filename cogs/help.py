@@ -99,7 +99,7 @@ class HelpCommand(commands.HelpCommand):
 								em_list = []
 
 								embed = discord.Embed(
-												title='{0.qualified_name.capitalize()} Commands'.format(cog),
+												title=f'{str(cog.qualified_name).capitalize()} Commands',
 												description=
 												f"```\n{cog.description if cog.description else 'NA'}\n```",
 												color=discord.Colour(0x55ddff))

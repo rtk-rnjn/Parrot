@@ -65,7 +65,7 @@ class BotConfig(Cog, name="config"):
 				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
 				if len(arg) > 6:
 						return await ctx.reply(f"{ctx.author.mention} length of prefix can not be more than 6 characters.")
-				post = {'prefix': str(arg)}
+				post = {'prefix': arg}
 				await guild_update(ctx.guild.id, post)
 
 				await ctx.reply(f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**.")

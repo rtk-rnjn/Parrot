@@ -53,6 +53,6 @@ class Parrot(commands.AutoShardedBot):
 								await guild_join(message.guild.id)
 						data = collection.find_one({"_id": message.guild.id})
 						prefix = data['prefix'] 
-				return (prefix, 	'<@!800780974274248764>', #Commands mention, i dont know
+				return (prefix, '<@!800780974274248764>', #Commands mention, i dont know
 								'<@800780974274248764>', '<@!800780974274248764> ',	# for some reason, commands.when_mentioned_or() is not working
 								'<@800780974274248764> ')

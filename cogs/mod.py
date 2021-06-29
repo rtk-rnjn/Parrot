@@ -59,6 +59,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will ban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member == ctx.member: return
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return 
@@ -88,6 +89,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will block indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the block. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return
@@ -118,6 +120,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		Permissions:
 		Need Manage Channels permission, for both user and the bot.
 		"""
+
 		if channel is None: channel = ctx.channel
 		
 		new_channel = await channel.clone(reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
@@ -142,6 +145,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will kick indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the kick. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member == ctx.member: return
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return
@@ -322,6 +326,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will softban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
+		if member == ctx.member: return
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return

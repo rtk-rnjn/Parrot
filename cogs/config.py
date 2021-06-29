@@ -50,6 +50,7 @@ class BotConfig(Cog, name="config"):
 																						f"> Disabled Cogs:\n{', '.join(disabled_cogs) if disabled_cogs else 'NA'}")
 					
 					await ctx.send(embed=embed)
+				else: pass
 		
 		@config.command()
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())

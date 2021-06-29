@@ -16,7 +16,7 @@ class BotConfig(Cog, name="config"):
 		@commands.guild_only()
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		@commands.bot_has_permissions(embed_links=True)
-		async def config(self, ctx: Context):
+		async def config(self, ctx: Context, *, args=None):
 				"""
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
 
@@ -26,33 +26,34 @@ class BotConfig(Cog, name="config"):
 				Permission:
 				Need Embed Links permission for the bot and Administration permission for the user 
 				"""
-				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
-				data = csc.find_one({'_id': ctx.guild.id})
-				prefix = data['prefix']
-				# disabled_cmds = data['disabled_cmds'] 
+				if args.lower() == 'show':
+					if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
+					data = csc.find_one({'_id': ctx.guild.id})
+					prefix = data['prefix']
+					# disabled_cmds = data['disabled_cmds'] 
 
-				disabled_cogs = data['disabled_cogs'] # simply a list of array
-				try: channel = ctx.guild.get_channel(data['action_log'])
-				except Exception: channel = "NA" 
-				
-				try: mute = ctx.guild.get_role(data['mute_role']).mention
-				except Exception: mute = "NA"
-				
-				try: mod = ctx.guild.get_role(data['mod_role'])
-				except Exception: mod = "NA"
+					disabled_cogs = data['disabled_cogs'] # simply a list of array
+					try: channel = ctx.guild.get_channel(data['action_log'])
+					except Exception: channel = "NA" 
+					
+					try: mute = ctx.guild.get_role(data['mute_role']).mention
+					except Exception: mute = "NA"
+					
+					try: mod = ctx.guild.get_role(data['mod_role'])
+					except Exception: mod = "NA"
 
-				embed = discord.Embed(description=f"This server current Bot settings are:-\n"
-											 										f"> Prefix:\n`{prefix}`, `@Parrot#9209`\n"
-											 										f"> Mute Role:\n{mute}\n\n"
-																					f"> Mod Role:\n{mod}\n\n"
-																					f"> Action Log:\n{channel}\n\n"
-																					f"> Disabled Cogs:\n{', '.join(disabled_cogs) if disabled_cogs else 'NA'}")
-				
-				await ctx.send(embed=embed)
+					embed = discord.Embed(description=f"This server current Bot settings are:-\n"
+																						f"> Prefix:\n`{prefix}`, `@Parrot#9209`\n"
+																						f"> Mute Role:\n{mute}\n\n"
+																						f"> Mod Role:\n{mod}\n\n"
+																						f"> Action Log:\n{channel}\n\n"
+																						f"> Disabled Cogs:\n{', '.join(disabled_cogs) if disabled_cogs else 'NA'}")
+					
+					await ctx.send(embed=embed)
 		
 		@config.command()
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
-		async def prefix(self, ctx: Context, *, arg:commands.clean_content):
+		async def botprefix(self, ctx: Context, *, arg:commands.clean_content):
 				"""
 				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix.
 

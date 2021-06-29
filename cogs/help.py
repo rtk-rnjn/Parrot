@@ -91,8 +91,10 @@ class HelpCommand(commands.HelpCommand):
 																	description=f"```{cmd.description if cmd.description else 'No description.'}```\n"
 																							f"Usage: {self.get_command_signature(cmd)}", 
 																	color=discord.Colour(0x55ddff))
-								
-						await self.context.send(embed=e)
+								em_list.append(e)
+
+						paginator = Paginator(pages=em_list)
+						await paginator.start(self.context)
 
 				async def send_cog_help(self, cog):
 

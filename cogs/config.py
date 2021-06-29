@@ -14,7 +14,7 @@ class BotConfig(Cog, name="config"):
 		
 		@commands.group()
 		@commands.guild_only()
-		@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		@commands.bot_has_permissions(embed_links=True)
 		async def config(self, ctx: Context):
 				"""
@@ -51,7 +51,7 @@ class BotConfig(Cog, name="config"):
 				await ctx.send(embed=embed)
 		
 		@config.command()
-		@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		async def prefix(self, ctx: Context, *, arg:commands.clean_content):
 				"""
 				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix.
@@ -71,7 +71,7 @@ class BotConfig(Cog, name="config"):
 				await ctx.reply(f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**.")
 		
 		@config.command(aliases=['mute-role'])
-		@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		async def mute_role(self, ctx: Context, *, role:discord.Role):
 				"""
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
@@ -89,7 +89,7 @@ class BotConfig(Cog, name="config"):
 				await ctx.reply(f"{ctx.author.mention} success! Mute role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
 
 		@config.command(aliases=['mod-role'])
-		@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		async def mod_role(self, ctx: Context, *, role:discord.Role):
 				"""
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
@@ -108,7 +108,7 @@ class BotConfig(Cog, name="config"):
 				await ctx.reply(f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
 
 		@config.command(aliases=['action-log'])
-		@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		async def actionlog(self, ctx: Context, *, channel:discord.TextChannel=None):
 				"""
 				To set the action log, basically the mod log.
@@ -149,7 +149,7 @@ class BotConfig(Cog, name="config"):
 	#			# post = {'disabled_cogs': []}
 
 		@config.command(aliases=['g-setup'])
-		@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		@commands.bot_has_permissions(manage_channels=True, manage_webhooks=True, manage_roles=True)
 		async def gchatsetup(self, ctx: Context, setting: str = None, *, role: typing.Union[discord.Role]):
 				"""

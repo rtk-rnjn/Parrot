@@ -108,4 +108,4 @@ def is_mod():
 				if not collection.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
 				data = collection.find_one({'_id': ctx.guild.id})
 				role_id = data['mod_role']
-				return commands.has_role(role_id)
+				return commands.has_any_role(role_id)

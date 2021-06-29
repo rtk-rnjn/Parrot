@@ -29,14 +29,7 @@
 		"cogs.events.on_member_join",
 		"cogs.events.on_guild",
 		"cogs.economy",
-		"cogs.nasa.nasasearch",
-		"cogs.nasa.nasa",
-		"cogs.nasa.mars",
-		"cogs.nasa.findasteroidid",
-		"cogs.nasa.findasteroid",
-		"cogs.nasa.epic",
-		"cogs.nasa.apod",
-		"jishaku"
+		"jishaku" //NASA API NEED TO LOAD
 	],
 	"support_server": "https://discord.gg/NEyJxM7G7f",
 	"invite": "https://discord.com/api/oauth2/authorize?client_id=825011717284036608&permissions=8&scope=bot",

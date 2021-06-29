@@ -17,7 +17,8 @@ async def guild_join(guild_id: int):
         'disabled_cogs': [],
         'disabled_cmds': [],
         'mod_role': [],
-        'action_log': None
+        'action_log': None,
+				'mute_role': None
     }
 
     try:

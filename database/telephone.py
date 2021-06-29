@@ -6,7 +6,7 @@ cluster = MongoClient(
 		f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
 db = cluster["economy"]
-collection = db["global_economy"]
+collection = db["telephone"]
 
 
 async def telephone_on_join(guild_id: int):

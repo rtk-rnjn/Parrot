@@ -372,7 +372,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		"""
 		
 		await ctx.guild.unban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
-		await ctx.reply(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
+		await ctx.reply(f"**`{member.name}#{member.discriminator}`** is unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
 		
 	@commands.command(hidden=False, brief='Unblocks a user from the text channel.')
 	@commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True))

@@ -39,9 +39,12 @@ class Parrot(commands.AutoShardedBot):
 				print(f"[Parrot] Spawned {len(self.shards)} Shards")
 
 		async def get_prefix(self, message: discord.Message) -> str:
-				if not collection.find_one({"_id": message.guild.id}):
-						await guild_join(message.guild.id)
-				data = collection.find_one({"_id": message.guild.id})
-				return (data['prefix'], '<@!800780974274248764>', #Commands mention, i dont know
+				if not message.guild: prefix = "$"
+				else:
+						if not collection.find_one({"_id": message.guild.id}):
+								await guild_join(message.guild.id)
+						data = collection.find_one({"_id": message.guild.id})
+						prefix = data['prefix'] 
+				return (prefix, 	'<@!800780974274248764>', #Commands mention, i dont know
 								'<@800780974274248764>', '<@!800780974274248764> ',	# for some reason, commands.when_mentioned_or() is not working
 								'<@800780974274248764> ')

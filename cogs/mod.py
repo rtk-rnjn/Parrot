@@ -59,7 +59,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will ban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member == ctx.member: return
+		if member == ctx.author: return
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return 
@@ -145,7 +145,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will kick indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the kick. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member == ctx.member: return
+		if member == ctx.author: return
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return
@@ -326,7 +326,7 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will softban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member == ctx.member: return
+		if member == ctx.author: return
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return

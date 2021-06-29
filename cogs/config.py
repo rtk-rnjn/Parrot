@@ -42,10 +42,10 @@ class BotConfig(Cog, name="config"):
 				except Exception: mod = "NA"
 
 				embed = discord.Embed(description=f"This server current Bot settings are:-\n"
-											 										f"> Prefix:\n{prefix}, @Parrot"
-											 										f"> Mute Role:\n{mute}\n"
-																					f"> Mod Role:\n{mod}\n"
-																					f"> Action Log:\n{channel}\n"
+											 										f"> Prefix:\n`{prefix}`, `@Parrot#9209`\n"
+											 										f"> Mute Role:\n{mute}\n\n"
+																					f"> Mod Role:\n{mod}\n\n"
+																					f"> Action Log:\n{channel}\n\n"
 																					f"> Disabled Cogs:\n{', '.join(disabled_cogs) if disabled_cogs else 'NA'}")
 				
 				await ctx.send(embed=embed)
@@ -66,7 +66,7 @@ class BotConfig(Cog, name="config"):
 				if len(arg) > 6:
 						return await ctx.reply(f"{ctx.author.mention} length of prefix can not be more than 6 characters.")
 				post = {'prefix': str(arg)}
-				await guild_update(ctx.author.mention, post)
+				await guild_update(ctx.guild.id, post)
 
 				await ctx.reply(f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**.")
 		

@@ -8,7 +8,7 @@ from core.ctx import Context
 from database.server_config import collection as csc, guild_join, guild_update
 from database.global_chat import collection as cgc, gchat_on_join, gchat_update
 
-class BotConfig(Cog, name="config"):
+class BotConfig(Cog, name="botconfig"):
 		def __init__(self, bot: Parrot):
 				self.bot = bot
 		

@@ -59,15 +59,17 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will ban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member == ctx.author: return
+		
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return 
 		if days is None: days = 1
 		for member in member:
 			try:
-				await ctx.guild.ban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}', delete_message_days=days)
-				await ctx.reply(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
+				if member.id == ctx.author.id or member.id == self.bot.user.id: pass
+				else:
+					await ctx.guild.ban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}', delete_message_days=days)
+					await ctx.reply(f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**")
 			except Exception as e:
 				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role") 
 			await asyncio.sleep(0.25)
@@ -94,12 +96,12 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 			raise commands.MissingRequiredArgument()
 			return
 
-		if (member.id == self.bot.user.id) or (member == ctx.author): return await ctx.reply(f"{ctx.author.mention} :\ don't do that, I am only trying to help!")
-
 		for member in member:
 			try:
-				await ctx.channel.set_permissions(member, send_messages=False, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-				await ctx.reply(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been created! **View Channel, and Send Messages** is denied!')
+				if member.id == ctx.author.id or member.id == self.bot.user.id: pass # cant mod the calling author or the bot itself
+				else:
+					await ctx.channel.set_permissions(member, send_messages=False, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
+					await ctx.reply(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been created! **View Channel, and Send Messages** is denied!')
 			except Exception as e:
 				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
@@ -145,15 +147,17 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will kick indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the kick. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member == ctx.author: return
+
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return
 
 		for member in member:
 			try:
-				await member.kick(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
-				await ctx.reply(f'**`{member.name}#{member.discriminator}`** is kicked! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**')
+				if member.id == ctx.author.id or member.id == self.bot.user.id: pass
+				else:
+					await member.kick(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
+					await ctx.reply(f'**`{member.name}#{member.discriminator}`** is kicked! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**')
 			except Exception as e:
 				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")  
 			await asyncio.sleep(0.25)
@@ -215,9 +219,6 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return 
-	
-		if ctx.author == member:
-			return await ctx.reply(f"{ctx.author.mention} you cannot mute yourself.")
 
 		muted = discord.utils.get(ctx.guild.roles, name="Muted")
 
@@ -228,8 +229,10 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		for member in member:
 			try:
-				await member.add_roles(muted, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
-				await ctx.reply(f'{ctx.author.mention} **{member.name}** has been successfully muted till death!')
+				if member.id == ctx.author.id or member.id == self.bot.user.id: pass
+				else:
+					await member.add_roles(muted, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
+					await ctx.reply(f'{ctx.author.mention} **{member.name}** has been successfully muted till death!')
 			except Exception as e:
 				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 			await asyncio.sleep(0.25)
@@ -326,23 +329,25 @@ class mod(Cog, name="Moderator", description="A simple moderator's tool for mana
 
 		NOTE: The bot will softban indiscriminately, means it does not care about the role hierarchy, as long as the bot itself has the power to do the ban. It is adviced that Bot role should be just below the Moderator/Staff role.
 		"""
-		if member == ctx.author: return
+
 		if not member: 
 			raise commands.MissingRequiredArgument()
 			return
 
 		for member in member:
 			try:
-				await member.ban(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
+				if member.id == ctx.author.id or member.id == self.bot.user.id: pass
+				else:
+					await member.ban(reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}')
 
-				banned_users = await ctx.guild.bans()
-				member_n, member_d = member.name, member.discriminator
-				for ban_entry in banned_users:
-					user = ban_entry.user
-					if (user.name, user.discriminator) == (member_n, member_d):
-						await ctx.guild.unban(user)
+					banned_users = await ctx.guild.bans()
+					member_n, member_d = member.name, member.discriminator
+					for ban_entry in banned_users:
+						user = ban_entry.user
+						if (user.name, user.discriminator) == (member_n, member_d):
+							await ctx.guild.unban(user)
 
-				await ctx.reply(f'**`{member.name}#{member.discriminator}`** is banned then unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.authoe.discriminator}`**! Reason: **{reason}**')
+					await ctx.reply(f'**`{member.name}#{member.discriminator}`** is banned then unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.authoe.discriminator}`**! Reason: **{reason}**')
 			except Exception as e:
 				await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role")
 

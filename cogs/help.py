@@ -49,7 +49,7 @@ class HelpCommand(commands.HelpCommand):
 								get_bot = f"[Add me to your server]({INVITE})"
 								support_server = f"[Support Server]({SUPPORT_SERVER})"
 
-								embed = discord.Embed(description=f"```\nPrefixes are '{self.context.prefix}' and '@{bot.name}'\n```", color=discord.Colour(0x55ddff))
+								embed = discord.Embed(description=f"```\nPrefixes are '{self.context.prefix}' and '@Parrot#9209'\n```", color=discord.Colour(0x55ddff))
 								embed.set_author(name=f"Server: {self.context.guild.name or self.context.author.name}", icon_url=self.context.guild.icon_url or self.context.me.icon_url)
 
 								embed.add_field(name="Get Parrot", value=f"• {get_bot}\n• {support_server}", inline=False)

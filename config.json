@@ -29,7 +29,7 @@
 		"cogs.events.on_member_join",
 		"cogs.events.on_guild",
 		"cogs.economy",
-		"jishaku" //NASA API NEED TO LOAD
+		"jishaku"
 	],
 	"support_server": "https://discord.gg/NEyJxM7G7f",
 	"invite": "https://discord.com/api/oauth2/authorize?client_id=825011717284036608&permissions=8&scope=bot",

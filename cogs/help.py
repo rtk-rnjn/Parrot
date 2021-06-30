@@ -78,7 +78,7 @@ class HelpCommand(commands.HelpCommand):
 				async def send_group_help(self, group):
 						
 						em_list = []
-						cmds = await self.filter_commands(group.commands, sort=True)
+						cmds = list(group.commands)
 
 						e = discord.Embed(color=discord.Colour(0x55ddff), description=f"Sub commands\n```\n{', '.join([cmd.name for cmd in cmds])}\n```")
 						e.title = f"Help with group **{group.name}{'|'.join(group.aliases) if group.aliases else ''}**"
@@ -88,7 +88,7 @@ class HelpCommand(commands.HelpCommand):
 						
 						for cmd in cmds:
 								e = discord.Embed(title=cmd.name, 
-																	description=f"```{cmd.description if cmd.description else 'No description.'}```\n"
+																	description=f"```{cmd.discription if cmd.discription else 'No description.'}```\n"
 																							f"Usage: {self.get_command_signature(cmd)}", 
 																	color=discord.Colour(0x55ddff))
 								em_list.append(e)

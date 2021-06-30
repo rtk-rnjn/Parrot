@@ -88,7 +88,7 @@ class HelpCommand(commands.HelpCommand):
 						
 						for cmd in cmds:
 								e = discord.Embed(title=cmd.name, 
-																	description=f"```{cmd.discription if cmd.discription else 'No description.'}```\n"
+																	description=f"```{cmd.help if cmd.help else 'No description.'}```\n"
 																							f"Usage: {self.get_command_signature(cmd)}", 
 																	color=discord.Colour(0x55ddff))
 								em_list.append(e)

@@ -179,7 +179,7 @@ class mod(Cog,
 		@mod_cd()
 		async def mass_ban(self,
 											ctx: Context,
-											members: commands.Greedy[discord.Users],
+											members: commands.Greedy[discord.User],
 											days: typing.Optional[int] = None,
 											*,
 											reason: commands.clean_content = None):

@@ -9,9 +9,7 @@ from utilities.checks import mod_cd, is_mod
 from database.server_config import collection, guild_join, guild_update
 
 
-class mod(Cog,
-					name="Moderator",
-					description="A simple moderator's tool for managing the server."):
+class mod(Cog, name="moderator", description="A simple moderator's tool for managing the server."):
 		"""A simple moderator's tool for managing the server."""
 		def __init__(self, bot: Parrot):
 				self.bot = bot
@@ -24,31 +22,24 @@ class mod(Cog,
 		@mod_cd()
 		@commands.bot_has_permissions(manage_roles=True)
 		async def role(self, ctx: Context):
-				"""
-			Role Management of the server.
-			"""
+				"""Role Management of the server."""
 				pass
 
 		@role.command(name="bots")
 		@commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
 		@mod_cd()
 		@commands.bot_has_permissions(manage_roles=True)
-		async def add_role_bots(self,
-														ctx: Context,
-														role: discord.Role,
-														*,
-														reason: commands.clean_content = None):
+		async def add_role_bots(self, ctx: Context, operator:typing.Optional[str]='+', role: discord.Role, *, reason: commands.clean_content = None):
 				"""Gives a role to the all bots."""
-
+				reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
 				for member in ctx.guild.members:
 						try:
 								if not member.bot: pass
 								else:
-										await member.add_roles(
-												role,
-												reason=
-												f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
-										)
+									if operator == '+':
+										await member.add_roles(role, reason=reason)
+									elif operator == '-':
+										await member.remove_roles(role, reason=reason)
 						except Exception as e:
 								await ctx.reply(
 										f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"
@@ -59,21 +50,20 @@ class mod(Cog,
 		@mod_cd()
 		@commands.bot_has_permissions(manage_roles=True)
 		async def add_role_human(self,
-														ctx: Context,
+														ctx: Context, operator:typing.Optional[str]='+', 
 														role: discord.Role,
 														*,
 														reason: commands.clean_content = None):
 				"""Gives a role to the all humans."""
-
+				reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
 				for member in ctx.guild.members:
 						try:
 								if member.bot: pass
 								else:
-										await member.add_roles(
-												role,
-												reason=
-												f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
-										)
+									if operator == '+':
+										await member.add_roles(role, reason=reason)
+									elif operator == '-':
+										await member.remove_roles(role, reason=reason)
 						except Exception as e:
 								await ctx.reply(
 										f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"

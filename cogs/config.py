@@ -9,6 +9,7 @@ from database.server_config import collection as csc, guild_join, guild_update
 from database.global_chat import collection as cgc, gchat_on_join, gchat_update
 
 class BotConfig(Cog, name="botconfig"):
+		"""To config the bot. In the server"""
 		def __init__(self, bot: Parrot):
 				self.bot = bot
 		

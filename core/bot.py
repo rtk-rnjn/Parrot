@@ -6,10 +6,10 @@ import discord, traceback
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX
 from database.server_config import collection, guild_join
 
-
 os.environ["JISHAKU_HIDE"] = "True"
 # os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
 # os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
+
 
 class Parrot(commands.AutoShardedBot):
 		"""A custom way to organise a commands.AutoSharedBot."""
@@ -18,7 +18,8 @@ class Parrot(commands.AutoShardedBot):
 						command_prefix=self.get_prefix,
 						case_insensitive=CASE_INSENSITIVE,
 						intents=discord.Intents.all(),
-						activity=discord.Activity(type=discord.ActivityType.listening, name="$help"),
+						activity=discord.Activity(type=discord.ActivityType.listening,
+																			name="$help"),
 						strip_after_prefix=STRIP_AFTER_PREFIX,
 						owner_ids=OWNER_IDS,
 						allowed_mentions=discord.AllowedMentions(everyone=False,
@@ -40,7 +41,31 @@ class Parrot(commands.AutoShardedBot):
 
 		async def on_ready(self):
 				print(
-						f"[Parrot] Logged in as {self.user.name}#{self.user.discriminator} ({self.user.id})"
+						f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
+				)
+				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
+				print(f"[Parrot] Connected to {len(self.users)} Users")
+				print(f"[Parrot] Spawned {len(self.shards)} Shards")
+
+		async def on_connect(self):
+				print(
+						f"[Parrot] Logged in as {self.user.name}#{self.user.discriminator}"
+				)
+				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
+				print(f"[Parrot] Connected to {len(self.users)} Users")
+				print(f"[Parrot] Spawned {len(self.shards)} Shards")
+
+		async def on_disconnect(self):
+				print(
+						f"[PARROT] {self.bot.user.name}#{self.bot.user.discriminator} disconnect from discord"
+				)
+				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
+				print(f"[Parrot] Connected to {len(self.users)} Users")
+				print(f"[Parrot] Spawned {len(self.shards)} Shards")
+
+		async def on_resumed(self):
+				print(
+						f"[PARROT] resumed {self.bot.user.name}#{self.bot.user.discriminator}"
 				)
 				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
 				print(f"[Parrot] Connected to {len(self.users)} Users")
@@ -52,7 +77,10 @@ class Parrot(commands.AutoShardedBot):
 						if not collection.find_one({"_id": message.guild.id}):
 								await guild_join(message.guild.id)
 						data = collection.find_one({"_id": message.guild.id})
-						prefix = data['prefix'] 
-				return (prefix, '<@!800780974274248764>', #Commands mention, i dont know
-								'<@800780974274248764>', '<@!800780974274248764> ',	# for some reason, commands.when_mentioned_or() is not working
-								'<@800780974274248764> ')
+						prefix = data['prefix']
+				return (
+						prefix,
+						'<@!800780974274248764>',  #Commands mention, i dont know
+						'<@800780974274248764>',
+						'<@!800780974274248764> ',  # for some reason, commands.when_mentioned_or() is not working
+						'<@800780974274248764> ')

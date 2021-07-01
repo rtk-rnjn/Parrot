@@ -51,25 +51,17 @@ class Parrot(commands.AutoShardedBot):
 				print(
 						f"[Parrot] Logged in as {self.user.name}#{self.user.discriminator}"
 				)
-				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
-				print(f"[Parrot] Connected to {len(self.users)} Users")
-				print(f"[Parrot] Spawned {len(self.shards)} Shards")
 
 		async def on_disconnect(self):
 				print(
 						f"[PARROT] {self.bot.user.name}#{self.bot.user.discriminator} disconnect from discord"
 				)
-				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
-				print(f"[Parrot] Connected to {len(self.users)} Users")
-				print(f"[Parrot] Spawned {len(self.shards)} Shards")
 
 		async def on_resumed(self):
 				print(
 						f"[PARROT] resumed {self.bot.user.name}#{self.bot.user.discriminator}"
 				)
-				print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
-				print(f"[Parrot] Connected to {len(self.users)} Users")
-				print(f"[Parrot] Spawned {len(self.shards)} Shards")
+
 
 		async def get_prefix(self, message: discord.Message) -> str:
 				if not message.guild: prefix = "$"

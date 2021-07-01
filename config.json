@@ -23,8 +23,6 @@
 		"cogs.unbiboat",
 		"cogs.config",
 		"cogs.gchat.on_message",
-		"cogs.leveling.on_message",
-		"cogs.leveling.leaderboard",
 		"cogs.events.on_command_error",
 		"cogs.events.on_member_join",
 		"cogs.events.on_guild",

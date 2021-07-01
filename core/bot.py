@@ -66,8 +66,7 @@ class Parrot(commands.AutoShardedBot):
 		async def get_prefix(self, message: discord.Message) -> str:
 				if not message.guild: prefix = "$"
 				else:
-						if not collection.find_one({"_id": message.guild.id}):
-								await guild_join(message.guild.id)
+						if not collection.find_one({"_id": message.guild.id}): await guild_join(message.guild.id)
 						data = collection.find_one({"_id": message.guild.id})
 						prefix = data['prefix']
 				return (

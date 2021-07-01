@@ -564,7 +564,7 @@ class mod(Cog,
 		@mute.command()
 		async def mass(self,
 									ctx: Context,
-									members: commands.Greedy[discord.Members],
+									members: commands.Greedy[discord.Member],
 									seconds: typing.Optional[int] = None,
 									*,
 									reason: commands.clean_content = None):
@@ -574,8 +574,12 @@ class mod(Cog,
 
 				data = collection.find_one({'_id': ctx.guild.id})
 
-				muted = ctx.guild.get_role(data['mute_role']) or discord.utils.get(
-						ctx.guild.roles, name="Muted")
+				muted = ctx.guild.get_role(data['mute_role']) 
+
+				for role in ctx.guild.roles: 
+					if 'muted' in (role.name).lower().split():
+						muted = role
+						break
 
 				if not muted:
 						muted = await ctx.guild.create_role(

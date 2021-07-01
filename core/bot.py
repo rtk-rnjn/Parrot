@@ -54,12 +54,12 @@ class Parrot(commands.AutoShardedBot):
 
 		async def on_disconnect(self):
 				print(
-						f"[PARROT] {self.bot.user.name}#{self.bot.user.discriminator} disconnect from discord"
+						f"[PARROT] {self.user.name}#{self.user.discriminator} disconnect from discord"
 				)
 
 		async def on_resumed(self):
 				print(
-						f"[PARROT] resumed {self.bot.user.name}#{self.bot.user.discriminator}"
+						f"[PARROT] resumed {self.user.name}#{self.user.discriminator}"
 				)
 
 

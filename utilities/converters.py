@@ -1,7 +1,12 @@
 from utilities.regex import TIME_REGEX
-
+from discord.ext.commands import clean_content
 
 def convert_time(arguments:str):
+		try: 
+			total_sec = int(arguments)
+			return total_sec
+		except ValueError:
+			pass
 		time_array = TIME_REGEX.findall(arguments)
 		total_sec = 0
 		for segment in time_array:
@@ -19,3 +24,7 @@ def conver_bool(text):
 				return True
 		elif text.lower() in ('no', 'n', 'false', 'f', '0', 'disable', 'off', 'x'):
 				return False
+
+
+def reason_convert(text:clean_content):
+		return text[:450:]

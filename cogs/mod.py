@@ -7,7 +7,7 @@ from core.ctx import Context
 
 from utilities.checks import mod_cd, is_mod
 from database.server_config import collection, guild_join, guild_update
-
+from utilities.converters import reason_convert, convert_time
 
 class mod(Cog, name="moderator", description="A simple moderator's tool for managing the server."):
 		"""A simple moderator's tool for managing the server."""
@@ -29,16 +29,16 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 		@commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
 		@mod_cd()
 		@commands.bot_has_permissions(manage_roles=True)
-		async def add_role_bots(self, ctx: Context, operator:typing.Optional[str]='+', role: discord.Role, *, reason: commands.clean_content = None):
+		async def add_role_bots(self, ctx: Context, operator:str, role: discord.Role, *, reason: reason_convert = None):
 				"""Gives a role to the all bots."""
 				reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
 				for member in ctx.guild.members:
 						try:
 								if not member.bot: pass
 								else:
-									if operator == '+':
+									if operator.lower() in ['+', 'add', 'give']:
 										await member.add_roles(role, reason=reason)
-									elif operator == '-':
+									elif operator.lower() in ['-', 'remove', 'take']:
 										await member.remove_roles(role, reason=reason)
 						except Exception as e:
 								await ctx.reply(
@@ -49,20 +49,16 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 		@commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
 		@mod_cd()
 		@commands.bot_has_permissions(manage_roles=True)
-		async def add_role_human(self,
-														ctx: Context, operator:typing.Optional[str]='+', 
-														role: discord.Role,
-														*,
-														reason: commands.clean_content = None):
+		async def add_role_human(self, ctx: Context, operator:str, role: discord.Role, *, reason: reason_convert = None):
 				"""Gives a role to the all humans."""
 				reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
 				for member in ctx.guild.members:
 						try:
 								if member.bot: pass
 								else:
-									if operator == '+':
+									if operator.lower() in ['+', 'add', 'give']:
 										await member.add_roles(role, reason=reason)
-									elif operator == '-':
+									elif operator.lower() in ['-', 'remove', 'take']:
 										await member.remove_roles(role, reason=reason)
 						except Exception as e:
 								await ctx.reply(
@@ -79,7 +75,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 											member: discord.Member,
 											role: discord.Role,
 											*,
-											reason: commands.clean_content = None):
+											reason: reason_convert = None):
 				"""Gives a role to the specified member(s)."""
 				guild = ctx.guild
 
@@ -111,7 +107,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 											member: discord.Member,
 											role: discord.Role,
 											*,
-											reason: commands.clean_content = None):
+											reason: reason_convert = None):
 				"""Remove the mentioned role from mentioned/id member"""
 				guild = ctx.guild
 
@@ -142,7 +138,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 									member: discord.User,
 									days: typing.Optional[int] = None,
 									*,
-									reason: commands.clean_content = None):
+									reason: reason_convert = None):
 				"""To ban a member from guild."""
 
 				if days is None: days = 0
@@ -172,7 +168,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 											members: commands.Greedy[discord.User],
 											days: typing.Optional[int] = None,
 											*,
-											reason: commands.clean_content = None):
+											reason: reason_convert = None):
 				"""To Mass ban list of members, from the guild"""
 				if days is None: days = 0
 				_list = members
@@ -203,7 +199,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 											ctx: Context,
 											member: commands.Greedy[discord.Member],
 											*,
-											reason: commands.clean_content = None):
+											reason: reason_convert = None):
 				"""To Ban a member from a guild then immediately unban"""
 
 				for member in member:
@@ -246,7 +242,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										ctx: Context,
 										member: commands.Greedy[discord.Member],
 										*,
-										reason: commands.clean_content = None):
+										reason: reason_convert = None):
 				"""Blocks a user from replying message in that channel."""
 
 				for member in member:
@@ -283,7 +279,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										ctx: Context,
 										channel: discord.TextChannel,
 										*,
-										reason: commands.clean_content = None):
+										reason: reason_convert = None):
 				"""To clone the channel or to nukes the channel (clones and delete)."""
 
 				if channel is None: channel = ctx.channel
@@ -306,7 +302,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 									ctx: Context,
 									member: discord.Member,
 									*,
-									reason: commands.clean_content = None):
+									reason: reason_convert = None):
 				"""To kick a member from guild."""
 				try:
 						if member.id == ctx.author.id or member.id == self.bot.user.id:
@@ -332,7 +328,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 												ctx: Context,
 												members: commands.Greedy[discord.Member],
 												*,
-												reason: commands.clean_content = None):
+												reason: reason_convert = None):
 				"""To kick a member from guild."""
 				_list = members
 				for member in members:
@@ -429,7 +425,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										ctx: Context,
 										channel: commands.Greedy[discord.TextChannel],
 										*,
-										reason: commands.clean_content = None):
+										reason: reason_convert = None):
 				"""To unlock the channel (Text channel)"""
 				pass
 
@@ -491,9 +487,9 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 		async def mute(self,
 									ctx: Context,
 									member: discord.Member,
-									seconds: typing.Optional[int] = None,
+									seconds: typing.Union[convert_time, int]=None,
 									*,
-									reason: commands.clean_content = None):
+									reason: reason_convert = None):
 				"""To restrict a member to sending message in the Server"""
 
 				if not collection.find_one({'_id': ctx.guild.id}):
@@ -555,9 +551,9 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 		async def mass(self,
 									ctx: Context,
 									members: commands.Greedy[discord.Member],
-									seconds: typing.Optional[int] = None,
+									seconds: typing.Union[convert_time, int]=None,
 									*,
-									reason: commands.clean_content = None):
+									reason: reason_convert = None):
 				"""To mass mute"""
 				if not collection.find_one({'_id': ctx.guild.id}):
 						await guild_join(ctx.guild.id)
@@ -625,31 +621,38 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 																	manage_messages=True)
 		async def clean(self, ctx: Context, amount: int):
 				"""To delete bulk message."""
-
-				deleted = await ctx.channel.purge(limit=amount + 1, bulk=True)
-				await ctx.reply(
+				await ctx.message.delete()
+				deleted = await ctx.channel.purge(limit=amount, bulk=True)
+				await ctx.send(
 						f"{ctx.author.mention} {len(deleted)} message deleted :')",
 						delete_after=5)
 
 		@clean.command(name='user')
-		@commands.check_any(is_mod(),
-												commands.has_permissions(manage_messages=True))
+		@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
 		@mod_cd()
-		@commands.bot_has_permissions(manage_messages=True,
-																	read_message_history=True)
-		async def purgeuser(self, ctx: Context, member: discord.Member,
-												amount: int):
+		@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
+		async def purgeuser(self, ctx: Context, member: discord.Member, amount: int):
 				"""To delete bulk message, of a specified user."""
 				def check_usr(m):
 						return m.author == member
 
 				await ctx.channel.purge(limit=amount, bulk=True, check=check_usr)
-				await ctx.reply(f"{ctx.author.mention} message deleted :')",
+				await ctx.send(f"{ctx.author.mention} message deleted :')",
 												delete_after=5)
 
+		@clean.command(name='bots')
+		@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+		@mod_cd()
+		@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
+		async def purgebots(self, ctx: Context, amount: int):
+				"""To delete bulk message, of bots"""
+				def check(m):
+						return m.author.bot
+				await ctx.channel.purge(limit=amount, bulk=True, check=check_usr)
+				await ctx.send(f"{ctx.author.mention} message deleted :')",
+												delete_after=5)
 		@commands.command(brief='To set slowmode in the specified channel.')
-		@commands.check_any(is_mod(),
-												commands.has_permissions(manage_channels=True))
+		@commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
 		@commands.bot_has_permissions(manage_channels=True)
 		@mod_cd()
 		async def slowmode(self,
@@ -657,7 +660,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 											seconds: typing.Union[int, str],
 											channel: discord.TextChannel = None,
 											*,
-											reason: commands.clean_content = None):
+											reason: reason_convert = None):
 				"""To set slowmode in the specified channel"""
 				channel = channel or ctx.channel
 				if not seconds: seconds = 5
@@ -694,7 +697,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										ctx: Context,
 										member: discord.User,
 										*,
-										reason: commands.clean_content = None):
+										reason: reason_convert = None):
 				"""To Unban a member from a guild"""
 
 				await ctx.guild.unban(
@@ -720,7 +723,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 											ctx: Context,
 											member: commands.Greedy[discord.Member],
 											*,
-											reason: commands.clean_content = None):
+											reason: reason_convert = None):
 				"""Unblocks a user from the text channel"""
 
 				for member in member:
@@ -755,7 +758,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										ctx: Context,
 										member: discord.Member,
 										*,
-										reason: commands.clean_content = None):
+										reason: reason_convert = None):
 				"""To allow a member to sending message in the Text Channels, if muted."""
 				if not collection.find_one({'_id': ctx.guild.id}):
 						await guild_join(ctx.guild.id)
@@ -791,7 +794,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 													ctx: Context,
 													member: commands.Greedy[discord.Member],
 													*,
-													reason: commands.clean_content = None):
+													reason: reason_convert = None):
 				"""To allow a member to sending message in the Text Channels, if muted."""
 				if not collection.find_one({'_id': ctx.guild.id}):
 						await guild_join(ctx.guild.id)
@@ -829,7 +832,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 		@mod_cd()
 		@commands.guild_only()
 		async def warn(self, ctx: Context, member: discord.Member, *,
-									reason: commands.clean_content):
+									reason: reason_convert):
 				"""
 		To warn a user
 

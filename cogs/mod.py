@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, json, typing, asyncio
+import discord, json, typing, asyncio, re
 
 from core.bot import Parrot
 from core.cog import Cog
@@ -129,16 +129,11 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 								f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"
 						)
 
-		@commands.group(aliases=['hackban'])
+		@commands.command(aliases=['hackban'])
 		@commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
 		@commands.bot_has_permissions(ban_members=True)
 		@mod_cd()
-		async def ban(self,
-									ctx: Context,
-									member: discord.User,
-									days: typing.Optional[int] = None,
-									*,
-									reason: reason_convert = None):
+		async def ban(self, ctx: Context, member: discord.User, days: typing.Optional[int] = None, *, reason: reason_convert = None):
 				"""To ban a member from guild."""
 
 				if days is None: days = 0
@@ -146,10 +141,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 						if member.id == ctx.author.id or member.id == self.bot.user.id:
 								pass
 						else:
-								await ctx.guild.ban(
-										member,
-										reason=
-										f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}',
+								await ctx.guild.ban(member, reason=f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}',
 										delete_message_days=days)
 								await ctx.reply(
 										f"**`{member.name}#{member.discriminator}`** is banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**"
@@ -159,7 +151,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 								f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"
 						)
 
-		@ban.command(name='mass')
+		@commands.command(name='massban')
 		@commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
 		@commands.bot_has_permissions(ban_members=True)
 		@mod_cd()
@@ -191,7 +183,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 						f"**{', '.join([member.name for member in members])}** are banned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Total: **{len(members)}**! Reason: **{reason}**"
 				)
 
-		@ban.command(aliases=['softkill'])
+		@commands.command(aliases=['softkill'])
 		@mod_cd()
 		@commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
 		@commands.bot_has_permissions(ban_members=True)
@@ -230,19 +222,11 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 
 						await asyncio.sleep(0.25)
 
-		@commands.command(
-				hidden=False,
-				brief="Blocks a user from replying message in that channel.")
+		@commands.command()
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-		@commands.bot_has_permissions(manage_channels=True,
-																	manage_permissions=True,
-																	manage_roles=True)
+		@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 		@mod_cd()
-		async def block(self,
-										ctx: Context,
-										member: commands.Greedy[discord.Member],
-										*,
-										reason: reason_convert = None):
+		async def block(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
 				"""Blocks a user from replying message in that channel."""
 
 				for member in member:
@@ -265,21 +249,12 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 								)
 						await asyncio.sleep(0.25)
 
-		@commands.command(
-				aliases=['nuke'],
-				hidden=False,
-				brief="To clone the channel or to nukes the channel (clones and delete)."
-		)
-		@commands.check_any(is_mod(),
-												commands.has_permissions(manage_channels=True))
+		@commands.command(aliases=['nuke'])
+		@commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
 		@commands.bot_has_permissions(manage_channels=True)
 		@commands.guild_only()
 		@mod_cd()
-		async def clone(self,
-										ctx: Context,
-										channel: discord.TextChannel,
-										*,
-										reason: reason_convert = None):
+		async def clone(self, ctx: Context, channel: discord.TextChannel, *, reason: reason_convert = None):
 				"""To clone the channel or to nukes the channel (clones and delete)."""
 
 				if channel is None: channel = ctx.channel
@@ -294,15 +269,11 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 				)
 				await new_channel.reply(f"{ctx.author.mention}", delete_after=5)
 
-		@commands.group()
+		@commands.command()
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 		@mod_cd()
 		@commands.bot_has_permissions(kick_members=True)
-		async def kick(self,
-									ctx: Context,
-									member: discord.Member,
-									*,
-									reason: reason_convert = None):
+		async def kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
 				"""To kick a member from guild."""
 				try:
 						if member.id == ctx.author.id or member.id == self.bot.user.id:
@@ -320,15 +291,11 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 								f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"
 						)
 
-		@kick.command(name='mass')
+		@commands.command(name='masskick')
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 		@mod_cd()
 		@commands.bot_has_permissions(kick_members=True)
-		async def mass_kick(self,
-												ctx: Context,
-												members: commands.Greedy[discord.Member],
-												*,
-												reason: reason_convert = None):
+		async def mass_kick(self, ctx: Context, members: commands.Greedy[discord.Member], *, reason: reason_convert = None):
 				"""To kick a member from guild."""
 				_list = members
 				for member in members:
@@ -366,10 +333,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 																	manage_permissions=True,
 																	manage_roles=True)
 		@mod_cd()
-		async def text_lock(self,
-												ctx: Context,
-												*,
-												channel: discord.TextChannel = None):
+		async def text_lock(self, ctx: Context, *, channel: discord.TextChannel = None):
 				"""To lock the text channel"""
 				if channel is None:
 						try:
@@ -479,7 +443,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 		@commands.check_any(is_mod(),
 												commands.bot_has_permissions(manage_roles=True))
 		@mod_cd()
-		@commands.group()
+		@commands.command()
 		async def mute(self,
 									ctx: Context,
 									member: discord.Member,
@@ -539,102 +503,28 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 						except Exception:
 								pass
 
-		@commands.has_permissions(kick_members=True)
-		@commands.check_any(is_mod(),
-												commands.bot_has_permissions(manage_roles=True))
-		@mod_cd()
-		@mute.command()
-		async def mass(self,
-									ctx: Context,
-									members: commands.Greedy[discord.Member],
-									seconds: typing.Union[convert_time, int]=None,
-									*,
-									reason: reason_convert = None):
-				"""To mass mute"""
-				if not collection.find_one({'_id': ctx.guild.id}):
-						await guild_join(ctx.guild.id)
-
-				data = collection.find_one({'_id': ctx.guild.id})
-
-				muted = ctx.guild.get_role(data['mute_role']) 
-
-				for role in ctx.guild.roles: 
-					if 'muted' in (role.name).lower().split():
-						muted = role
-						break
-
-				if not muted:
-						muted = await ctx.guild.create_role(
-								name="Muted",
-								reason=
-								f"Setting up mute role. it's first command is execution, by {ctx.author.name}({ctx.author.id})"
-						)
-						for channel in ctx.guild.channels:
-								try:
-										await channel.set_permissions(muted,
-																									send_messages=False,
-																									read_message_history=False)
-								except Exception:
-										pass
-						await guild_update(ctx.guild.id, {'mute_role': muted.id})
-				if seconds is None: seconds = 0
-				for member in members:
-						try:
-								if member.id == ctx.author.id or member.id == self.bot.user.id:
-										pass
-								else:
-										await member.add_roles(
-												muted,
-												reason=
-												f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
-										)
-						except Exception as e:
-								await ctx.reply(
-										f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"
-								)
-
-				await ctx.reply(
-						f"{ctx.author.mention} **{', '.join([member.name for member in members])}** has been successfully muted {'for **' + str(seconds) + 's**' if (seconds > 0) and (type(seconds) is int) else ''}!"
-				)
-
-				if seconds > 0:
-						await asyncio.sleep(seconds)
-						for member in members:
-								try:
-										await member.remove_roles(
-												muted,
-												reason=
-												f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: Mute Duration Expired"
-										)
-								except Exception:
-										pass
 
 		@commands.group(aliases=['purge'])
-		@commands.check_any(is_mod(),
-												commands.has_permissions(manage_messages=True))
+		@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
 		@mod_cd()
-		@commands.bot_has_permissions(read_message_history=True,
-																	manage_messages=True)
+		@commands.bot_has_permissions(read_message_history=True, manage_messages=True)
 		async def clean(self, ctx: Context, amount: int):
 				"""To delete bulk message."""
 				await ctx.message.delete()
 				deleted = await ctx.channel.purge(limit=amount, bulk=True)
-				await ctx.send(
-						f"{ctx.author.mention} {len(deleted)} message deleted :')",
-						delete_after=5)
+				await ctx.send(f"{ctx.author.mention} {len(deleted)} message deleted :')", delete_after=5)
 
-		@clean.command(name='user')
+		@clean.command(name='user', aliases=['member'])
 		@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
 		@mod_cd()
 		@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
-		async def purgeuser(self, ctx: Context, member: discord.Member, amount: int):
+		async def purgeuser(self, ctx: Context, amount: int, *, member: discord.Member):
 				"""To delete bulk message, of a specified user."""
 				def check_usr(m):
 						return m.author == member
 
 				await ctx.channel.purge(limit=amount, bulk=True, check=check_usr)
-				await ctx.send(f"{ctx.author.mention} message deleted :')",
-												delete_after=5)
+				await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
 
 		@clean.command(name='bots')
 		@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -645,18 +535,26 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 				def check(m):
 						return m.author.bot
 				await ctx.channel.purge(limit=amount, bulk=True, check=check)
-				await ctx.send(f"{ctx.author.mention} message deleted :')",
-												delete_after=5)
-		@commands.command(brief='To set slowmode in the specified channel.')
+				await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
+
+		@clean.command()
+		@commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+		@mod_cd()
+		@commands.bot_has_permissions(manage_messages=True, read_message_history=True)
+		async def regex(self, ctx: Context, amount: int, *, regex:str):
+				"""
+				To delete bulk message, matching the regex
+				"""
+				def check(m):
+					return re.search(regex, m.message.context)
+				await ctx.channel.purge(limit=amount, bulk=True, check=check)
+				await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
+
+		@commands.command()
 		@commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
 		@commands.bot_has_permissions(manage_channels=True)
 		@mod_cd()
-		async def slowmode(self,
-											ctx: Context,
-											seconds: typing.Union[int, str],
-											channel: discord.TextChannel = None,
-											*,
-											reason: reason_convert = None):
+		async def slowmode(self, ctx: Context, seconds: typing.Union[int, str], channel: discord.TextChannel = None, *, reason: reason_convert = None):
 				"""To set slowmode in the specified channel"""
 				channel = channel or ctx.channel
 				if not seconds: seconds = 5
@@ -705,56 +603,29 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 						f"**`{member.name}#{member.discriminator}`** is unbanned! Responsible moderator: **`{ctx.author.name}#{ctx.author.discriminator}`**! Reason: **{reason}**"
 				)
 
-		@commands.command(hidden=False,
-											brief='Unblocks a user from the text channel.')
-		@commands.check_any(is_mod(),
-												commands.has_permissions(manage_permissions=True,
-																								manage_roles=True,
-																								manage_channels=True))
-		@commands.bot_has_permissions(manage_channels=True,
-																	manage_permissions=True,
-																	manage_roles=True)
+		@commands.command()
+		@commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True))
+		@commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
 		@mod_cd()
-		async def unblock(self,
-											ctx: Context,
-											member: commands.Greedy[discord.Member],
-											*,
-											reason: reason_convert = None):
+		async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
 				"""Unblocks a user from the text channel"""
 
 				for member in member:
 						try:
 								if member.permissions_in(ctx.channel).send_messages:
-										await ctx.reply(
-												f"{ctx.author.mention} {member.name} is already unblocked. They can send message"
-										)
+										await ctx.reply(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
 								else:
-										await ctx.channel.set_permissions(
-												member,
-												view_channel=None,
-												send_messages=None,
-												overwrite=None,
-												reason=
-												f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
-										)
-								await ctx.reply(
-										f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been deleted!'
-								)
+										await ctx.channel.set_permissions(member, overwrite=None, reason=f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}")
+								await ctx.reply(f'{ctx.author.mention} overwrite permission(s) for **{member.name}** has been deleted!')
 						except Exception as e:
-								await ctx.reply(
-										f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}"
-								)
+								await ctx.reply(f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}")
 						await asyncio.sleep(0.25)
 
-		@commands.group()
+		@commands.command()
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 		@commands.bot_has_permissions(manage_roles=True)
 		@mod_cd()
-		async def unmute(self,
-										ctx: Context,
-										member: discord.Member,
-										*,
-										reason: reason_convert = None):
+		async def unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
 				"""To allow a member to sending message in the Text Channels, if muted."""
 				if not collection.find_one({'_id': ctx.guild.id}):
 						await guild_join(ctx.guild.id)
@@ -774,55 +645,14 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}'
 								)
 						else:
-								await ctx.reply(
-										f"{ctx.author.mention} **{member.name}** already unmuted :')"
-								)
+								await ctx.reply(f"{ctx.author.mention} **{member.name}** already unmuted :')")
 				except Exception as e:
 						await ctx.reply(
 								f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role"
 						)
 
-		@unmute.command(name='mass')
-		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-		@commands.bot_has_permissions(manage_roles=True)
-		@mod_cd()
-		async def unmute_mass(self,
-													ctx: Context,
-													member: commands.Greedy[discord.Member],
-													*,
-													reason: reason_convert = None):
-				"""To allow a member to sending message in the Text Channels, if muted."""
-				if not collection.find_one({'_id': ctx.guild.id}):
-						await guild_join(ctx.guild.id)
 
-				data = collection.find_one({'_id': ctx.guild.id})
-
-				muted = ctx.guild.get_role(data['mute_role']) or discord.utils.get(
-						ctx.guild.roles, name="Muted")
-				for member in member:
-						try:
-								if muted in member.roles:
-										await ctx.reply(
-												f'{ctx.author.mention} **{member.name}** has been unmuted now!'
-										)
-										await member.remove_roles(
-												muted,
-												reason=
-												f'Action requested by: {ctx.author.name}({ctx.author.id}) || Reason: {reason}'
-										)
-								else:
-										await ctx.reply(
-												f"{ctx.author.mention} **{member.name}** already unmuted :')"
-										)
-						except Exception as e:
-								await ctx.reply(
-										f"Can not able to {ctx.command.name} {member.name}#{member.discriminator}. Error raised: {e}\n\nMake sure that the bot role is above the target role"
-								)
-
-						await asyncio.sleep(0.25)
-
-		@commands.command(
-				pass_context=True, )
+		@commands.command()
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 		@commands.bot_has_permissions(embed_links=True)
 		@mod_cd()

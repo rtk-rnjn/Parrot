@@ -66,4 +66,4 @@ class Parrot(commands.AutoShardedBot):
 						if not collection.find_one({"_id": message.guild.id}): await guild_join(message.guild.id)
 						data = collection.find_one({"_id": message.guild.id})
 						prefix = data['prefix']
-				return commands.when_mentioned_or(prefix)
+				return commands.when_mentioned_or(prefix)(self, message)

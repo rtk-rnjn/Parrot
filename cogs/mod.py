@@ -525,7 +525,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										f"Action requested by {ctx.author.name}({ctx.author.id}) || Reason: {reason}"
 								)
 								await ctx.reply(
-										f"{ctx.author.mention} **{member.name}** has been successfully muted {'for' + str(seconds) if (seconds > 0) and (type(seconds) is int) else ''}!"
+										f"{ctx.author.mention} **{member.name}** has been successfully muted {'for **' + str(seconds) + 's**' if (seconds > 0) and (type(seconds) is int) else ''}!"
 								)
 				except Exception as e:
 						await ctx.reply(
@@ -598,7 +598,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 								)
 
 				await ctx.reply(
-						f"{ctx.author.mention} **{', '.join([member.name for member in members])}** has been successfully muted {'for' + str(seconds) if (seconds > 0) and (type(seconds) is int) else ''}!"
+						f"{ctx.author.mention} **{', '.join([member.name for member in members])}** has been successfully muted {'for **' + str(seconds) + 's**' if (seconds > 0) and (type(seconds) is int) else ''}!"
 				)
 
 				if seconds > 0:
@@ -648,7 +648,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 				"""To delete bulk message, of bots"""
 				def check(m):
 						return m.author.bot
-				await ctx.channel.purge(limit=amount, bulk=True, check=check_usr)
+				await ctx.channel.purge(limit=amount, bulk=True, check=check)
 				await ctx.send(f"{ctx.author.mention} message deleted :')",
 												delete_after=5)
 		@commands.command(brief='To set slowmode in the specified channel.')

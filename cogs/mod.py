@@ -444,7 +444,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 										reason=
 										f"Action requested by {ctx.author.name}({ctx.author.id})",
 										overwrite=None)
-								await ctx.reply(f'{ctx.author.mention} channel locked.')
+								await ctx.reply(f'{ctx.author.mention} channel unlocked.')
 						except Exception as e:
 								await ctx.reply(
 										f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}"
@@ -469,7 +469,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 								reason=
 								f"Action requested by {ctx.author.name}({ctx.author.id})",
 								overwrite=None)
-						await ctx.reply(f'{ctx.author.mention} channel locked.')
+						await ctx.reply(f'{ctx.author.mention} channel unlocked.')
 				except Exception as e:
 						await ctx.reply(
 								f"Can not able to {ctx.command.name} {channel.name}. Error raised: {e}"

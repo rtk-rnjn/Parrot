@@ -18,18 +18,15 @@ class Parrot(commands.AutoShardedBot):
 						command_prefix=self.get_prefix,
 						case_insensitive=CASE_INSENSITIVE,
 						intents=discord.Intents.all(),
-						activity=discord.Activity(type=discord.ActivityType.listening,
-																			name="$help"),
+						activity=discord.Activity(type=discord.ActivityType.listening, name="Janu meri Jaan"),
+						status=discord.Status.dnd,
 						strip_after_prefix=STRIP_AFTER_PREFIX,
 						owner_ids=OWNER_IDS,
-						allowed_mentions=discord.AllowedMentions(everyone=False,
-																										roles=True,
-																										replied_user=True,
-																										users=True),
-						member_cache_flags=discord.MemberCacheFlags.from_intents(
-								discord.Intents.all()),
-						shard_count=3,
-						**kwargs)
+						allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, replied_user=True, users=True),
+						member_cache_flags=discord.MemberCacheFlags.from_intents(discord.Intents.all()), 
+						shard_count=3, 
+						**kwargs
+				)
 				for ext in EXTENSIONS:
 						try:
 								self.load_extension(ext)
@@ -69,9 +66,4 @@ class Parrot(commands.AutoShardedBot):
 						if not collection.find_one({"_id": message.guild.id}): await guild_join(message.guild.id)
 						data = collection.find_one({"_id": message.guild.id})
 						prefix = data['prefix']
-				return (
-						prefix,
-						'<@!800780974274248764>',  #Commands mention, i dont know
-						'<@800780974274248764>',
-						'<@!800780974274248764> ',  # for some reason, commands.when_mentioned_or() is not working
-						'<@800780974274248764> ')
+				return commands.when_mentioned_or(prefix)

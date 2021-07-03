@@ -21,7 +21,7 @@ class OnGuildJoin(Cog):
 				await guild_join(guild.id)
 
 				for channel in guild.text_channels:
-						if channel.permission_for(guild.me).send_messages:
+						if channel.permissions_for(guild.me).send_messages:
 								channel.send("Thank you for adding me to this server! Default prefix are `$` and `@Parrot` (Mention)!")
 								break
 

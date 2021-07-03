@@ -27,12 +27,6 @@ class Telephone(Cog, name='telephone'):
 	async def telsetup(self, ctx: Context, setting: str, *, arg: typing.Union[discord.TextChannel, discord.Role, discord.Member, int]):
 		"""
 		To set the telephone phone line, in the server to call and receive the call from other server.
-
-		Syntax:
-		`Telsetup <Settings:Text> <Arguments:Text>`
-
-		Permissions:
-		Need Manage Server permission for the user.
 		"""
 		settings = ['channel', 'pingrole', 'memberping']
 
@@ -64,9 +58,6 @@ class Telephone(Cog, name='telephone'):
 	async def dial(self, ctx: Context, number: typing.Union[discord.Guild, int]):
 		"""
 		To dial to other server. Do not misuse this. Else you RIP :|
-
-		Syntax:
-		`Dial <Number:Whole Number>`
 		"""
 		channel = ctx.channel
 		self_guild = collection.find_one({'_id': ctx.guild.id})

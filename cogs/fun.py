@@ -1,3 +1,4 @@
+
 import discord, random, io, base64, datetime, aiohttp, urllib
 from discord.ext import commands
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
@@ -20,8 +21,9 @@ with open("extra/dare.txt") as g:
 	_dare = g.read()
 
 
-class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun commands, so that you won't get bored."):
-	'''Parrot gives you huge amount of fun commands, so that you won't get bored.'''
+class fun(Cog, name="fun"):
+	'''Parrot gives you huge amount of fun commands, so that you won't get bored'''
+
 	def __init__(self, bot: Parrot):
 		self.bot = bot
 		
@@ -29,14 +31,9 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	@guild_only()
 	@user_premium_cd()
 	async def _8ball(self, ctx: Context, *, question:commands.clean_content):
-		'''
-		8ball Magic, nothing to say much.
-		
-		Syntax:
-		`8ball <Question:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-		'''
+		"""
+		8ball Magic, nothing to say much
+		"""
 		response = ["All signs point to yes...","Yes!", "My sources say nope.", "You may rely on it.", "Concentrate and ask again...", "Outlook not so good...", "It is decidedly so!", "Better not tell you.", "Very doubtful.", "Yes - Definitely!", "It is certain!", "Most likely.", "Ask again later.", "No!", "Outlook good.", "Don't count on it.", "Why not", "Probably", "Can't say", "Well well..."]
 		await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
 
@@ -46,13 +43,7 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	@user_premium_cd()
 	async def choose(self, ctx: Context, *, options:commands.clean_content):
 		'''
-		Confuse something with your decision? Let Parrot choose from your choice. 
-		
-		Syntax:
-		`Choose [Option1:Text/Number], [Option2:Text/Number], [Option3:Text/Number], ...`
-		
-		Cooldown of 5 seconds after one time use, per member.
-
+		Confuse something with your decision? Let Parrot choose from your choice.
 		NOTE: The `Options` should be seperated by commas `,`.
 		'''
 		options = options.split(',')
@@ -66,14 +57,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def color(self, ctx: Context, colour):
 		'''
 		To get colour information using the hexademical codes.
-		
-		Syntax:
-		`Color <Color:Hexadecimal>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link permission for the bot
 		'''
 		
 		link = f"https://www.thecolorapi.com/id?format=json&hex={colour}"
@@ -84,9 +67,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 				else:
 					return
 
-		#hex = res['hex']['clean']
-		
-		#RGB VALUE
 		green = round(res['rgb']['fraction']['g'], 2)
 		red = round(res['rgb']['fraction']['r'], 2)
 		blue = round(res['rgb']['fraction']['b'], 2)
@@ -136,14 +116,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def decode(self, ctx: Context, *, string:str):
 		'''
 		Decode the code to text from Base64 encryption
-		
-		Syntax:
-		`Decode <Base64:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link permission for the bot
 		'''
 		base64_string = string
 		base64_bytes = base64_string.encode("ascii") 
@@ -167,14 +139,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def encode(self, ctx: Context, *, string:str):
 		'''
 		Encode the text to Base64 Encryption and in Binary
-		
-		Syntax:
-		`Encode <Text:Text>`
-		
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link permission for the bot
 		'''
 		sample_string = string
 		sample_string_bytes = sample_string.encode("ascii") 
@@ -199,14 +163,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def animal_fact(self, ctx: Context, *, animal: str):
 		'''
 		Return a random Fact. It's useless command, I know
-		
-		Syntax:
-		`Fact <Animal:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link permission for the bot
 
 		NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala
 		'''
@@ -245,14 +201,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def gay(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Image Generator. Gay Pride.
-
-		Syntax:
-		`Gay [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Attach Files and Embed Links permissions for the bot.
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -271,14 +219,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def glass(self, ctx: Context, *, member:discord.Member=None):
 		'''
 		Provide a glass filter on your profile picture, try it!
-		
-		Syantax:
-		`Glass [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link and Attach Files permissions for the bot.
 		'''
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -297,14 +237,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def horny(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Image generator, Horny card generator.
-		
-		Syntax:
-		`Horny [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link and Attach Files permission for the bot
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -322,11 +254,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def roast(self, ctx: Context, *, member: discord.Member = None):
 		'''
 		Insult your enemy, Ugh!
-		
-		Syntax:
-		`Roast <User:Mention/ID>`
-		
-		Cooldown of 5 seconds after one time use, per member
 		'''
 		if member == None: member = ctx.author
 		async with aiohttp.ClientSession() as session:
@@ -343,14 +270,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def itssostupid(self, ctx, *, comment:str):
 		"""
 		:| I don't know what is this, I think a meme generator.
-		
-		Syntax:
-		`Itssostupid <Comment:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link and Attach Files permissions for the bot.
 		"""
 		member = ctx.author
 		if len(comment) > 20: comment = comment[:19:]
@@ -371,14 +290,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def jail(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Image generator. Makes you behind the bars. Haha
-		
-		Syntax:
-		`Jail [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link and Attach Files permissions for the bot.
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -397,14 +308,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def lolice(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		This command is not made by me. :\
-		
-		Syntax:
-		`Lolice [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link and Attach Files permissions for the bot.
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -425,14 +328,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def meme(self, ctx: Context):
 		'''
 		Random meme generator.
-		
-		Syntax:
-		`Meme`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link permission for the bot
 		'''
 		link = "https://memes.blademaker.tv/api?lang=en"
 		async with aiohttp.ClientSession() as session:
@@ -460,14 +355,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def fakepeople(self, ctx: Context):
 		'''
 		Fake Identity generator.
-		
-		Syntax:
-		`Fakepeople`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link permission for the bot
 		'''
 		link = "https://randomuser.me/api/"
 		async with aiohttp.ClientSession() as session:
@@ -499,35 +386,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 		await ctx.reply(embed=em)
 
 
-	#@commands.command()
-	#@commands.cooldown(1, 5, BucketType.member)
-	#@commands.guild_only()
-	#async def parrot(self, ctx, query:commands.clean_content=None):
-	#	'''
-	#	Talk with Parrot, it is a small cleverbot integration.
-	#
-	#	Syntax:
-	#	`Parrot <Query:Text>`
-	#
-	#	Cooldown of 5 seconds after one time use, per member.
-	#	'''
-	#
-	#	if query is None:
-	#		await ctx.reply(f"{ctx.author.mention} -> Ask a question!")
-	#	try:
-	#		if "tu" in query.lower().split(" "): return
-	#		if "kya" in query.lower().split(" "): return
-	#		if "kar" in query.lower().split(" "): return
-	#		if "chal" in query.lower().split(" "): return
-	#		if "bhai" in query.lower().split(" "): return
-	#		if "pagal" in query.lower().split(" "): return
-	#	except:
-	#		return await ctx.reply(f"{ctx.author.mention} -> I don't understand!")
-	#	link = f"https://vxrl.xyz/api/cleverbot/ask/ai/{query}"
-	#	req = requests.get(link).content
-	#	text = str(req)
-	#	await ctx.reply(f"{ctx.author.mention} -> {text[2:-1:]}")
-
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@user_premium_cd()
@@ -535,14 +393,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def simpcard(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Good for those, who are hell simp! LOL
-		
-		Syntax:
-		`Simpcard [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Link and Attach Files permissions for the bot
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -561,15 +411,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
 		'''
 		Slap virtually with is shit command.
-		
-		Syntax:
-		`Slap <User:Mention/ID> [Reason:Text]`
-		(Default reason is "for no reason")
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Manage Messages permission for the bot
 		'''
 		await ctx.message.delete()
 		await ctx.reply(f"{ctx.author.display_name} slapped {member.mention} {reason}!")
@@ -582,14 +423,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def translate(self, ctx: Context, from_lang:str, to_lang:str, *, text:str):
 		"""
 		This command is useful, to be honest, if and only if you use correctly, else it gives error. Not my fault.
-		
-		Syntax:
-		`Translate <From:Text> <To:Text> <Text:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
 		from_lang = urllib.parse.quote(from_lang)
 		to_lang = urllib.parse.quote(to_lang)
@@ -616,14 +449,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def trigger(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		User Triggered!
-
-		Syntax:
-		`Trigger [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links and Attach Files permissions for the bot
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -643,14 +468,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def urbandictionary(self, ctx: Context, *, text:str):
 		'''
 		LOL. This command is insane.
-		
-		Syntax:
-		`Urbandictionary <Query:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links permission for the bot
 		'''
 		t = text
 		text = urllib.parse.quote(text)
@@ -690,14 +507,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def wasted(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Overlay 'WASTED' on your profile picture, just like GTA:SA
-		
-		Syntax:
-		`Wasted [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links and Attach Files permissions for the bot
 		"""
 		if member is None: member = ctx.author
 		async with aiohttp.ClientSession() as wastedSession:
@@ -716,14 +525,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def ytcomment(self, ctx: Context, *, comment:str):
 		'''
 		Makes a comment in YT. Best ways to fool your fool friends. :')
-		
-		Syntax:
-		`Ytcomment <Comment:Text>`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links and Attach Files permissions for the bot
 		'''
 		member = ctx.author
 		if len(comment) > 1000: comment = comment[:999:]
@@ -745,14 +546,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def dare(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		I dared you to use this command.
-		
-		Syntax:
-		`Dare [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
 		dare = _dare.split("\n")
 		if member is None:
@@ -771,14 +564,6 @@ class fun(Cog, name="Fun", description="Parrot gives you huge amount of fun comm
 	async def truth(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Truth: Who is your crush?
-		
-		Syntax:
-		`Truth [User:Mention/ID]`
-
-		Cooldown of 5 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
 		t = _truth.split("\n")
 		if member is None:

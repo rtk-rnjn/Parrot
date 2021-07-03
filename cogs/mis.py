@@ -19,9 +19,7 @@ invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0
 invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\/)?([A-Za-z0-9\-]+)(\/)?"
 
 
-class miscl(Cog,
-						name="miscellaneous",
-						description="Those commands which can't be listed"):
+class miscl(Cog, name="miscellaneous"):
 		"""Those commands which can't be listed"""
 		def __init__(self, bot: Parrot):
 				self.bot = bot
@@ -241,7 +239,6 @@ class miscl(Cog,
 								"Successfully removed {} emoji with the name {}.".format(
 										emote_length, name))
 
-		### todo: error handing in emoji
 
 		@commands.command(aliases=['calc', 'cal'])
 		@commands.guild_only()
@@ -250,12 +247,6 @@ class miscl(Cog,
 		async def calculator(self, ctx: Context, *, text: str):
 				"""
 				This is basic calculator with all the expression supported. Syntax is similar to python math module.
-				
-				Syntax:
-				`Calculator <Query:Text>`
-
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
 				new_text = urllib.parse.quote(text)
 				link = 'http://twitch.center/customapi/math?expr=' + new_text
@@ -280,13 +271,7 @@ class miscl(Cog,
 		async def maths(self, ctx: Context, operation: str, *, expression: str):
 				"""
 				Another calculator but quite advance one
-				
-				Syntax:
-				`Maths <Operation:Text> <Expression:Text>`
 
-				Permissions:
-				Need Embed Links permission for the bot
-				
 				NOTE: Available operation - Simplify, Factor, Derive, Integrate, Zeroes, Tangent, Area, Cos, Sin, Tan, Arccos, Arcsin, Arctan, Abs, Log
 				For more detailed use, visit: `https://github.com/aunyks/newton-api/blob/master/README.md`
 				"""
@@ -313,13 +298,6 @@ class miscl(Cog,
 		async def news(self, ctx: Context, nat: str):
 				"""
 				This command will fetch the latest news from all over the world.
-				
-				Syntax:
-				`News <Nationality:Text>`
-				(Provide only first two letter of the country)
-
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
 
 				key = os.environ['NEWSKEY']
@@ -365,12 +343,6 @@ class miscl(Cog,
 		async def search(self, ctx: Context, *, search: str):
 				"""
 				Simple google search Engine.
-
-				Usage:
-				`Search <Query:Text>`
-
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
 				search = urllib.parse.quote(search)
 				google_key = os.environ['GOOGLE_KEY']
@@ -429,13 +401,7 @@ class miscl(Cog,
 		@commands.bot_has_permissions(read_message_history=True, embed_links=True)
 		async def snipe(self, ctx: Context):
 				"""
-				"Snipes" someone\'s message that\'s deleted.
-
-				Syntax:
-				`Snipe`
-
-				Permissions:
-				Need Embed Links and Read Message History permissions for the bot
+				"Snipes" someone\'s message that\'s deleted
 				"""
 				try:
 						snipe = self.snipes[ctx.channel.id]
@@ -500,12 +466,6 @@ class miscl(Cog,
 		async def weather(self, ctx: Context, *, location: str):
 				"""
 				Weather API, for current weather forecast, supports almost every city.
-				
-				Syntax:
-				`Weather <Location:Text>`
-
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
 
 				appid = os.environ['WEATHERID']
@@ -574,12 +534,6 @@ class miscl(Cog,
 		async def wikipedia(self, ctx: Context, *, text: str):
 				"""
 				Web articles from Wikipedia.
-				
-				Syntax:
-				`Wikipedia <Query:Text>`
-
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
 				link = str(wikipedia.page(text).url)
 				try:
@@ -607,13 +561,7 @@ class miscl(Cog,
 		@commands.bot_has_permissions(embed_links=True)
 		async def youtube(self, ctx: Context, *, query: str):
 				"""
-				Search for videos on YouTube. 
-				
-				Syntax:
-				`YouTube <Query:Text>`
-
-				Permissions:
-				Need Embed Links permission for the bot
+				Search for videos on YouTube.
 				"""
 				results = YoutubeSearch(query, max_results=5).to_json()
 				main = json.loads(results)
@@ -655,13 +603,6 @@ class miscl(Cog,
 		async def embed(self, ctx: Context, *, data):
 				"""
 				A nice command to make custom embeds, from a `Python Dictionary` or form `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
-
-				Syntax:
-				`Embed <Data:Dict/JSON>`
-				(Example: `Embed { "title": "This is title", "description": "This is description" }`)
-
-				Permissions:
-				Need Embed Links permisssion for the bot.
 				"""
 				if type(data) is dict:
 						await ctx.reply(embed=discord.Embed.from_dict(data))

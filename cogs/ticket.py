@@ -22,12 +22,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def new(self, ctx: Context, *, args = None):
 			'''
 			This creates a new ticket. Add any words after the command if you'd like to send a message when we initially create your ticket.
-			
-			Syntax:
-			`New [Argument:Text]`
-
-			Permissions:
-			Need Manage Channels and Embed Links permissions for the bot.
 			'''
 			if not collection.find_one({'_id': ctx.guild.id}): await ticket_on_join(ctx.guild.id)
 
@@ -88,12 +82,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def close(self, ctx):
 			'''
 			Use this to close a ticket. This command only works in ticket channels.
-			
-			Syntax:
-			`Close`
-
-			Permissions:
-			Need Manage Channels for the bot
 			'''
 			if not collection.find_one({'_id': ctx.guild.id}): await ticket_on_join(ctx.guild.id)
 			data = collection.find_one({'_id':ctx.guild.id})
@@ -123,12 +111,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def save(self, ctx):
 			'''
 			Use this to save the transcript of a ticket. This command only works in ticket channels.
-			
-			Syntax:
-			`Save`
-
-			Permissions:
-			Need Embed Links for the bot
 			'''
 			if not collection.find_one({'_id': ctx.guild.id}): await ticket_on_join(ctx.guild.id)
 			data = collection.find_one({'_id':ctx.guild.id})
@@ -157,9 +139,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def addaccess(self, ctx: Context, *, role:discord.Role):
 			'''
 			This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
-			
-			Syntax:
-			`Addaccess <Role:Mention/ID>`
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -186,9 +165,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def delaccess(self, ctx: Context, *, role:discord.Role):
 			'''
 			This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
-			
-			Syntax:
-			`Delaccess <Role:Mention/ID>`
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -216,9 +192,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def addadminrole(self, ctx: Context, *, role:discord.Role):
 			'''
 			This command gives all users with a specific role access to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`.
-			
-			Syntax:
-			`Addadminrole <Role:Mention/ID>`
 
 			Permissions:
 			Need Embed Links permission for the bot and Administrator permission for the user.
@@ -243,9 +216,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def addpingedrole(self, ctx: Context, *, role:discord.Role):
 			'''
 			This command adds a role to the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot.
-			
-			Syntax:
-			`Addpingedrole <Role:Mention/ID>`
 
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
@@ -272,9 +242,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 	async def deladminrole(self, ctx: Context, *, role:discord.Role):
 			"""
 			This command removes access for all users with the specified role to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`.
-			
-			Syntax:
-			`Deladminrole <Role:Mention/ID>`
 
 			Permissions:
 			Need Embed Links permission for the bot and Administrator permission for the user.
@@ -303,9 +270,6 @@ class ticket(Cog, name="ticket", command_attrs=dict(hidden=False)):
 			'''
 			This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot.
 			
-			Syntax:
-			`Delpingedrole <Role:Mention/ID>`
-
 			Permissions:
 			Need Embed Links permission for the bot and Parrot Ticket `Admin-Level` role or Administrator permission for the user.
 			(`Help addadminrole` for more info)

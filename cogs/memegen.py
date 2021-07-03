@@ -24,11 +24,6 @@ class meme(Cog, name="Meme Generator"):
     async def thefact(self, ctx: Context, *, text: str = None):
         """
 				Meme Generator/Image Generator: The Fact
-
-				`Thefact [Member:Mention/ID]`
-
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
 
         params = {
@@ -54,11 +49,6 @@ class meme(Cog, name="Meme Generator"):
     async def stickbug(self, ctx: Context, *, member: discord.Member = None):
         """
 				Meme Generator/Image Generator: Stickbug
-
-				`Stickbug [Member:Mention/ID]`
-				
-				Permissions:
-				Need Embed Links permission for the bot
 				"""
         if member is None: member = ctx.author
         params = {
@@ -84,11 +74,6 @@ class meme(Cog, name="Meme Generator"):
     async def trash(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Trash
-
-		`Trash [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {
@@ -117,11 +102,6 @@ class meme(Cog, name="Meme Generator"):
                     intensity: int = None):
         """
 		Meme Generator/Image Generator: Magik
-
-		`Magik [Member:Mention/ID] [Intensity:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         if intensity is None: intensity = 5
@@ -149,11 +129,6 @@ class meme(Cog, name="Meme Generator"):
     async def blurpify(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Blurpify
-
-		`Blurpify [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "blurpify", "image": f"{member.avatar_url}"}
@@ -176,11 +151,6 @@ class meme(Cog, name="Meme Generator"):
     async def phcomment(self, ctx: Context, *, text: str = None):
         """
 		Meme Generator/Image Generator: Porn Hub Comment
-
-		`Phcomment [Text:Text]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         params = {
             "type": "phcomment",
@@ -207,11 +177,6 @@ class meme(Cog, name="Meme Generator"):
     async def deepfry(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Deep Fry
-
-		`Deepfry [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "deepfry", "image": f"{member.avatar_url}"}
@@ -234,11 +199,6 @@ class meme(Cog, name="Meme Generator"):
     async def tweet(self, ctx: Context, *, text: str = None):
         """
 		Meme Generator/Image Generator: Tweet
-
-		`Tweet [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if text is None: text = "No U"
         params = {
@@ -265,11 +225,6 @@ class meme(Cog, name="Meme Generator"):
     async def trumptweet(self, ctx: Context, *, text: str = None):
         """
 		Meme Generator/Image Generator: Trump Tweet
-
-		`Trumptweet [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if text is None: text = "No U"
         params = {"type": "trumptweet", "text": f"{text}"}
@@ -292,11 +247,6 @@ class meme(Cog, name="Meme Generator"):
     async def trap(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Trap
-
-		`Trap [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {
@@ -324,11 +274,6 @@ class meme(Cog, name="Meme Generator"):
     async def awooify(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Awooify
-
-		`Awooify [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "awooify", "url": f"{member.avatar_url}"}
@@ -351,11 +296,6 @@ class meme(Cog, name="Meme Generator"):
     async def animeface(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Anime Face
-
-		`Animeface [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "animeface", "image": f"{member.avatar_url}"}
@@ -378,11 +318,6 @@ class meme(Cog, name="Meme Generator"):
     async def iphonex(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: IphoneX
-
-		`IphoneX [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "iphonex", "url": f"{member.avatar_url}"}
@@ -405,11 +340,6 @@ class meme(Cog, name="Meme Generator"):
     async def threats(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Threats
-
-		`Threats [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "threats", "url": f"{member.avatar_url}"}
@@ -432,11 +362,6 @@ class meme(Cog, name="Meme Generator"):
     async def clyde(self, ctx: Context, *, text: str):
         """
 		Meme Generator/Image Generator: Clyde
-
-		`Clyde [Text:Text]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         params = {"type": "clyde", "text": f"{text}"}
         url = "https://nekobot.xyz/api/imagegen"
@@ -458,11 +383,6 @@ class meme(Cog, name="Meme Generator"):
     async def captcha(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Captcha
-
-		`Captcha [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {
@@ -489,11 +409,6 @@ class meme(Cog, name="Meme Generator"):
     async def whowouldwin(self, ctx: Context, *, member: discord.Member):
         """
 		Meme Generator/Image Generator: Who would win
-
-		`Whowouldwin [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         params = {
             "type": "whowouldwin",
@@ -519,11 +434,6 @@ class meme(Cog, name="Meme Generator"):
     async def baguette(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Baguette
-
-		`Baguette [Member:Mention/ID]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		"""
         if member is None: member = ctx.author
         params = {"type": "baguette", "url": f"{member.avatar_url}"}
@@ -551,14 +461,7 @@ class meme(Cog, name="Meme Generator"):
                           font: str = None,
                           fontsize: int = None):
         """
-		Meme Generator: Awkward Seal. 
-		
-		`Awkwardseal <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
+		Meme Generator: Awkward Seal.
 		"""
         params = {
             "template_id": 13757816,
@@ -596,13 +499,6 @@ class meme(Cog, name="Meme Generator"):
                            fontsize: int = None):
         """
 		Meme Generator: Change My Mind. 
-		
-		`Changemymind <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
 		"""
 
         font = font or "impact"
@@ -643,14 +539,7 @@ class meme(Cog, name="Meme Generator"):
                            font: str = None,
                            fontsize: int = None):
         """
-		Meme Generator: Distracted BF. 
-		
-		`Distractedbf <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
+		Meme Generator: Distracted BF.
 		"""
 
         font = font or "impact"
@@ -691,14 +580,7 @@ class meme(Cog, name="Meme Generator"):
                    font: str = None,
                    fontsize: int = None):
         """
-		Meme Generator: Doge. 
-		
-		`Doge <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
+		Meme Generator: Doge.
 		"""
 
         font = font or "impact"
@@ -739,13 +621,6 @@ class meme(Cog, name="Meme Generator"):
                          fontsize: int = None):
         """
 		Meme Generator: Drake Yes No. 
-		
-		`Drakeyesno <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
 		"""
         font = font or "impact"
         fontsize = fontsize or 50
@@ -785,13 +660,6 @@ class meme(Cog, name="Meme Generator"):
                            fontsize: int = None):
         """
 		Meme Generator: Is This Pigeon. 
-		
-		`Isthispigeon <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
 		"""
         font = font or "impact"
         fontsize = fontsize or 50
@@ -830,14 +698,7 @@ class meme(Cog, name="Meme Generator"):
                          font: str = None,
                          fontsize: int = None):
         """
-		Meme Generator: Two Buttons. 
-		
-		`Twobuttons <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
+		Meme Generator: Two Buttons.
 		"""
         font = font or "impact"
         fontsize = fontsize or 50
@@ -877,14 +738,7 @@ class meme(Cog, name="Meme Generator"):
                         font: str = None,
                         fontsize: int = None):
         """
-		Meme Generator: UNO Draw 25. 
-		
-		`Unodraw25 <Text1:Text> <Text2:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
-		
-		NOTE: Default Font is Impact and default Fontsize is 50
+		Meme Generator: UNO Draw 25.
 		"""
         font = font or "impact"
         fontsize = fontsize or 50
@@ -925,12 +779,6 @@ class meme(Cog, name="Meme Generator"):
                          fontsize: int = None):
         """
 		To create a meme as per your choice.
-
-		Usage:
-		`Mastermeme <TemplateID:Whole Number> <Text:Text> <Text:Text> [Font:Text] [Fontsize:Whole Number]`
-		
-		Permissions:
-		Need Embed Links permission for the bot
 		
 		NOTE: Default Font is Impact and default Fontsize is 50. You can find tons and tons of template at https://imgflip.com/popular_meme_ids or at https://imgflip.com/
 		"""

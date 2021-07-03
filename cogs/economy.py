@@ -18,9 +18,6 @@ class Economy(Cog, name="economy"):
 		async def withdraw(self, ctx: Context, money: int):
 				'''
 				Withdraw your money, from your bank account
-				
-				Syntax:
-				`Withdraw <Money:Whole Number>`
 				'''
 				if money < 0:
 						return await ctx.reply(
@@ -59,9 +56,6 @@ class Economy(Cog, name="economy"):
 		async def steal(self, ctx, *, member: discord.Member):
 				'''
 				Want more money? Try stealing others.
-				
-				Syntax:
-				`Steal <Member:Mention/ID>`
 				'''
 
 				x = collection.find({'_id': ctx.author.id})
@@ -106,10 +100,7 @@ class Economy(Cog, name="economy"):
 		@commands.guild_only()
 		async def slots(self, ctx: Context, money: int):
 				'''
-				Want more money? Try gambling slots.
-				
-				Syntax:
-				`Slots <Money:Whole Number>
+				Want more money? Try gambling slots
 				'''
 
 				if money < 0:
@@ -158,9 +149,7 @@ class Economy(Cog, name="economy"):
 		@commands.guild_only()
 		async def give(self, ctx: Context, member: discord.Member, money: int):
 				'''
-				You can give your Parrot coins to other user too.
-
-				`Give <Member:Mention/ID> <Money:Whole Number>`
+				You can give your Parrot coins to other user too
 				'''
 
 				if money < 0:
@@ -207,9 +196,6 @@ class Economy(Cog, name="economy"):
 		async def deposit(self, ctx: Context, money: int):
 				'''
 				Save your money by depositing all the money in the bank
-				
-				Syntax:
-				`Deposit <Money:Whole Number>`
 				'''
 
 				if money < 0:
@@ -249,9 +235,6 @@ class Economy(Cog, name="economy"):
 		async def beg(self, ctx: Context):
 				'''
 				Beg from internet, hope someone will give you money
-				
-				Syntax:
-				`Beg`
 				'''
 
 				inc = random.randint(0, 100)
@@ -292,8 +275,6 @@ class Economy(Cog, name="economy"):
 		async def balance(self, ctx: Context, *, member: discord.User = None):
 				'''
 				To check your balance, if not, then it will open a Parrot Economy bank account for you
-				
-				`Balance [Member:Mention/ID]`
 				'''
 				target = ctx.author or member
 				if target.bot: return

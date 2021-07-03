@@ -20,12 +20,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def config(self, ctx: Context, args):
 				"""
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
-
-				Syntax:
-				`Config [Setting:Text] [Arguments:Text]`
-
-				Permission:
-				Need Embed Links permission for the bot and Administration permission for the user 
 				"""
 				if args.lower() == 'show':
 					if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
@@ -59,12 +53,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def botprefix(self, ctx: Context, *, arg:commands.clean_content):
 				"""
 				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix.
-
-				Syntax:
-				`Config {prefix} <Argument:Text>` 
-				
-				Permission:
-				Need Administration permission for the user 
 				"""
 				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
 				if len(arg) > 6:
@@ -79,12 +67,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def mute_role(self, ctx: Context, *, role:discord.Role):
 				"""
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
-
-				Syntax:
-				`Config {mute-role} <Role:Mention/ID>`
-				
-				Permission:
-				Need Administration permission for the user 
 				"""
 				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
 				post = {'mute_role': role.id}
@@ -97,12 +79,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def mod_role(self, ctx: Context, *, role:discord.Role):
 				"""
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
-
-				Syntax:
-				`Config {mod-role} <Role:Mention/ID> 
-				
-				Permission:
-				Need Administration permission for the user 
 				"""
 				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
 
@@ -116,12 +92,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def actionlog(self, ctx: Context, *, channel:discord.TextChannel=None):
 				"""
 				To set the action log, basically the mod log.
-
-				Syntax:
-				`Config {actionlog} <Channel:Mention/ID>`
-				
-				Permission:
-				Need Administration permission for the user 
 				"""
 				channel = channel or ctx.channel
 				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
@@ -158,14 +128,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def gchatsetup(self, ctx: Context, setting: str = None, *, role: typing.Union[discord.Role]):
 				"""
 				This command will connect your server with other servers which then connected to #global-chat must try this once
-				
-				Syntax:
-				`Config {gchatsetup} [Setting:Text] [Role:Mention/ID]`
-
-				Cooldown of 60 seconds after one time use, per guild.
-
-				Permissions:
-				Need Manage Channels, Manage Webhook, and Manage Roles permissions for the bot, and Manage Server permission for the user.
 				"""
 				if not cgc.find_one({'_id': ctx.guild.id}): await gchat_on_join(ctx.guild.id)
 
@@ -193,9 +155,6 @@ class BotConfig(Cog, name="botconfig"):
 		async def broadcast(self, ctx: Context, *, message: str):
 				"""
 				To broadcast all over the global channel. Only for owners.
-
-				Syntax:
-				`Broadcast <Message:Text>`
 				"""
 				data = cgc.find({})
 

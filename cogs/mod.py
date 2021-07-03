@@ -421,11 +421,7 @@ class mod(Cog, name="moderator", description="A simple moderator's tool for mana
 																	manage_roles=True,
 																	manage_permissions=True)
 		@mod_cd()
-		async def unlock(self,
-										ctx: Context,
-										channel: commands.Greedy[discord.TextChannel],
-										*,
-										reason: reason_convert = None):
+		async def unlock(self, ctx: Context):
 				"""To unlock the channel (Text channel)"""
 				pass
 

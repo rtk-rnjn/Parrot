@@ -5,7 +5,7 @@ from utilities.config import my_secret
 cluster = MongoClient(
 		f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
-db = cluster["economy"]
+db = cluster["parrot_db"]
 collection = db["telephone"]
 
 

@@ -3,59 +3,34 @@ from datetime import datetime
 from core.cog import Cog
 from core.bot import Parrot
 
+
+async def spam_filter(msg1, msg2, msg3, msg4, msg5):
+		if msg1.author == msg2.author == msg3.author == msg4.author == msg5.author:
+				_1 = (msg1.created_at - msg2.created_at).seconds
+				_2 = (msg2.created_at - msg3.created_at).seconds
+				_3 = (msg3.created_at - msg4.created_at).seconds
+				_4 = (msg4.created_at - msg5.created_at).seconds
+
+				avg = (_1 + _2 + _3 + _4) / 4
+
+				if avg >= 1.5: return True
+
+
 class SupportMail(Cog):
-	"""No commands in this category, you can actually send message to owner directly by DMing the bot. Mainly for complains"""
+		"""No commands in this category, you can actually send message to owner directly by DMing the bot. Mainly for complains"""
+		def __init__(self, bot: Parrot):
+				self.bot = bot
 
-	def __init__(self, bot: Parrot):
-		self.bot = bot
-
-	@Cog.listener()
-	async def on_message(self, message):
-		if message.author.bot: return
-		
-		empty_array = []
-		modmail_channel = self.bot.get_channel(837637146453868554)
-
-		if str(message.channel.type) == "private":
-			if message.attachments != empty_array:
-				files = message.attachments
-				await modmail_channel.send(f"> **Message from {message.author.name}#{message.author.discriminator}**")
-
-				for file in files:
-					await modmail_channel.send(file.url)
-			else:
-				await modmail_channel.send(f"> **Message from {message.author.name}#{message.author.discriminator}**\n```\n{message.content}```\n\n> ID: {message.author.id}\n> AT: {datetime.utcnow()}")
-
-		elif message.channel == modmail_channel and message.content.startswith("<"):
-			member_object = message.mentions[0]
-			if message.attachments != empty_array:
-				files = message.attachments
-				await member_object.send(f"> **Message from {message.author.name}#{message.author.discriminator}**")
-
-				for file in files:
-					await member_object.send(file.url)
-			else:
-				index = message.content.index(" ")
-				string = message.content
-				mod_message = string[index:]
-				await member_object.send(f"> **Message from {message.author.name}#{message.author.discriminator}**\n```\n{mod_message}```\n\n> ID: {message.author.id}\n> AT: {datetime.utcnow()}")
-		
-		#if message.channel.id == 833255204430020618:
-		#	
-		#	msg = message.content
-		#	key = 'MOvDyLB35FoAktTcorVUeCTS5'  --EXPIRED--
-		#	if msg.startswith("$") or msg.startswith("<") or msg.startswith("!") or msg.startswith("-") or msg.startswith(";;") or msg.startswith("owo") or msg.startswith(","): return
-		#	params = {
-		#		"message": msg,
-		#		"key": key
-		#	}
-		#	req = requests.get(url="https://some-random-api.ml/chatbot", params=params)
-		#	if req.status_code != 200: return
-		#	res = req.json()
-
-		#	try: await self.bot.get_channel(833255204430020618).send(f"{message.author.mention} {res['response']}")
-		#	except: pass
+		@Cog.listener()
+		async def on_message(self, message):
+				if message.channel.id == 796645162860150784:
+						messages = await message.channel.history(limit=5).flatten()
+						if await spam_filter(messages[0], messages[1], messages[2],
+																messages[3], messages[4]):
+								await message.channel.send(
+										f"{message.author.mention} you done? You send **5** message in less than **1.5s**. Slowdown",
+										delete_after=5)
 
 
 def setup(bot):
-	bot.add_cog(SupportMail(bot)) 
+		bot.add_cog(SupportMail(bot))

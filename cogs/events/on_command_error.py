@@ -3,10 +3,7 @@ from discord.ext import commands
 from datetime import datetime
 
 from utilities.exceptions import ParrotError
-
-from core.cog import Cog
-from core.ctx import Context
-from core.bot import Parrot
+from core import Cog, Parrot, Context
 
 with open("extra/quote.txt") as f:
 		quote = f.read()

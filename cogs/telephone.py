@@ -1,16 +1,8 @@
-# "_id": guild_id,
-# "channel": None,
-# "pingrole": None,
-# "is_line_busy": False,
-# "memberping": None,
-# "blocked": []
 
 from discord.ext import commands
 import discord, random, asyncio, typing
 
-from core.cog import Cog
-from core.bot import Parrot
-from core.ctx import Context
+from core import Cog, Parrot, Context
 
 from database.telephone import collection, telephone_update, telephone_on_join
 

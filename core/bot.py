@@ -3,7 +3,7 @@ import os
 
 from discord.ext import commands
 import discord, traceback
-from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX
+from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from database.server_config import collection, guild_join
 
 os.environ["JISHAKU_HIDE"] = "True"
@@ -36,6 +36,9 @@ class Parrot(commands.AutoShardedBot):
 								tbe = "".join(tb) + ""
 								print(f"[WARNING] Could not load extension {ext}: {tbe}")
 
+		def run(self):
+				super().run(TOKEN, reconnect=True)
+
 		async def on_ready(self):
 				print(
 						f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
@@ -67,3 +70,5 @@ class Parrot(commands.AutoShardedBot):
 						data = collection.find_one({"_id": message.guild.id})
 						prefix = data['prefix']
 				return commands.when_mentioned_or(prefix)(self, message)
+
+bot = Parrot()

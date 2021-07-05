@@ -3,8 +3,7 @@ from mee6_py_api import API
 
 mee6API = API(741614680652644382)
 
-from core.cog import Cog
-from core.bot import Parrot
+from core import Cog, Parrot
 
 class Mee6Integration(Cog, name="MEE6 Integration"):
 	"""MEE6 Inetration for level rewards"""

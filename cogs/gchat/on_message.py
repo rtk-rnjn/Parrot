@@ -4,8 +4,7 @@ from discord import Webhook, AsyncWebhookAdapter
 
 from database.global_chat import collection
 
-from core.bot import Parrot 
-from core.cog import Cog
+from core import Cog, Parrot
 
 class MessageEvents(Cog, name="Global Chat"):
 		def __init__(self, bot: Parrot):

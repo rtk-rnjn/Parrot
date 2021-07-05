@@ -1,8 +1,6 @@
 from datetime import datetime
 
-from core.cog import Cog
-from core.bot import Parrot
-
+from core import Cog, Parrot
 
 async def spam_filter(msg1, msg2, msg3, msg4, msg5):
 		if msg1.author == msg2.author == msg3.author == msg4.author == msg5.author:
@@ -10,13 +8,13 @@ async def spam_filter(msg1, msg2, msg3, msg4, msg5):
 				_2 = (msg2.created_at - msg3.created_at).seconds
 				_3 = (msg3.created_at - msg4.created_at).seconds
 				_4 = (msg4.created_at - msg5.created_at).seconds
-
-				avg = (_1 + _2 + _3 + _4) / 4
+				_5 = (datetime.utcnow() - msg1.created_at).seconds
+				avg = (_1 + _2 + _3 + _4 + _5) / 5
 
 				if avg >= 1.5: return True
 
 
-class SupportMail(Cog):
+class Msg(Cog):
 		"""No commands in this category, you can actually send message to owner directly by DMing the bot. Mainly for complains"""
 		def __init__(self, bot: Parrot):
 				self.bot = bot
@@ -33,4 +31,4 @@ class SupportMail(Cog):
 
 
 def setup(bot):
-		bot.add_cog(SupportMail(bot))
+		bot.add_cog(Msg(bot))

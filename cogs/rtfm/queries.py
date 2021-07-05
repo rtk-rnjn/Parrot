@@ -14,9 +14,7 @@ from io import BytesIO
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 
-from core.bot import Parrot
-from core.cog import Cog
-from core.ctx import Context
+from core import Cog, Parrot, Context
 
 from discord.ext import commands
 from discord.utils import escape_mentions

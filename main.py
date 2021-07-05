@@ -1,8 +1,5 @@
-
-from utilities.config import TOKEN
-from core.bot import Parrot
-bot = Parrot()
-bot.run(TOKEN)
+from core import bot
+bot.run()
 
 # todo: 1. action log, 
 #       2. disabled commands

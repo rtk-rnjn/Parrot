@@ -1,8 +1,7 @@
 from discord import Embed
 import datetime
 
-from core.cog import Cog
-from core.bot import Parrot
+from core import Cog, Parrot
 
 
 class OnMemberJoin(Cog):

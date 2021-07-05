@@ -1,9 +1,7 @@
 # from discord.ext import tasks 
 # todo: tasks system
 
-from core.cog import Cog
-from core.ctx import Context
-from core.bot import Parrot
+from core import Cog, Parrot, Context
 
 from database.cmd_count import collection, if_not_exists, increment
 

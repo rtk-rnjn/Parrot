@@ -1,9 +1,7 @@
 import discord, aiohttp, datetime, time
 from discord.ext import commands
 
-from core.bot import Parrot 
-from core.ctx import Context
-from core.cog import Cog
+from core import Cog, Parrot, Context
 
 class nsfw(Cog, name="nsfw", description="Want some fun? These are best commands! :')"):
 	'''Want some fun? These are best commands! :')'''

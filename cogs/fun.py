@@ -8,9 +8,7 @@ from aiohttp import request
 
 from utilities.paginator import Paginator
 
-from core.cog import Cog
-from core.bot import Parrot
-from core.ctx import Context
+from core import Cog, Parrot, Context
 
 from utilities.checks import user_premium_cd
 

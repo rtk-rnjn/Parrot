@@ -7,8 +7,9 @@ from discord import Embed
 from aiohttp import request
 
 from utilities.paginator import Paginator
-
-from core import Cog, Parrot, Context
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
 
 from utilities.checks import user_premium_cd
 

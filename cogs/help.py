@@ -4,7 +4,9 @@ from discord.ext import commands
 from utilities.paginator import Paginator
 from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO
 
-from core import Cog, Parrot
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
 
 
 class HelpCommand(commands.HelpCommand):

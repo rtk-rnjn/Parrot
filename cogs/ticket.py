@@ -3,7 +3,9 @@ import discord, asyncio
 
 import chat_exporter, io
 
-from core import Cog, Parrot, Context
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
 
 from database.ticket import collection, ticket_on_join, ticket_update
 from utilities.checks import has_verified_role_ticket

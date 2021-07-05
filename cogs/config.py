@@ -1,8 +1,9 @@
 from discord.ext import commands
 import discord, typing, aiohttp
 from discord import Webhook, AsyncWebhookAdapter
-
-from core import Cog, Parrot, Context
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
 
 from database.server_config import collection as csc, guild_join, guild_update
 from database.global_chat import collection as cgc, gchat_on_join, gchat_update

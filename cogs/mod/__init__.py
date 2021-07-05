@@ -1,6 +1,8 @@
 from discord.ext import commands
 import discord, json, typing, re
-from core import Cog, Parrot, Context
+from core.bot import Parrot
+from core.ctx import Context
+from core.cog import Cog
 from utilities.checks import mod_cd, is_mod
 from utilities.converters import reason_convert, convert_time
 from cogs.mod import method as mt

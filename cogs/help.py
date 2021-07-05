@@ -3,10 +3,7 @@ from discord.ext import commands
 
 from utilities.paginator import Paginator
 from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO
-
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
+from core import Parrot, Cog
 
 
 class HelpCommand(commands.HelpCommand):

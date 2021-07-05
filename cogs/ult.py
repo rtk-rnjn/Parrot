@@ -7,9 +7,7 @@ from psutil import Process, virtual_memory
 from discord import __version__ as discord_version
 from platform import python_version
 
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
+from core import Parrot, Context, Cog
 
 class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	'''Basic commands for the bots.'''

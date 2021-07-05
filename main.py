@@ -1,4 +1,4 @@
-from core.bot import Parrot
+from core import Parrot
 from utilities.config import TOKEN
 
 bot = Parrot()

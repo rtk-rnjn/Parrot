@@ -2,9 +2,7 @@
 from discord.ext import commands
 import discord, random, asyncio, typing
 
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
+from core import Parrot, Context, Cog
 
 from database.telephone import collection, telephone_update, telephone_on_join
 

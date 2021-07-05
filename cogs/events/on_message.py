@@ -1,8 +1,5 @@
 from datetime import datetime
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
-
+from core import Parrot, Cog
 async def spam_filter(msg1, msg2, msg3, msg4, msg5):
 		if msg1.author == msg2.author == msg3.author == msg4.author == msg5.author:
 				_1 = (msg1.created_at - msg2.created_at).seconds

@@ -1,8 +1,6 @@
 from discord.ext import commands
 import discord, random
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
+from core import Parrot, Context, Cog
 
 from database.economy import collection, ge_update, ge_on_join
 from utilities.checks import user_premium_cd

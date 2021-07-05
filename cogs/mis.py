@@ -10,9 +10,7 @@ from utilities.checks import user_premium_cd
 
 from discord import Embed
 
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
+from core import Parrot, Context, Cog
 
 invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"
 # my own regex

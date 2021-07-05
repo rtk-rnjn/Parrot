@@ -1,9 +1,7 @@
 from discord.ext import commands
 import discord, asyncio, time, datetime, aiohttp
 
-from core.bot import Parrot
-from core.cog import Cog
-from core.ctx import Context
+from core import Parrot, Context, Cog
 
 class dm_mod(Cog):
     """This Section will only used in support server for asking for moderation!"""

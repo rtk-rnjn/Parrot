@@ -1,9 +1,7 @@
 import discord, aiohttp
 from discord.ext import commands
 from datetime import datetime
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
+from core import Parrot, Context, Cog
 
 from utilities.checks import user_premium_cd
 from utilities.config import MEME_PASS as meme_pass

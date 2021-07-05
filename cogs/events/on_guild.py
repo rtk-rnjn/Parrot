@@ -1,7 +1,4 @@
-from core.bot import Parrot
-from core.ctx import Context
-from core.cog import Cog
-
+from core import Parrot, Cog
 from database.global_chat import gchat_on_join, gchat_on_remove
 from database.telephone import telephone_on_join, telephone_on_remove
 from database.ticket import ticket_on_join, ticket_on_remove

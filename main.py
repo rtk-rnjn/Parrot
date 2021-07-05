@@ -1,4 +1,4 @@
-from core import bot
+from core.bot import bot
 bot.run()
 
 # todo: 1. action log, 

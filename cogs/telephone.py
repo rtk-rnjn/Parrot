@@ -16,7 +16,7 @@ class Telephone(Cog, name='telephone'):
 	@commands.cooldown(1, 30, commands.BucketType.guild)
 	@commands.guild_only()
 	@commands.has_permissions(manage_guild=True)
-	async def telsetup(self, ctx: Context, setting: str, *, arg: typing.Union[discord.TextChannel, discord.Role, discord.Member, int]):
+	async def telsetup(self, ctx: Context, setting: str=None, *, arg: typing.Union[discord.TextChannel, discord.Role, discord.Member, discord.Guild, int]):
 		"""
 		To set the telephone phone line, in the server to call and receive the call from other server.
 		"""
@@ -25,14 +25,20 @@ class Telephone(Cog, name='telephone'):
 		if not collection.find_one({'_id': ctx.guild.id}):
 			await telephone_on_join(ctx.guild.id)
 
+		if type(arg) is discord.Guild: arg = arg.id
 		if setting.lower() == 'block' and (type(arg) == int):
 			collection.update_one({'_id': ctx.guild.id}, { '$addToSet': { 'blocked': int(arg) } })
 			await ctx.reply(f'{ctx.author.mention} Success! blocked: {arg}')
 			return
+		
+		if setting.lower() == 'unblock' and (type(arg) == int):
+			collection.update_one({'_id': ctx.guild.id}, { '$pull': { 'blocked': int(arg) } })
+			await ctx.reply(f'{ctx.author.mention} Success! unblocked: {arg}')
+			return
 
 		if not arg or not settings:
 			data = collection.find_one({'_id': ctx.guild.id})
-			await ctx.send(f"Invalid setting. Available setting type: `channel`, `pingrole`, `memberping`, `block`. This server current Telephone Settings are:-\n"
+			await ctx.send(f"Invalid setting. Available setting type: `channel`, `pingrole`, `memberping`, `block` `unblock. This server current Telephone Settings are:-\n"
 										 f"> Telephone Channel:\n`{data['channel']}`\n"
 										 f"> Telephone Pingrole:\n`{data['pingrole']}`\n"
 										 f"> Telephone Memberping:\n`{data['memberping']}`\n"

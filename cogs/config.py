@@ -15,12 +15,12 @@ class BotConfig(Cog, name="botconfig"):
 		@commands.guild_only()
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		@commands.bot_has_permissions(embed_links=True)
-		async def config(self, ctx: Context, args):
+		async def config(self, ctx: Context):
 				"""
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
 				"""
 				pass
-				
+				# FUCK
 		
 		@config.command()
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())

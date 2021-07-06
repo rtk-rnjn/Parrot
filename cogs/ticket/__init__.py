@@ -3,7 +3,6 @@ import discord
 
 from core import Parrot, Context, Cog
 
-from database.ticket import collection, ticket_on_join
 from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
@@ -11,14 +10,6 @@ class ticket(Cog, name="ticket"):
 	"""A simple ticket service, trust me it's better than YAG. LOL!"""
 	def __init__(self, bot: Parrot):
 		self.bot = bot 
-	
-	async def cog_check(self, ctx):
-			if ctx.guild:
-				if not collection.find_one({'_id': ctx.guild.id}):
-					await ticket_on_join(ctx.guild.id)
-					return True
-			else: 
-				raise commands.NoPrivateMessage()
 
 	@commands.command()
 	@commands.cooldown(1, 60, commands.BucketType.member)

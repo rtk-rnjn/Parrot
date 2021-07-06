@@ -13,14 +13,6 @@ class mod(Cog,
 		def __init__(self, bot: Parrot):
 				self.bot = bot
 
-		async def cog_check(self, ctx):
-			if ctx.guild:
-				if not collection.find_one({'_id': ctx.guild.id}):
-					await guild_join(ctx.guild.id)
-					return True
-			else: 
-				raise commands.NoPrivateMessage()
-
 		async def log(self, ctx, cmd, performed_on, reason):
 			if not collection.find_one({'_id': ctx.guild.id}):
 				await guild_join(ctx.guild.id)

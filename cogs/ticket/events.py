@@ -1,7 +1,7 @@
 from core import Parrot, Cog
 from database.ticket import collection, ticket_update
 import discord
-from ticket.method import log
+from cogs.ticket.method import log
 
 
 class ReactionTicket(Cog):

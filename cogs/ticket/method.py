@@ -122,7 +122,7 @@ async def _close(ctx, bot):
 						await ctx.channel.delete()
 						index = data["ticket-channel-ids"].index(channel_id)
 						ticket_channel_ids = data['ticket-channel-ids']
-						del ticket_channel_ids["ticket-channel-ids"][index]
+						del ticket_channel_ids[index]
 						post = {'ticket-channel-ids': ticket_channel_ids}
 						await ticket_update(ctx.guild.id, post)
 						log_channel = ctx.guild.get_channel(data['log'])

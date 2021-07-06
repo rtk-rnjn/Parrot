@@ -13,7 +13,7 @@ class mod(Cog,
 		def __init__(self, bot: Parrot):
 				self.bot = bot
 
-		def cog_check(self, ctx):
+		async def cog_check(self, ctx):
 			if ctx.guild:
 				if not collection.find_one({'_id': ctx.guild.id}):
 					await guild_join(ctx.guild.id)

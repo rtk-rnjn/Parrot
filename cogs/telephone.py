@@ -25,6 +25,11 @@ class Telephone(Cog, name='telephone'):
 		if not collection.find_one({'_id': ctx.guild.id}):
 			await telephone_on_join(ctx.guild.id)
 
+		if setting.lower() == 'block' and (type(arg) == int):
+			collection.update_one({'_id': ctx.guild.id}, { '$addToSet': { 'blocked': int(arg) } })
+			await ctx.reply(f'{ctx.author.mention} Success! blocked: {arg}')
+			return
+
 		if not arg or not settings:
 			data = collection.find_one({'_id': ctx.guild.id})
 			await ctx.send(f"Invalid setting. Available setting type: `channel`, `pingrole`, `memberping`, `block`. This server current Telephone Settings are:-\n"
@@ -38,10 +43,6 @@ class Telephone(Cog, name='telephone'):
 				await telephone_update(ctx.guild.id, setting.lower(), arg.id)
 				await ctx.reply(f'{ctx.author.mention} Success! {setting.lower()}: {arg.name} ({arg.id})')
 
-		if setting.lower() == 'block' and (type(arg) == int):
-			collection.update_one({'_id': ctx.guild.id}, { '$addToSet': { 'blocked': int(arg) } })
-			await ctx.reply(f'{ctx.author.mention} Success! blocked: {arg}')
-			return
 
 	@commands.command()
 	@commands.max_concurrency(1, commands.BucketType.guild)

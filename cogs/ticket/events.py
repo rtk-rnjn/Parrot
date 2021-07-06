@@ -26,7 +26,8 @@ class ReactionTicket(Cog):
 				if message_id == data['message_id'] and channel_id == data[
 								'channel_id']:
 						message = await channel.fetch_message(message_id)
-
+				else:
+						return
 				if (message is not None) and (emoji == '✉️'):
 						try:
 								await message.remove_reaction("✉️", member)

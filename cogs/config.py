@@ -19,31 +19,7 @@ class BotConfig(Cog, name="botconfig"):
 				"""
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
 				"""
-				if args.lower() == 'show':
-					if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
-					data = csc.find_one({'_id': ctx.guild.id})
-					prefix = data['prefix']
-					# disabled_cmds = data['disabled_cmds'] 
-
-					disabled_cogs = data['disabled_cogs'] # simply a list of array
-					try: channel = ctx.guild.get_channel(data['action_log'])
-					except Exception: channel = "NA" 
-					
-					try: mute = ctx.guild.get_role(data['mute_role']).mention
-					except Exception: mute = "NA"
-					
-					try: mod = ctx.guild.get_role(data['mod_role'])
-					except Exception: mod = "NA"
-
-					embed = discord.Embed(description=f"This server current Bot settings are:-\n"
-																						f"> Prefix:\n`{prefix}`, `@Parrot#9209`\n"
-																						f"> Mute Role:\n{mute}\n\n"
-																						f"> Mod Role:\n{mod}\n\n"
-																						f"> Action Log:\n{channel}\n\n"
-																						f"> Disabled Cogs:\n{', '.join(disabled_cogs) if disabled_cogs else 'NA'}")
-					
-					await ctx.send(embed=embed)
-				else: pass
+				pass
 				
 		
 		@config.command()
@@ -62,7 +38,7 @@ class BotConfig(Cog, name="botconfig"):
 		
 		@config.command(aliases=['mute-role'])
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
-		async def mute_role(self, ctx: Context, *, role:discord.Role):
+		async def muterole(self, ctx: Context, *, role:discord.Role):
 				"""
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
 				"""
@@ -74,7 +50,7 @@ class BotConfig(Cog, name="botconfig"):
 
 		@config.command(aliases=['mod-role'])
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
-		async def mod_role(self, ctx: Context, *, role:discord.Role):
+		async def modrole(self, ctx: Context, *, role:discord.Role):
 				"""
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
 				"""

@@ -1,3 +1,3 @@
-from .Bot import Parrot
+from .Parrot import Parrot, bot
 from .Cog import Cog
 from .Context import Context

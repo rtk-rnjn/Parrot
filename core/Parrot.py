@@ -69,5 +69,3 @@ class Parrot(commands.AutoShardedBot):
 						data = collection.find_one({"_id": message.guild.id})
 						prefix = data['prefix']
 				return commands.when_mentioned_or(prefix)(self, message)
-
-bot = Parrot()

@@ -12,13 +12,13 @@ class ReactionTicket(Cog):
 		async def on_raw_reaction_add(self, payload):
 
 				guild_id = payload.guild_id
-				guild = self.client.get_guild(guild_id)
+				guild = self.bot.get_guild(guild_id)
 				data = collection.find_one({'_id': guild_id})
 				user_id = payload.user_id
 				member = guild.get_member(user_id)
 
 				channel_id = payload.channel_id
-				channel = self.client.get_channel(channel_id)
+				channel = self.bot.get_channel(channel_id)
 
 				message_id = payload.message_id
 				emoji = payload.emoji.name

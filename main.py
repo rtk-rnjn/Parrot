@@ -1,9 +1,4 @@
-from core import Parrot
-from utilities.config import TOKEN
+from core.Bot import bot
 
-bot = Parrot()
-bot.run(TOKEN)
-
-# todo: 1. action log, 
-#       2. disabled commands
-#       3. advance moderation
+if __name__ == '__main__':
+		bot.run()

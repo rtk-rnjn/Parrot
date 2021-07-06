@@ -871,7 +871,7 @@ class nsfw(Cog, name="nsfw", description="Want some fun? These are best commands
 		await ctx.reply(embed=em)
 		
 		
-	@commands.command(aliases=['nsfwdm'])
+	@commands.command()
 	@commands.is_nsfw()
 	@commands.bot_has_permissions(embed_links=True)
 	async def n(self, ctx: Context):

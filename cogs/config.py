@@ -118,7 +118,7 @@ class BotConfig(Cog, name="botconfig"):
 						await ctx.send(f"{channel.mention} created successfully.")
 						return
 
-				if (setting.lower() == 'ignore-role' or 'ignore_role') and (role is not None):
+				if (setting.lower() in ['ignore-role', 'ignore_role', 'ignorerole']) and (role is not None):
 						post = {'ignore-role': role.id}
 						await gchat_update(ctx.guild.id, post)
 						await ctx.reply(f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!")

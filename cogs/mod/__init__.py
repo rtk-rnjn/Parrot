@@ -20,9 +20,9 @@ class mod(Cog,
 			
 			data = collection.find_one({'_id': ctx.guild.id})
 
-			embed = discord.Embed(title=f"`{cmd}` Used", description=f"```\nREASON: {reason}\n```", timestamp=datetime.utcnow())
+			embed = discord.Embed(title=f"Mod command, `{cmd}` Used", description=f"```\nREASON: {reason}\n```", timestamp=datetime.utcnow())
 			embed.add_field(name="Action Performed by:", value=f"{ctx.author.mention}", inline=True)
-			embed.add_field(name="Action Performed on:", value=f"{ctx.author.mention}", inline=True)
+			embed.add_field(name="Action Performed on:", value=f"{performed_on}", inline=True)
 			embed.set_footer(text=f"{ctx.guild.name}")
 			return await self.bot.get_channel(data['action_log']).send(embed=embed)
 

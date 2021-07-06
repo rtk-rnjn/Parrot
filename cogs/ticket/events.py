@@ -14,6 +14,7 @@ class ReactionTicket(Cog):
 				guild_id = payload.guild_id
 				guild = self.bot.get_guild(guild_id)
 				data = collection.find_one({'_id': guild_id})
+				if not data: return
 				user_id = payload.user_id
 				member = guild.get_member(user_id)
 

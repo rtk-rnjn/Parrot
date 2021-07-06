@@ -5,7 +5,8 @@ from utilities.checks import mod_cd, is_mod
 from utilities.converters import reason_convert, convert_time
 from cogs.mod import method as mt
 from database.server_config import collection, guild_join
-import datetime
+from datetime import datetime
+
 class mod(Cog,
 					name="moderator",
 					description="A simple moderator's tool for managing the server."):

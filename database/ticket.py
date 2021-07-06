@@ -16,7 +16,11 @@ async def ticket_on_join(guild_id: int):
         "valid-roles": [],
         "pinged-roles": [],
         "ticket-channel-ids": [],
-        "verified-roles": []
+        "verified-roles": [],
+				"message_id": None,
+				"log": None,
+				"category": None,
+				"channel_id": None
     }
 
     try:

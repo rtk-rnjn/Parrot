@@ -11,7 +11,7 @@ collection = db["cmd_count"]
 async def if_not_exists(cmd: str, count: int):
 		post = {'_id': cmd, 'count': count}
 		try:
-				collection.insert_one({post})
+				collection.insert_one(post)
 				return "OK"
 		except Exception as e:
 				return str(e)

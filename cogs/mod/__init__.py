@@ -206,7 +206,7 @@ class mod(Cog,
 												channel: discord.TextChannel = None):
 				"""To lock the text channel"""
 				await mt._text_lock(ctx, channel)
-				await self.log(ctx, 'Text Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id})')
+				await self.log(ctx, 'Text Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})')
 		@lock.command(name='vc')
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 		@commands.bot_has_permissions(manage_channels=True,
@@ -219,7 +219,7 @@ class mod(Cog,
 											channel: discord.VoiceChannel = None):
 				"""To lock the Voice Channel"""
 				await mt._vc_lock(ctx, channel)
-				await self.log(ctx, 'VC Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id})')
+				await self.log(ctx, 'VC Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})')
 		@commands.group()
 		@commands.check_any(is_mod(),
 												commands.has_permissions(manage_channels=True))
@@ -243,7 +243,7 @@ class mod(Cog,
 													channel: discord.TextChannel = None):
 				"""To unlock the text channel"""
 				await mt._text_unlock(ctx, channel)
-				await self.log(ctx, 'Text Un-Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id})')
+				await self.log(ctx, 'Text Un-Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})')
 		@unlock.command(name='vc')
 		@commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
 		@commands.bot_has_permissions(manage_channels=True,
@@ -256,7 +256,7 @@ class mod(Cog,
 												channel: discord.VoiceChannel = None):
 				"""To unlock the Voice Channel"""
 				await mt._vc_unlock(ctx, channel)
-				await self.log(ctx, 'VC Un-Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id})')
+				await self.log(ctx, 'VC Un-Lock', f'{channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})')
 
 		@commands.has_permissions(kick_members=True)
 		@commands.check_any(is_mod(),
@@ -284,20 +284,21 @@ class mod(Cog,
 				"""To allow a member to sending message in the Text Channels, if muted."""
 				await mt._unmute(ctx, member, reason)
 				await self.log(ctx, 'Un-Mute', f'{member.mention}', f'{reason}')
-		@commands.group(aliases=['purge'])
+		@commands.group()
 		@commands.check_any(is_mod(),
 												commands.has_permissions(manage_messages=True))
 		@mod_cd()
 		@commands.bot_has_permissions(read_message_history=True,
 																	manage_messages=True)
-		async def clean(self, ctx: Context, amount: int):
+		async def clean(self, ctx: Context, amount: int, ):
 				"""To delete bulk message."""
-				await ctx.message.delete()
-				deleted = await ctx.channel.purge(limit=amount, bulk=True)
-				await ctx.send(
-						f"{ctx.author.mention} {len(deleted)} message deleted :')",
-						delete_after=5)
-				await self.log(ctx, 'Clean', f'{ctx.channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id}) | Total message deleted {len(deleted)}')
+				if not ctx.invoked_subcommand:
+					await ctx.message.delete()	
+					deleted = await ctx.channel.purge(limit=amount, bulk=True)
+					await ctx.send(
+							f"{ctx.author.mention} {len(deleted)} message deleted :')",
+							delete_after=5)
+					await self.log(ctx, 'Clean', f'{ctx.channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}')
 
 		@clean.command(name='user', aliases=['member'])
 		@commands.check_any(is_mod(),
@@ -314,7 +315,7 @@ class mod(Cog,
 				deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check_usr)
 				await ctx.send(f"{ctx.author.mention} message deleted :')",
 											delete_after=5)
-				await self.log(ctx, 'Clean user', f'{ctx.channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id}) | Total message deleted {len(deleted)}')
+				await self.log(ctx, 'Clean user', f'{ctx.channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}')
 
 		@clean.command(name='bots')
 		@commands.check_any(is_mod(),
@@ -330,7 +331,7 @@ class mod(Cog,
 				deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
 				await ctx.send(f"{ctx.author.mention} message deleted :')",
 											delete_after=5)
-				await self.log(ctx, 'Clean Bots', f'{ctx.channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id}) | Total message deleted {len(deleted)}')
+				await self.log(ctx, 'Clean Bots', f'{ctx.channel.mention}', f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}')
 		@clean.command()
 		@commands.check_any(is_mod(),
 												commands.has_permissions(manage_messages=True))

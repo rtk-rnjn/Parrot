@@ -2,7 +2,7 @@ import discord, traceback, sys, math, random
 from discord.ext import commands
 from datetime import datetime
 
-from utilities.exceptions import ParrotError
+from utilities.exceptions import ParrotCheckFaliure
 from core import Parrot, Context, Cog
 with open("extra/quote.txt") as f:
 		quote = f.read()
@@ -151,7 +151,7 @@ class CommandErrorHandler(Cog):
 								f"{random.choice(quote)}\n\nMax Concurrenry Reached. This command is already running in this server. You have wait for it to finish."
 						)
 
-				elif isinstance(error, ParrotError):
+				elif isinstance(error, ParrotCheckFaliure):
 						return await ctx.send(error.__str__().format(ctx=ctx))
 
 				else:

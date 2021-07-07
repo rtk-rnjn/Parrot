@@ -8,6 +8,7 @@ from database.premium import collection_guild as collection_pre_guild
 from database.premium import collection_user as collection_pre_user
 from database.server_config import collection, guild_join
 
+
 def is_guild_owner():
 		def predicate(ctx):
 				if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
@@ -69,7 +70,8 @@ def mod_cd():
 
 		return commands.check(predicate)
 
- # [{"cmd": ctx.command.name, "channel": []}]
+
+# [{"cmd": ctx.command.name, "channel": []}]
 def id_cmd_disabled():
 		def predicate(ctx):
 				data = collection.find({"_id": ctx.guild.id})
@@ -99,15 +101,22 @@ def has_verified_role_ticket():
 				data = c.find_one({'_id': ctx.guild.id})
 				roles = data['verified-roles']
 				for role in roles:
-					if ctx.guild.get_role(role) in ctx.author.roles: return True
+						if ctx.guild.get_role(role) in ctx.author.roles: return True
+				else:
+						raise ex.NoVerifiedRoleTicket()
 
 		return commands.check(predicate)
 
 
 def is_mod():
 		async def predicate(ctx):
-				if not collection.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
+				if not collection.find_one({'_id': ctx.guild.id}):
+						await guild_join(ctx.guild.id)
 				data = collection.find_one({'_id': ctx.guild.id})
 				role = ctx.guild.get_role(data['mod_role'])
-				return role in ctx.author.roles
+				if role in ctx.author.roles:
+						return True
+				else:
+						raise ex.NotMod()
+
 		return commands.check(predicate)

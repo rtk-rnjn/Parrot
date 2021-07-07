@@ -98,7 +98,8 @@ def has_verified_role_ticket():
 				if not data: await ticket_on_join(ctx.guild.id)
 				data = c.find_one({'_id': ctx.guild.id})
 				roles = data['verified-roles']
-				return commands.check_any(commands.has_any_role(*roles), commands.has_permissions(administrator=True))
+				for role in roles:
+					if ctx.guild.get_role(role) in ctx.author.roles: return True
 
 		return commands.check(predicate)
 
@@ -107,6 +108,6 @@ def is_mod():
 		async def predicate(ctx):
 				if not collection.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
 				data = collection.find_one({'_id': ctx.guild.id})
-				role_id = data['mod_role']
-				return commands.has_role(role_id)
+				role = ctx.guild.get_role(data['mod_role'])
+				return role in ctx.author.roles
 		return commands.check(predicate)

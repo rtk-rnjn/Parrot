@@ -15,16 +15,18 @@ class mod(Cog,
 				self.bot = bot
 
 		async def log(self, ctx, cmd, performed_on, reason):
-			if not collection.find_one({'_id': ctx.guild.id}):
-				await guild_join(ctx.guild.id)
-			
-			data = collection.find_one({'_id': ctx.guild.id})
+				if not collection.find_one({'_id': ctx.guild.id}):
+					await guild_join(ctx.guild.id)
+				
+				data = collection.find_one({'_id': ctx.guild.id})
 
-			embed = discord.Embed(title=f"Mod command, `{cmd}` Used", description=f"```\nREASON: {reason}\n```", timestamp=datetime.utcnow())
-			embed.add_field(name="Action Performed by:", value=f"{ctx.author.mention}", inline=True)
-			embed.add_field(name="Action Performed on:", value=f"{performed_on}", inline=True)
-			embed.set_footer(text=f"{ctx.guild.name}")
-			return await self.bot.get_channel(data['action_log']).send(embed=embed)
+				embed = discord.Embed(title=f"Mod command, `{cmd}` Used", description=f"```\nREASON: {reason}\n```", timestamp=datetime.utcnow())
+				embed.add_field(name="Action Performed by:", value=f"{ctx.author.mention}", inline=True)
+				embed.add_field(name="Action Performed on:", value=f"{performed_on}", inline=True)
+				embed.set_footer(text=f"{ctx.guild.name}")
+				channel = self.bot.get_channel(data['action_log'])
+				if channel:
+						return await self.bot.get_channel(data['action_log']).send(embed=embed)
 
 		@commands.group()
 		@commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))

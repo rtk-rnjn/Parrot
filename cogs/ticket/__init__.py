@@ -45,7 +45,7 @@ class ticket(Cog, name="ticket"):
 
 		@commands.group()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def ticketconfig(self, ctx: Context):
 				"""
@@ -54,7 +54,7 @@ class ticket(Cog, name="ticket"):
 		
 		@ticketconfig.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def auto(self, ctx: Context, channel: discord.TextChannel=None, *, message:str=None):
 			"""
@@ -66,7 +66,7 @@ class ticket(Cog, name="ticket"):
 
 		@ticketconfig.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def setcategory(self, ctx: Context, *, channel: discord.CategoryChannel):
 			"""
@@ -76,7 +76,7 @@ class ticket(Cog, name="ticket"):
 		
 		@ticketconfig.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def setlog(self, ctx: Context, *, channel: discord.TextChannel):
 			"""
@@ -86,7 +86,7 @@ class ticket(Cog, name="ticket"):
 
 		@ticketconfig.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def addaccess(self, ctx: Context, *, role: discord.Role):
 				'''
@@ -98,7 +98,7 @@ class ticket(Cog, name="ticket"):
 
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@ticketconfig.command()
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def delaccess(self, ctx: Context, *, role: discord.Role):
 				'''
@@ -118,7 +118,7 @@ class ticket(Cog, name="ticket"):
 				await mt._addadimrole(ctx, role)
 
 		@ticketconfig.command(hidden=False)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.cooldown(1, 5, commands.BucketType.member)
 		@commands.bot_has_permissions(embed_links=True)
 		async def addpingedrole(self, ctx: Context, *, role: discord.Role):
@@ -139,7 +139,7 @@ class ticket(Cog, name="ticket"):
 
 		@ticketconfig.command()
 		@commands.cooldown(1, 5, commands.BucketType.member)
-		@has_verified_role_ticket()
+		@commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
 		@commands.bot_has_permissions(embed_links=True)
 		async def delpingedrole(self, ctx: Context, *, role: discord.Role):
 				'''

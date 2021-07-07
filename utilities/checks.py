@@ -103,8 +103,7 @@ def has_verified_role_ticket():
 				for role in roles:
 						if ctx.guild.get_role(role) in ctx.author.roles: return True
 				else:
-						raise ex.NoVerifiedRoleTicket()
-
+					raise ex.NoVerifiedRoleTicket()
 		return commands.check(predicate)
 
 
@@ -116,7 +115,7 @@ def is_mod():
 				role = ctx.guild.get_role(data['mod_role'])
 				if role in ctx.author.roles:
 						return True
-				else:
-						raise ex.NotMod()
+				else: 
+						raise ex.NoModRole()
 
 		return commands.check(predicate)

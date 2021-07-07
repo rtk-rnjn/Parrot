@@ -11,18 +11,14 @@ class ParrotCheckFaliure(cmd.CheckFailure):
     pass
 
 
-class ParrotCheckAnyFailure(cmd.CheckAnyFailure):
-		pass
-
-
-class NotMod(ParrotCheckAnyFailure):
+class NotMod(ParrotCheckFaliure):
 		def __init__(self):
 				super().__init__(
 					f"{random.choice(quote)}\n\nNot Mod. You are missing Mod role or the required permission to use this command."
 				)
 
 
-class NoVerifiedRoleTicket(ParrotCheckAnyFailure):
+class NoVerifiedRoleTicket(ParrotCheckFaliure):
 		def __init__(self):
 				super().__init__(
 					f"{random.choice(quote)}\n\nNot Verified Role. You are missing Ticket Verified role or the required permission to use this command."

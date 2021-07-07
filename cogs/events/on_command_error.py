@@ -2,7 +2,7 @@ import discord, traceback, sys, math, random
 from discord.ext import commands
 from datetime import datetime
 
-from utilities.exceptions import ParrotCheckFaliure, ParrotCheckAnyFailure
+from utilities.exceptions import ParrotCheckFaliure
 from core import Parrot, Context, Cog
 with open("extra/quote.txt") as f:
 		quote = f.read()
@@ -152,9 +152,6 @@ class CommandErrorHandler(Cog):
 						)
 
 				elif isinstance(error, ParrotCheckFaliure):
-						return await ctx.send(error.__str__().format(ctx=ctx))
-				
-				elif isinstance(error, ParrotCheckAnyFailure):
 						return await ctx.send(error.__str__().format(ctx=ctx))
 
 				else:

@@ -29,6 +29,9 @@
 		"cogs.events.on_member_join",
 		"cogs.events.on_guild",
 		"cogs.economy",
+    "cogs.giveaway",
+    "cogs.giveaway.events",
+    "cogs.giveaway.tasks",
 		"jishaku"
 	],
 	"support_server": "https://discord.gg/NEyJxM7G7f",

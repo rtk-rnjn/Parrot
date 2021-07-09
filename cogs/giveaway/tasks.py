@@ -6,7 +6,7 @@ from datetime import datetime
 
 class GiveawayTask(Cog):
     def __init__(self, bot: Parrot):
-        self.index = 0
+        self.bot = bot
         self.GiveawayRefresher.start()
 
     def cog_unload(self):

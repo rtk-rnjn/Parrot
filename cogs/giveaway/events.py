@@ -1,5 +1,5 @@
 from core import Parrot, Cog
-from giveaway.method import collection, add_user, can_win_giveaway, remove_user
+from cogs.giveaway.method import collection, add_user, can_win_giveaway, remove_user
 
 
 class ReactionGiveaway(Cog):

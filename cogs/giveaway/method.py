@@ -33,7 +33,7 @@ async def end_giveaway(bot, message_id, winner):
     if not msg: return
     winner = winner or data['winner']
     for reaction in msg.reactions:
-        if reaction.emoji == ":tada:":
+        if reaction.emoji == "🎉":
             #index = list(msg.reactions).index(reaction)
             break
     users = list(

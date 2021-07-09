@@ -8,7 +8,7 @@ class ReactionGiveaway(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if not payload.emoji.name == ':tada:': return
+        if not payload.emoji.name == "🎉": return
         message_id = payload.message_id
         channel_id = payload.channel_id
         data = collection.find_one({'_id': message_id})
@@ -21,13 +21,13 @@ class ReactionGiveaway(Cog):
             try:
                 channel = self.bot.get_channel(channel_id)
                 message = await channel.fetch_message(message_id)
-                await message.remove_reaction(":tada:", member)
+                await message.remove_reaction("🎉", member)
             except Exception:
                 pass
 
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        if not payload.emoji.name == ':tada:': return
+        if not payload.emoji.name == "🎉": return
         message_id = payload.message_id
         data = collection.find_one({'_id': message_id})
         member = payload.member

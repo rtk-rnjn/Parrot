@@ -114,7 +114,7 @@ class Giveaway(Cog):
                                  role.id if role else None,
                                  msg_count if msg_count else None,
                                  datetime.utcnow() + timedelta(seconds=t))
-        await msg.add_reaction(":tada:")
+        await msg.add_reaction("🎉")
 
 
 def setup(bot):

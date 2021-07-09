@@ -42,7 +42,7 @@ class Giveaway(Cog):
 
         for q, i in ques:
             try:
-                msg = self.bot.wait_for('message', timeout=60, check=check)
+                msg = await self.bot.wait_for('message', timeout=60, check=check)
             except Exception:
                 return await ctx.send(
                     f"{ctx.author.mention} you ran out time. Try again")

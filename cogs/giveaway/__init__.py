@@ -41,16 +41,17 @@ class Giveaway(Cog):
             return m.author == ctx.author and m.channel == ctx.channel
 
         for q, i in ques:
-            try:
-                msg = await self.bot.wait_for('message', timeout=60, check=check)
-            except Exception:
-                return await ctx.send(
-                    f"{ctx.author.mention} you ran out time. Try again")
             embed = discord.Embed(title="Giveaway Create",
                                   description=f"{i}. {q}",
                                   timestamp=datetime.utcnow())
             embed.set_footer(text='Type `Cancel` to cancel')
             await ctx.send(embed=embed)
+            try:
+                msg = await self.bot.wait_for('message', timeout=60, check=check)
+            except Exception:
+                return await ctx.send(
+                    f"{ctx.author.mention} you ran out time. Try again")
+            
             if msg.content.lower() == 'cancel':
                 raise ex.GiveawayError(f"{ctx.author.mention} canceling...")
             if i == 1:

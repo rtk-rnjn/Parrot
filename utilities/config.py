@@ -1,7 +1,7 @@
 import json, os
 
 with open('config.json') as f:
-	data = json.load(f)
+    data = json.load(f)
 
 OWNER_IDS = data['owner_ids']
 DEFAULT_PREFIX = data['prefix']

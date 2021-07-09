@@ -19,7 +19,7 @@ class Parrot(commands.AutoShardedBot):
             case_insensitive=CASE_INSENSITIVE,
             intents=discord.Intents.all(),
             activity=discord.Activity(type=discord.ActivityType.listening,
-                                      name="to my BOSS"),
+                                      name="my BOSS's Wife"),
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,

@@ -1,4 +1,3 @@
-
 from pymongo import MongoClient
 from utilities.config import my_secret
 
@@ -24,7 +23,7 @@ async def gchat_on_join(guild_id: int):
         return str(e)
 
 
-async def gchat_update(guild_id: int, post:dict):
+async def gchat_update(guild_id: int, post: dict):
     post = {
         '_id': guild_id,
     }
@@ -47,5 +46,3 @@ async def gchat_on_remove(guild_id: int):
         return "OK"
     except Exception as e:
         return str(e)
-
-

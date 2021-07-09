@@ -1,4 +1,3 @@
-
 from pymongo import MongoClient
 from utilities.config import my_secret
 
@@ -17,10 +16,10 @@ async def ticket_on_join(guild_id: int):
         "pinged-roles": [],
         "ticket-channel-ids": [],
         "verified-roles": [],
-				"message_id": None,
-				"log": None,
-				"category": None,
-				"channel_id": None
+        "message_id": None,
+        "log": None,
+        "category": None,
+        "channel_id": None
     }
 
     try:

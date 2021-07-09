@@ -286,7 +286,7 @@ class mod(Cog,
     async def mute(self,
                    ctx: Context,
                    member: discord.Member,
-                   seconds: typing.Union[convert_time, int] = None,
+                   seconds: typing.Union[convert_time, int] = 0,
                    *,
                    reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""

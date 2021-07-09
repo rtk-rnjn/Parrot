@@ -1,4 +1,3 @@
-
 from pymongo import MongoClient
 from utilities.config import my_secret
 
@@ -18,8 +17,8 @@ async def guild_join(guild_id: int):
         'disabled_cmds': [],
         'mod_role': None,
         'action_log': None,
-				'mute_role': None,
-				'giveaway_role': None
+        'mute_role': None,
+        'giveaway_role': None
     }
 
     try:
@@ -29,7 +28,7 @@ async def guild_join(guild_id: int):
         return str(e)
 
 
-async def guild_update(guild_id: int, post:dict):
+async def guild_update(guild_id: int, post: dict):
     _post = {
         '_id': guild_id,
     }

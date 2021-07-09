@@ -1,4 +1,3 @@
-
 from pymongo import MongoClient
 from utilities.config import my_secret
 

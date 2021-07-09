@@ -9,8 +9,8 @@ from database.premium import collection_user as collection_pre_user
 from database.server_config import collection, guild_join
 
 
-def is_guild_owner():
-		def predicate(ctx):
+async def is_guild_owner():
+		async def predicate(ctx):
 				if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
 						return True
 				else:
@@ -19,8 +19,8 @@ def is_guild_owner():
 		return commands.check(predicate)
 
 
-def is_me():
-		def predicate(ctx):
+async def is_me():
+		async def predicate(ctx):
 				if ctx.message.author.id == SUPER_USER:  # !! Ritik Ranjan [*.*]#9230
 						return True
 				else:
@@ -29,8 +29,8 @@ def is_me():
 		return commands.check(predicate)
 
 
-def is_user_premium():
-		def predicate(ctx):
+async def is_user_premium():
+		async def predicate(ctx):
 				user = collection_pre_user.find({"_id": ctx.message.author.id})
 				if not user:
 						raise ex.NotPremiumUser()
@@ -40,8 +40,8 @@ def is_user_premium():
 		return commands.check(predicate)
 
 
-def is_guild_premium():
-		def predicate(ctx):
+async def is_guild_premium():
+		async def predicate(ctx):
 				guild = collection_pre_guild.find({"_id": ctx.guild.id})
 				if guild:
 						return True
@@ -49,8 +49,8 @@ def is_guild_premium():
 						raise ex.NotPremiumGuild()
 
 
-def user_premium_cd():
-		def predicate(ctx):
+async def user_premium_cd():
+		async def predicate(ctx):
 				user = collection_pre_user.find({"_id": ctx.message.author.id})
 				if user:
 						return commands.cooldown(0, 0, commands.BucketType.member)
@@ -60,8 +60,8 @@ def user_premium_cd():
 		return commands.check(predicate)
 
 
-def mod_cd():
-		def predicate(ctx):
+async def mod_cd():
+		async def predicate(ctx):
 				guild = collection_pre_guild.find({"_id": ctx.guild.id})
 				if guild:
 						return commands.cooldown(0, 0, commands.BucketType.guild)
@@ -72,8 +72,8 @@ def mod_cd():
 
 
 # [{"cmd": ctx.command.name, "channel": []}]
-def id_cmd_disabled():
-		def predicate(ctx):
+async def id_cmd_disabled():
+		async def predicate(ctx):
 				data = collection.find({"_id": ctx.guild.id})
 				if ctx.command.name in data['disabled_cmds']:
 						raise commands.DisabledCommand()
@@ -83,8 +83,8 @@ def id_cmd_disabled():
 		return commands.check(predicate)
 
 
-def id_cog_disabled():
-		def predicate(ctx):
+async def id_cog_disabled():
+		async def predicate(ctx):
 				data = collection.find({"_id": ctx.guild.id})
 				if ctx.command.name in data['disabled_cogs']:
 						raise commands.DisabledCommand()
@@ -94,7 +94,7 @@ def id_cog_disabled():
 		return commands.check(predicate)
 
 
-def has_verified_role_ticket():
+async def has_verified_role_ticket():
 		async def predicate(ctx):
 				data = c.find_one({'_id': ctx.guild.id})
 				if not data: await ticket_on_join(ctx.guild.id)
@@ -107,7 +107,7 @@ def has_verified_role_ticket():
 		return commands.check(predicate)
 
 
-def is_mod():
+async def is_mod():
 		async def predicate(ctx):
 				if not collection.find_one({'_id': ctx.guild.id}):
 						await guild_join(ctx.guild.id)
@@ -117,5 +117,19 @@ def is_mod():
 						return True
 				else: 
 						raise ex.NoModRole()
+
+		return commands.check(predicate)
+
+async def can_giveaway():
+		async def predicate(ctx):
+				if not collection.find_one({'_id': ctx.guild.id}):
+						await guild_join(ctx.guild.id)
+				data = collection.find_one({'_id': ctx.guild.id})
+				role_id = data['giveaway_role']
+				if role_id in [role.id for role in ctx.author.roles]: return True
+				elif 'giveaway' in [role.name.lower() for role in ctx.author.roles]: return True
+				elif 'giveaway manager' in [role.name.lower() for role in ctx.author.roles]: return True
+				else:
+						raise ex.NoGiveawayRole()
 
 		return commands.check(predicate)

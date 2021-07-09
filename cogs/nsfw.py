@@ -13,15 +13,7 @@ class nsfw(Cog, name="nsfw", description="Want some fun? These are best commands
 	@commands.bot_has_permissions(embed_links=True)
 	async def anal(self, ctx: Context):
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Anal`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+		To get Random Anal
 		"""
 
 		url = 'https://nekobot.xyz/api/image'
@@ -49,15 +41,7 @@ class nsfw(Cog, name="nsfw", description="Want some fun? These are best commands
 	@commands.bot_has_permissions(embed_links=True)
 	async def gonewild(self, ctx: Context):
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Gonewild`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+		To get Random GoneWild
 		"""
 		url = 'https://nekobot.xyz/api/image'
 		params = {"type": "gonewild"}

@@ -9,7 +9,7 @@ aki = Akinator()
 import datetime
 
 import discord
-import requests
+
 from discord.ext import commands
 
 
@@ -57,7 +57,7 @@ class GuessName(commands.Cog):
         await ctx.send(embed=embed)
 
         def check(m):
-            return (m.content == "yes" and m.channel == ctx.channel
+            return (m.content.lower() == "yes" or "y" and m.channel == ctx.channel
                     and m.author == ctx.author)
 
         correct = await self.client.wait_for("message", check=check)

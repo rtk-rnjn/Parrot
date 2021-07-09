@@ -18,7 +18,7 @@ class Parrot(commands.AutoShardedBot):
 						command_prefix=self.get_prefix,
 						case_insensitive=CASE_INSENSITIVE,
 						intents=discord.Intents.all(),
-						activity=discord.Activity(type=discord.ActivityType.listening, name="Janu meri Jaan"),
+						activity=discord.Activity(type=discord.ActivityType.listening, name="to my BOSS"),
 						status=discord.Status.dnd,
 						strip_after_prefix=STRIP_AFTER_PREFIX,
 						owner_ids=OWNER_IDS,

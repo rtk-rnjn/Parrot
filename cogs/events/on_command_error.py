@@ -151,7 +151,7 @@ class CommandErrorHandler(Cog):
 								f"{random.choice(quote)}\n\nMax Concurrenry Reached. This command is already running in this server. You have wait for it to finish."
 						)
 				elif isinstance(error, commands.CheckAnyFailure):
-						return await ctx.send(', or'.join([error.__str__().format(ctx=ctx) for error in error.errors]))
+						return await ctx.send(', or '.join([error.__str__().format(ctx=ctx) for error in error.errors]))
 
 
 				elif isinstance(error, ParrotCheckFaliure):

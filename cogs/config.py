@@ -61,6 +61,16 @@ class BotConfig(Cog, name="botconfig"):
 
 				await ctx.reply(f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
 
+		@config.command(aliases=['giveaway-role'])
+		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
+		async def giveawayrole(self, ctx: Context, *, role: discord.Role):
+				if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
+
+				post = {'giveaway_role': role.id}
+				await guild_update(ctx.guild.id, post)
+
+				await ctx.reply(f"{ctx.author.mention} success! Giveaway role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
+
 		@config.command(aliases=['action-log'])
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 		async def actionlog(self, ctx: Context, *, channel:discord.TextChannel=None):
@@ -74,27 +84,6 @@ class BotConfig(Cog, name="botconfig"):
 				await guild_update(ctx.guild.id, post)
 
 				await ctx.reply(f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**")
-
-	#	@config.command(aliases=['disable-cog'])
-	#	@commands.check_any(commands.has_permission(administrator=True), commands.is_owner())
-	#	async def disable_cog(self, ctx: Context, cog:str, channel:discord.TextChannel=None):
-	#			"""
-	#			To disable the cog; cog means category, as every command is being listed in some category.
-	#			
-	#			Syntax:
-	#			`Config {disable-cog} <Cog:Text> [Channel:Mention/ID]`
-	#
-	#			Permission:
-	#			Need Administration permission for the user
-	#
-	#			Note: If no channel is specified. Then it will consider the current woking channel.
-	#			"""
-	#			if not csc.find_one({'_id': ctx.guild.id}): await guild_join(ctx.guild.id)
-	#
-	#			channel = channel or ctx.channel 
-	#			if not cog in self.bot.cogs: return await ctx.reply(f"{ctx.author.mention} Invalid Cog name.")
-	#	
-	#			# post = {'disabled_cogs': []}
 
 		@config.command(aliases=['g-setup'])
 		@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())

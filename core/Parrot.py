@@ -7,8 +7,8 @@ from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTE
 from database.server_config import collection, guild_join
 
 os.environ["JISHAKU_HIDE"] = "True"
-# os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
-# os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
+os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
+os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 
 class Parrot(commands.AutoShardedBot):

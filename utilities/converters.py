@@ -1,6 +1,6 @@
 from utilities.regex import TIME_REGEX
 from discord.ext.commands import clean_content
-from utilities import exceptions as ex
+# from utilities import exceptions as ex
 
 
 def convert_time(arguments: str):
@@ -18,8 +18,7 @@ def convert_time(arguments: str):
         if multiplier == 'm': total_sec += 60 * number
         if multiplier == 'h': total_sec += 60 * 60 * number
         if multiplier == 'd': total_sec += 24 * 60 * 60 * number
-    else:
-        raise ex.TimeError()
+    
     return total_sec
 
 

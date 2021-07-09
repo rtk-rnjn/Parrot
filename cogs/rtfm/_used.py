@@ -9,14 +9,14 @@ def get_raw(link):
 
     link = link.strip('<>/')  # Allow for no-embed links
 
-    authorized = (
-        'https://hastebin.com',
-        'https://gist.github.com',
-        'https://gist.githubusercontent.com'
-    )
+    authorized = ('https://hastebin.com', 'https://gist.github.com',
+                  'https://gist.githubusercontent.com')
 
     if not any([link.startswith(url) for url in authorized]):
-        raise commands.BadArgument(message=f"I only accept links from {', '.join(authorized)}. (Starting with 'http').")
+        raise commands.BadArgument(
+            message=
+            f"I only accept links from {', '.join(authorized)}. (Starting with 'http')."
+        )
 
     domain = link.split('/')[2]
 
@@ -39,13 +39,18 @@ async def paste(text):
     """Return an online bin of given text"""
 
     async with aiohttp.ClientSession() as aioclient:
-        post = await aioclient.post('https://hastebin.com/documents', data=text)
+        post = await aioclient.post('https://hastebin.com/documents',
+                                    data=text)
         if post.status == 200:
             response = await post.text()
             return f'https://hastebin.com/{response[8:-2]}'
 
         # Rollback bin
-        post = await aioclient.post("https://bin.readthedocs.fr/new", data={'code': text, 'lang': 'txt'})
+        post = await aioclient.post("https://bin.readthedocs.fr/new",
+                                    data={
+                                        'code': text,
+                                        'lang': 'txt'
+                                    })
         if post.status == 200:
             return post.url
 

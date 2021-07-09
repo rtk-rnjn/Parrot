@@ -25,7 +25,6 @@ class fun(Cog, name="fun"):
 		self.bot = bot
 		
 	@command(name='8ball')
-	@guild_only()
 	@user_premium_cd()
 	async def _8ball(self, ctx: Context, *, question:commands.clean_content):
 		"""
@@ -36,7 +35,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command()
-	@commands.guild_only()
 	@user_premium_cd()
 	async def choose(self, ctx: Context, *, options:commands.clean_content):
 		'''
@@ -48,7 +46,6 @@ class fun(Cog, name="fun"):
 	
 
 	@commands.command(aliases=['colours', 'colour'])
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
 	async def color(self, ctx: Context, colour):
@@ -107,7 +104,6 @@ class fun(Cog, name="fun"):
 			
 	
 	@command()
-	@commands.guild_only()
 	@user_premium_cd()
 	@bot_has_permissions(embed_links=True)
 	async def decode(self, ctx: Context, *, string:str):
@@ -131,7 +127,6 @@ class fun(Cog, name="fun"):
 
 	@command()
 	@bot_has_permissions(embed_links=True)
-	@commands.guild_only()
 	@user_premium_cd()
 	async def encode(self, ctx: Context, *, string:str):
 		'''
@@ -156,7 +151,6 @@ class fun(Cog, name="fun"):
 	@command(name="fact")
 	@user_premium_cd()
 	@bot_has_permissions(embed_links=True)
-	@commands.guild_only()
 	async def animal_fact(self, ctx: Context, *, animal: str):
 		'''
 		Return a random Fact. It's useless command, I know
@@ -192,7 +186,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command()
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	async def gay(self, ctx: Context, *, member:discord.Member=None):
@@ -210,7 +203,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command()
-	@commands.guild_only()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@user_premium_cd()
 	async def glass(self, ctx: Context, *, member:discord.Member=None):
@@ -228,7 +220,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command()
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	async def horny(self, ctx: Context, *, member:discord.Member=None):
@@ -246,7 +237,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command(aliases=['insult'])
-	@commands.guild_only()
 	@user_premium_cd()
 	async def roast(self, ctx: Context, *, member: discord.Member = None):
 		'''
@@ -261,7 +251,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command(aliases=['its-so-stupid'])
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	async def itssostupid(self, ctx, *, comment:str):
@@ -282,7 +271,6 @@ class fun(Cog, name="fun"):
 
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.guild_only()
 	@user_premium_cd()
 	async def jail(self, ctx: Context, *, member:discord.Member=None):
 		"""
@@ -300,7 +288,6 @@ class fun(Cog, name="fun"):
 
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.guild_only()
 	@user_premium_cd()
 	async def lolice(self, ctx: Context, *, member:discord.Member=None):
 		"""
@@ -319,7 +306,6 @@ class fun(Cog, name="fun"):
 			
 			
 	@commands.command(name='meme')
-	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
 	@user_premium_cd()
 	async def meme(self, ctx: Context):
@@ -347,7 +333,6 @@ class fun(Cog, name="fun"):
 
 	@commands.command()
 	@user_premium_cd()
-	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
 	async def fakepeople(self, ctx: Context):
 		'''
@@ -386,7 +371,6 @@ class fun(Cog, name="fun"):
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@user_premium_cd()
-	@commands.guild_only()
 	async def simpcard(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		Good for those, who are hell simp! LOL
@@ -402,7 +386,6 @@ class fun(Cog, name="fun"):
 			
 	
 	@command(name="slap", aliases=["hit"])
-	@commands.guild_only()
 	@commands.bot_has_permissions(manage_messages=True)
 	@user_premium_cd()
 	async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
@@ -414,7 +397,6 @@ class fun(Cog, name="fun"):
 	
 		
 	@commands.command(aliases=['trans'])
-	@commands.guild_only()
 	@commands.bot_has_permissions(embed_links=True)
 	@user_premium_cd()
 	async def translate(self, ctx: Context, from_lang:str, to_lang:str, *, text:str):
@@ -442,7 +424,6 @@ class fun(Cog, name="fun"):
 	@commands.command(aliases=['triggered'])
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
 	@user_premium_cd()
-	@commands.guild_only()
 	async def trigger(self, ctx: Context, *, member:discord.Member=None):
 		"""
 		User Triggered!
@@ -459,7 +440,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command(aliases=['def', 'urban'])
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
 	async def urbandictionary(self, ctx: Context, *, text:str):
@@ -499,7 +479,6 @@ class fun(Cog, name="fun"):
 
 	@commands.command()
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.guild_only()
 	@user_premium_cd()
 	async def wasted(self, ctx: Context, *, member:discord.Member=None):
 		"""
@@ -517,7 +496,6 @@ class fun(Cog, name="fun"):
 
 	@commands.command(aliases=['youtube-comment'])
 	@commands.bot_has_permissions(attach_files=True, embed_links=True)
-	@commands.guild_only()
 	@user_premium_cd()
 	async def ytcomment(self, ctx: Context, *, comment:str):
 		'''
@@ -537,7 +515,6 @@ class fun(Cog, name="fun"):
 	
 	
 	@commands.command() 
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
 	async def dare(self, ctx: Context, *, member:discord.Member=None):
@@ -555,7 +532,6 @@ class fun(Cog, name="fun"):
 
 
 	@commands.command() 
-	@commands.guild_only()
 	@user_premium_cd()
 	@commands.bot_has_permissions(embed_links=True)
 	async def truth(self, ctx: Context, *, member:discord.Member=None):

@@ -2,886 +2,666 @@ import discord, aiohttp, datetime, time
 from discord.ext import commands
 from core import Parrot, Context, Cog
 
-class nsfw(Cog, name="nsfw", description="Want some fun? These are best commands! :')"):
-	'''Want some fun? These are best commands! :')'''
-	def __init__(self, bot: Parrot):
-		self.bot = bot
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def anal(self, ctx: Context):
-		"""
+class nsfw(Cog,
+           name="nsfw",
+           description="Want some fun? These are best commands! :')"):
+    '''Want some fun? These are best commands! :')'''
+    def __init__(self, bot: Parrot):
+        self.bot = bot
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def anal(self, ctx: Context):
+        """
 		To get Random Anal
 		"""
 
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "anal"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "anal"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		img = res['message']
-		
-		em = discord.Embed(title="Anal", timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        img = res['message']
 
-		await ctx.reply(embed=em)
+        em = discord.Embed(title="Anal", timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
 
+        await ctx.reply(embed=em)
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def gonewild(self, ctx: Context):
-		"""
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def gonewild(self, ctx: Context):
+        """
 		To get Random GoneWild
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "gonewild"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "gonewild"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return  
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hanal(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hanal(self, ctx: Context):
+        """
+		To get Random Hentai Anal
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hanal`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hanal"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hentai(self, ctx: Context):
+        """
+		To get Random Hentai
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hanal"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hentai"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hentai(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def holo(self, ctx: Context):
+        """
+		To get Random Holo
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hentai`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "holo"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def neko(self, ctx: Context):
+        """
+		To get Random Neko
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hentai"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "neko"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return  
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def holo(self, ctx: Context):
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hneko(self, ctx: Context):
+        """
+		To get Random Hneko
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Holo`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hneko"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hkitsune(self, ctx: Context):
+        """
+		To get Random Hkitsune
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "holo"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hkitsune"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return  
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def neko(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def kemonomimi(self, ctx: Context):
+        """
+		To get Random Kemonomimi
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hkitsune`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "kemonomimi"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def pgif(self, ctx: Context):
+        """
+		To get Random PornGif
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "neko"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "pgif"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hneko(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command(name="4k")
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def _4k(self, ctx: Context):
+        """
+		To get Random 4k
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hkitsune`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "4k"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def kanna(self, ctx: Context):
+        """
+		To get Random Kanna
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hneko"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "kanna"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return  
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hkitsune(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def ass(self, ctx: Context):
+        """
+		To get Random Ass
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hkitsune`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "ass"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def pussy(self, ctx: Context):
+        """
+		To get Random Pussy
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hkitsune"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "pussy"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def kemonomimi(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def thigh(self, ctx: Context):
+        """
+		To get Random Thigh
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Kemonomimi`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "thigh"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hthigh(self, ctx: Context):
+        """
+		To get Random Hentai Thigh
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "kemonomimi"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hthigh"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def pgif(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def gah(self, ctx: Context):
+        """
+		To get Random Gay
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Pgif`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "gah"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def paizuri(self, ctx: Context):
+        """
+		To get Random Paizuri
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "pgif"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "paizuri"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command(name="4k")
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def _4k(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def tentacle(self, ctx: Context):
+        """
+		To get Random Tentacle Porn
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`4k`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "tentacle"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def boobs(self, ctx: Context):
+        """
+		To get Random Boobs
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "4k"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "boobs"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		# 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        img = res['message']
 
-		await ctx.reply(embed=em)
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def kanna(self, ctx: Context):
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hboobs(self, ctx: Context):
+        """
+		To get Random Hentai Boobs
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Kanna`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hboobs"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def yaoi(self, ctx: Context):
+        """
+		To get Random Yaoi
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "kanna"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "yaoi"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		# 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        img = res['message']
 
-		await ctx.reply(embed=em)
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def ass(self, ctx: Context):
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hmidriff(self, ctx: Context):
+        """
+		To get Random Hmidriff
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Ass`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hmidriff"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['message']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hass(self, ctx: Context):
+        """
+		To get Random Hentai Ass
 		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "ass"}
+        url = 'https://nekobot.xyz/api/image'
+        params = {"type": "hass"}
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		# 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
 
-		await ctx.reply(embed=em)
+        img = res['message']
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def pussy(self, ctx: Context):
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+    @commands.command(aliases=['randnsfw'])
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def randomnsfw(self, ctx: Context, *, subreddit: str = None):
+        """
+		To get Random NSFW from subreddit.
 		"""
-		To get Random ^^.
-		
-		Usage:
-		`Pussy`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "pussy"}
+        if subreddit is None: subreddit = "NSFW"
+        end = time() + 60
+        while time() < end:
+            url = f'https://memes.blademaker.tv/api/{subreddit}'
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as r:
+                    if r.status == 200:
+                        res = await r.json()
+                    else:
+                        return
+            if res['nsfw']: break
 
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
+        img = res['image']
 
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
 
-		await ctx.reply(embed=em)
+        await ctx.reply(embed=em)
 
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def thigh(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Thigh`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "thigh"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hthigh(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hthigh`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hthigh"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-
-		# 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def gah(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Gah`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "gah"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def paizuri(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Paizuri`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "paizuri"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def tentacle(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Tentacle`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "tentacle"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def boobs(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Boobs`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "boobs"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return 
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hboobs(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hboobs`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hboobs"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def yaoi(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Yaoi`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "yaoi"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hmidriff(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hmidriff`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hmidriff"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-		
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-
-	@commands.command()
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def hass(self, ctx: Context):
-		"""
-		To get Random ^^.
-		
-		Usage:
-		`Hass`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		url = 'https://nekobot.xyz/api/image'
-		params = {"type": "hass"}
-
-		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=params) as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-
-		img = res['message']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-	
-	@commands.command(aliases=['randnsfw'])
-	@commands.guild_only()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def randomnsfw(self, ctx: Context, *, subreddit:str=None):
-		"""
-		To get Random ^^ from subreddit.
-		
-		Usage:
-		`Randomnsfw [Subreddit:Text]`
-		
-		Permission: 
-		Need Embed Links Permission for the bot.
-		
-		NOTE: Command will only run in NSFW Marked Channels
-		"""
-		if subreddit is None: subreddit = "NSFW"
-		end = time() + 60
-		while time() < end:
-			url = f'https://memes.blademaker.tv/api/{subreddit}'
-			async with aiohttp.ClientSession() as session:
-				async with session.get(url) as r:
-					if r.status == 200:
-						res = await r.json()
-					else:
-						return
-			if res['nsfw']: break
-
-		img = res['image']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
-
-		await ctx.reply(embed=em)
-		
-		
-	@commands.command()
-	@commands.is_nsfw()
-	@commands.bot_has_permissions(embed_links=True)
-	async def n(self, ctx: Context):
-		"""
+    @commands.command()
+    @commands.is_nsfw()
+    @commands.bot_has_permissions(embed_links=True)
+    async def n(self, ctx: Context):
+        """
 		Best command I guess. It return random ^^
-		
-		Usage:
-		`NsfwDM`
-		
-		NOTE: Command will only run in DM Channels
 		"""
-		
-		async with aiohttp.ClientSession() as session:
-			async with session.get("https://scathach.redsplit.org/v3/nsfw/gif/") as r:
-				if r.status == 200:
-					res = await r.json()
-				else:
-					return
-		
-		img = res['url']
-		
-		em = discord.Embed(timestamp=datetime.datetime.utcnow())
-		em.set_footer(text=f"{ctx.author.name}")
-		em.set_image(url=img)
 
-		await ctx.reply(embed=em)
-		
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://scathach.redsplit.org/v3/nsfw/gif/") as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return
+
+        img = res['url']
+
+        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em.set_footer(text=f"{ctx.author.name}")
+        em.set_image(url=img)
+
+        await ctx.reply(embed=em)
+
+
 def setup(bot):
-	bot.add_cog(nsfw(bot))
+    bot.add_cog(nsfw(bot))

@@ -15,17 +15,10 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 		self.bot = bot
 
 	@commands.command(name="ping")
-	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	async def ping(self, ctx: Context):
 		'''
 		Get the latency of bot.
-		
-		Syntax:
-		`Ping`
-
-		Permissions:
-		Need Embed Links permission for the bot
 		'''
 		start = time()
 		message = await ctx.reply(f"Pong! latency: {self.bot.latency*1000:,.0f} ms.")
@@ -34,18 +27,11 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 
 
 	@commands.command(aliases=['av'])
-	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
 	async def avatar(self, ctx: Context, *, member: discord.Member= None):
 			'''
 			Get the avatar of the user. Make sure you don't misuse.
-			
-			Syntax:
-			`Avatar [User:Mention/ID]`
-
-			Permissions:
-			Need Embed Links permission for the bot
 			'''
 			if member is None:
 					member = ctx.author
@@ -57,34 +43,21 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 
 
 	@commands.command(name="owner")
-	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
 	async def owner(self, ctx: Context):
 		'''
 		Get the freaking bot owner name.
-		
-		Syntax:
-		`Owner`
-
-		Permissions:
-		Need Embed Links permission for the bot
 		'''
 		await ctx.reply(embed=discord.Embed(title="Owner Info", description='This bot is being hosted by !! Ritik Ranjan [\*.\*]. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', timestamp=datetime.utcnow()))
 
 
 	@commands.command(aliases=['guildavatar', 'serverlogo', 'servericon'])
 	@commands.bot_has_permissions(embed_links=True)
-	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	async def guildicon(self, ctx: Context, server:int=None):
 			'''
 			Get the freaking server icon
-			
-			Syntax:
-			`Guildicon`
-			Permissions:
-			Need Embed Links permission for the bot
 			'''
 			guild = self.bot.get_guild(server) or ctx.guild
 			embed = discord.Embed(timestamp=datetime.utcnow())
@@ -96,16 +69,9 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])
 	@commands.bot_has_permissions(	embed_links=True)
 	@commands.cooldown(1, 5, commands.BucketType.member)
-	@commands.guild_only()
 	async def server_info(self, ctx: Context):
 		'''
 		Get the basic stats about the server
-		
-		Syntax:
-		`Serverinfo`
-
-		Permissions:
-		Need Embed Links permission for the bot. It will be better if you give Ban Member permission too for counting the number of bans.
 		'''
 		embed = discord.Embed(title="Server information",
 						colour=ctx.guild.owner.colour,
@@ -139,18 +105,11 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 
 
 	@commands.command(name="stats")
-	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
 	async def show_bot_stats(self, ctx: Context):
 		'''
 		Get the bot stats
-		
-		Syntax:
-		`Stats`
-		
-		Permissions:
-		Need Embed Links permission for the bot.
 		'''
 		embed = discord.Embed(title="Bot stats",
 						colour=ctx.author.colour,
@@ -185,16 +144,9 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 	@commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
 	@commands.bot_has_permissions(embed_links=True)
 	@commands.cooldown(1, 5, commands.BucketType.member)
-	@commands.guild_only()
 	async def user_info(self, ctx: Context, *, member:discord.User=None):
 		'''
 		Get the basic stats about the user
-		
-		Syntax:
-		`Userinfo`
-
-		Permissions:
-		Need Embed Links permission for the bot.
 		'''
 		target = member or ctx.author
 		roles = [role for role in target.roles]
@@ -221,18 +173,11 @@ class ult(Cog, name="Utilities", description="Basic commands for the bots."):
 
 
 	@commands.command()
-	@commands.guild_only()
 	@commands.cooldown(1, 5, commands.BucketType.member)
 	@commands.bot_has_permissions(embed_links=True)
 	async def invite(self, ctx: Context):
 		"""
 		Get the invite of the bot! Thanks for seeing this command
-
-		Syntax:
-		`Invite`
-
-		Permissions:
-		Need Embed Links permission for the bot.
 		"""
 		em = discord.Embed(title="ADD ME IN YOUR SERVER", url="https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=0&scope=bot", timestamp=datetime.utcnow())
 		em.set_footer(text=f"{ctx.author.name}")

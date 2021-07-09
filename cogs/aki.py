@@ -6,8 +6,6 @@ from discord.ext.commands import BucketType, cooldown
 
 aki = Akinator()
 
-import datetime
-
 import discord
 
 from discord.ext import commands
@@ -33,7 +31,10 @@ class GuessName(commands.Cog):
             await ctx.send(embed=embed)
 
             def check(m):
-                replies = ["yes", "y", "no", "n", "i", "idk", "i don't know", "probably", "p", "probably not", "pn"]
+                replies = [
+                    "yes", "y", "no", "n", "i", "idk", "i don't know",
+                    "probably", "p", "probably not", "pn"
+                ]
                 return (m.content in replies and m.channel == ctx.channel
                         and m.author == ctx.author)
 
@@ -57,8 +58,8 @@ class GuessName(commands.Cog):
         await ctx.send(embed=embed)
 
         def check(m):
-            return (m.content.lower() == "yes" or "y" and m.channel == ctx.channel
-                    and m.author == ctx.author)
+            return (m.content.lower() == "yes" or "y"
+                    and m.channel == ctx.channel and m.author == ctx.author)
 
         correct = await self.client.wait_for("message", check=check)
         if correct.content.lower() == "yes" or correct.content.lower() == "y":

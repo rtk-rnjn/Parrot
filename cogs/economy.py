@@ -11,7 +11,6 @@ class Economy(Cog, name="economy"):
 
 		@commands.command(aliases=["with"])
 		@user_premium_cd()
-		@commands.guild_only()
 		async def withdraw(self, ctx: Context, money: int):
 				'''
 				Withdraw your money, from your bank account

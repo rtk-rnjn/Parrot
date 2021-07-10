@@ -1,8 +1,8 @@
-from core import Cog
+from core import Cog, Parrot
 
 
 class Extra(Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
 
     @Cog.listener()

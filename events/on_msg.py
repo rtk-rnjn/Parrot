@@ -1,13 +1,14 @@
-from core import Cog
+from core import Parrot, Cog
+from database.msg_count import increment
 
 
 class OnMsg(Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
 
     @Cog.listener()
     async def on_message(self, message):
-        pass
+        await increment(message.guild.id, message.author.id)
 
     @Cog.listener()
     async def on_message_delete(self, message):

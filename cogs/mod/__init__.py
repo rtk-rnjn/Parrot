@@ -53,7 +53,7 @@ class mod(Cog,
                             *,
                             reason: reason_convert = None):
         """Gives a role to the all bots."""
-        await mt._add_roles_bot(ctx, operator, role, reason)
+        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
         await self.log(ctx, 'Role', 'Bots', f'{reason}')
 
     @role.command(name="humans")
@@ -66,7 +66,7 @@ class mod(Cog,
                              *,
                              reason: reason_convert = None):
         """Gives a role to the all humans."""
-        await mt._add_roles_humans(ctx, operator, role, reason)
+        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
         await self.log(ctx, 'Role', 'Humans', f'{reason}')
 
     @role.command(name="add", aliases=['arole', 'giverole', 'grole'])
@@ -79,7 +79,7 @@ class mod(Cog,
                        *,
                        reason: reason_convert = None):
         """Gives a role to the specified member(s)."""
-        await mt._add_roles(ctx, member, role, reason)
+        await mt._add_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
         await self.log(ctx, 'Role add', f'{member.mention}', f'{reason}')
 
     @role.command(name='remove', aliases=['urole', 'removerole', 'rrole'])
@@ -92,7 +92,7 @@ class mod(Cog,
                           *,
                           reason: reason_convert = None):
         """Remove the mentioned role from mentioned/id member"""
-        await mt._remove_roles(ctx, member, role, reason)
+        await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
         await self.log(ctx, 'Role removed', f'{member.mention}', f'{reason}')
 
     @commands.command(aliases=['hackban'])
@@ -107,7 +107,7 @@ class mod(Cog,
         """To ban a member from guild."""
 
         if days is None: days = 0
-        await mt._ban(ctx, member, days, reason)
+        await mt._ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, days, reason)
         await self.log(ctx, 'Ban', f'{member.mention}', f'{reason}')
 
     @commands.command(name='massban')
@@ -121,7 +121,7 @@ class mod(Cog,
                        reason: reason_convert = None):
         """To Mass ban list of members, from the guild"""
         if days is None: days = 0
-        await mt._mass_ban(ctx, members, days, reason)
+        await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, days, reason)
         await self.log(ctx, 'Mass Ban',
                        f'{", ".join([member.mention for member in members])}',
                        f'{reason}')
@@ -135,7 +135,7 @@ class mod(Cog,
                       *,
                       reason: reason_convert = None):
         """To Ban a member from a guild then immediately unban"""
-        await mt._softban(ctx, member, reason)
+        await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Soft Ban',
                        f'{", ".join([member.mention for member in member])}',
                        f'{reason}')
@@ -152,7 +152,7 @@ class mod(Cog,
                     reason: reason_convert = None):
         """Blocks a user from replying message in that channel."""
 
-        await mt._block(ctx, member, reason)
+        await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Block',
                        f'{", ".join([member.mention for member in member])}',
                        f'{reason}')
@@ -163,11 +163,11 @@ class mod(Cog,
     @commands.bot_has_permissions(manage_channels=True)
     async def clone(self,
                     ctx: Context,
-                    channel: discord.TextChannel,
+                    channel: discord.TextChannel = None,
                     *,
                     reason: reason_convert = None):
         """To clone the channel or to nukes the channel (clones and delete)."""
-        await mt._clone(ctx, channel, reason)
+        await mt._clone(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel, reason)
         await self.log(ctx, 'Clone', f'{channel.mention}', f'{reason}')
 
     @commands.command()
@@ -179,7 +179,7 @@ class mod(Cog,
                    *,
                    reason: reason_convert = None):
         """To kick a member from guild."""
-        await mt._kick(ctx, member, reason)
+        await mt._kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Kick', f'{member.mention}', f'{reason}')
 
     @commands.command(name='masskick')
@@ -191,7 +191,7 @@ class mod(Cog,
                         *,
                         reason: reason_convert = None):
         """To kick a member from guild."""
-        await mt._mass_kick(ctx, members, reason)
+        await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, reason)
         await self.log(ctx, 'Mass Kick',
                        f'{", ".join([member.mention for member in members])}',
                        f'{reason}')
@@ -215,7 +215,7 @@ class mod(Cog,
                         *,
                         channel: discord.TextChannel = None):
         """To lock the text channel"""
-        await mt._text_lock(ctx, channel)
+        await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel)
         await self.log(
             ctx, 'Text Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -231,7 +231,7 @@ class mod(Cog,
                       *,
                       channel: discord.VoiceChannel = None):
         """To lock the Voice Channel"""
-        await mt._vc_lock(ctx, channel)
+        await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.author.voice.channel)
         await self.log(
             ctx, 'VC Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -257,7 +257,7 @@ class mod(Cog,
                           *,
                           channel: discord.TextChannel = None):
         """To unlock the text channel"""
-        await mt._text_unlock(ctx, channel)
+        await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel)
         await self.log(
             ctx, 'Text Un-Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -273,7 +273,7 @@ class mod(Cog,
                         *,
                         channel: discord.VoiceChannel = None):
         """To unlock the Voice Channel"""
-        await mt._vc_unlock(ctx, channel)
+        await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.author.voice.channel)
         await self.log(
             ctx, 'VC Un-Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -290,7 +290,7 @@ class mod(Cog,
                    *,
                    reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
-        await mt._mute(ctx, member, seconds, reason)
+        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
         await self.log(ctx, 'Mute', f'{member.mention}',
                        f'{reason} | For {seconds}s')
 
@@ -303,10 +303,10 @@ class mod(Cog,
                      *,
                      reason: reason_convert = None):
         """To allow a member to sending message in the Text Channels, if muted."""
-        await mt._unmute(ctx, member, reason)
+        await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Un-Mute', f'{member.mention}', f'{reason}')
 
-    @commands.group()
+    @commands.command(aliases=['purge'])
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True,
@@ -328,7 +328,7 @@ class mod(Cog,
                 f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
             )
 
-    @clean.command(name='user', aliases=['member'])
+    @commands.command()
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(manage_messages=True,
@@ -349,7 +349,7 @@ class mod(Cog,
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
         )
 
-    @clean.command(name='bots')
+    @commands.command()
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(manage_messages=True,
@@ -367,12 +367,12 @@ class mod(Cog,
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
         )
 
-    @clean.command()
+    @commands.command()
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(manage_messages=True,
                                   read_message_history=True)
-    async def regex(self, ctx: Context, amount: int, *, regex: str):
+    async def purgeregex(self, ctx: Context, amount: int, *, regex: str):
         """
 				To delete bulk message, matching the regex
 				"""
@@ -398,7 +398,7 @@ class mod(Cog,
                        *,
                        reason: reason_convert = None):
         """To set slowmode in the specified channel"""
-        await mt._slowmode(ctx, seconds, channel, reason)
+        await mt._slowmode(ctx.guild, ctx.command.name, ctx.author, ctx.channel, seconds, channel or ctx.channel, reason)
         await self.log(ctx, 'Slowmode', f'{channel.mention}',
                        f'{reason} | For {seconds}s')
 
@@ -412,7 +412,7 @@ class mod(Cog,
                     reason: reason_convert = None):
         """To Unban a member from a guild"""
 
-        await mt._unban(ctx, member, reason)
+        await mt._unban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Un-Ban', f'{member.mention}', f'{reason}')
 
     @commands.command()
@@ -430,7 +430,7 @@ class mod(Cog,
                       reason: reason_convert = None):
         """Unblocks a user from the text channel"""
 
-        await mt._unblock(ctx, member, reason)
+        await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Un-Block',
                        f'{", ".join([member.mention for member in member])}',
                        f'{reason}')

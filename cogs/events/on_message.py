@@ -9,10 +9,10 @@ class Msg(Cog):
     @Cog.listener()
     async def on_message(self, message):
         if not message.author.bot:
-            if not collection.find_one({'_id': message.author.id}):
-                return await if_not_exists(message.author.id, 1)
-            await increment(message.author.id)
-
+            if not collection.find_one({'_id': message.guild.id}):
+                return await if_not_exists(message.guild.id, message.author.id, 1)
+            return await increment(message.guild.id, message.author.id)
+        return
 
 def setup(bot):
     bot.add_cog(Msg(bot))

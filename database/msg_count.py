@@ -8,8 +8,8 @@ db = cluster["parrot_db"]
 collection = db["msg_count"]
 
 
-async def if_not_exists(user_id: int, count: int):
-    post = {'_id': user_id, 'count': count}
+async def if_not_exists(guild_id: int, user_id: int, count: int):
+    post = {'_id': guild_id, 'user_id': user_id, 'count': count}
     try:
         collection.insert_one(post)
         return "OK"
@@ -17,8 +17,8 @@ async def if_not_exists(user_id: int, count: int):
         return str(e)
 
 
-async def increment(user_id: int):
-    pre_post = {'_id': user_id}
+async def increment(guild_id: int, user_id: int):
+    pre_post = {'_id': guild_id, 'user_id': user_id}
     try:
         collection.update_one(pre_post, {'$inc': {'count': 1}})
         return 'OK'

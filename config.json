@@ -28,6 +28,7 @@
 		"cogs.events.on_command_error",
 		"cogs.events.on_member_join",
 		"cogs.events.on_guild",
+    "cogs.events.on_message",
 		"cogs.economy",
     "cogs.giveaway",
     "cogs.giveaway.events",

@@ -55,7 +55,10 @@ class Giveaway(Cog):
             if msg.content.lower() == 'cancel':
                 raise ex.GiveawayError(f"{ctx.author.mention} canceling...")
             if i == 1:
+              try:
                 t = convert_time(msg.content)
+              except Exception:
+                raise ex.TimeError()
             if i == 2:
                 channel = await commands.TextChannelConverter().convert(
                     ctx, msg.content)

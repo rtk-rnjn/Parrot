@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from utilities.config import my_secret
 import random
-from database.msg_count import collection as col
+
 
 cluster = MongoClient(
     f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -65,7 +65,8 @@ async def drop_giveaway(message_id):
 
 async def can_win_giveaway(message_id, channel_id, user_id, guild, member):
     data = collection.find_one({'_id': message_id})
-    msg_user = col.find_one({'_id': user_id})
+    col = db[f'{guild.id}']
+    msg_user = col.find_one({'_id': member.id})
     if not data: return
     if (guild.get_role(data['required_role']) in member.roles
             and data['required_msg'] >= msg_user['count']):

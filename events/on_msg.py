@@ -1,4 +1,4 @@
-from core.cog import Cog
+from core import Cog
 
 
 class OnMsg(Cog):

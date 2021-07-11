@@ -116,7 +116,7 @@ class Giveaway(Cog):
         await mt.create_giveaway(msg.id, channel.id, winner,
                                  role.id if role else None,
                                  msg_count if msg_count else None,
-                                 datetime.utcnow() + timedelta(seconds=t))
+                                 datetime.utcnow() + timedelta(seconds=t), True)
         await msg.add_reaction("🎉")
 
 

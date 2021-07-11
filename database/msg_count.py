@@ -4,7 +4,7 @@ from utilities.config import my_secret
 cluster = MongoClient(
     f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
-db = cluster["parrot_db"]
+db = cluster["msg_db"]
 
 
 async def increment(guild_id: int, user_id: int):

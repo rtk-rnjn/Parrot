@@ -12,7 +12,7 @@ collection = db['giveaway']
 
 
 async def create_giveaway(message_id, channel_id, winner, required_role,
-                          required_msg, ends_at):
+                          required_msg, ends_at, active):
     post = {
         '_id': message_id,
         'channel_id': channel_id,
@@ -20,7 +20,8 @@ async def create_giveaway(message_id, channel_id, winner, required_role,
         'required_role': required_role,
         'required_msg': required_msg,
         'ends_at': ends_at,
-        'user': []
+        'user': [],
+        'active': active
     }
     collection.insert_one(post)
 
@@ -49,6 +50,7 @@ async def end_giveaway(bot, message_id, winner):
             {"$set": {
                 'user': [user.id for user in from_users]
             }})
+        collection.update_one({'_id': message_id}, {'$set': {'active': False}})
 
     users.remove(bot.user)
     winners = random.sample(from_users, winner)

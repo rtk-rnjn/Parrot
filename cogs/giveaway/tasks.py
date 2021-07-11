@@ -16,6 +16,7 @@ class GiveawayTask(Cog):
     async def GiveawayRefresher(self):
         data = collection.find({})
         for data in data:
+            if not data['active']: return 
             if data['ends_at'] >= datetime.utcnow():
                 break
         else:

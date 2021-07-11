@@ -9,7 +9,7 @@ from platform import python_version
 
 from core import Parrot, Context, Cog
 
-class ult(Cog, name="Utilities", description="Basic commands for the bots."):
+class ult(Cog, name="utilities", description="Basic commands for the bots."):
 	'''Basic commands for the bots.'''
 	def __init__(self, bot: Parrot):
 		self.bot = bot

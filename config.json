@@ -35,10 +35,7 @@
 		"cogs.config",
 		"cogs.gchat.on_message",
 		"cogs.economy",
-    "cogs.giveaway",
-    "cogs.giveaway.events",
-    "cogs.giveaway.tasks",
-		"jishaku"
+    "jishaku"
 	],
 	"support_server": "https://discord.gg/NEyJxM7G7f",
 	"invite": "https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot",

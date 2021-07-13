@@ -183,29 +183,5 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
 		em.set_footer(text=f"{ctx.author.name}")
 		await ctx.reply(embed=em)
 
-	@commands.command(aliases=['suggestions', 'suggest'])
-	@commands.guild_only()
-	@commands.cooldown(1, 120, commands.BucketType.member)
-	@commands.bot_has_permissions(embed_links=True)
-	async def feedback(self, ctx: Context, *, remark:str):
-		"""
-		To reply the feedback to the developers. Kindly do not spam this command. Else ^^
-
-		Syntax:
-		`Feedback <remark>`
-
-		Cooldown of 300 seconds after one time use, per member.
-
-		Permissions:
-		Need Embed Links permission for the bot.
-
-		NOTE: Your feedback is important, also I will buy you a cup of coffee, if your suggestion is useful. Also, `<remark>` should be more than 20 characters.
-		"""
-		if len(remark) <= 20: return
-		else:
-			embed = discord.Embed(title='Suggestion', description=f"```css\n{remark}```", color=discord.Color.blue(), timestamp=datetime.utcnow())
-			embed.set_footer(text=f"{ctx.author.name}")
-			await self.bot.get_channel(834662716492873758).reply(embed=embed)
-
 def setup(bot):
 	bot.add_cog(ult(bot))

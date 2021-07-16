@@ -1,0 +1,84 @@
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @commands.bot_has_permissions(embed_links=True)
+    async def warn(self, ctx: Context, member: discord.Member, *,
+                   reason: reason_convert):
+        """
+		To warn a user
+		"""
+        with open('reports.json', encoding='utf-8') as f:
+            try:
+                report = json.load(f)
+            except ValueError:
+                report = {}
+                report['users'] = []
+
+        for current_guild in report['reports']:
+            if (current_guild['guild_id']
+                    == ctx.guild.id) and (current_guild['name'] == member.id):
+                current_guild['reasons'].append(reason)
+                break
+        else:
+            report['reports'].append({
+                'guild_id': ctx.guild.id,
+                'name': member.id,
+                'reasons': [
+                    reason,
+                ]
+            })
+        with open('json/reports.json', 'w+') as f:
+            json.dump(report, f)
+
+        try:
+            await member.send(
+                f"{member.name}#{member.discriminator} you are being warned for {reason}"
+            )
+        except Exception:
+            await ctx.reply(
+                f"{member.name}#{member.discriminator} you are being warned for {reason}"
+            )
+            pass
+
+    @commands.command(pass_context=True)
+    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @commands.bot_has_permissions(embed_links=True)
+    async def warnings(self, ctx: Context, member: discord.Member):
+        """
+		To see the number of times the user is being warned
+		"""
+        with open('json/reports.json', encoding='utf-8') as f:
+            report = json.load(f)
+        for current_guild in report['reports']:
+            if (current_guild['guild_id']
+                    == ctx.guild.id) and (current_guild['name'] == member.id):
+                await ctx.reply(
+                    f"{member.name} has been reported {len(current_guild['reasons'])} times : {', '.join(current_guild['reasons'])}"
+                )
+                break
+        else:
+            await ctx.reply(f"{member.name} has never been reported")
+
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @commands.bot_has_permissions(embed_links=True)
+    async def clearwarn(self, ctx: Context, member: discord.Member):
+        """
+		To clear all the warning from the user
+		"""
+        with open('json/reports.json', 'r', encoding='utf-8') as f:
+            report = json.load(f)
+        for current_guild in report['reports']:
+            if member.id == current_guild['name']:
+                if (current_guild['guild_id']
+                        == ctx.guild.id) and (current_guild['name']
+                                              == member.id):
+                    current_guild['reasons'] = []
+                    await ctx.reply(
+                        f"{ctx.author.mention} cleared all the warning from {member.name}"
+                    )
+                    break
+            else:
+                await ctx.reply(
+                    f"{ctx.author.mention} {member.name} never being reported")
+        with open('json/reports.json', 'w+') as f:
+            json.dump(report, f)

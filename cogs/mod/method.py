@@ -3,7 +3,8 @@ import discord, asyncio
 
 
 # ROLES
-async def _add_roles_bot(guild, command_name, destination, operator, role, reason):
+async def _add_roles_bot(guild, command_name, destination, operator, role,
+                         reason):
     for member in guild.members:
         try:
             if not member.bot: pass
@@ -18,7 +19,8 @@ async def _add_roles_bot(guild, command_name, destination, operator, role, reaso
             )
 
 
-async def _add_roles_humans(guild, command_name, destination, operator, role, reason):
+async def _add_roles_humans(guild, command_name, destination, operator, role,
+                            reason):
     for member in guild.members:
         try:
             if member.bot: pass
@@ -33,9 +35,10 @@ async def _add_roles_humans(guild, command_name, destination, operator, role, re
             )
 
 
-async def _add_roles(guild, command_name, ctx_author, destination, member, role, reason):
+async def _add_roles(guild, command_name, ctx_author, destination, member,
+                     role, reason):
 
-    if guild.me.top_role < member.top_role:
+    if guild.me.top_role.position < member.top_role.position:
         return await destination.send(
             f"{ctx_author.mention} can't give the role to {member.name} as it's role is above the bot"
         )
@@ -55,10 +58,11 @@ async def _add_roles(guild, command_name, ctx_author, destination, member, role,
         )
 
 
-async def _remove_roles(guild, command_name, ctx_author, destination, member, role, reason):
+async def _remove_roles(guild, command_name, ctx_author, destination, member,
+                        role, reason):
 
-    if guild.me.top_role < member.top_role:
-        await destination.send(
+    if guild.me.top_role.position < member.top_role.position:
+        return await destination.send(
             f"{ctx_author.mention} can't give the role to {member.name} as it's role is above the bot"
         )
     try:
@@ -76,10 +80,47 @@ async def _remove_roles(guild, command_name, ctx_author, destination, member, ro
         )
 
 
+async def _role_hoist(guild, command_name, ctx_author, destination, role,
+                      _bool, reason):
+    if guild.me.top_role.position < role.position:
+        return await destination.send(
+            f"{ctx_author.mention} can't edit {role.name} as it's role is above the bot"
+        )
+    try:
+        await role.edit(
+            hoist=_bool,
+            reason=
+            f'Action requested by: {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
+        )
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} {role.name}({role.id}). Error raised: {e}"
+        )
+
+
+async def _change_role_name(guild, command_name, ctx_author, destination, role,
+                            text, reason):
+    if guild.me.top_role.position < role.position:
+        return await destination.send(
+            f"{ctx_author.mention} can't edit {role.name} as it's role is above the bot"
+        )
+    try:
+        await role.edit(
+            name=text,
+            reason=
+            f'Action requested by: {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
+        )
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} {role.name}({role.id}). Error raised: {e}"
+        )
+
+
 # BAN
 
 
-async def _ban(guild, command_name, ctx_author, destination, member, days, reason):
+async def _ban(guild, command_name, ctx_author, destination, member, days,
+               reason):
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
             pass
@@ -98,7 +139,8 @@ async def _ban(guild, command_name, ctx_author, destination, member, days, reaso
         )
 
 
-async def _mass_ban(guild, command_name, ctx_author, destination, members, days, reason):
+async def _mass_ban(guild, command_name, ctx_author, destination, members,
+                    days, reason):
     _list = members
     for member in members:
         try:
@@ -120,7 +162,8 @@ async def _mass_ban(guild, command_name, ctx_author, destination, members, days,
     )
 
 
-async def _softban(guild, command_name, ctx_author, destination, member, reason):
+async def _softban(guild, command_name, ctx_author, destination, member,
+                   reason):
     for member in member:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
@@ -149,23 +192,25 @@ async def _softban(guild, command_name, ctx_author, destination, member, reason)
 
 async def _unban(guild, command_name, ctx_author, destination, member, reason):
     try:
-      await guild.unban(
-        member,
-        reason=
-        f'Action requested by: {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
-      )
-      await destination.send(
-        f"**`{member.name}#{member.discriminator}`** is unbanned! Responsible moderator: **`{ctx_author.name}#{ctx_author.discriminator}`**! Reason: **{reason}**"
-     )
+        await guild.unban(
+            member,
+            reason=
+            f'Action requested by: {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
+        )
+        await destination.send(
+            f"**`{member.name}#{member.discriminator}`** is unbanned! Responsible moderator: **`{ctx_author.name}#{ctx_author.discriminator}`**! Reason: **{reason}**"
+        )
     except Exception as e:
-      await destination.send(
-                f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
-            )
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
+
 
 # MUTE
 
 
-async def _mute(guild, command_name, ctx_author, destination, member, seconds, reason):
+async def _mute(guild, command_name, ctx_author, destination, member, seconds,
+                reason):
     if not collection.find_one({'_id': guild.id}):
         await guild_join(guild.id)
 
@@ -218,7 +263,8 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds, r
             pass
 
 
-async def _unmute(guild, command_name, ctx_author, destination, member, reason):
+async def _unmute(guild, command_name, ctx_author, destination, member,
+                  reason):
     if not collection.find_one({'_id': guild.id}):
         await guild_join(guild.id)
 
@@ -263,7 +309,8 @@ async def _kick(guild, command_name, ctx_author, destination, member, reason):
         )
 
 
-async def _mass_kick(guild, command_name, ctx_author, destination, members, reason):
+async def _mass_kick(guild, command_name, ctx_author, destination, members,
+                     reason):
     _list = members
     for member in members:
         try:
@@ -288,7 +335,8 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members, reas
 # BLOCK
 
 
-async def _block(guild, command_name, ctx_author, destination, channel, member, reason):
+async def _block(guild, command_name, ctx_author, destination, channel, member,
+                 reason):
     for member in member:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
@@ -309,7 +357,8 @@ async def _block(guild, command_name, ctx_author, destination, channel, member, 
             )
 
 
-async def _unblock(guild, command_name, ctx_author, destination, channel, member, reason):
+async def _unblock(guild, command_name, ctx_author, destination, channel,
+                   member, reason):
     for member in member:
         try:
             if member.permissions_in(channel).send_messages:
@@ -401,7 +450,46 @@ async def _vc_unlock(guild, command_name, ctx_author, destination, channel):
 # EXTRA
 
 
-async def slowmode(guild, command_name, ctx_author, destination, seconds, channel, reason):
+async def _change_nickname(guild, command_name, ctx_author, destination,
+                           member, name, reason):
+    try:
+        await member.edit(
+            nick=name,
+            reason=
+            f'Action Requested by {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
+        )
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
+
+
+async def _change_channel_topic(guild, command_name, ctx_author, destination,
+                                channel, text):
+    try:
+        await channel.edit(
+            topic=text,
+            reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} {channel.name}. Error raised: {e}"
+        )
+
+
+async def _change_channel_name(guild, command_name, ctx_author, destination,
+                               channel, text):
+    try:
+        await channel.edit(
+            name=text,
+            reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} {channel.name}. Error raised: {e}"
+        )
+
+
+async def _slowmode(guild, command_name, ctx_author, destination, seconds,
+                    channel, reason):
     if seconds:
         try:
             if (seconds <= 21600) and (seconds > 0):
@@ -432,7 +520,9 @@ async def slowmode(guild, command_name, ctx_author, destination, seconds, channe
                 f"Can not able to {command_name} {channel.name}. Error raised: {e}"
             )
 
-async def _clone(guild, command_name, ctx_author, destination, channel, reason):
+
+async def _clone(guild, command_name, ctx_author, destination, channel,
+                 reason):
     try:
         new_channel = await channel.clone(
             reason=
@@ -445,5 +535,11 @@ async def _clone(guild, command_name, ctx_author, destination, channel, reason):
         await new_channel.send(f"{ctx_author.mention}", delete_after=5)
     except Exception as e:
         await destination.send(
-                f"Can not able to {command_name} {channel.name}. Error raised: {e}"
-            )
+            f"Can not able to {command_name} {channel.name}. Error raised: {e}"
+        )
+
+
+MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
+TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']
+VC_REACTION = ['🔒', '🔓', '🖋️']
+ROLE_REACTION =  ['🔒', '🔓', '🌈', '🖋️']

@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, json, typing, re
+import discord, typing, re, asyncio
 from core import Parrot, Context, Cog
 from utilities.checks import is_mod
 from utilities.converters import reason_convert, convert_time
@@ -53,7 +53,8 @@ class mod(Cog,
                             *,
                             reason: reason_convert = None):
         """Gives a role to the all bots."""
-        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
+        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel,
+                                operator, role, reason)
         await self.log(ctx, 'Role', 'Bots', f'{reason}')
 
     @role.command(name="humans")
@@ -66,7 +67,8 @@ class mod(Cog,
                              *,
                              reason: reason_convert = None):
         """Gives a role to the all humans."""
-        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
+        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel,
+                                   operator, role, reason)
         await self.log(ctx, 'Role', 'Humans', f'{reason}')
 
     @role.command(name="add", aliases=['arole', 'giverole', 'grole'])
@@ -79,7 +81,8 @@ class mod(Cog,
                        *,
                        reason: reason_convert = None):
         """Gives a role to the specified member(s)."""
-        await mt._add_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
+        await mt._add_roles(ctx.guild, ctx.command.name, ctx.author,
+                            ctx.channel, member, role, reason)
         await self.log(ctx, 'Role add', f'{member.mention}', f'{reason}')
 
     @role.command(name='remove', aliases=['urole', 'removerole', 'rrole'])
@@ -92,7 +95,8 @@ class mod(Cog,
                           *,
                           reason: reason_convert = None):
         """Remove the mentioned role from mentioned/id member"""
-        await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
+        await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author,
+                               ctx.channel, member, role, reason)
         await self.log(ctx, 'Role removed', f'{member.mention}', f'{reason}')
 
     @commands.command(aliases=['hackban'])
@@ -107,7 +111,8 @@ class mod(Cog,
         """To ban a member from guild."""
 
         if days is None: days = 0
-        await mt._ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, days, reason)
+        await mt._ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                      member, days, reason)
         await self.log(ctx, 'Ban', f'{member.mention}', f'{reason}')
 
     @commands.command(name='massban')
@@ -121,7 +126,8 @@ class mod(Cog,
                        reason: reason_convert = None):
         """To Mass ban list of members, from the guild"""
         if days is None: days = 0
-        await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, days, reason)
+        await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author,
+                           ctx.channel, members, days, reason)
         await self.log(ctx, 'Mass Ban',
                        f'{", ".join([member.mention for member in members])}',
                        f'{reason}')
@@ -135,7 +141,8 @@ class mod(Cog,
                       *,
                       reason: reason_convert = None):
         """To Ban a member from a guild then immediately unban"""
-        await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                          member, reason)
         await self.log(ctx, 'Soft Ban',
                        f'{", ".join([member.mention for member in member])}',
                        f'{reason}')
@@ -152,7 +159,8 @@ class mod(Cog,
                     reason: reason_convert = None):
         """Blocks a user from replying message in that channel."""
 
-        await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                        ctx.channel, member, reason)
         await self.log(ctx, 'Block',
                        f'{", ".join([member.mention for member in member])}',
                        f'{reason}')
@@ -167,7 +175,8 @@ class mod(Cog,
                     *,
                     reason: reason_convert = None):
         """To clone the channel or to nukes the channel (clones and delete)."""
-        await mt._clone(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel, reason)
+        await mt._clone(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                        channel or ctx.channel, reason)
         await self.log(ctx, 'Clone', f'{channel.mention}', f'{reason}')
 
     @commands.command()
@@ -179,7 +188,8 @@ class mod(Cog,
                    *,
                    reason: reason_convert = None):
         """To kick a member from guild."""
-        await mt._kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await mt._kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                       member, reason)
         await self.log(ctx, 'Kick', f'{member.mention}', f'{reason}')
 
     @commands.command(name='masskick')
@@ -191,7 +201,8 @@ class mod(Cog,
                         *,
                         reason: reason_convert = None):
         """To kick a member from guild."""
-        await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, reason)
+        await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author,
+                            ctx.channel, members, reason)
         await self.log(ctx, 'Mass Kick',
                        f'{", ".join([member.mention for member in members])}',
                        f'{reason}')
@@ -215,7 +226,8 @@ class mod(Cog,
                         *,
                         channel: discord.TextChannel = None):
         """To lock the text channel"""
-        await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel)
+        await mt._text_lock(ctx.guild, ctx.command.name, ctx.author,
+                            ctx.channel, channel or ctx.channel)
         await self.log(
             ctx, 'Text Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -231,7 +243,8 @@ class mod(Cog,
                       *,
                       channel: discord.VoiceChannel = None):
         """To lock the Voice Channel"""
-        await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.author.voice.channel)
+        await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                          channel or ctx.author.voice.channel)
         await self.log(
             ctx, 'VC Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -257,7 +270,8 @@ class mod(Cog,
                           *,
                           channel: discord.TextChannel = None):
         """To unlock the text channel"""
-        await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel)
+        await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author,
+                              ctx.channel, channel or ctx.channel)
         await self.log(
             ctx, 'Text Un-Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -273,7 +287,8 @@ class mod(Cog,
                         *,
                         channel: discord.VoiceChannel = None):
         """To unlock the Voice Channel"""
-        await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.author.voice.channel)
+        await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
+                            ctx.channel, channel or ctx.author.voice.channel)
         await self.log(
             ctx, 'VC Un-Lock', f'{channel.mention}',
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
@@ -290,7 +305,8 @@ class mod(Cog,
                    *,
                    reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
-        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
+        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                       member, seconds, reason)
         await self.log(ctx, 'Mute', f'{member.mention}',
                        f'{reason} | For {seconds}s')
 
@@ -303,7 +319,8 @@ class mod(Cog,
                      *,
                      reason: reason_convert = None):
         """To allow a member to sending message in the Text Channels, if muted."""
-        await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                         member, reason)
         await self.log(ctx, 'Un-Mute', f'{member.mention}', f'{reason}')
 
     @commands.command(aliases=['purge'])
@@ -398,7 +415,9 @@ class mod(Cog,
                        *,
                        reason: reason_convert = None):
         """To set slowmode in the specified channel"""
-        await mt._slowmode(ctx.guild, ctx.command.name, ctx.author, ctx.channel, seconds, channel or ctx.channel, reason)
+        await mt._slowmode(ctx.guild, ctx.command.name, ctx.author,
+                           ctx.channel, seconds, channel or ctx.channel,
+                           reason)
         await self.log(ctx, 'Slowmode', f'{channel.mention}',
                        f'{reason} | For {seconds}s')
 
@@ -412,7 +431,8 @@ class mod(Cog,
                     reason: reason_convert = None):
         """To Unban a member from a guild"""
 
-        await mt._unban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await mt._unban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                        member, reason)
         await self.log(ctx, 'Un-Ban', f'{member.mention}', f'{reason}')
 
     @commands.command()
@@ -430,95 +450,309 @@ class mod(Cog,
                       reason: reason_convert = None):
         """Unblocks a user from the text channel"""
 
-        await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
+                          ctx.channel, member, reason)
         await self.log(ctx, 'Un-Block',
                        f'{", ".join([member.mention for member in member])}',
                        f'{reason}')
 
     @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(embed_links=True)
-    async def warn(self, ctx: Context, member: discord.Member, *,
-                   reason: reason_convert):
+    @commands.check_any(is_mod(),
+                        commands.has_permissions(manage_permissions=True,
+                                                 manage_messages=True,
+                                                 manage_channels=True,
+                                                 ban_members=True,
+                                                 manage_roles=True,
+                                                 kick_members=True,
+                                                 manage_nicknames=True))
+    @commands.bot_has_permissions(manage_permissions=True,
+                                  manage_messages=True,
+                                  manage_channels=True,
+                                  ban_members=True,
+                                  manage_roles=True,
+                                  kick_members=True,
+                                  read_message_history=True,
+                                  add_reactions=True,
+                                  manage_nicknames=True)
+    async def mod(self,
+                  ctx: Context,
+                  target: typing.Union[discord.Member, discord.User,
+                                       discord.TextChannel,
+                                       discord.VoiceChannel, discord.Role],
+                  *,
+                  reason: reason_convert = None):
         """
-		To warn a user
-		"""
-        with open('reports.json', encoding='utf-8') as f:
+        Why to learn the commands. This is all in one mod command.
+        """
+        if (type(target) is discord.Member) or (type(target) is discord.User):
+            member_embed = discord.Embed(title='Mod Menu',
+                                         description=':hammer: Ban\n'
+                                         ':boot: Kick\n'
+                                         ':zipper_mouth: Mute\n'
+                                         ':grin: Unmute\n'
+                                         ':x: Block\n'
+                                         ':o: Unblock\n'
+                                         ':arrow_up: Add role\n'
+                                         ':arrow_down: Remove role'
+                                         ':pen_fountain: Change Nickname',
+                                         timestamp=datetime.utcnow(),
+                                         color=ctx.author.color)
+            member_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
+            member_embed.set_thumbnail(url=ctx.guild.icon_url)
+            msg = ctx.send(embed=member_embed)
+            for reaction in mt.MEMBER_REACTION:
+                await msg.add_reaction(reaction)
+
+            def check(reaction, user):
+                return str(
+                    reaction.emoji
+                ) in mt.MEMBER_REACTION and user == ctx.author and reaction.message.id == msg.id
+
+            def check_msg(m):
+                return m.author == ctx.author and m.channel == ctx.channel
+
             try:
-                report = json.load(f)
-            except ValueError:
-                report = {}
-                report['users'] = []
+                reaction, user = await self.bot.wait_for('reaction_add',
+                                                         timeout=60.0,
+                                                         check=check)
+            except asyncio.TimeoutError:
+                return await msg.delete()
+            if str(reaction.emoji) == mt.MEMBER_REACTION[0]:
+                await mt._ban(ctx.guild, ctx.command.name, ctx.author,
+                              ctx.channel, target, 0, reason)
 
-        for current_guild in report['reports']:
-            if (current_guild['guild_id']
-                    == ctx.guild.id) and (current_guild['name'] == member.id):
-                current_guild['reasons'].append(reason)
-                break
-        else:
-            report['reports'].append({
-                'guild_id': ctx.guild.id,
-                'name': member.id,
-                'reasons': [
-                    reason,
-                ]
-            })
-        with open('json/reports.json', 'w+') as f:
-            json.dump(report, f)
+            if str(reaction.emoji) == mt.MEMBER_REACTION[1]:
+                await mt._kick(ctx.guild, ctx.command.name, ctx.author,
+                               ctx.channel, target, reason)
 
-        try:
-            await member.send(
-                f"{member.name}#{member.discriminator} you are being warned for {reason}"
-            )
-        except Exception:
-            await ctx.reply(
-                f"{member.name}#{member.discriminator} you are being warned for {reason}"
-            )
-            pass
+            if str(reaction.emoji) == mt.MEMBER_REACTION[2]:
+                await mt._mute(ctx.guild, ctx.command.name, ctx.author,
+                               ctx.channel, target, 0, reason)
 
-    @commands.command(pass_context=True)
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(embed_links=True)
-    async def warnings(self, ctx: Context, member: discord.Member):
-        """
-		To see the number of times the user is being warned
-		"""
-        with open('json/reports.json', encoding='utf-8') as f:
-            report = json.load(f)
-        for current_guild in report['reports']:
-            if (current_guild['guild_id']
-                    == ctx.guild.id) and (current_guild['name'] == member.id):
-                await ctx.reply(
-                    f"{member.name} has been reported {len(current_guild['reasons'])} times : {', '.join(current_guild['reasons'])}"
+            if str(reaction.emoji) == mt.MEMBER_REACTION[3]:
+                await mt._unmute(ctx.guild, ctx.command.name, ctx.author,
+                                 ctx.channel, target, reason)
+
+            if str(reaction.emoji) == mt.MEMBER_REACTION[4]:
+                await mt._block(ctx.guild, ctx.command.name, ctx.author,
+                                ctx.channel, ctx.channel, target, reason)
+
+            if str(reaction.emoji) == mt.MEMBER_REACTION[5]:
+                await mt._unblock(ctx.guild, ctx.command.name, ctx.author,
+                                  ctx.channel, ctx.channel, target, reason)
+
+            if str(reaction.emoji) == mt.MEMBER_REACTION[6]:
+                temp = await ctx.send(
+                    f'{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]'
                 )
-                break
-        else:
-            await ctx.reply(f"{member.name} has never been reported")
+                try:
+                    m = await self.bot.wait_for('message',
+                                                timeout=30,
+                                                check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                role = await commands.RoleConverter().convert(ctx, m.content)
+                await temp.delete()
+                await mt._add_roles(ctx.guild, ctx.command.name, ctx.author,
+                                    ctx.channel, target, role, reason)
 
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(embed_links=True)
-    async def clearwarn(self, ctx: Context, member: discord.Member):
-        """
-		To clear all the warning from the user
-		"""
-        with open('json/reports.json', 'r', encoding='utf-8') as f:
-            report = json.load(f)
-        for current_guild in report['reports']:
-            if member.id == current_guild['name']:
-                if (current_guild['guild_id']
-                        == ctx.guild.id) and (current_guild['name']
-                                              == member.id):
-                    current_guild['reasons'] = []
-                    await ctx.reply(
-                        f"{ctx.author.mention} cleared all the warning from {member.name}"
-                    )
-                    break
-            else:
-                await ctx.reply(
-                    f"{ctx.author.mention} {member.name} never being reported")
-        with open('json/reports.json', 'w+') as f:
-            json.dump(report, f)
+            if str(reaction.emoji) == mt.MEMBER_REACTION[7]:
+                temp = await ctx.send(
+                    f'{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]'
+                )
+                try:
+                    m = await self.bot.wait_for('message',
+                                                timeout=30,
+                                                check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                role = await commands.RoleConverter().convert(ctx, m.content)
+                await temp.delete()
+                await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author,
+                                       ctx.channel, target, role, reason)
+            if str(reaction.emoji) == mt.MEMBER_REACTION[8]:
+                await ctx.send(
+                    f'{ctx.author.mention} Enter the Nickname, [Not more than 32 char]',
+                    delete_after=30)
+                try:
+                    m = await self.bot.wait_for('message',
+                                                timeout=30,
+                                                check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+
+                await mt._change_nickname(ctx.guild, ctx.command.name,
+                                          ctx.author, ctx.channel, target,
+                                          (m.content)[:31:], reason)
+        return await msg.delete()
+
+        if (type(target) is discord.TextChannel):
+            tc_embed = discord.Embed(title='Mod Menu',
+                                     description=':lock: Lock\n'
+                                     ':unlock: Unlock\n'
+                                     ':pencil: Change Topic\n'
+                                     ':pen_fountain: Change Name',
+                                     timestamp=datetime.utcnow(),
+                                     color=ctx.author.color)
+            tc_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
+            tc_embed.set_thumbnail(url=ctx.guild.icon_url)
+            msg = ctx.send(embed=tc_embed)
+            for reaction in mt.TEXT_REACTION:
+                await msg.add_reaction(reaction)
+
+            def check(reaction, user):
+                return str(
+                    reaction.emoji
+                ) in mt.TEXT_REACTION and user == ctx.author and reaction.message.id == msg.id
+
+            def check_msg(m):
+                return m.author == ctx.author and m.channel == ctx.channel
+
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add',
+                                                         timeout=60.0,
+                                                         check=check)
+            except asyncio.TimeoutError:
+                return await msg.delete()
+
+            if str(reaction.emoji) == mt.TEXT_REACTION[0]:
+                await mt._text_lock(ctx.guild, ctx.commmand.name, ctx.author,
+                                    ctx.channel, ctx.channel)
+
+            if str(reaction.emoji) == mt.TEXT_REACTION[1]:
+                await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author,
+                                      ctx.channel, ctx.channel)
+
+            if str(reaction.emoji) == mt.TEXT_REACTION[2]:
+                await ctx.send(f'{ctx.author.mention} Enter the Channel Topic',
+                               delete_after=60)
+                try:
+                    m = self.bot.wait_for('message',
+                                          timeout=60,
+                                          check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                await mt._change_channel_topic(ctx.guild, ctx.command.name,
+                                               ctx.author, ctx.channel,
+                                               ctx.channel, m.content)
+
+            if str(reaction.emoji) == mt.TEXT_REACTION[3]:
+                await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
+                               delete_after=60)
+                try:
+                    m = self.bot.wait_for('message',
+                                          timeout=60,
+                                          check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                await mt._change_channel_name(ctx.guild, ctx.command.name,
+                                              ctx.author, ctx.channel,
+                                              ctx.channel, m.content)
+
+        return await msg.delete()
+
+        if (type(target) is discord.VoiceChannel):
+            vc_embed = discord.Embed(title='Mod Menu',
+                                     description=':lock: Lock\n'
+                                     ':unlock: Unlock\n'
+                                     ':pen_fountain: Change Name',
+                                     timestamp=datetime.utcnow(),
+                                     color=ctx.author.color)
+            vc_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
+            vc_embed.set_thumbnail(url=ctx.guild.icon_url)
+            msg = ctx.send(embed=tc_embed)
+            for reaction in mt.VC_REACTION:
+                await msg.add_reaction(reaction)
+
+            def check(reaction, user):
+                return str(
+                    reaction.emoji
+                ) in mt.VC_REACTION and user == ctx.author and reaction.message.id == msg.id
+
+            def check_msg(m):
+                return m.author == ctx.author and m.channel == ctx.channel
+
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add',
+                                                         timeout=60.0,
+                                                         check=check)
+            except asyncio.TimeoutError:
+                return await msg.delete()
+
+            if str(reaction.emoji) == mt.VC_REACTION[0]:
+                await mt._vc_lock(ctx.guild, ctx.commmand.name, ctx.author,
+                                  ctx.channel, ctx.author.voice.channel)
+
+            if str(reaction.emoji) == mt.VC_REACTION[1]:
+                await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
+                                    ctx.channel, ctx.author.voice.channel)
+
+            if str(reaction.emoji) == mt.VC_REACTION[2]:
+                await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
+                               delete_after=60)
+                try:
+                    m = self.bot.wait_for('message',
+                                          timeout=60,
+                                          check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                await mt._change_channel_name(ctx.guild, ctx.command.name,
+                                              ctx.author, ctx.channel,
+                                              ctx.channel, m.content)
+
+        return await msg.delete()
+
+        if (type(target) is discord.Role):
+            role_embed = discord.Embed(title='Mod Menu',
+                                       description=':lock: Hoist\n'
+                                       ':unlock: De-Hoist\n'
+                                       ':rainbow: Change Colour'
+                                       ':pen_fountain: Change Name',
+                                       timestamp=datetime.utcnow(),
+                                       color=ctx.author.color)
+            role_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
+            role_embed.set_thumbnail(url=ctx.guild.icon_url)
+            msg = ctx.send(embed=tc_embed)
+            for reaction in mt.ROLE_REACTION:
+                await msg.add_reaction(reaction)
+
+            def check(reaction, user):
+                return str(
+                    reaction.emoji
+                ) in mt.ROLE_REACTION and user == ctx.author and reaction.message.id == msg.id
+
+            def check_msg(m):
+                return m.author == ctx.author and m.channel == ctx.channel
+
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add',
+                                                         timeout=60.0,
+                                                         check=check)
+            except asyncio.TimeoutError:
+                return await msg.delete()
+
+            if str(reaction.emoji) == mt.ROLE_REACTION[0]:
+                await mt._vc_lock(ctx.guild, ctx.commmand.name, ctx.author,
+                                  ctx.channel, ctx.author.voice.channel)
+
+            if str(reaction.emoji) == mt.ROLE_REACTION[1]:
+                await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
+                                    ctx.channel, ctx.author.voice.channel)
+
+            if str(reaction.emoji) == mt.ROLE_REACTION[2]:
+                await ctx.send(f'{ctx.author.mention} Enter the Role Name',
+                               delete_after=60)
+                try:
+                    m = self.bot.wait_for('message',
+                                          timeout=60,
+                                          check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                await mt._change_role_name(ctx.guild, ctx.command.name,
+                                           ctx.author, ctx.channel,
+                                           ctx.channel, m.content, reason)
+
+        return await msg.delete()
 
 
 def setup(bot):

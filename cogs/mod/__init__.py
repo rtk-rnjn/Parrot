@@ -484,6 +484,7 @@ class mod(Cog,
         """
         Why to learn the commands. This is all in one mod command.
         """
+        if not target: ctx.send_help(ctx.command)
         if (type(target) is discord.Member) or (type(target) is discord.User):
             member_embed = discord.Embed(title='Mod Menu',
                                          description=':hammer: Ban\n'
@@ -584,7 +585,7 @@ class mod(Cog,
                 await mt._change_nickname(ctx.guild, ctx.command.name,
                                           ctx.author, ctx.channel, target,
                                           (m.content)[:31:], reason)
-        return await msg.delete()
+
 
         if (type(target) is discord.TextChannel):
             tc_embed = discord.Embed(title='Mod Menu',
@@ -649,8 +650,6 @@ class mod(Cog,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
 
-        return await msg.delete()
-
         if (type(target) is discord.VoiceChannel):
             vc_embed = discord.Embed(title='Mod Menu',
                                      description=':lock: Lock\n'
@@ -700,7 +699,6 @@ class mod(Cog,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
 
-        return await msg.delete()
 
         if (type(target) is discord.Role):
             role_embed = discord.Embed(title='Mod Menu',

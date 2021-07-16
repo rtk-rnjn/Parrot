@@ -499,7 +499,7 @@ class mod(Cog,
                                          color=ctx.author.color)
             member_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
             member_embed.set_thumbnail(url=ctx.guild.icon_url)
-            msg = ctx.send(embed=member_embed)
+            msg = await ctx.send(embed=member_embed)
             for reaction in mt.MEMBER_REACTION:
                 await msg.add_reaction(reaction)
 
@@ -596,7 +596,7 @@ class mod(Cog,
                                      color=ctx.author.color)
             tc_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
             tc_embed.set_thumbnail(url=ctx.guild.icon_url)
-            msg = ctx.send(embed=tc_embed)
+            msg = await ctx.send(embed=tc_embed)
             for reaction in mt.TEXT_REACTION:
                 await msg.add_reaction(reaction)
 
@@ -660,7 +660,7 @@ class mod(Cog,
                                      color=ctx.author.color)
             vc_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
             vc_embed.set_thumbnail(url=ctx.guild.icon_url)
-            msg = ctx.send(embed=tc_embed)
+            msg = await ctx.send(embed=tc_embed)
             for reaction in mt.VC_REACTION:
                 await msg.add_reaction(reaction)
 
@@ -712,7 +712,7 @@ class mod(Cog,
                                        color=ctx.author.color)
             role_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
             role_embed.set_thumbnail(url=ctx.guild.icon_url)
-            msg = ctx.send(embed=tc_embed)
+            msg = await ctx.send(embed=tc_embed)
             for reaction in mt.ROLE_REACTION:
                 await msg.add_reaction(reaction)
 

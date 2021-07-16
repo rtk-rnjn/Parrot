@@ -617,7 +617,7 @@ class mod(Cog,
                 return await msg.delete()
 
             if str(reaction.emoji) == mt.TEXT_REACTION[0]:
-                await mt._text_lock(ctx.guild, ctx.commmand.name, ctx.author,
+                await mt._text_lock(ctx.guild, ctx.command.name, ctx.author,
                                     ctx.channel, ctx.channel)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[1]:
@@ -679,7 +679,7 @@ class mod(Cog,
                 return await msg.delete()
 
             if str(reaction.emoji) == mt.VC_REACTION[0]:
-                await mt._vc_lock(ctx.guild, ctx.commmand.name, ctx.author,
+                await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author,
                                   ctx.channel, ctx.author.voice.channel)
 
             if str(reaction.emoji) == mt.VC_REACTION[1]:
@@ -730,7 +730,7 @@ class mod(Cog,
                 return await msg.delete()
 
             if str(reaction.emoji) == mt.ROLE_REACTION[0]:
-                await mt._vc_lock(ctx.guild, ctx.commmand.name, ctx.author,
+                await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author,
                                   ctx.channel, ctx.author.voice.channel)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:

@@ -618,11 +618,11 @@ class mod(Cog,
 
             if str(reaction.emoji) == mt.TEXT_REACTION[0]:
                 await mt._text_lock(ctx.guild, ctx.command.name, ctx.author,
-                                    ctx.channel, ctx.channel)
+                                    ctx.channel, target)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[1]:
                 await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author,
-                                      ctx.channel, ctx.channel)
+                                      ctx.channel, target)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[2]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Topic',
@@ -635,7 +635,7 @@ class mod(Cog,
                     return await msg.delete()
                 await mt._change_channel_topic(ctx.guild, ctx.command.name,
                                                ctx.author, ctx.channel,
-                                               ctx.channel, m.content)
+                                               target, m.content)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -680,11 +680,11 @@ class mod(Cog,
 
             if str(reaction.emoji) == mt.VC_REACTION[0]:
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author,
-                                  ctx.channel, ctx.author.voice.channel)
+                                  ctx.channel, ctx.author.voice.channel or target)
 
             if str(reaction.emoji) == mt.VC_REACTION[1]:
                 await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
-                                    ctx.channel, ctx.author.voice.channel)
+                                    ctx.channel, ctx.author.voice.channel or target)
 
             if str(reaction.emoji) == mt.VC_REACTION[2]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -730,14 +730,12 @@ class mod(Cog,
                 return await msg.delete()
 
             if str(reaction.emoji) == mt.ROLE_REACTION[0]:
-                await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author,
-                                  ctx.channel, ctx.author.voice.channel)
+                await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author, ctx.channel, target, True, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:
-                await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
-                                    ctx.channel, ctx.author.voice.channel)
-
-            if str(reaction.emoji) == mt.ROLE_REACTION[2]:
+                await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author, ctx.channel, target, False, reason)
+            if str(reaction.emoji) == mt.ROLE_REACTION[2]: pass #todo: color change
+            if str(reaction.emoji) == mt.ROLE_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Role Name',
                                delete_after=60)
                 try:

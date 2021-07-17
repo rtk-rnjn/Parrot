@@ -144,8 +144,8 @@ class fun(Cog, name="fun"):
   def __init__(self, bot: Parrot):
     self.bot = bot
   
-  @commands.command(aliases=['ttt'])
-  async def tictactoe(self, ctx: Context):
+  @commands.command()
+  async def ttt(self, ctx: Context):
       await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
   
   @command(name='8ball')

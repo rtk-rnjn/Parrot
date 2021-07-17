@@ -16,7 +16,7 @@ youtube_dl==2021.6.6
 async_timeout==3.0.1
 jishaku==2.0
 beautifulsoup4==4.9.3
-discord.py==1.7.3
+git+https://github.com/Rapptz/discord.py
 PyYAML==5.4.1
 ttg==0.1.dev3
 PyNacl

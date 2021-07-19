@@ -54,7 +54,7 @@ class HelpCommand(commands.HelpCommand):
         embed.set_author(
             name=
             f"Server: {self.context.guild.name or self.context.author.name}",
-            icon_url=self.context.guild.icon_url or self.context.me.icon_url)
+            icon_url=self.context.guild.icon.url or self.context.me.icon.url)
 
         embed.add_field(name="Get Parrot",
                         value=f"• {get_bot}\n• {support_server}",

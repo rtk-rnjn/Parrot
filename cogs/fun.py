@@ -158,7 +158,6 @@ class fun(Cog, name="fun"):
     await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
 
   @commands.command()
-  @commands.command()
   @user_premium_cd()
   async def choose(self, ctx: Context, *, options:commands.clean_content):
     '''

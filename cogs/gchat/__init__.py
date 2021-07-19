@@ -80,7 +80,7 @@ class MessageEvents(Cog, name="Global Chat"):
                             content=message.clean_content,
                             username=message.author.name + "#" +
                             message.author.discriminator,
-                            avatar_url=message.author.avatar_url)
+                            avatar_url=message.author.avatar.url)
 
                 await send_webhook()
             except:

@@ -244,7 +244,7 @@ class fun(Cog, name="fun"):
     embed.add_field(name="Encoded text:", value=f'```\n{base64_string}\n```', inline=False)
     embed.add_field(name="Decoded text:", value=f'```\n{sample_string}\n```', inline=False)
     embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
-    embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar_url}')
+    embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar.url}')
     await ctx.reply(embed=embed)
 
 
@@ -267,7 +267,7 @@ class fun(Cog, name="fun"):
     embed.add_field(name="Encoded [base64]:", value=f'```\n{base64_string}\n```', inline=False)
     embed.add_field(name="Encoded [binary]:", value=f'```\n{str(res)}\n```', inline=False)
     embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
-    embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar_url}')
+    embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar.url}')
     await ctx.reply(embed=embed)
 
   
@@ -318,7 +318,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/gay?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get('https://some-random-api.ml/canvas/gay?avatar={}'.format(member.avatar.url)) as wastedImage: 
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -335,7 +335,7 @@ class fun(Cog, name="fun"):
     '''
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/glass?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/glass?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -352,7 +352,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/horny?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/horny?avatar={member.avatar.url}.') as wastedImage: 
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -384,7 +384,7 @@ class fun(Cog, name="fun"):
     member = ctx.author
     if len(comment) > 20: comment = comment[:19:]
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/its-so-stupid?avatar={member.avatar_url_as(format="png", size=1024)}&dog={comment}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/its-so-stupid?avatar={member.avatar.url}&dog={comment}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -402,7 +402,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/jail?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/jail?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -419,7 +419,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/lolice?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/lolice?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -501,7 +501,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/simpcard?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/simpcard?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -554,7 +554,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/triggered?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/triggered?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -610,7 +610,7 @@ class fun(Cog, name="fun"):
     """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/wasted?avatar={member.avatar_url_as(format="png", size=1024)}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/wasted?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;
@@ -630,7 +630,7 @@ class fun(Cog, name="fun"):
     if len(member.name) > 20: name = member.name[:20:]
     else: name = member.name
     async with aiohttp.ClientSession() as wastedSession:
-        async with wastedSession.get(f'https://some-random-api.ml/canvas/youtube-comment?avatar={member.avatar_url_as(format="png", size=512)}&username={name}&comment={comment}') as wastedImage: # get users avatar as png with 1024 size
+        async with wastedSession.get(f'https://some-random-api.ml/canvas/youtube-comment?avatar={member.avatar.url}&username={name}&comment={comment}') as wastedImage: # get users avatar as png with 1024 size
             imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
             
             await wastedSession.close() # closing the session and;

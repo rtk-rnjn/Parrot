@@ -411,7 +411,7 @@ class miscl(Cog, name="miscellaneous"):
         emb = discord.Embed()
         if type(snipe) == list:  # edit snipe
             emb.set_author(name=str(snipe[0].author),
-                           icon_url=snipe[0].author.avatar_url)
+                           icon_url=snipe[0].author.avatar.url)
             emb.colour = snipe[0].author.colour
             emb.add_field(name='Before',
                           value=self.sanitise(snipe[0].content),
@@ -422,12 +422,12 @@ class miscl(Cog, name="miscellaneous"):
             emb.timestamp = snipe[0].created_at
         else:  # delete snipe
             emb.set_author(name=str(snipe.author),
-                           icon_url=snipe.author.avatar_url)
+                           icon_url=snipe.author.avatar.url)
             emb.description = self.sanitise(snipe.content)
             emb.colour = snipe.author.colour
             emb.timestamp = snipe.created_at
             emb.set_footer(text=f'Message sniped by {str(ctx.author)}',
-                           icon_url=ctx.author.avatar_url)
+                           icon_url=ctx.author.avatar.url)
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
 

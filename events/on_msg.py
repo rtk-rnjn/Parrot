@@ -8,6 +8,7 @@ class OnMsg(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
+        if not message.guild: return 
         await increment(message.guild.id, message.author.id)
 
     @Cog.listener()

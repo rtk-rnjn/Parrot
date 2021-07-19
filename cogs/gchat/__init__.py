@@ -1,6 +1,6 @@
 import aiohttp, re, asyncio
 
-from discord import Webhook, AsyncWebhookAdapter
+from discord import Webhook
 
 from database.global_chat import collection
 
@@ -74,8 +74,7 @@ class MessageEvents(Cog, name="Global Chat"):
 
                 async def send_webhook():
                     async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(
-                            f"{hook}", adapter=AsyncWebhookAdapter(session))
+                        webhook = Webhook.from_url(f"{hook}", adapter=session)
 
                         await webhook.send(
                             content=message.clean_content,

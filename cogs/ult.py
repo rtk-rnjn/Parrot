@@ -36,9 +36,9 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
 			if member is None:
 					member = ctx.author
 			embed = discord.Embed(timestamp=datetime.utcnow())
-			embed.add_field(name=member.name,value=f'[Download]({member.avatar_url})')
-			embed.set_image(url=member.avatar_url)
-			embed.set_footer(text=f'Requested by {ctx.author.name}', icon_url= ctx.author.avatar_url)
+			embed.add_field(name=member.name,value=f'[Download]({member.avatar.url})')
+			embed.set_image(url=member.avatar.url)
+			embed.set_footer(text=f'Requested by {ctx.author.name}', icon_url= ctx.author.avatar.url)
 			await ctx.reply(embed=embed)
 
 
@@ -113,7 +113,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
 		'''
 		embed = discord.Embed(title="Bot stats",
 						colour=ctx.author.colour,
-						thumbnail=f"{ctx.guild.me.avatar_url}",
+						thumbnail=f"{ctx.guild.me.avatar.url}",
 						timestamp=datetime.utcnow())
 
 		proc = Process()
@@ -154,7 +154,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
 						colour=target.colour,
 						timestamp=datetime.utcnow())
 
-		embed.set_thumbnail(url=target.avatar_url)
+		embed.set_thumbnail(url=target.avatar.url)
 		embed.set_footer(text=f"{target.id}")
 		fields = [("Name", str(target), True),
 					#("ID", target.id, True),

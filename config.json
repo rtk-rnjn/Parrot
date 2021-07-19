@@ -32,7 +32,7 @@
 		"cogs.telephone",
 		"cogs.unbiboat",
 		"cogs.config",
-		"cogs.gchat.on_message",
+		"cogs.gchat",
 		"cogs.economy",
     "jishaku"
 	],

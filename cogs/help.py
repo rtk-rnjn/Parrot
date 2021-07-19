@@ -7,13 +7,14 @@ from core import Parrot, Cog
 
 
 class HelpCommand(commands.HelpCommand):
-    def __init__(self):
-        super().__init__(
-            command_attrs={
-                'cooldown': commands.Cooldown(1, 3.0,
-                                              commands.BucketType.member),
-                'help': 'Shows help about the bot, a command, or a category'
-            })
+    def __init__(self, *args, **kwargs):
+        super().__init__(command_attrs={
+            'cooldown':
+            commands.Cooldown(1, 3.0, commands.BucketType.member),
+            'help':
+            'Shows help about the bot, a command, or a category'
+        },
+                         **kwargs)
 
     async def on_help_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
@@ -145,7 +146,7 @@ class HelpCommand(commands.HelpCommand):
         await paginator.start(self.context)
 
 
-class Meta(Cog):
+class HelpCog(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.old_help_command = bot.help_command
@@ -157,7 +158,4 @@ class Meta(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Meta(bot))
-
-
-#
+    bot.add_cog(HelpCog(bot))

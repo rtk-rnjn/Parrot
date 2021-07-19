@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord, typing, aiohttp
-from discord import Webhook, AsyncWebhookAdapter
+from discord import Webhook
 from core import Parrot, Context, Cog
 
 from database.server_config import collection as csc, guild_join, guild_update
@@ -177,13 +177,12 @@ class BotConfig(Cog, name="botconfig"):
 
                 async def send_webhook():
                     async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(
-                            f"{hook}", adapter=AsyncWebhookAdapter(session))
+                        webhook = Webhook.from_url(f"{hook}", adapter=session)
 
                         await webhook.send(
                             content=f"{message}",
                             username="SYSTEM",
-                            avatar_url=f"{self.bot.guild.me.avatar_url}")
+                            avatar_url=f"{self.bot.guild.me.avatar.url}")
 
                 await send_webhook()
             except:

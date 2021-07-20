@@ -126,12 +126,13 @@ class BotConfig(Cog, name="botconfig"):
                 return 
             else:
                 await insert_lvl_role(ctx.guild.id, level, role.id)
-        
+                await ctx.send(f'{ctx.author.mention} added! **{level}** will assigned with **{role.name} ({role.id})**')
         if settings.lower() == 'updlvl':
             if not level and not role:
                 return
             else:
                 await update_lvl_role(ctx.guild.id, level, role.id)
+                await ctx.send(f'{ctx.author.mention} updated! **{level}** will assigned with **{role.name} ({role.id})**')
 
     @config.command(aliases=['g-setup'])
     @commands.check_any(commands.has_permissions(administrator=True))

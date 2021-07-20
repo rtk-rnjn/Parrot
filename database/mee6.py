@@ -16,22 +16,17 @@ async def guild_join(guild_id: int):
 
 
 async def insert_lvl_role(guild_id: int, level: int, role_id: int):
+    post = {'_id': guild_id}
     try:
-        collection.insert_one({'_id': guild_id, level: role_id})
+        collection.insert_one(post, {'$set' : {level: role_id}})
     except Exception as e:
         return str(e)
 
 
-# async def remove_lvl_role(guild_id: int, level: int):
-#     try:
-#         collection.delete_one({'_id': guild_id, level: {'$regex': '\d+'}})
-#     except Exception as e:
-#         return str(e)
-
 async def update_lvl_role(guild_id: int, level: int, role_id: int):
     post = {'_id': guild_id}
     try:
-        collection.update(post, {level: role_id})
+        collection.update(post, {'$set' : {level: role_id}})
     except Exception as e:
         return str(e)
 

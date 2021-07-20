@@ -21,7 +21,7 @@ async def insert_lvl_role(guild_id: int, level: str, role_id: int):
 
     post = {'_id': guild_id}
     try:
-        collection.update(post, {'$set' : {level: role_id}})
+        collection.update_one(post, {'$set' : {level: role_id}})
     except Exception as e:
         return str(e)
 
@@ -29,7 +29,7 @@ async def insert_lvl_role(guild_id: int, level: str, role_id: int):
 async def update_lvl_role(guild_id: int, level: str, role_id: int):
     post = {'_id': guild_id}
     try:
-        collection.update(post, {'$set' : {level: role_id}})
+        collection.update_one(post, {'$set' : {level: role_id}})
     except Exception as e:
         return str(e)
 

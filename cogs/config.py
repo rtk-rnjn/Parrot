@@ -119,20 +119,26 @@ class BotConfig(Cog, name="botconfig"):
         if settings.lower() == 'removeall':
             await gr_mee6(ctx.guild.id)
             await ge_mee6(ctx.guild.id)
-            return await ctx.send(f'{ctx.author.mention} removed all the level and its respective roles')
-        
+            return await ctx.send(
+                f'{ctx.author.mention} removed all the level and its respective roles'
+            )
+
         if settings.lower() == 'addlvl':
             if not level and not role:
-                return 
+                return
             else:
-                await insert_lvl_role(ctx.guild.id, level, role.id)
-                await ctx.send(f'{ctx.author.mention} added! **{level}** will assigned with **{role.name} ({role.id})**')
+                await insert_lvl_role(ctx.guild.id, str(level), role.id)
+                await ctx.send(
+                    f'{ctx.author.mention} added! **{level}** will assigned with **{role.name} ({role.id})**'
+                )
         if settings.lower() == 'updlvl':
             if not level and not role:
                 return
             else:
-                await update_lvl_role(ctx.guild.id, level, role.id)
-                await ctx.send(f'{ctx.author.mention} updated! **{level}** will assigned with **{role.name} ({role.id})**')
+                await update_lvl_role(ctx.guild.id, str(level), role.id)
+                await ctx.send(
+                    f'{ctx.author.mention} updated! **{level}** will assigned with **{role.name} ({role.id})**'
+                )
 
     @config.command(aliases=['g-setup'])
     @commands.check_any(commands.has_permissions(administrator=True))

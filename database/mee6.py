@@ -15,7 +15,7 @@ async def guild_join(guild_id: int):
         return str(e)
 
 
-async def insert_lvl_role(guild_id: int, level: int, role_id: int):
+async def insert_lvl_role(guild_id: int, level: str, role_id: int):
     if not collection.find_one({'_id' :guild_id}):
         await guild_join(guild_id)
 
@@ -26,7 +26,7 @@ async def insert_lvl_role(guild_id: int, level: int, role_id: int):
         return str(e)
 
 
-async def update_lvl_role(guild_id: int, level: int, role_id: int):
+async def update_lvl_role(guild_id: int, level: str, role_id: int):
     post = {'_id': guild_id}
     try:
         collection.update(post, {'$set' : {level: role_id}})

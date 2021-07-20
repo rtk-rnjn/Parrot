@@ -586,7 +586,6 @@ class mod(Cog,
                                           ctx.author, ctx.channel, target,
                                           (m.content)[:31:], reason)
 
-
         if (type(target) is discord.TextChannel):
             tc_embed = discord.Embed(title='Mod Menu',
                                      description=':lock: Lock\n'
@@ -634,8 +633,8 @@ class mod(Cog,
                 except asyncio.TimeoutError:
                     return await msg.delete()
                 await mt._change_channel_topic(ctx.guild, ctx.command.name,
-                                               ctx.author, ctx.channel,
-                                               target, m.content)
+                                               ctx.author, ctx.channel, target,
+                                               m.content)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -680,11 +679,13 @@ class mod(Cog,
 
             if str(reaction.emoji) == mt.VC_REACTION[0]:
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author,
-                                  ctx.channel, ctx.author.voice.channel or target)
+                                  ctx.channel, ctx.author.voice.channel
+                                  or target)
 
             if str(reaction.emoji) == mt.VC_REACTION[1]:
                 await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
-                                    ctx.channel, ctx.author.voice.channel or target)
+                                    ctx.channel, ctx.author.voice.channel
+                                    or target)
 
             if str(reaction.emoji) == mt.VC_REACTION[2]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -698,7 +699,6 @@ class mod(Cog,
                 await mt._change_channel_name(ctx.guild, ctx.command.name,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
-
 
         if (type(target) is discord.Role):
             role_embed = discord.Embed(title='Mod Menu',
@@ -730,11 +730,26 @@ class mod(Cog,
                 return await msg.delete()
 
             if str(reaction.emoji) == mt.ROLE_REACTION[0]:
-                await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author, ctx.channel, target, True, reason)
+                await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author,
+                                     ctx.channel, target, True, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:
-                await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author, ctx.channel, target, False, reason)
-            if str(reaction.emoji) == mt.ROLE_REACTION[2]: pass #todo: color change
+                await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author,
+                                     ctx.channel, target, False, reason)
+            
+            if str(reaction.emoji) == mt.ROLE_REACTION[2]:
+                await ctx.send(f'{ctx.author.mention} Enter the Colour, in whole number',
+                               delete_after=60)
+                try:
+                    m = self.bot.wait_for('message',
+                                          timeout=60,
+                                          check=check_msg)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                await mt._change_role_name(ctx.guild, ctx.command.name,
+                                           ctx.author, ctx.channel, target,
+                                           m.content, reason)
+            
             if str(reaction.emoji) == mt.ROLE_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Role Name',
                                delete_after=60)
@@ -745,8 +760,8 @@ class mod(Cog,
                 except asyncio.TimeoutError:
                     return await msg.delete()
                 await mt._change_role_name(ctx.guild, ctx.command.name,
-                                           ctx.author, ctx.channel,
-                                           ctx.channel, m.content, reason)
+                                           ctx.author, ctx.channel, target,
+                                           m.content, reason)
 
         return await msg.delete()
 

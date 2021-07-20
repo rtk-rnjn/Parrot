@@ -5,6 +5,7 @@ from core import Parrot, Context, Cog
 
 from database.server_config import collection as csc, guild_join, guild_update
 from database.global_chat import collection as cgc, gchat_on_join, gchat_update
+from database.mee6 import guild_join as ge_mee6, guild_remove as gr_mee6, insert_lvl_role, update_lvl_role, collection as cm6
 
 
 class BotConfig(Cog, name="botconfig"):
@@ -13,19 +14,16 @@ class BotConfig(Cog, name="botconfig"):
         self.bot = bot
 
     @commands.group()
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     @commands.bot_has_permissions(embed_links=True)
     async def config(self, ctx: Context):
         """
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
 				"""
         pass
-        # FUCK
 
     @config.command()
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     async def botprefix(self, ctx: Context, *, arg: commands.clean_content):
         """
 				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix.
@@ -44,8 +42,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['mute-role'])
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     async def muterole(self, ctx: Context, *, role: discord.Role):
         """
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
@@ -60,8 +57,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['mod-role'])
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     async def modrole(self, ctx: Context, *, role: discord.Role):
         """
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
@@ -77,8 +73,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['giveaway-role'])
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     async def giveawayrole(self, ctx: Context, *, role: discord.Role):
         if not csc.find_one({'_id': ctx.guild.id}):
             await guild_join(ctx.guild.id)
@@ -91,8 +86,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['action-log'])
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     async def actionlog(self,
                         ctx: Context,
                         *,
@@ -111,9 +105,36 @@ class BotConfig(Cog, name="botconfig"):
             f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**"
         )
 
+    @config.command(name='mee6')
+    @commands.check_any(commands.has_permissions(administrator=True))
+    async def mee6(self,
+                   ctx: Context,
+                   settings: str,
+                   level: int = None,
+                   *,
+                   role: discord.Role = None):
+        if not cm6.find_one(ctx.guild.id):
+            await ge_mee6(ctx.guild.id)
+
+        if settings.lower() == 'removeall':
+            await gr_mee6(ctx.guild.id)
+            await ge_mee6(ctx.guild.id)
+            return await ctx.send(f'{ctx.author.mention} removed all the level and its respective roles')
+        
+        if settings.lower() == 'addlvl':
+            if not level and not role:
+                return 
+            else:
+                await insert_lvl_role(ctx.guild.id, level, role.id)
+        
+        if settings.lower() == 'updlvl':
+            if not level and not role:
+                return
+            else:
+                await update_lvl_role(ctx.guild.id, level, role.id)
+
     @config.command(aliases=['g-setup'])
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        commands.is_owner())
+    @commands.check_any(commands.has_permissions(administrator=True))
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_webhooks=True,
                                   manage_roles=True)

@@ -17,3 +17,11 @@ async def increment(guild_id: int, user_id: int):
         return 'OK'
     except Exception as e:
         return str(e)
+
+
+async def guild_remove(guild_id: int):
+    try:
+        collection = db[f'{guild_id}']
+        collection.drop()
+    except Exception as e:
+        return str(e)

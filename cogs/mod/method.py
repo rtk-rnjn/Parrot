@@ -116,6 +116,24 @@ async def _change_role_name(guild, command_name, ctx_author, destination, role,
         )
 
 
+async def _change_role_color(guild, command_name, ctx_author, destination,
+                             role, int_, reason):
+    if guild.me.top_role.position < role.position:
+        return await destination.send(
+            f"{ctx_author.mention} can't edit {role.name} as it's role is above the bot"
+        )
+    try:
+        await role.edit(
+            color=discord.Color.value(int(int_)),
+            reason=
+            f'Action requested by: {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
+        )
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} {role.name}({role.id}). Error raised: {e}"
+        )
+
+
 # BAN
 
 
@@ -542,4 +560,4 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
 TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']
 VC_REACTION = ['🔒', '🔓', '🖋️']
-ROLE_REACTION =  ['🔒', '🔓', '🌈', '🖋️']
+ROLE_REACTION = ['🔒', '🔓', '🌈', '🖋️']

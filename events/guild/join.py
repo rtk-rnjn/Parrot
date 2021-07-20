@@ -1,9 +1,20 @@
 from core import Parrot, Cog
+
 from database.global_chat import gchat_on_join, gchat_on_remove
+
 from database.telephone import telephone_on_join, telephone_on_remove
+
 from database.ticket import ticket_on_join, ticket_on_remove
+
 from database.logging import logging_on_join, logging_on_remove
+
 from database.server_config import guild_join, guild_remove
+
+from database.msg_count import guild_remove as gr_msg
+
+from database.mee6 import guild_join as ge_mee6
+from database.mee6 import guild_remove as gr_mee6
+
 
 class GuildJoin(Cog):
     def __init__(self, bot: Parrot):
@@ -16,7 +27,7 @@ class GuildJoin(Cog):
         await ticket_on_join(guild.id)
         await logging_on_join(guild.id)
         await guild_join(guild.id)
-
+        await ge_mee6(guild.id)
         for channel in guild.text_channels:
             if channel.permissions_for(guild.me).send_messages:
                 channel.send(
@@ -31,6 +42,8 @@ class GuildJoin(Cog):
         await ticket_on_remove(guild.id)
         await logging_on_remove(guild.id)
         await guild_remove(guild.id)
+        await gr_msg(guild.id)
+        await gr_mee6(guild.id)
 
     @Cog.listener()
     async def on_guild_update(self, before, after):

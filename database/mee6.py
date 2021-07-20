@@ -16,9 +16,12 @@ async def guild_join(guild_id: int):
 
 
 async def insert_lvl_role(guild_id: int, level: int, role_id: int):
+    if not collection.find_one({'_id' :guild_id}):
+        await guild_join(guild_id)
+
     post = {'_id': guild_id}
     try:
-        collection.insert_one(post, {'$set' : {level: role_id}})
+        collection.update(post, {'$set' : {level: role_id}})
     except Exception as e:
         return str(e)
 

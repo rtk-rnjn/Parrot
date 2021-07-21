@@ -256,7 +256,7 @@ class miscl(Cog, name="miscellaneous"):
         embed = discord.Embed(title="Calculated!!",
                               description=f'```\nAnswer is: {res}```',
                               timestamp=datetime.datetime.utcnow())
-        embed.set_footer(f"{ctx.author.name}")
+        embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed)
 

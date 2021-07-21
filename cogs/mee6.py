@@ -10,7 +10,8 @@ class Mee6Integration(Cog, name="MEE6 Integration"):
 
     @Cog.listener()
     async def on_message(self, message):
-        if not message.guild or message.author.bot: return
+        if message.author.bot: return
+        if not message.guild: return
         mee6API = API(message.guild.id)
         data = collection.find_one({'_id': message.guild.id})
 

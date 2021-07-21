@@ -554,6 +554,7 @@ class mod(Cog,
                     return await msg.delete()
                 role = await commands.RoleConverter().convert(ctx, m.content)
                 await temp.delete()
+                if role.permissions.administrator: return await ctx.send(f"{ctx.author.metion} can't give admin role to {target.name}")
                 await mt._add_roles(ctx.guild, ctx.command.name, ctx.author,
                                     ctx.channel, target, role, reason)
 

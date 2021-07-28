@@ -105,41 +105,6 @@ class BotConfig(Cog, name="botconfig"):
             f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**"
         )
 
-    @config.command(name='mee6')
-    @commands.check_any(commands.has_permissions(administrator=True))
-    async def mee6(self,
-                   ctx: Context,
-                   settings: str,
-                   level: int = None,
-                   *,
-                   role: discord.Role = None):
-        if not cm6.find_one(ctx.guild.id):
-            await ge_mee6(ctx.guild.id)
-
-        if settings.lower() == 'removeall':
-            await gr_mee6(ctx.guild.id)
-            await ge_mee6(ctx.guild.id)
-            return await ctx.send(
-                f'{ctx.author.mention} removed all the level and its respective roles'
-            )
-
-        if settings.lower() == 'addlvl':
-            if not level and not role:
-                return
-            else:
-                await insert_lvl_role(ctx.guild.id, str(level), role.id)
-                await ctx.send(
-                    f'{ctx.author.mention} added! **{level}** will assigned with **{role.name} ({role.id})**'
-                )
-        if settings.lower() == 'updlvl':
-            if not level and not role:
-                return
-            else:
-                await update_lvl_role(ctx.guild.id, str(level), role.id)
-                await ctx.send(
-                    f'{ctx.author.mention} updated! **{level}** will assigned with **{role.name} ({role.id})**'
-                )
-
     @config.command(aliases=['g-setup'])
     @commands.check_any(commands.has_permissions(administrator=True))
     @commands.bot_has_permissions(manage_channels=True,

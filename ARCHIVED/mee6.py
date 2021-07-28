@@ -1,35 +1,41 @@
-from mee6_py_api import API
-from core import Parrot, Cog
-from database.mee6 import collection
+from pymongo import MongoClient
+from utilities.config import my_secret
+
+cluster = MongoClient(
+    f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+)
+db = cluster["parrot_db"]
+collection = db['mee6_role']
 
 
-class Mee6Integration(Cog, name="MEE6 Integration"):
-    """MEE6 Inetration for level rewards"""
-    def __init__(self, bot: Parrot):
-        self.bot = bot
-
-    @Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot: return
-        if not message.guild: return
-        mee6API = API(message.guild.id)
-        data = collection.find_one({'_id': message.guild.id})
-
-        if (not data): return
-        user_level = await mee6API.levels.get_user_level(message.author.id)
-        if not user_level: return
-
-        for rolid in data.keys():
-            try:
-                if int(rolid) <= user_level:
-                    role = message.guild.get_role(int(rolid))
-                    if role not in message.author.roles:
-                        await message.author.add_roles(
-                            role,
-                            reason="Auto Roles as per MEE6 Leveling System")
-            except Exception:
-                pass
+async def guild_join(guild_id: int):
+    try:
+        collection.insert_one({'_id': guild_id})
+    except Exception as e:
+        return str(e)
 
 
-def setup(bot):
-    bot.add_cog(Mee6Integration(bot))
+async def insert_lvl_role(guild_id: int, level: str, role_id: int):
+    if not collection.find_one({'_id' :guild_id}):
+        await guild_join(guild_id)
+
+    post = {'_id': guild_id}
+    try:
+        collection.update_one(post, {'$set' : {level: role_id}})
+    except Exception as e:
+        return str(e)
+
+
+async def update_lvl_role(guild_id: int, level: str, role_id: int):
+    post = {'_id': guild_id}
+    try:
+        collection.update_one(post, {'$set' : {level: role_id}})
+    except Exception as e:
+        return str(e)
+
+
+async def guild_remove(guild_id: int):
+    try:
+        collection.delete_one({'_id': guild_id})
+    except Exception as e:
+        return str(e)

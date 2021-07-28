@@ -20,11 +20,13 @@ class Mee6Integration(Cog, name="MEE6 Integration"):
         if not user_level: return
         
         for rolid in data.keys():
-            if int(rolid) <= user_level:
-                role = message.guild.get_role(int(roleid))
+            try:
+              if int(rolid) <= user_level:
+                role = message.guild.get_role(int(rolid))
                 if role not in message.author.roles:
                       await message.author.add_roles(role, reason="Auto Roles as per MEE6 Leveling System")
-
+            except Exception: 
+              pass
 
 def setup(bot):
     bot.add_cog(Mee6Integration(bot))

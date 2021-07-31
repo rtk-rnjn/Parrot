@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, random, asyncio, typing
+import discord, random, asyncio, typing, time
 
 from core import Parrot, Context, Cog
 
@@ -16,14 +16,14 @@ class Telephone(Cog, name='telephone'):
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def telsetup(self,
-                       ctx: Context,
-                       setting: str = None,
-                       *,
-                       arg: typing.Union[discord.TextChannel, discord.Role,
-                                         discord.Member, discord.Guild, int]):
+                      ctx: Context,
+                      setting: str = None,
+                      *,
+                      arg: typing.Union[discord.TextChannel, discord.Role,
+                                        discord.Member, discord.Guild, int]):
         """
-		To set the telephone phone line, in the server to call and receive the call from other server.
-		"""
+    To set the telephone phone line, in the server to call and receive the call from other server.
+    """
         settings = ['channel', 'pingrole', 'memberping']
 
         if not collection.find_one({'_id': ctx.guild.id}):
@@ -71,8 +71,9 @@ class Telephone(Cog, name='telephone'):
     async def dial(self, ctx: Context, number: typing.Union[discord.Guild,
                                                             int]):
         """
-		To dial to other server. Do not misuse this. Else you RIP :|
-		"""
+    To dial to other server. Do not misuse this. Else you RIP :|
+    """
+        
         channel = ctx.channel
         self_guild = collection.find_one({'_id': ctx.guild.id})
         if not self_guild:
@@ -138,22 +139,22 @@ class Telephone(Cog, name='telephone'):
             return
 
         if _talk.content.lower() == 'hangup':
-            await ctx.reply(f'Disconnected')
+            await ctx.send(f'Disconnected')
             await target_channel.send(f'Disconnected')
             await telephone_update(ctx.guild.id, 'is_line_busy', False)
             await telephone_update(number, 'is_line_busy', False)
             return
 
         elif _talk.content.lower() == 'pickup':
-            await ctx.reply(
+            await ctx.send(
                 f"Connected. Say {random.choice(['hi', 'hello', 'heya'])}")
             await target_channel.send(
                 f"Connected. Say {random.choice(['hi', 'hello', 'heya'])}")
 
             await telephone_update(ctx.guild.id, 'is_line_busy', True)
             await telephone_update(number, 'is_line_busy', True)
-
-            while True:
+            str_tim = time.time() + 60
+            while time.time() <= str_tim:
 
                 def check(m):
                     if (m.channel == target_channel) or (m.channel == channel):
@@ -163,8 +164,8 @@ class Telephone(Cog, name='telephone'):
 
                 try:
                     talk_message = await self.bot.wait_for('message',
-                                                           check=check,
-                                                           timeout=60.0)
+                                                          check=check,
+                                                          timeout=60.0)
                 except Exception:
                     await asyncio.sleep(0.5)
                     await target_channel.send(
@@ -195,6 +196,6 @@ class Telephone(Cog, name='telephone'):
                         f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
                     )
 
-
+        return await ctx.send("LINE DISCONNECTED")
 def setup(bot):
     bot.add_cog(Telephone(bot))

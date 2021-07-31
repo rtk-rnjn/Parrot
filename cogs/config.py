@@ -5,7 +5,6 @@ from core import Parrot, Context, Cog
 
 from database.server_config import collection as csc, guild_join, guild_update
 from database.global_chat import collection as cgc, gchat_on_join, gchat_update
-from database.mee6 import guild_join as ge_mee6, guild_remove as gr_mee6, insert_lvl_role, update_lvl_role, collection as cm6
 
 
 class BotConfig(Cog, name="botconfig"):
@@ -22,7 +21,7 @@ class BotConfig(Cog, name="botconfig"):
 				"""
         pass
 
-    @config.command()
+    @config.command(aliases=['prefix'])
     @commands.check_any(commands.has_permissions(administrator=True))
     async def botprefix(self, ctx: Context, *, arg: commands.clean_content):
         """

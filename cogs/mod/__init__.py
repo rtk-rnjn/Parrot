@@ -554,7 +554,10 @@ class mod(Cog,
                     return await msg.delete()
                 role = await commands.RoleConverter().convert(ctx, m.content)
                 await temp.delete()
-                if role.permissions.administrator: return await ctx.send(f"{ctx.author.metion} can't give admin role to {target.name}")
+                if role.permissions.administrator:
+                    return await ctx.send(
+                        f"{ctx.author.metion} can't give admin role to {target.name}"
+                    )
                 await mt._add_roles(ctx.guild, ctx.command.name, ctx.author,
                                     ctx.channel, target, role, reason)
 
@@ -737,10 +740,11 @@ class mod(Cog,
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:
                 await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author,
                                      ctx.channel, target, False, reason)
-            
+
             if str(reaction.emoji) == mt.ROLE_REACTION[2]:
-                await ctx.send(f'{ctx.author.mention} Enter the Colour, in whole number',
-                               delete_after=60)
+                await ctx.send(
+                    f'{ctx.author.mention} Enter the Colour, in whole number',
+                    delete_after=60)
                 try:
                     m = self.bot.wait_for('message',
                                           timeout=60,
@@ -750,7 +754,7 @@ class mod(Cog,
                 await mt._change_role_name(ctx.guild, ctx.command.name,
                                            ctx.author, ctx.channel, target,
                                            m.content, reason)
-            
+
             if str(reaction.emoji) == mt.ROLE_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Role Name',
                                delete_after=60)

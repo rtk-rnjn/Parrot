@@ -122,7 +122,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
       mem_total = virtual_memory().total / (1024**2)
       mem_of_total = proc.memory_percent()
       mem_usage = mem_total * (mem_of_total / 100)
-    VERSION="v2.7"
+    VERSION="v3.0.0.a"
     x = len(self.bot.users)
     y = len(self.bot.guilds)
     fields = [
@@ -179,7 +179,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
     Get the invite of the bot! Thanks for seeing this command
     """
     em = discord.Embed(title="ADD ME IN YOUR SERVER", url="https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=0&scope=bot", timestamp=datetime.utcnow())
-    em.set_footer(text=f"{ctx.author.name}")
+    em.set_footer(text=f"{ctx.author.name}#{ctx.author.discriminator}")
     await ctx.reply(embed=em)
 
 def setup(bot):

@@ -14,6 +14,6 @@ VERSION = "v3.1.5.9"
 SUPPORT_SERVER = data['support_server']
 INVITE = data['invite']
 DEV_LOGO = data['dev_logo']
-DATABASE_KEY = os.environ['DATABASE']
+DATABASE_KEY = os.environ['DATABASE_KEY']
 my_secret = DATABASE_KEY
 MEME_PASS = "***qwerty123"

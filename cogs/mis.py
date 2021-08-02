@@ -601,11 +601,11 @@ class miscl(Cog, name="miscellaneous"):
 				A nice command to make custom embeds, from a `Python Dictionary` or form `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
 				"""
         if type(data) is dict:
-            await ctx.reply(embed=discord.Embed.from_dict(data))
+            await ctx.send(embed=discord.Embed.from_dict(data))
         else:
             try:
                 data = json.loads(data)
-                await ctx.reply(embed=discord.Embed.from_dict(data))
+                await ctx.send(embed=discord.Embed.from_dict(data))
             except Exception:
                 pass
 

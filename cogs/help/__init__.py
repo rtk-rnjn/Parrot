@@ -4,9 +4,11 @@ from discord.ext import commands
 from utilities.paginator import Paginator
 from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO
 from core import Parrot, Cog
+from cogs.help.method import common_command_formatting, get_command_signature
 
 
 class HelpCommand(commands.HelpCommand):
+    """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):
         super().__init__(command_attrs={
             'help':
@@ -18,25 +20,9 @@ class HelpCommand(commands.HelpCommand):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send(str(error.original))
 
-    def get_command_signature(self, command):
-        return f'[p]{command.name}{"|" if command.aliases else ""}{"|".join(command.aliases if command.aliases else "")} {command.signature}'
-
-    def common_command_formatting(self, embed_like, command):
-        embed_like.title = f"Help with command `{command.name}`"
-
-        embed_like.description = f"```\n{command.help if command.help else 'Help not available... :('}\n```"
-        embed_like.add_field(
-            name="Usage",
-            value=f"```\n{self.get_command_signature(command)}\n```")
-        embed_like.add_field(
-            name="Aliases",
-            value=
-            f"```\n{', '.join(command.aliases if command.aliases else '')}\n```"
-        )
-
     async def send_command_help(self, command):
         embed = discord.Embed(colour=discord.Colour(0x55ddff))
-        self.common_command_formatting(embed, command)
+        common_command_formatting(embed, command)
         await self.context.send(embed=embed)
 
     async def send_bot_help(self, mapping):
@@ -127,9 +113,8 @@ class HelpCommand(commands.HelpCommand):
                 em = discord.Embed(title=f"Help with {cmd.name}",
                                    description=f"```\n{cmd.help}\n```",
                                    color=discord.Colour(0x55ddff))
-                em.add_field(
-                    name=f"Usage",
-                    value=f"```\n{self.get_command_signature(cmd)}\n```")
+                em.add_field(name=f"Usage",
+                             value=f"```\n{get_command_signature(cmd)}\n```")
                 em.add_field(
                     name="Aliases",
                     value=
@@ -145,6 +130,7 @@ class HelpCommand(commands.HelpCommand):
 
 
 class HelpCog(Cog):
+    """Shows help about the bot, a command, or a category"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.old_help_command = bot.help_command

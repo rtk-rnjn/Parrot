@@ -23,13 +23,13 @@ class Member(Cog):
                 description=
                 "We glad to see you here. Check out <#785803322136592394> and enjoy!",
                 timestamp=member.created_at)
-            embed.set_thumbnail(url=f"{member.avatar_url}")
+            embed.set_thumbnail(url=f"{member.avatar.url}")
             embed.add_field(
                 name="Account age",
                 value=
                 f"```{timedelta[0]} Hr(s) {timedelta[1]} Min(s) {timedelta[2]} Sec(s)```",
                 inline=False)
-            embed.set_footer(text=f"ID: {member.id}", icon_url=guild.icon_url)
+            embed.set_footer(text=f"ID: {member.id}", icon_url=guild.icon.url)
             await self.bot.get_channel(796645162860150784).send(embed=embed)
 
             if (today - created).total_seconds() >= 86400: pass

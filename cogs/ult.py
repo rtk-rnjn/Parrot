@@ -143,7 +143,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
   @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
   @commands.bot_has_permissions(embed_links=True)
   @commands.cooldown(1, 5, commands.BucketType.member)
-  async def user_info(self, ctx: Context, *, member:discord.User=None):
+  async def user_info(self, ctx: Context, *, member:discord.Member=None):
     '''
     Get the basic stats about the user
     '''

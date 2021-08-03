@@ -8,9 +8,7 @@ from database.server_config import collection, guild_join
 from datetime import datetime
 
 
-class mod(Cog,
-          name="moderator",
-          description="A simple moderator's tool for managing the server."):
+class mod(Cog, name="moderator"):
     """A simple moderator's tool for managing the server."""
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -21,14 +19,32 @@ class mod(Cog,
 
         data = collection.find_one({'_id': ctx.guild.id})
 
+        if type(performed_on) is not list:
+            if type(performed_on) is discord.Member:
+                target = f"{performed_on.name}#{performed_on.discriminator}"
+            else:
+                target = f"{performed_on.name} (ID: {performed_on.id})"
+        elif type(target) is str or type(target) is int:
+            target = str(performed_on)
+        else:
+            target = ''
+            for temp in performed_on:
+                if type(temp) is discord.Member:
+                    target = target + f"{temp.name}#{temp.discriminator}, "
+                else:
+                    target = target + f"{temp.name} (ID: {temp.id}), "
+
         embed = discord.Embed(
             description=
-            f"{ctx.command.name}ed **{performed_on.name}#{performed_on.discriminator}**\nReason: {reason if reason else 'No Reason Provided'}\n```",
+            f"{cmd.capitalize()}ed **{target}**\nReason: {reason if reason else 'No Reason Provided'}\n```",
             timestamp=datetime.utcnow(),
             colour=ctx.author.color)
-        
-        embed.set_thumbnail(url=performed_on.avatar.url)
-        
+
+        embed.set_thumbnail(
+            url=
+            f"{performed_on.avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}"
+        )
+
         embed.set_author(
             name=
             f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})',
@@ -36,7 +52,7 @@ class mod(Cog,
             url=f"https://discord.com/users/{ctx.author.id}")
 
         embed.set_footer(text=f"{ctx.guild.name}")
-        
+
         channel = self.bot.get_channel(data['action_log'])
         if channel:
             return await self.bot.get_channel(data['action_log']
@@ -491,7 +507,7 @@ class mod(Cog,
         Why to learn the commands. This is all in one mod command.
         """
         if not target: ctx.send_help(ctx.command)
-        if (type(target) is discord.Member) or (type(target) is discord.User):
+        if (type(target) is discord.Member):
             member_embed = discord.Embed(title='Mod Menu',
                                          description=':hammer: Ban\n'
                                          ':boot: Kick\n'
@@ -524,29 +540,36 @@ class mod(Cog,
                                                          check=check)
             except asyncio.TimeoutError:
                 return await msg.delete()
+
             if str(reaction.emoji) == mt.MEMBER_REACTION[0]:
                 await mt._ban(ctx.guild, ctx.command.name, ctx.author,
                               ctx.channel, target, 0, reason)
+                await self.log(ctx, 'ban', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[1]:
                 await mt._kick(ctx.guild, ctx.command.name, ctx.author,
                                ctx.channel, target, reason)
+                await self.log(ctx, 'kick', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[2]:
                 await mt._mute(ctx.guild, ctx.command.name, ctx.author,
                                ctx.channel, target, 0, reason)
+                await self.log(ctx, 'mute', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[3]:
                 await mt._unmute(ctx.guild, ctx.command.name, ctx.author,
                                  ctx.channel, target, reason)
+                await self.log(ctx, 'unmute', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[4]:
                 await mt._block(ctx.guild, ctx.command.name, ctx.author,
                                 ctx.channel, ctx.channel, target, reason)
+                await self.log(ctx, 'block', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[5]:
                 await mt._unblock(ctx.guild, ctx.command.name, ctx.author,
                                   ctx.channel, ctx.channel, target, reason)
+                await self.log(ctx, 'unblock', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[6]:
                 temp = await ctx.send(
@@ -566,6 +589,7 @@ class mod(Cog,
                     )
                 await mt._add_roles(ctx.guild, ctx.command.name, ctx.author,
                                     ctx.channel, target, role, reason)
+                await self.log(ctx, 'role', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[7]:
                 temp = await ctx.send(
@@ -581,6 +605,8 @@ class mod(Cog,
                 await temp.delete()
                 await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author,
                                        ctx.channel, target, role, reason)
+                await self.log(ctx, 'unrole', target, reason)
+
             if str(reaction.emoji) == mt.MEMBER_REACTION[8]:
                 await ctx.send(
                     f'{ctx.author.mention} Enter the Nickname, [Not more than 32 char]',
@@ -595,6 +621,7 @@ class mod(Cog,
                 await mt._change_nickname(ctx.guild, ctx.command.name,
                                           ctx.author, ctx.channel, target,
                                           (m.content)[:31:], reason)
+                await self.log(ctx, 'nickname chang', target, reason)
 
         if (type(target) is discord.TextChannel):
             tc_embed = discord.Embed(title='Mod Menu',
@@ -628,10 +655,12 @@ class mod(Cog,
             if str(reaction.emoji) == mt.TEXT_REACTION[0]:
                 await mt._text_lock(ctx.guild, ctx.command.name, ctx.author,
                                     ctx.channel, target)
+                await self.log(ctx, 'Text lock', target, reason)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[1]:
                 await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author,
                                       ctx.channel, target)
+                await self.log(ctx, 'Text unlock', target, reason)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[2]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Topic',
@@ -645,6 +674,7 @@ class mod(Cog,
                 await mt._change_channel_topic(ctx.guild, ctx.command.name,
                                                ctx.author, ctx.channel, target,
                                                m.content)
+                await self.log(ctx, 'Text topic chang', target, reason)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -658,6 +688,7 @@ class mod(Cog,
                 await mt._change_channel_name(ctx.guild, ctx.command.name,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
+                await self.log(ctx, 'Text name chang', target, reason)
 
         if (type(target) is discord.VoiceChannel):
             vc_embed = discord.Embed(title='Mod Menu',
@@ -691,11 +722,13 @@ class mod(Cog,
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author,
                                   ctx.channel, ctx.author.voice.channel
                                   or target)
+                await self.log(ctx, 'VC Lock', target, reason)
 
             if str(reaction.emoji) == mt.VC_REACTION[1]:
                 await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author,
                                     ctx.channel, ctx.author.voice.channel
                                     or target)
+                await self.log(ctx, 'VC Unlock', target, reason)
 
             if str(reaction.emoji) == mt.VC_REACTION[2]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -709,6 +742,7 @@ class mod(Cog,
                 await mt._change_channel_name(ctx.guild, ctx.command.name,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
+                await self.log(ctx, 'VC name chang', target, reason)
 
         if (type(target) is discord.Role):
             role_embed = discord.Embed(title='Mod Menu',
@@ -742,10 +776,12 @@ class mod(Cog,
             if str(reaction.emoji) == mt.ROLE_REACTION[0]:
                 await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author,
                                      ctx.channel, target, True, reason)
+                await self.log(ctx, 'Role Hoist', target, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:
                 await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author,
                                      ctx.channel, target, False, reason)
+                await self.log(ctx, 'Role De-Hoist', target, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[2]:
                 await ctx.send(
@@ -760,6 +796,7 @@ class mod(Cog,
                 await mt._change_role_name(ctx.guild, ctx.command.name,
                                            ctx.author, ctx.channel, target,
                                            m.content, reason)
+                await self.log(ctx, 'Role color chang', target, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Role Name',
@@ -773,6 +810,7 @@ class mod(Cog,
                 await mt._change_role_name(ctx.guild, ctx.command.name,
                                            ctx.author, ctx.channel, target,
                                            m.content, reason)
+                await self.log(ctx, 'Role name chang', target, reason)
 
         return await msg.delete()
 

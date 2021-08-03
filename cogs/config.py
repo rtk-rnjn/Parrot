@@ -139,7 +139,7 @@ class BotConfig(Cog, name="botconfig"):
 
             webhook = await channel.create_webhook(name="GlobalChat",
                                                    avatar=await
-                                                   ctx.me.avatar.url.read())
+                                                   ctx.me.avatar.url)
 
             post = {'chanel_id': channel.id, 'webhook': webhook.url}
 

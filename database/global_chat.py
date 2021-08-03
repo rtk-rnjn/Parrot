@@ -24,13 +24,9 @@ async def gchat_on_join(guild_id: int):
 
 
 async def gchat_update(guild_id: int, post: dict):
-    post = {
-        '_id': guild_id,
-    }
-    new_post = {"$set": post}
-
+    
     try:
-        collection.update_one(post, new_post)
+        collection.update_one({'_id': guild_id}, {'$set': post})
         return "OK"
     except Exception as e:
         return str(e)

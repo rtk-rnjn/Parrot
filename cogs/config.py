@@ -139,7 +139,7 @@ class BotConfig(Cog, name="botconfig"):
 
             webhook = await channel.create_webhook(name="GlobalChat")
 
-            post = {'chanel_id': channel.id, 'webhook': webhook.url}
+            post = {'channel_id': channel.id, 'webhook': webhook.url}
 
             await gchat_update(guild.id, post)
             await ctx.send(f"{channel.mention} created successfully.")

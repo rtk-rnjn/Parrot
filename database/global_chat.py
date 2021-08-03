@@ -13,7 +13,7 @@ async def gchat_on_join(guild_id: int):
         '_id': guild_id,
         'channel_id': None,
         'webhook': None,
-        'ignore-role': [],
+        'ignore-role': None,
     }
 
     try:

@@ -21,16 +21,22 @@ class mod(Cog,
 
         data = collection.find_one({'_id': ctx.guild.id})
 
-        embed = discord.Embed(title=f"Mod command, `{cmd}` Used",
-                              description=f"```\nREASON: {reason}\n```",
-                              timestamp=datetime.utcnow())
-        embed.add_field(name="Action Performed by:",
-                        value=f"{ctx.author.mention}",
-                        inline=True)
-        embed.add_field(name="Action Performed on:",
-                        value=f"{performed_on}",
-                        inline=True)
+        embed = discord.Embed(
+            description=
+            f"{ctx.command.name}ed **{performed_on.name}#{performed_on.discriminator}**\nReason: {reason if reason else 'No Reason Provided'}\n```",
+            timestamp=datetime.utcnow(),
+            colour=ctx.author.color)
+        
+        embed.set_thumbnail(url=performed_on.avatar.url)
+        
+        embed.set_author(
+            name=
+            f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})',
+            icon_url=ctx.author.avatar.url,
+            url=f"https://discord.com/users/{ctx.author.id}")
+
         embed.set_footer(text=f"{ctx.guild.name}")
+        
         channel = self.bot.get_channel(data['action_log'])
         if channel:
             return await self.bot.get_channel(data['action_log']

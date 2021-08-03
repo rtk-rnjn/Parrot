@@ -13,14 +13,13 @@ class Telephone(Cog, name='telephone'):
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.guild)
-    @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def telsetup(self,
                       ctx: Context,
                       setting: str = None,
                       *,
                       arg: typing.Union[discord.TextChannel, discord.Role,
-                                        discord.Member, discord.Guild, int]):
+                                        discord.Member, discord.Guild, int]=None):
         """
     To set the telephone phone line, in the server to call and receive the call from other server.
     """
@@ -73,7 +72,7 @@ class Telephone(Cog, name='telephone'):
         """
     To dial to other server. Do not misuse this. Else you RIP :|
     """
-        
+        number = number.id if type(number) is discord.Guild else int(number)
         channel = ctx.channel
         self_guild = collection.find_one({'_id': ctx.guild.id})
         if not self_guild:

@@ -74,7 +74,7 @@ class MessageEvents(Cog, name="Global Chat"):
 
                 async def send_webhook():
                     async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(f"{hook}", adapter=session)
+                        webhook = Webhook.from_url(f"{hook}", session=session)
 
                         await webhook.send(
                             content=message.clean_content,

@@ -113,7 +113,7 @@ class BotConfig(Cog, name="botconfig"):
                          ctx: Context,
                          setting: str = None,
                          *,
-                         role: typing.Union[discord.Role]):
+                         role: typing.Union[discord.Role]=None):
         """
 				This command will connect your server with other servers which then connected to #global-chat must try this once
 				"""

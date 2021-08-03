@@ -39,14 +39,19 @@ class MessageEvents(Cog, name="Global Chat"):
             message.content.lower())
         if urls:
             try:
-                return await message.delete()
+                await message.delete()
+                return await message.channel.send(
+                    f"{message.author.mention} | URLs aren't allowed.")
             except:
                 return await message.channel.send(
                     f"{message.author.mention} | URLs aren't allowed.")
 
         if "discord.gg" in message.content.lower():
             try:
-                return await message.delete()
+                await message.delete()
+                return await message.channel.send(
+                    f"{message.author.mention} | Advertisements aren't allowed."
+                )
             except:
                 return await message.channel.send(
                     f"{message.author.mention} | Advertisements aren't allowed."
@@ -54,7 +59,10 @@ class MessageEvents(Cog, name="Global Chat"):
 
         if "discord.com" in message.content.lower():
             try:
-                return await message.delete()
+                await message.delete()
+                return await message.channel.send(
+                    f"{message.author.mention} | Advertisements aren't allowed."
+                )
             except:
                 return await message.channel.send(
                     f"{message.author.mention} | Advertisements aren't allowed."
@@ -83,8 +91,10 @@ class MessageEvents(Cog, name="Global Chat"):
                             avatar_url=message.author.avatar.url)
 
                 await send_webhook()
-            except:
+            except Exception as e:
+                print(e)
                 continue
+                
 
 
 ## todo: make a system to avoid spam, and bad words.

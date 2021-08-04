@@ -710,6 +710,7 @@ class fun(Cog, name="fun"):
             f"It's {aki.first_guess['name']} ({aki.first_guess['description']})! Was I correct?\n\t",
             color=0xFF0000,
         )
+        embed.set_image(url=f"{aki.first_guess['absolute_picture_path']}")
         embed.add_field(name="Reply with `yes/y` `no/n`", value="\u200b")
         await ctx.send(embed=embed)
 
@@ -717,8 +718,10 @@ class fun(Cog, name="fun"):
             return (m.content.lower() in ["yes", "y"]
                     and m.channel == ctx.channel and m.author == ctx.author)
 
-        try: correct = await self.bot.wait_for("message", check=check, timeout=30)
-        except Exception: return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
+        try: 
+            correct = await self.bot.wait_for("message", check=check, timeout=30)
+        except Exception: 
+            return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if correct.content.lower() == "yes" or correct.content.lower() == "y":
             embed = discord.Embed(title="Yay! I guessed it right",
                                   color=0xFF0000)

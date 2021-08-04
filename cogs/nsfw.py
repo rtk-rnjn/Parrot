@@ -3,9 +3,7 @@ from discord.ext import commands
 from core import Parrot, Context, Cog
 
 
-class nsfw(Cog,
-           name="nsfw",
-           description="Want some fun? These are best commands! :')"):
+class nsfw(Cog, name="nsfw"):
     '''Want some fun? These are best commands! :')'''
     def __init__(self, bot: Parrot):
         self.bot = bot

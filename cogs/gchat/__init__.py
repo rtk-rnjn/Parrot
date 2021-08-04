@@ -1,18 +1,29 @@
-import aiohttp, re, asyncio
-
+import aiohttp, re, asyncio, json
 from discord import Webhook
-
 from database.global_chat import collection
-
 from core import Parrot, Cog
+from discord.ext import commands
+
+with open('extra/profanity.json') as f:
+    bad_dict = json.load(f)
 
 
 class MessageEvents(Cog, name="Global Chat"):
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.cd_mapping = commands.CooldownMapping.from_cooldown(
+            5, 5, commands.BucketType.channel)
+
+    async def refrain_message(self, msg: str) -> bool:
+        for bad_word in bad_dict:
+            if bad_word in msg:
+                return False
+            elif bad_word not in msg:
+                return True
 
     @Cog.listener()
     async def on_message(self, message):
+
         if not message.guild or message.author.bot:
             return
 
@@ -22,6 +33,13 @@ class MessageEvents(Cog, name="Global Chat"):
         })
 
         if not channel: return
+
+        bucket = self.cd_mapping.get_bucket(message)
+        retry_after = bucket.update_rate_limit()
+
+        if retry_after:
+            return await message.channel.send(
+                f"Chill out | Reached the ratelimit", delete_after=5.0)
 
         guild = collection.find_one({'_id': message.guild.id})
         data = collection.find({})
@@ -41,32 +59,48 @@ class MessageEvents(Cog, name="Global Chat"):
             try:
                 await message.delete()
                 return await message.channel.send(
-                    f"{message.author.mention} | URLs aren't allowed.")
-            except:
+                    f"{message.author.mention} | URLs aren't allowed.",
+                    delete_after=5)
+            except Exception:
                 return await message.channel.send(
-                    f"{message.author.mention} | URLs aren't allowed.")
+                    f"{message.author.mention} | URLs aren't allowed.",
+                    delete_after=5)
 
         if "discord.gg" in message.content.lower():
             try:
                 await message.delete()
                 return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed."
-                )
-            except:
+                    f"{message.author.mention} | Advertisements aren't allowed.",
+                    delete_after=5)
+            except Exception:
                 return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed."
-                )
+                    f"{message.author.mention} | Advertisements aren't allowed.",
+                    delete_after=5)
 
         if "discord.com" in message.content.lower():
             try:
                 await message.delete()
                 return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed."
-                )
-            except:
+                    f"{message.author.mention} | Advertisements aren't allowed.",
+                    delete_after=5)
+            except Exception:
                 return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed."
-                )
+                    f"{message.author.mention} | Advertisements aren't allowed.",
+                    delete_after=5)
+
+        to_send = self.refrain_message(message.content)
+        if to_send:
+            pass
+        elif not to_send:
+            try:
+                await message.delete()
+                return await message.channel.send(
+                    f"{message.author.mention} | Sending Bad Word not allowed",
+                    delete_after=5)
+            except Exception:
+                return await message.channel.send(
+                    f"{message.author.mention} | Sending Bad Word not allowed",
+                    delete_after=5)
 
         try:
             await asyncio.sleep(0.1)
@@ -91,13 +125,8 @@ class MessageEvents(Cog, name="Global Chat"):
                             avatar_url=message.author.avatar.url)
 
                 await send_webhook()
-            except Exception as e:
-                print(e)
+            except Exception:
                 continue
-                
-
-
-## todo: make a system to avoid spam, and bad words.
 
 
 def setup(bot):

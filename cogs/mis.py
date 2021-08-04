@@ -1,9 +1,8 @@
 from discord.ext import commands
 from youtube_search import YoutubeSearch
 import urllib.parse, aiohttp
-import os
 
-import requests, discord, re, editdistance, wikipedia, json, ttg, io, datetime
+import discord, re, editdistance, wikipedia, json, ttg, io, datetime, typing, os
 
 from utilities.paginator import Paginator
 from utilities.checks import user_premium_cd
@@ -87,16 +86,11 @@ class miscl(Cog, name="miscellaneous"):
         name = "emoji.png"
         return name, url, "N/A", "Official"
 
-    @commands.group(aliases=['emote'])
+    @commands.command(aliases=['emote'])
     @user_premium_cd()
-    async def emoji(self, ctx: Context, *, msg):
+    async def bigemoji(self, ctx: Context, *, msg: typing.Union[discord.Emoji, str]):
         """
-				View, copy, add or remove emoji.
-				Usage:
-				1) [p]emoji <emoji> - View a large image of a given emoji. Use [p]emoji s for additional info.
-				2) [p]emoji copy <emoji> - Copy a custom emoji on another server and add it to the current server if you have the permissions.
-				3) [p]emoji add <url> - Add a new emoji to the current server if you have the permissions.
-				4) [p]emoji remove <emoji> - Remove an emoji from the current server if you have the permissions
+				To view the emoji in bigger form
 				"""
 
         try:
@@ -119,11 +113,12 @@ class miscl(Cog, name="miscellaneous"):
             if url == "":
                 await ctx.send("[p]Could not find {}. Skipping.".format(emoji))
                 continue
-            response = requests.get(url, stream=True)
-            if response.status_code == 404:
-                await ctx.send(
-                    "Emoji {} not available. Open an issue on <https://github.com/astronautlevel2/twemoji> with the name of the missing emoji"
-                    .format(emoji))
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as r:
+                    response = await r.read()
+            
+            if response.status == 404:
                 continue
 
             img = io.BytesIO()
@@ -151,90 +146,6 @@ class miscl(Cog, name="miscellaneous"):
                     await ctx.send(url)
             file.close()
 
-    @emoji.command(pass_context=True, aliases=["steal"])
-    @commands.has_permissions(manage_emojis=True)
-    @commands.bot_has_permissions(manage_emojis=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def copy(self, ctx: Context, *, msg):
-        try:
-            await ctx.message.delete()
-        except:
-            pass
-        msg = re.sub("<:(.+):([0-9]+)>", "\\2", msg)
-
-        match = None
-        exact_match = False
-        for guild in self.bot.guilds:
-            for emoji in guild.emojis:
-                if msg.strip().lower() in str(emoji):
-                    match = emoji
-                if msg.strip() in (str(emoji.id), emoji.name):
-                    match = emoji
-                    exact_match = True
-                    break
-            if exact_match:
-                break
-
-        if not match:
-            return await ctx.send('Could not find emoji.')
-
-        response = requests.get(match.url)
-        emoji = await ctx.guild.create_custom_emoji(name=match.name,
-                                                    image=response.content)
-        await ctx.send(
-            "Successfully added the emoji {0.name} <{1}:{0.name}:{0.id}>!".
-            format(emoji, "a" if emoji.animated else ""))
-
-    @emoji.command(pass_context=True)
-    @commands.has_permissions(manage_emojis=True)
-    @commands.bot_has_permissions(manage_emojis=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def add(self, ctx: Context, name, url):
-        try:
-            await ctx.message.delete()
-        except:
-            pass
-        try:
-            response = requests.get(url)
-        except (requests.exceptions.MissingSchema,
-                requests.exceptions.InvalidURL,
-                requests.exceptions.InvalidSchema,
-                requests.exceptions.ConnectionError):
-            return await ctx.send("The URL you have provided is invalid.")
-        if response.status_code == 404:
-            return await ctx.send("The URL you have provided leads to a 404.")
-        try:
-            emoji = await ctx.guild.create_custom_emoji(name=name,
-                                                        image=response.content)
-        except discord.InvalidArgument:
-            return await ctx.send(
-                "Invalid image type. Only PNG, JPEG and GIF are supported.")
-        await ctx.send(
-            "Successfully added the emoji {0.name} <{1}:{0.name}:{0.id}>!".
-            format(emoji, "a" if emoji.animated else ""))
-
-    @emoji.command(pass_context=True)
-    @commands.bot_has_permissions(manage_emojis=True)
-    @commands.has_permissions(manage_emojis=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def remove(self, ctx: Context, name):
-        try:
-            await ctx.message.delete()
-        except:
-            pass
-        emotes = [x for x in ctx.guild.emojis if x.name == name]
-        emote_length = len(emotes)
-        if not emotes:
-            return await ctx.send(
-                "No emotes with that name could be found on this server.")
-        for emote in emotes:
-            await emote.delete()
-        if emote_length == 1:
-            await ctx.send("Successfully removed the {} emoji!".format(name))
-        else:
-            await ctx.send(
-                "Successfully removed {} emoji with the name {}.".format(
-                    emote_length, name))
 
     @commands.command(aliases=['calc', 'cal'])
     @commands.guild_only()

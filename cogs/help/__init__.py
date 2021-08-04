@@ -42,10 +42,11 @@ class HelpCommand(commands.HelpCommand):
             f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.icon.url)
         
-        embed.description = description + f"\n\n• {get_bot}\n• {support_server}"
+        embed.description = description + f"\n• {get_bot}\n• {support_server}"
 
         for cog in bot.cogs:
-            embed.add_field(name=f"{str(cog).capitalize()}", value=f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```", inline=True)
+            if bot.cogs[cog].get_commands() or (str(cog) == 'jishaku'):
+                embed.add_field(name=f"{str(cog).upper()}", value=f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```", inline=True)
 
         embed.set_footer(text="Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")

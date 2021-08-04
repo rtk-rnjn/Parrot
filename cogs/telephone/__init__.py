@@ -98,9 +98,7 @@ class Telephone(Cog, name='telephone'):
                 "Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission."
             )
 
-        if (target_guild['_id']
-                in self_guild['blocked']) or (self_guild['_id']
-                                              in target_guild['blocked']):
+        if (target_guild['_id'] in self_guild['blocked']) or (self_guild['_id'] in target_guild['blocked']):
             return await ctx.reply(
                 f'Calling failed! Possible reasons: They blocked You, You blocked Them.'
             )
@@ -117,8 +115,7 @@ class Telephone(Cog, name='telephone'):
             pass
 
         def check(m):
-            return (m.content.lower() == "pickup"
-                    or "hangup") and (m.channel == channel or target_channel)
+            return (m.content.lower() == "pickup" or "hangup") and (m.channel == channel or target_channel) and not m.author.bot
 
         try:
             _talk = await self.bot.wait_for('message', check=check, timeout=60)
@@ -150,8 +147,8 @@ class Telephone(Cog, name='telephone'):
 
             await telephone_update(ctx.guild.id, 'is_line_busy', True)
             await telephone_update(number, 'is_line_busy', True)
-            str_tim = time.time() + 60
-            while time.time() <= str_tim:
+            ini = time.time() + 120
+            while True:
 
                 def check(m):
                     if (m.channel == target_channel) or (m.channel == channel):
@@ -183,7 +180,7 @@ class Telephone(Cog, name='telephone'):
                     await target_channel.send(f'Disconnected')
                     return
 
-                elif talk_message.channel == target_channel:
+                if talk_message.channel == target_channel:
                     await channel.send(
                         f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
                     )
@@ -192,7 +189,12 @@ class Telephone(Cog, name='telephone'):
                     await target_channel.send(
                         f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
                     )
+                if ini - time.time() <= 60: 
+                    await channel.send(f'Disconnected. Call duration reached its maximum limit')
+                    await target_channel.send(f'Disconnected. Call duration reached its maximum limit')
+                    await telephone_update(ctx.guild.id, 'is_line_busy', False)
+                    await telephone_update(number, 'is_line_busy', False)
+                    return
 
-        return await ctx.send("LINE DISCONNECTED")
 def setup(bot):
     bot.add_cog(Telephone(bot))

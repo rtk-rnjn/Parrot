@@ -717,7 +717,7 @@ class fun(Cog, name="fun"):
             return (m.content.lower() in ["yes", "y"]
                     and m.channel == ctx.channel and m.author == ctx.author)
 
-        try: correct = await self.client.wait_for("message", check=check, timeout=30)
+        try: correct = await self.bot.wait_for("message", check=check, timeout=30)
         except Exception: return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if correct.content.lower() == "yes" or correct.content.lower() == "y":
             embed = discord.Embed(title="Yay! I guessed it right",

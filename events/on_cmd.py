@@ -57,6 +57,8 @@ class Cmd(Cog):
             )
 
         elif isinstance(error, commands.CommandOnCooldown):
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
             return await ctx.send(
                 f"{random.choice(quote)}\n\nCommand On Cooldown. You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s."
             )

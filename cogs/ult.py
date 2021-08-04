@@ -178,7 +178,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
     """
     Get the invite of the bot! Thanks for seeing this command
     """
-    em = discord.Embed(title="ADD ME IN YOUR SERVER", url="https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=0&scope=bot", timestamp=datetime.utcnow())
+    em = discord.Embed(title="ADD ME IN YOUR SERVER", url="https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot", timestamp=datetime.utcnow())
     em.set_footer(text=f"{ctx.author.name}#{ctx.author.discriminator}")
     await ctx.reply(embed=em)
 

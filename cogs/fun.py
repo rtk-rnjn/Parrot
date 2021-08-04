@@ -672,6 +672,7 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   async def aki(self, ctx):
+        """Answer the questions and let the bot guess your character!"""
         q = await aki.start_game()
         question_num = 1
         while aki.progression <= 80:

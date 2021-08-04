@@ -25,7 +25,7 @@ class BotConfig(Cog, name="botconfig"):
     @commands.check_any(commands.has_permissions(administrator=True))
     async def botprefix(self, ctx: Context, *, arg: commands.clean_content):
         """
-				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix.
+				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 charss
 				"""
         if not csc.find_one({'_id': ctx.guild.id}):
             await guild_join(ctx.guild.id)
@@ -71,18 +71,6 @@ class BotConfig(Cog, name="botconfig"):
             f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
-    @config.command(aliases=['giveaway-role'])
-    @commands.check_any(commands.has_permissions(administrator=True))
-    async def giveawayrole(self, ctx: Context, *, role: discord.Role):
-        if not csc.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
-
-        post = {'giveaway_role': role.id}
-        await guild_update(ctx.guild.id, post)
-
-        await ctx.reply(
-            f"{ctx.author.mention} success! Giveaway role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
-        )
 
     @config.command(aliases=['action-log'])
     @commands.check_any(commands.has_permissions(administrator=True))
@@ -109,7 +97,7 @@ class BotConfig(Cog, name="botconfig"):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_webhooks=True,
                                   manage_roles=True)
-    async def gchatsetup(self,
+    async def gsetup(self,
                          ctx: Context,
                          setting: str = None,
                          *,

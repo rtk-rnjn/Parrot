@@ -21,7 +21,7 @@ class Telephone(Cog, name='telephone'):
                       arg: typing.Union[discord.TextChannel, discord.Role,
                                         discord.Member, discord.Guild, int]=None):
         """
-    To set the telephone phone line, in the server to call and receive the call from other server.
+    To set the telephone phone line, in the server to call and receive the call from other server. Available settings 'channel', 'pingrole', 'memberping', 'block', 'unblock'
     """
         settings = ['channel', 'pingrole', 'memberping']
 

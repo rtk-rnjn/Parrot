@@ -88,7 +88,7 @@ class HelpCommand(commands.HelpCommand):
                 title=cmd.name,
                 description=
                 f"```{cmd.help if cmd.help else 'No description.'}```\n"
-                f"Usage:\n```\n[p]{group.name}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else '')} {cmd.signature}\n```",
+                f"Usage:\n```\n[p]{group.qualified_name}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else 'NA')} {cmd.signature}\n```",
                 color=discord.Colour(0x55ddff))
             em_list.append(e)
 

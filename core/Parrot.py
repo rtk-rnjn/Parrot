@@ -65,7 +65,7 @@ class Parrot(commands.AutoShardedBot):
         print(f"[PARROT] resumed {self.user.name}#{self.user.discriminator}")
 
     async def get_prefix(self, message: discord.Message) -> str:
-        if not message.guild: return
+        if not message.guild: return ''
         else:
             if not collection.find_one({"_id": message.guild.id}):
                 await guild_join(message.guild.id)

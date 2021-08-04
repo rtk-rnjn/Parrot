@@ -65,14 +65,12 @@ class Telephone(Cog, name='telephone'):
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.guild_only()
     @commands.cooldown(1, 30, commands.BucketType.guild)
-    async def dial(self, ctx: Context, number: typing.Union[discord.Guild,
-                                                            int]):
+    async def dial(self, ctx: Context, *, server: discord.Guild):
         """
     To dial to other server. Do not misuse this. Else you RIP :|
     """
-        number = number.id if type(number) is discord.Guild else int(number)
+        number = server.id
         channel = ctx.channel
         self_guild = collection.find_one({'_id': ctx.guild.id})
         if not self_guild:

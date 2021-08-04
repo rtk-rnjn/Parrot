@@ -680,7 +680,7 @@ class fun(Cog, name="fun"):
             embed.add_field(
                 name=f"Q-{question_num}\n{question}",
                 value=
-                "Reply with `yes/y` `no/n` `i/idk/i don't know` `p/probably` `proably not/pn`",
+                "Reply with `yes/y` | `no/n` | `i/idk/i don't know` | `p/probably` | `proably not/pn`",
             )
             await ctx.send(embed=embed)
 
@@ -692,7 +692,7 @@ class fun(Cog, name="fun"):
                 return (m.content in replies and m.channel == ctx.channel
                         and m.author == ctx.author)
             try:
-              msg = await self.client.wait_for("message", check=check, timeout=30)
+              msg = await self.bot.wait_for("message", check=check, timeout=30)
             except Exception:
               return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
             if msg.content == "b":

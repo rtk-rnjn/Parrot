@@ -32,19 +32,21 @@ class HelpCommand(commands.HelpCommand):
 
         get_bot = f"[Add me to your server]({INVITE})"
         support_server = f"[Support Server]({SUPPORT_SERVER})"
-
-        embed = discord.Embed(
-            description=
-            f"```\nPrefixes are '{self.context.prefix}' and '@Parrot#9209'\n```",
-            color=discord.Colour(0x55ddff))
+        
+        description = f"```\nPrefixes are '{self.context.prefix}' and '@Parrot#9209'\n```"
+        
+        embed = discord.Embed(color=discord.Colour(0x55ddff))
+        
         embed.set_author(
             name=
             f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.icon.url)
+        
+        embed.description = description + f"\n\n• {get_bot}\n• {support_server}"
 
-        embed.add_field(name="Get Parrot",
-                        value=f"• {get_bot}\n• {support_server}",
-                        inline=False)
+        for cog in bot.cogs:
+            embed.add_field(name=f"{str(cog).capitalize()}", value=f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```", inline=True)
+
         embed.set_footer(text="Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 

@@ -70,6 +70,7 @@ class Telephone(Cog, name='telephone'):
         """
     To dial to other server. Do not misuse this. Else you RIP :|
     """
+        if server is ctx.guild: return await ctx.send(f"Can't make a self call")
         number = server.id
         channel = ctx.channel
         self_guild = collection.find_one({'_id': ctx.guild.id})
@@ -88,10 +89,6 @@ class Telephone(Cog, name='telephone'):
                 f"Can not make a connection to **{number} ({self.bot.get_guild(target_guild['_id']).name})**. Line busy!"
             )
 
-        await ctx.reply(
-            f"Calling to **{number} ({self.bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ..."
-        )
-
         target_channel = self.bot.get_channel(target_guild['channel'])
         if not target_channel:
             return await ctx.reply(
@@ -102,6 +99,10 @@ class Telephone(Cog, name='telephone'):
             return await ctx.reply(
                 f'Calling failed! Possible reasons: They blocked You, You blocked Them.'
             )
+        
+        await ctx.send(
+            f"Calling to **{number} ({self.bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ..."
+        )
 
         await target_channel.send(
             f"**Incomming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"

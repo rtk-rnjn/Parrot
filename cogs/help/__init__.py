@@ -43,7 +43,7 @@ class HelpCommand(commands.HelpCommand):
             icon_url=self.context.guild.icon.url or self.context.me.icon.url)
         
         embed.description = description + f"\n• {get_bot}\n• {support_server}"
-
+        embed.set_thumnail(url=self.context.me.icon.url)
         for cog in bot.cogs:
             if bot.cogs[cog].get_commands() or (str(cog) == 'jishaku'):
                 embed.add_field(name=f"{str(cog).upper()}", value=f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```", inline=True)
@@ -61,10 +61,11 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```\n"
                     f"**Commands**```\n{', '.join([cmd.name for cmd in bot.cogs[cog].get_commands()])}\n```",
                     color=discord.Colour(0x55ddff))
-                em.set_author(name=f"COG: {cog}")
+                em.set_author(name=f"COG: {str(cog).upper()}")
                 em.set_footer(text="Built with ❤️ and `discord.py`",
                               icon_url=f"{DEV_LOGO}")
                 em_list.append(em)
+                em.set_thumnail(url=self.context.me.icon.url)
             else:
                 pass
 
@@ -83,7 +84,7 @@ class HelpCommand(commands.HelpCommand):
         e.title = f"Help with group **{group.name}{'|'.join(group.aliases) if group.aliases else ''}**"
         e.set_footer(text="Built with ❤️ and `discord.py`",
                      icon_url=f"{DEV_LOGO}")
-
+        e.set_thumnail(url=self.context.me.icon.url)
         em_list.append(e)
 
         for cmd in cmds:
@@ -94,7 +95,8 @@ class HelpCommand(commands.HelpCommand):
                 f"Usage:\n```\n[p]{group.qualified_name}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else 'NA')} {cmd.signature}\n```",
                 color=discord.Colour(0x55ddff))
             em_list.append(e)
-
+            e.set_thumnail(url=self.context.me.icon.url)
+        
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)
 

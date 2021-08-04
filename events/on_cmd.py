@@ -153,8 +153,9 @@ class Cmd(Cog):
                 )
 
         elif isinstance(error, commands.MissingRequiredArgument):
+            command = ctx.command
             return await ctx.send(
-                f"{random.choice(quote)}\n\nMissing Required Argument. Please use proper syntax.```\n[p]{ctx.command.name} {ctx.command.signature}```"
+                f"{random.choice(quote)}\n\nMissing Required Argument. Please use proper syntax.```\n[p]{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
             )
 
         elif isinstance(error, commands.MaxConcurrencyReached):

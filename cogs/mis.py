@@ -44,22 +44,15 @@ class miscl(Cog, name="miscellaneous"):
 
     @commands.command(aliases=['emote'])
     @commands.has_permissions(embed_links=True)
-    @commands.bot_has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True, manage_messages=True)
     @user_premium_cd()
-    async def bigemoji(self, ctx: Context, *, emojis: commands.Greedy[discord.Emoji]):
+    async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
         """
 				To view the emoji in bigger form
 				"""
-        
-        try:
-            await ctx.message.delete()
-        except Exception:
-            pass
-        i = 1
-        for emoji in emojis:
-            if i <= 5:
-              await ctx.send(f"{emoji[i].url}")
-            i += 1
+        await ctx.message.delete()
+        await ctx.send(emoji.url)
+
     @commands.command(aliases=['calc', 'cal'])
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)

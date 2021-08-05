@@ -58,7 +58,7 @@ class miscl(Cog, name="miscellaneous"):
         i = 1
         for emoji in emojis:
             if i <= 5:
-              await ctx.send(f"{emoji.url}")
+              await ctx.send(f"{emoji[i].url}")
             i += 1
     @commands.command(aliases=['calc', 'cal'])
     @commands.guild_only()

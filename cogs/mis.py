@@ -42,110 +42,22 @@ class miscl(Cog, name="miscellaneous"):
         string = re.sub(invitere2, '[INVITE REDACTED]', string)
         return string
 
-    def find_emoji(self, msg):
-        msg = re.sub("<a?:(.+):([0-9]+)>", "\\2", msg)
-        color_modifiers = [
-            "1f3fb", "1f3fc", "1f3fd", "1f44c", "1f3fe", "1f3ff"
-        ]  # These color modifiers aren't in Twemoji
-
-        name = None
-
-        for guild in self.bot.guilds:
-            for emoji in guild.emojis:
-                if msg.strip().lower() in emoji.name.lower():
-                    name = emoji.name + (".gif" if emoji.animated else ".png")
-                    url = emoji.url
-                    id = emoji.id
-                    guild_name = guild.name
-                if msg.strip() in (str(emoji.id), emoji.name):
-                    name = emoji.name + (".gif" if emoji.animated else ".png")
-                    url = emoji.url
-                    return name, url, emoji.id, guild.name
-        if name:
-            return name, url, id, guild_name
-
-        # Here we check for a stock emoji before returning a failure
-        codepoint_regex = re.compile('([\d#])?\\\\[xuU]0*([a-f\d]*)')
-        unicode_raw = msg.encode('unicode-escape').decode('ascii')
-        codepoints = codepoint_regex.findall(unicode_raw)
-        if codepoints == []:
-            return "", "", "", ""
-
-        if len(codepoints) > 1 and codepoints[1][1] in color_modifiers:
-            codepoints.pop(1)
-
-        if codepoints[0][0] == '#':
-            emoji_code = '23-20e3'
-        elif codepoints[0][0] == '':
-            codepoints = [x[1] for x in codepoints]
-            emoji_code = '-'.join(codepoints)
-        else:
-            emoji_code = "3{}-{}".format(codepoints[0][0], codepoints[0][1])
-        url = "https://raw.githubusercontent.com/astronautlevel2/twemoji/gh-pages/128x128/{}.png".format(
-            emoji_code)
-        name = "emoji.png"
-        return name, url, "N/A", "Official"
-
     @commands.command(aliases=['emote'])
+    @commands.has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True)
     @user_premium_cd()
-    async def bigemoji(self, ctx: Context, *, msg: typing.Union[discord.Emoji, str]):
+    async def bigemoji(self, ctx: Context, *, emoji: commands.Greedy[discord.Emoji]):
         """
 				To view the emoji in bigger form
 				"""
-        msg = str(msg)
+        if len(emoji) > 5: return await ctx.send(f"{ctx.author.mention} only 5 emoji at at time.")
         try:
             await ctx.message.delete()
-        except:
+        except Exception:
             pass
-        emojis = msg.split()
-        if msg.startswith('s '):
-            emojis = emojis[1:]
-            get_guild = True
-        else:
-            get_guild = False
 
-        if len(emojis) > 5:
-            return await ctx.send("Maximum of 5 emojis at a time.")
-
-        images = []
-        for emoji in emojis:
-            name, url, id, guild = self.find_emoji(emoji)
-            if url == "":
-                await ctx.send("[p]Could not find {}. Skipping.".format(emoji))
-                continue
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as r:
-                  if r.status == 400:
-                    continue
-                  else:
-                    response = await r.read()
-
-            img = io.BytesIO()
-            for block in response.iter_content(1024):
-                if not block:
-                    break
-                img.write(block)
-            img.seek(0)
-            images.append((guild, str(id), url, discord.File(img, name)))
-
-        for (guild, id, url, file) in images:
-            if ctx.channel.permissions_for(ctx.author).attach_files:
-                if get_guild:
-                    await ctx.send(content='**ID:** {}\n**Server:** {}'.format(
-                        id, guild),
-                                   file=file)
-                else:
-                    await ctx.send(file=file)
-            else:
-                if get_guild:
-                    await ctx.send(
-                        '**ID:** {}\n**Server:** {}\n**URL: {}**'.format(
-                            id, guild, url))
-                else:
-                    await ctx.send(url)
-            file.close()
-
+        for emoji in emoji:
+            await ctx.send(f"{emoji.url}")
 
     @commands.command(aliases=['calc', 'cal'])
     @commands.guild_only()

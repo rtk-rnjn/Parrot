@@ -36,7 +36,7 @@ class mod(Cog, name="moderator"):
 
         embed = discord.Embed(
             description=
-            f"{cmd.capitalize()}ed **{target}**\nReason: {reason if reason else 'No Reason Provided'}\n```",
+            f"**{cmd.capitalize()}ed**\n```\n{target}\n```\n**Reason:**\n```\n{reason if reason else 'No Reason Provided'}\n```",
             timestamp=datetime.utcnow(),
             colour=ctx.author.color)
 
@@ -151,7 +151,7 @@ class mod(Cog, name="moderator"):
         await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author,
                            ctx.channel, members, days, reason)
         await self.log(ctx, 'Mass Ban',
-                       f'{", ".join([member.name for member in members])}',
+                       f'{", ".join([str(member) for member in members])}',
                        f'{reason}')
 
     @commands.command(aliases=['softkill'])
@@ -166,7 +166,7 @@ class mod(Cog, name="moderator"):
         await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
                           member, reason)
         await self.log(ctx, 'Soft Ban',
-                       f'{", ".join([member.mention for member in member])}',
+                       f'{", ".join([str(member) for member in member])}',
                        f'{reason}')
 
     @commands.command()
@@ -184,7 +184,7 @@ class mod(Cog, name="moderator"):
         await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
                         ctx.channel, member, reason)
         await self.log(ctx, 'Block',
-                       f'{", ".join([member.mention for member in member])}',
+                       f'{", ".join([str(member) for member in member])}',
                        f'{reason}')
 
     @commands.command(aliases=['nuke'])
@@ -226,7 +226,7 @@ class mod(Cog, name="moderator"):
         await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author,
                             ctx.channel, members, reason)
         await self.log(ctx, 'Mass Kick',
-                       f'{", ".join([member.mention for member in members])}',
+                       f'{", ".join([str(member) for member in members])}',
                        f'{reason}')
 
     @commands.group()
@@ -473,7 +473,7 @@ class mod(Cog, name="moderator"):
         await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
                           ctx.channel, member, reason)
         await self.log(ctx, 'Un-Block',
-                       f'{", ".join([member.mention for member in member])}',
+                       f'{", ".join([str(member) for member in member])}',
                        f'{reason}')
 
     @commands.command()

@@ -88,7 +88,7 @@ class MessageEvents(Cog, name="Global Chat"):
                     f"{message.author.mention} | Advertisements aren't allowed.",
                     delete_after=5)
 
-        to_send = self.refrain_message(message.content)
+        to_send = await self.refrain_message(message.content)
         if to_send:
             pass
         elif not to_send:

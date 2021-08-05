@@ -298,13 +298,14 @@ class NASA(Cog, name='nasa'):
     async def nasasearch(self, ctx: Context, *,
                          string: commands.clean_content):
         '''NASA Image and Video Library'''
-        new_text = urllib.parse.quote(string)
-        link = 'https://images-api.nasa.gov/search?q=' + new_text
+
+        link = f'https://images-api.nasa.gov/search?q={string}'
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:
                 if r.status == 200:
                     res = await r.json()
                 else:
+                    print(1)
                     return
 
         if not res['collection']['items']:

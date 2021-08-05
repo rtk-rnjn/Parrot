@@ -92,7 +92,7 @@ class miscl(Cog, name="miscellaneous"):
         """
 				To view the emoji in bigger form
 				"""
-
+        msg = str(msg)
         try:
             await ctx.message.delete()
         except:

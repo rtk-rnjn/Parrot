@@ -1,12 +1,3 @@
 {
-  "files": {
-    "cogs/nasa.py": [
-      {
-        "id": "8d661c25-cca4-4daf-b3c3-459ac601a817",
-        "line": 351,
-        "version": 1038,
-        "index": 14226
-      }
-    ]
-  }
+  "files": {}
 }

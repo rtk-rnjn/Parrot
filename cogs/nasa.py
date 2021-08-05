@@ -19,13 +19,19 @@ class NASA(Cog, name='nasa'):
         self.bot = bot
 
     @commands.command(aliases=['sat', 'satelite'])
-    @commands.guild_only()
     @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
-    async def nasa(self, ctx: Context, longitute: float, latitude: float,
-                   date: str):
+    async def earth(self, ctx: Context, longitute: float, latitude: float,
+                    date: str):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
-
+        if not (-90 <= latitude and latitude <= 90):
+            return await ctx.send(
+                f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90"
+            )
+        if not (-180 <= latitude and latitude <= 180):
+            return await ctx.send(
+                f"{ctx.author.mention} Invalid longitude range, must be between -180 to 180"
+            )
         link = f'https://api.nasa.gov/planetary/earth/imagery?lon={longitute}&lat={latitude}&date={date}&dim=0.15&api_key={NASA_KEY}'
 
         embed = discord.Embed(title='Earth',
@@ -40,7 +46,6 @@ class NASA(Cog, name='nasa'):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.guild_only()
     @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def apod(self, ctx: Context):
@@ -61,18 +66,21 @@ class NASA(Cog, name='nasa'):
         if res['media_type'] == "image":
             image = res['media_type']
 
-        embed = discord.Embed(title=f"Astronomy Picture of the Day: {title}",
-                              description=f"{expln}")
+        embed = discord.Embed(
+            title=f"Astronomy Picture of the Day: {title} | At: {date_}",
+            description=f"{expln}",
+            timestamp=datetime.utcnow())
         if res['media_type'] == "image":
             image = res['url']
             embed.set_image(url=f"{image}")
-        #embed.set_author(name=f"Author: {authr}")
-        embed.set_footer(text=f"{date_}")
+        embed.set_thumbnail(
+            url=
+            'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png')
+        embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['earth'])
-    @commands.guild_only()
+    @commands.command()
     @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def epic(self, ctx: Context, date: str):
@@ -99,13 +107,18 @@ class NASA(Cog, name='nasa'):
                                   timestamp=datetime.utcnow())
             embed.set_image(url=f"{link}")
             embed.set_footer(
-                text=f"Page {index}/{len(res)} | {ctx.author.name}")
+                text=f"Page {index+1}/{len(res)} | {ctx.author.name}")
+            embed.set_thumbnail(
+                url=
+                'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
+            )
             em_list.append(embed)
+
         paginator = Paginator(pages=em_list, timeout=60.0)
 
         await paginator.start(ctx)
 
-    @commands.command(aliases=['finda', 'asteroid'])
+    @commands.command(aliases=['finda', 'asteroid', 'neo'])
     @commands.guild_only()
     @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
@@ -122,25 +135,32 @@ class NASA(Cog, name='nasa'):
         em_list = []
 
         for date in res['near_earth_objects']:
-            for index in range(0, len(date)):
-                link_self = date[index]['nasa_jpl_url']
-                name_end = date[index]['name']
-                id_end = date[index]['neo_reference_id']
+            for index in range(0, len(res['near_earth_objects'][date])):
+                link_self = res['near_earth_objects'][date][index][
+                    'nasa_jpl_url']
+                name_end = res['near_earth_objects'][date][index]['name']
+                id_end = res['near_earth_objects'][date][index][
+                    'neo_reference_id']
                 dia = round(
-                    float(date[index]['estimated_diameter']['meters']
+                    float(res['near_earth_objects'][date][index]
+                          ['estimated_diameter']['meters']
                           ['estimated_diameter_min']))
-                danger = date[index]['is_potentially_hazardous_asteroid']
-                approach_date = date[index]['close_approach_data'][0][
-                    'close_approach_date']
-                velocity = date[index]['close_approach_data'][0][
-                    'relative_velocity']['kilometers_per_hour']
-                miss_dist = date[index]['close_approach_data'][0][
-                    'miss_distance']['kilometers']
-                orbiting = date[index]['close_approach_data'][0][
-                    'orbiting_body']
-                is_sentry_object = date[index]['is_sentry_object']
+                danger = res['near_earth_objects'][date][index][
+                    'is_potentially_hazardous_asteroid']
+                approach_date = res['near_earth_objects'][date][index][
+                    'close_approach_data'][0]['close_approach_date']
+                velocity = res['near_earth_objects'][date][index][
+                    'close_approach_data'][0]['relative_velocity'][
+                        'kilometers_per_hour']
+                miss_dist = res['near_earth_objects'][date][index][
+                    'close_approach_data'][0]['miss_distance']['kilometers']
+                orbiting = res['near_earth_objects'][date][index][
+                    'close_approach_data'][0]['orbiting_body']
+                is_sentry_object = res['near_earth_objects'][date][index][
+                    'is_sentry_object']
 
                 embed = discord.Embed(
+                    title=f"At: {date}",
                     description=f"Retriving data from {start} to {end}",
                     url=f"{link_self}",
                     timestamp=datetime.utcnow())
@@ -176,7 +196,7 @@ class NASA(Cog, name='nasa'):
                     'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
                 )
                 embed.set_footer(
-                    text=f"Page {index}/{len(date)} | {ctx.author.name}")
+                    text=f"Page {index+1}/{len(date)} | {ctx.author.name}")
 
         paginator = Paginator(pages=em_list, timeout=60.0)
 
@@ -261,17 +281,22 @@ class NASA(Cog, name='nasa'):
                 timestamp=datetime.utcnow())
             embed.set_image(url=f"{img}")
             embed.set_footer(
-                text=f"Page {index}/{len(res['photos'])} | {ctx.author.name}")
-
+                text=f"Page {index+1}/{len(res['photos'])} | {ctx.author.name}"
+            )
+            embed.set_thumbnail(
+                url=
+                'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
+            )
+            em_list.append(embed)
         paginator = Paginator(pages=em_list, timeout=60.0)
 
         await paginator.start(ctx)
 
     @commands.command(aliases=['nsearch', 'ns'])
-    @commands.guild_only()
     @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
-    async def nasasearch(self, ctx: Context, *, string: str):
+    async def nasasearch(self, ctx: Context, *,
+                         string: commands.clean_content):
         '''NASA Image and Video Library'''
         new_text = urllib.parse.quote(string)
         link = 'https://images-api.nasa.gov/search?q=' + new_text
@@ -282,68 +307,63 @@ class NASA(Cog, name='nasa'):
                 else:
                     return
 
+        if not res['collection']['items']:
+            await ctx.send(
+                f'{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.'
+            )
+        em_list = []
+        for index in range(0, len(res['collection']['items'])):
+            title = res['collection']['items'][index]['data'][0]['title']
+            description = res['collection']['items'][index]['data'][0][
+                'description']
+            preview = res['collection']['items'][index]['links'][0]['href']
 
-#     if res['collection']['metadata']['total_hits'] == 0:
-#       await ctx.send(f'{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.')
+            async with aiohttp.ClientSession() as session:
+                async with session.get() as r:
+                    if r.status == 200:
+                        media = r.json()
+                    else:
+                        pass
+            img, vid, srt = [], [], []
+            i, j, k = 1, 1, 1
+            for link in media:
+                if link.endswith('.jpg') or link.endswith('.png'):
+                    img.append(f"[Link {i}]({link})")
+                    i += 1
+                if link.endswith('.mp4'):
+                    vid.append(f"[Link {j}]({link})")
+                    j += 1
+                if link.endswith('.str'):
+                    srt.append(f"[Link {k}]({link})")
+                    k += 1
 
-#     _1_des = res['collection']['items'][0]['data'][0]['description'][:1000:]
-#     _1_mdT = res['collection']['items'][0]['data'][0]['media_type']
-#     _1_tit = res['collection']['items'][0]['data'][0]['title']
-#     _1_pre = res['collection']['items'][0]['links'][0]['href']
+            embed = discord.Embed(title=f"{title}",
+                                  description=f"{description}",
+                                  timestamp=datetime.utcnow())
+            embed.set_image(url=f"{preview}")
+            if img:
+                embed.add_field(name='Images',
+                                value=f"{', '.join(img)}",
+                                inline=False)
+            if vid:
+                embed.add_field(name='Videos',
+                                value=f"{', '.join(vid)}",
+                                inline=False)
+            if srt:
+                embed.add_field(name='Srt',
+                                value=f"{', '.join(srt)}",
+                                inline=False)
+            embed.set_footer(
+                f"Page {index+1}/{len(res['collection']['items'])} | {ctx.author.name}"
+            )
+            embed.set_thumbnail(
+                url=
+                'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
+            )
+            em_list.append(embed)
+        paginator = Paginator(pages=em_list, timeout=60.0)
 
-#     _2_des = res['collection']['items'][1]['data'][0]['description'][:1000:]
-#     _2_mdT = res['collection']['items'][1]['data'][0]['media_type']
-#     _2_tit = res['collection']['items'][1]['data'][0]['title']
-#     _2_pre = res['collection']['items'][1]['links'][0]['href']
-
-#     _3_des = res['collection']['items'][2]['data'][0]['description'][:1000:]
-#     _3_mdT = res['collection']['items'][2]['data'][0]['media_type']
-#     _3_tit = res['collection']['items'][2]['data'][0]['title']
-#     _3_pre = res['collection']['items'][2]['links'][0]['href']
-
-#     embed = discord.Embed(title="NASA Image and Video Library", colour=discord.Colour.blue())
-#     embed.add_field(name=f"[1] {_1_tit}", value=f"{_1_des}", inline=False)
-#     embed.add_field(name=f"[2] {_2_tit}", value=f"{_2_des}", inline=False)
-#     embed.add_field(name=f"[3] {_3_tit}", value=f"{_3_des}", inline=False)
-
-#     await ctx.send(f'{ctx.author.mention} Found three results, media type:\n[1] **{_1_mdT}**\n[2] **{_2_mdT}**\n[3] **{_3_mdT}**\nFrom NASA Image and Video Library database. You may use the index [1,2,3] to get the media files.')
-#     await ctx.send(embed=embed)
-
-#     ans = []
-#     def check(m):
-#       return m.author == ctx.author and m.channel == ctx.channel
-
-#     message = await self.bot.wait_for('message', timeout=60, check=check)
-
-#     ans.append(message.content)
-
-# #		ind_ = ans[0]
-
-#     #pre_ = requests.get(_1_pre)
-#     col = res['collection']['items'][int(ans[0])]['href']
-#     print(col, "\n")
-#     req = requests.get(col)
-#     res = req.json()
-#     print(res, "\n")
-
-#     try:
-#       for i in range(len(res[0])):
-#           if ".mp4" in res[i]:
-#             url = res[i]
-#             print(url)
-#             await ctx.send(f'{url}')
-#             break
-#     except:
-#       pass
-
-#     try:
-#       for i in range(len(res[0])):
-#           if ".jpg" in res[i]:
-#             url = res[i]
-#             await ctx.send(f'{url}')
-#             break
-#     except:
-#       pass
+        await paginator.start(ctx)
 
 
 def setup(bot):

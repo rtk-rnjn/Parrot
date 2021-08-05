@@ -31,12 +31,8 @@ async def ticket_on_join(guild_id: int):
 
 async def ticket_update(guild_id: int, post):
 
-    pre_post = collection.find_one({'_id': guild_id})
-
-    new_post = {"$set": post}
-
     try:
-        collection.update_one(pre_post, new_post)
+        collection.update_one({'_id': guild_id}, {"$set": post})
         return "OK"
     except Exception as e:
         return str(e)

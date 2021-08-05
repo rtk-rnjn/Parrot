@@ -93,11 +93,12 @@ async def _new(ctx, args):
             ticket_channel.mention),
         color=discord.Color.blue())
     await ctx.reply(embed=created_em)
-    log_channel = ctx.guild.get_channel(data['log'])
-    await log(
-        ctx.guild, log_channel,
-        f'ticket-{ticket_number} opened by, {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})',
-        'RUNNING')
+    if data['log']:
+        log_channel = ctx.guild.get_channel(data['log'])
+        await log(
+            ctx.guild, log_channel,
+            f'ticket-{ticket_number} opened by, {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})',
+            'RUNNING')
 
 
 async def _close(ctx, bot):
@@ -125,11 +126,12 @@ async def _close(ctx, bot):
             del ticket_channel_ids[index]
             post = {'ticket-channel-ids': ticket_channel_ids}
             await ticket_update(ctx.guild.id, post)
-            log_channel = ctx.guild.get_channel(data['log'])
-            await log(
-                ctx.guild, log_channel,
-                f'{ctx.channel.name} closed by, {message.author.name}#{message.author.discriminator} ({message.author.id})',
-                'CLOSED')
+            if data['log']:
+                log_channel = ctx.guild.get_channel(data['log'])
+                await log(
+                    ctx.guild, log_channel,
+                    f'{ctx.channel.name} closed by, {message.author.name}#{message.author.discriminator} ({message.author.id})',
+                    'CLOSED')
         except asyncio.TimeoutError:
             em = discord.Embed(
                 title="Parrot Ticket Bot",
@@ -163,11 +165,12 @@ async def _save(ctx, bot):
                 io.BytesIO(transcript.encode()),
                 filename=f"transcript-{ctx.channel.name}.html")
             await ctx.reply(file=transcript_file)
-            log_channel = ctx.guild.get_channel(data['log'])
-            await log(
-                ctx.guild, log_channel,
-                f'{ctx.channel.name} logged created by, {message.author.name}#{message.author.discriminator} ({message.author.id})',
-                'RUNNING')
+            if data['log']:
+                log_channel = ctx.guild.get_channel(data['log'])
+                await log(
+                    ctx.guild, log_channel,
+                    f'{ctx.channel.name} transcript created by, {message.author.name}#{message.author.discriminator} ({message.author.id})',
+                    'RUNNING')
         except asyncio.TimeoutError:
             em = discord.Embed(
                 title="Parrot Ticket Bot",
@@ -331,7 +334,7 @@ async def _setcategory(ctx, channel):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
     data = collection.find_one({'_id': ctx.guild.id})
-    if not channel.id in data['category']:
+    if data['category'] is None or data['category'] != channel.id:
         post = {'category', channel.id}
         await ticket_update(ctx.guild.id, post)
         em = discord.Embed(
@@ -341,7 +344,7 @@ async def _setcategory(ctx, channel):
             .format(channel.name),
             color=discord.Color.blue())
         await ctx.reply(embed=em)
-    else:
+    elif data['categogy'] == channel.id:
         em = discord.Embed(
             title="Parrot Ticket Bot",
             description=
@@ -355,7 +358,7 @@ async def _setlog(ctx, channel):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
     data = collection.find_one({'_id': ctx.guild.id})
-    if not channel.id in data['log']:
+    if not data['log'] or data['log'] != channel.id:
         post = {'log', channel.id}
         await ticket_update(ctx.guild.id, post)
         em = discord.Embed(

@@ -17,7 +17,7 @@ class ReactionTicket(Cog):
         if not data: return
         user_id = payload.user_id
         member = guild.get_member(user_id)
-
+        if member.bot: return
         channel_id = payload.channel_id
         channel = self.bot.get_channel(channel_id)
 

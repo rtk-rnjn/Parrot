@@ -1,6 +1,12 @@
 from database.server_config import collection, guild_join, guild_update
 import discord, asyncio
+from pymongo import MongoClient
+from utilities.config import my_secret
 
+cluster = MongoClient(
+    f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+)
+db = cluster["parrot_db"]
 
 # ROLES
 async def _add_roles_bot(guild, command_name, destination, operator, role,
@@ -555,6 +561,10 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
         await destination.send(
             f"Can not able to {command_name} {channel.name}. Error raised: {e}"
         )
+
+
+async def _warn(guild, command_name, ctx_author, destination, target, reason):
+    await destination.send(f"{target.name}#{target.discriminator} has being warned for: {reason}")
 
 
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']

@@ -76,6 +76,16 @@ class MessageEvents(Cog, name="Global Chat"):
                 return await message.channel.send(
                     f"{message.author.mention} | Advertisements aren't allowed.",
                     delete_after=5)
+        if len(message.content.split('\n')) > 4:
+            try:
+                await message.delete()
+                return await message.channel.send(
+                    f"{message.author.mention} | Do not send message in 4-5 lines or above.",
+                    delete_after=5)
+            except Exception:
+                return await message.channel.send(
+                    f"{message.author.mention} | Do not send message in 4-5 lines or above.",
+                    delete_after=5)
 
         if "discord.com" in message.content.lower():
             try:

@@ -12,7 +12,7 @@ class MessageEvents(Cog, name="Global Chat"):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            5, 5, commands.BucketType.channel)
+            2, 5, commands.BucketType.channel)
 
     async def refrain_message(self, msg: str) -> bool:
         for bad_word in bad_dict:

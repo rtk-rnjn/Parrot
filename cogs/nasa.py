@@ -302,11 +302,12 @@ class NASA(Cog, name='nasa'):
         link = f'https://images-api.nasa.gov/search?q={string}'
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
+                if r.status == 400:
+                    return await ctx.send(
+                        f'{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.'
+                    )
                 else:
-                    print(1)
-                    return
+                    res = await r.json()
 
         if not res['collection']['items']:
             await ctx.send(

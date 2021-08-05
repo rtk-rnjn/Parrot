@@ -116,10 +116,10 @@ class miscl(Cog, name="miscellaneous"):
             
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as r:
+                  if r.status == 400:
+                    continue
+                  else:
                     response = await r.read()
-            
-            if response.status == 404:
-                continue
 
             img = io.BytesIO()
             for block in response.iter_content(1024):

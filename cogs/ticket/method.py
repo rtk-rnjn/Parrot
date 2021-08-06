@@ -33,18 +33,18 @@ async def _new(ctx, args):
     await ticket_channel.set_permissions(ctx.guild.get_role(ctx.guild.id),
                                          send_messages=False,
                                          read_messages=False)
+    if data['valid-roles']:
+      for role_id in data["valid-roles"]:
+          role = ctx.guild.get_role(role_id)
 
-    for role_id in data["valid-roles"]:
-        role = ctx.guild.get_role(role_id)
-
-        await ticket_channel.set_permissions(role,
-                                             send_messages=True,
-                                             read_messages=True,
-                                             add_reactions=True,
-                                             embed_links=True,
-                                             attach_files=True,
-                                             read_message_history=True,
-                                             external_emojis=True)
+          await ticket_channel.set_permissions(role,
+                                              send_messages=True,
+                                              read_messages=True,
+                                              add_reactions=True,
+                                              embed_links=True,
+                                              attach_files=True,
+                                              read_message_history=True,
+                                              external_emojis=True)
 
     await ticket_channel.set_permissions(ctx.author,
                                          send_messages=True,

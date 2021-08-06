@@ -66,7 +66,7 @@ async def _new(ctx, args):
     await ticket_channel.send(f'{ctx.author.mention}', delete_after=2)
     pinged_msg_content = ""
     non_mentionable_roles = []
-    if data["pinged-roles"]:
+    if data["pinged-roles"] is not None:
         for role_id in data["pinged-roles"]:
             role = ctx.guild.get_role(role_id)
             pinged_msg_content += role.mention

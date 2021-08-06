@@ -10,17 +10,11 @@ collection = db["cmd_count"]
 
 async def if_not_exists(cmd: str, count: int):
     post = {'_id': cmd, 'count': count}
-    try:
-        collection.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.insert_one(post)
+      
 
 
 async def increment(cmd: str):
     pre_post = {'_id': cmd}
-    try:
-        collection.update_one(pre_post, {'$inc': {'count': 1}})
-        return 'OK'
-    except Exception as e:
-        return str(e)
+    collection.update_one(pre_post, {'$inc': {'count': 1}})
+

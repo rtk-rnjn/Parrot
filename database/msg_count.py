@@ -12,16 +12,11 @@ async def increment(guild_id: int, user_id: int):
     data = collection.find_one({'_id': user_id})
     if not data: collection.insert_one({'_id': user_id, 'count': 1})
     pre_post = {'_id': user_id}
-    try:
-        collection.update_one(pre_post, {'$inc': {'count': 1}})
-        return 'OK'
-    except Exception as e:
-        return str(e)
-
+    collection.update_one(pre_post, {'$inc': {'count': 1}})
+ 
 
 async def guild_remove(guild_id: int):
-    try:
+    
         collection = db[f'{guild_id}']
         collection.drop()
-    except Exception as e:
-        return str(e)
+    

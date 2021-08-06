@@ -12,18 +12,12 @@ async def ge_update(user_id: int, bank: int, wallet: int):
     pre_post = {"_id": user_id}
     post = {'bank': bank, 'wallet': wallet}
 
-    try:
-        collection.update_one(pre_post, {"$set": post})
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.update_one(pre_post, {"$set": post})
+
 
 
 async def ge_on_join(user_id: int):
     post = {'_id': user_id, 'bank': 0, 'wallet': 400}
 
-    try:
-        collection.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+
+    collection.insert_one(post)

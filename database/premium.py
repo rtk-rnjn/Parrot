@@ -13,11 +13,8 @@ async def premium_add_guild(guild_id: int):
         "_id": guild_id,
     }
 
-    try:
-        collection_guild.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection_guild.insert_one(post)
+
 
 
 async def premium_del_guild(guild_id: int):
@@ -25,12 +22,8 @@ async def premium_del_guild(guild_id: int):
         "_id": guild_id,
     }
 
-    try:
-        collection_guild.delete_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
-
+    collection_guild.delete_one(post)
+     
 
 collection_user = db["premium_user"]
 
@@ -40,11 +33,8 @@ async def premium_add_user(user_id: int):
         "_id": user_id,
     }
 
-    try:
-        collection_user.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection_user.insert_one(post)
+    
 
 
 async def premium_del_user(user_id: int):
@@ -52,8 +42,5 @@ async def premium_del_user(user_id: int):
         "_id": user_id,
     }
 
-    try:
-        collection_user.delete_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection_user.delete_one(post)
+    

@@ -34,11 +34,8 @@ async def logging_on_join(guild_id: int):
         'role_removed': None
     }
 
-    try:
-        collection.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.insert_one(post)
+
 
 
 async def logging_update(guild_id: int, event: str, channel_id: int):
@@ -56,11 +53,8 @@ async def logging_update(guild_id: int, event: str, channel_id: int):
         get_post = {'_id': guild_id}
         new_post = {"$set": {event.lower(): channel_id}}
 
-    try:
-        collection.update_one(get_post, new_post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.update_one(get_post, new_post)
+
 
 
 async def logging_on_remove(guild_id: int):
@@ -68,8 +62,5 @@ async def logging_on_remove(guild_id: int):
         '_id': guild_id,
     }
 
-    try:
-        collection.delete_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.delete_one(post)
+

@@ -22,20 +22,11 @@ async def ticket_on_join(guild_id: int):
         "channel_id": None
     }
 
-    try:
-        collection.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.insert_one(post)
 
 
 async def ticket_update(guild_id: int, post):
-
-    try:
-        collection.update_one({'_id': guild_id}, {"$set": post})
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.update_one({'_id': guild_id}, {"$set": post})
 
 
 async def ticket_on_remove(guild_id: int):
@@ -43,8 +34,4 @@ async def ticket_on_remove(guild_id: int):
         "_id": guild_id,
     }
 
-    try:
-        collection.delete_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.delete_one(post)

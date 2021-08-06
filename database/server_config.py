@@ -20,12 +20,8 @@ async def guild_join(guild_id: int):
         'mute_role': None,
         'giveaway_role': None
     }
-
-    try:
-        collection.insert_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.insert_one(post)
+    
 
 
 async def guild_update(guild_id: int, post: dict):
@@ -35,11 +31,7 @@ async def guild_update(guild_id: int, post: dict):
 
     new_post = {"$set": post}
 
-    try:
-        collection.update_one(_post, new_post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.update_one(_post, new_post)
 
 
 async def guild_remove(guild_id: int):
@@ -47,8 +39,4 @@ async def guild_remove(guild_id: int):
         '_id': guild_id,
     }
 
-    try:
-        collection.delete_one(post)
-        return "OK"
-    except Exception as e:
-        return str(e)
+    collection.delete_one(post)

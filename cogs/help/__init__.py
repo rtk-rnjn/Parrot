@@ -45,7 +45,7 @@ class HelpCommand(commands.HelpCommand):
         embed.description = description + f"\n• {get_bot}\n• {support_server}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
         for cog in bot.cogs:
-            if (bot.cogs[cog].get_commands() != []) or (str(cog).lower() != 'jishaku') or (bot.cogs[cog].get_listeners() == []):
+            if bot.cogs[cog].get_commands():
                 embed.add_field(name=f"{str(cog).upper()}", value=f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```", inline=False)
 
         embed.set_footer(text="Built with ❤️ and `discord.py`",

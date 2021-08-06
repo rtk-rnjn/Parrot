@@ -8,7 +8,7 @@ async def chat_exporter(channel, limit=None):
     with open(f'extra/{channel.id}.txt', 'w+') as f:
         async for msg in channel.history(limit=limit):
             f.write(
-                f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([i.to_dict() for i in msg.embeds]) if msg.embeds else ''}\n\n"
+                f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n\n"
             )
     with open(f'extra/{channel.id}.txt', 'rb') as fp:
         await channel.send(file=discord.File(fp, 'FUCKING_FILE_NAME.txt'))

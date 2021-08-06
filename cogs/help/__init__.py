@@ -52,11 +52,11 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```",
                     inline=True)
 
-        embed.set_footer(text="Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{len(bot.cogs)} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
-
+        i = 1
         for cog in bot.cogs:
             if bot.cogs[cog].get_commands():
 
@@ -66,12 +66,11 @@ class HelpCommand(commands.HelpCommand):
                     f"**Commands**```\n{', '.join([cmd.name for cmd in bot.cogs[cog].get_commands()])}\n```",
                     color=discord.Colour(0x55ddff))
                 em.set_author(name=f"COG: {str(cog).upper()}")
-                em.set_footer(text="Built with ❤️ and `discord.py`",
+                em.set_footer(text=f"Page {i+1}/{len(bot.cogs)} | Built with ❤️ and `discord.py`",
                               icon_url=f"{DEV_LOGO}")
                 em_list.append(em)
                 em.set_thumbnail(url=self.context.me.avatar.url)
-            else:
-                pass
+            i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)
@@ -116,6 +115,7 @@ class HelpCommand(commands.HelpCommand):
                      icon_url=f"{DEV_LOGO}")
             em_list.append(e)
             e.set_thumbnail(url=self.context.me.avatar.url)
+            i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)
@@ -129,7 +129,7 @@ class HelpCommand(commands.HelpCommand):
             description=
             f"```\n{cog.description if cog.description else 'NA'}\n```\nCommands\n```\n{', '.join([cmd.name for cmd in cog.get_commands()])}\n```",
             color=discord.Colour(0x55ddff))
-        embed.set_footer(text="Page {}/{} | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{len(cog.get_commands())} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
         em_list.append(embed)
         i = 1
@@ -146,10 +146,9 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{', '.join(cmd.aliases if cmd.aliases else 'NA')}\n```"
                 )
 
-                em.set_footer(text=)
+                em.set_footer(text=f"Page {i+1}/{len(cog.get_commands())} | Built with ❤️ and `discord.py`")
                 em_list.append(em)
-            else:
-                pass
+            i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)

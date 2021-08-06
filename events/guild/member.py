@@ -2,7 +2,7 @@ from discord import Embed
 import datetime
 from core import Cog, Parrot
 
-class Member(Cog):
+class Member(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 

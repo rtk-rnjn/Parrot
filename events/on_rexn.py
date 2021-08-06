@@ -1,7 +1,7 @@
 from core import Cog, Parrot
 
 
-class OnReaction(Cog):
+class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 

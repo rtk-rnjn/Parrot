@@ -1,7 +1,7 @@
 from core import Cog, Parrot
 
 
-class GuildRoleEmoji(Cog):
+class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 

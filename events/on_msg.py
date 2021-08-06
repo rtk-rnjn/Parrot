@@ -2,7 +2,7 @@ from core import Parrot, Cog
 from database.msg_count import increment
 
 
-class OnMsg(Cog):
+class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 

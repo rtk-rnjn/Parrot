@@ -14,7 +14,7 @@ from database.msg_count import guild_remove as gr_msg
 
 
 
-class GuildJoin(Cog):
+class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 

@@ -12,7 +12,7 @@ with open("extra/quote.txt") as f:
 
 quote = quote.split('\n')
 
-class Cmd(Cog):
+class Cmd(Cog, command_attrs=dict(hidden=True)):
     """This category is of no use for you, ignore it."""
     def __init__(self, bot: Parrot):
         self.bot = bot

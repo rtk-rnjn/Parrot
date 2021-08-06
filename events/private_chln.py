@@ -1,7 +1,7 @@
 from core import Cog, Parrot
 
 
-class PrivateChannel(Cog):
+class PrivateChannel(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 

@@ -359,7 +359,7 @@ async def _setlog(ctx, channel):
         await ticket_on_join(ctx.guild.id)
     data = collection.find_one({'_id': ctx.guild.id})
     if not data['log'] or data['log'] != channel.id:
-        post = {'log', channel.id}
+        post = {'log': channel.id}
         await ticket_update(ctx.guild.id, post)
         em = discord.Embed(
             title="Parrot Ticket Bot",

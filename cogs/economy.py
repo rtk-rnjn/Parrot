@@ -7,6 +7,7 @@ from database.economy import collection, ge_update, ge_on_join
 
 
 class Economy(Cog, name="economy"):
+    """Parrot Economy to get some Parrot Coins as to make calls"""
     def __init__(self, bot: Parrot):
         self.bot = bot
 

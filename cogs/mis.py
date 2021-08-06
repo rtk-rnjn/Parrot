@@ -411,7 +411,6 @@ class miscl(Cog, name="miscellaneous"):
 
     @commands.command()
     @user_premium_cd()
-    @commands.guild_only()
     @commands.bot_has_permissions(embed_links=True)
     async def embed(self, ctx: Context, *, data):
         """
@@ -425,6 +424,27 @@ class miscl(Cog, name="miscellaneous"):
                 await ctx.send(embed=discord.Embed.from_dict(data))
             except Exception:
                 pass
+
+    @commands.command()
+    @user_premium_cd()
+    @commands.bot_has_permissions(embed_links=True)
+    async def snowflakeid(self, ctx: Context, *, target: typing.Union[discord.Member, discord.Role, discord.Thread, discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Guild, discord.Message]):
+        """To get the ID of discord models"""
+        await ctx.send(f"{ctx.author.mention} {target} is **{type(target)}** of id **{target.id}** created at **{target.created_at}**")
+    
+    @commands.command()
+    @user_premium_cd()
+    @commands.bot_has_permissions(embed_links=True)
+    async def snowflaketime(self, ctx: Context, snowflake1: int, snowflake2: int):
+        """Get the time difference in seconds, between two discord SnowFlakes"""
+        if snowflake2 > snowflake1: 
+            first = discord.utils.snowflake_time(snowflake1)
+            second = discord.utils.snowflake_time(snowflake2) # bigger
+            timedelta = second - first
+        else:
+            timedelta = first - second
+        
+        await ctx.send(f"{ctx.author.mention} total seconds between {snowflake1} and {snowflake2} is {timedelta.total_seconds()}")
 
 
 def setup(bot):

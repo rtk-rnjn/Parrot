@@ -18,8 +18,7 @@ class MessageEvents(Cog, name="Global Chat"):
         for bad_word in bad_dict:
             if bad_word in msg:
                 return False
-            elif bad_word not in msg:
-                return True
+        return True
 
     @Cog.listener()
     async def on_message(self, message):

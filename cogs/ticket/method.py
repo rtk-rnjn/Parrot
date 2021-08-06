@@ -17,7 +17,7 @@ async def chat_exporter(channel, limit=None):
 async def log(guild, channel, description, status):
     embed = discord.Embed(title='Parrot Ticket Bot',
                           timestamp=datetime.utcnow(),
-                          description=description,
+                          description=f"```\n{description}\n```",
                           color=discord.Color.blue())
     embed.add_field(name='Status', value=status)
     embed.set_footer(text=f"{guild.name}")
@@ -169,7 +169,7 @@ async def _save(ctx, bot):
                 color=discord.Color.blue())
             await ctx.reply(embed=em)
             message = await bot.wait_for('message', check=check, timeout=60)
-            transcript = await chat_exporter(ctx.channel)
+            await chat_exporter(ctx.channel)
             
             if data['log']:
                 log_channel = ctx.guild.get_channel(data['log'])

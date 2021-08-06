@@ -1,8 +1,18 @@
-import discord, asyncio
+import discord, asyncio, io, os
 from database.ticket import collection, ticket_on_join, ticket_update
-import chat_exporter, io
+
 from datetime import datetime
 
+
+async def chat_exporter(channel, limit=None):
+    with open(f'extra/{channel.id}.txt', 'w+') as f:
+        async for msg in channel.history(limit=limit):
+            f.write(
+                f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([i.to_dict() for i in msg.embeds]) if msg.embeds else ''}\n\n"
+            )
+    with open(f'extra/{channel.id}.txt', 'rb') as fp:
+        await channel.send(file=discord.File(fp, 'FUCKING_FILE_NAME.txt'))
+    os.remove(f'extra/{channel.id}.txt')
 
 async def log(guild, channel, description, status):
     embed = discord.Embed(title='Parrot Ticket Bot',
@@ -34,17 +44,17 @@ async def _new(ctx, args):
                                          send_messages=False,
                                          read_messages=False)
     if data['valid-roles']:
-      for role_id in data["valid-roles"]:
-          role = ctx.guild.get_role(role_id)
+        for role_id in data["valid-roles"]:
+            role = ctx.guild.get_role(role_id)
 
-          await ticket_channel.set_permissions(role,
-                                              send_messages=True,
-                                              read_messages=True,
-                                              add_reactions=True,
-                                              embed_links=True,
-                                              attach_files=True,
-                                              read_message_history=True,
-                                              external_emojis=True)
+            await ticket_channel.set_permissions(role,
+                                                 send_messages=True,
+                                                 read_messages=True,
+                                                 add_reactions=True,
+                                                 embed_links=True,
+                                                 attach_files=True,
+                                                 read_message_history=True,
+                                                 external_emojis=True)
 
     await ticket_channel.set_permissions(ctx.author,
                                          send_messages=True,
@@ -159,12 +169,8 @@ async def _save(ctx, bot):
                 color=discord.Color.blue())
             await ctx.reply(embed=em)
             message = await bot.wait_for('message', check=check, timeout=60)
-            transcript = await chat_exporter.export(ctx.channel)
-            if transcript is None: return
-            transcript_file = discord.File(
-                io.BytesIO(transcript.encode()),
-                filename=f"transcript-{ctx.channel.name}.html")
-            await ctx.reply(file=transcript_file)
+            transcript = await chat_exporter(ctx.channel)
+            
             if data['log']:
                 log_channel = ctx.guild.get_channel(data['log'])
                 await log(

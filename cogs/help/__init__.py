@@ -52,7 +52,7 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```",
                     inline=True)
 
-        embed.set_footer(text=f"Page 1/{len(bot.cogs)} | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{len(bot.cogs)+1} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
@@ -66,11 +66,11 @@ class HelpCommand(commands.HelpCommand):
                     f"**Commands**```\n{', '.join([cmd.name for cmd in bot.cogs[cog].get_commands()])}\n```",
                     color=discord.Colour(0x55ddff))
                 em.set_author(name=f"COG: {str(cog).upper()}")
-                em.set_footer(text=f"Page {i+1}/{len(bot.cogs)} | Built with ❤️ and `discord.py`",
+                em.set_footer(text=f"Page {i+1}/{len(bot.cogs)+1} | Built with ❤️ and `discord.py`",
                               icon_url=f"{DEV_LOGO}")
                 em_list.append(em)
                 em.set_thumbnail(url=self.context.me.avatar.url)
-            i += 1
+                i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)
@@ -82,12 +82,12 @@ class HelpCommand(commands.HelpCommand):
 
         e = discord.Embed(
             title=
-            f"Help with group **{group.name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''}**",
+            f"Help with group {group.name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''}",
             color=discord.Colour(0x55ddff),
             description=
             f"Sub commands\n```\n{', '.join([cmd.name for cmd in cmds])}\n```")
 
-        e.set_footer(text=f"Page 1/{len(cmds)+1}| Built with ❤️ and `discord.py`",
+        e.set_footer(text=f"Page 1/{len(cmds)+1} | Built with ❤️ and `discord.py`",
                      icon_url=f"{DEV_LOGO}")
         e.set_thumbnail(url=self.context.me.avatar.url)
         em_list.append(e)
@@ -111,7 +111,7 @@ class HelpCommand(commands.HelpCommand):
                 f"```\n{', '.join(group.aliases) if group.aliases else 'NA'}\n```",
                 inline=False
             )
-            e.set_footer(text=f"Page {i+1}/{len(cmds)+1}| Built with ❤️ and `discord.py`",
+            e.set_footer(text=f"Page {i+1}/{len(cmds)+1} | Built with ❤️ and `discord.py`",
                      icon_url=f"{DEV_LOGO}")
             em_list.append(e)
             e.set_thumbnail(url=self.context.me.avatar.url)
@@ -129,7 +129,7 @@ class HelpCommand(commands.HelpCommand):
             description=
             f"```\n{cog.description if cog.description else 'NA'}\n```\nCommands\n```\n{', '.join([cmd.name for cmd in cog.get_commands()])}\n```",
             color=discord.Colour(0x55ddff))
-        embed.set_footer(text=f"Page 1/{len(cog.get_commands())} | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
         em_list.append(embed)
         i = 1
@@ -146,9 +146,9 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{', '.join(cmd.aliases if cmd.aliases else 'NA')}\n```"
                 )
 
-                em.set_footer(text=f"Page {i+1}/{len(cog.get_commands())} | Built with ❤️ and `discord.py`")
+                em.set_footer(text=f"Page {i+1}/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`")
                 em_list.append(em)
-            i += 1
+                i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)

@@ -409,30 +409,30 @@ class nsfw(Cog, name="nsfw"):
 
         await ctx.reply(embed=em)
 
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    async def gah(self, ctx: Context):
-        """
-		To get Random Gay
-		"""
-        url = 'https://nekobot.xyz/api/image'
-        params = {"type": "gah"}
+    # @commands.command()
+    # @commands.is_nsfw()
+    # @commands.bot_has_permissions(embed_links=True)
+    # async def gah(self, ctx: Context):
+    #     """
+		# To get Random Gay
+		# """
+    #     url = 'https://nekobot.xyz/api/image'
+    #     params = {"type": "gah"}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+    #     async with aiohttp.ClientSession() as session:
+    #         async with session.get(url, params=params) as r:
+    #             if r.status == 200:
+    #                 res = await r.json()
+    #             else:
+    #                 return
 
-        img = res['message']
+    #     img = res['message']
 
-        em = discord.Embed(timestamp=datetime.datetime.utcnow())
-        em.set_footer(text=f"{ctx.author.name}")
-        em.set_image(url=img)
+    #     em = discord.Embed(timestamp=datetime.datetime.utcnow())
+    #     em.set_footer(text=f"{ctx.author.name}")
+    #     em.set_image(url=img)
 
-        await ctx.reply(embed=em)
+    #     await ctx.reply(embed=em)
 
     @commands.command()
     @commands.is_nsfw()

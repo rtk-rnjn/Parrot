@@ -83,16 +83,17 @@ class HelpCommand(commands.HelpCommand):
 
         e = discord.Embed(
             title=
-            f"Help with group **{group.name}{'|'.join(group.aliases) if group.aliases else ''}**",
+            f"Help with group **{group.name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''}**",
             color=discord.Colour(0x55ddff),
             description=
             f"Sub commands\n```\n{', '.join([cmd.name for cmd in cmds])}\n```")
 
-        e.set_footer(text="Built with ❤️ and `discord.py`",
+        e.set_footer(text=f"Page 1/{len(cmds)+1}| Built with ❤️ and `discord.py`",
                      icon_url=f"{DEV_LOGO}")
         e.set_thumbnail(url=self.context.me.avatar.url)
         em_list.append(e)
 
+        i = 1
         for cmd in cmds:
             e = discord.Embed(
                 title=f"Help with {cmd.qualified_name}",
@@ -102,7 +103,7 @@ class HelpCommand(commands.HelpCommand):
             e.add_field(
                 name="Usage",
                 value=
-                f"Usage:\n```\n[p]{group.qualified_name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''} {cmd.qualified_name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else '')} {cmd.signature}\n```",
+                f"Usage:\n```\n[p]{group.qualified_name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else '')} {cmd.signature}\n```",
                 inline=False
             )
             e.add_field(
@@ -111,6 +112,8 @@ class HelpCommand(commands.HelpCommand):
                 f"```\n{', '.join(group.aliases) if group.aliases else 'NA'}\n```",
                 inline=False
             )
+            e.set_footer(text=f"Page {i+1}/{len(cmds)+1}| Built with ❤️ and `discord.py`",
+                     icon_url=f"{DEV_LOGO}")
             em_list.append(e)
             e.set_thumbnail(url=self.context.me.avatar.url)
 
@@ -126,10 +129,10 @@ class HelpCommand(commands.HelpCommand):
             description=
             f"```\n{cog.description if cog.description else 'NA'}\n```\nCommands\n```\n{', '.join([cmd.name for cmd in cog.get_commands()])}\n```",
             color=discord.Colour(0x55ddff))
-        embed.set_footer(text="Built with ❤️ and `discord.py`",
+        embed.set_footer(text="Page {}/{} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
         em_list.append(embed)
-
+        i = 1
         for cmd in cog.get_commands():
             if cog.get_commands():
                 em = discord.Embed(title=f"Help with {cmd.name}",
@@ -143,6 +146,7 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{', '.join(cmd.aliases if cmd.aliases else 'NA')}\n```"
                 )
 
+                em.set_footer(text=)
                 em_list.append(em)
             else:
                 pass

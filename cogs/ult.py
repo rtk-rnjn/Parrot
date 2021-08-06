@@ -8,6 +8,7 @@ from discord import __version__ as discord_version
 from platform import python_version
 
 from core import Parrot, Context, Cog
+from config import VERSION
 
 class ult(Cog, name="utilities", description="Basic commands for the bots."):
   '''Basic commands for the bots.'''
@@ -122,7 +123,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
       mem_total = virtual_memory().total / (1024**2)
       mem_of_total = proc.memory_percent()
       mem_usage = mem_total * (mem_of_total / 100)
-    VERSION="v3.0.0.a"
+    
     x = len(self.bot.users)
     y = len(self.bot.guilds)
     fields = [

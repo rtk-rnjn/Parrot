@@ -8,7 +8,7 @@ class ReactionTicket(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def log(guild, channel, description, status):
+    async def log(self, guild, channel, description, status):
         embed = discord.Embed(title='Parrot Ticket Bot',
                               timestamp=datetime.utcnow(),
                               description=f"```\n{description}\n```",
@@ -113,7 +113,7 @@ class ReactionTicket(Cog):
             log_channel = guild.get_channel(data['log'])
             await self.log(
                 guild, log_channel,
-                f'ticket-{ticket_number} opened by, {member.name}#{member.discriminator} ({member.id})',
+                f"ticket-{ticket_number} opened by, {member.name}#{member.discriminator} ({member.id})",
                 'RUNNING')
 
 

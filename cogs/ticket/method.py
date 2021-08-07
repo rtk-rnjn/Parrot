@@ -194,7 +194,7 @@ async def _addaccess(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
 
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
                                     'valid-roles': role.id
                                 }})
@@ -213,7 +213,7 @@ async def _delaccess(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
 
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
                                     'valid-roles': role.id
                                 }})
@@ -232,7 +232,7 @@ async def _addadimrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
 
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
                                     "verified-roles": role.id
                                 }})
@@ -251,7 +251,7 @@ async def _addpingedrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
 
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
                                     'pinged-roles': role.id
                                 }})
@@ -270,7 +270,7 @@ async def _deladminrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
 
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$pull': {
                                     'verified-roles': role.id
                                 }})
@@ -288,7 +288,7 @@ async def _deladminrole(ctx, role):
 async def _delpingedrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$pull': {
                                     'pinged-roles': role.id
                                 }})
@@ -307,7 +307,7 @@ async def _setcategory(ctx, channel):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
 
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$set': {
                                     'category': channel.id
                                 }})
@@ -325,7 +325,7 @@ async def _setcategory(ctx, channel):
 async def _setlog(ctx, channel):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    await collection.update_one({'_id': ctx.guild.id},
+    collection.update_one({'_id': ctx.guild.id},
                                 {'$set': {
                                     'log': channel.id
                                 }})

@@ -177,9 +177,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 tb = traceback.format_exception(type(error), error, error.__traceback__)
                 tbe = "".join(tb) + ""
                 if len(tbe) < 1800:
-                  await ctx.send('Copy paste this error to `!! Ritik Ranjan [*.*]#9230`\n\n```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))
+                  await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))
                 else: 
-                    await ctx.send(f"Give this link to `!! Ritik Ranjan [*.*]#9230`\n{self.paste(tbe)}")
+                    await ctx.send(f"{self.paste(tbe)}")
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

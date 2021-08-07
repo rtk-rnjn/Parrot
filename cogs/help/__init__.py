@@ -102,7 +102,7 @@ class HelpCommand(commands.HelpCommand):
             e.add_field(
                 name="Usage",
                 value=
-                f"Usage:\n```\n[p]{group.qualified_name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else '')} {cmd.signature}\n```",
+                f"```\n[p]{group.qualified_name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else '')} {cmd.signature}\n```",
                 inline=False
             )
             e.add_field(

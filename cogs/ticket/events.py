@@ -1,12 +1,21 @@
 from core import Parrot, Cog
 from database.ticket import collection, ticket_update
 import discord
-from cogs.ticket.method import log
+from datetime import datetime
 
 
 class ReactionTicket(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
+
+    async def log(guild, channel, description, status):
+        embed = discord.Embed(title='Parrot Ticket Bot',
+                              timestamp=datetime.utcnow(),
+                              description=f"```\n{description}\n```",
+                              color=discord.Color.blue())
+        embed.add_field(name='Status', value=status)
+        embed.set_footer(text=f"{guild.name}")
+        await channel.send(embed=embed)
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -102,7 +111,7 @@ class ReactionTicket(Cog):
             await ticket_update(guild.id, post)
 
             log_channel = guild.get_channel(data['log'])
-            await log(
+            await self.log(
                 guild, log_channel,
                 f'ticket-{ticket_number} opened by, {member.name}#{member.discriminator} ({member.id})',
                 'RUNNING')

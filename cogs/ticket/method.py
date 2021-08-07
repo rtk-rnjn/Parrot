@@ -1,4 +1,4 @@
-import discord, asyncio, io, os
+import discord, asyncio, os
 from database.ticket import collection, ticket_on_join, ticket_update
 
 from datetime import datetime
@@ -13,6 +13,7 @@ async def chat_exporter(channel, limit=None):
     with open(f'extra/{channel.id}.txt', 'rb') as fp:
         await channel.send(file=discord.File(fp, 'FUCKING_FILE_NAME.txt'))
     os.remove(f'extra/{channel.id}.txt')
+
 
 async def log(guild, channel, description, status):
     embed = discord.Embed(title='Parrot Ticket Bot',
@@ -170,7 +171,7 @@ async def _save(ctx, bot):
             await ctx.reply(embed=em)
             message = await bot.wait_for('message', check=check, timeout=60)
             await chat_exporter(ctx.channel)
-            
+
             if data['log']:
                 log_channel = ctx.guild.get_channel(data['log'])
                 await log(
@@ -192,196 +193,151 @@ async def _save(ctx, bot):
 async def _addaccess(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    if role.id not in data["valid-roles"]:
-        valid_roles = data["valid-roles"].append(role.id)
-        post = {'valid-roles': valid_roles}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully added `{}` to the list of roles with access to tickets."
-            .format(role.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description="That role already has access to tickets!",
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$addToSet': {
+                                    'valid-roles': role.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully added `{}` to the list of roles with access to tickets."
+        .format(role.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _delaccess(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    valid_roles = data["valid-roles"]
-    if role.id in valid_roles:
-        index = valid_roles.index(role.id)
-        del valid_roles[index]
-        post = {'valid-roles': valid_roles}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully removed `{}` from the list of roles with access to tickets."
-            .format(role.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description="That role already doesn't have access to tickets!",
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$addToSet': {
+                                    'valid-roles': role.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully removed `{}` from the list of roles with access to tickets."
+        .format(role.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _addadimrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    if role.id not in data['verified-roles']:
-        verified_roles = data["verified-roles"].append(role.id)
-        await ticket_update(ctx.guild.id, {"verified-roles": verified_roles})
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully added `{}` to the list of roles that can run admin-level commands!"
-            .format(role.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "That role already getting pinged when new tickets are created!",
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$addToSet': {
+                                    "verified-roles": role.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully added `{}` to the list of roles that can run admin-level commands!"
+        .format(role.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _addpingedrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    if role.id not in data["pinged-roles"]:
-        pinged_roles = data["pinged-roles"].append(role.id)
-        post = {'pinged-roles': pinged_roles}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully added `{}` to the list of roles that get pinged when new tickets are created!"
-            .format(role.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "That role already receives pings when tickets are created.",
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$addToSet': {
+                                    'pinged-roles': role.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully added `{}` to the list of roles that get pinged when new tickets are created!"
+        .format(role.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _deladminrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    admin_roles = data["verified-roles"]
-    if role.id in admin_roles:
-        index = admin_roles.index(role.id)
-        del admin_roles[index]
-        post = {"verified-roles": admin_roles}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully removed `{}` from the list of roles that get pinged when new tickets are created."
-            .format(role.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "That role isn't getting pinged when new tickets are created!",
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$pull': {
+                                    'verified-roles': role.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully removed `{}` from the list of roles that get pinged when new tickets are created."
+        .format(role.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _delpingedrole(ctx, role):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    pinged_roles = data["pinged-roles"]
-    if role.id in pinged_roles:
-        index = pinged_roles.index(role.id)
-        del pinged_roles[index]
-        post = {'pinged-roles': pinged_roles}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully removed `{}` from the list of roles that get pinged when new tickets are created."
-            .format(role.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "That role already isn't getting pinged when new tickets are created!",
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$pull': {
+                                    'pinged-roles': role.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully removed `{}` from the list of roles that get pinged when new tickets are created."
+        .format(role.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _setcategory(ctx, channel):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    if data['category'] is None or data['category'] != channel.id:
-        post = {'category': channel.id}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully added `{}` where new tickets will be created."
-            .format(channel.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    elif data['categogy'] == channel.id:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "That channel already added where new tickets will be created.".
-            format(channel.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$set': {
+                                    'category': channel.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully added `{}` where new tickets will be created.".
+        format(channel.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 async def _setlog(ctx, channel):
     if not collection.find_one({'_id': ctx.guild.id}):
         await ticket_on_join(ctx.guild.id)
-    data = collection.find_one({'_id': ctx.guild.id})
-    if not data['log'] or data['log'] != channel.id:
-        post = {'log': channel.id}
-        await ticket_update(ctx.guild.id, post)
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "You have successfully added `{}` where tickets action will be logged."
-            .format(channel.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
-    else:
-        em = discord.Embed(
-            title="Parrot Ticket Bot",
-            description=
-            "That channel already added where tickets action will be logged.".
-            format(channel.name),
-            color=discord.Color.blue())
-        await ctx.reply(embed=em)
+    await collection.update_one({'_id': ctx.guild.id},
+                                {'$set': {
+                                    'log': channel.id
+                                }})
+    em = discord.Embed(
+        title="Parrot Ticket Bot",
+        description=
+        "You have successfully added `{}` where tickets action will be logged."
+        .format(channel.name),
+        color=discord.Color.blue(),
+        timestamp=datetime.utcnow())
+    em.set_footer(text=f"{ctx.author.name}")
+    await ctx.reply(embed=em)
 
 
 # AUTO/ REACTION

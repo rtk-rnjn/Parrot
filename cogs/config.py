@@ -13,7 +13,7 @@ class BotConfig(Cog, name="botconfig"):
         self.bot = bot
 
     @commands.group()
-    @commands.check_any(commands.has_permissions(administrator=True))
+    @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def config(self, ctx: Context):
         """
@@ -22,10 +22,10 @@ class BotConfig(Cog, name="botconfig"):
         pass
 
     @config.command(aliases=['prefix'])
-    @commands.check_any(commands.has_permissions(administrator=True))
+    @commands.has_permissions(administrator=True)
     async def botprefix(self, ctx: Context, *, arg: commands.clean_content):
         """
-				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 charss
+				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 chars
 				"""
         if not csc.find_one({'_id': ctx.guild.id}):
             await guild_join(ctx.guild.id)
@@ -41,7 +41,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['mute-role'])
-    @commands.check_any(commands.has_permissions(administrator=True))
+    @commands.has_permissions(administrator=True)
     async def muterole(self, ctx: Context, *, role: discord.Role):
         """
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
@@ -56,7 +56,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['mod-role'])
-    @commands.check_any(commands.has_permissions(administrator=True))
+    @commands.has_permissions(administrator=True)
     async def modrole(self, ctx: Context, *, role: discord.Role):
         """
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
@@ -72,8 +72,8 @@ class BotConfig(Cog, name="botconfig"):
         )
 
 
-    @config.command(aliases=['action-log'])
-    @commands.check_any(commands.has_permissions(administrator=True))
+    @config.command(aliases=['action-log', 'modlog', 'mod-log'])
+    @commands.has_permissions(administrator=True)
     async def actionlog(self,
                         ctx: Context,
                         *,
@@ -93,7 +93,7 @@ class BotConfig(Cog, name="botconfig"):
         )
 
     @config.command(aliases=['g-setup'])
-    @commands.check_any(commands.has_permissions(administrator=True))
+    @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_webhooks=True,
                                   manage_roles=True)

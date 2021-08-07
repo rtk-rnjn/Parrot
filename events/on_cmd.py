@@ -1,4 +1,4 @@
-import discord, traceback, sys, math, random
+import discord, traceback, math, random
 from discord.ext import commands
 from datetime import datetime
 
@@ -64,6 +64,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
 
         elif isinstance(error, commands.MissingPermissions):
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
             missing = [
                 perm.replace('_', ' ').replace('guild', 'server').title()
                 for perm in error.missing_perms
@@ -170,12 +172,14 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.send(error.__str__().format(ctx=ctx))
 
         else:
-            print('Ignoring exception in command {}:'.format(ctx.command))
-
-            traceback.print_exception(type(error),
-                                      error,
-                                      error.__traceback__,
-                                      file=sys.stderr)
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: 
+                tb = traceback.format_exception(type(error), error, error.__traceback__)
+                tbe = "".join(tb) + ""
+                if len(tbe) < 1800:
+                  await ctx.send('Copy paste this error to `!! Ritik Ranjan [*.*]#9230`\n\n```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))
+                else: 
+                    await ctx.send(f"Give this link to `!! Ritik Ranjan [*.*]#9230`\n{self.paste(tbe)}")
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

@@ -18,7 +18,6 @@ async def guild_join(guild_id: int):
         'mod_role': None,
         'action_log': None,
         'mute_role': None,
-        'giveaway_role': None
     }
     collection.insert_one(post)
     

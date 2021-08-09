@@ -9,6 +9,10 @@ If you found any Error. In some of the command then please let me know, or you c
 Bot Invite Link: [Invite Link](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot)
 
 ---
+### How to Configure the bot when added?
+It's relatively easy to Configure. 
+
+---
 ## Moderation
 A simple moderator's tool for managing the server.
 

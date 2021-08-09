@@ -1,6 +1,13 @@
 # Parrot Discord Bot
 A good moderation and Ticket Service bot. Basically made for helping the mods!
 
+### Self Host? 
+No Help will be given if You are self Hosting. Tho' Bot is very easy to understand there is No Thetha Theroy. Yes, if you need any Python Help. You can ask me out at my Discord Server. 
+
+If you found any Error. In some of the command then please let me know, or you can ask for Pull Request. It would be helpful. Thanks
+
+Bot Invite Link: [Invite Link](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot)
+
 ---
 ## Moderation
 A simple moderator's tool for managing the server.
@@ -16,14 +23,17 @@ A simple moderator's tool for managing the server.
 | clone | To clone the channel or to nukes the channel (clones and delete). | nuke | 
 | kick | To kick a member from guild. | None | 
 | masskick | To kick a member from guild. | None | 
-| lock | To lock the channel | None | | unlock | To unlock the channel (Text channel) | None | 
+| lock | To lock the channel | None | 
+| unlock | To unlock the channel (Text channel) | None | 
 | mute | To restrict a member to sending message in the Server | None |
 | unmute | To allow a member to sending message in the Text Channels, if muted. | None | 
-| clean | To delete bulk message. | purge | | purgeuser | To delete bulk message, of a specified user. | None | 
+| clean | To delete bulk message. | purge | 
+| purgeuser | To delete bulk message, of a specified user. | None | 
 | purgebots | To delete bulk message, of bots | None |
 | purgeregex | To delete bulk message, matching the regex | None | 
 | slowmode | To set slowmode in the specified channel | None |
-| unban | To Unban a member from a guild | None | | unblock | Unblocks a user from the text channel | None |
+| unban | To Unban a member from a guild | None | 
+| unblock | Unblocks a user from the text channel | None |
 | mod | Why to learn the commands. This is all in one mod command. | None |
 
 __**Note: Bot will ban indiscriminately, means member of lower rank can moderate, member of higher rank. So it is advice to place the bot role just below the mod role/staff role**__
@@ -59,11 +69,12 @@ Parrot gives you huge amount of fun commands, so that you won't get bored
 | encode | Encode the text to Base64 Encryption and in Binary | None | 
 | fact | Return a random Fact. It's useless command, I know NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala | None | 
 | gay | Image Generator. Gay Pride. | None | 
-| glass | Provide a glass filter on your profile picture, try it! | None | | horny | Image generator, Horny card generator. | None | 
+| glass | Provide a glass filter on your profile picture, try it! | None | 
+| horny | Image generator, Horny card generator. | None | 
 | roast | Insult your enemy, Ugh! | insult | 
 | itssostupid | :\ I don't know what is this, I think a meme generator. | its-so-stupid | 
 | jail | Image generator. Makes you behind the bars. Haha | None | 
-| lolice | This command is not made by me. : | None | 
+| lolice | This command is not made by me. : \ | None | 
 | meme | Random meme generator. | None | 
 | fakepeople | Fake Identity generator. | None | 
 | simpcard | Good for those, who are hell simp! LOL | None | 

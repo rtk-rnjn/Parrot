@@ -50,6 +50,7 @@ Sometimes giving permissions kick ban can be dangerous. If people are not trust 
 <br>
 
 ---
+
 ## Global-Chat Setup
 
 This thing is insane. Feature inspired from World Chat bot. Configuring the `#global-chat` is kinda easy too. Pass `None` if you want to remove
@@ -223,6 +224,9 @@ TODO:
 3. To make AutoModeration
 4. To make more Todo list. LOL
 ```
+
+<br>
+
 ---
 # Commands
 

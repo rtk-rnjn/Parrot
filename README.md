@@ -207,9 +207,9 @@ Now, if you want to remove the role if you don't want that role to be get pinged
 ```
 
 <br>
+
 ---
 
-```
 
 NOTE: 
 
@@ -217,10 +217,6 @@ NOTE:
 
 2. Bot will moderate indiscriminately. Means it hardly care about the role level. So it is adviced to place the bot role below the staff role or moderator role.
 
-```
-
-
-```
 
 TODO:
 
@@ -229,7 +225,6 @@ TODO:
 3. To make AutoModeration
 4. To make more Todo list. LOL
 
-```
 
 <br>
 

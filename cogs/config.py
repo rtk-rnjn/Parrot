@@ -48,38 +48,42 @@ class BotConfig(Cog, name="botconfig"):
         post = {'prefix': arg}
         await guild_update(ctx.guild.id, post)
 
-        await ctx.reply(
+        await ctx.send(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
         )
 
     @config.command(aliases=['mute-role'])
     @commands.has_permissions(administrator=True)
-    async def muterole(self, ctx: Context, *, role: discord.Role):
+    async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
 				"""
         if not csc.find_one({'_id': ctx.guild.id}):
             await guild_join(ctx.guild.id)
-        post = {'mute_role': role.id}
+        post = {'mute_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
-
-        await ctx.reply(
+        if not role:
+            return await ctx.send(
+                f"{ctx.author.mention} mute role reseted! or removed")
+        await ctx.send(
             f"{ctx.author.mention} success! Mute role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
     @config.command(aliases=['mod-role'])
     @commands.has_permissions(administrator=True)
-    async def modrole(self, ctx: Context, *, role: discord.Role):
+    async def modrole(self, ctx: Context, *, role: discord.Role = None):
         """
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
 				"""
         if not csc.find_one({'_id': ctx.guild.id}):
             await guild_join(ctx.guild.id)
 
-        post = {'mod_role': role.id}
+        post = {'mod_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
-
-        await ctx.reply(
+        if not role:
+            return await ctx.send(
+                f"{ctx.author.mention} mod role reseted! or removed")
+        await ctx.send(
             f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
@@ -92,13 +96,15 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To set the action log, basically the mod log.
 				"""
-        channel = channel or ctx.channel
+
         if not csc.find_one({'_id': ctx.guild.id}):
             await guild_join(ctx.guild.id)
 
-        post = {'action_log': channel.id}
+        post = {'action_log': channel.id if channel else None}
         await guild_update(ctx.guild.id, post)
-
+        if not channel:
+            return await ctx.send(
+                f"{ctx.author.mention} action log reseted! or removed")
         await ctx.reply(
             f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**"
         )
@@ -205,35 +211,52 @@ class BotConfig(Cog, name="botconfig"):
         """
         if not ct.find_one({'_id': ctx.guild.id}):
             await telephone_on_join(ctx.guild.id)
-        await telephone_update(ctx.guild.id, 'channel', channel.id
-                               or ctx.channel.id)
+        await telephone_update(ctx.guild.id, 'channel',
+                               channel.id if channel else None)
+        if not channel:
+            return await ctx.send(
+                f"{ctx.author.mention} global telephone line is reseted! or removed"
+            )
         await ctx.send(
             f"{ctx.author.mention} success! #{channel.name} is now added to global telephone line."
         )
 
     @telsetup.command(name='pingrole')
     @commands.has_permissions(administrator=True)
-    async def tel_config_pingrole(self, ctx: Context, *, role: discord.Role):
+    async def tel_config_pingrole(self,
+                                  ctx: Context,
+                                  *,
+                                  role: discord.Role = None):
         """
         To add the ping role. If other server call your server. Then the role will be pinged if set any
         """
         if not ct.find_one({'_id': ctx.guild.id}):
             await telephone_on_join(ctx.guild.id)
-        await telephone_update(ctx.guild.id, 'channel', role.id)
+        await telephone_update(ctx.guild.id, 'channel',
+                               role.id if role else None)
+        if not role:
+            return await ctx.send(
+                f"{ctx.author.mention} ping role reseted! or removed")
         await ctx.send(
             f"{ctx.author.mention} success! @{role.name} will be now pinged when someone calls your server."
         )
 
     @telsetup.command(name='memberping')
     @commands.has_permissions(administrator=True)
-    async def tel_config_memberping(self, ctx: Context, *,
-                                    member: discord.Member):
+    async def tel_config_memberping(self,
+                                    ctx: Context,
+                                    *,
+                                    member: discord.Member = None):
         """
         To add the ping role. If other server call your server. Then the role will be pinged if set any
         """
         if not ct.find_one({'_id': ctx.guild.id}):
             await telephone_on_join(ctx.guild.id)
-        await telephone_update(ctx.guild.id, 'channel', member.id)
+        await telephone_update(ctx.guild.id, 'channel',
+                               member.id if member else None)
+        if not member:
+            return await ctx.send(
+                f"{ctx.author.menton} member ping reseted! or removed")
         await ctx.send(
             f"{ctx.author.mention} success! @{member.name}#{member.discriminator} will be now pinged when someone calls your server."
         )
@@ -255,7 +278,7 @@ class BotConfig(Cog, name="botconfig"):
                       }})
         await ctx.send(f'{ctx.author.mention} success! blocked: {server.name}')
 
-    @telsetup.command(name='unblocked')
+    @telsetup.command(name='unblock')
     @commands.has_permissions(administrator=True)
     async def tel_config_unblock(self, ctx: Context, *, server: discord.Guild):
         """
@@ -287,7 +310,7 @@ class BotConfig(Cog, name="botconfig"):
                    *,
                    message: str = None):
         """
-			Where the new ticket will created? In category or on the TOP.
+			Automatic ticket making system. On reaction basis
 			"""
         channel = channel or ctx.channel
         message = message or 'React to ✉️ to create ticket'

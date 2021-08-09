@@ -43,7 +43,9 @@ async def _new(ctx, args):
         "ticket-{}".format(ticket_number), category=cat)
     await ticket_channel.set_permissions(ctx.guild.get_role(ctx.guild.id),
                                          send_messages=False,
-                                         read_messages=False)
+                                         read_messages=False,
+                                         view_channel=False, 
+                                         reason="Parrot Ticket Bot on action | Basic")
     if data['valid-roles']:
         for role_id in data["valid-roles"]:
             role = ctx.guild.get_role(role_id)
@@ -55,7 +57,8 @@ async def _new(ctx, args):
                                                  embed_links=True,
                                                  attach_files=True,
                                                  read_message_history=True,
-                                                 external_emojis=True)
+                                                 external_emojis=True,
+                                                 view_channel=True, reason="Parrot Ticket Bot on action | Role Access")
 
     await ticket_channel.set_permissions(ctx.author,
                                          send_messages=True,
@@ -64,7 +67,8 @@ async def _new(ctx, args):
                                          embed_links=True,
                                          attach_files=True,
                                          read_message_history=True,
-                                         external_emojis=True)
+                                         external_emojis=True,
+                                         view_channel=True, reason="Parrot Ticket Bot on action | Basic")
 
     em = discord.Embed(title="New ticket from {}#{}".format(
         ctx.author.name, ctx.author.discriminator),

@@ -199,11 +199,28 @@ Now, if you want to remove the role if you don't want that role to be get pinged
 ```
 
 <br>
-
-NOTE: Member having `admin-level` can not have access to the ticket channel unless they have `access` role. `admin-level` can change the `access` and `pinged-role` setting ONLY.
-
 ---
+```
+NOTE: 
+
+1. Member having `admin-level` can not have access to the ticket channel unless they have `access` role. `admin-level` can change the `access` and `pinged-role` setting ONLY.
+
+2. Bot will moderate indiscriminately. Means it hardly care about the role level. So it is adviced to place the bot role below the staff role or moderator role.
+```
+
+```
+TODO:
+
+1. To make tag system
+2. To make help commands more good
+3. To make AutoModeration
+4. To make more Todo list. LOL
+```
+---
+# Commands
+
 ## Moderation
+
 A simple moderator's tool for managing the server.
 
 ----
@@ -281,6 +298,7 @@ Parrot gives you huge amount of fun commands, so that you won't get bored
 | dare | I dared you to use this command. | None | 
 | truth | Truth: Who is your crush? | None | 
 | aki | Answer the questions and let the bot guess your character! | None |
+| dial | To make server calls | None |
 
 ## Ticket
 A simple ticket service, trust me it's better than YAG. LOL!
@@ -313,6 +331,9 @@ Those commands which can't be listed
 | snowflakeid | To get the ID of discord models | None | 
 | snowflaketime | Get the time difference in seconds, between two discord SnowFlakes | None |	
 
+<br>
+
+There are NSFW, and Meme Generator commands too :)
 
 __You can get the more info by doing `[p]help <command_name>`__
 

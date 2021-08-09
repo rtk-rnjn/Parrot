@@ -47,6 +47,8 @@ Sometimes giving permissions kick ban can be dangerous. If people are not trust 
 [p]serverconfig modrole ROLE
 ```
 
+<br>
+
 ---
 ## Global-Chat Setup
 
@@ -67,6 +69,8 @@ Again there are anonying people who just spam. People with ignore role can't cha
 ```
 [p]serverconfig gsetup ignorerole ROLE
 ```
+
+<br>
 
 ---
 
@@ -116,6 +120,8 @@ Suppose the cringe server is now DMing your to forgive them. LOL. And they said 
 [p]telsetup unblock SERVER
 ```
 
+<br>
+
 ---
 
 ## Ticket Setup
@@ -127,6 +133,7 @@ If you are unaware then let me know Parrot Support ticket system very nicely. Se
 Ticket can be created on reaction basis. This can be setup easily by:
 ```
 [p]ticketconfig auto [CHANNEL] [MESSAGE]
+```
 
 #### - **Category**
 

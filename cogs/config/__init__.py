@@ -16,7 +16,7 @@ class BotConfig(Cog, name="botconfig"):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    @commands.group(name='serverconfig', invoke_without_command=True)
+    @commands.group(name='serverconfig', aliases=['config'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config(self, ctx: Context):
         """
@@ -33,9 +33,9 @@ class BotConfig(Cog, name="botconfig"):
         if not ctx.invoked_subcommand:
             data = csc.find_one({'_id': ctx.guild.id})
             if data:
-                role = ctx.guild.get_role(data['mod_role']).name or None
+                role = ctx.guild.get_role(data['mod_role']).name if data['mod_role'] else None 
                 mod_log = ctx.guild.get_channel(
-                    data['action_log']).name or None
+                    data['action_log']).name if data['action_log'] else None
                 await ctx.send(
                     f"Configuration of this server [server_config]\n\n"
                     f"Prefix: {data['prefix']}\n"
@@ -111,7 +111,7 @@ class BotConfig(Cog, name="botconfig"):
             f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**"
         )
 
-    @config.command(aliases=['g-setup'])
+    @config.command(aliases=['g-setup', 'g_setup'])
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_webhooks=True,
@@ -272,7 +272,7 @@ class BotConfig(Cog, name="botconfig"):
         ct.update_one({'_id': ctx.guild.id}, {'$pull': {'blocked': server.id}})
         await ctx.send(f'{ctx.author.mention} Success! unblocked: {server.id}')
 
-    @commands.group()
+    @commands.group(aliases=['ticketsetup'], invoke_without_command=True)
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
@@ -295,28 +295,29 @@ class BotConfig(Cog, name="botconfig"):
                 "channel_id": None
             })
             data = ctt.find_one({'_id': ctx.guild.id})
-            ticket_counter = data['ticket-counter']
-            valid_roles = ', '.join(
-                ctx.guild.get_role(n).name
-                for n in data['valid-roles']) or None
-            pinged_roles = ', '.join(
-                ctx.guild.get_role(n).name
-                for n in data['pinged-roles']) or None
-            current_active_channel = ', '.join(
-                ctx.guild.get_channel(n).name
-                for n in data['ticket-channel-ids']) or None
-            verified_roles = ', '.join(
-                ctx.guild.get_role(n).name
-                for n in data['verified-roles']) or None
-            category = ctx.guild.get_channel(data['category']) or None
-            await ctx.send(
-                f"Configuration of this server [ticket]\n\n"
-                f"Total Ticket made: {ticket_counter}\n"
-                f"Valid Roles (admin): {valid_roles}\n"
-                f"Pinged Roles: {pinged_roles}\n"
-                f"Current Active Channel: {current_active_channel}\n"
-                f"Verifed Roles (mod): {verified_roles}\n"
-                f"Category Channel: {category}")
+            if not ctx.invoked_subcommand:
+                ticket_counter = data['ticket-counter']
+                valid_roles = ', '.join(
+                    ctx.guild.get_role(n).name
+                    for n in data['valid-roles']) if data['valid-roles'] else None
+                pinged_roles = ', '.join(
+                    ctx.guild.get_role(n).name
+                    for n in data['pinged-roles']) if data['pinged-roles'] else None
+                current_active_channel = ', '.join(
+                    ctx.guild.get_channel(n).name
+                    for n in data['ticket-channel-ids']) if data['ticket-channel-ids'] else None
+                verified_roles = ', '.join(
+                    ctx.guild.get_role(n).name
+                    for n in data['verified-roles']) if data['verified-roles'] else None
+                category = ctx.guild.get_channel(data['category']) if data['category'] else None
+                await ctx.send(
+                    f"Configuration of this server [ticket]\n\n"
+                    f"Total Ticket made: {ticket_counter}\n"
+                    f"Valid Roles (admin): {valid_roles}\n"
+                    f"Pinged Roles: {pinged_roles}\n"
+                    f"Current Active Channel: {current_active_channel}\n"
+                    f"Verifed Roles (mod): {verified_roles}\n"
+                    f"Category Channel: {category}")
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True),

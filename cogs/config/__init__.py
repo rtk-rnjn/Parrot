@@ -286,46 +286,47 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To config the Ticket Parrot Bot in the server
 				"""
+        if not ctt.find_one({'_id': ctx.guild.id}):
+            ctt.insert_one({
+                "_id": ctx.guild.id,
+                "ticket-counter": 0,
+                "valid-roles": [],
+                "pinged-roles": [],
+                "ticket-channel-ids": [],
+                "verified-roles": [],
+                "message_id": None,
+                "log": None,
+                "category": None,
+                "channel_id": None
+            })
         if not ctx.invoked_subcommand:
-            if not ctt.find_one({'_id': ctx.guild.id}):
-                ctt.insert_one({
-                    "_id": ctx.guild.id,
-                    "ticket-counter": 0,
-                    "valid-roles": [],
-                    "pinged-roles": [],
-                    "ticket-channel-ids": [],
-                    "verified-roles": [],
-                    "message_id": None,
-                    "log": None,
-                    "category": None,
-                    "channel_id": None
-                })
-                data = ctt.find_one({'_id': ctx.guild.id})
+            print(1)
+            data = ctt.find_one({'_id': ctx.guild.id})
 
-                ticket_counter = data['ticket-counter']
-                valid_roles = ', '.join(
-                    ctx.guild.get_role(n).name for n in
-                    data['valid-roles']) if data['valid-roles'] else None
-                pinged_roles = ', '.join(
-                    ctx.guild.get_role(n).name for n in
-                    data['pinged-roles']) if data['pinged-roles'] else None
-                current_active_channel = ', '.join(
-                    ctx.guild.get_channel(n).name
-                    for n in data['ticket-channel-ids']
-                ) if data['ticket-channel-ids'] else None
-                verified_roles = ', '.join(
-                    ctx.guild.get_role(n).name for n in
-                    data['verified-roles']) if data['verified-roles'] else None
-                category = ctx.guild.get_channel(
-                    data['category']) if data['category'] else None
-                await ctx.send(
-                    f"Configuration of this server [ticket]\n\n"
-                    f"`Total Ticket made  :` **{ticket_counter}**\n"
-                    f"`Valid Roles (admin):` **{valid_roles}**\n"
-                    f"`Pinged Roles       :` **{pinged_roles}**\n"
-                    f"`Active Channel     :` **{current_active_channel}**\n"
-                    f"`Verifed Roles (mod):` **{verified_roles}**\n"
-                    f"`Category Channel   :` **{category}**")
+            ticket_counter = data['ticket-counter']
+            valid_roles = ', '.join(
+                ctx.guild.get_role(n).name
+                for n in data['valid-roles']) if data['valid-roles'] else None
+            pinged_roles = ', '.join(
+                ctx.guild.get_role(n).name for n in
+                data['pinged-roles']) if data['pinged-roles'] else None
+            current_active_channel = ', '.join(
+                ctx.guild.get_channel(n).name
+                for n in data['ticket-channel-ids']
+            ) if data['ticket-channel-ids'] else None
+            verified_roles = ', '.join(
+                ctx.guild.get_role(n).name for n in
+                data['verified-roles']) if data['verified-roles'] else None
+            category = ctx.guild.get_channel(
+                data['category']) if data['category'] else None
+            await ctx.send(
+                f"Configuration of this server [ticket]\n\n"
+                f"`Total Ticket made  :` **{ticket_counter}**\n"
+                f"`Valid Roles (admin):` **{valid_roles}**\n"
+                f"`Pinged Roles       :` **{pinged_roles}**\n"
+                f"`Active Channel     :` **{current_active_channel}**\n"
+                f"`Verifed Roles (mod):` **{verified_roles}**\n"
+                f"`Category Channel   :` **{category}**")
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True),

@@ -173,6 +173,7 @@ class BotConfig(Cog, name="botconfig"):
                 '_id': ctx.guild.id,
                 'channel': None,
                 'pingrole': None,
+                'memberping': None, 
                 'blocked': []
             })
         if not ctx.invoked_subcommand:

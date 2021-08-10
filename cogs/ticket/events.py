@@ -1,8 +1,9 @@
 from core import Parrot, Cog
-from database.ticket import collection, ticket_update
+from utilities.database import parrot_db, ticket_update
 import discord
 from datetime import datetime
 
+collection=parrot_db['ticket']
 
 class ReactionTicket(Cog):
     def __init__(self, bot: Parrot):

@@ -3,7 +3,7 @@ import discord, random
 from core import Parrot, Context, Cog
 from datetime import datetime
 
-from utilities.database import ge_update, ge_on_join, economy
+from utilities.database import ge_update, economy
 
 collection = economy['global_economy']
 
@@ -39,7 +39,7 @@ class Economy(Cog, name="economy"):
                     f"{ctx.author.mention} deposited **{money}** coins in the bank"
                 )
         else:
-            await ge_on_join(ctx.author.id)
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             embed = discord.Embed(
                 title=f"Balance of {ctx.author.name}",
                 description=
@@ -83,7 +83,7 @@ class Economy(Cog, name="economy"):
                 f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
             )
         if not x:
-            await ge_on_join(ctx.author.id)
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             embed = discord.Embed(
                 title=f"Balance of {ctx.author.name}",
                 description=
@@ -131,7 +131,7 @@ class Economy(Cog, name="economy"):
 
             await ge_update(ctx.author.id, coins_bank, coins_walt)
         else:
-            await ge_on_join(ctx.author.id)
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             embed = discord.Embed(
                 title=f"Balance of {ctx.author.name}",
                 description=
@@ -176,7 +176,7 @@ class Economy(Cog, name="economy"):
                 f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
             )
         if not x:
-            await ge_on_join(ctx.author.id)
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             embed = discord.Embed(
                 title=f"Balance of {ctx.author.name}",
                 description=
@@ -214,7 +214,7 @@ class Economy(Cog, name="economy"):
                     f"{ctx.author.mention} deposited **{money}** coins in the bank"
                 )
         else:
-            await ge_on_join(ctx.author.id)
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             embed = discord.Embed(
                 title=f"Balance of {ctx.author.name}",
                 description=
@@ -252,7 +252,7 @@ class Economy(Cog, name="economy"):
             await ge_update(ctx.author.id, coins_bank, coins_walt)
             return
         else:
-            await ge_on_join(ctx.author.id)
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             embed = discord.Embed(
                 title=f"Balance of {ctx.author.name}",
                 description=

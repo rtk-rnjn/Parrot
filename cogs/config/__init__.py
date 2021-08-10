@@ -6,7 +6,7 @@ from utilities.database import guild_update, gchat_update, parrot_db, telephone_
 
 ct = parrot_db['telephone']
 csc = parrot_db['server_config']
-
+ctt = parrot_db['ticket']
 from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
@@ -22,7 +22,14 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
 				"""
-
+        if not csc.find_one({'_id': ctx.guild.id}):
+            csc.insert_one({
+                '_id': ctx.guild.id,
+                'prefix': '$',
+                'mod_role': None,
+                'action_log': None,
+                'mute_role': None
+            })
         if not ctx.invoked_subcommand:
             data = csc.find_one({'_id': ctx.guild.id})
             if data:
@@ -158,16 +165,25 @@ class BotConfig(Cog, name="botconfig"):
         """
     To set the telephone phone line, in the server to call and receive the call from other server. Available settings 'channel', 'pingrole', 'memberping', 'block', 'unblock'
     """
-
+        if not ct.find_one({'_id': ctx.guild.id}):
+            ct.insert_one({
+                '_id': ctx.guild.id,
+                'channel': None,
+                'pingrole': None,
+                'blocked': []
+            })
         if not ctx.invoked_subcommand:
             if ct.find_one({'_id': ctx.guild.id}):
                 data = ct.find_one({'_id': ctx.guild.id})
+                role = ctx.guild.get_role(data['pingrole']).name or None
+                channel = ctx.guild.get_channel(data['channel']).name or None
+                member = ctx.guild.get_member(data['memberping']).name or None
                 await ctx.send(
                     f"Configuration of this server [telsetup]\n\n"
-                    f"Channel: {data['channel']}\n"
-                    f"Pingrole: {ctx.guild.get_role(data['pingrole']).name} ID: {data['pingrole']}\n"
-                    f"MemberPing: {ctx.guild.get_member(data['pingrole']).name} ID: {data['pingrole']}\n"
-                    f"Blocked: {', '.join(data['blocked'])}")
+                    f"Channel: {channel}\n"
+                    f"Pingrole: {role} ID: {data['pingrole'] or None}\n"
+                    f"MemberPing: {member} ID: {data['memberping'] or None}\n"
+                    f"Blocked: {', '.join(data['blocked']) or None}")
 
     @telsetup.command(name='channel')
     @commands.has_permissions(administrator=True)
@@ -236,16 +252,7 @@ class BotConfig(Cog, name="botconfig"):
         if server is ctx.guild:
             return await ctx.send(
                 f"{ctx.author.mention} can't block your own server")
-        if not ct.find_one({'_id': ctx.guild.id}):
-            post = {
-                "_id": ctx.guild.id,
-                "channel": None,
-                "pingrole": None,
-                "is_line_busy": False,
-                "memberping": None,
-                "blocked": []
-            }
-            ct.insert_one(post)
+
         ct.update_one({'_id': ctx.guild.id},
                       {'$addToSet': {
                           'blocked': server.id
@@ -273,6 +280,43 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To config the Ticket Parrot Bot in the server
 				"""
+
+        if not ctt.find_one({'_id': ctx.guild.id}):
+            ctt.insert_one({
+                "_id": ctx.guild.id,
+                "ticket-counter": 0,
+                "valid-roles": [],
+                "pinged-roles": [],
+                "ticket-channel-ids": [],
+                "verified-roles": [],
+                "message_id": None,
+                "log": None,
+                "category": None,
+                "channel_id": None
+            })
+            data = ctt.find_one({'_id': ctx.guild.id})
+            ticket_counter = data['ticket-counter']
+            valid_roles = ', '.join(
+                ctx.guild.get_role(n).name
+                for n in data['valid-roles']) or None
+            pinged_roles = ', '.join(
+                ctx.guild.get_role(n).name
+                for n in data['pinged-roles']) or None
+            current_active_channel = ', '.join(
+                ctx.guild.get_channel(n).name
+                for n in data['ticket-channel-ids']) or None
+            verified_roles = ', '.join(
+                ctx.guild.get_role(n).name
+                for n in data['verified-roles']) or None
+            category = ctx.guild.get_channel(data['category']) or None
+            await ctx.send(
+                f"Configuration of this server [ticket]\n\n"
+                f"Total Ticket made: {ticket_counter}\n"
+                f"Valid Roles (admin): {valid_roles}\n"
+                f"Pinged Roles: {pinged_roles}\n"
+                f"Current Active Channel: {current_active_channel}\n"
+                f"Verifed Roles (mod): {verified_roles}\n"
+                f"Category Channel: {category}")
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True),

@@ -52,18 +52,24 @@ async def telephone_update(guild_id: int, event: str, value):
     if not collection.find_one({'_id': guild_id}):
         collection.insert_one({'_id': guild_id})
 
-    post = {
-        "_id": guild_id,
-    }
-
-    new_post = {"$set": {event: value}}
-    collection.update_one(post, new_post)
+    collection.update_one({'_id': guild_id}, {"$set": {event: value}})
 
 
 async def ticket_update(guild_id: int, post):
     collection = parrot_db["ticket"]
     if not collection.find_one({'_id': guild_id}):
-        collection.insert_one({'_id': guild_id})
+        collection.insert_one({
+            '_id': guild_id,
+            "ticket-counter": 0,
+            "valid-roles": [],
+            "pinged-roles": [],
+            "ticket-channel-ids": [],
+            "verified-roles": [],
+            "message_id": None,
+            "log": None,
+            "category": None,
+            "channel_id": None
+        })
 
     collection.update_one({'_id': guild_id}, {"$set": post})
 
@@ -71,14 +77,15 @@ async def ticket_update(guild_id: int, post):
 async def guild_update(guild_id: int, post: dict):
     collection = parrot_db['server_config']
     if not collection.find_one({'_id': guild_id}):
-        collection.insert_one({'_id': guild_id})
-    _post = {
-        '_id': guild_id,
-    }
+        collection.insert_one({
+            '_id': guild_id,
+            'prefix': '$',
+            'mod_role': None,
+            'action_log': None,
+            'mute_role': None,
+        })
 
-    new_post = {"$set": post}
-
-    collection.update_one(_post, new_post)
+    collection.update_one({'_id': guild_id}, {"$set": post})
 
 
 async def guild_join(guild_id: int):

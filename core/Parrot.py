@@ -5,6 +5,7 @@ from discord.ext import commands
 import discord, traceback
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db
+
 collection = parrot_db['server_config']
 
 os.environ["JISHAKU_HIDE"] = "True"
@@ -69,7 +70,13 @@ class Parrot(commands.AutoShardedBot):
         if not message.guild: return ''
         else:
             if not collection.find_one({"_id": message.guild.id}):
-                await collection.insert_one({'_id':message.guild.id, 'prefix': '$', 'mod_role': None, 'action_log': None, 'mute_role': None})
+                collection.insert_one({
+                    '_id': message.guild.id,
+                    'prefix': '$',
+                    'mod_role': None,
+                    'action_log': None,
+                    'mute_role': None
+                })
             data = collection.find_one({"_id": message.guild.id})
             prefix = data['prefix']
         return commands.when_mentioned_or(prefix)(self, message)

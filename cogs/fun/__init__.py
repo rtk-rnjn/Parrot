@@ -21,7 +21,6 @@ aki = Akinator()
 from utilities.paginator import Paginator
 from core import Parrot, Context, Cog
 
-from utilities.checks import user_premium_cd
 
 with open("extra/truth.txt") as f:
   _truth = f.read()
@@ -154,7 +153,6 @@ class fun(Cog, name="fun"):
       await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
   
   @command(name='8ball')
-  @user_premium_cd()
   async def _8ball(self, ctx: Context, *, question:commands.clean_content):
     """
     8ball Magic, nothing to say much
@@ -163,7 +161,6 @@ class fun(Cog, name="fun"):
     await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
 
   @commands.command()
-  @user_premium_cd()
   async def choose(self, ctx: Context, *, options:commands.clean_content):
     '''
     Confuse something with your decision? Let Parrot choose from your choice.
@@ -174,7 +171,6 @@ class fun(Cog, name="fun"):
   
 
   @commands.command(aliases=['colours', 'colour'])
-  @user_premium_cd()
   @commands.bot_has_permissions(embed_links=True)
   async def color(self, ctx: Context, colour):
     '''
@@ -232,7 +228,6 @@ class fun(Cog, name="fun"):
       
   
   @command()
-  @user_premium_cd()
   @bot_has_permissions(embed_links=True)
   async def decode(self, ctx: Context, *, string:str):
     '''
@@ -255,7 +250,6 @@ class fun(Cog, name="fun"):
 
   @command()
   @bot_has_permissions(embed_links=True)
-  @user_premium_cd()
   async def encode(self, ctx: Context, *, string:str):
     '''
     Encode the text to Base64 Encryption and in Binary
@@ -277,7 +271,6 @@ class fun(Cog, name="fun"):
   
       
   @command(name="fact")
-  @user_premium_cd()
   @bot_has_permissions(embed_links=True)
   async def animal_fact(self, ctx: Context, *, animal: str):
     '''
@@ -314,7 +307,6 @@ class fun(Cog, name="fun"):
 
 
   @commands.command()
-  @user_premium_cd()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
   async def gay(self, ctx: Context, *, member:discord.Member=None):
     """
@@ -332,7 +324,6 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def glass(self, ctx: Context, *, member:discord.Member=None):
     '''
     Provide a glass filter on your profile picture, try it!
@@ -348,7 +339,6 @@ class fun(Cog, name="fun"):
 
 
   @commands.command()
-  @user_premium_cd()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
   async def horny(self, ctx: Context, *, member:discord.Member=None):
     """
@@ -365,7 +355,6 @@ class fun(Cog, name="fun"):
 
 
   @commands.command(aliases=['insult'])
-  @user_premium_cd()
   async def roast(self, ctx: Context, *, member: discord.Member = None):
     '''
     Insult your enemy, Ugh!
@@ -379,7 +368,6 @@ class fun(Cog, name="fun"):
 
 
   @commands.command(aliases=['its-so-stupid'])
-  @user_premium_cd()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
   async def itssostupid(self, ctx, *, comment:str):
     """
@@ -399,7 +387,6 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def jail(self, ctx: Context, *, member:discord.Member=None):
     """
     Image generator. Makes you behind the bars. Haha
@@ -416,7 +403,6 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def lolice(self, ctx: Context, *, member:discord.Member=None):
     """
     This command is not made by me. :\
@@ -435,7 +421,6 @@ class fun(Cog, name="fun"):
       
   @commands.command(name='meme')
   @commands.bot_has_permissions(embed_links=True)
-  @user_premium_cd()
   async def meme(self, ctx: Context):
     '''
     Random meme generator.
@@ -460,7 +445,6 @@ class fun(Cog, name="fun"):
       
 
   @commands.command()
-  @user_premium_cd()
   @commands.bot_has_permissions(embed_links=True)
   async def fakepeople(self, ctx: Context):
     '''
@@ -498,7 +482,6 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def simpcard(self, ctx: Context, *, member:discord.Member=None):
     """
     Good for those, who are hell simp! LOL
@@ -515,7 +498,6 @@ class fun(Cog, name="fun"):
   
   @command(name="slap", aliases=["hit"])
   @commands.bot_has_permissions(manage_messages=True)
-  @user_premium_cd()
   async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
     '''
     Slap virtually with is shit command.
@@ -526,7 +508,6 @@ class fun(Cog, name="fun"):
     
   @commands.command(aliases=['trans'])
   @commands.bot_has_permissions(embed_links=True)
-  @user_premium_cd()
   async def translate(self, ctx: Context, from_lang:str, to_lang:str, *, text:str):
     """
     This command is useful, to be honest, if and only if you use correctly, else it gives error. Not my fault.
@@ -551,7 +532,6 @@ class fun(Cog, name="fun"):
 
   @commands.command(aliases=['triggered'])
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def trigger(self, ctx: Context, *, member:discord.Member=None):
     """
     User Triggered!
@@ -568,7 +548,6 @@ class fun(Cog, name="fun"):
 
 
   @commands.command(aliases=['def', 'urban'])
-  @user_premium_cd()
   @commands.bot_has_permissions(embed_links=True)
   async def urbandictionary(self, ctx: Context, *, text:str):
     '''
@@ -584,7 +563,7 @@ class fun(Cog, name="fun"):
           res = await response.json()
         else:
           return
-    if res['list'] == []: return await ctx.reply(f"{ctx.author.mention} :\ **{t}** means nothings. Try something else")
+    if not res['list']: return await ctx.reply(f"{ctx.author.mention} :\ **{t}** means nothings. Try something else")
     em_list = []
     for i in range(0, len(res['list'])):
       _def = res['list'][i]['definition']
@@ -597,7 +576,7 @@ class fun(Cog, name="fun"):
       embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}", timestamp=datetime.datetime.utcnow())
       embed.add_field(name="Example", value=f"{example}")
       embed.set_author(name=f"Author: {author}")
-      embed.set_footer(text=f"👍 {thumbs_up} | 👎 {thumbs_down}")
+      embed.set_footer(text=f"Page {i+1}/{len(res['list'])} | 👍 {thumbs_up} | 👎 {thumbs_down}")
       em_list.append(embed)
 
     paginator = Paginator(pages=em_list, timeout=60.0)
@@ -607,7 +586,6 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def wasted(self, ctx: Context, *, member:discord.Member=None):
     """
     Overlay 'WASTED' on your profile picture, just like GTA:SA
@@ -624,7 +602,6 @@ class fun(Cog, name="fun"):
 
   @commands.command(aliases=['youtube-comment'])
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
-  @user_premium_cd()
   async def ytcomment(self, ctx: Context, *, comment:str):
     '''
     Makes a comment in YT. Best ways to fool your fool friends. :')
@@ -643,7 +620,6 @@ class fun(Cog, name="fun"):
   
   
   @commands.command() 
-  @user_premium_cd()
   @commands.bot_has_permissions(embed_links=True)
   async def dare(self, ctx: Context, *, member:discord.Member=None):
     """
@@ -660,7 +636,6 @@ class fun(Cog, name="fun"):
 
 
   @commands.command() 
-  @user_premium_cd()
   @commands.bot_has_permissions(embed_links=True)
   async def truth(self, ctx: Context, *, member:discord.Member=None):
     """
@@ -753,28 +728,28 @@ class fun(Cog, name="fun"):
         channel = ctx.channel
         self_guild = collection.find_one({'_id': ctx.guild.id})
         if not self_guild:
-            return await ctx.reply(
+            return await ctx.send(
                 f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this."
             )
         target_guild = collection.find_one({'_id': number})
         if not target_guild:
-            return await ctx.reply(
+            return await ctx.send(
                 f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server!"
             )
 
         if target_guild['is_line_busy']:
-            return await ctx.reply(
+            return await ctx.send(
                 f"Can not make a connection to **{number} ({self.bot.get_guild(target_guild['_id']).name})**. Line busy!"
             )
 
         target_channel = self.bot.get_channel(target_guild['channel'])
         if not target_channel:
-            return await ctx.reply(
+            return await ctx.send(
                 "Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission."
             )
 
         if (target_guild['_id'] in self_guild['blocked']) or (self_guild['_id'] in target_guild['blocked']):
-            return await ctx.reply(
+            return await ctx.send(
                 f'Calling failed! Possible reasons: They blocked You, You blocked Them.'
             )
         

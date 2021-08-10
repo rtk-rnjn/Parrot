@@ -1,7 +1,26 @@
 import discord, asyncio, os
-from database.ticket import collection, ticket_on_join, ticket_update
-
+from utilities.database import ticket_update, parrot_db
 from datetime import datetime
+
+collection = parrot_db['ticket']
+
+
+async def check_if_server(guild_id):
+    if not collection.find_one({'_id': guild_id}):
+        post = {
+            "_id": guild_id,
+            "ticket-counter": 0,
+            "valid-roles": [],
+            "pinged-roles": [],
+            "ticket-channel-ids": [],
+            "verified-roles": [],
+            "message_id": None,
+            "log": None,
+            "category": None,
+            "channel_id": None
+        }
+
+        collection.insert_one(post)
 
 
 async def chat_exporter(channel, limit=None):
@@ -26,8 +45,7 @@ async def log(guild, channel, description, status):
 
 
 async def _new(ctx, args):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
+    await check_if_server(ctx.guild_id)
 
     if not args:
         message_content = "Please wait, we will be with you shortly!"
@@ -41,34 +59,39 @@ async def _new(ctx, args):
 
     ticket_channel = await ctx.guild.create_text_channel(
         "ticket-{}".format(ticket_number), category=cat)
-    await ticket_channel.set_permissions(ctx.guild.get_role(ctx.guild.id),
-                                         send_messages=False,
-                                         read_messages=False,
-                                         view_channel=False, 
-                                         reason="Parrot Ticket Bot on action | Basic")
+    await ticket_channel.set_permissions(
+        ctx.guild.get_role(ctx.guild.id),
+        send_messages=False,
+        read_messages=False,
+        view_channel=False,
+        reason="Parrot Ticket Bot on action | Basic")
     if data['valid-roles']:
         for role_id in data["valid-roles"]:
             role = ctx.guild.get_role(role_id)
 
-            await ticket_channel.set_permissions(role,
-                                                 send_messages=True,
-                                                 read_messages=True,
-                                                 add_reactions=True,
-                                                 embed_links=True,
-                                                 attach_files=True,
-                                                 read_message_history=True,
-                                                 external_emojis=True,
-                                                 view_channel=True, reason="Parrot Ticket Bot on action | Role Access")
+            await ticket_channel.set_permissions(
+                role,
+                send_messages=True,
+                read_messages=True,
+                add_reactions=True,
+                embed_links=True,
+                attach_files=True,
+                read_message_history=True,
+                external_emojis=True,
+                view_channel=True,
+                reason="Parrot Ticket Bot on action | Role Access")
 
-    await ticket_channel.set_permissions(ctx.author,
-                                         send_messages=True,
-                                         read_messages=True,
-                                         add_reactions=True,
-                                         embed_links=True,
-                                         attach_files=True,
-                                         read_message_history=True,
-                                         external_emojis=True,
-                                         view_channel=True, reason="Parrot Ticket Bot on action | Basic")
+    await ticket_channel.set_permissions(
+        ctx.author,
+        send_messages=True,
+        read_messages=True,
+        add_reactions=True,
+        embed_links=True,
+        attach_files=True,
+        read_message_history=True,
+        external_emojis=True,
+        view_channel=True,
+        reason="Parrot Ticket Bot on action | Basic")
 
     em = discord.Embed(title="New ticket from {}#{}".format(
         ctx.author.name, ctx.author.discriminator),
@@ -117,8 +140,8 @@ async def _new(ctx, args):
 
 
 async def _close(ctx, bot):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
+    await check_if_server(ctx.guild_id)
+
     data = collection.find_one({'_id': ctx.guild.id})
     if ctx.channel.id in data["ticket-channel-ids"]:
         channel_id = ctx.channel.id
@@ -157,8 +180,8 @@ async def _close(ctx, bot):
 
 
 async def _save(ctx, bot):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
+    await check_if_server(ctx.guild_id)
+
     data = collection.find_one({'_id': ctx.guild.id})
     if ctx.channel.id in data["ticket-channel-ids"]:
 
@@ -195,13 +218,12 @@ async def _save(ctx, bot):
 
 
 async def _addaccess(ctx, role):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
+    await check_if_server(ctx.guild_id)
 
     collection.update_one({'_id': ctx.guild.id},
-                                {'$addToSet': {
-                                    'valid-roles': role.id
-                                }})
+                          {'$addToSet': {
+                              'valid-roles': role.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -214,13 +236,11 @@ async def _addaccess(ctx, role):
 
 
 async def _delaccess(ctx, role):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
-
+    await check_if_server(ctx.guild_id)
     collection.update_one({'_id': ctx.guild.id},
-                                {'$addToSet': {
-                                    'valid-roles': role.id
-                                }})
+                          {'$addToSet': {
+                              'valid-roles': role.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -233,13 +253,11 @@ async def _delaccess(ctx, role):
 
 
 async def _addadimrole(ctx, role):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
-
+    await check_if_server(ctx.guild_id)
     collection.update_one({'_id': ctx.guild.id},
-                                {'$addToSet': {
-                                    "verified-roles": role.id
-                                }})
+                          {'$addToSet': {
+                              "verified-roles": role.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -252,13 +270,11 @@ async def _addadimrole(ctx, role):
 
 
 async def _addpingedrole(ctx, role):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
-
+    await check_if_server(ctx.guild_id)
     collection.update_one({'_id': ctx.guild.id},
-                                {'$addToSet': {
-                                    'pinged-roles': role.id
-                                }})
+                          {'$addToSet': {
+                              'pinged-roles': role.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -271,13 +287,11 @@ async def _addpingedrole(ctx, role):
 
 
 async def _deladminrole(ctx, role):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
-
+    await check_if_server(ctx.guild_id)
     collection.update_one({'_id': ctx.guild.id},
-                                {'$pull': {
-                                    'verified-roles': role.id
-                                }})
+                          {'$pull': {
+                              'verified-roles': role.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -290,12 +304,11 @@ async def _deladminrole(ctx, role):
 
 
 async def _delpingedrole(ctx, role):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
+    await check_if_server(ctx.guild_id)
     collection.update_one({'_id': ctx.guild.id},
-                                {'$pull': {
-                                    'pinged-roles': role.id
-                                }})
+                          {'$pull': {
+                              'pinged-roles': role.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -308,13 +321,11 @@ async def _delpingedrole(ctx, role):
 
 
 async def _setcategory(ctx, channel):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
-
+    await check_if_server(ctx.guild_id)
     collection.update_one({'_id': ctx.guild.id},
-                                {'$set': {
-                                    'category': channel.id
-                                }})
+                          {'$set': {
+                              'category': channel.id
+                          }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -327,12 +338,8 @@ async def _setcategory(ctx, channel):
 
 
 async def _setlog(ctx, channel):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
-                                {'$set': {
-                                    'log': channel.id
-                                }})
+    await check_if_server(ctx.guild_id)
+    collection.update_one({'_id': ctx.guild.id}, {'$set': {'log': channel.id}})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=
@@ -348,8 +355,6 @@ async def _setlog(ctx, channel):
 
 
 async def _auto(ctx, channel, message):
-    if not collection.find_one({'_id': ctx.guild.id}):
-        await ticket_on_join(ctx.guild.id)
 
     embed = discord.Embed(title='Parrot Ticket Bot',
                           description=message,

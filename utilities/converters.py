@@ -22,7 +22,7 @@ def convert_time(arguments: str):
     return total_sec
 
 
-def conver_bool(text):
+def convert_bool(text):
     if text.lower() in ('yes', 'y', 'true', 't', '1', 'enable', 'on', 'o'):
         return True
     elif text.lower() in ('no', 'n', 'false', 'f', '0', 'disable', 'off', 'x'):

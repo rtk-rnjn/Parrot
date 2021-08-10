@@ -5,7 +5,7 @@ from datetime import datetime
 from utilities.exceptions import ParrotCheckFaliure
 from core import Parrot, Context, Cog
 
-from database.cmd_count import collection, if_not_exists, increment
+from utilities.database import cmd_increment
 
 with open("extra/quote.txt") as f:
     quote = f.read()
@@ -21,10 +21,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     async def on_command(self, ctx: Context):
         """This event will be triggered when the command is being completed; triggered by [discord.User]!"""
         if ctx.author.bot: return
-
-        if not collection.find_one({'_id': ctx.command.name}):
-            return await if_not_exists(ctx.command.name, 1)
-        await increment(ctx.command.name)
+        await cmd_increment(ctx.command.name)
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error):

@@ -2,10 +2,9 @@ from discord.ext import commands
 from youtube_search import YoutubeSearch
 import urllib.parse, aiohttp
 
-import discord, re, editdistance, wikipedia, json, ttg, io, datetime, typing, os
+import discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os
 
 from utilities.paginator import Paginator
-from utilities.checks import user_premium_cd
 
 from discord import Embed
 
@@ -45,7 +44,6 @@ class miscl(Cog, name="miscellaneous"):
     @commands.command(aliases=['emote'])
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True)
-    @user_premium_cd()
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
         """
 				To view the emoji in bigger form
@@ -54,8 +52,6 @@ class miscl(Cog, name="miscellaneous"):
         await ctx.send(emoji.url)
 
     @commands.command(aliases=['calc', 'cal'])
-    @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def calculator(self, ctx: Context, *, text: str):
         """
@@ -78,8 +74,6 @@ class miscl(Cog, name="miscellaneous"):
         await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def maths(self, ctx: Context, operation: str, *, expression: str):
         """
@@ -105,7 +99,6 @@ class miscl(Cog, name="miscellaneous"):
         await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.guild_only()
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     async def news(self, ctx: Context, nat: str):
@@ -137,20 +130,21 @@ class miscl(Cog, name="miscellaneous"):
             content = res['articles'][data]['content']
             if not content:
                 content = "N/A"
-            publish = res['articles'][data]['publishedAt']
+            # publish = res['articles'][data]['publishedAt']
 
-            embed = Embed(title=f'{title}', description=f'{description}')
+            embed = Embed(title=f'{title}',
+                          description=f'{description}',
+                          timestamp=datetime.datetime.utcnow())
             embed.add_field(name=f'{source}', value=f'{content}')
             embed.set_image(url=f'{img}')
             embed.set_author(name=f'{author}')
-            embed.set_footer(text=f'{publish}')
+            embed.set_footer(text=f'Page {data+1}/{len(res["articles"])}')
             em_list.append(embed)
 
         paginator = Paginator(pages=em_list, timeout=60.0)
         await paginator.start(ctx)
 
     @commands.command(name="search", aliases=['googlesearch', 'google', 's'])
-    @commands.guild_only()
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     async def search(self, ctx: Context, *, search: str):
@@ -219,10 +213,10 @@ class miscl(Cog, name="miscellaneous"):
         try:
             snipe = self.snipes[ctx.channel.id]
         except KeyError:
-            return await ctx.reply(
+            return await ctx.send(
                 f'{ctx.author.mention} no snipes in this channel!')
         if snipe is None:
-            return await ctx.reply(
+            return await ctx.send(
                 f'{ctx.author.mention} no snipes in this channel!')
         # there's gonna be a snipe after this point
         emb = discord.Embed()
@@ -249,8 +243,6 @@ class miscl(Cog, name="miscellaneous"):
         self.snipes[ctx.channel.id] = None
 
     @commands.command(aliases=['trutht', 'tt', 'ttable'])
-    @commands.guild_only()
-    @user_premium_cd()
     async def truthtable(self, ctx: Context, *, data: commands.clean_content):
         """
 				A simple command to generate Truth Table of given data. Make sure you use proper syntax.
@@ -273,8 +265,6 @@ class miscl(Cog, name="miscellaneous"):
         await ctx.reply(f"```\n{table}```")
 
     @commands.command(aliases=['w'])
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def weather(self, ctx: Context, *, location: str):
         """
@@ -341,8 +331,6 @@ class miscl(Cog, name="miscellaneous"):
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=['wiki'])
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def wikipedia(self, ctx: Context, *, text: str):
         """
@@ -369,8 +357,6 @@ class miscl(Cog, name="miscellaneous"):
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=['yt'])
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def youtube(self, ctx: Context, *, query: str):
         """
@@ -410,7 +396,6 @@ class miscl(Cog, name="miscellaneous"):
         await paginator.start(ctx)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def embed(self, ctx: Context, *, data):
         """
@@ -426,25 +411,36 @@ class miscl(Cog, name="miscellaneous"):
                 pass
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
-    async def snowflakeid(self, ctx: Context, *, target: typing.Union[discord.Member, discord.Role, discord.Thread, discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Guild, discord.Message]):
+    async def snowflakeid(
+        self, ctx: Context, *,
+        target: typing.Union[discord.Member, discord.Role, discord.Thread,
+                             discord.TextChannel, discord.VoiceChannel,
+                             discord.StageChannel, discord.Guild,
+                             discord.Message]):
         """To get the ID of discord models"""
-        await ctx.send(f"{ctx.author.mention} {target} is **{type(target)}** of id **{target.id}** created at **{target.created_at}**")
-    
+        await ctx.send(
+            f"{ctx.author.mention} {target} is **{type(target)}** of id **{target.id}** created at **{target.created_at}**"
+        )
+
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
-    async def snowflaketime(self, ctx: Context, snowflake1: int, snowflake2: int):
+    async def snowflaketime(self, ctx: Context, snowflake1: int,
+                            snowflake2: int):
         """Get the time difference in seconds, between two discord SnowFlakes"""
-        if snowflake2 > snowflake1: 
-            first = discord.utils.snowflake_time(snowflake1)
-            second = discord.utils.snowflake_time(snowflake2) # bigger
+        first = discord.utils.snowflake_time(snowflake1)
+        second = discord.utils.snowflake_time(snowflake2)
+
+        if snowflake2 > snowflake1:
+
             timedelta = second - first
         else:
+
             timedelta = first - second
-        
-        await ctx.send(f"{ctx.author.mention} total seconds between {snowflake1} and {snowflake2} is {timedelta.total_seconds()}")
+
+        await ctx.send(
+            f"{ctx.author.mention} total seconds between {snowflake1} and {snowflake2} is {timedelta.total_seconds()}"
+        )
 
 
 def setup(bot):

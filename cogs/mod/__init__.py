@@ -4,8 +4,10 @@ from core import Parrot, Context, Cog
 from utilities.checks import is_mod
 from utilities.converters import reason_convert, convert_time
 from cogs.mod import method as mt
-from database.server_config import collection, guild_join
+from utilities.database import parrot_db
 from datetime import datetime
+
+collection = parrot_db['server_config']
 
 
 class mod(Cog, name="moderator"):
@@ -14,11 +16,8 @@ class mod(Cog, name="moderator"):
         self.bot = bot
 
     async def log(self, ctx, cmd, performed_on, reason):
-        if not collection.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
-
         data = collection.find_one({'_id': ctx.guild.id})
-
+        if not data: return
         if type(performed_on) is not list:
             if type(performed_on) is discord.Member:
                 target = f"{performed_on.name}#{performed_on.discriminator}"

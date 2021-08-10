@@ -3,11 +3,7 @@ from discord.ext import commands
 from datetime import datetime
 from core import Parrot, Context, Cog
 
-from utilities.checks import user_premium_cd
 from utilities.config import MEME_PASS as meme_pass
-
-# PASSWORD IS NOT ACTUALLY PASSWORD. ITS JUST TO TELL THE WEBSITE FROM
-# WHERE THE API IS BEING CALLED
 
 
 class meme(Cog, name="Meme Generator"):
@@ -17,7 +13,7 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
+
     async def thefact(self, ctx: Context, *, text: str = None):
         """
 				Meme Generator/Image Generator: The Fact
@@ -42,7 +38,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def stickbug(self, ctx: Context, *, member: discord.Member = None):
         """
 				Meme Generator/Image Generator: Stickbug
@@ -67,7 +62,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def trash(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Trash
@@ -92,7 +86,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def magik(self,
                     ctx: Context,
                     member: discord.Member = None,
@@ -122,7 +115,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def blurpify(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Blurpify
@@ -144,7 +136,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def phcomment(self, ctx: Context, *, text: str = None):
         """
 		Meme Generator/Image Generator: Porn Hub Comment
@@ -169,7 +160,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def deepfry(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -192,7 +182,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def tweet(self, ctx: Context, *, text: str = None):
         """
 		Meme Generator/Image Generator: Tweet
@@ -217,7 +206,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def trumptweet(self, ctx: Context, *, text: str = None):
         """
@@ -239,7 +227,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def trap(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -266,7 +253,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def awooify(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -289,7 +275,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def animeface(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Anime Face
@@ -311,7 +296,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def iphonex(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: IphoneX
@@ -333,7 +317,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def threats(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Threats
@@ -354,7 +337,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def clyde(self, ctx: Context, *, text: str):
         """
@@ -375,7 +357,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def captcha(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -402,7 +383,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def whowouldwin(self, ctx: Context, *, member: discord.Member):
         """
 		Meme Generator/Image Generator: Who would win
@@ -427,7 +407,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def baguette(self, ctx: Context, *, member: discord.Member = None):
         """
 		Meme Generator/Image Generator: Baguette
@@ -450,7 +429,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def awkwardseal(self,
                           ctx: Context,
                           text1: str,
@@ -487,7 +465,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def changemymind(self,
                            ctx: Context,
                            text1: str,
@@ -528,7 +505,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @user_premium_cd()
     async def distractedbf(self,
                            ctx: Context,
                            text1: str,
@@ -567,7 +543,6 @@ class meme(Cog, name="Meme Generator"):
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @user_premium_cd()
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def doge(self,
@@ -607,7 +582,6 @@ class meme(Cog, name="Meme Generator"):
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @user_premium_cd()
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def drakeyesno(self,
@@ -646,7 +620,6 @@ class meme(Cog, name="Meme Generator"):
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @user_premium_cd()
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def isthispigeon(self,
@@ -685,7 +658,6 @@ class meme(Cog, name="Meme Generator"):
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @user_premium_cd()
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def twobuttons(self,
@@ -725,7 +697,6 @@ class meme(Cog, name="Meme Generator"):
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @user_premium_cd()
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def unodraw25(self,
@@ -765,8 +736,6 @@ class meme(Cog, name="Meme Generator"):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @commands.guild_only()
-    @user_premium_cd()
     async def mastermeme(self,
                          ctx: Context,
                          template: int,

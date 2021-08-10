@@ -40,7 +40,7 @@ async def gchat_update(guild_id: int, post: dict):
 
 
 async def msg_increment(guild_id: int, user_id: int):
-    collection = parrot_db[f'{guild_id}']
+    collection = msg_db[f'{guild_id}']
     data = collection.find_one({'_id': user_id})
     if not data: collection.insert_one({'_id': user_id, 'count': 1})
     pre_post = {'_id': user_id}

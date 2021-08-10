@@ -16,7 +16,9 @@ class BotConfig(Cog, name="botconfig"):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    @commands.group(name='serverconfig', aliases=['config'], invoke_without_command=True)
+    @commands.group(name='serverconfig',
+                    aliases=['config'],
+                    invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config(self, ctx: Context):
         """
@@ -33,14 +35,15 @@ class BotConfig(Cog, name="botconfig"):
         if not ctx.invoked_subcommand:
             data = csc.find_one({'_id': ctx.guild.id})
             if data:
-                role = ctx.guild.get_role(data['mod_role']).name if data['mod_role'] else None 
+                role = ctx.guild.get_role(
+                    data['mod_role']).name if data['mod_role'] else None
                 mod_log = ctx.guild.get_channel(
                     data['action_log']).name if data['action_log'] else None
                 await ctx.send(
                     f"Configuration of this server [server_config]\n\n"
-                    f"Prefix: {data['prefix']}\n"
-                    f"ModRole: {role} ID: {data['mod_role'] if data['mod_role'] else None}\n"
-                    f"MogLog: {mod_log} ID: {data['action_log'] if data['action_log'] else None}\n"
+                    f"`Prefix :` **{data['prefix']}**\n"
+                    f"`ModRole:` **{role} ({data['mod_role'] if data['mod_role'] else None})**\n"
+                    f"`MogLog :` **{mod_log} ({data['action_log'] if data['action_log'] else None})**\n"
                 )
 
     @config.command(aliases=['prefix'])
@@ -163,7 +166,7 @@ class BotConfig(Cog, name="botconfig"):
     @commands.has_permissions(administrator=True)
     async def telsetup(self, ctx: Context):
         """
-    To set the telephone phone line, in the server to call and receive the call from other server. Available settings 'channel', 'pingrole', 'memberping', 'block', 'unblock'
+    To set the telephone phone line, in the server to call and receive the call from other server. 
     """
         if not ct.find_one({'_id': ctx.guild.id}):
             ct.insert_one({
@@ -175,15 +178,18 @@ class BotConfig(Cog, name="botconfig"):
         if not ctx.invoked_subcommand:
             if ct.find_one({'_id': ctx.guild.id}):
                 data = ct.find_one({'_id': ctx.guild.id})
-                role = ctx.guild.get_role(data['pingrole']).name or None
-                channel = ctx.guild.get_channel(data['channel']).name or None
-                member = ctx.guild.get_member(data['memberping']).name or None
+                role = ctx.guild.get_role(
+                    data['pingrole']).name if data['pingrole'] else None
+                channel = ctx.guild.get_channel(
+                    data['channel']).name if data['channel'] else None
+                member = ctx.guild.get_member(
+                    data['memberping']).name if data['memberping'] else None
                 await ctx.send(
                     f"Configuration of this server [telsetup]\n\n"
-                    f"Channel: {channel}\n"
-                    f"Pingrole: {role} ID: {data['pingrole'] or None}\n"
-                    f"MemberPing: {member} ID: {data['memberping'] or None}\n"
-                    f"Blocked: {', '.join(data['blocked']) or None}")
+                    f"`Channel   :` **{channel}**\n"
+                    f"`Pingrole  :` **{role} ({data['pingrole'] or None})**\n"
+                    f"`MemberPing:` **{member} ({data['memberping'] or None})**\n"
+                    f"`Blocked   :` **{', '.join(data['blocked']) or None}**")
 
     @telsetup.command(name='channel')
     @commands.has_permissions(administrator=True)
@@ -280,44 +286,46 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To config the Ticket Parrot Bot in the server
 				"""
+        if not ctx.invoked_subcommand:
+            if not ctt.find_one({'_id': ctx.guild.id}):
+                ctt.insert_one({
+                    "_id": ctx.guild.id,
+                    "ticket-counter": 0,
+                    "valid-roles": [],
+                    "pinged-roles": [],
+                    "ticket-channel-ids": [],
+                    "verified-roles": [],
+                    "message_id": None,
+                    "log": None,
+                    "category": None,
+                    "channel_id": None
+                })
+                data = ctt.find_one({'_id': ctx.guild.id})
 
-        if not ctt.find_one({'_id': ctx.guild.id}):
-            ctt.insert_one({
-                "_id": ctx.guild.id,
-                "ticket-counter": 0,
-                "valid-roles": [],
-                "pinged-roles": [],
-                "ticket-channel-ids": [],
-                "verified-roles": [],
-                "message_id": None,
-                "log": None,
-                "category": None,
-                "channel_id": None
-            })
-            data = ctt.find_one({'_id': ctx.guild.id})
-            if not ctx.invoked_subcommand:
                 ticket_counter = data['ticket-counter']
                 valid_roles = ', '.join(
-                    ctx.guild.get_role(n).name
-                    for n in data['valid-roles']) if data['valid-roles'] else None
+                    ctx.guild.get_role(n).name for n in
+                    data['valid-roles']) if data['valid-roles'] else None
                 pinged_roles = ', '.join(
-                    ctx.guild.get_role(n).name
-                    for n in data['pinged-roles']) if data['pinged-roles'] else None
+                    ctx.guild.get_role(n).name for n in
+                    data['pinged-roles']) if data['pinged-roles'] else None
                 current_active_channel = ', '.join(
                     ctx.guild.get_channel(n).name
-                    for n in data['ticket-channel-ids']) if data['ticket-channel-ids'] else None
+                    for n in data['ticket-channel-ids']
+                ) if data['ticket-channel-ids'] else None
                 verified_roles = ', '.join(
-                    ctx.guild.get_role(n).name
-                    for n in data['verified-roles']) if data['verified-roles'] else None
-                category = ctx.guild.get_channel(data['category']) if data['category'] else None
+                    ctx.guild.get_role(n).name for n in
+                    data['verified-roles']) if data['verified-roles'] else None
+                category = ctx.guild.get_channel(
+                    data['category']) if data['category'] else None
                 await ctx.send(
                     f"Configuration of this server [ticket]\n\n"
-                    f"Total Ticket made: {ticket_counter}\n"
-                    f"Valid Roles (admin): {valid_roles}\n"
-                    f"Pinged Roles: {pinged_roles}\n"
-                    f"Current Active Channel: {current_active_channel}\n"
-                    f"Verifed Roles (mod): {verified_roles}\n"
-                    f"Category Channel: {category}")
+                    f"`Total Ticket made  :` **{ticket_counter}**\n"
+                    f"`Valid Roles (admin):` **{valid_roles}**\n"
+                    f"`Pinged Roles       :` **{pinged_roles}**\n"
+                    f"`Active Channel     :` **{current_active_channel}**\n"
+                    f"`Verifed Roles (mod):` **{verified_roles}**\n"
+                    f"`Category Channel   :` **{category}**")
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True),

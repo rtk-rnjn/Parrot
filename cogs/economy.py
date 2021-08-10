@@ -3,9 +3,9 @@ import discord, random
 from core import Parrot, Context, Cog
 from datetime import datetime
 
-from utilities.database import ge_update, economy
+from utilities.database import ge_update, economy_db
 
-collection = economy['global_economy']
+collection = economy_db['global_economy']
 
 
 class Economy(Cog, name="economy"):

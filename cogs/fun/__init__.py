@@ -8,8 +8,8 @@ from random import choice
 from discord import Embed 
 
 
-from database.telephone import collection, telephone_update, telephone_on_join
-
+from utilities.database import parrot_db, telephone_update
+collection = parrot_db['telephone']
 
 from aiohttp import request
 

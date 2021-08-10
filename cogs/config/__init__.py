@@ -171,10 +171,11 @@ class BotConfig(Cog, name="botconfig"):
         if not ct.find_one({'_id': ctx.guild.id}):
             ct.insert_one({
                 '_id': ctx.guild.id,
-                'channel': None,
-                'pingrole': None,
-                'memberping': None, 
-                'blocked': []
+                "channel": None,
+                "pingrole": None,
+                "is_line_busy": False,
+                "memberping": None,
+                "blocked": []
             })
         if not ctx.invoked_subcommand:
             if ct.find_one({'_id': ctx.guild.id}):

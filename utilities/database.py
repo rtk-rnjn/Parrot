@@ -50,7 +50,7 @@ async def msg_increment(guild_id: int, user_id: int):
 async def telephone_update(guild_id: int, event: str, value):
     collection = parrot_db["telephone"]
     if not collection.find_one({'_id': guild_id}):
-        collection.insert_one({'_id': guild_id})
+        collection.insert_one({'_id': guild_id, "channel": None, "pingrole": None, "is_line_busy": False, "memberping": None, "blocked": []})
 
     collection.update_one({'_id': guild_id}, {"$set": {event: value}})
 

@@ -1,11 +1,12 @@
 from discord.ext import commands
-import discord, typing, aiohttp
-from discord import Webhook
-from core import Parrot, Context, Cog
+import discord, typing
 
-from database.server_config import collection as csc, guild_join, guild_update
-from database.global_chat import collection as cgc, gchat_on_join, gchat_update
-from database.telephone import collection as ct, telephone_update, telephone_on_join
+from core import Parrot, Context, Cog
+from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
+
+ct = parrot_db['telephone']
+csc = parrot_db['server_config']
+
 from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
@@ -17,21 +18,23 @@ class BotConfig(Cog, name="botconfig"):
 
     @commands.group(name='serverconfig', invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def config(self, ctx: Context):
         """
 				To config the bot, mod role, prefix, or you can disable the commands and cogs.
 				"""
-        if not csc.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
+
         if not ctx.invoked_subcommand:
             data = csc.find_one({'_id': ctx.guild.id})
-            await ctx.send(
-                f"Configuration of this server [server_config]\n\n"
-                f"Prefix: {data['prefix']}\n"
-                f"ModRole: {ctx.guild.get_role(data['mod_role']).name} ID: {data['mod_role']}\n"
-                f"MogLog: {ctx.guild.get_channel(data['action_log']).name} ID: {data['action_log']}\n"
-            )
+            if data:
+                role = ctx.guild.get_role(data['mod_role']).name or None
+                mod_log = ctx.guild.get_channel(
+                    data['action_log']).name or None
+                await ctx.send(
+                    f"Configuration of this server [server_config]\n\n"
+                    f"Prefix: {data['prefix']}\n"
+                    f"ModRole: {role} ID: {data['mod_role'] if data['mod_role'] else None}\n"
+                    f"MogLog: {mod_log} ID: {data['action_log'] if data['action_log'] else None}\n"
+                )
 
     @config.command(aliases=['prefix'])
     @commands.has_permissions(administrator=True)
@@ -39,8 +42,7 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 chars
 				"""
-        if not csc.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
+
         if len(arg) > 6:
             return await ctx.reply(
                 f"{ctx.author.mention} length of prefix can not be more than 6 characters."
@@ -58,8 +60,7 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
 				"""
-        if not csc.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
+
         post = {'mute_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
         if not role:
@@ -75,9 +76,6 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
 				"""
-        if not csc.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
-
         post = {'mod_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
         if not role:
@@ -96,9 +94,6 @@ class BotConfig(Cog, name="botconfig"):
         """
 				To set the action log, basically the mod log.
 				"""
-
-        if not csc.find_one({'_id': ctx.guild.id}):
-            await guild_join(ctx.guild.id)
 
         post = {'action_log': channel.id if channel else None}
         await guild_update(ctx.guild.id, post)
@@ -122,9 +117,6 @@ class BotConfig(Cog, name="botconfig"):
         """
 				This command will connect your server with other servers which then connected to #global-chat must try this once
 				"""
-        if not cgc.find_one({'_id': ctx.guild.id}):
-            await gchat_on_join(ctx.guild.id)
-
         if not setting:
             guild = ctx.guild
             overwrites = {
@@ -150,38 +142,15 @@ class BotConfig(Cog, name="botconfig"):
             await ctx.send(f"{channel.mention} created successfully.")
             return
 
-        if (setting.lower() in ['ignore-role', 'ignore_role', 'ignorerole'
-                                ]) and (role is not None):
-            post = {'ignore-role': role.id}
+        if (setting.lower() in ['ignore-role', 'ignore_role', 'ignorerole']):
+            post = {'ignore-role': role.id if role else None}
             await gchat_update(ctx.guild.id, post)
-            await ctx.reply(
+            if not role:
+                return await ctx.send(
+                    f"{ctx.author.mention} ignore role reseted! or removed")
+            await ctx.send(
                 f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!"
             )
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def broadcast(self, ctx: Context, *, message: str):
-        """
-				To broadcast all over the global channel. Only for owners.
-				"""
-        data = cgc.find({})
-
-        for webhooks in data:
-            hook = webhooks['webhook']
-            try:
-
-                async def send_webhook():
-                    async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(f"{hook}", adapter=session)
-
-                        await webhook.send(
-                            content=f"{message}",
-                            username="SYSTEM",
-                            avatar_url=f"{self.bot.guild.me.avatar.url}")
-
-                await send_webhook()
-            except:
-                continue
 
     @commands.group(aliases=['telconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -189,16 +158,16 @@ class BotConfig(Cog, name="botconfig"):
         """
     To set the telephone phone line, in the server to call and receive the call from other server. Available settings 'channel', 'pingrole', 'memberping', 'block', 'unblock'
     """
-        if not ct.find_one({'_id': ctx.guild.id}):
-            await telephone_on_join(ctx.guild.id)
+
         if not ctx.invoked_subcommand:
-            data = ct.find_one({'_id': ctx.guild.id})
-            await ctx.send(
-                f"Configuration of this server [telsetup]\n\n"
-                f"Channel: {data['channel']}\n"
-                f"Pingrole: {ctx.guild.get_role(data['pingrole']).name} ID: {data['pingrole']}\n"
-                f"MemberPing: {ctx.guild.get_member(data['pingrole']).name} ID: {data['pingrole']}\n"
-                f"Blocked: {', '.join(data['blocked'])}")
+            if ct.find_one({'_id': ctx.guild.id}):
+                data = ct.find_one({'_id': ctx.guild.id})
+                await ctx.send(
+                    f"Configuration of this server [telsetup]\n\n"
+                    f"Channel: {data['channel']}\n"
+                    f"Pingrole: {ctx.guild.get_role(data['pingrole']).name} ID: {data['pingrole']}\n"
+                    f"MemberPing: {ctx.guild.get_member(data['pingrole']).name} ID: {data['pingrole']}\n"
+                    f"Blocked: {', '.join(data['blocked'])}")
 
     @telsetup.command(name='channel')
     @commands.has_permissions(administrator=True)
@@ -209,8 +178,7 @@ class BotConfig(Cog, name="botconfig"):
         """
         To setup the telephone line in the channel.
         """
-        if not ct.find_one({'_id': ctx.guild.id}):
-            await telephone_on_join(ctx.guild.id)
+
         await telephone_update(ctx.guild.id, 'channel',
                                channel.id if channel else None)
         if not channel:
@@ -230,8 +198,7 @@ class BotConfig(Cog, name="botconfig"):
         """
         To add the ping role. If other server call your server. Then the role will be pinged if set any
         """
-        if not ct.find_one({'_id': ctx.guild.id}):
-            await telephone_on_join(ctx.guild.id)
+
         await telephone_update(ctx.guild.id, 'channel',
                                role.id if role else None)
         if not role:
@@ -250,8 +217,7 @@ class BotConfig(Cog, name="botconfig"):
         """
         To add the ping role. If other server call your server. Then the role will be pinged if set any
         """
-        if not ct.find_one({'_id': ctx.guild.id}):
-            await telephone_on_join(ctx.guild.id)
+
         await telephone_update(ctx.guild.id, 'channel',
                                member.id if member else None)
         if not member:
@@ -271,7 +237,15 @@ class BotConfig(Cog, name="botconfig"):
             return await ctx.send(
                 f"{ctx.author.mention} can't block your own server")
         if not ct.find_one({'_id': ctx.guild.id}):
-            await telephone_on_join(ctx.guild.id)
+            post = {
+                "_id": ctx.guild.id,
+                "channel": None,
+                "pingrole": None,
+                "is_line_busy": False,
+                "memberping": None,
+                "blocked": []
+            }
+            ct.insert_one(post)
         ct.update_one({'_id': ctx.guild.id},
                       {'$addToSet': {
                           'blocked': server.id

@@ -3,8 +3,9 @@ import discord, random
 from core import Parrot, Context, Cog
 from datetime import datetime
 
-from database.economy import collection, ge_update, ge_on_join
-#from utilities.checks import user_premium_cd
+from utilities.database import ge_update, ge_on_join, economy
+
+collection = economy['global_economy']
 
 
 class Economy(Cog, name="economy"):
@@ -43,7 +44,8 @@ class Economy(Cog, name="economy"):
                 title=f"Balance of {ctx.author.name}",
                 description=
                 "Welcome to Parrot Economy, before depositing you must have an account!",
-                colour=ctx.author.colour, timestamp=datetime.utcnow())
+                colour=ctx.author.colour,
+                timestamp=datetime.utcnow())
             embed.add_field(name="Wallet", value=400)
             embed.add_field(name="Bank", value=0)
             await ctx.reply(embed=embed)
@@ -86,7 +88,8 @@ class Economy(Cog, name="economy"):
                 title=f"Balance of {ctx.author.name}",
                 description=
                 "Welcome to Parrot Economy, before robbing money you must have an account!",
-                colour=ctx.author.colour, timestamp=datetime.utcnow())
+                colour=ctx.author.colour,
+                timestamp=datetime.utcnow())
             embed.add_field(name="Wallet", value=400)
             embed.add_field(name="Bank", value=0)
             await ctx.reply(embed=embed)
@@ -133,7 +136,8 @@ class Economy(Cog, name="economy"):
                 title=f"Balance of {ctx.author.name}",
                 description=
                 "Welcome to Parrot Economy, before playing slots you must have a account!",
-                colour=ctx.author.colour, timestamp=datetime.utcnow())
+                colour=ctx.author.colour,
+                timestamp=datetime.utcnow())
             embed.add_field(name="Wallet", value=400)
             embed.add_field(name="Bank", value=0)
             await ctx.reply(embed=embed)
@@ -177,7 +181,8 @@ class Economy(Cog, name="economy"):
                 title=f"Balance of {ctx.author.name}",
                 description=
                 "Welcome to Parrot Economy, before giving money you must have an account!",
-                colour=ctx.author.colour, timestamp=datetime.utcnow())
+                colour=ctx.author.colour,
+                timestamp=datetime.utcnow())
             embed.add_field(name="Wallet", value=400)
             embed.add_field(name="Bank", value=0)
             await ctx.reply(embed=embed)
@@ -252,7 +257,8 @@ class Economy(Cog, name="economy"):
                 title=f"Balance of {ctx.author.name}",
                 description=
                 "Welcome to Parrot Economy, before begging you must have an account!",
-                colour=ctx.author.colour, timestamp=datetime.utcnow())
+                colour=ctx.author.colour,
+                timestamp=datetime.utcnow())
             embed.add_field(name="Wallet", value=400)
             embed.add_field(name="Bank", value=0)
             await ctx.reply(embed=embed)
@@ -275,7 +281,8 @@ class Economy(Cog, name="economy"):
             coins_bank = x['bank']
             coins_walt = x['wallet']
             embed = discord.Embed(title=f"Balance of {target.name}",
-                                  colour=target.colour, timestamp=datetime.utcnow())
+                                  colour=target.colour,
+                                  timestamp=datetime.utcnow())
             embed.add_field(name="Wallet", value=coins_walt)
             embed.add_field(name="Bank", value=coins_bank)
             return await ctx.reply(embed=embed)

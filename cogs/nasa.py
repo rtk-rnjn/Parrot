@@ -3,11 +3,8 @@ import os
 from datetime import datetime
 import discord, aiohttp
 from discord.ext import commands
-import urllib.parse
 
 from utilities.paginator import Paginator
-from utilities.checks import user_premium_cd
-
 from core import Cog, Parrot, Context
 
 NASA_KEY = os.environ['NASA_KEY']
@@ -19,7 +16,6 @@ class NASA(Cog, name='nasa'):
         self.bot = bot
 
     @commands.command(aliases=['sat', 'satelite'])
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def earth(self, ctx: Context, longitute: float, latitude: float,
                     date: str):
@@ -46,7 +42,6 @@ class NASA(Cog, name='nasa'):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def apod(self, ctx: Context):
         '''Asteroid Picture of the Day'''
@@ -81,7 +76,6 @@ class NASA(Cog, name='nasa'):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def epic(self, ctx: Context, date: str):
         '''Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format'''
@@ -119,8 +113,6 @@ class NASA(Cog, name='nasa'):
         await paginator.start(ctx)
 
     @commands.command(aliases=['finda', 'asteroid', 'neo'])
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def findasteroid(self, ctx: Context, start: str, end: str):
         '''You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format'''
@@ -203,8 +195,6 @@ class NASA(Cog, name='nasa'):
         await paginator.start(ctx)
 
     @commands.command(aliases=['findaid', 'asteroidid'])
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def findasteroididid(self, ctx: Context, id: int):
         '''Find any asteroid in the space by ID. "$help findaid" for syntax'''
@@ -254,8 +244,6 @@ class NASA(Cog, name='nasa'):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['mrp'])
-    @commands.guild_only()
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def mars(self, ctx: Context, date: str):
         """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format"""
@@ -293,7 +281,6 @@ class NASA(Cog, name='nasa'):
         await paginator.start(ctx)
 
     @commands.command(aliases=['nsearch', 'ns'])
-    @user_premium_cd()
     @commands.bot_has_permissions(embed_links=True)
     async def nasasearch(self, ctx: Context, *,
                          string: commands.clean_content):

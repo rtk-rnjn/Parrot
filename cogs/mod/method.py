@@ -1,12 +1,8 @@
-from database.server_config import collection, guild_join, guild_update
+from utilities.database import parrot_db
 import discord, asyncio
-from pymongo import MongoClient
-from utilities.config import my_secret
 
-cluster = MongoClient(
-    f"mongodb+srv://user:{str(my_secret)}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-)
-db = cluster["parrot_db"]
+collection = parrot_db['server_config']
+
 
 # ROLES
 async def _add_roles_bot(guild, command_name, destination, operator, role,
@@ -236,7 +232,14 @@ async def _unban(guild, command_name, ctx_author, destination, member, reason):
 async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                 reason):
     if not collection.find_one({'_id': guild.id}):
-        await guild_join(guild.id)
+        post = {
+            '_id': guild.id,
+            'prefix': '$',
+            'mod_role': None,
+            'action_log': None,
+            'mute_role': None,
+        }
+        collection.insert_one(post)
 
     data = collection.find_one({'_id': guild.id})
 
@@ -256,7 +259,10 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                                               read_message_history=False)
             except Exception:
                 pass
-        await guild_update(guild.id, {'mute_role': muted.id})
+        await collection.update_one({'_id': guild.id},
+                                    {'$set': {
+                                        'mute_role': muted.id
+                                    }})
     if seconds is None: seconds = 0
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
@@ -290,8 +296,14 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
 async def _unmute(guild, command_name, ctx_author, destination, member,
                   reason):
     if not collection.find_one({'_id': guild.id}):
-        await guild_join(guild.id)
-
+        post = {
+            '_id': guild.id,
+            'prefix': '$',
+            'mod_role': None,
+            'action_log': None,
+            'mute_role': None,
+        }
+        collection.insert_one(post)
     data = collection.find_one({'_id': guild.id})
 
     muted = guild.get_role(data['mute_role']) or discord.utils.get(
@@ -564,7 +576,8 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
 
 
 async def _warn(guild, command_name, ctx_author, destination, target, reason):
-    await destination.send(f"{target.name}#{target.discriminator} has being warned for: {reason}")
+    await destination.send(
+        f"{target.name}#{target.discriminator} has being warned for: {reason}")
 
 
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']

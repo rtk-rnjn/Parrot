@@ -53,7 +53,7 @@ Sometimes giving permissions kick ban can be dangerous. If people are not trust 
 
 ## Global-Chat Setup
 
-This thing is insane. Feature inspired from World Chat bot. Configuring the `#global-chat` is kinda easy too. Pass `None` if you want to remove
+This thing is insane. Feature inspired from World Chat bot. Configuring the `#global-chat` is kinda easy too. 
 
 #### - **Making the channel**
 

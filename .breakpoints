@@ -1,3 +1,12 @@
 {
-  "files": {}
+  "files": {
+    "cogs/fun/__init__.py": [
+      {
+        "id": "bbb00d3e-b228-4757-89a5-e18bb14e890a",
+        "line": 760,
+        "version": 158,
+        "index": 30518
+      }
+    ]
+  }
 }

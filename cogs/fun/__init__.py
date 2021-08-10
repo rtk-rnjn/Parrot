@@ -769,7 +769,7 @@ class fun(Cog, name="fun"):
             pass
 
         def check(m):
-            return (m.content.lower() == "pickup" or "hangup") and (m.channel == channel or target_channel) and not m.author.bot
+            return (m.content.lower() in ("pickup", "hangup")) and (m.channel == channel or m.channel == target_channel) # and not m.author.bot
 
         try:
             _talk = await self.bot.wait_for('message', check=check, timeout=60)

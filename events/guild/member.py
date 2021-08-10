@@ -21,6 +21,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     async def on_voice_state_update(self, member, before, after):
         pass
 
+    @Cog.listener()
+    async def on_presence_update(self, before, after):
+        pass
 
 def setup(bot):
     bot.add_cog(Member(bot))

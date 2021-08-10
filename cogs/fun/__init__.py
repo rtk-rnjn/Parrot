@@ -1,7 +1,5 @@
 
-import discord 
-import random 
-import io, base64, datetime, aiohttp, urllib, asyncio
+import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time
 from discord.ext import commands
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
 from random import choice

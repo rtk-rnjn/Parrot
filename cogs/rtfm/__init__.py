@@ -30,7 +30,7 @@ with open("extra/lang.txt") as f:
 
 
 class Coding(Cog, name="rtfm"):
-    """To test code and check docs"""
+    """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.algos = sorted(

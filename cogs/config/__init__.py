@@ -300,7 +300,6 @@ class BotConfig(Cog, name="botconfig"):
                 "channel_id": None
             })
         if not ctx.invoked_subcommand:
-            print(1)
             data = ctt.find_one({'_id': ctx.guild.id})
 
             ticket_counter = data['ticket-counter']

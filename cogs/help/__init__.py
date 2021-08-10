@@ -52,7 +52,7 @@ class HelpCommand(commands.HelpCommand):
                     f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```",
                     inline=True)
 
-        embed.set_footer(text=f"Page 1/15 | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/14 | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
@@ -66,7 +66,7 @@ class HelpCommand(commands.HelpCommand):
                     f"**Commands**```\n{', '.join([cmd.name for cmd in bot.cogs[cog].get_commands()])}\n```",
                     color=discord.Colour(0x55ddff))
                 em.set_author(name=f"COG: {str(cog).upper()}")
-                em.set_footer(text=f"Page {i+1}/15 | Built with ❤️ and `discord.py`",
+                em.set_footer(text=f"Page {i+1}/14 | Built with ❤️ and `discord.py`",
                               icon_url=f"{DEV_LOGO}")
                 em_list.append(em)
                 em.set_thumbnail(url=self.context.me.avatar.url)

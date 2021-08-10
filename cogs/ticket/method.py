@@ -45,7 +45,7 @@ async def log(guild, channel, description, status):
 
 
 async def _new(ctx, args):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
 
     if not args:
         message_content = "Please wait, we will be with you shortly!"
@@ -140,7 +140,7 @@ async def _new(ctx, args):
 
 
 async def _close(ctx, bot):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
 
     data = collection.find_one({'_id': ctx.guild.id})
     if ctx.channel.id in data["ticket-channel-ids"]:
@@ -180,7 +180,7 @@ async def _close(ctx, bot):
 
 
 async def _save(ctx, bot):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
 
     data = collection.find_one({'_id': ctx.guild.id})
     if ctx.channel.id in data["ticket-channel-ids"]:
@@ -218,7 +218,7 @@ async def _save(ctx, bot):
 
 
 async def _addaccess(ctx, role):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
 
     collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
@@ -236,7 +236,7 @@ async def _addaccess(ctx, role):
 
 
 async def _delaccess(ctx, role):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               'valid-roles': role.id
@@ -253,7 +253,7 @@ async def _delaccess(ctx, role):
 
 
 async def _addadimrole(ctx, role):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               "verified-roles": role.id
@@ -270,7 +270,7 @@ async def _addadimrole(ctx, role):
 
 
 async def _addpingedrole(ctx, role):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               'pinged-roles': role.id
@@ -287,7 +287,7 @@ async def _addpingedrole(ctx, role):
 
 
 async def _deladminrole(ctx, role):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id},
                           {'$pull': {
                               'verified-roles': role.id
@@ -304,7 +304,7 @@ async def _deladminrole(ctx, role):
 
 
 async def _delpingedrole(ctx, role):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id},
                           {'$pull': {
                               'pinged-roles': role.id
@@ -321,7 +321,7 @@ async def _delpingedrole(ctx, role):
 
 
 async def _setcategory(ctx, channel):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id},
                           {'$set': {
                               'category': channel.id
@@ -338,7 +338,7 @@ async def _setcategory(ctx, channel):
 
 
 async def _setlog(ctx, channel):
-    await check_if_server(ctx.guild_id)
+    await check_if_server(ctx.guild.id)
     collection.update_one({'_id': ctx.guild.id}, {'$set': {'log': channel.id}})
     em = discord.Embed(
         title="Parrot Ticket Bot",

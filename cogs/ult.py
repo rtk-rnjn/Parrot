@@ -50,7 +50,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
     '''
     Get the freaking bot owner name.
     '''
-    await ctx.reply(embed=discord.Embed(title="Owner Info", description='This bot is being hosted by !! Ritik Ranjan [\*.\*]. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', timestamp=datetime.utcnow()))
+    await ctx.reply(embed=discord.Embed(title="Owner Info", description='This bot is being hosted by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', timestamp=datetime.utcnow()))
 
 
   @commands.command(aliases=['guildavatar', 'serverlogo', 'servericon'])
@@ -134,7 +134,7 @@ class ult(Cog, name="utilities", description="Basic commands for the bots."):
         ("CPU time", "`"+str(cpu_time)+"`", True),
         ("Memory usage", f"`{mem_usage:,.3f} / {mem_total:,.0f} MiB ({mem_of_total:.0f}%)`", True),
         ("Total users on count", "`"+str(x)+"`", True),
-        ("Owner",'`!! Ritik Ranjan [*.*]`', True),
+        ("Owner",'`!! Ritik Ranjan [*.*]#9230`', True),
         ("Total guild on count", "`"+str(y)+"`", True)]
     for name, value, inline in fields:
       embed.add_field(name=name, value=value, inline=inline)

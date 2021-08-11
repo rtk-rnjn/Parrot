@@ -45,7 +45,7 @@ class HelpCommand(commands.HelpCommand):
         embed.description = description + f"\n• {get_bot}\n• {support_server}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
         for cog in mapping:
-            # if bot.cogs[cog].get_commands():
+            if cog:
                 embed.add_field(
                     name=f"{str(cog).upper()}",
                     value=f">>> {cog.description if cog.description else 'No help available :('}",
@@ -57,7 +57,7 @@ class HelpCommand(commands.HelpCommand):
         em_list.append(embed)
         i = 1
         for cog, cmds in mapping:
-            # if bot.cogs[cog].get_commands():
+            if cog:
                 em = discord.Embed(
                     description=
                     f"```\n{cog.description if cog.description else 'No help available :('}\n```\n"

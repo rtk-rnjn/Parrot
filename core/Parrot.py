@@ -16,6 +16,7 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
     def __init__(self, *args, **kwargs):
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict() # to make cog case insensitive
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
@@ -32,7 +33,7 @@ class Parrot(commands.AutoShardedBot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(
                 discord.Intents.all()),
             shard_count=3,
-            **kwargs)
+            **kwargs)  
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -68,6 +69,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_prefix(self, message: discord.Message) -> str:
         if not message.guild: return ''
+        if message.author.id == 741614468546560092: return ['', '$']
         else:
             if not collection.find_one({"_id": message.guild.id}):
                 collection.insert_one({

@@ -1,3 +1,4 @@
+
 import discord
 from discord.ext import commands
 
@@ -38,35 +39,32 @@ class HelpCommand(commands.HelpCommand):
         embed = discord.Embed(color=discord.Colour(0x55ddff))
 
         embed.set_author(
-            name=
-            f"Server: {self.context.guild.name or self.context.author.name}",
+            name=f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
         embed.description = description + f"\n• {get_bot}\n• {support_server}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
-        for cog in bot.cogs:
-            if bot.cogs[cog].get_commands():
+        for cog in mapping:
+            # if bot.cogs[cog].get_commands():
                 embed.add_field(
                     name=f"{str(cog).upper()}",
-                    value=
-                    f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```",
-                    inline=True)
+                    value=f">>> {cog.description if cog.description else 'No help available :('}",
+                    inline=False, color=discord.Colour(0x55ddff))
 
-        embed.set_footer(text=f"Page 1/14 | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{len(mapping)+1} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
         i = 1
-        for cog in bot.cogs:
-            if bot.cogs[cog].get_commands():
-
+        for cog, cmds in mapping:
+            # if bot.cogs[cog].get_commands():
                 em = discord.Embed(
                     description=
-                    f"```\n{bot.cogs[cog].description if bot.cogs[cog].description else 'No help available :('}\n```\n"
-                    f"**Commands**```\n{', '.join([cmd.name for cmd in bot.cogs[cog].get_commands()])}\n```",
+                    f"```\n{cog.description if cog.description else 'No help available :('}\n```\n"
+                    f"**Commands**```\n{', '.join([cmd.name for cmd in cmds])}\n```",
                     color=discord.Colour(0x55ddff))
                 em.set_author(name=f"COG: {str(cog).upper()}")
-                em.set_footer(text=f"Page {i+1}/14 | Built with ❤️ and `discord.py`",
+                em.set_footer(text=f"Page {i+1}/{len(mapping)+1} | Built with ❤️ and `discord.py`",
                               icon_url=f"{DEV_LOGO}")
                 em_list.append(em)
                 em.set_thumbnail(url=self.context.me.avatar.url)

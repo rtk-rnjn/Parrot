@@ -49,7 +49,7 @@ class HelpCommand(commands.HelpCommand):
                 embed.add_field(
                     name=f"{str(cog).upper()}",
                     value=f">>> {cog.description if cog.description else 'No help available :('}",
-                    inline=False, color=discord.Colour(0x55ddff))
+                    inline=False)
 
         embed.set_footer(text=f"Page 1/{len(mapping)+1} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")

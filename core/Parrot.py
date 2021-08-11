@@ -69,7 +69,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_prefix(self, message: discord.Message) -> str:
         if not message.guild: return ''
-        if message.author.id == 741614468546560092: return ['', '$']
+        if message.author.id == 741614468546560092: return ('', '$')
         else:
             if not collection.find_one({"_id": message.guild.id}):
                 collection.insert_one({

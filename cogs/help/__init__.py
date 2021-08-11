@@ -56,7 +56,7 @@ class HelpCommand(commands.HelpCommand):
 
         em_list.append(embed)
         i = 1
-        for cog, cmds in mapping:
+        for cog, cmds in mapping.items():
             if cog:
                 em = discord.Embed(
                     description=

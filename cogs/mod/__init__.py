@@ -41,8 +41,7 @@ class mod(Cog, name="mod"):
             colour=ctx.author.color)
 
         embed.set_thumbnail(
-            url=
-            f"{performed_on.avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}"
+            url=f"{performed_on.avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}"
         )
 
         embed.set_author(
@@ -473,7 +472,15 @@ class mod(Cog, name="mod"):
         await self.log(ctx, 'Un-Block',
                        f'{", ".join([str(member) for member in member])}',
                        f'{reason}')
-
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_nicknames=True))
+    @bot_has_permissions(manage_nicknames=True)
+    async def nick(self, ctx: Context, member: discord.Member, *, name: commands.clean_content):
+        """
+        To change the nickname of the specified member
+        """
+        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
+        await self.log(ctx, 'nickname chang', member, 'Action Requested by {ctx.author.name} ({ctx.author.id})')
     @commands.command()
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_permissions=True,
@@ -559,12 +566,12 @@ class mod(Cog, name="mod"):
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[4]:
                 await mt._block(ctx.guild, ctx.command.name, ctx.author,
-                                ctx.channel, ctx.channel, target, reason)
+                                ctx.channel, ctx.channel, [target], reason)
                 await self.log(ctx, 'block', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[5]:
                 await mt._unblock(ctx.guild, ctx.command.name, ctx.author,
-                                  ctx.channel, ctx.channel, target, reason)
+                                  ctx.channel, ctx.channel, [target], reason)
                 await self.log(ctx, 'unblock', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[6]:
@@ -686,7 +693,7 @@ class mod(Cog, name="mod"):
                                               ctx.channel, m.content)
                 await self.log(ctx, 'Text name chang', target, reason)
 
-        if (type(target) is discord.VoiceChannel):
+        if (type(target) is (discord.VoiceChannel, discord.StageChannel,)):
             vc_embed = discord.Embed(title='Mod Menu',
                                      description=':lock: Lock\n'
                                      ':unlock: Unlock\n'

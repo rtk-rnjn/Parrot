@@ -494,6 +494,7 @@ async def _change_nickname(guild, command_name, ctx_author, destination,
             reason=
             f'Action Requested by {ctx_author.name}({ctx_author.id}) || Reason: {reason}'
         )
+        await destination.send(f"{ctx_author.mention} **{member.name}#{member.discriminator}** nickname changed to **{name}**")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
@@ -506,6 +507,7 @@ async def _change_channel_topic(guild, command_name, ctx_author, destination,
         await channel.edit(
             topic=text,
             reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
+        await destination.send(f"{ctx_author.mention} **{channel.name}** topic changed to **{text}**")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} {channel.name}. Error raised: {e}"
@@ -518,6 +520,7 @@ async def _change_channel_name(guild, command_name, ctx_author, destination,
         await channel.edit(
             name=text,
             reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
+        await destination.send(f"{ctx_author.mention} **{channel}** name changed to **{text}**")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} {channel.name}. Error raised: {e}"
@@ -573,11 +576,6 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
         await destination.send(
             f"Can not able to {command_name} {channel.name}. Error raised: {e}"
         )
-
-
-async def _warn(guild, command_name, ctx_author, destination, target, reason):
-    await destination.send(
-        f"{target.name}#{target.discriminator} has being warned for: {reason}")
 
 
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']

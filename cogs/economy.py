@@ -257,14 +257,7 @@ class Economy(Cog, name="economy"):
         """
         A another gambling command for earn more money
         """
-        if not choose: 
-            choose = 'heads'
-        elif choose.lower() in ['heads', 'head', 'h']: 
-            choose = 'heads'
-        elif choose.lower() in ['tails', 'tail', 't']
-            choose = 'tails'
-        else:
-            choose = 'heads'
+        choose = 'tails' if choose in ['tails', 'tail', 't'] else 'heads'
         
         x = collection.find_one({'_id': ctx.author.id})
         if not x: 

@@ -34,7 +34,7 @@ class HelpCommand(commands.HelpCommand):
         get_bot = f"[Add me to your server]({INVITE})"
         support_server = f"[Support Server]({SUPPORT_SERVER})"
 
-        description = f"```\nPrefixes are '{self.context.prefix}' and '@Parrot#9209'\n```"
+        description = f"```\nPrefixes are '{self.context.clean_prefix}' and '@Parrot#9209'\n```"
 
         embed = discord.Embed(color=discord.Colour(0x55ddff))
 
@@ -46,12 +46,14 @@ class HelpCommand(commands.HelpCommand):
         embed.set_thumbnail(url=self.context.me.avatar.url)
         for cog in mapping:
             if cog and cog.get_commands():
-                embed.add_field(
-                    name=f"{str(cog).upper()}",
-                    value=f">>> {cog.description if cog.description else 'No help available :('}",
-                    inline=False)
+                if cog.qualified_name.lower() == 'jishaku': pass
+                else:
+                    embed.add_field(
+                        name=f"{str(cog.qualified_name).lower()}",
+                        value=f"```\n$help",
+                        inline=False)
 
-        embed.set_footer(text=f"Page 1/{len(mapping)+1} | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{14} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
@@ -64,7 +66,7 @@ class HelpCommand(commands.HelpCommand):
                     f"**Commands**```\n{', '.join([cmd.name for cmd in cmds])}\n```",
                     color=discord.Colour(0x55ddff))
                 em.set_author(name=f"COG: {str(cog).upper()}")
-                em.set_footer(text=f"Page {i+1}/{len(mapping)+1} | Built with ❤️ and `discord.py`",
+                em.set_footer(text=f"Page {i+1}/{14} | Built with ❤️ and `discord.py`",
                               icon_url=f"{DEV_LOGO}")
                 em_list.append(em)
                 em.set_thumbnail(url=self.context.me.avatar.url)
@@ -133,20 +135,22 @@ class HelpCommand(commands.HelpCommand):
         i = 1
         for cmd in cog.get_commands():
             if cog.get_commands():
-                em = discord.Embed(title=f"Help with {cmd.name}",
-                                   description=f"```\n{cmd.help}\n```",
-                                   color=discord.Colour(0x55ddff))
-                em.add_field(name=f"Usage",
-                             value=f"```\n{get_command_signature(cmd)}\n```")
-                em.add_field(
-                    name="Aliases",
-                    value=
-                    f"```\n{', '.join(cmd.aliases if cmd.aliases else 'NA')}\n```"
-                )
+                if cmd.hidden: pass
+                else:
+                    em = discord.Embed(title=f"Help with {cmd.name}",
+                                    description=f"```\n{cmd.help}\n```",
+                                    color=discord.Colour(0x55ddff))
+                    em.add_field(name=f"Usage",
+                                value=f"```\n{get_command_signature(cmd)}\n```")
+                    em.add_field(
+                        name="Aliases",
+                        value=
+                        f"```\n{', '.join(cmd.aliases if cmd.aliases else 'NA')}\n```"
+                    )
 
-                em.set_footer(text=f"Page {i+1}/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`")
-                em_list.append(em)
-                i += 1
+                    em.set_footer(text=f"Page {i+1}/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`")
+                    em_list.append(em)
+                    i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)

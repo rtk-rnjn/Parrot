@@ -16,4 +16,5 @@ INVITE = data['invite']
 DEV_LOGO = data['dev_logo']
 DATABASE_KEY = os.environ['DATABASE_KEY']
 my_secret = DATABASE_KEY
+GIT = data['github']
 MEME_PASS = "***qwerty123"

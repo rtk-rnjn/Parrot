@@ -7,7 +7,9 @@ from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
 
-
+ignored = ('jishaku', 'rtfm', 'helpcog',)
+get_bot = f"[Add me to your server]({INVITE})"
+support_server = f"[Support Server]({SUPPORT_SERVER})"
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):
@@ -31,9 +33,6 @@ class HelpCommand(commands.HelpCommand):
 
         em_list = []
 
-        get_bot = f"[Add me to your server]({INVITE})"
-        support_server = f"[Support Server]({SUPPORT_SERVER})"
-
         description = f"```\nPrefixes are '{self.context.clean_prefix}' and '@Parrot#9209'\n```"
 
         embed = discord.Embed(color=discord.Colour(0x55ddff))
@@ -46,31 +45,33 @@ class HelpCommand(commands.HelpCommand):
         embed.set_thumbnail(url=self.context.me.avatar.url)
         for cog in mapping:
             if cog and cog.get_commands():
-                if cog.qualified_name.lower() == 'jishaku': pass
+                if cog.qualified_name.lower() in ignored: pass
                 else:
                     embed.add_field(
                         name=f"{str(cog.qualified_name).lower()}",
-                        value=f"```\n$help",
-                        inline=False)
+                        value=f"`{self.context.clean_prefix}help {cog.qualified_name}`",
+                        inline=True)
 
-        embed.set_footer(text=f"Page 1/{14} | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{12} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
         i = 1
         for cog, cmds in mapping.items():
             if cog and cog.get_commands():
-                em = discord.Embed(
-                    description=
-                    f"```\n{cog.description if cog.description else 'No help available :('}\n```\n"
-                    f"**Commands**```\n{', '.join([cmd.name for cmd in cmds])}\n```",
-                    color=discord.Colour(0x55ddff))
-                em.set_author(name=f"COG: {str(cog).upper()}")
-                em.set_footer(text=f"Page {i+1}/{14} | Built with ❤️ and `discord.py`",
-                              icon_url=f"{DEV_LOGO}")
-                em_list.append(em)
-                em.set_thumbnail(url=self.context.me.avatar.url)
-                i += 1
+                if cog.qualified_name.lower() in ignored: pass
+                else:
+                    em = discord.Embed(
+                        description=
+                        f"```ini\n[{cog.description if cog.description else 'No help available :('}]\n```\n"
+                        f"**Commands**```\n{', '.join([cmd.name for cmd in cmds])}\n```",
+                        color=discord.Colour(0x55ddff))
+                    em.set_author(name=f"COG: {str(cog).upper()}")
+                    em.set_footer(text=f"Page {i+1}/{12} | Built with ❤️ and `discord.py`",
+                                icon_url=f"{DEV_LOGO}")
+                    em_list.append(em)
+                    em.set_thumbnail(url=self.context.me.avatar.url)
+                    i += 1
 
         paginator = Paginator(pages=em_list)
         await paginator.start(self.context)
@@ -82,7 +83,7 @@ class HelpCommand(commands.HelpCommand):
 
         e = discord.Embed(
             title=
-            f"Help with group {group.name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''}",
+            f"Help with group {group.name}{' | ' if group.aliases else ''}{' | '.join(group.aliases) if group.aliases else ''}",
             color=discord.Colour(0x55ddff),
             description=
             f"Sub commands\n```\n{', '.join([cmd.name for cmd in cmds])}\n```")

@@ -13,11 +13,25 @@ class Economy(Cog, name="economy"):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
+    @commands.command(aliases=['starteconomy'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    async def starteco(self, ctx: Context):
+        """
+        To start the Parrot Economy.
+        """
+        x = collection.find_one({'_id': ctx.author.id})
+        if not x: 
+            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
+            await ctx.reply(f"{ctx.author.mention} successfully started your Parort Bank. You have **0** coins in the bank and **400** coins in the wallet")
+        else:
+            await ctx.reply(f"{ctx.author.mention} you already started your Parort Bank.")
+
     @commands.command(aliases=["with"])
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def withdraw(self, ctx: Context, money: int):
-        '''
-				Withdraw your money, from your bank account
-				'''
+        """
+		Withdraw your money, from your bank account
+		"""
         if money < 0:
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
@@ -39,22 +53,14 @@ class Economy(Cog, name="economy"):
                     f"{ctx.author.mention} deposited **{money}** coins in the bank"
                 )
         else:
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            embed = discord.Embed(
-                title=f"Balance of {ctx.author.name}",
-                description=
-                "Welcome to Parrot Economy, before depositing you must have an account!",
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow())
-            embed.add_field(name="Wallet", value=400)
-            embed.add_field(name="Bank", value=0)
-            await ctx.reply(embed=embed)
+            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
 
     @commands.command(aliases=['rob'])
+    @commands.cooldown(1, 30, commands.BucketType.member)
     async def steal(self, ctx, *, member: discord.Member):
-        '''
-				Want more money? Try stealing others.
-				'''
+        """
+		Want more money? Try stealing others.
+		"""
 
         x = collection.find({'_id': ctx.author.id})
         y = collection.find({'_id': member.id})
@@ -76,25 +82,17 @@ class Economy(Cog, name="economy"):
             await ge_update(ctx.author.id, coins_bank_x, coins_walt_x)
 
             return await ctx.reply(
-                f"{ctx.author.mention} you robbed **{member.name}#{member.discriminator}** and recieved **{money}**"
+                f"{ctx.author.mention} you robbed **{member.name}#{member.discriminator}** and received **{money}**"
             )
         if not y:
             return await ctx.reply(
-                f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
+                f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Bank"
             )
         if not x:
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            embed = discord.Embed(
-                title=f"Balance of {ctx.author.name}",
-                description=
-                "Welcome to Parrot Economy, before robbing money you must have an account!",
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow())
-            embed.add_field(name="Wallet", value=400)
-            embed.add_field(name="Bank", value=0)
-            await ctx.reply(embed=embed)
+            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
 
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.member)
     async def slots(self, ctx: Context, money: int):
         '''
 				Want more money? Try gambling slots
@@ -131,18 +129,10 @@ class Economy(Cog, name="economy"):
 
             await ge_update(ctx.author.id, coins_bank, coins_walt)
         else:
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            embed = discord.Embed(
-                title=f"Balance of {ctx.author.name}",
-                description=
-                "Welcome to Parrot Economy, before playing slots you must have a account!",
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow())
-            embed.add_field(name="Wallet", value=400)
-            embed.add_field(name="Bank", value=0)
-            await ctx.reply(embed=embed)
+            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
 
     @commands.command(aliases=['send'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def give(self, ctx: Context, member: discord.Member, money: int):
         '''
 				You can give your Parrot coins to other user too
@@ -169,25 +159,17 @@ class Economy(Cog, name="economy"):
             await ge_update(ctx.author.id, coins_bank_x, coins_walt_x)
 
             return await ctx.reply(
-                f"{ctx.author.mention} **{member.name}#{member.discriminator}** recieved **{money}** from you"
+                f"{ctx.author.mention} **{member.name}#{member.discriminator}** received **{money}** from you"
             )
         if not y:
             return await ctx.reply(
                 f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
             )
         if not x:
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            embed = discord.Embed(
-                title=f"Balance of {ctx.author.name}",
-                description=
-                "Welcome to Parrot Economy, before giving money you must have an account!",
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow())
-            embed.add_field(name="Wallet", value=400)
-            embed.add_field(name="Bank", value=0)
-            await ctx.reply(embed=embed)
+            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
 
     @commands.command(aliases=["dep"])
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def deposit(self, ctx: Context, money: int):
         '''
 				Save your money by depositing all the money in the bank
@@ -214,17 +196,10 @@ class Economy(Cog, name="economy"):
                     f"{ctx.author.mention} deposited **{money}** coins in the bank"
                 )
         else:
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            embed = discord.Embed(
-                title=f"Balance of {ctx.author.name}",
-                description=
-                "Welcome to Parrot Economy, before depositing you must have an account!",
-                colour=ctx.author.colour)
-            embed.add_field(name="Wallet", value=400)
-            embed.add_field(name="Bank", value=0)
-            await ctx.reply(embed=embed)
+            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
 
     @commands.command()
+    @commands.cooldown(1, 30, commands.BucketType.member)
     async def beg(self, ctx: Context):
         '''
 				Beg from internet, hope someone will give you money
@@ -232,14 +207,14 @@ class Economy(Cog, name="economy"):
 
         inc = random.randint(0, 100)
         someone = [
-            "someone", "Mr. X", "Mother nature", "PewDiePie", "CarryMinati",
-            "Parrot", "this internet", "the guy who punched you yesterday",
-            "girl with whom you had fun last night", "your father", "the Boss"
+            "someone", "Mr. X", "Mother nature", "PewDiePie", "CarryMinati", "Discord",
+            "Parrot", "this internet", "the guy who punched you yesterday", "Ritik Ranjan",
+            "girl with whom you had fun last night", "your father", "the Boss", "your mom"
         ]
 
         gives = [
             'gives you', 'gifted you', 'unconditionally gives you',
-            'slaps, and give'
+            'slaps, and give', 'transfer'
         ]
 
         x = collection.find_one({'_id': ctx.author.id})
@@ -252,18 +227,10 @@ class Economy(Cog, name="economy"):
             await ge_update(ctx.author.id, coins_bank, coins_walt)
             return
         else:
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            embed = discord.Embed(
-                title=f"Balance of {ctx.author.name}",
-                description=
-                "Welcome to Parrot Economy, before begging you must have an account!",
-                colour=ctx.author.colour,
-                timestamp=datetime.utcnow())
-            embed.add_field(name="Wallet", value=400)
-            embed.add_field(name="Bank", value=0)
-            await ctx.reply(embed=embed)
+            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
 
-    @commands.command(aliases=['bal'])
+    @commands.command(aliases=['bal', 'wallet', 'bank'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def balance(self, ctx: Context, *, member: discord.User = None):
         '''
 				To check your balance, if not, then it will open a Parrot Economy bank account for you
@@ -274,23 +241,47 @@ class Economy(Cog, name="economy"):
         x = collection.find_one({'_id': target.id})
 
         if not x:
-            return await ctx.reply(
-                f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
-            )
-        elif target == ctx.author:
-            coins_bank = x['bank']
-            coins_walt = x['wallet']
-            embed = discord.Embed(title=f"Balance of {target.name}",
-                                  colour=target.colour,
-                                  timestamp=datetime.utcnow())
-            embed.add_field(name="Wallet", value=coins_walt)
-            embed.add_field(name="Bank", value=coins_bank)
-            return await ctx.reply(embed=embed)
+            if target is ctx.author:
+                return await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            else:
+                return await ctx.reply(
+                    f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
+                )
+        
+        return await ctx.reply(f"{ctx.author.mention if target is ctx.author else target.name} has **{x['bank']}** in bank and **{x['wallet']}** in wallet")
+        
+
+    @commands.command(aliases=['cointoss', 'cf', 'ct'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    async def coinflip(self, ctx: Context, money: int, choose: str = None):
+        """
+        A another gambling command for earn more money
+        """
+        if not choose: 
+            choose = 'heads'
+        elif choose.lower() in ['heads', 'head', 'h']: 
+            choose = 'heads'
+        elif choose.lower() in ['tails', 'tail', 't']
+            choose = 'tails'
         else:
-            return await ctx.reply(
-                f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
-            )
+            choose = 'heads'
+        
+        x = collection.find_one({'_id': ctx.author.id})
+        if not x: 
+            return await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+        
+        coins_bank = x['bank']
+        coins_walt = x['walt']
+        result = random.choice(['heads', 'tails'])
+        if result == choose:
+            coins_walt = coins_walt + money
+            await ge_update(ctx.author.id, coins_bank, coins_walt)
+            await ctx.reply(f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You won {money}")
 
-
+        elif result != choose:
+            coins_walt = coins_walt - money
+            await ge_update(ctx.author.id, coins_bank, coins_walt)
+            await ctx.reply(f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You lose {money}")
+            
 def setup(bot):
     bot.add_cog(Economy(bot))

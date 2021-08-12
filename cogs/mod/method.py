@@ -397,7 +397,7 @@ async def _unblock(guild, command_name, ctx_author, destination, channel,
                    member, reason):
     for member in member:
         try:
-            if member.permissions_in(channel).send_messages:
+            if channel.permissions_for(member).send_messages:
                 await destination.send(
                     f"{ctx_author.mention} {member.name} is already unblocked. They can send message"
                 )

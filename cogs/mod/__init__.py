@@ -17,7 +17,7 @@ class mod(Cog, name="mod"):
 
     async def log(self, ctx, cmd, performed_on, reason):
         data = collection.find_one({'_id': ctx.guild.id})
-        if not data['actionlog']: return
+        if not data['action_log']: return
         if not data: return
         if type(performed_on) is not list:
             if type(performed_on) in (discord.Member, discor.User):

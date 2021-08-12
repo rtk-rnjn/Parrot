@@ -10,27 +10,28 @@ from datetime import datetime
 collection = parrot_db['server_config']
 
 
-class mod(Cog, name="moderator"):
+class mod(Cog, name="mod"):
     """A simple moderator's tool for managing the server."""
     def __init__(self, bot: Parrot):
         self.bot = bot
 
     async def log(self, ctx, cmd, performed_on, reason):
         data = collection.find_one({'_id': ctx.guild.id})
+        if not data['actionlog']: return
         if not data: return
         if type(performed_on) is not list:
-            if type(performed_on) is discord.Member:
+            if type(performed_on) in (discord.Member, discor.User):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
-            else:
+            elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
                 target = f"{performed_on.name} (ID: {performed_on.id})"
         elif type(target) is str or type(target) is int:
             target = str(performed_on)
-        else:
+        elif typ(target) is list:
             target = ''
             for temp in performed_on:
                 if type(temp) is discord.Member:
                     target = target + f"{temp.name}#{temp.discriminator}, "
-                else:
+                elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
                     target = target + f"{temp.name} (ID: {temp.id}), "
 
         embed = discord.Embed(
@@ -182,9 +183,7 @@ class mod(Cog, name="moderator"):
 
         await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
                         ctx.channel, member, reason)
-        await self.log(ctx, 'Block',
-                       f'{", ".join([str(member) for member in member])}',
-                       f'{reason}')
+        await self.log(ctx, 'Block', member, f'{reason}')
 
     @commands.command(aliases=['nuke'])
     @commands.check_any(is_mod(),

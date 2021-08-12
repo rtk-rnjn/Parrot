@@ -380,7 +380,7 @@ async def _block(guild, command_name, ctx_author, destination, channel, member,
             else:
                 await channel.set_permissions(
                     member,
-                    send_messages=False,
+                    send_messages=False, view_channel=False, 
                     reason=
                     f"Action requested by {ctx_author.name}({ctx_author.id}) || Reason: {reason}"
                 )

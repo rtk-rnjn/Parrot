@@ -29,6 +29,7 @@ with open("extra/dare.txt") as g:
 from typing import List
 
 
+response = ["All signs point to yes...","Yes!", "My sources say nope.", "You may rely on it.", "Concentrate and ask again...", "Outlook not so good...", "It is decidedly so!", "Better not tell you.", "Very doubtful.", "Yes - Definitely!", "It is certain!", "Most likely.", "Ask again later.", "No!", "Outlook good.", "Don't count on it.", "Why not", "Probably", "Can't say", "Well well..."]
 
 class TicTacToeButton(discord.ui.Button['TicTacToe']):
     def __init__(self, x: int, y: int):
@@ -155,7 +156,6 @@ class fun(Cog, name="fun"):
     """
     8ball Magic, nothing to say much
     """
-    response = ["All signs point to yes...","Yes!", "My sources say nope.", "You may rely on it.", "Concentrate and ask again...", "Outlook not so good...", "It is decidedly so!", "Better not tell you.", "Very doubtful.", "Yes - Definitely!", "It is certain!", "Most likely.", "Ask again later.", "No!", "Outlook good.", "Don't count on it.", "Why not", "Probably", "Can't say", "Well well..."]
     await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
 
   @commands.command()
@@ -172,7 +172,7 @@ class fun(Cog, name="fun"):
   @commands.bot_has_permissions(embed_links=True)
   async def color(self, ctx: Context, colour):
     '''
-    To get colour information using the hexademical codes.
+    To get colour information using the hexadecimal codes.
     '''
     
     link = f"https://www.thecolorapi.com/id?format=json&hex={colour}"
@@ -215,12 +215,12 @@ class fun(Cog, name="fun"):
     embed = discord.Embed(title="Parrot colour prompt", timestamp=datetime.datetime.utcnow(), colour = discord.Color.from_rgb(_red, _green, _blue), description=f"Colour name: `{name}` | Close Hex code: `{close_name_hex}` | Having exact name? `{exact_name}` | Distance: `{distance}`")
     embed.set_thumbnail(url=f"https://some-random-api.ml/canvas/colorviewer?hex={colour}")
     embed.set_footer(text=f"{ctx.author.name}")
-    feilds = [
+    fields = [
       ("RGB value (fraction)", f"Red: `{_red}` (`{red}`)\nGreen: `{_green}` (`{green}`)\nBlue: `{_blue}` (`{blue}`)", True),
       ("HSL value (fraction)", f"Hue: `{_hue}` (`{hue}`)\nSaturation: `{_saturation}` (`{saturation}`)\nLightness: `{_lightness}` (`{lightness}`)", True),
       ("HSV value (fraction)", f"Hue: `{_hue_}` (`{hue_}`)\nSaturation: `{_saturation_}` (`{saturation_}`)\nValue: `{_value_}` (`{value_}`)", True)		
       ]
-    for name, value, inline in feilds:
+    for name, value, inline in fields:
       embed.add_field(name=name, value=value, inline=inline)
     await ctx.reply(embed=embed)
       
@@ -414,8 +414,6 @@ class fun(Cog, name="fun"):
             
             await ctx.reply(file=discord.File(imageData, 'lolice.png')) # replying the file
   
-
-      
       
   @commands.command(name='meme')
   @commands.bot_has_permissions(embed_links=True)
@@ -435,7 +433,7 @@ class fun(Cog, name="fun"):
     downs = res["downs"]
     sub = res["subreddit"]
 
-    embed = discord.Embed(title=f'{title}', discription=f"{sub}", timestamp=datetime.datetime.utcnow())
+    embed = discord.Embed(title=f'{title}', description=f"{sub}", timestamp=datetime.datetime.utcnow())
     embed.set_image(url = res["image"])
     embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}") 
 
@@ -598,7 +596,7 @@ class fun(Cog, name="fun"):
             await ctx.reply(file=discord.File(imageData, 'wasted.png')) # replying the file
   
 
-  @commands.command(aliases=['youtube-comment'])
+  @commands.command(aliases=['youtube-comment', 'youtube_comment'])
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
   async def ytcomment(self, ctx: Context, *, comment:str):
     '''
@@ -756,7 +754,7 @@ class fun(Cog, name="fun"):
         )
 
         await target_channel.send(
-            f"**Incomming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
+            f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
         )
         try:
             temp_message = target_channel.send(

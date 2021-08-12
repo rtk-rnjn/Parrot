@@ -264,7 +264,7 @@ class Economy(Cog, name="economy"):
             return await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
         
         coins_bank = x['bank']
-        coins_walt = x['walt']
+        coins_walt = x['wallet']
         result = random.choice(['heads', 'tails'])
         if result == choose:
             coins_walt = coins_walt + money

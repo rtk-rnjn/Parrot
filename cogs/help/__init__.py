@@ -3,13 +3,14 @@ import discord
 from discord.ext import commands
 
 from utilities.paginator import Paginator
-from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO
+from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO, GIT
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
 
 ignored = ('jishaku', 'rtfm', 'helpcog',)
 get_bot = f"[Add me to your server]({INVITE})"
 support_server = f"[Support Server]({SUPPORT_SERVER})"
+github = f"[Github]({GIT})"
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):
@@ -41,7 +42,7 @@ class HelpCommand(commands.HelpCommand):
             name=f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
-        embed.description = description + f"\n• {get_bot}\n• {support_server}"
+        embed.description = description + f"\n• {get_bot}\n• {support_server}\n• {github}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
         for cog in mapping:
             if cog and cog.get_commands():
@@ -52,7 +53,7 @@ class HelpCommand(commands.HelpCommand):
                         value=f"`{self.context.clean_prefix}help {cog.qualified_name}`",
                         inline=True)
 
-        embed.set_footer(text=f"Page 1/{12} | Built with ❤️ and `discord.py`",
+        embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
         em_list.append(embed)
@@ -67,7 +68,7 @@ class HelpCommand(commands.HelpCommand):
                         f"**Commands**```\n{', '.join([cmd.name for cmd in cmds])}\n```",
                         color=discord.Colour(0x55ddff))
                     em.set_author(name=f"COG: {str(cog).upper()}")
-                    em.set_footer(text=f"Page {i+1}/{12} | Built with ❤️ and `discord.py`",
+                    em.set_footer(text=f"Page {i+1}/{10} | Built with ❤️ and `discord.py`",
                                 icon_url=f"{DEV_LOGO}")
                     em_list.append(em)
                     em.set_thumbnail(url=self.context.me.avatar.url)

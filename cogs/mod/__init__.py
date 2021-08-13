@@ -693,7 +693,7 @@ class mod(Cog, name="mod"):
                                               ctx.channel, m.content)
                 await self.log(ctx, 'Text name chang', target, reason)
 
-        if (type(target) is (discord.VoiceChannel, discord.StageChannel,)):
+        if (type(target) in (discord.VoiceChannel, discord.StageChannel,)):
             vc_embed = discord.Embed(title='Mod Menu',
                                      description=':lock: Lock\n'
                                      ':unlock: Unlock\n'

@@ -1,5 +1,5 @@
 from discord.ext import commands
-from youtube_search import YoutubeSearch
+from utilities.youtube_search import YoutubeSearch
 import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect
 
 from utilities.paginator import Paginator
@@ -358,8 +358,8 @@ class misc(Cog, name="miscellaneous"):
     @commands.bot_has_permissions(embed_links=True)
     async def youtube(self, ctx: Context, *, query: str):
         """
-				Search for videos on YouTube.
-				"""
+		Search for videos on YouTube.
+		"""
         results = YoutubeSearch(query, max_results=5).to_json()
         main = json.loads(results)
 

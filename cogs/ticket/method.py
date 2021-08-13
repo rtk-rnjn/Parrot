@@ -58,7 +58,7 @@ async def _new(ctx, args):
     cat = ctx.guild.get_channel(data['category'])
 
     ticket_channel = await ctx.guild.create_text_channel(
-        "ticket-{}".format(ticket_number), category=cat)
+        "ticket-{}".format(ticket_number), category=cat, reason="Parrot Ticket bot feature | On request from {ctx.author.name}#{ctx.author.discriminator}")
     await ticket_channel.set_permissions(
         ctx.guild.get_role(ctx.guild.id),
         send_messages=False,
@@ -158,7 +158,7 @@ async def _close(ctx, bot):
                 color=discord.Color.blue())
             await ctx.reply(embed=em)
             message = await bot.wait_for('message', check=check, timeout=60)
-            await ctx.channel.delete()
+            await ctx.channel.delete(reason=f"Parrot Ticket bot feature | On request from {ctx.author.name}#{ctx.author.discriminator}")
             index = data["ticket-channel-ids"].index(channel_id)
             ticket_channel_ids = data['ticket-channel-ids']
             del ticket_channel_ids[index]

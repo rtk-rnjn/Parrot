@@ -23,7 +23,6 @@
     "cogs.fun",
     "cogs.memegen",
     "cogs.ticket",
-    "cogs.ticket.events",
     "cogs.mis",
     "cogs.nsfw",
     "cogs.rtfm",

@@ -142,7 +142,7 @@ class TicTacToe(discord.ui.View):
 
 
 class fun(Cog, name="fun"):
-  '''Parrot gives you huge amount of fun commands, so that you won't get bored'''
+  """Parrot gives you huge amount of fun commands, so that you won't get bored"""
 
   def __init__(self, bot: Parrot):
     self.bot = bot
@@ -160,10 +160,10 @@ class fun(Cog, name="fun"):
 
   @commands.command()
   async def choose(self, ctx: Context, *, options:commands.clean_content):
-    '''
+    """
     Confuse something with your decision? Let Parrot choose from your choice.
     NOTE: The `Options` should be seperated by commas `,`.
-    '''
+    """
     options = options.split(',')
     await ctx.reply(f'{ctx.author.mention} I choose {choice(options)}')
   
@@ -171,9 +171,9 @@ class fun(Cog, name="fun"):
   @commands.command(aliases=['colours', 'colour'])
   @commands.bot_has_permissions(embed_links=True)
   async def color(self, ctx: Context, colour):
-    '''
+    """
     To get colour information using the hexadecimal codes.
-    '''
+    """
     
     link = f"https://www.thecolorapi.com/id?format=json&hex={colour}"
     async with aiohttp.ClientSession() as session:
@@ -228,9 +228,9 @@ class fun(Cog, name="fun"):
   @command()
   @bot_has_permissions(embed_links=True)
   async def decode(self, ctx: Context, *, string:str):
-    '''
+    """
     Decode the code to text from Base64 encryption
-    '''
+    """
     base64_string = string
     base64_bytes = base64_string.encode("ascii") 
     
@@ -249,9 +249,9 @@ class fun(Cog, name="fun"):
   @command()
   @bot_has_permissions(embed_links=True)
   async def encode(self, ctx: Context, *, string:str):
-    '''
+    """
     Encode the text to Base64 Encryption and in Binary
-    '''
+    """
     sample_string = string
     sample_string_bytes = sample_string.encode("ascii") 
     res = ''.join(format(ord(i), 'b') for i in string)
@@ -271,11 +271,11 @@ class fun(Cog, name="fun"):
   @command(name="fact")
   @bot_has_permissions(embed_links=True)
   async def animal_fact(self, ctx: Context, *, animal: str):
-    '''
+    """
     Return a random Fact. It's useless command, I know
 
     NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala
-    '''
+    """
     if (animal := animal.lower()) in ("dog", "cat", "panda", "fox", "bird", "koala"):
       fact_url = f"https://some-random-api.ml/facts/{animal}"
       image_url = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
@@ -323,9 +323,9 @@ class fun(Cog, name="fun"):
   @commands.command()
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
   async def glass(self, ctx: Context, *, member:discord.Member=None):
-    '''
+    """
     Provide a glass filter on your profile picture, try it!
-    '''
+    """
     if member is None: member = ctx.author
     async with aiohttp.ClientSession() as wastedSession:
         async with wastedSession.get(f'https://some-random-api.ml/canvas/glass?avatar={member.avatar.url}') as wastedImage: # get users avatar as png with 1024 size
@@ -354,9 +354,9 @@ class fun(Cog, name="fun"):
 
   @commands.command(aliases=['insult'])
   async def roast(self, ctx: Context, *, member: discord.Member = None):
-    '''
+    """
     Insult your enemy, Ugh!
-    '''
+    """
     if member == None: member = ctx.author
     async with aiohttp.ClientSession() as session:
       async with session.get("https://insult.mattbas.org/api/insult") as response:
@@ -418,9 +418,9 @@ class fun(Cog, name="fun"):
   @commands.command(name='meme')
   @commands.bot_has_permissions(embed_links=True)
   async def meme(self, ctx: Context):
-    '''
+    """
     Random meme generator.
-    '''
+    """
     link = "https://memes.blademaker.tv/api?lang=en"
     async with aiohttp.ClientSession() as session:
       async with session.get(link) as response:
@@ -443,9 +443,9 @@ class fun(Cog, name="fun"):
   @commands.command()
   @commands.bot_has_permissions(embed_links=True)
   async def fakepeople(self, ctx: Context):
-    '''
+    """
     Fake Identity generator.
-    '''
+    """
     link = "https://randomuser.me/api/"
     async with aiohttp.ClientSession() as session:
       async with session.get(link) as response:
@@ -495,9 +495,9 @@ class fun(Cog, name="fun"):
   @command(name="slap", aliases=["hit"])
   @commands.bot_has_permissions(manage_messages=True)
   async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
-    '''
+    """
     Slap virtually with is shit command.
-    '''
+    """
     await ctx.message.delete()
     await ctx.reply(f"{ctx.author.display_name} slapped {member.mention} {reason}!")
   
@@ -546,9 +546,9 @@ class fun(Cog, name="fun"):
   @commands.command(aliases=['def', 'urban'])
   @commands.bot_has_permissions(embed_links=True)
   async def urbandictionary(self, ctx: Context, *, text:str):
-    '''
+    """
     LOL. This command is insane.
-    '''
+    """
     t = text
     text = urllib.parse.quote(text)
     link = 'http://api.urbandictionary.com/v0/define?term=' + text 
@@ -599,9 +599,9 @@ class fun(Cog, name="fun"):
   @commands.command(aliases=['youtube-comment', 'youtube_comment'])
   @commands.bot_has_permissions(attach_files=True, embed_links=True)
   async def ytcomment(self, ctx: Context, *, comment:str):
-    '''
+    """
     Makes a comment in YT. Best ways to fool your fool friends. :')
-    '''
+    """
     member = ctx.author
     if len(comment) > 1000: comment = comment[:999:]
     if len(member.name) > 20: name = member.name[:20:]

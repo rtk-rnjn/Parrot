@@ -313,7 +313,7 @@ class mod(Cog, name="mod"):
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
         )
 
-    @commands.has_permissions(kick_members=True)
+    @commands.has_permissions(manage_roles=True)
     @commands.check_any(is_mod(),
                         commands.bot_has_permissions(manage_roles=True))
     @commands.command()
@@ -329,7 +329,7 @@ class mod(Cog, name="mod"):
         await self.log(ctx, 'Mute', member, f'{reason} | For {seconds}s')
 
     @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
     async def unmute(self,
                      ctx: Context,

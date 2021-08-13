@@ -418,7 +418,7 @@ class misc(Cog, name="miscellaneous"):
                              discord.Message]):
         """To get the ID of discord models"""
         await ctx.send(
-            f"{ctx.author.mention} {target} is **{type(target)}** of id **{target.id}** created at **{target.created_at}**"
+            f"{ctx.author.mention} {target.id if type(target) is discord.Message else target} is **{type(target)}** of id **{target.id}** created at **{target.created_at}**"
         )
 
     @commands.command()

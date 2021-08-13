@@ -1,6 +1,7 @@
 # Parrot Discord Bot
 
-A good moderation and Ticket Service bot. Basically made for helping the mods! Configuring the bot is relatively easy
+A good moderation and Ticket Service bot; over 100+ commands! Basically made for helping the mods! This bot is even great for having fun and to engage people in your server, as it has a lot of meme generator commands and also have global chat and dialing system. Configuring the bot is relatively easy too. It can be found (here)[https://github.com/ritik0ranjan/Parrot#bot-setup]
+
 ### Self Host? 
 
 No Help will be given if You are self Hosting. Tho' Bot is very easy to understand there is No Thetha Theroy. Yes, if you need any Python Help. You can ask me out at my Discord Server. 

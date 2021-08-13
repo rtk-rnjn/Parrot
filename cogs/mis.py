@@ -360,7 +360,7 @@ class misc(Cog, name="miscellaneous"):
         """
 		Search for videos on YouTube.
 		"""
-        results = YoutubeSearch(query, max_results=5).to_json()
+        results = await YoutubeSearch(query, max_results=5).to_json()
         main = json.loads(results)
 
         em_list = []
@@ -465,13 +465,13 @@ class misc(Cog, name="miscellaneous"):
             filename = src.co_filename
 
         lines, firstlineno = inspect.getsourcelines(src)
-        if not module.startswith('discord'):
-            # not a built-in command
-            location = os.path.relpath(filename).replace('\\', '/')
-        else:
-            location = module.replace('.', '/') + '.py'
-            source_url = 'https://github.com/Rapptz/discord.py'
-            branch = 'master'
+        # if not module.startswith('discord'):
+        #     # not a built-in command
+        #     location = os.path.relpath(filename).replace('\\', '/')
+        # else:
+        #     location = module.replace('.', '/') + '.py'
+        #     source_url = 'https://github.com/Rapptz/discord.py'
+        #     branch = 'master'
 
         final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.send(final_url)

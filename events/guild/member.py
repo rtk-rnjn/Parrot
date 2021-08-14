@@ -43,7 +43,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if not data:
             return
 
-        muted = member.guild.get_role(data['mute_role']) or discord.utils.get(guild.roles, name="Muted")
+        muted = after.guild.get_role(data['mute_role']) or discord.utils.get(guild.roles, name="Muted")
         if not muted:
             return
         

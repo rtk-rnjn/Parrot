@@ -51,7 +51,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
         
         if (muted in before.roles) and (muted not in after.roles):
-            await after.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass.")
+            await after.add_roles(muted, reason=f"Action auto performed | Reason: {ater.name}#{after.discriminator} Attempt to mute bypass.")
 
     @Cog.listener()
     async def on_voice_state_update(self, member, before, after):

@@ -43,7 +43,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 f"Chill out | Reached the ratelimit", delete_after=5.0)
 
         guild = await collection.find_one({'_id': message.guild.id})
-        data = await collection.find({})
+        # data = await collection.find({})
 
         role = message.guild.get_role(guild['ignore-role'])
         if role:
@@ -121,7 +121,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "Bot requires **Manage Messages** permission(s) to function properly."
             )
 
-        for webhook in data:
+        async for webhook in collection.find({}):
             hook = webhook['webhook']
             try:
 

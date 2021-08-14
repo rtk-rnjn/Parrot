@@ -39,7 +39,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_update(self, before, after):
-        data = collection.find_one({'_id': member.guild.id})
+        data = await collection.find_one({'_id': after.guild.id})
         if not data:
             return
 

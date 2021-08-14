@@ -143,7 +143,7 @@ async def _ban(guild, command_name, ctx_author, destination, member, days,
                reason):
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
-            pass
+            await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
         else:
             await guild.ban(
                 member,
@@ -165,7 +165,7 @@ async def _mass_ban(guild, command_name, ctx_author, destination, members,
     for member in members:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                pass
+                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
             else:
                 await guild.ban(
                     member,
@@ -187,7 +187,7 @@ async def _softban(guild, command_name, ctx_author, destination, member,
     for member in member:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                pass
+                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
             else:
                 await member.ban(
                     reason=
@@ -266,7 +266,7 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
     if seconds is None: seconds = 0
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
-            pass
+            await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
         else:
             await member.add_roles(
                 muted,
@@ -280,11 +280,11 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
         await destination.send(
             f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
         )
-
+    member_id = member.id
     if seconds > 0:
         await asyncio.sleep(seconds)
         try:
-            await member.remove_roles(
+            await guild.get_member(member_id).remove_roles(
                 muted,
                 reason=
                 f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: Mute Duration Expired"
@@ -330,7 +330,7 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
 async def _kick(guild, command_name, ctx_author, destination, member, reason):
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
-            pass
+            await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
         else:
             await member.kick(
                 reason=
@@ -351,7 +351,7 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members,
     for member in members:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                pass
+                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
             else:
                 await member.kick(
                     reason=
@@ -376,7 +376,7 @@ async def _block(guild, command_name, ctx_author, destination, channel, member,
     for member in member:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                pass  # cant mod the calling author or the bot itself
+                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
             else:
                 await channel.set_permissions(
                     member,

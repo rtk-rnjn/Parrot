@@ -35,7 +35,14 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_update(self, before, after):
-        pass
+        data = collection.find_one({'_id': member.guild.id})
+        if not data:return
+
+        muted = member.guild.get_role(data['mute_role']) or discord.utils.get(guild.roles, name="Muted")
+        if not muted: return
+        
+        if (muted in before.roles) and (muted not in after.roles):
+            await after.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass.")
 
     @Cog.listener()
     async def on_voice_state_update(self, member, before, after):

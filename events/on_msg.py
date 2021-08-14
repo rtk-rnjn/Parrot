@@ -28,7 +28,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if not message.guild or message.author.bot: return
         await msg_increment(message.guild.id, message.author.id)
 
-        channel = collection.find_one({
+        channel = await collection.find_one({
             '_id': message.guild.id,
             'channel_id': message.channel.id
         })
@@ -42,8 +42,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return await message.channel.send(
                 f"Chill out | Reached the ratelimit", delete_after=5.0)
 
-        guild = collection.find_one({'_id': message.guild.id})
-        data = collection.find({})
+        guild = await collection.find_one({'_id': message.guild.id})
+        data = await collection.find({})
 
         role = message.guild.get_role(guild['ignore-role'])
         if role:

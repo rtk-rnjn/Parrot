@@ -31,11 +31,11 @@ def is_me():
 
 def has_verified_role_ticket():
     async def predicate(ctx):
-        data = c.find_one({'_id': ctx.guild.id})
+        data = await c.find_one({'_id': ctx.guild.id})
         if not data:
-            await c.insert_one({'_id': ctx.guild.id})
+            await await c.insert_one({'_id': ctx.guild.id})
             return False
-        data = c.find_one({'_id': ctx.guild.id})
+        data = await c.find_one({'_id': ctx.guild.id})
         roles = data['verified-roles']
         if not roles: return False
         for role in roles:
@@ -48,12 +48,14 @@ def has_verified_role_ticket():
 
 def is_mod():
     async def predicate(ctx):
-        if not collection.find_one({'_id': ctx.guild.id}):
+        data = await collection.find_one({'_id': ctx.guild.id})
+        if not data:
             await collection.insert_one({'_id': ctx.guild.id})
             return False
-        data = collection.find_one({'_id': ctx.guild.id})
+        data = await collection.find_one({'_id': ctx.guild.id})
         role = ctx.guild.get_role(data['mod_role'])
-        if not role: return False
+        if not role: 
+            return False
         if role in ctx.author.roles:
             return True
         else:

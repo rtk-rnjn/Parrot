@@ -3,7 +3,7 @@ from utilities.database import parrot_db, ticket_update
 import discord
 from datetime import datetime
 
-collection=parrot_db['ticket']
+collection = parrot_db['ticket']
 
 class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
@@ -26,19 +26,20 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_reaction_add(self, payload):
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
-        data = collection.find_one({'_id': guild_id})
-        if not data: return
+        data = await collection.find_one({'_id': guild_id})
+        if not data: 
+            return
         user_id = payload.user_id
         member = guild.get_member(user_id)
-        if member.bot: return
+        if member.bot: 
+            return
         channel_id = payload.channel_id
         channel = self.bot.get_channel(channel_id)
 
         message_id = payload.message_id
         emoji = payload.emoji.name
 
-        if message_id == data['message_id'] and channel_id == data[
-                'channel_id']:
+        if message_id == data['message_id'] and channel_id == data['channel_id']:
             message = await channel.fetch_message(message_id)
         else:
             return

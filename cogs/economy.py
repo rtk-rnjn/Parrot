@@ -19,9 +19,9 @@ class Economy(Cog, name="economy"):
         """
         To start the Parrot Economy.
         """
-        x = collection.find_one({'_id': ctx.author.id})
+        x = await collection.find_one({'_id': ctx.author.id})
         if not x: 
-            collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
+            await collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
             await ctx.reply(f"{ctx.author.mention} successfully started your Parort Bank. You have **0** coins in the bank and **400** coins in the wallet")
         else:
             await ctx.reply(f"{ctx.author.mention} you already started your Parort Bank.")
@@ -36,7 +36,7 @@ class Economy(Cog, name="economy"):
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
 
-        x = collection.find_one({'_id': ctx.author.id})
+        x = await collection.find_one({'_id': ctx.author.id})
         if x:
             coins_walt = x['wallet']
             coins_bank = x['bank']
@@ -62,8 +62,8 @@ class Economy(Cog, name="economy"):
 		Want more money? Try stealing others.
 		"""
 
-        x = collection.find({'_id': ctx.author.id})
-        y = collection.find({'_id': member.id})
+        x = await collection.find({'_id': ctx.author.id})
+        y = await collection.find({'_id': member.id})
 
         if x and y:
             coins_walt_x = x['wallet']
@@ -102,7 +102,7 @@ class Economy(Cog, name="economy"):
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
 
-        x = collection.find({'_id': ctx.author.id})
+        x = await collection.find({'_id': ctx.author.id})
 
         if x:
             coins_walt = x['wallet']
@@ -142,8 +142,8 @@ class Economy(Cog, name="economy"):
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
 
-        x = collection.find({'_id': ctx.author.id})
-        y = collection.find({'_id': member.id})
+        x = await collection.find({'_id': ctx.author.id})
+        y = await collection.find({'_id': member.id})
 
         if x and y:
             coins_walt_x = x['wallet'] - money
@@ -179,7 +179,7 @@ class Economy(Cog, name="economy"):
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
 
-        x = collection.find_one({'_id': ctx.author.id})
+        x = await collection.find_one({'_id': ctx.author.id})
         if x:
             coins_walt = x['wallet']
             coins_bank = x['bank']
@@ -217,7 +217,7 @@ class Economy(Cog, name="economy"):
             'slaps, and give', 'transfer'
         ]
 
-        x = collection.find_one({'_id': ctx.author.id})
+        x = await collection.find_one({'_id': ctx.author.id})
         if x:
             coins_walt = x['wallet'] + inc
             coins_bank = x['bank']
@@ -238,7 +238,7 @@ class Economy(Cog, name="economy"):
         target = ctx.author or member
         if target.bot: return
 
-        x = collection.find_one({'_id': target.id})
+        x = await collection.find_one({'_id': target.id})
 
         if not x:
             if target is ctx.author:
@@ -259,7 +259,7 @@ class Economy(Cog, name="economy"):
         """
         choose = 'tails' if choose in ['tails', 'tail', 't'] else 'heads'
         
-        x = collection.find_one({'_id': ctx.author.id})
+        x = await collection.find_one({'_id': ctx.author.id})
         if not x: 
             return await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
         

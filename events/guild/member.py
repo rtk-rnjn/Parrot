@@ -13,22 +13,26 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_join(self, member):
-        data = collection.find_one({'_id': member.guild.id})
-        if not data:return
+        data = await collection.find_one({'_id': member.guild.id})
+        if not data:
+            return
 
         muted = member.guild.get_role(data['mute_role']) or discord.utils.get(guild.roles, name="Muted")
-        if not muted: return 
+        if not muted:
+            return 
         
         if self.mute[member.id]:
             await member.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
 
     @Cog.listener()
     async def on_member_remove(self, member):
-        data = collection.find_one({'_id': member.guild.id})
-        if not data: return
+        data = await collection.find_one({'_id': member.guild.id})
+        if not data:
+            return
 
         muted = member.guild.get_role(data['mute_role']) or discord.utils.get(guild.roles, name="Muted")
-        if not muted: return
+        if not muted:
+            return
         
         if muted in member.roles: 
             self.mute[member.id] = True
@@ -36,10 +40,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_member_update(self, before, after):
         data = collection.find_one({'_id': member.guild.id})
-        if not data:return
+        if not data:
+            return
 
         muted = member.guild.get_role(data['mute_role']) or discord.utils.get(guild.roles, name="Muted")
-        if not muted: return
+        if not muted:
+            return
         
         if (muted in before.roles) and (muted not in after.roles):
             await after.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass.")

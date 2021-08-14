@@ -70,7 +70,7 @@ class Parrot(commands.AutoShardedBot):
     async def get_prefix(self, message: discord.Message) -> str:
         if not message.guild: return ''
         else:
-            data = collection.find_one({"_id": message.guild.id})
+            data = await collection.find_one({"_id": message.guild.id})
             if not data:
                 await collection.insert_one({
                     '_id': message.guild.id,

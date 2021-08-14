@@ -82,7 +82,7 @@ async def ticket_update(guild_id: int, post):
 
 async def guild_update(guild_id: int, post: dict):
     collection = parrot_db['server_config']
-    data await collection.find_one({'_id': guild_id})
+    data = await collection.find_one({'_id': guild_id})
     if not data:
         await collection.insert_one({
             '_id': guild_id,

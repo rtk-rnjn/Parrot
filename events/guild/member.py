@@ -21,9 +21,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if not muted:
             return 
         
-        if self.mute[member.id]:
-            await member.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
-
+        try:
+            if self.mute[member.id]:
+                await member.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
+        except KeyError:
+            pass
+        
     @Cog.listener()
     async def on_member_remove(self, member):
         data = await collection.find_one({'_id': member.guild.id})

@@ -21,11 +21,10 @@ class BotConfig(Cog, name="botconfig"):
                     invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config(self, ctx: Context):
-        """
-				To config the bot, mod role, prefix, or you can disable the commands and cogs.
-				"""
-        if not csc.find_one({'_id': ctx.guild.id}):
-            csc.insert_one({
+        """To config the bot, mod role, prefix, or you can disable the commands and cogs."""
+        data = await csc.find_one({'_id': ctx.guild.id})
+        if not data:
+            await csc.insert_one({
                 '_id': ctx.guild.id,
                 'prefix': '$',
                 'mod_role': None,
@@ -33,7 +32,7 @@ class BotConfig(Cog, name="botconfig"):
                 'mute_role': None
             })
         if not ctx.invoked_subcommand:
-            data = csc.find_one({'_id': ctx.guild.id})
+            data = await csc.find_one({'_id': ctx.guild.id})
             if data:
                 role = ctx.guild.get_role(
                     data['mod_role']).name if data['mod_role'] else None
@@ -168,8 +167,9 @@ class BotConfig(Cog, name="botconfig"):
         """
     To set the telephone phone line, in the server to call and receive the call from other server. 
     """
-        if not ct.find_one({'_id': ctx.guild.id}):
-            ct.insert_one({
+        data = ct.find_one({'_id': ctx.guild.id})
+        if not data:
+            await ct.insert_one({
                 '_id': ctx.guild.id,
                 "channel": None,
                 "pingrole": None,
@@ -178,8 +178,8 @@ class BotConfig(Cog, name="botconfig"):
                 "blocked": []
             })
         if not ctx.invoked_subcommand:
-            if ct.find_one({'_id': ctx.guild.id}):
-                data = ct.find_one({'_id': ctx.guild.id})
+            data = await ct.find_one({'_id': ctx.guild.id})
+            if data:
                 role = ctx.guild.get_role(
                     data['pingrole']).name if data['pingrole'] else None
                 channel = ctx.guild.get_channel(
@@ -261,7 +261,7 @@ class BotConfig(Cog, name="botconfig"):
             return await ctx.send(
                 f"{ctx.author.mention} can't block your own server")
 
-        ct.update_one({'_id': ctx.guild.id},
+        await ct.update_one({'_id': ctx.guild.id},
                       {'$addToSet': {
                           'blocked': server.id
                       }})
@@ -277,7 +277,7 @@ class BotConfig(Cog, name="botconfig"):
             return await ctx.send(
                 f"{ctx.author.mention} ok google, let the server admin get some rest"
             )
-        ct.update_one({'_id': ctx.guild.id}, {'$pull': {'blocked': server.id}})
+        await ct.update_one({'_id': ctx.guild.id}, {'$pull': {'blocked': server.id}})
         await ctx.send(f'{ctx.author.mention} Success! unblocked: {server.id}')
 
     @commands.group(aliases=['ticketsetup'], invoke_without_command=True)
@@ -285,11 +285,10 @@ class BotConfig(Cog, name="botconfig"):
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     async def ticketconfig(self, ctx: Context):
-        """
-				To config the Ticket Parrot Bot in the server
-				"""
-        if not ctt.find_one({'_id': ctx.guild.id}):
-            ctt.insert_one({
+        """To config the Ticket Parrot Bot in the server"""
+        data = await ctt.find_one({'_id': ctx.guild.id})
+        if not data:
+            await ctt.insert_one({
                 "_id": ctx.guild.id,
                 "ticket-counter": 0,
                 "valid-roles": [],
@@ -302,7 +301,7 @@ class BotConfig(Cog, name="botconfig"):
                 "channel_id": None
             })
         if not ctx.invoked_subcommand:
-            data = ctt.find_one({'_id': ctx.guild.id})
+            data = await ctt.find_one({'_id': ctx.guild.id})
 
             ticket_counter = data['ticket-counter']
             valid_roles = ', '.join(

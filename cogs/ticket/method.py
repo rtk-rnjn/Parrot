@@ -6,7 +6,8 @@ collection = parrot_db['ticket']
 
 
 async def check_if_server(guild_id):
-    if not collection.find_one({'_id': guild_id}):
+    data = await collection.find_one({'_id': guild_id})
+    if not data:
         post = {
             "_id": guild_id,
             "ticket-counter": 0,
@@ -20,7 +21,7 @@ async def check_if_server(guild_id):
             "channel_id": None
         }
 
-        collection.insert_one(post)
+        await collection.insert_one(post)
 
 
 async def chat_exporter(channel, limit=None):
@@ -53,7 +54,7 @@ async def _new(ctx, args):
     else:
         message_content = "".join(args)
 
-    data = collection.find_one({'_id': ctx.guild.id})
+    data = await collection.find_one({'_id': ctx.guild.id})
     ticket_number = data['ticket-counter'] + 1
     cat = ctx.guild.get_channel(data['category'])
 
@@ -142,7 +143,7 @@ async def _new(ctx, args):
 async def _close(ctx, bot):
     await check_if_server(ctx.guild.id)
 
-    data = collection.find_one({'_id': ctx.guild.id})
+    data = await collection.find_one({'_id': ctx.guild.id})
     if ctx.channel.id in data["ticket-channel-ids"]:
         channel_id = ctx.channel.id
 
@@ -182,7 +183,7 @@ async def _close(ctx, bot):
 async def _save(ctx, bot):
     await check_if_server(ctx.guild.id)
 
-    data = collection.find_one({'_id': ctx.guild.id})
+    data = await collection.find_one({'_id': ctx.guild.id})
     if ctx.channel.id in data["ticket-channel-ids"]:
 
         def check(message):
@@ -220,7 +221,7 @@ async def _save(ctx, bot):
 async def _addaccess(ctx, role):
     await check_if_server(ctx.guild.id)
 
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               'valid-roles': role.id
                           }})
@@ -237,7 +238,7 @@ async def _addaccess(ctx, role):
 
 async def _delaccess(ctx, role):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               'valid-roles': role.id
                           }})
@@ -254,7 +255,7 @@ async def _delaccess(ctx, role):
 
 async def _addadimrole(ctx, role):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               "verified-roles": role.id
                           }})
@@ -271,7 +272,7 @@ async def _addadimrole(ctx, role):
 
 async def _addpingedrole(ctx, role):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$addToSet': {
                               'pinged-roles': role.id
                           }})
@@ -288,7 +289,7 @@ async def _addpingedrole(ctx, role):
 
 async def _deladminrole(ctx, role):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$pull': {
                               'verified-roles': role.id
                           }})
@@ -305,7 +306,7 @@ async def _deladminrole(ctx, role):
 
 async def _delpingedrole(ctx, role):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$pull': {
                               'pinged-roles': role.id
                           }})
@@ -322,7 +323,7 @@ async def _delpingedrole(ctx, role):
 
 async def _setcategory(ctx, channel):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id},
+    await collection.update_one({'_id': ctx.guild.id},
                           {'$set': {
                               'category': channel.id
                           }})
@@ -339,7 +340,7 @@ async def _setcategory(ctx, channel):
 
 async def _setlog(ctx, channel):
     await check_if_server(ctx.guild.id)
-    collection.update_one({'_id': ctx.guild.id}, {'$set': {'log': channel.id}})
+    await collection.update_one({'_id': ctx.guild.id}, {'$set': {'log': channel.id}})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=

@@ -231,7 +231,8 @@ async def _unban(guild, command_name, ctx_author, destination, member, reason):
 
 async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                 reason):
-    if not collection.find_one({'_id': guild.id}):
+    data = await collection.find_one({'_id': guild.id})
+    if not data:
         post = {
             '_id': guild.id,
             'prefix': '$',
@@ -239,9 +240,9 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
             'action_log': None,
             'mute_role': None,
         }
-        collection.insert_one(post)
+        await collection.insert_one(post)
 
-    data = collection.find_one({'_id': guild.id})
+    data = await collection.find_one({'_id': guild.id})
 
     muted = guild.get_role(data['mute_role']) or discord.utils.get(
         guild.roles, name="Muted")
@@ -295,7 +296,8 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
 
 async def _unmute(guild, command_name, ctx_author, destination, member,
                   reason):
-    if not collection.find_one({'_id': guild.id}):
+    data = await collection.find_one({'_id': guild.id})
+    if not data:
         post = {
             '_id': guild.id,
             'prefix': '$',
@@ -303,8 +305,8 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
             'action_log': None,
             'mute_role': None,
         }
-        collection.insert_one(post)
-    data = collection.find_one({'_id': guild.id})
+        await collection.insert_one(post)
+    data = await collection.find_one({'_id': guild.id})
 
     muted = guild.get_role(data['mute_role']) or discord.utils.get(
         guild.roles, name="Muted")

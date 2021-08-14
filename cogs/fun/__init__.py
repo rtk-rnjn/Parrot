@@ -722,12 +722,12 @@ class fun(Cog, name="fun"):
         if server is ctx.guild: return await ctx.send(f"Can't make a self call")
         number = server.id
         channel = ctx.channel
-        self_guild = collection.find_one({'_id': ctx.guild.id})
+        self_guild = await collection.find_one({'_id': ctx.guild.id})
         if not self_guild:
             return await ctx.send(
                 f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this."
             )
-        target_guild = collection.find_one({'_id': number})
+        target_guild = await collection.find_one({'_id': number})
         if not target_guild:
             return await ctx.send(
                 f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server!"

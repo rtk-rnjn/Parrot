@@ -315,7 +315,7 @@ class mod(Cog, name="mod"):
 
     @commands.has_permissions(manage_roles=True)
     @commands.check_any(is_mod(),
-                        commands.bot_has_permissions(manage_roles=True))
+                        commands.has_permissions(manage_roles=True))
     @commands.command()
     async def mute(self,
                    ctx: Context,

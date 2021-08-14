@@ -474,13 +474,14 @@ class mod(Cog, name="mod"):
                        f'{reason}')
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_nicknames=True))
-    @bot_has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
     async def nick(self, ctx: Context, member: discord.Member, *, name: commands.clean_content):
         """
         To change the nickname of the specified member
         """
         await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
         await self.log(ctx, 'nickname chang', member, 'Action Requested by {ctx.author.name} ({ctx.author.id})')
+    
     @commands.command()
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_permissions=True,

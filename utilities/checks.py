@@ -33,7 +33,7 @@ def has_verified_role_ticket():
     async def predicate(ctx):
         data = await c.find_one({'_id': ctx.guild.id})
         if not data:
-            await await c.insert_one({'_id': ctx.guild.id})
+            await c.insert_one({'_id': ctx.guild.id})
             return False
         data = await c.find_one({'_id': ctx.guild.id})
         roles = data['verified-roles']

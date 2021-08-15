@@ -516,14 +516,14 @@ class fun(Cog, name="fun"):
                 return await ctx.send('Missing a message to translate')
 
         try: 
-            ret = await loop.run_in_executor(None, googletrans.Translator(message, dest=to))
+            ret = await loop.run_in_executor(None, googletrans.Translator.translate(message, dest=to))
         except Exception as e:
             return await ctx.send(f'An error occurred: {e.__class__.__name__}: {e}')
 
         embed = discord.Embed(title='Translated', timestamp=datetime.datetime.utcnow())
         src = googletrans.LANGUAGES.get(ret.src, '(auto-detected)').title()
         dest = googletrans.LANGUAGES.get(ret.dest, 'Unknown').title()
-        embed.add_field(name=f'From {src}', value=ret.origin, inline=False)
+        embed.add_field(name=f'From {src}', value=str(message), inline=False)
         embed.add_field(name=f'To {dest}', value=ret.text, inline=False)
         await ctx.send(embed=embed)
         

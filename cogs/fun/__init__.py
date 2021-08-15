@@ -144,7 +144,6 @@ class fun(Cog, name="fun"):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.trans = googletrans.Translator()
   
     @commands.command()
     async def ttt(self, ctx: Context):
@@ -516,8 +515,8 @@ class fun(Cog, name="fun"):
             else:
                 return await ctx.send('Missing a message to translate')
 
-        try:
-            ret = await loop.run_in_executor(None, self.trans.translate, message, dest=to)
+        try: 
+            ret = await loop.run_in_executor(None, googletrans.Translator(message, dest=to))
         except Exception as e:
             return await ctx.send(f'An error occurred: {e.__class__.__name__}: {e}')
 

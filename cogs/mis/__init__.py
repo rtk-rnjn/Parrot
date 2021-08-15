@@ -300,14 +300,14 @@ class misc(Cog, name="miscellaneous"):
         embed = discord.Embed(title=f"Weather Menu of: {loc}",
                               description=f"Weather: {weather}",
                               timestamp=datetime.datetime.utcnow())
-        embed.add_field(name="Latitude", value=f"{lat}°", inline=True)
-        embed.add_field(name="Longitude", value=f"{lon}°", inline=True)
+        embed.add_field(name="Latitude", value=f"{lat} Deg", inline=True)
+        embed.add_field(name="Longitude", value=f"{lon} Deg", inline=True)
         embed.add_field(name="Humidity", value=f"{humidity} g/m³", inline=True)
         embed.add_field(name="Maximum Temperature",
-                        value=f"{round(max_temp)} C°",
+                        value=f"{round(max_temp)} C Deg",
                         inline=True)
         embed.add_field(name="Minimum Temperature",
-                        value=f"{round(min_temp)} C°",
+                        value=f"{round(min_temp)} C Deg",
                         inline=True)
         embed.add_field(name="Pressure", value=f"{press} Pascal", inline=True)
 

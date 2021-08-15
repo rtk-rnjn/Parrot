@@ -25,4 +25,4 @@ opuslib==3.0.1
 pymongo==3.12.0
 dnspython
 motor==2.5.0
-googletrans
+git@github.com:ssut/py-googletrans

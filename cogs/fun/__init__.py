@@ -516,7 +516,7 @@ class fun(Cog, name="fun"):
                 return await ctx.send('Missing a message to translate')
 
         try: 
-            ret = await loop.run_in_executor(None, googletrans.Translator.translate(message, dest=to))
+            ret = await loop.run_in_executor(None, googletrans.Translator().translate(text=message, dest=to))
         except Exception as e:
             return await ctx.send(f'An error occurred: {e.__class__.__name__}: {e}')
 

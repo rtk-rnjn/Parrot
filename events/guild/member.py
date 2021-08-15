@@ -9,7 +9,7 @@ collection = parrot_db['server_config']
 class Member(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.mute = {}
+        self.mute = {} # {GUILD_ID: {*MEMBER_IDS}}
 
     @Cog.listener()
     async def on_member_join(self, member):
@@ -21,12 +21,13 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if not muted:
             return 
         
-        try:
-            if self.mute[member.id]:
-                await member.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
-        except KeyError:
-            pass
-        
+        if member.guild.id in self.muted:
+            if member.id in self.muted[member.guild.id]:
+                self.muted[member.guild.id].remove(member.id)
+                await member.add_role(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
+        else: 
+            return
+
     @Cog.listener()
     async def on_member_remove(self, member):
         data = await collection.find_one({'_id': member.guild.id})
@@ -36,23 +37,16 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         muted = member.guild.get_role(data['mute_role']) or discord.utils.get(member.guild.roles, name="Muted")
         if not muted:
             return
-        
-        if muted in member.roles: 
-            self.mute[member.id] = True
+
+        if member.guild.id in self.muted:
+            self.muted[member.guild.id].add(member.id)
+        elif member.guild.id not in self.muted:
+            self.muted[member.guild.id] = {member.id}
 
     @Cog.listener()
     async def on_member_update(self, before, after):
-        data = await collection.find_one({'_id': after.guild.id})
-        if not data:
-            return
-
-        muted = after.guild.get_role(data['mute_role']) or discord.utils.get(after.guild.roles, name="Muted")
-        if not muted:
-            return
-        
-        if (muted in before.roles) and (muted not in after.roles):
-            await after.add_roles(muted, reason=f"Action auto performed | Reason: {after.name}#{after.discriminator} Attempt to mute bypass.")
-
+        pass
+    
     @Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         pass

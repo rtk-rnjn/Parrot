@@ -8,13 +8,11 @@ from discord import Embed
 
 from utilities.database import parrot_db, telephone_update
 collection = parrot_db['telephone']
-
+import googletrans
 from aiohttp import request
 
 import akinator
 from akinator.async_aki import Akinator
-
-aki = Akinator()
 
 from utilities.paginator import Paginator
 from core import Parrot, Context, Cog
@@ -149,8 +147,8 @@ class fun(Cog, name="fun"):
         self.trans = googletrans.Translator()
   
     @commands.command()
-      async def ttt(self, ctx: Context):
-          await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
+    async def ttt(self, ctx: Context):
+        await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
   
     @command(name='8ball')
     async def _8ball(self, ctx: Context, *, question:commands.clean_content):
@@ -226,8 +224,8 @@ class fun(Cog, name="fun"):
         await ctx.send(embed=embed)
       
   
-    @command()
-    @bot_has_permissions(embed_links=True)
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def decode(self, ctx: Context, *, string:str):
         """
         Decode the code to text from Base64 encryption
@@ -296,14 +294,13 @@ class fun(Cog, name="fun"):
                     embed = Embed(title=f"{animal.title()} fact", description=data["fact"], colour=ctx.author.colour)
                     if image_link is not None:
                         embed.set_image(url=image_link)
-                    
-                    return await ctx.reply(embed=embed)
+                        return await ctx.reply(embed=embed)
 
                     else:
-                        await ctx.reply(f"{ctx.author.mention} API returned a {response.status} status.")
+                        return await ctx.reply(f"{ctx.author.mention} API returned a {response.status} status.")
 
                 else:
-                  await ctx.reply(f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`")
+                    return await ctx.reply(f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`")
 
 
     @commands.command()
@@ -595,7 +592,7 @@ class fun(Cog, name="fun"):
           embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}", timestamp=datetime.datetime.utcnow())
           embed.add_field(name="Example", value=f"{example}")
           embed.set_author(name=f"Author: {author}")
-          embed.set_footer(text=f"Page {i+1}/{len(res['list'])} | 👍 {thumbs_up} | 👎 {thumbs_down}")
+          embed.set_footer(text=f"Page {i+1}/{len(res['list'])} | UP(s) {thumbs_up}, DOWNS(s) {thumbs_down}")
           em_list.append(embed)
 
       paginator = Paginator(pages=em_list, timeout=60.0)
@@ -672,6 +669,7 @@ class fun(Cog, name="fun"):
     @commands.command()
     async def aki(self, ctx):
         """Answer the questions and let the bot guess your character!"""
+        aki = Akinator()
         q = await aki.start_game()
         question_num = 1
         while aki.progression <= 80:

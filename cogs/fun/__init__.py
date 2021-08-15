@@ -506,7 +506,7 @@ class fun(Cog, name="fun"):
         """
         Translates a message to English using Google translate
         """
-        to = to or 'en'
+        to = to.lower() or 'en'
         loop = self.bot.loop
         if message is None:
             ref = ctx.message.reference

@@ -16,7 +16,7 @@ class mod(Cog, name="mod"):
         self.bot = bot
 
     async def log(self, ctx, cmd, performed_on, reason):
-        data = collection.find_one({'_id': ctx.guild.id})
+        data = await collection.find_one({'_id': ctx.guild.id})
         if not data['action_log']: return
         if not data: return
         if type(performed_on) is not list:

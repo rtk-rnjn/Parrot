@@ -2,11 +2,19 @@ from utilities.database import parrot_db
 import discord, asyncio
 
 collection = parrot_db['server_config']
-
+async def is_role_mod(guild, role) -> bool:
+    data = await collection.find_one({'_id': guild.id})
+    if not data: return False
+    r = guild.get_role(data['mod_role']) 
+    if not r: return False
+    if role.id == r.id: return True
 
 # ROLES
 async def _add_roles_bot(guild, command_name, destination, operator, role,
                          reason):
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     for member in guild.members:
         try:
             if not member.bot: pass
@@ -23,6 +31,9 @@ async def _add_roles_bot(guild, command_name, destination, operator, role,
 
 async def _add_roles_humans(guild, command_name, destination, operator, role,
                             reason):
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     for member in guild.members:
         try:
             if member.bot: pass
@@ -39,12 +50,9 @@ async def _add_roles_humans(guild, command_name, destination, operator, role,
 
 async def _add_roles(guild, command_name, ctx_author, destination, member,
                      role, reason):
-
-    if guild.me.top_role.position < member.top_role.position:
-        return await destination.send(
-            f"{ctx_author.mention} can't give the role to {member.name} as it's role is above the bot"
-        )
-
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await member.add_roles(
             role,
@@ -62,11 +70,9 @@ async def _add_roles(guild, command_name, ctx_author, destination, member,
 
 async def _remove_roles(guild, command_name, ctx_author, destination, member,
                         role, reason):
-
-    if guild.me.top_role.position < member.top_role.position:
-        return await destination.send(
-            f"{ctx_author.mention} can't give the role to {member.name} as it's role is above the bot"
-        )
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await member.remove_roles(
             role,
@@ -84,10 +90,9 @@ async def _remove_roles(guild, command_name, ctx_author, destination, member,
 
 async def _role_hoist(guild, command_name, ctx_author, destination, role,
                       _bool, reason):
-    if guild.me.top_role.position < role.position:
-        return await destination.send(
-            f"{ctx_author.mention} can't edit {role.name} as it's role is above the bot"
-        )
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await role.edit(
             hoist=_bool,
@@ -102,10 +107,9 @@ async def _role_hoist(guild, command_name, ctx_author, destination, role,
 
 async def _change_role_name(guild, command_name, ctx_author, destination, role,
                             text, reason):
-    if guild.me.top_role.position < role.position:
-        return await destination.send(
-            f"{ctx_author.mention} can't edit {role.name} as it's role is above the bot"
-        )
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await role.edit(
             name=text,
@@ -120,10 +124,9 @@ async def _change_role_name(guild, command_name, ctx_author, destination, role,
 
 async def _change_role_color(guild, command_name, ctx_author, destination,
                              role, int_, reason):
-    if guild.me.top_role.position < role.position:
-        return await destination.send(
-            f"{ctx_author.mention} can't edit {role.name} as it's role is above the bot"
-        )
+    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    is_mod = await is_role_mod(guild, role)
+    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await role.edit(
             color=discord.Color.value(int(int_)),

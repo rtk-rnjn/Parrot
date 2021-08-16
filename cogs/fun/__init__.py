@@ -8,7 +8,7 @@ from discord import Embed
 
 from utilities.database import parrot_db, telephone_update
 collection = parrot_db['telephone']
-import googletrans
+
 from aiohttp import request
 
 import akinator

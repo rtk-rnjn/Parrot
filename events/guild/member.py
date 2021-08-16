@@ -9,7 +9,7 @@ collection = parrot_db['server_config']
 class Member(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.mute = {} # {GUILD_ID: {*MEMBER_IDS}}
+        self.muted = {} # {GUILD_ID: {*MEMBER_IDS}}
 
     @Cog.listener()
     async def on_member_join(self, member):

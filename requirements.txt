@@ -20,3 +20,4 @@ opuslib
 pymongo
 dnspython
 motor
+aiofile

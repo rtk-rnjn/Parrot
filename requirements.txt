@@ -21,3 +21,4 @@ pymongo
 dnspython
 motor
 aiofile
+constants

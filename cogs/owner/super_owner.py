@@ -17,10 +17,10 @@ class Owner(Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:
                 data = await r.read()
-        name = f"temp/temp{self.count}.py"
+        name = f"temp/temp{self.count}"
         
         try:
-            async with async_open(f'{name}', 'wb') as f:
+            async with async_open(f'{name}.py', 'wb') as f:
                 await f.write(data)
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
@@ -36,7 +36,7 @@ class Owner(Cog):
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(f"[ERROR] Could not load extension {name}: ```py\n{tbe}\n```")
+            await ctx.send(f"[ERROR] Could not load extension {name}.py: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] Extension loaded `{name}.py`")
             

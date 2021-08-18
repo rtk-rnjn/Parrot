@@ -13,7 +13,6 @@ class meme(Cog, name="Meme Generator"):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-
     async def thefact(self, ctx: Context, *, text: str = None):
         """
 				Meme Generator/Image Generator: The Fact

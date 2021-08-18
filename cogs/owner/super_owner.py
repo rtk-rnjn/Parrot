@@ -52,5 +52,9 @@ class Owner(Cog):
         else:
             await ctx.send("[SUCCESS] File `{name}` created")
             
-def setup(bot):
-    bot.add_cog(Owner(bot))
+    @commands.command()
+    @commands.is_owner()
+    async def leave_guild(self, ctx: Context, *, guild: discord.Guild):
+        """To leave the guild"""
+        await ctx.send(f"Leaving Guild in a second!")
+        await guild.leave()

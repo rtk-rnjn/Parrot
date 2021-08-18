@@ -29,7 +29,7 @@ with open("extra/lang.txt") as f:
     languages = f.read()
 
 
-class Coding(Cog, name="rtfm"):
+class rtfm(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -501,4 +501,4 @@ class Coding(Cog, name="rtfm"):
 
 
 def setup(bot):
-    bot.add_cog(Coding(bot))
+    bot.add_cog(rtfm(bot))

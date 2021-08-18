@@ -33,7 +33,6 @@ def has_verified_role_ticket():
     async def predicate(ctx):
         data = await c.find_one({'_id': ctx.guild.id})
         if not data:
-            await c.insert_one({'_id': ctx.guild.id})
             return False
         data = await c.find_one({'_id': ctx.guild.id})
         roles = data['verified-roles']
@@ -50,7 +49,6 @@ def is_mod():
     async def predicate(ctx):
         data = await collection.find_one({'_id': ctx.guild.id})
         if not data:
-            await collection.insert_one({'_id': ctx.guild.id})
             return False
         data = await collection.find_one({'_id': ctx.guild.id})
         role = ctx.guild.get_role(data['mod_role'])

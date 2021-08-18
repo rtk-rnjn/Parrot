@@ -29,17 +29,18 @@ class Owner(Cog):
         else:
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
         
-        self.count += 1
-
         try:
             self.bot.load_extension(name)
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(f"[ERROR] Could not load extension {name}.py: ```py\n{tbe}\n```")
+            await ctx.send(f"[ERROR] Could not load extension {name.replace('/', '.')}.py: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] Extension loaded `{name}.py`")
-            
+        
+        self.count += 1
+
+
     @commands.command()
     @commands.is_owner()
     async def makefile(self, ctx: Context, name: str, *, text: str):

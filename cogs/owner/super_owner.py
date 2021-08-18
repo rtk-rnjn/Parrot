@@ -30,7 +30,7 @@ class Owner(Cog):
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
         
         try:
-            self.bot.load_extension(f'{name_cog}.py')
+            self.bot.load_extension(f'{name_cog}')
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""

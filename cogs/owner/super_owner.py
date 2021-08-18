@@ -2,7 +2,8 @@ from core import Parrot, Context, Cog
 from aiofile import async_open
 import traceback
 from discord.ext import commands
-import discord
+import discord, aiohttp
+
 class Owner(Cog):
     """You can not use these commands"""
     def __init__(self, bot: Parrot):
@@ -26,7 +27,7 @@ class Owner(Cog):
             tbe = "".join(tb) + ""
             await ctx.send(f"[ERROR] Could not create file `{name}.py`: ```py\n{tbe}\n```")
         else:
-            await ctx.send("[SUCCESS] file `{name}.py` created")
+            await ctx.send(f"[SUCCESS] file `{name}.py` created")
         
         self.count += 1
 
@@ -37,7 +38,7 @@ class Owner(Cog):
             tbe = "".join(tb) + ""
             await ctx.send(f"[ERROR] Could not load extension {name}: ```py\n{tbe}\n```")
         else:
-            await ctx.send("[SUCCESS] Extension loaded `{name}.py`")
+            await ctx.send(f"[SUCCESS] Extension loaded `{name}.py`")
             
     @commands.command()
     @commands.is_owner()
@@ -51,7 +52,7 @@ class Owner(Cog):
             tbe = "".join(tb) + ""
             await ctx.send(f"[ERROR] Could not create file `{name}`: ```py\n{tbe}\n```")
         else:
-            await ctx.send("[SUCCESS] File `{name}` created")
+            await ctx.send(f"[SUCCESS] File `{name}` created")
             
     @commands.command()
     @commands.is_owner()

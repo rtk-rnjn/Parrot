@@ -188,6 +188,7 @@ class Utility(Cog):
     @rtfm.command(name="stable")
     async def rtfm_stable(self, ctx, *, obj: str = None):
         """Gives you a documentation link for a discord.py entity (stable branch)"""
+        await self.do_rtfm(ctx, "stable", obj)
 
     @command()
     async def charinfo(self, ctx, *, characters: str):

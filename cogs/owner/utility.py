@@ -14,7 +14,7 @@ import discord
 
 from . import fuzzy
 from discord.ext.commands import command, Context, Cog, group
-
+import aiohttp
 
 # https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/api.py
 
@@ -115,12 +115,13 @@ class Utility(Cog):
         cache = {}
         for key, page in page_types.items():
             sub = cache[key] = {}
-            async with self.bot.session.get(page + "/objects.inv") as resp:
-                if resp.status != 200:
-                    raise RuntimeError("Cannot build rtfm lookup table, try again later.")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(page + "/objects.inv") as resp:
+                    if resp.status != 200:
+                        raise RuntimeError("Cannot build rtfm lookup table, try again later.")
 
-                stream = SphinxObjectFileReader(await resp.read())
-                cache[key] = self.parse_object_inv(stream, page)
+                    stream = SphinxObjectFileReader(await resp.read())
+                    cache[key] = self.parse_object_inv(stream, page)
 
         self._rtfm_cache = cache
 

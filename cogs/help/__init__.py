@@ -7,10 +7,11 @@ from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO, GIT
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
 
-ignored = ('jishaku', 'rtfm', 'helpcog',)
+ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
 get_bot = f"[Add me to your server]({INVITE})"
 support_server = f"[Support Server]({SUPPORT_SERVER})"
 github = f"[Github]({GIT})"
+
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):

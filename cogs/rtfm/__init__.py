@@ -393,32 +393,6 @@ class rtfm(Cog):
                             description=description)
         await ctx.send(embed=emb)
 
-    @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
-    async def rtfm(self, ctx: Context):
-        url = 'https://github.com/FrenchMasterSword/RTFMbot'
-        embed = discord.Embed(
-            title="RTFM Bot",
-            description=
-            f"RTFM is a discord bot created to help you as a programmer directly from Discord. It provides some helpful tools:\n    - Languages documentations and references\n    - Code execution\n\nNote: This is a part of Program fetched from RTFM Bot. All credits goes to rightful developer. Consider giving them a star on their Github repo. {url}",
-            timestamp=datetime.utcnow())
-        embed.set_footer(
-            text="RTFM Bot",
-            icon_url=
-            "https://github.com/FrenchMasterSword/RTFMbot/blob/master/icon.png?raw=true"
-        )
-        embed.set_thumbnail(
-            url=
-            "https://github.com/FrenchMasterSword/RTFMbot/blob/master/icon.png?raw=true"
-        )
-        embed.add_field(name="run", value="[p]run <lang> <code>", inline=False)
-        embed.add_field(name="doc",
-                        value="[p]doc <lang> <query>",
-                        inline=False)
-        embed.add_field(name="ref",
-                        value="[p]ref <lang> <query>",
-                        inline=False)
-        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

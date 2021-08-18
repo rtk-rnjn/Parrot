@@ -3,8 +3,6 @@ from __future__ import annotations
 import typing
 import unicodedata
 
-from constants import COLOR
-
 if typing.TYPE_CHECKING:
     from bot import Parrot
 
@@ -14,7 +12,7 @@ import os
 import zlib
 import discord
 
-from .utils import fuzzy
+from . import fuzzy
 from discord.ext.commands import command, Context, Cog, group
 
 
@@ -161,7 +159,7 @@ class Utility(Cog):
 
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
-        e = discord.Embed(colour=COLOR)
+        e = discord.Embed()
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 

@@ -2,7 +2,7 @@ from core import Parrot, Context, Cog
 from aiofile import async_open
 import traceback
 from discord.ext import commands
-
+import discord
 class Owner(Cog):
     """You can not use these commands"""
     def __init__(self, bot: Parrot):

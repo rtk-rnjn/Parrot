@@ -18,7 +18,7 @@ class Owner(Cog):
             async with session.get(link) as r:
                 data = await r.read()
         name = f"temp/temp{self.count}"
-        
+        name_cog = f"temp.temp{self.count}"
         try:
             async with async_open(f'{name}.py', 'wb') as f:
                 await f.write(data)
@@ -30,13 +30,13 @@ class Owner(Cog):
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
         
         try:
-            self.bot.load_extension(name)
+            self.bot.load_extension(f'{name_cog}.py')
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(f"[ERROR] Could not load extension {name.replace('/', '.')}.py: ```py\n{tbe}\n```")
+            await ctx.send(f"[ERROR] Could not load extension {name_cog}.py: ```py\n{tbe}\n```")
         else:
-            await ctx.send(f"[SUCCESS] Extension loaded `{name}.py`")
+            await ctx.send(f"[SUCCESS] Extension loaded `{name_cog}.py`")
         
         self.count += 1
 

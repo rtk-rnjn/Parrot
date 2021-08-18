@@ -1,6 +1,7 @@
 from core import Parrot, Context, Cog
 from aiofile import async_open
 import traceback
+from discord.ext import commands
 
 class Owner(Cog):
     """You can not use these commands"""

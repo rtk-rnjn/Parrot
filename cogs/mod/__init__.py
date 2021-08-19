@@ -19,14 +19,12 @@ class mod(Cog, name="mod"):
         data = await collection.find_one({'_id': ctx.guild.id})
         if not data['action_log']: return
         if not data: return
-        target = None
+        target = str(performed_on)
         if type(performed_on) is not list:
             if type(performed_on) in (discord.Member, discord.User):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
-            elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
+            elif type(target) in (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
                 target = f"{performed_on.name} (ID: {performed_on.id})"
-        elif type(target) is str or type(target) is int:
-            target = str(performed_on)
         elif typ(target) is list:
             target = ''
             for temp in performed_on:

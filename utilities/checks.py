@@ -72,7 +72,7 @@ def is_cmd_enabled():
         if ctx.channel.id in channels:
             raise ex.CommandDisabledChannel()
         elif ctx.channel.category:
-            if ctx.channel.category.if in categories:
+            if ctx.channel.category.id in categories:
                 raise ex.CommandDisabledCategory()
         elif server is True:
             raise ex.CommandDisabledServer()

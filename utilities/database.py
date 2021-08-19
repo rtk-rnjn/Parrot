@@ -11,6 +11,7 @@ economy_db = cluster['economy']
 msg_db = cluster['msg_db']
 tags = cluster['tags']
 
+enable_disable = cluster['enable_disable']
 
 async def cmd_increment(cmd: str):
     collection = parrot_db['cmd_count']
@@ -94,6 +95,42 @@ async def guild_update(guild_id: int, post: dict):
 
     await collection.update_one({'_id': guild_id}, {"$set": post})
 
+
+async def disable_cmd(guild_id: int, cmd: str, type_: str, channel_id: list=None, category_id: list=None, server: bool = False):
+    collection = enable_disable[f"{guild_id}"]
+    data = await collection.find_one({'_id': cmd})
+    if not data:
+        await collection.insert_one({
+            '_id': cmd,
+            'channel': [],
+            'category': [],
+            'server': False
+        })
+    # $disable cmd "cmd" [channel]/[category] if provided else server basis
+    if type_ == "channel":
+        await collection.update_one({'_id': cmd}, {"$addToSet": {'channel': channel_id}})
+    if type_ == "category":
+        await collection.update_one({'_id': cmd}, {"$addToSet": {'category': category_id}})
+    if type_ == "server":
+        await collection.update_one({'_id': cmd}, {"$set": {'server': server}})
+
+async def enable_cmd(guild_id: int, cmd: str, type_: str, channel_id: list, category_id: list, server: bool = False):
+    collection = enable_disable[f"{guild_id}"]
+    data = await collection.find_one({'_id': cmd})
+    if not data:
+        await collection.insert_one({
+            '_id': cmd,
+            'channel': [],
+            'category': [],
+            'server': False
+        })
+        return
+    if type_ == "channel":
+        await collection.update_one({'_id': cmd}, {"$pull": {'channel': channel_id}})
+    if type_ == "category":
+        await collection.update_one({'_id': cmd}, {"$pull": {'category': category_id}})
+    if type_ == "server":
+        await collection.update_one({'_id': cmd}, {"$set": {'server': server}})
 
 async def guild_join(guild_id: int):
     collection = parrot_db['server_config']

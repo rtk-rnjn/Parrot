@@ -3,11 +3,10 @@ from discord.ext import commands
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
 
-from utilities.database import parrot_db
+from utilities.database import parrot_db, enable_disable
 
 collection = parrot_db['server_config']
 c = parrot_db['ticket']
-
 
 def is_guild_owner():
     async def predicate(ctx):
@@ -60,3 +59,23 @@ def is_mod():
             raise ex.NoModRole()
 
     return commands.check(predicate)
+
+def is_cmd_enabled():
+    async def predicate(ctx):
+        collection = enable_disable[f'{ctx.guild.id}']
+        data = collection.find_one({'_id': ctx.command.qualified_name})
+        if not data:
+            return True
+        channels = data['channel']
+        categories = data['category']
+        server = data['server']
+        if ctx.channel.id in channels:
+            raise ex.CommandDisabledChannel()
+        elif ctx.channel.category:
+            if ctx.channel.category.if in categories:
+                raise ex.CommandDisabledCategory()
+        elif server is True:
+            raise ex.CommandDisabledServer()
+        else:
+            return True
+        

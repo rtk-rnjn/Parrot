@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 import unicodedata
-
+from datetime import datetime
 if typing.TYPE_CHECKING:
     from bot import Parrot
 
@@ -160,11 +160,14 @@ class Utility(Cog):
 
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
-        e = discord.Embed()
+        e = discord.Embed(title="Read the Fine Manual", timestamp=datetime.utcnow())
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
+        e.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg')
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
+
+        e.set_footer(text=f"Request by {ctx.author.name}#{ctx.author.discriminator}")
         await ctx.send(embed=e)
 
     @group(aliases=["rtfd"], invoke_without_command=True)

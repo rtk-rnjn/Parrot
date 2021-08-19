@@ -164,10 +164,10 @@ class Utility(Cog):
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
-        e.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg')
+        e.set_thumbnail(url='http://assets.stickpng.com/images/5848152fcef1014c0b5e4967.png')
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
-        e.set_footer(text=f"Request by {ctx.author.name}#{ctx.author.discriminator}")
+        e.set_footer(text=f"Request by {ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar.url)
         await ctx.send(embed=e)
 
     @group(aliases=["rtfd"], invoke_without_command=True)

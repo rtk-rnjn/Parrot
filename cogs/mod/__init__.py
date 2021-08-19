@@ -19,6 +19,7 @@ class mod(Cog, name="mod"):
         data = await collection.find_one({'_id': ctx.guild.id})
         if not data['action_log']: return
         if not data: return
+        target = None
         if type(performed_on) is not list:
             if type(performed_on) in (discord.Member, discord.User):
                 target = f"{performed_on.name}#{performed_on.discriminator}"

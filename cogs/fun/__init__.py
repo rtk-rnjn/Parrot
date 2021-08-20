@@ -24,7 +24,7 @@ with open("extra/truth.txt") as f:
 with open("extra/dare.txt") as g:
   _dare = g.read()
 
-with opend("extra/lang.json") as lang:
+with open("extra/lang.json") as lang:
     lg = json.load(lang)
 
 from typing import List, Optional
@@ -505,7 +505,7 @@ class fun(Cog, name="fun"):
     
     @commands.command(aliases=['trans'])
     @commands.bot_has_permissions(embed_links=True)
-    async def translate(self, ctx: Context, to: Optional[str]='en', *, message: commands.clean_content=None):
+    async def translate(self, ctx: Context, to: str, *, message: commands.clean_content=None):
         """
         Translates a message to English (default) using Google translate
         """
@@ -516,7 +516,7 @@ class fun(Cog, name="fun"):
             else:
                 return await ctx.reply(f"{ctx.author.mention} you must provide the message reference or message for translation")
         
-        link = "https://translate-api.ml/translate?text={}&lang={}".format(message, to if to else 'en')
+        link = "https://translate-api.ml/translate?text={}&lang={}".format(message.lower(), to.lower() if to else 'en')
 
         async with asyncio.ClientSession() as session:
             async with session.get(link) as response:

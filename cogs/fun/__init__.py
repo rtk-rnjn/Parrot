@@ -518,7 +518,7 @@ class fun(Cog, name="fun"):
         
         link = "https://translate-api.ml/translate?text={}&lang={}".format(message.lower(), to.lower() if to else 'en')
 
-        async with asyncio.ClientSession() as session:
+        async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
                 if response.status == 200:
                     data = await response.json()

@@ -1,5 +1,5 @@
 
-import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time
+import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time, json
 from discord.ext import commands
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
 from random import choice
@@ -24,7 +24,10 @@ with open("extra/truth.txt") as f:
 with open("extra/dare.txt") as g:
   _dare = g.read()
 
-from typing import List
+with opend("extra/lang.json") as lang:
+    lg = json.load(lang)
+
+from typing import List, Optional
 
 
 response = ["All signs point to yes...","Yes!", "My sources say nope.", "You may rely on it.", "Concentrate and ask again...", "Outlook not so good...", "It is decidedly so!", "Better not tell you.", "Very doubtful.", "Yes - Definitely!", "It is certain!", "Most likely.", "Ask again later.", "No!", "Outlook good.", "Don't count on it.", "Why not", "Probably", "Can't say", "Well well..."]
@@ -500,30 +503,48 @@ class fun(Cog, name="fun"):
         await ctx.reply(f"{ctx.author.display_name} slapped {member.mention} {reason}!")
   
     
-    # @commands.command(aliases=['trans'])
-    # @commands.bot_has_permissions(embed_links=True)
-    # async def translate(self, ctx: Context, to: commands.clean_content, *, message: commands.clean_content=None):
-    #     """
-    #     Translates a message to English using Google translate
-    #     """
+    @commands.command(aliases=['trans'])
+    @commands.bot_has_permissions(embed_links=True)
+    async def translate(self, ctx: Context, to: commands.clean_content=Optional[str]='en', *, message: commands.clean_content=None):
+        """
+        Translates a message to English (default) using Google translate
+        """
+        if message is None:
+            ref = ctx.message.reference
+            if ref and isinstance(ref.resolved, discord.Message):
+                message = ref.resolved.content
+            else:
+                return await ctx.reply(f"{ctx.author.mention} you must provide the message reference or message for translation")
         
-    #     from_lang = urllib.parse.quote(from_lang)
-    #     to_lang = urllib.parse.quote(to_lang)
-    #     text = urllib.parse.quote(text)
-        # link = 'https://api.mymemory.translated.net/get?q=' + text + '&langpair=' + from_lang + '|' + to_lang
-        # async with aiohttp.ClientSession() as session:
-        #     async with session.get(link) as response:
-        #         if response.status == 200:
-        #             res = await response.json()
-        #         else:
-        #             return
+        link = "https://translate-api.ml/translate?text={}&lang={}".format(message, to if to else 'en')
 
-        # trans_text = res['responseData']['translatedText']
-
-        # embed = discord.Embed(title="Translated!!", description=f"Translation: {trans_text}")
-        # embed.set_footer(text=f"{ctx.author.name}")
-        # await ctx.reply(embed=embed)
-    
+        async with asyncio.ClientSession() as session:
+            async with session.get(link) as response:
+                if response.status == 200:
+                    data = await response.json()
+                else:
+                    return await ctx.reply(f"{ctx.author.mention} Something not right!")
+                
+        success = data['status']
+        if success == 200:
+            text = data['given']['text']
+            lang = data['given']['lang']
+            translated_text = data['translated']['text']
+            translated_lang = data['translated']['lang']
+            translated_pronunciation = data['translated']['pronunciation']
+        else: 
+            return await ctx.reply(f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{lang}**")
+        
+        embed = discord.Embed(
+            title="Translated", 
+            description=f"```\n{translated_text}\n```",
+            color=ctx.author.color, 
+            timestamp=datetime.datetime.utcnow())
+        embed.set_footer(text=f"{ctx.author.name}")
+        embed.add_field(name="Info", value=f"Tranlated from **{lg[lang]}** to **{lg[translated_lang]}**", inline=False)
+        embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png")
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=['triggered'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -539,8 +560,6 @@ class fun(Cog, name="fun"):
                 await wastedSession.close() # closing the session and;
                 
                 await ctx.reply(file=discord.File(imageData, 'triggered.gif')) # replying the file
-
-
 
     @commands.command(aliases=['def', 'urban'])
     @commands.bot_has_permissions(embed_links=True)

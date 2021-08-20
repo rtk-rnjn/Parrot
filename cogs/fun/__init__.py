@@ -541,7 +541,7 @@ class fun(Cog, name="fun"):
             color=ctx.author.color, 
             timestamp=datetime.datetime.utcnow())
         embed.set_footer(text=f"{ctx.author.name}")
-        embed.add_field(name="Info", value=f"Tranlated from **{lg[lang]}** to **{lg[translated_lang]}**", inline=False)
+        embed.add_field(name="Info", value=f"Tranlated from **{lg[lang]['name']}** to **{lg[translated_lang]['name']}**", inline=False)
         embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png")
         await ctx.send(embed=embed)

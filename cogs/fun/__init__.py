@@ -505,7 +505,7 @@ class fun(Cog, name="fun"):
     
     @commands.command(aliases=['trans'])
     @commands.bot_has_permissions(embed_links=True)
-    async def translate(self, ctx: Context, to: commands.clean_content=Optional[str]='en', *, message: commands.clean_content=None):
+    async def translate(self, ctx: Context, to: Optional[str]='en', *, message: commands.clean_content=None):
         """
         Translates a message to English (default) using Google translate
         """

@@ -167,7 +167,7 @@ class BotConfig(Cog, name="botconfig"):
         """
     To set the telephone phone line, in the server to call and receive the call from other server. 
     """
-        data = ct.find_one({'_id': ctx.guild.id})
+        data = await ct.find_one({'_id': ctx.guild.id})
         if not data:
             await ct.insert_one({
                 '_id': ctx.guild.id,

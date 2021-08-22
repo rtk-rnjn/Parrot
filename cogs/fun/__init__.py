@@ -852,7 +852,7 @@ class fun(Cog, name="fun"):
                         f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
                     )
 
-                if talk_message.channel == channel:
+                elif talk_message.channel == channel:
                     await target_channel.send(
                         f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
                     )

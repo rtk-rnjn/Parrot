@@ -820,10 +820,8 @@ class fun(Cog, name="fun"):
             while True:
 
                 def check(m):
-                    if (m.channel == target_channel) or (m.channel == channel):
+                    if (m.channel == target_channel) or (m.channel == channel) and (not m.author.bot): 
                         return True
-                    if m.author.bot: return False
-                    return False
 
                 try:
                     talk_message = await self.bot.wait_for('message',

@@ -50,7 +50,7 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def server(self) -> typing.Optional[discord.Guild]:
-        return self.get_guild() # Main server
+        return self.get_guild(741614680652644382) # Main server
     
     @async_property
     async def db_latency(self) -> int:

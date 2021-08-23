@@ -436,11 +436,11 @@ class misc(Cog):
         )
 
     @commands.command()
-    async def source(self, ctx, *, command: str = None):
+    async def source(self, ctx, branch: str, *, command: str = None):
         """Displays my full source code or for a specific command.
         """
         source_url = 'https://github.com/ritik0ranjan/Parrot'
-        branch = 'master'
+        branch = branch or 'main'
         if command is None:
             return await ctx.send(source_url)
 
@@ -459,7 +459,6 @@ class misc(Cog):
         lines, firstlineno = inspect.getsourcelines(src)
     
         location = module.replace('.', '/') + '.py'
-        branch = 'master'
 
         final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.send(final_url)

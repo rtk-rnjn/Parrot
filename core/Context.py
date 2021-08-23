@@ -12,7 +12,7 @@ class Context(commands.Context):
         return "{0.__class__.__name__}".format(self)
     
     async def send(self, content: any = None, **kwargs):
-        if not (_perms := self.channel.permissions_for(self.me)).send_messages:
+        if not self.channel.permissions_for(self.me).send_messages:
             try:
                 await self.author.send(
                     f"Bot can't send any messages in {self.channel.mention} channel. Please provide sufficient permissions."

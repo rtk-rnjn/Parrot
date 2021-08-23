@@ -55,7 +55,7 @@ class Parrot(commands.AutoShardedBot):
     @async_property
     async def db_latency(self) -> int:
         ini = time()
-        data = await collection.find({})
+        data = await collection.find_one({'_id': 741614680652644382})
         fin = time()
         return fin - ini
     

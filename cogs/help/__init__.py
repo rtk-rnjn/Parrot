@@ -45,14 +45,14 @@ class HelpCommand(commands.HelpCommand):
 
         embed.description = description + f"\n• {get_bot}\n• {support_server}\n• {github}\n• {owner_url}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
-        CATEGORY = ''
+        CATEGORY = '\n'
         for cog in mapping:
             if cog and cog.get_commands():
                 if cog.qualified_name.lower() in ignored: 
                     pass
                 else:
                     CATEGORY = CATEGORY + str(cog.qualified_name).upper()
-        embed.add_field(name="Categories", value=f"```\n{CATEGORY}\n```")
+        embed.add_field(name="Categories", value=f"```{CATEGORY}\n```")
         embed.add_field(name="Latest News", value=f"- Help commands Updated\n- Some Minor Bug Fixes")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")

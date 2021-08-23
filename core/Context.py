@@ -1,4 +1,6 @@
+from __future__ import annotations
 from discord.ext import commands
+import discord, typing
 
 __all__ = ("Context", )
 
@@ -11,7 +13,7 @@ class Context(commands.Context):
     def __str__(self):
         return "{0.__class__.__name__}".format(self)
     
-    async def send(self, content: any = None, **kwargs):
+    async def send(self, content: typing.Optional[str] = None, **kwargs) -> discord.Message:
         if not self.channel.permissions_for(self.me).send_messages:
             try:
                 await self.author.send(
@@ -21,5 +23,4 @@ class Context(commands.Context):
                 pass
             return
         await self.trigger_typing()
-        await super().send(content, **kwargs)
-        return
+        return await super().send(content, **kwargs)

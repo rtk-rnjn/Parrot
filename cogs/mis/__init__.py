@@ -436,7 +436,7 @@ class misc(Cog):
         )
 
     @commands.command()
-    async def source(self, ctx, branch: str, *, command: str = None):
+    async def source(self, ctx: Context, branch: str, *, command: str = None):
         """Displays my full source code or for a specific command.
         """
         source_url = 'https://github.com/ritik0ranjan/Parrot'

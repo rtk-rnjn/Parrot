@@ -11,7 +11,7 @@ invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\
 google_key = os.environ['GOOGLE_KEY']
 cx = os.environ['GOOGLE_CX']
 
-class misc(Cog, name="miscellaneous"):
+class misc(Cog):
     """Those commands which can't be listed"""
     def __init__(self, bot: Parrot):
         self.bot = bot

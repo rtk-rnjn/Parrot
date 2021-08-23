@@ -6,7 +6,7 @@ from core import Parrot, Context, Cog
 from cogs.ticket import method as mt
 
 
-class ticket(Cog, name="ticket"):
+class ticket(Cog):
     """A simple ticket service, trust me it's better than YAG. LOL!"""
     def __init__(self, bot: Parrot):
         self.bot = bot

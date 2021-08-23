@@ -142,7 +142,7 @@ class TicTacToe(discord.ui.View):
         return None
 
 
-class fun(Cog, name="fun"):
+class fun(Cog):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
 
     def __init__(self, bot: Parrot):

@@ -114,6 +114,7 @@ async def disable_cmd(guild_id: int, cmd: str, type_: str, channel_id: list=None
     if type_ == "server":
         await collection.update_one({'_id': cmd}, {"$set": {'server': server}})
 
+
 async def enable_cmd(guild_id: int, cmd: str, type_: str, channel_id: list, category_id: list, server: bool = False):
     collection = enable_disable[f"{guild_id}"]
     data = await collection.find_one({'_id': cmd})
@@ -131,6 +132,7 @@ async def enable_cmd(guild_id: int, cmd: str, type_: str, channel_id: list, cate
         await collection.update_one({'_id': cmd}, {"$pull": {'category': category_id}})
     if type_ == "server":
         await collection.update_one({'_id': cmd}, {"$set": {'server': server}})
+
 
 async def guild_join(guild_id: int):
     collection = parrot_db['server_config']

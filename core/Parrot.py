@@ -1,10 +1,13 @@
-import jishaku
-import os
 
+from __future__ import annotations
+import jishaku
+import os, typing
+from async_property import async_property
 from discord.ext import commands
 import discord, traceback
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
-from utilities.database import parrot_db
+from utilities.database import parrot_db, cluster
+from time import time
 
 collection = parrot_db['server_config']
 
@@ -16,7 +19,6 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
     def __init__(self, *args, **kwargs):
-        self._BotBase__cogs = commands.core._CaseInsensitiveDict() # to make cog case insensitive
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
@@ -34,6 +36,9 @@ class Parrot(commands.AutoShardedBot):
                 discord.Intents.all()),
             shard_count=3,
             **kwargs)  
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict() # to make cog case insensitive
+        self.color = 0x87CEEB
+        
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -43,6 +48,20 @@ class Parrot(commands.AutoShardedBot):
                 tbe = "".join(tb) + ""
                 print(f"[WARNING] Could not load extension {ext}: {tbe}")
 
+    @property
+    def server(self) -> typing.Optional[discord.Guild]:
+        return self.get_guild() # Main server
+    
+    @async_property
+    async def db_latency(self) -> int:
+        ini = time()
+        data = collection.find({})
+        fin = time()
+        return fin - ini
+    
+    async def collection(self, collection_name: str):
+        
+        
     def run(self):
         super().run(TOKEN, reconnect=True)
 
@@ -54,18 +73,21 @@ class Parrot(commands.AutoShardedBot):
         print(f"[Parrot] Connected to {len(self.users)} Users")
         print(f"[Parrot] Spawned {len(self.shards)} Shards")
 
-    async def on_connect(self):
+    async def on_connect(self) -> None:
         print(
             f"[Parrot] Logged in as {self.user.name}#{self.user.discriminator}"
         )
+        return
 
-    async def on_disconnect(self):
+    async def on_disconnect(self) -> None:
         print(
             f"[PARROT] {self.user.name}#{self.user.discriminator} disconnect from discord"
         )
+        return
 
-    async def on_resumed(self):
+    async def on_resumed(self) -> None:
         print(f"[PARROT] resumed {self.user.name}#{self.user.discriminator}")
+        return
 
     async def get_prefix(self, message: discord.Message) -> str:
         if not message.guild: return ''

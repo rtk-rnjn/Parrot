@@ -16,6 +16,25 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     """This category is of no use for you, ignore it."""
     def __init__(self, bot: Parrot):
         self.bot = bot
+    
+    async def paste(self, text):
+        """Return an online bin of given text"""
+
+        async with aiohttp.ClientSession() as aioclient:
+            post = await aioclient.post('https://hastebin.com/documents',
+                                        data=text)
+            if post.status == 200:
+                response = await post.text()
+                return f'https://hastebin.com/{response[8:-2]}'
+
+            # Rollback bin
+            post = await aioclient.post("https://bin.readthedocs.fr/new",
+                                        data={
+                                            'code': text,
+                                            'lang': 'txt'
+                                        })
+            if post.status == 200:
+                return post.url
 
     @Cog.listener()
     async def on_command(self, ctx: Context):
@@ -31,8 +50,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         # get the original exception
         error = getattr(error, 'original', error)
 
-        ignore = (commands.CommandNotFound, discord.Forbidden,
-                  discord.errors.NotFound)
+        ignore = (commands.CommandNotFound, discord.errors.NotFound)
 
         if isinstance(error, ignore): return
 
@@ -174,9 +192,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 tb = traceback.format_exception(type(error), error, error.__traceback__)
                 tbe = "".join(tb) + ""
                 if len(tbe) < 1800:
-                  await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))
+                    await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))
                 else: 
-                    await ctx.send(f"{self.paste(tbe)}")
+                    await ctx.author.send(f"{self.paste(tbe)}")
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

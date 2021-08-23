@@ -6,7 +6,7 @@ from core import Parrot, Context, Cog
 from utilities.config import MEME_PASS as meme_pass
 
 
-class meme(Cog, name="Meme Generator"):
+class memegen(Cog):
     """Be a memer, make memes using Parrot."""
     def __init__(self, bot: Parrot):
         self.bot = bot

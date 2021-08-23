@@ -11,7 +11,7 @@ from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
 
-class BotConfig(Cog, name="botconfig"):
+class botConfig(Cog):
     """To config the bot. In the server"""
     def __init__(self, bot: Parrot):
         self.bot = bot

@@ -10,7 +10,7 @@ from platform import python_version
 from core import Parrot, Context, Cog
 from utilities.config import VERSION
 
-class ult(Cog, name="utilities", description="Basic commands for the bots."):
+class utilities(Cog):
   '''Basic commands for the bots.'''
   def __init__(self, bot: Parrot):
     self.bot = bot

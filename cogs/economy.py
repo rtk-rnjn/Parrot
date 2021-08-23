@@ -8,7 +8,7 @@ from utilities.database import ge_update, economy_db
 collection = economy_db['global_economy']
 
 
-class Economy(Cog, name="economy"):
+class economy(Cog):
     """Parrot Economy to get some Parrot Coins as to make calls"""
     def __init__(self, bot: Parrot):
         self.bot = bot

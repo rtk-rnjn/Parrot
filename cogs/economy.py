@@ -277,4 +277,4 @@ class economy(Cog):
             await ctx.reply(f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You lose {money}")
             
 def setup(bot):
-    bot.add_cog(Economy(bot))
+    bot.add_cog(economy(bot))

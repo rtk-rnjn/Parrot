@@ -10,7 +10,7 @@ from core import Cog, Parrot, Context
 NASA_KEY = os.environ['NASA_KEY']
 
 
-class NASA(Cog, name='nasa'):
+class nasa(Cog):
     '''Incridible NASA API Integration'''
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -359,4 +359,4 @@ class NASA(Cog, name='nasa'):
 
 
 def setup(bot):
-    bot.add_cog(NASA(bot))
+    bot.add_cog(nasa(bot))

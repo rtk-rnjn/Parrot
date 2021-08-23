@@ -185,4 +185,4 @@ class utilities(Cog):
     await ctx.reply(embed=em)
 
 def setup(bot):
-  bot.add_cog(ult(bot))
+  bot.add_cog(utilities(bot))

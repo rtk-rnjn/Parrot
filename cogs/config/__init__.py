@@ -429,4 +429,4 @@ class botConfig(Cog):
 
 
 def setup(bot):
-    bot.add_cog(BotConfig(bot))
+    bot.add_cog(botConfig(bot))

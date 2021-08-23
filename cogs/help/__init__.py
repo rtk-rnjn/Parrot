@@ -12,6 +12,8 @@ get_bot = f"[Add me to your server]({INVITE})"
 support_server = f"[Support Server]({SUPPORT_SERVER})"
 github = f"[Github]({GIT})"
 owner_url = "[Made by Ritik Ranjan](https://discord.com/users/741614468546560092)"
+CHANGE = "- Help commands Updated\n- Some Minor Bug Fixes\n - Fixed Typos\n - All Cogs are now Case Insensitive"
+
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):
@@ -53,7 +55,7 @@ class HelpCommand(commands.HelpCommand):
                 else:
                     CATEGORY = CATEGORY + str(cog.qualified_name).upper() + '\n'
         embed.add_field(name="Categories", value=f"```{CATEGORY}```")
-        embed.add_field(name="Latest News", value=f"- Help commands Updated\n- Some Minor Bug Fixes")
+        embed.add_field(name="Latest News", value=f"{CHANGE}")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 

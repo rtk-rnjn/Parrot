@@ -776,4 +776,4 @@ class memegen(Cog):
 
 
 def setup(bot):
-    bot.add_cog(meme(bot))
+    bot.add_cog(memegen(bot))

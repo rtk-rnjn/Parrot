@@ -11,7 +11,7 @@ ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
 get_bot = f"[Add me to your server]({INVITE})"
 support_server = f"[Support Server]({SUPPORT_SERVER})"
 github = f"[Github]({GIT})"
-
+owner_url = "[Made by Ritik Ranjan](https://discord.com/users/741614468546560092)"
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):
@@ -35,7 +35,7 @@ class HelpCommand(commands.HelpCommand):
 
         em_list = []
 
-        description = f"```\nPrefixes are '{self.context.clean_prefix}' and '@Parrot#9209'\n```"
+        description = f"```ini\n[Prefixes are '{self.context.clean_prefix}' and '@Parrot#9209']\n```"
 
         embed = discord.Embed(color=discord.Colour(0x55ddff))
 
@@ -43,17 +43,17 @@ class HelpCommand(commands.HelpCommand):
             name=f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
-        embed.description = description + f"\n• {get_bot}\n• {support_server}\n• {github}"
+        embed.description = description + f"\n• {get_bot}\n• {support_server}\n• {github}\n• {owner_url}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
+        CATEGORY = ''
         for cog in mapping:
             if cog and cog.get_commands():
-                if cog.qualified_name.lower() in ignored: pass
+                if cog.qualified_name.lower() in ignored: 
+                    pass
                 else:
-                    embed.add_field(
-                        name=f"{str(cog.qualified_name).lower()}",
-                        value=f"`{self.context.clean_prefix}help {cog.qualified_name}`",
-                        inline=True)
-
+                    CATEGORY = CATEGORY + str(cog.qualified_name).upper()
+        embed.add_field(name="Categories", value=f"```\n{CATEGORY}\n```")
+        embed.add_field(name="Latest News", value=f"- Help commands Updated\n- Some Minor Bug Fixes")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 

@@ -59,8 +59,8 @@ class Parrot(commands.AutoShardedBot):
         fin = time()
         return fin - ini
     
-    async def collection(self, collection_name: str):
-        
+    async def db(self, db_name: str):
+        return cluster[db_name]
         
     def run(self):
         super().run(TOKEN, reconnect=True)

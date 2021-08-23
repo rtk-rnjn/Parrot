@@ -20,5 +20,6 @@ class Context(commands.Context):
             except discord.Forbidden:
                 pass
             return
-        
-        return await super().send(content, **kwargs)
+        await self.trigger_typing()
+        await super().send(content, **kwargs)
+        return

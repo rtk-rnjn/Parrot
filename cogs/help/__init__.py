@@ -51,8 +51,8 @@ class HelpCommand(commands.HelpCommand):
                 if cog.qualified_name.lower() in ignored: 
                     pass
                 else:
-                    CATEGORY = CATEGORY + str(cog.qualified_name).upper()
-        embed.add_field(name="Categories", value=f"```{CATEGORY}\n```")
+                    CATEGORY = CATEGORY + str(cog.qualified_name).upper() + '\n'
+        embed.add_field(name="Categories", value=f"```{CATEGORY}```")
         embed.add_field(name="Latest News", value=f"- Help commands Updated\n- Some Minor Bug Fixes")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")

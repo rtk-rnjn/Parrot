@@ -6,13 +6,13 @@ from utilities.paginator import Paginator
 from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO, GIT
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
+from main import CHANGE
 
 ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
 get_bot = f"[Add me to your server]({INVITE})"
 support_server = f"[Support Server]({SUPPORT_SERVER})"
 github = f"[Github]({GIT})"
 owner_url = "[Made by Ritik Ranjan](https://discord.com/users/741614468546560092)"
-CHANGE = "- Help commands Updated\n- Some Minor Bug Fixes\n - Fixed Typos\n - All Cogs are now Case Insensitive"
 
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""

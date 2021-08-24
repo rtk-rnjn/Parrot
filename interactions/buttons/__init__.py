@@ -29,7 +29,7 @@ class game(Cog):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channe.id
  
         while not gameOver:
-            msg = await ctx.send(embed=discord.embed(title="MineSweeper 1.0", description=f"```\n{Board}\n```", timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f"{ctx.author.name}"))
+            msg = await ctx.send(embed=discord.Embed(title="MineSweeper 1.0", description=f"```\n{Board}\n```", timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f"{ctx.author.name}"))
             await msg.reply(f"{ctx.author.mention} Make the move, first come X then Y. Example: `1, 2` or `1 2` | Type `cancel` to quit")
             while True:
                 try:

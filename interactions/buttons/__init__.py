@@ -18,6 +18,7 @@ class game(Cog):
         await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
 
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def minesweeper(self, ctx: Context, boardSize: int=None, numMines: int=None):
         """Basic MineSweeper Game"""
         boardSize = boardSize or 6

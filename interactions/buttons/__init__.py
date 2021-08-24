@@ -40,7 +40,7 @@ class game(Cog):
                     return await ctx.send(f"{ctx.author.mention} game canceled")
                 elif len(loc.content.replace(',', '').split(" ")) == 2:
                     lc = loc.content.replace(',', '').split(" ")
-                    Board.makeMove(lc[0], lc[1])
+                    Board.makeMove(int(lc[0]), int(lc[1]))
                     gameOver = Board.hitMine(lc[0], lc[1])
                 if Board.isWinner() and gameOver == False:
                     gameOver = True

@@ -16,6 +16,7 @@ class mod(Cog):
         self.bot = bot
 
     async def log(self, ctx, cmd, performed_on, reason):
+        """A simple and nerdy Logging System"""
         data = await collection.find_one({'_id': ctx.guild.id})
         if not data['action_log']: return
         if not data: return
@@ -35,7 +36,7 @@ class mod(Cog):
 
         embed = discord.Embed(
             description=
-            f"**{cmd.capitalize()}ed**\n```\n{target}\n```\n**Reason:**\n```\n{reason if reason else 'No Reason Provided'}\n```",
+            f"**{cmd.capitalize()}-ed** {target}\n**Reason:** {reason if reason else 'No Reason Provided'} ",
             timestamp=datetime.utcnow(),
             colour=ctx.author.color)
 
@@ -345,43 +346,15 @@ class mod(Cog):
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True,
                                   manage_messages=True)
-    async def clean(
-        self,
-        ctx: Context,
-        amount: int,
-    ):
-        """To delete bulk message."""
-        if not ctx.invoked_subcommand:
-            await ctx.message.delete()
-            deleted = await ctx.channel.purge(limit=amount, bulk=True)
-            await ctx.send(
-                f"{ctx.author.mention} {len(deleted)} message deleted :')",
-                delete_after=5)
-            await self.log(
-                ctx, 'Clean', ctx.channel,
-                f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
-            )
-
-    @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_messages=True))
-    @commands.bot_has_permissions(manage_messages=True,
-                                  read_message_history=True)
-    async def purgeuser(self, ctx: Context, amount: int, *,
-                        member: discord.Member):
-        """To delete bulk message, of a specified user."""
-        def check_usr(m):
-            return m.author == member
-
-        deleted = await ctx.channel.purge(limit=amount,
-                                          bulk=True,
-                                          check=check_usr)
-        await ctx.send(f"{ctx.author.mention} message deleted :')",
-                       delete_after=5)
-        await self.log(
-            ctx, 'Clean user', ctx.channel,
-            f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
-        )
+    async def clear(ctx, num: int, *, target: discord.Member=None):
+        if num > 500 or num < 0:
+            return await ctx.send("Invalid amount. Maximum is 500.")
+        def msgcheck(amsg):
+            if target:
+                return amsg.author.id == target.id
+            return True
+        deleted = await ctx.channel.purge(limit=num, check=msgcheck)
+        await ctx.send(f'Deleted **{len(deleted)}/{num}** possible messages for you.', delete_after=10)
 
     @commands.command()
     @commands.check_any(is_mod(),
@@ -390,6 +363,9 @@ class mod(Cog):
                                   read_message_history=True)
     async def purgebots(self, ctx: Context, amount: int):
         """To delete bulk message, of bots"""
+        if num > 500 or num < 0:
+            return await ctx.send("Invalid amount. Maximum is 500.")
+        
         def check(m):
             return m.author.bot
 
@@ -411,7 +387,7 @@ class mod(Cog):
 				To delete bulk message, matching the regex
 				"""
         def check(m):
-            return re.search(regex, m.message.context)
+            return re.search(regex, m.context)
 
         deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
         await ctx.send(f"{ctx.author.mention} message deleted :')",

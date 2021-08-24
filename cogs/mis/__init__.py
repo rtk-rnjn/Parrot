@@ -351,6 +351,7 @@ class misc(Cog):
 
     @commands.command(aliases=['yt'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.is_nsfw()
     async def youtube(self, ctx: Context, *, query: str):
         """
 		Search for videos on YouTube.

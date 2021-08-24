@@ -26,7 +26,7 @@ class game(Cog):
         winner = False
         Board = boardClass(boardSize, numMines)
         def check(m):
-            return m.author.id == ctx.author.id and m.channel.id == ctx.channe.id
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
  
         while not gameOver:
             msg = await ctx.send(embed=discord.Embed(title="MineSweeper 1.0", description=f"```\n{Board}\n```", timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f"{ctx.author.name}"))

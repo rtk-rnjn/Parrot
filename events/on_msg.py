@@ -15,9 +15,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            2, 5, commands.BucketType.channel)
+            3, 5, commands.BucketType.channel)
 
     def refrain_message(self, msg: str):
+        msg = msg.split(" ")
         for bad_word in bad_dict:
             if bad_word in msg:
                 return False

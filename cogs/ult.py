@@ -47,6 +47,7 @@ class utilities(Cog):
     @commands.command(name="owner")
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def owner(self, ctx: Context):
         """
         Get the freaking bot owner name.
@@ -57,6 +58,7 @@ class utilities(Cog):
     @commands.command(aliases=['guildavatar', 'serverlogo', 'servericon'])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def guildicon(self, ctx: Context, server:int=None):
         """
         Get the freaking server icon
@@ -71,6 +73,7 @@ class utilities(Cog):
     @commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def server_info(self, ctx: Context):
         """
         Get the basic stats about the server
@@ -109,6 +112,7 @@ class utilities(Cog):
     @commands.command(name="stats")
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def show_bot_stats(self, ctx: Context):
         """
         Get the bot stats
@@ -145,6 +149,7 @@ class utilities(Cog):
     @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def user_info(self, ctx: Context, *, member:discord.Member=None):
         """
         Get the basic stats about the user
@@ -176,6 +181,7 @@ class utilities(Cog):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def invite(self, ctx: Context):
         """
         Get the invite of the bot! Thanks for seeing this command

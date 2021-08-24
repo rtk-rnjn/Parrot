@@ -11,6 +11,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def anal(self, ctx: Context):
         """
 		To get Random Anal
@@ -37,6 +38,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def gonewild(self, ctx: Context):
         """
 		To get Random GoneWild
@@ -62,6 +64,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hanal(self, ctx: Context):
         """
 		To get Random Hentai Anal
@@ -87,6 +90,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hentai(self, ctx: Context):
         """
 		To get Random Hentai
@@ -112,6 +116,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def holo(self, ctx: Context):
         """
 		To get Random Holo
@@ -137,6 +142,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def neko(self, ctx: Context):
         """
 		To get Random Neko
@@ -162,6 +168,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hneko(self, ctx: Context):
         """
 		To get Random Hneko
@@ -187,6 +194,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hkitsune(self, ctx: Context):
         """
 		To get Random Hkitsune
@@ -212,6 +220,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def kemonomimi(self, ctx: Context):
         """
 		To get Random Kemonomimi
@@ -237,6 +246,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def pgif(self, ctx: Context):
         """
 		To get Random PornGif
@@ -262,6 +272,7 @@ class nsfw(Cog):
     @commands.command(name="4k")
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def _4k(self, ctx: Context):
         """
 		To get Random 4k
@@ -287,6 +298,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def kanna(self, ctx: Context):
         """
 		To get Random Kanna
@@ -312,6 +324,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def ass(self, ctx: Context):
         """
 		To get Random Ass
@@ -337,6 +350,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def pussy(self, ctx: Context):
         """
 		To get Random Pussy
@@ -362,6 +376,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def thigh(self, ctx: Context):
         """
 		To get Random Thigh
@@ -387,6 +402,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hthigh(self, ctx: Context):
         """
 		To get Random Hentai Thigh
@@ -409,34 +425,10 @@ class nsfw(Cog):
 
         await ctx.reply(embed=em)
 
-    # @commands.command()
-    # @commands.is_nsfw()
-    # @commands.bot_has_permissions(embed_links=True)
-    # async def gah(self, ctx: Context):
-    #     """
-		# To get Random Gay
-		# """
-    #     url = 'https://nekobot.xyz/api/image'
-    #     params = {"type": "gah"}
-
-    #     async with aiohttp.ClientSession() as session:
-    #         async with session.get(url, params=params) as r:
-    #             if r.status == 200:
-    #                 res = await r.json()
-    #             else:
-    #                 return
-
-    #     img = res['message']
-
-    #     em = discord.Embed(timestamp=datetime.datetime.utcnow())
-    #     em.set_footer(text=f"{ctx.author.name}")
-    #     em.set_image(url=img)
-
-    #     await ctx.reply(embed=em)
-
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def paizuri(self, ctx: Context):
         """
 		To get Random Paizuri
@@ -462,6 +454,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def tentacle(self, ctx: Context):
         """
 		To get Random Tentacle Porn
@@ -487,6 +480,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def boobs(self, ctx: Context):
         """
 		To get Random Boobs
@@ -512,6 +506,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hboobs(self, ctx: Context):
         """
 		To get Random Hentai Boobs
@@ -537,6 +532,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def yaoi(self, ctx: Context):
         """
 		To get Random Yaoi
@@ -562,6 +558,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hmidriff(self, ctx: Context):
         """
 		To get Random Hmidriff
@@ -587,6 +584,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def hass(self, ctx: Context):
         """
 		To get Random Hentai Ass
@@ -612,6 +610,7 @@ class nsfw(Cog):
     @commands.command(aliases=['randnsfw'])
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def randomnsfw(self, ctx: Context, *, subreddit: str = None):
         """
 		To get Random NSFW from subreddit.
@@ -639,6 +638,7 @@ class nsfw(Cog):
     @commands.command()
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def n(self, ctx: Context):
         """
 		Best command I guess. It return random ^^

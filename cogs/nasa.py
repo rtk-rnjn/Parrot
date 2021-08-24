@@ -17,6 +17,7 @@ class nasa(Cog):
 
     @commands.command(aliases=['sat', 'satelite'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def earth(self, ctx: Context, longitute: float, latitude: float,
                     date: str):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
@@ -43,6 +44,7 @@ class nasa(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def apod(self, ctx: Context):
         '''Asteroid Picture of the Day'''
         link = f'https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}'
@@ -77,6 +79,7 @@ class nasa(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def epic(self, ctx: Context, date: str):
         '''Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format'''
         s_link = f'https://epic.gsfc.nasa.gov/api/images.php?date={date}'
@@ -114,6 +117,7 @@ class nasa(Cog):
 
     @commands.command(aliases=['finda', 'asteroid', 'neo'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def findasteroid(self, ctx: Context, start: str, end: str):
         '''You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format'''
         link = f'https://api.nasa.gov/neo/rest/v1/feed?start_date={start}&end_date={end}&api_key={NASA_KEY}'
@@ -196,6 +200,7 @@ class nasa(Cog):
 
     @commands.command(aliases=['findaid', 'asteroidid'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def findasteroididid(self, ctx: Context, id: int):
         '''Find any asteroid in the space by ID. "$help findaid" for syntax'''
         link = f'https://api.nasa.gov/neo/rest/v1/neo/{id}?api_key={NASA_KEY}'
@@ -245,6 +250,7 @@ class nasa(Cog):
 
     @commands.command(aliases=['mrp'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def mars(self, ctx: Context, date: str):
         """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format"""
         link = f'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={date}&api_key={NASA_KEY}'
@@ -282,6 +288,7 @@ class nasa(Cog):
 
     @commands.command(aliases=['nsearch', 'ns'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def nasasearch(self, ctx: Context, *,
                          string: commands.clean_content):
         '''NASA Image and Video Library'''

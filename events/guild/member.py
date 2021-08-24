@@ -24,7 +24,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if member.guild.id in self.muted:
             if member.id in self.muted[member.guild.id]:
                 self.muted[member.guild.id].remove(member.id)
-                await member.add_role(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
+                await member.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
         else: 
             return
 

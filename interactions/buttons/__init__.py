@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from core import Parrot, Cog, Context
+from typing import List, Optional
 
 class TicTacToeButton(discord.ui.Button['TicTacToe']):
     def __init__(self, x: int, y: int):

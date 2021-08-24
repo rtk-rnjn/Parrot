@@ -388,7 +388,7 @@ class mod(Cog):
 				To delete bulk message, matching the regex
 				"""
         def check(m):
-            return re.search(regex, m.context)
+            return re.search(regex, m.content)
 
         deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
         await ctx.send(f"{ctx.author.mention} message deleted :')",

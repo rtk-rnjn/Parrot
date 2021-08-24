@@ -15,9 +15,9 @@ class utilities(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    @Context.with_type
     @commands.command(name="ping")
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def ping(self, ctx: Context):
         """
         Get the latency of bot.
@@ -27,10 +27,10 @@ class utilities(Cog):
         end = time()
         await message.edit(content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms.")
 
-    @Context.with_type
     @commands.command(aliases=['av'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def avatar(self, ctx: Context, *, member: discord.Member= None):
         """
         Get the avatar of the user. Make sure you don't misuse.

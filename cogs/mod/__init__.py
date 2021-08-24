@@ -348,8 +348,8 @@ class mod(Cog):
                                   manage_messages=True)
     async def clear(self, ctx, num: int, *, target: discord.Member=None):
         """To delete bulk message"""
-        if num > 500 or num < 0:
-            return await ctx.send("Invalid amount. Maximum is 500.")
+        if num > 100 or num < 0:
+            return await ctx.send("Invalid amount. Maximum is 100.")
         def msgcheck(amsg):
             if target:
                 return amsg.author.id == target.id
@@ -364,8 +364,8 @@ class mod(Cog):
                                   read_message_history=True)
     async def purgebots(self, ctx: Context, amount: int):
         """To delete bulk message, of bots"""
-        if amount > 500 or amount < 0:
-            return await ctx.send("Invalid amount. Maximum is 500.")
+        if amount > 100 or amount < 0:
+            return await ctx.send("Invalid amount. Maximum is 100.")
         
         def check(m):
             return m.author.bot

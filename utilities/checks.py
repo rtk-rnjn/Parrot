@@ -78,4 +78,18 @@ def is_cmd_enabled():
             raise ex.CommandDisabledServer()
         else:
             return True
-        
+        data = collection.find_one({'_id': ctx.command.cog.qualified_name})
+        if not data:
+            return True
+        channels = data['channel']
+        categories = data['category']
+        server = data['server']
+        if ctx.channel.id in channels:
+            raise ex.CommandDisabledChannel()
+        elif ctx.channel.category:
+            if ctx.channel.category.id in categories:
+                raise ex.CommandDisabledCategory()
+        elif server is True:
+            raise ex.CommandDisabledServer()
+        else:
+            return True

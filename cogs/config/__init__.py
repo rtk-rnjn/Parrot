@@ -3,10 +3,12 @@ import discord, typing
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
+from utilities.database import enable_cog, disable_cog, enable_cmd, disable_cmd
 
 ct = parrot_db['telephone']
 csc = parrot_db['server_config']
 ctt = parrot_db['ticket']
+
 from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
@@ -187,12 +189,9 @@ class botConfig(Cog):
         if not ctx.invoked_subcommand:
             data = await ct.find_one({'_id': ctx.guild.id})
             if data:
-                role = ctx.guild.get_role(
-                    data['pingrole']).name if data['pingrole'] else None
-                channel = ctx.guild.get_channel(
-                    data['channel']).name if data['channel'] else None
-                member = ctx.guild.get_member(
-                    data['memberping']).name if data['memberping'] else None
+                role = ctx.guild.get_role(data['pingrole']).name if data['pingrole'] else None
+                channel = ctx.guild.get_channel(data['channel']).name if data['channel'] else None
+                member = ctx.guild.get_member(data['memberping']).name if data['memberping'] else None
                 await ctx.send(
                     f"Configuration of this server [telsetup]\n\n"
                     f"`Channel   :` **{channel}**\n"
@@ -218,7 +217,7 @@ class botConfig(Cog):
                 f"{ctx.author.mention} global telephone line is reseted! or removed"
             )
         await ctx.send(
-            f"{ctx.author.mention} success! #{channel.name} is now added to global telephone line."
+            f"{ctx.author.mention} success! **#{channel.name}** is now added to global telephone line."
         )
 
     @telsetup.command(name='pingrole')
@@ -232,13 +231,13 @@ class botConfig(Cog):
         To add the ping role. If other server call your server. Then the role will be pinged if set any
         """
 
-        await telephone_update(ctx.guild.id, 'channel',
+        await telephone_update(ctx.guild.id, 'pingrole',
                                role.id if role else None)
         if not role:
             return await ctx.send(
                 f"{ctx.author.mention} ping role reseted! or removed")
         await ctx.send(
-            f"{ctx.author.mention} success! @{role.name} will be now pinged when someone calls your server."
+            f"{ctx.author.mention} success! **@{role.name}** will be now pinged when someone calls your server."
         )
 
     @telsetup.command(name='memberping')
@@ -252,13 +251,13 @@ class botConfig(Cog):
         To add the ping role. If other server call your server. Then the role will be pinged if set any
         """
 
-        await telephone_update(ctx.guild.id, 'channel',
+        await telephone_update(ctx.guild.id, 'memberping',
                                member.id if member else None)
         if not member:
             return await ctx.send(
                 f"{ctx.author.menton} member ping reseted! or removed")
         await ctx.send(
-            f"{ctx.author.mention} success! @{member.name}#{member.discriminator} will be now pinged when someone calls your server."
+            f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."
         )
 
     @telsetup.command(name='block')
@@ -276,7 +275,7 @@ class botConfig(Cog):
                       {'$addToSet': {
                           'blocked': server.id
                       }})
-        await ctx.send(f'{ctx.author.mention} success! blocked: {server.name}')
+        await ctx.send(f'{ctx.author.mention} success! blocked: **{server.name}**')
 
     @telsetup.command(name='unblock')
     @commands.has_permissions(administrator=True)
@@ -449,6 +448,28 @@ class botConfig(Cog):
 			'''
         await mt._delpingedrole(ctx, role)
 
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def disable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.CategoryChannel]=None):
+        """To disable the command"""
+        server = False
+        if target is None:
+            server = True
+        else:
+            tar = target.id 
+        # target = True if target is None else target.id
+        cmd = bot.get_command(command)
+        type_ = str(target.type)
+        if server: type_ = 'server'
+        if type(target) is discord.TextChannel:
+            await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, tar, None, server)
+        elif type(target) is discord.CategoryChannel:
+            await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, tar, server)
+        else:
+            await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
+        
+        await ctx.send(f"{ctx.author.mention} success! **{cmd.qualified_name}** is disabled this **{type_}** wide")
 
 def setup(bot):
     bot.add_cog(botConfig(bot))

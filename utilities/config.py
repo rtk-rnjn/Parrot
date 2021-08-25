@@ -18,4 +18,4 @@ DEV_LOGO = data['dev_logo']
 DATABASE_KEY = os.environ['DATABASE_KEY']
 my_secret = DATABASE_KEY
 GIT = data['github']
-MEME_PASS = "***qwerty123"
+MEME_PASS = "***qwerty123" # this is not the real pass, just to tell the website from where the API call is comming from.

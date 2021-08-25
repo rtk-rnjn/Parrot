@@ -6,7 +6,7 @@ from utilities.paginator import Paginator
 from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO, GIT
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
-from main import CHANGE
+from utilities.extra import get_last_commits
 
 ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
 get_bot = f"[Add me to your server]({INVITE})"
@@ -55,7 +55,7 @@ class HelpCommand(commands.HelpCommand):
                 else:
                     CATEGORY = CATEGORY + str(cog.qualified_name).upper() + '\n'
         embed.add_field(name="Categories", value=f"```{CATEGORY}```")
-        embed.add_field(name="Latest News", value=f"{CHANGE}")
+        embed.add_field(name="Latest News", value=f"{get_last_commits()}")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 

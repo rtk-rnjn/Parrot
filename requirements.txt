@@ -22,3 +22,4 @@ dnspython
 motor
 aiofile
 async-property
+pygit2

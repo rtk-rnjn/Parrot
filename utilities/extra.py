@@ -1,8 +1,8 @@
 from traceback import format_exception
 import logging
+import pygit2
 
-
-def load_ext(bot, extensions: list):
+def load_ext(bot, extensions: list) -> None:
     for ext in extensions:
         try:
             bot.load_extension(ext)
@@ -13,7 +13,7 @@ def load_ext(bot, extensions: list):
             print(tbe)
 
 
-def logger(get_logger: str, file_name: str):
+def logger(get_logger: str, file_name: str) -> None:
     """Main file to start the logging system"""
 
     logger = logging.getLogger(get_logger)
@@ -26,3 +26,9 @@ def logger(get_logger: str, file_name: str):
         logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 
     logger.addHandler(handler)
+
+
+def get_last_commits(count=3) -> str:
+    repo = pygit2.Repository('.git')
+    commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
+    return '\n'.join(self.format_commit(c) for c in commits)

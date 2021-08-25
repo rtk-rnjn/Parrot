@@ -367,12 +367,12 @@ class fun(Cog):
         phone = f"{res['phone']}, {res['cell']}"
         pic = res['picture']['large']
 
-        em = discord.Embed(title=f"{name}", description=f"```\n{address}\n{cords}```", timestamp=datetime.datetime.utcnow())
-        em.add_field(name="Timezone", value=f"```\n{tz}```", inline=True)
-        em.add_field(name="Email & Password", value=f"```\nUsername: {usrname}\nEmail: {email}\nPassword: {pswd}```", inline=True)
-        em.add_field(name="Age", value=f"```\n{age}```", inline=True)
+        em = discord.Embed(title=f"{name}", description=f"```\n{address} {cords}```", timestamp=datetime.datetime.utcnow())
+        em.add_field(name="Timezone", value=f"{tz}", inline=False)
+        em.add_field(name="Email & Password", value=f"**Username:** {usrname}\n**Email:** {email}\n**Password:** {pswd}", inline=False)
+        em.add_field(name="Age", value=f"{age}", inline=False)
         em.set_thumbnail(url=pic)
-        em.add_field(name="Phone", value=f"```\n{phone}```", inline=True)
+        em.add_field(name="Phone", value=f"{phone}", inline=False)
         em.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=em)

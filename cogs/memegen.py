@@ -147,7 +147,7 @@ class memegen(Cog):
 		"""
         params = {
             "type": "phcomment",
-            "image": f"{ctx.author.avatar.url}",
+            "image": f"{ctx.author.display_avatar.url}",
             "text": text,
             "username": f"{ctx.author.name}"
         }
@@ -406,7 +406,7 @@ class memegen(Cog):
         params = {
             "type": "whowouldwin",
             "user1": f"{member.avatar.url}",
-            "user2": f"{ctx.author.avatar.url}"
+            "user2": f"{ctx.author.display_avatar.url}"
         }
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:

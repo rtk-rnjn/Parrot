@@ -167,7 +167,7 @@ class Utility(Cog):
         e.set_thumbnail(url='http://assets.stickpng.com/images/5848152fcef1014c0b5e4967.png')
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
-        e.set_footer(text=f"Request by {ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar.url)
+        e.set_footer(text=f"Request by {ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.display_avatar.url)
         await ctx.send(embed=e)
 
     @group(aliases=["rtfd"], invoke_without_command=True)

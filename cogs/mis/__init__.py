@@ -238,7 +238,7 @@ class misc(Cog):
             emb.colour = snipe.author.colour
             emb.timestamp = snipe.created_at
             emb.set_footer(text=f'Message sniped by {str(ctx.author)}',
-                           icon_url=ctx.author.avatar.url)
+                           icon_url=ctx.author.display_avatar.url)
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
 
@@ -426,6 +426,7 @@ class misc(Cog):
                              discord.StageChannel, discord.Guild,
                              discord.Message]):
         """To get the ID of discord models"""
+        embed = discord.Embed(title="Snowflake lookup", color=ctx.author.color, timestamp=datetime.datetime.utcnow())
         await ctx.send(
             f"{ctx.author.mention} {target.id if type(target) is discord.Message else target} is **{type(target)}** of id **{target.id}** created at **{target.created_at}**"
         )
@@ -440,17 +441,15 @@ class misc(Cog):
         second = discord.utils.snowflake_time(snowflake2)
 
         if snowflake2 > snowflake1:
-
             timedelta = second - first
         else:
-
             timedelta = first - second
 
         await ctx.send(
-            f"{ctx.author.mention} total seconds between {snowflake1} and {snowflake2} is {timedelta.total_seconds()}"
+            f"{ctx.author.mention} total seconds between **{snowflake1}** and **{snowflake2}** is **{timedelta.total_seconds()}**"
         )
 
-    @commands.command()
+    @commands.command(aliases=['src'])
     @Context.with_type
     async def source(self, ctx: Context, branch: str=None, *, command: str = None):
         """Displays my full source code or for a specific command.

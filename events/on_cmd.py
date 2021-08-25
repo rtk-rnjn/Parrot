@@ -50,7 +50,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         # get the original exception
         error = getattr(error, 'original', error)
 
-        ignore = (commands.CommandNotFound, discord.errors.NotFound)
+        ignore = (commands.CommandNotFound, discord.errors.NotFound, discord.Forbidden)
 
         if isinstance(error, ignore): return
 
@@ -72,15 +72,15 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
 
         elif isinstance(error, commands.CommandOnCooldown):
-            is_owner = await ctx.bot.is_owner(ctx.author)
-            if is_owner: return await ctx.reinvoke()
+            # is_owner = await ctx.bot.is_owner(ctx.author)
+            # if is_owner: return await ctx.reinvoke()
             return await ctx.send(
                 f"**{random.choice(quote)}**\nCommand On Cooldown. You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
             )
 
         elif isinstance(error, commands.MissingPermissions):
-            is_owner = await ctx.bot.is_owner(ctx.author)
-            if is_owner: return await ctx.reinvoke()
+            # is_owner = await ctx.bot.is_owner(ctx.author)
+            # if is_owner: return await ctx.reinvoke()
             missing = [
                 perm.replace('_', ' ').replace('guild', 'server').title()
                 for perm in error.missing_perms
@@ -192,9 +192,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 tb = traceback.format_exception(type(error), error, error.__traceback__)
                 tbe = "".join(tb) + ""
                 if len(tbe) < 1800:
-                    await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))
+                    await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe), delete_after=60)
                 else: 
-                    await ctx.author.send(f"{self.paste(tbe)}")
+                    await ctx.author.send(f"{self.paste('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))}")
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

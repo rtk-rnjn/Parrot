@@ -47,7 +47,7 @@ class mod(Cog):
         embed.set_author(
             name=
             f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})',
-            icon_url=ctx.author.avatar.url,
+            icon_url=ctx.author.display_avatar.url,
             url=f"https://discord.com/users/{ctx.author.id}")
 
         embed.set_footer(text=f"{ctx.guild.name}")

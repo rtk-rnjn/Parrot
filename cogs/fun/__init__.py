@@ -132,7 +132,7 @@ class fun(Cog):
         embed.add_field(name="Encoded text:", value=f'```\n{base64_string}\n```', inline=False)
         embed.add_field(name="Decoded text:", value=f'```\n{sample_string}\n```', inline=False)
         embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
-        embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar.url}')
+        embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
         await ctx.send(embed=embed)
 
 
@@ -155,7 +155,7 @@ class fun(Cog):
         embed.add_field(name="Encoded [base64]:", value=f'```\n{base64_string}\n```', inline=False)
         embed.add_field(name="Encoded [binary]:", value=f'```\n{str(res)}\n```', inline=False)
         embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
-        embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar.url}')
+        embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
         await ctx.send(embed=embed)
 
   

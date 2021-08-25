@@ -16,6 +16,7 @@ class ticket(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   embed_links=True,
                                   manage_roles=True)
+    @Context.with_type
     async def new(self, ctx: Context, *, args=None):
         """
 			This creates a new ticket. Add any words after the command if you'd like to send a message when we initially create your ticket.
@@ -25,6 +26,7 @@ class ticket(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(manage_channels=True, embed_links=True)
+    @Context.with_type
     async def close(self, ctx):
         """
 			Use this to close a ticket. This command only works in ticket channels.
@@ -35,6 +37,7 @@ class ticket(Cog):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def save(self, ctx):
         """
 			Use this to save the transcript of a ticket. This command only works in ticket channels.

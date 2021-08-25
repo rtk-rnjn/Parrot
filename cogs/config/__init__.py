@@ -20,6 +20,7 @@ class botConfig(Cog):
                     aliases=['config'],
                     invoke_without_command=True)
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def config(self, ctx: Context):
         """To config the bot, mod role, prefix, or you can disable the commands and cogs."""
         data = await csc.find_one({'_id': ctx.guild.id})
@@ -47,6 +48,7 @@ class botConfig(Cog):
 
     @config.command(aliases=['prefix'])
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def botprefix(self, ctx: Context, *, arg: str):
         """
 				To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 chars
@@ -65,6 +67,7 @@ class botConfig(Cog):
 
     @config.command(aliases=['mute-role'])
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """
 				To set the mute role of the server. By default role with name `Muted` is consider as mute role.
@@ -81,6 +84,7 @@ class botConfig(Cog):
 
     @config.command(aliases=['mod-role'])
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def modrole(self, ctx: Context, *, role: discord.Role = None):
         """
 				To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission
@@ -96,6 +100,7 @@ class botConfig(Cog):
 
     @config.command(aliases=['action-log', 'modlog', 'mod-log'])
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def actionlog(self,
                         ctx: Context,
                         *,
@@ -118,6 +123,7 @@ class botConfig(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_webhooks=True,
                                   manage_roles=True)
+    @Context.with_type
     async def gsetup(self,
                      ctx: Context,
                      setting: str = None,
@@ -163,6 +169,7 @@ class botConfig(Cog):
 
     @commands.group(aliases=['telconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def telsetup(self, ctx: Context):
         """
     To set the telephone phone line, in the server to call and receive the call from other server. 
@@ -195,6 +202,7 @@ class botConfig(Cog):
 
     @telsetup.command(name='channel')
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def tel_config_channel(self,
                                  ctx: Context,
                                  *,
@@ -215,6 +223,7 @@ class botConfig(Cog):
 
     @telsetup.command(name='pingrole')
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def tel_config_pingrole(self,
                                   ctx: Context,
                                   *,
@@ -234,6 +243,7 @@ class botConfig(Cog):
 
     @telsetup.command(name='memberping')
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def tel_config_memberping(self,
                                     ctx: Context,
                                     *,
@@ -253,6 +263,7 @@ class botConfig(Cog):
 
     @telsetup.command(name='block')
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def tel_config_block(self, ctx: Context, *, server: discord.Guild):
         """
         There are people who are really anonying, you can block them.
@@ -269,6 +280,7 @@ class botConfig(Cog):
 
     @telsetup.command(name='unblock')
     @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def tel_config_unblock(self, ctx: Context, *, server: discord.Guild):
         """
         Now they understood their mistake. You can now unblock them.
@@ -284,6 +296,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def ticketconfig(self, ctx: Context):
         """To config the Ticket Parrot Bot in the server"""
         data = await ctt.find_one({'_id': ctx.guild.id})
@@ -332,6 +345,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def auto(self,
                    ctx: Context,
                    channel: discord.TextChannel = None,
@@ -348,6 +362,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def setcategory(self, ctx: Context, *,
                           channel: discord.CategoryChannel):
         """
@@ -359,6 +374,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def setlog(self, ctx: Context, *, channel: discord.TextChannel):
         """
 			Where the tickets action will logged? To config the ticket log.
@@ -369,6 +385,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def addaccess(self, ctx: Context, *, role: discord.Role):
         '''
 			This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
@@ -381,6 +398,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def delaccess(self, ctx: Context, *, role: discord.Role):
         '''
 			This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
@@ -392,6 +410,7 @@ class botConfig(Cog):
     @ticketconfig.command()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def addadminrole(self, ctx: Context, *, role: discord.Role):
         '''
 			This command gives all users with a specific role access to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`.
@@ -402,6 +421,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def addpingedrole(self, ctx: Context, *, role: discord.Role):
         '''
 			This command adds a role to the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot.
@@ -411,6 +431,7 @@ class botConfig(Cog):
     @ticketconfig.command()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def deladminrole(self, ctx: Context, *, role: discord.Role):
         """
 			This command removes access for all users with the specified role to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`.
@@ -421,6 +442,7 @@ class botConfig(Cog):
     @commands.check_any(commands.has_permissions(administrator=True),
                         has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def delpingedrole(self, ctx: Context, *, role: discord.Role):
         '''
 			This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot.

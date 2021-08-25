@@ -60,6 +60,7 @@ class mod(Cog):
     @commands.group()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
+    @Context.with_type
     async def role(self, ctx: Context):
         """Role Management of the server."""
         pass
@@ -67,6 +68,7 @@ class mod(Cog):
     @role.command(name="bots")
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
+    @Context.with_type
     async def add_role_bots(self,
                             ctx: Context,
                             operator: str,
@@ -81,6 +83,7 @@ class mod(Cog):
     @role.command(name="humans")
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
+    @Context.with_type
     async def add_role_human(self,
                              ctx: Context,
                              operator: str,
@@ -95,6 +98,7 @@ class mod(Cog):
     @role.command(name="add", aliases=['arole', 'giverole', 'grole'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
+    @Context.with_type
     async def add_role(self,
                        ctx: Context,
                        member: discord.Member,
@@ -109,6 +113,7 @@ class mod(Cog):
     @role.command(name='remove', aliases=['urole', 'removerole', 'rrole'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
+    @Context.with_type
     async def remove_role(self,
                           ctx: Context,
                           member: discord.Member,
@@ -123,6 +128,7 @@ class mod(Cog):
     @commands.command(aliases=['hackban'])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)
+    @Context.with_type
     async def ban(self,
                   ctx: Context,
                   member: discord.User,
@@ -139,6 +145,7 @@ class mod(Cog):
     @commands.command(name='massban')
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)
+    @Context.with_type
     async def mass_ban(self,
                        ctx: Context,
                        members: commands.Greedy[discord.User],
@@ -156,6 +163,7 @@ class mod(Cog):
     @commands.command(aliases=['softkill'])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)
+    @Context.with_type
     async def softban(self,
                       ctx: Context,
                       member: commands.Greedy[discord.Member],
@@ -173,6 +181,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def block(self,
                     ctx: Context,
                     member: commands.Greedy[discord.Member],
@@ -188,6 +197,7 @@ class mod(Cog):
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_channels=True))
     @commands.bot_has_permissions(manage_channels=True)
+    @Context.with_type
     async def clone(self,
                     ctx: Context,
                     channel: discord.TextChannel = None,
@@ -201,6 +211,7 @@ class mod(Cog):
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
     @commands.bot_has_permissions(kick_members=True)
+    @Context.with_type
     async def kick(self,
                    ctx: Context,
                    member: discord.Member,
@@ -214,6 +225,7 @@ class mod(Cog):
     @commands.command(name='masskick')
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
     @commands.bot_has_permissions(kick_members=True)
+    @Context.with_type
     async def mass_kick(self,
                         ctx: Context,
                         members: commands.Greedy[discord.Member],
@@ -231,6 +243,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def lock(self, ctx: Context):
         """To lock the channel"""
         pass
@@ -240,6 +253,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def text_lock(self,
                         ctx: Context,
                         *,
@@ -257,6 +271,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def vc_lock(self,
                       ctx: Context,
                       *,
@@ -275,6 +290,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_roles=True,
                                   manage_permissions=True)
+    @Context.with_type
     async def unlock(self, ctx: Context):
         """To unlock the channel (Text channel)"""
         pass
@@ -284,6 +300,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def text_unlock(self,
                           ctx: Context,
                           *,
@@ -301,6 +318,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def vc_unlock(self,
                         ctx: Context,
                         *,
@@ -313,10 +331,11 @@ class mod(Cog):
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})'
         )
 
+    @commands.command()
     @commands.has_permissions(manage_roles=True)
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_roles=True))
-    @commands.command()
+    @Context.with_type
     async def mute(self,
                    ctx: Context,
                    member: discord.Member,
@@ -331,6 +350,7 @@ class mod(Cog):
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @commands.bot_has_permissions(manage_roles=True)
+    @Context.with_type
     async def unmute(self,
                      ctx: Context,
                      member: discord.Member,
@@ -346,6 +366,7 @@ class mod(Cog):
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True,
                                   manage_messages=True)
+    @Context.with_type
     async def clear(self, ctx, num: int, *, target: discord.Member=None):
         """To delete bulk message"""
         if num > 100 or num < 0:
@@ -362,6 +383,7 @@ class mod(Cog):
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(manage_messages=True,
                                   read_message_history=True)
+    @Context.with_type
     async def purgebots(self, ctx: Context, amount: int):
         """To delete bulk message, of bots"""
         if amount > 100 or amount < 0:
@@ -383,6 +405,7 @@ class mod(Cog):
                         commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(manage_messages=True,
                                   read_message_history=True)
+    @Context.with_type
     async def purgeregex(self, ctx: Context, amount: int, *, regex: str):
         """
 				To delete bulk message, matching the regex
@@ -402,6 +425,7 @@ class mod(Cog):
     @commands.check_any(is_mod(),
                         commands.has_permissions(manage_channels=True))
     @commands.bot_has_permissions(manage_channels=True)
+    @Context.with_type
     async def slowmode(self,
                        ctx: Context,
                        seconds: typing.Union[int, str],
@@ -417,6 +441,7 @@ class mod(Cog):
     @commands.command(brief='To Unban a member from a guild')
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)
+    @Context.with_type
     async def unban(self,
                     ctx: Context,
                     member: discord.User,
@@ -436,6 +461,7 @@ class mod(Cog):
     @commands.bot_has_permissions(manage_channels=True,
                                   manage_permissions=True,
                                   manage_roles=True)
+    @Context.with_type
     async def unblock(self,
                       ctx: Context,
                       member: commands.Greedy[discord.Member],
@@ -451,6 +477,7 @@ class mod(Cog):
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_nicknames=True))
     @commands.bot_has_permissions(manage_nicknames=True)
+    @Context.with_type
     async def nick(self, ctx: Context, member: discord.Member, *, name: commands.clean_content):
         """
         To change the nickname of the specified member
@@ -476,6 +503,7 @@ class mod(Cog):
                                   read_message_history=True,
                                   add_reactions=True,
                                   manage_nicknames=True)
+    @Context.with_type
     async def mod(self,
                   ctx: Context,
                   target: typing.Union[discord.Member, discord.User,

@@ -40,6 +40,7 @@ class misc(Cog):
     @commands.command(aliases=['emote'])
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True)
+    @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
         """
 				To view the emoji in bigger form
@@ -49,6 +50,7 @@ class misc(Cog):
 
     @commands.command(aliases=['calc', 'cal'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def calculator(self, ctx: Context, *, text: str):
         """
 				This is basic calculator with all the expression supported. Syntax is similar to python math module.
@@ -71,6 +73,7 @@ class misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def maths(self, ctx: Context, operation: str, *, expression: str):
         """
 				Another calculator but quite advance one
@@ -97,6 +100,8 @@ class misc(Cog):
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    @Context.with_type
     async def news(self, ctx: Context, nat: str):
         """
 				This command will fetch the latest news from all over the world.
@@ -143,6 +148,7 @@ class misc(Cog):
     @commands.command(name="search", aliases=['googlesearch', 'google'])
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def search(self, ctx: Context, *, search: str):
         """
 				Simple google search Engine.
@@ -199,6 +205,7 @@ class misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
+    @Context.with_type
     async def snipe(self, ctx: Context):
         """
 				"Snipes" someone\'s message that\'s deleted
@@ -236,6 +243,7 @@ class misc(Cog):
         self.snipes[ctx.channel.id] = None
 
     @commands.command(aliases=['trutht', 'tt', 'ttable'])
+    @Context.with_type
     async def truthtable(self, ctx: Context, *, data: commands.clean_content):
         """
 				A simple command to generate Truth Table of given data. Make sure you use proper syntax.
@@ -259,6 +267,7 @@ class misc(Cog):
 
     @commands.command(aliases=['w'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def weather(self, ctx: Context, *, location: str):
         """
 				Weather API, for current weather forecast, supports almost every city.
@@ -325,6 +334,7 @@ class misc(Cog):
 
     @commands.command(aliases=['wiki'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def wikipedia(self, ctx: Context, *, text: str):
         """
 				Web articles from Wikipedia.
@@ -352,6 +362,7 @@ class misc(Cog):
     @commands.command(aliases=['yt'])
     @commands.bot_has_permissions(embed_links=True)
     @commands.is_nsfw()
+    @Context.with_type
     async def youtube(self, ctx: Context, *, query: str):
         """
 		Search for videos on YouTube.
@@ -391,6 +402,7 @@ class misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def embed(self, ctx: Context, *, data):
         """
 				A nice command to make custom embeds, from a `Python Dictionary` or form `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
@@ -406,6 +418,7 @@ class misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def snowflakeid(
         self, ctx: Context, *,
         target: typing.Union[discord.Member, discord.Role, discord.Thread,
@@ -419,6 +432,7 @@ class misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def snowflaketime(self, ctx: Context, snowflake1: int,
                             snowflake2: int):
         """Get the time difference in seconds, between two discord SnowFlakes"""
@@ -437,7 +451,8 @@ class misc(Cog):
         )
 
     @commands.command()
-    async def source(self, ctx: Context, branch: str, *, command: str = None):
+    @Context.with_type
+    async def source(self, ctx: Context, branch: str=None, *, command: str = None):
         """Displays my full source code or for a specific command.
         """
         source_url = 'https://github.com/ritik0ranjan/Parrot'

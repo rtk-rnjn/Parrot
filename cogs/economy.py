@@ -15,6 +15,7 @@ class economy(Cog):
 
     @commands.command(aliases=['starteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def starteco(self, ctx: Context):
         """
         To start the Parrot Economy.
@@ -28,6 +29,7 @@ class economy(Cog):
 
     @commands.command(aliases=["with"])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def withdraw(self, ctx: Context, money: int):
         """
 		Withdraw your money, from your bank account
@@ -57,6 +59,7 @@ class economy(Cog):
 
     @commands.command(aliases=['rob'])
     @commands.cooldown(1, 30, commands.BucketType.member)
+    @Context.with_type
     async def steal(self, ctx, *, member: discord.Member):
         """
 		Want more money? Try stealing others.
@@ -93,6 +96,7 @@ class economy(Cog):
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.member)
+    @Context.with_type
     async def slots(self, ctx: Context, money: int):
         '''
 				Want more money? Try gambling slots
@@ -133,6 +137,7 @@ class economy(Cog):
 
     @commands.command(aliases=['send'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def give(self, ctx: Context, member: discord.Member, money: int):
         '''
 				You can give your Parrot coins to other user too
@@ -170,6 +175,7 @@ class economy(Cog):
 
     @commands.command(aliases=["dep"])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def deposit(self, ctx: Context, money: int):
         '''
 				Save your money by depositing all the money in the bank
@@ -200,6 +206,7 @@ class economy(Cog):
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.member)
+    @Context.with_type
     async def beg(self, ctx: Context):
         '''
 				Beg from internet, hope someone will give you money
@@ -231,6 +238,7 @@ class economy(Cog):
 
     @commands.command(aliases=['bal', 'wallet', 'bank'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def balance(self, ctx: Context, *, member: discord.User = None):
         '''
 				To check your balance, if not, then it will open a Parrot Economy bank account for you
@@ -253,6 +261,7 @@ class economy(Cog):
 
     @commands.command(aliases=['cointoss', 'cf', 'ct'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
     async def coinflip(self, ctx: Context, money: int, choose: str = None):
         """
         A another gambling command for earn more money

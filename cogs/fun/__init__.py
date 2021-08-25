@@ -39,6 +39,7 @@ class fun(Cog):
         self.bot = bot
   
     @command(name='8ball')
+    @Context.with_type
     async def _8ball(self, ctx: Context, *, question:commands.clean_content):
         """
         8ball Magic, nothing to say much
@@ -46,6 +47,7 @@ class fun(Cog):
         await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
 
     @commands.command()
+    @Context.with_type
     async def choose(self, ctx: Context, *, options:commands.clean_content):
         """
         Confuse something with your decision? Let Parrot choose from your choice.
@@ -57,6 +59,7 @@ class fun(Cog):
 
     @commands.command(aliases=['colours', 'colour'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def color(self, ctx: Context, colour):
         """
         To get colour information using the hexadecimal codes.
@@ -114,6 +117,7 @@ class fun(Cog):
   
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def decode(self, ctx: Context, *, string:str):
         """
         Decode the code to text from Base64 encryption
@@ -135,6 +139,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def encode(self, ctx: Context, *, string:str):
         """
         Encode the text to Base64 Encryption and in Binary
@@ -157,6 +162,7 @@ class fun(Cog):
       
     @commands.command(name="fact")
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def animal_fact(self, ctx: Context, *, animal: str):
         """
         Return a random Fact. It's useless command, I know
@@ -193,6 +199,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def gay(self, ctx: Context, *, member:discord.Member=None):
         """
         Image Generator. Gay Pride.
@@ -209,6 +216,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def glass(self, ctx: Context, *, member:discord.Member=None):
         """
         Provide a glass filter on your profile picture, try it!
@@ -225,6 +233,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def horny(self, ctx: Context, *, member:discord.Member=None):
         """
         Image generator, Horny card generator.
@@ -240,6 +249,7 @@ class fun(Cog):
 
 
     @commands.command(aliases=['insult'])
+    @Context.with_type
     async def roast(self, ctx: Context, *, member: discord.Member = None):
         """
         Insult your enemy, Ugh!
@@ -253,6 +263,7 @@ class fun(Cog):
 
 
     @commands.command(aliases=['its-so-stupid'])
+    @Context.with_type
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     async def itssostupid(self, ctx, *, comment:str):
       """
@@ -272,6 +283,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def jail(self, ctx: Context, *, member:discord.Member=None):
         """
         Image generator. Makes you behind the bars. Haha
@@ -288,6 +300,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def lolice(self, ctx: Context, *, member:discord.Member=None):
         """
         This command is not made by me. :\
@@ -304,6 +317,7 @@ class fun(Cog):
       
     @commands.command(name='meme')
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def meme(self, ctx: Context):
         """
         Random meme generator.
@@ -329,6 +343,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def fakepeople(self, ctx: Context):
         """
         Fake Identity generator.
@@ -365,6 +380,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def simpcard(self, ctx: Context, *, member:discord.Member=None):
         """
         Good for those, who are hell simp! LOL
@@ -381,6 +397,7 @@ class fun(Cog):
   
     @command(name="slap", aliases=["hit"])
     @commands.bot_has_permissions(manage_messages=True)
+    @Context.with_type
     async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
         """
         Slap virtually with is shit command.
@@ -391,6 +408,7 @@ class fun(Cog):
     
     @commands.command(aliases=['trans'])
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def translate(self, ctx: Context, to: str, *, message: commands.clean_content=None):
         """
         Translates a message to English (default) using Google translate
@@ -434,6 +452,7 @@ class fun(Cog):
 
     @commands.command(aliases=['triggered'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def trigger(self, ctx: Context, *, member:discord.Member=None):
         """
         User Triggered!
@@ -449,7 +468,8 @@ class fun(Cog):
 
     @commands.command(aliases=['def', 'urban'])
     @commands.bot_has_permissions(embed_links=True)
-    async def urbandictionary(self, ctx: Context, *, text:str):
+    @Context.with_type
+    async def urbandictionary(self, ctx: Context, *, text: commands.clean_content):
       """
       LOL. This command is insane.
       """
@@ -486,6 +506,7 @@ class fun(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def wasted(self, ctx: Context, *, member:discord.Member=None):
         """
         Overlay 'WASTED' on your profile picture, just like GTA:SA
@@ -502,6 +523,7 @@ class fun(Cog):
 
     @commands.command(aliases=['youtube-comment', 'youtube_comment'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def ytcomment(self, ctx: Context, *, comment:str):
         """
         Makes a comment in YT. Best ways to fool your fool friends. :')
@@ -521,6 +543,7 @@ class fun(Cog):
   
     @commands.command() 
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def dare(self, ctx: Context, *, member:discord.Member=None):
         """
         I dared you to use this command.
@@ -537,6 +560,7 @@ class fun(Cog):
 
     @commands.command() 
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def truth(self, ctx: Context, *, member:discord.Member=None):
         """
         Truth: Who is your crush?
@@ -551,6 +575,8 @@ class fun(Cog):
         await ctx.send(embed=em)
 
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def aki(self, ctx):
         """Answer the questions and let the bot guess your character!"""
         aki = Akinator()
@@ -620,6 +646,7 @@ class fun(Cog):
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 30, commands.BucketType.guild)
+    @Context.with_type
     async def dial(self, ctx: Context, *, server: discord.Guild):
         """
         To dial to other server. Do not misuse this. Else you RIP :|

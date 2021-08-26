@@ -93,3 +93,4 @@ def is_cmd_enabled():
             raise ex.CommandDisabledServer()
         else:
             return True
+    return commands.check(predicate)

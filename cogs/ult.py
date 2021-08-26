@@ -17,7 +17,7 @@ class utilities(Cog):
 
     @commands.command(name="ping")
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @is_cmd_enabled()
+    @commands.check(is_cmd_enabled)
     @Context.with_type
     async def ping(self, ctx: Context):
         """

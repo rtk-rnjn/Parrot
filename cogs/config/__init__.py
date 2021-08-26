@@ -474,8 +474,8 @@ class botConfig(Cog):
         cmd = self.bot.get_command(command)
         if not cmd:
             return await ctx.send(f"{ctx.author.mention} that commands do not exists")
-        type_ = str(target.type)
         if server: type_ = 'server'
+        else: type_ = str(target.type)
         if type(target) is discord.TextChannel:
             await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, tar, None, server)
         elif type(target) is discord.CategoryChannel:
@@ -499,8 +499,8 @@ class botConfig(Cog):
         cmd = self.bot.get_command(command)
         if not cmd:
             return await ctx.send(f"{ctx.author.mention} that commands do not exists")
-        type_ = str(target.type)
         if server: type_ = 'server'
+        else: type_ = str(target.type)
         if type(target) is discord.TextChannel:
             await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, tar, None, server)
         elif type(target) is discord.CategoryChannel:

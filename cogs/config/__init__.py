@@ -471,7 +471,7 @@ class botConfig(Cog):
         else:
             tar = target.id 
         # target = True if target is None else target.id
-        cmd = bot.get_command(command)
+        cmd = self.bot.get_command(command)
         if not cmd:
             return await ctx.send(f"{ctx.author.mention} that commands do not exists")
         type_ = str(target.type)
@@ -496,7 +496,7 @@ class botConfig(Cog):
         else:
             tar = target.id 
         # target = True if target is None else target.id
-        cmd = bot.get_command(command)
+        cmd = self.bot.get_command(command)
         if not cmd:
             return await ctx.send(f"{ctx.author.mention} that commands do not exists")
         type_ = str(target.type)

@@ -27,7 +27,7 @@ class utilities(Cog):
         message = await ctx.reply(f"Pinging...")
         db = await self.bot.db_latency
         end = time()
-        await message.edit(content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f}")
+        await message.edit(content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f} ms.")
 
     @commands.command(aliases=['av'])
     @commands.cooldown(1, 5, commands.BucketType.member)

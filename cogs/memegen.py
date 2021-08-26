@@ -46,7 +46,7 @@ class memegen(Cog):
         if member is None: member = ctx.author
         params = {
             "type": "stickbug",
-            "url": f"{member.avatar.url}",
+            "url": f"{member.display_avatar.url}",
         }
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
@@ -71,7 +71,7 @@ class memegen(Cog):
         if member is None: member = ctx.author
         params = {
             "type": "trash",
-            "url": f"{member.avatar.url}",
+            "url": f"{member.display_avatar.url}",
         }
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
@@ -100,7 +100,7 @@ class memegen(Cog):
         if intensity is None: intensity = 5
         params = {
             "type": "magik",
-            "image": f"{member.avatar.url}",
+            "image": f"{member.display_avatar.url}",
             "intensity": intensity
         }
         url = "https://nekobot.xyz/api/imagegen"
@@ -124,7 +124,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: Blurpify
 		"""
         if member is None: member = ctx.author
-        params = {"type": "blurpify", "image": f"{member.avatar.url}"}
+        params = {"type": "blurpify", "image": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
@@ -172,7 +172,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: Deep Fry
 		"""
         if member is None: member = ctx.author
-        params = {"type": "deepfry", "image": f"{member.avatar.url}"}
+        params = {"type": "deepfry", "image": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
@@ -246,7 +246,7 @@ class memegen(Cog):
             "type": "trap",
             "name": f"{member.name}",
             "author": f"{ctx.author.name}",
-            "image": f"{member.avatar.url}"
+            "image": f"{member.display_avatar.url}"
         }
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
@@ -269,7 +269,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: Awooify
 		"""
         if member is None: member = ctx.author
-        params = {"type": "awooify", "url": f"{member.avatar.url}"}
+        params = {"type": "awooify", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
@@ -291,7 +291,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: Anime Face
 		"""
         if member is None: member = ctx.author
-        params = {"type": "animeface", "image": f"{member.avatar.url}"}
+        params = {"type": "animeface", "image": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
@@ -313,7 +313,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: IphoneX
 		"""
         if member is None: member = ctx.author
-        params = {"type": "iphonex", "url": f"{member.avatar.url}"}
+        params = {"type": "iphonex", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
@@ -335,7 +335,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: Threats
 		"""
         if member is None: member = ctx.author
-        params = {"type": "threats", "url": f"{member.avatar.url}"}
+        params = {"type": "threats", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
@@ -380,7 +380,7 @@ class memegen(Cog):
         if member is None: member = ctx.author
         params = {
             "type": "captcha",
-            "url": f"{member.avatar.url}",
+            "url": f"{member.display_avatar.url}",
             "username": f"{member.name}"
         }
         url = "https://nekobot.xyz/api/imagegen"
@@ -405,7 +405,7 @@ class memegen(Cog):
 		"""
         params = {
             "type": "whowouldwin",
-            "user1": f"{member.avatar.url}",
+            "user1": f"{member.display_avatar.url}",
             "user2": f"{ctx.author.display_avatar.url}"
         }
         url = "https://nekobot.xyz/api/imagegen"
@@ -429,7 +429,7 @@ class memegen(Cog):
 		Meme Generator/Image Generator: Baguette
 		"""
         if member is None: member = ctx.author
-        params = {"type": "baguette", "url": f"{member.avatar.url}"}
+        params = {"type": "baguette", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:

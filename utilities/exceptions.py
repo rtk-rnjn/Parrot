@@ -7,7 +7,7 @@ with open("extra/quote.txt") as f:
 quote = quote.split('\n')
 
 
-class ParrotCheckFaliure(cmd.CheckAnyFailure):
+class ParrotCheckFaliure(cmd.CheckFailure):
     pass
 
 

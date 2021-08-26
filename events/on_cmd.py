@@ -72,15 +72,15 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
 
         elif isinstance(error, commands.CommandOnCooldown):
-            # is_owner = await ctx.bot.is_owner(ctx.author)
-            # if is_owner: return await ctx.reinvoke()
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
             return await ctx.send(
                 f"**{random.choice(quote)}**\nCommand On Cooldown. You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
             )
 
         elif isinstance(error, commands.MissingPermissions):
-            # is_owner = await ctx.bot.is_owner(ctx.author)
-            # if is_owner: return await ctx.reinvoke()
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
             missing = [
                 perm.replace('_', ' ').replace('guild', 'server').title()
                 for perm in error.missing_permissions

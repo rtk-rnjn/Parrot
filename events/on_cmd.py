@@ -83,7 +83,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             # if is_owner: return await ctx.reinvoke()
             missing = [
                 perm.replace('_', ' ').replace('guild', 'server').title()
-                for perm in error.missing_perms
+                for perm in error.missing_permissions
             ]
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),

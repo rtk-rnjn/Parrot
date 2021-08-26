@@ -63,7 +63,7 @@ def is_mod():
 def is_cmd_enabled():
     async def predicate(ctx):
         collection = enable_disable[f'{ctx.guild.id}']
-        data = collection.find_one({'_id': ctx.command.qualified_name})
+        data = await collection.find_one({'_id': ctx.command.qualified_name})
         if not data:
             return True
         channels = data['channel']
@@ -78,7 +78,7 @@ def is_cmd_enabled():
             raise ex.CommandDisabledServer()
         else:
             return True
-        data = collection.find_one({'_id': ctx.command.cog.qualified_name})
+        data = await collection.find_one({'_id': ctx.command.cog.qualified_name})
         if not data:
             return True
         channels = data['channel']

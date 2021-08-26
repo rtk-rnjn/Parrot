@@ -179,12 +179,13 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.send(
                 f"**{random.choice(quote)}**\nMax Concurrenry Reached. This command is already running in this server. You have wait for it to finish"
             )
+        
+        elif isinstance(error, ParrotCheckFaliure):
+            return await ctx.send(error.__str__().format(ctx=ctx))
+        
         elif isinstance(error, commands.CheckAnyFailure):
             return await ctx.send(' or '.join(
                 [error.__str__().format(ctx=ctx) for error in error.errors]))
-
-        elif isinstance(error, ParrotCheckFaliure):
-            return await ctx.send(error.__str__().format(ctx=ctx))
 
         else:
             is_owner = await ctx.bot.is_owner(ctx.author)
@@ -197,6 +198,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                     await ctx.send(er, delete_after=60)
                 else: 
                     await ctx.send(text)
+            else:
+                ctx.send(f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working")
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

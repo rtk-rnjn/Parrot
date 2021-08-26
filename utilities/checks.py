@@ -70,12 +70,12 @@ def is_cmd_enabled():
         categories = data['category']
         server = data['server']
         if ctx.channel.id in channels:
-            raise ex.CommandDisabledChannel()
+            return False # raise ex.CommandDisabledChannel()
         elif ctx.channel.category:
             if ctx.channel.category.id in categories:
-                raise ex.CommandDisabledCategory()
+                return False # raise ex.CommandDisabledCategory()
         elif server is True:
-            raise ex.CommandDisabledServer()
+            return False # raise ex.CommandDisabledServer()
         else:
             return True
         data = await collection.find_one({'_id': ctx.command.cog.qualified_name})
@@ -85,12 +85,12 @@ def is_cmd_enabled():
         categories = data['category']
         server = data['server']
         if ctx.channel.id in channels:
-            raise ex.CommandDisabledChannel()
+            return False # raise ex.CommandDisabledChannel()
         elif ctx.channel.category:
             if ctx.channel.category.id in categories:
-                raise ex.CommandDisabledCategory()
+                return False # raise ex.CommandDisabledCategory()
         elif server is True:
-            raise ex.CommandDisabledServer()
+            return False # raise ex.CommandDisabledServer()
         else:
             return True
     return commands.check(predicate)

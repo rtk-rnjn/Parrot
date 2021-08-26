@@ -34,7 +34,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                                             'lang': 'txt'
                                         })
             if post.status == 200:
-                return post.url
+                return str(post.url)
 
     @Cog.listener()
     async def on_command(self, ctx: Context):
@@ -191,10 +191,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             if is_owner: 
                 tb = traceback.format_exception(type(error), error, error.__traceback__)
                 tbe = "".join(tb) + ""
+                er = '```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe)
+                text = await self.paste(er)
                 if len(tbe) < 1800:
-                    await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe), delete_after=60)
+                    await ctx.send(er, delete_after=60)
                 else: 
-                    await ctx.author.send(self.paste('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))")
+                    await ctx.send(text)
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

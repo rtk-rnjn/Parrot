@@ -3,7 +3,7 @@ import discord, typing
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
-from utilities.database import enable_cog, disable_cog, enable_cmd, disable_cmd
+from utilities.database import enable_cog, disable_cog, enable_cmd, disable_cmd, enable_disable
 
 ct = parrot_db['telephone']
 csc = parrot_db['server_config']
@@ -18,6 +18,18 @@ class botConfig(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
+    async def get_disabled_cmd(self, guild_id: int):
+        collection = enable_disable[f"{guild_id}"]
+        
+        if not data:
+            await collection.insert_one({
+                '_id': cmd,
+                'channel': [],
+                'category': [],
+                'server': False
+            })
+            return []
+        
     @commands.group(name='serverconfig',
                     aliases=['config'],
                     invoke_without_command=True)
@@ -460,6 +472,8 @@ class botConfig(Cog):
             tar = target.id 
         # target = True if target is None else target.id
         cmd = bot.get_command(command)
+        if not cmd:
+            return await ctx.send(f"{ctx.author.mention} that commands do not exists")
         type_ = str(target.type)
         if server: type_ = 'server'
         if type(target) is discord.TextChannel:
@@ -469,7 +483,32 @@ class botConfig(Cog):
         else:
             await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
         
-        await ctx.send(f"{ctx.author.mention} success! **{cmd.qualified_name}** is disabled this **{type_}** wide")
+        await ctx.send(f"{ctx.author.mention} success! **{cmd.qualified_name}** is disabled; to **{type_}** wide")
+    
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def enable(self, ctx: Context, command: commands.clean_content, *, target: typing.Union[discord.TextChannel, discord.CategoryChannel]=None):
+        """To enable the command"""
+        server = True
+        if target is None:
+            server = True
+        else:
+            tar = target.id 
+        # target = True if target is None else target.id
+        cmd = bot.get_command(command)
+        if not cmd:
+            return await ctx.send(f"{ctx.author.mention} that commands do not exists")
+        type_ = str(target.type)
+        if server: type_ = 'server'
+        if type(target) is discord.TextChannel:
+            await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, tar, None, server)
+        elif type(target) is discord.CategoryChannel:
+            await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, tar, server)
+        else:
+            await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
+        
+        await ctx.send(f"{ctx.author.mention} success! **{cmd.qualified_name}** is enabled; to **{type_}** wide")
 
 def setup(bot):
     bot.add_cog(botConfig(bot))

@@ -194,7 +194,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 if len(tbe) < 1800:
                     await ctx.send('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe), delete_after=60)
                 else: 
-                    await ctx.author.send(f"{self.paste('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))}")
+                    await ctx.author.send(self.paste('```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe))")
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

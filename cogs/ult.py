@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from psutil import Process, virtual_memory
 from discord import __version__ as discord_version
 from platform import python_version
-
+from utilities.checks import is_cmd_enabled
 from core import Parrot, Context, Cog
 from utilities.config import VERSION
 
@@ -17,15 +17,17 @@ class utilities(Cog):
 
     @commands.command(name="ping")
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @is_cmd_enabled
     @Context.with_type
     async def ping(self, ctx: Context):
         """
         Get the latency of bot.
         """
         start = time()
-        message = await ctx.reply(f"Pong! latency: {self.bot.latency*1000:,.0f} ms.")
+        message = await ctx.reply(f"Pinging...")
+        db = await self.bot.db_latency
         end = time()
-        await message.edit(content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms.")
+        await message.edit(content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f}")
 
     @commands.command(aliases=['av'])
     @commands.cooldown(1, 5, commands.BucketType.member)

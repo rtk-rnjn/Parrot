@@ -28,7 +28,7 @@ def logger(get_logger: str, file_name: str) -> None:
     logger.addHandler(handler)
 
 
-def get_last_commits(count=3) -> str:
-    repo = pygit2.Repository('.git')
-    commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
-    return '\n'.join(self.format_commit(c) for c in commits)
+# def get_last_commits(count=3) -> str:
+#     repo = pygit2.Repository('.git')
+#     commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
+#     return '\n'.join(self.format_commit(c) for c in commits)

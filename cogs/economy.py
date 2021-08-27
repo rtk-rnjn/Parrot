@@ -12,7 +12,27 @@ class economy(Cog):
     """Parrot Economy to get some Parrot Coins as to make calls"""
     def __init__(self, bot: Parrot):
         self.bot = bot
-
+    
+    @commands.command(aliases=['reseteconomy'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def reseteco(self, ctx: Context):
+        """To reset the economy, this can not be undone"""
+        x = await collection.find_one({'_id': ctx.author.id})
+        if not x:
+            return await ctx.reply(f"{ctx.author.mention} you already dont have a economy")
+        else:
+            await ctx.reply(f"{ctx.author.mention} Are you sure about that? If yes, then type `YES`")
+            def check(m):
+                return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+            try:
+                msg = self.bot.wait_for('message', timeout=60, check=check)
+            except Exception:
+                return await ctx.reply(f"{ctx.author.mention} you didnt answer on time")
+            if msg.content.upper() == 'YES':
+                await collection.delete_one({'_id': ctx.author.id})
+                return await ctx.reply(f"{ctx.author.mention} deleted successfully")
+        
     @commands.command(aliases=['starteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type

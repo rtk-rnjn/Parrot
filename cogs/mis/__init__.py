@@ -222,7 +222,7 @@ class misc(Cog):
         emb = discord.Embed()
         if type(snipe) == list:  # edit snipe
             emb.set_author(name=str(snipe[0].author),
-                           icon_url=snipe[0].author.avatar.url)
+                           icon_url=snipe[0].author.display_avatar.url)
             emb.colour = snipe[0].author.colour
             emb.add_field(name='Before',
                           value=self.sanitise(snipe[0].content),
@@ -233,7 +233,7 @@ class misc(Cog):
             emb.timestamp = snipe[0].created_at
         else:  # delete snipe
             emb.set_author(name=str(snipe.author),
-                           icon_url=snipe.author.avatar.url)
+                           icon_url=snipe.author.display_avatar.url)
             emb.description = self.sanitise(snipe.content)
             emb.colour = snipe.author.colour
             emb.timestamp = snipe.created_at

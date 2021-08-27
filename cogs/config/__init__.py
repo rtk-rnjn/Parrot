@@ -464,7 +464,7 @@ class botConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def disable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.CategoryChannel]=None):
-        """To disable the command"""
+        """To disable the command | NOT WORKING FOR SOME REASON"""
         server = False
         if target is None:
             server = True
@@ -489,7 +489,7 @@ class botConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def enable(self, ctx: Context, command: commands.clean_content, *, target: typing.Union[discord.TextChannel, discord.CategoryChannel]=None):
-        """To enable the command"""
+        """To enable the command | NOT WORKING FOR SOME REASON"""
         server = True
         if target is None:
             server = True

@@ -128,7 +128,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
             await ctx.send(
                 content=
-                f"{random.choice(quote)}\n\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
+                f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
                 embed=em)
             return
 

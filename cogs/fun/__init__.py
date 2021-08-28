@@ -403,7 +403,7 @@ class fun(Cog):
         Slap virtually with is shit command.
         """
         await ctx.message.delete()
-        await ctx.send(f"{ctx.author.display_name} slapped {member.mention} {reason}!")
+        await ctx.send(f"{ctx.author.mention} slapped **{member.name}#{member.discriminator}** {reason}!")
   
     
     @commands.command(aliases=['trans'])

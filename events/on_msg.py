@@ -20,6 +20,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     def refrain_message(self, msg: str):
         msg = msg.split(" ")
+        if 'chod' in msg:
+            return False
         for bad_word in bad_dict:
             if bad_word in msg:
                 return False
@@ -31,9 +33,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             self.collection = db['banned_users']
         if data := await self.collection.find_one({'_id': user.id}):
             if data['chat'] or data['global']:
-                return False
+                return True
         else:
-            return True
+            return False
 
     @Cog.listener()
     async def on_message(self, message):

@@ -80,7 +80,7 @@ class Owner(Cog):
         def check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
         try:
-            msg = self.bot.wait_for('message', timeout=60, check=check)
+            msg = await self.bot.wait_for('message', timeout=60, check=check)
         except Exception:
             return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if msg.content.upper() == "YES":

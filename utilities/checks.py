@@ -88,6 +88,7 @@ def is_cmd_enabled():
             return False # raise ex.CommandDisabledServer()
         else:
             return True
+        
         data = await collection.find_one({'_id': ctx.command.cog.qualified_name})
         if not data:
             return True

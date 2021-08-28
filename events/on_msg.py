@@ -16,6 +16,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.channel)
+        self.collection = None
 
     def refrain_message(self, msg: str):
         msg = msg.split(" ")
@@ -23,6 +24,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if bad_word in msg:
                 return False
         return True
+
+    async def is_banned(self, user) -> bool:
+        if self.collection is None:
+            db = await self.bot.db('parrot_db')
+            self.collection = db['banned_users']
+        if data := await self.collection.find_one({'_id': user.id}):
+            if data['chat'] or data['global']:
+                return False
+        else:
+            return True
 
     @Cog.listener()
     async def on_message(self, message):
@@ -113,7 +124,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return await message.channel.send(
                     f"{message.author.mention} | Sending Bad Word not allowed",
                     delete_after=5)
-
+        is_user_banned = self.is_banned(message.author)
+        if is_user_banned:
+            return
         try:
             await asyncio.sleep(0.1)
             await message.delete()
@@ -124,19 +137,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         async for webhook in collection.find({}):
             hook = webhook['webhook']
-            try:
+            try:                
+                async with aiohttp.ClientSession() as session:
+                    webhook = Webhook.from_url(f"{hook}", session=session)
 
-                async def send_webhook():
-                    async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(f"{hook}", session=session)
+                    await webhook.send(
+                        content=message.clean_content,
+                        username=f"{message.author.name}#{message.author.discriminator}",
+                        avatar_url=message.author.display_avatar.url)
 
-                        await webhook.send(
-                            content=message.clean_content,
-                            username=message.author.name + "#" +
-                            message.author.discriminator,
-                            avatar_url=message.author.avatar.url)
-
-                await send_webhook()
             except Exception:
                 continue
 

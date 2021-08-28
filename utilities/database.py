@@ -10,7 +10,6 @@ parrot_db = cluster['parrot_db']
 economy_db = cluster['economy']
 msg_db = cluster['msg_db']
 tags = cluster['tags']
-
 enable_disable = cluster['enable_disable']
 
 async def cmd_increment(cmd: str):
@@ -236,3 +235,7 @@ async def guild_remove(guild_id: int):
     await collection.delete_one({'_id': guild_id})
     collection = parrot_db["ticket"]
     await collection.delete_one({'_id': guild_id})
+
+async def ban(user_id: int, cmd: bool, chat: bool, global_: bool, reason: str): # chat, cmd, global
+    collection = parrot_db['banned_users']
+    await collection.insert_one({'_id': user_id, 'cmd': cmd, 'chat': chat, 'global': global_, 'reason': reason})

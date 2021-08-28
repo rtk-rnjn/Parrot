@@ -49,7 +49,6 @@ def is_mod():
         data = await collection.find_one({'_id': ctx.guild.id})
         if not data:
             return False
-        data = await collection.find_one({'_id': ctx.guild.id})
         role = ctx.guild.get_role(data['mod_role'])
         if not role: 
             return False
@@ -58,6 +57,17 @@ def is_mod():
         else:
             raise ex.NoModRole()
 
+    return commands.check(predicate)
+
+def can_run():
+    async def predicate(ctx):
+        data = await collection.find_one({'_id': ctx.author.id})
+        if not data:
+            return True
+        if data['cmd']:
+            return False
+        if data['global']:
+            return False
     return commands.check(predicate)
 
 def is_cmd_enabled():

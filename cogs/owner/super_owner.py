@@ -3,7 +3,7 @@ from aiofile import async_open
 import traceback
 from discord.ext import commands
 import discord, aiohttp
-
+from utilities.database import ban
 class Owner(Cog):
     """You can not use these commands"""
     def __init__(self, bot: Parrot):
@@ -61,3 +61,28 @@ class Owner(Cog):
         """To leave the guild"""
         await ctx.send(f"Leaving Guild in a second!")
         await guild.leave()
+    
+    @commands.command()
+    @commands.is_owner()
+    async def ban_user(self, ctx: Context, user: discord.User, cmd: bool=True, chat: bool=True, global_: bool=True, *, reason: str=None):
+        """To ban the user"""
+        reason = reason or "No reason provided"
+        await ban(user.id, cmd, chat, globals_, reason)
+        try:
+            await user.send(f"{user.mention} you are banned from Parrot bot. From now you can not use any command neither you can chat on #global-chat. Reason: {reason}\n\nContact `!! Ritik Ranjan [*.*]#9230` (741614468546560092) for unban.")
+        except Exception:
+            pass
+    
+    @commands.command(aliases=['report-user', 'report', 'report_user', 'ru'])
+    async def reportuser(self, ctx: Context, *, text: str):
+        """To report someone"""
+        await ctx.send(f"{ctx.author.mention} are you sure? Abuse of this command will result in ban from parrot commands. Type `YES` to continue (case sensitive)")
+        def check(m):
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+        try:
+            msg = self.bot.wait_for('message', timeout=60, check=check)
+        except Exception:
+            return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
+        if msg.content.upper() == "YES":
+            await ctx.send(f"{ctx.author.mention} reported")
+            await self.bot.get_user(741614468546560092).send(f"{ctx.author.mention} {text[1000::]}")

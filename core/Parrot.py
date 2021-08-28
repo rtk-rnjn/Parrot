@@ -38,7 +38,7 @@ class Parrot(commands.AutoShardedBot):
             **kwargs)  
         self._BotBase__cogs = commands.core._CaseInsensitiveDict() # to make cog case insensitive
         self.color = 0x87CEEB
-        
+
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -51,17 +51,17 @@ class Parrot(commands.AutoShardedBot):
     @property
     def server(self) -> typing.Optional[discord.Guild]:
         return self.get_guild(741614680652644382) # Main server
-    
+
     @async_property
     async def db_latency(self) -> int:
         ini = time()
         data = await collection.find_one({'_id': 741614680652644382})
         fin = time()
         return fin - ini
-    
+
     async def db(self, db_name: str):
         return cluster[db_name]
-        
+
     def run(self):
         super().run(TOKEN, reconnect=True)
 

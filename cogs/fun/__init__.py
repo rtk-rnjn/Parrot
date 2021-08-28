@@ -263,8 +263,8 @@ class fun(Cog):
 
 
     @commands.command(aliases=['its-so-stupid'])
-    @Context.with_type
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @Context.with_type
     async def itssostupid(self, ctx, *, comment:str):
       """
       :\ I don't know what is this, I think a meme generator.
@@ -341,7 +341,7 @@ class fun(Cog):
         await ctx.reply(embed=embed)
       
 
-    @commands.command()
+    @commands.command(aliases=['fakeprofile'])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def fakepeople(self, ctx: Context):

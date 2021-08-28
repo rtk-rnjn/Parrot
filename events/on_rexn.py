@@ -47,8 +47,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             try:
                 await message.remove_reaction("✉️", member)
             except Exception:
-                return await channel.send(
-                    'Missing Manage Message permisssion to work properly')
+                return await channel.send('Missing Manage Message permisssion to work properly', delete_after=10)
 
             ticket_number = data['ticket-counter'] + 1
             cat = guild.get_channel(data['category'])

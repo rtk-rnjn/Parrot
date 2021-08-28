@@ -126,7 +126,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return await message.channel.send(
                     f"{message.author.mention} | Sending Bad Word not allowed",
                     delete_after=5)
-        is_user_banned = self.is_banned(message.author)
+        is_user_banned = await self.is_banned(message.author)
         if is_user_banned:
             return
         try:

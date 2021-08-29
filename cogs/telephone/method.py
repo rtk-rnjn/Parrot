@@ -1,6 +1,6 @@
 from utilities.database import parrot_db, telephone_update
 collection = parrot_db['telephone']
-import asyncio, discord, random
+import asyncio, discord, random, time
 
 async def dial(bot, ctx, server, reverse=False):
     if server.id == ctx.guild.id: 

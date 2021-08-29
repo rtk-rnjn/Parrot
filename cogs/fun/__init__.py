@@ -5,12 +5,8 @@ from discord.ext.commands import command, guild_only, bot_has_permissions, coold
 from random import choice
 from discord import Embed 
 
-
-from utilities.database import parrot_db, telephone_update
-collection = parrot_db['telephone']
-
+from utilities.database import parrot_db
 from aiohttp import request
-
 
 from utilities.paginator import Paginator
 from core import Parrot, Context, Cog
@@ -572,139 +568,7 @@ class fun(Cog):
             em.set_footer(text=f'{ctx.author.name}')
         await ctx.send(embed=em)
 
-    
-    @commands.command()
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.cooldown(1, 30, commands.BucketType.guild)
-    @Context.with_type
-    async def dial(self, ctx: Context, *, server: discord.Guild):
-        """
-        To dial to other server. Do not misuse this. Else you RIP :|
-        """
-        if server is ctx.guild: return await ctx.send(f"Can't make a self call")
-        number = server.id
-        channel = ctx.channel
-        self_guild = await collection.find_one({'_id': ctx.guild.id})
-        if not self_guild:
-            return await ctx.send(
-                f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this."
-            )
-        target_guild = await collection.find_one({'_id': number})
-        if not target_guild:
-            return await ctx.send(
-                f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server!"
-            )
 
-        if target_guild['is_line_busy']:
-            return await ctx.send(
-                f"Can not make a connection to **{number} ({self.bot.get_guild(target_guild['_id']).name})**. Line busy!"
-            )
-
-        target_channel = self.bot.get_channel(target_guild['channel'])
-        if not target_channel:
-            return await ctx.send(
-                "Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission."
-            )
-
-        if (target_guild['_id'] in self_guild['blocked']) or (self_guild['_id'] in target_guild['blocked']):
-            return await ctx.send(
-                f'Calling failed! Possible reasons: They blocked You, You blocked Them.'
-            )
-        
-        await ctx.send(
-            f"Calling to **{number} ({self.bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ..."
-        )
-
-        await target_channel.send(
-            f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
-        )
-        try:
-            temp_message = target_channel.send(
-                f'{self.bot.get_guild(target_guild["_id"]).get_role(target_guild["pingrole"]).mention} {self.bot.get_user(target_guild["memberping"]).mention}'
-            )
-            await temp_message.delete()
-        except Exception:
-            pass
-
-        def check(m):
-            return (m.content.lower() in ("pickup", "hangup")) and (m.channel == channel or m.channel == target_channel) # and not m.author.bot
-
-        try:
-            _talk = await self.bot.wait_for('message', check=check, timeout=60)
-        except Exception:
-            await asyncio.sleep(0.5)
-            await target_channel.send(
-                f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
-            )
-            await ctx.reply(
-                f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds"
-            )
-
-            await telephone_update(ctx.guild.id, 'is_line_busy', False)
-            await telephone_update(number, 'is_line_busy', False)
-            return
-
-        if _talk.content.lower() == 'hangup':
-            await ctx.send(f'Disconnected')
-            await target_channel.send(f'Disconnected')
-            await telephone_update(ctx.guild.id, 'is_line_busy', False)
-            await telephone_update(number, 'is_line_busy', False)
-            return
-
-        elif _talk.content.lower() == 'pickup':
-            await ctx.send(
-                f"Connected. Say {random.choice(['hi', 'hello', 'heya'])}")
-            await target_channel.send(
-                f"Connected. Say {random.choice(['hi', 'hello', 'heya'])}")
-
-            await telephone_update(ctx.guild.id, 'is_line_busy', True)
-            await telephone_update(number, 'is_line_busy', True)
-            ini = time.time() + 120
-            while True:
-
-                def check(m):
-                    if (m.channel == target_channel) or (m.channel == channel) and (not m.author.bot): 
-                        return True
-
-                try:
-                    talk_message = await self.bot.wait_for('message',
-                                                          check=check,
-                                                          timeout=60.0)
-                except Exception:
-                    await asyncio.sleep(0.5)
-                    await target_channel.send(
-                        f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
-                    )
-                    await ctx.reply(
-                        f"Line disconnected from **{number} ({self.bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds"
-                    )
-
-                    await telephone_update(ctx.guild.id, 'is_line_busy', False)
-                    await telephone_update(number, 'is_line_busy', False)
-                    return
-
-                if talk_message.content.lower() == 'hangup':
-                    await telephone_update(ctx.guild.id, 'is_line_busy', False)
-                    await telephone_update(number, 'is_line_busy', False)
-                    await ctx.send(f'Disconnected')
-                    await target_channel.send(f'Disconnected')
-                    return
-
-                if talk_message.channel == target_channel:
-                    await channel.send(
-                        f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
-                    )
-
-                elif talk_message.channel == channel:
-                    await target_channel.send(
-                        f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
-                    )
-                if ini - time.time() <= 60: 
-                    await channel.send(f'Disconnected. Call duration reached its maximum limit')
-                    await target_channel.send(f'Disconnected. Call duration reached its maximum limit')
-                    await telephone_update(ctx.guild.id, 'is_line_busy', False)
-                    await telephone_update(number, 'is_line_busy', False)
-                    return
 
 def setup(bot):
   bot.add_cog(fun(bot))

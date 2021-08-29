@@ -189,7 +189,9 @@ class utilities(Cog):
         """
         Get the invite of the bot! Thanks for seeing this command
         """
-        em = discord.Embed(title="Click here to add", description="```ini\n[Default Prefix: `$` and `@Parrot#9209`]\n```", url="https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FNEyJxM7G7f&scope=bot%20applications.commands", timestamp=datetime.utcnow())
+        em = discord.Embed(title="Click here to add", 
+                           description="```ini\n[Default Prefix: `$` and `@Parrot#9209`]\n```\n\n**Bot Owned and created by `!! Ritik Ranjan [*.*]`**", 
+                           url=f"{self.bot.invite}", timestamp=datetime.utcnow())
         em.set_footer(text=f"{ctx.author.name}#{ctx.author.discriminator}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)

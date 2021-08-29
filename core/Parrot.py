@@ -24,7 +24,7 @@ class Parrot(commands.AutoShardedBot):
             case_insensitive=CASE_INSENSITIVE,
             intents=discord.Intents.all(),
             activity=discord.Activity(type=discord.ActivityType.listening,
-                                      name="$help"),
+                                      name=f"{len(self.users)}"),
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,
@@ -54,7 +54,7 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def invite(self) -> str:
-        return discord.utils.oauth_url(self.user.id, permissions=discord.Permissions.all_channel())
+        return f"{discord.utils.oauth_url(self.user.id, permissions=discord.Permissions.all_channel(), redirect_uri="https://discord.gg/NEyJxM7G7f")}%20applications.commands"
 
     @property
     def github(self) -> str:

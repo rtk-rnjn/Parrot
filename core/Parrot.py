@@ -54,7 +54,7 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def invite(self) -> str:
-        return f"{discord.utils.oauth_url(self.user.id, permissions=discord.Permissions.all_channel(), redirect_uri='https://discord.gg/NEyJxM7G7f')}%20applications.commands"
+        return discord.utils.oauth_url(self.user.id, permissions=discord.Permissions.all_channel(), redirect_uri='https://discord.gg/NEyJxM7G7f')
 
     @property
     def github(self) -> str:

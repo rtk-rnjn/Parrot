@@ -4,7 +4,7 @@ from .method import dial
 
 class telephone(Cog):
     """To Make calls"""
-    def def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
         self.redial = {}
         self.las_call_detail = {}

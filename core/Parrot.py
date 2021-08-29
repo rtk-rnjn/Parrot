@@ -52,6 +52,18 @@ class Parrot(commands.AutoShardedBot):
     def server(self) -> typing.Optional[discord.Guild]:
         return self.get_guild(741614680652644382) # Main server
 
+    @property
+    def invite(self) -> str:
+        return discord.utils.oauth_url(self.user.id, permissions=discord.Permissions.all_channel())
+
+    @property
+    def github(self) -> str:
+        return "https://github.com/ritik0ranjan/Parrot"
+
+    @property
+    def support_server(self) -> str:
+        return "https://discord.gg/NEyJxM7G7f"
+
     @async_property
     async def db_latency(self) -> int:
         ini = time()

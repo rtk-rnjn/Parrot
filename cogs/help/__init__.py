@@ -3,15 +3,12 @@ import discord
 from discord.ext import commands
 
 from utilities.paginator import Paginator
-from utilities.config import SUPPORT_SERVER, INVITE, DEV_LOGO, GIT
+from utilities.config import DEV_LOGO
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
 from main import CHANGES
 
 ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
-get_bot = f"[Add me to your server]({INVITE})"
-support_server = f"[Support Server]({SUPPORT_SERVER})"
-github = f"[Github]({GIT})"
 owner_url = "[Made by Ritik Ranjan](https://discord.com/users/741614468546560092)"
 
 class HelpCommand(commands.HelpCommand):
@@ -45,7 +42,7 @@ class HelpCommand(commands.HelpCommand):
             name=f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
-        embed.description = description + f"\n• {get_bot}\n• {support_server}\n• {github}\n• {owner_url}"
+        embed.description = description + f"\n• {self.bot.invite}\n• {self.bot.support_server}\n• {self.bot.github}\n• {owner_url}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
         CATEGORY = '\n'
         for cog in mapping:

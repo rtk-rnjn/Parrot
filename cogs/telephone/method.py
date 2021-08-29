@@ -1,7 +1,8 @@
 from utilities.database import parrot_db, telephone_update
 collection = parrot_db['telephone']
+import asyncio, discord, random
 
-async def dial(bot, ctx, server):
+async def dial(bot, ctx, server, reverse=False):
     if server.id == ctx.guild.id: 
         return await ctx.send(f"Can't make a self call")
     number = server.id
@@ -111,15 +112,17 @@ async def dial(bot, ctx, server):
                 await ctx.send(f'Disconnected')
                 await target_channel.send(f'Disconnected')
                 return
+            TALK = discord.utils.escape_mentions(talk_message.content[:1000:])
+            if reverse: TALK = discord.utils.escape_mentions("".join(reversed(talk_message.content[:1000:]))) # this is imp, cause people can bypass so i added discord.utils
 
             if talk_message.channel == target_channel:
                 await channel.send(
-                    f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
+                    f"**{talk_message.author.name}#{talk_message.author.discriminator}** {TALK}"
                 )
 
             elif talk_message.channel == channel:
                 await target_channel.send(
-                    f"**{talk_message.author.name}#{talk_message.author.discriminator}** {talk_message.clean_content}"
+                    f"**{talk_message.author.name}#{talk_message.author.discriminator}** {TALK}"
                 )
             if ini - time.time() <= 60: 
                 await channel.send(f'Disconnected. Call duration reached its maximum limit')

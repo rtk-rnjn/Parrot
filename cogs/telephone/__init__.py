@@ -1,6 +1,7 @@
 from core import Parrot, Cog, Context
 from discord.ext import commands
 from .method import dial
+import discord 
 
 class telephone(Cog):
     """To Make calls"""

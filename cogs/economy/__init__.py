@@ -85,8 +85,8 @@ class economy(Cog):
 		Want more money? Try stealing others.
 		"""
 
-        x = await collection.find({'_id': ctx.author.id})
-        y = await collection.find({'_id': member.id})
+        x = await collection.find_one({'_id': ctx.author.id})
+        y = await collection.find_one({'_id': member.id})
 
         if x and y:
             coins_walt_x = x['wallet']
@@ -118,15 +118,13 @@ class economy(Cog):
     @commands.cooldown(1, 10, commands.BucketType.member)
     @Context.with_type
     async def slots(self, ctx: Context, money: int):
-        '''
-				Want more money? Try gambling slots
-				'''
+        '''Want more money? Try gambling slots'''
 
         if money < 0:
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
 
-        x = await collection.find({'_id': ctx.author.id})
+        x = await collection.find_one({'_id': ctx.author.id})
 
         if x:
             coins_walt = x['wallet']
@@ -167,8 +165,8 @@ class economy(Cog):
             return await ctx.reply(
                 f'{ctx.author.mention} money can not be negative')
 
-        x = await collection.find({'_id': ctx.author.id})
-        y = await collection.find({'_id': member.id})
+        x = await collection.find_one({'_id': ctx.author.id})
+        y = await collection.find_one({'_id': member.id})
 
         if x and y:
             coins_walt_x = x['wallet'] - money

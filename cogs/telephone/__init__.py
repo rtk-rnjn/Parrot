@@ -2,6 +2,7 @@ from core import Parrot, Cog, Context
 from discord.ext import commands
 from .method import dial
 import discord 
+from time import time
 
 class telephone(Cog):
     """To Make calls"""
@@ -23,8 +24,17 @@ class telephone(Cog):
             await ctx.send("That server no longer exists or bot is being removed from that server")
         self.redial[ctx.guild.id] = server.id
         self.redial[server.id] = ctx.guild.id
+        ini = time()
         await dial(self.bot, ctx, server, False)
-
+        fin = time()
+        return await ctx.send(
+            f"Call Details\n"
+            f"`Total Time Taken:` **{round(fin-ini)}**\n"
+            f"`Tried to call   :` **{server.name} ({server.id})**\n"
+            f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
+            f"`Can Redial?     :` **True**\n"
+            f"`Call log saved? :` **False**\n"
+            )
     @commands.command(aliases=['recall'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
@@ -38,7 +48,17 @@ class telephone(Cog):
         else:
             server = self.bot.get_guild(serverid)
             if server:
+                ini = time()
                 await dial(self.bot, ctx, server, False)
+                fin = time()
+                return await ctx.send(
+                    f"Call Details\n"
+                    f"`Total Time Taken:` **{round(fin-ini)}**\n"
+                    f"`Tried to call   :` **{server.name} ({server.id})**\n"
+                    f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
+                    f"`Can Redial?     :` **True**\n"
+                    f"`Call log saved? :` **False**\n"
+                    )
             else:
                 await ctx.send("That server no longer exists or bot is being removed from that server")
     
@@ -52,7 +72,17 @@ class telephone(Cog):
             await ctx.send("That server no longer exists or bot is being removed from that server")
         self.redial[ctx.guild.id] = server.id
         self.redial[server.id] = ctx.guild.id
+        ini = time()
         await dial(self.bot, ctx, server, True)
-    
+        fin = time()
+        return await ctx.send(
+            f"Call Details\n"
+            f"`Total Time Taken:` **{round(fin-ini)}**\n"
+            f"`Tried to call   :` **{server.name} ({server.id})**\n"
+            f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
+            f"`Can Redial?     :` **True**\n"
+            f"`Call log saved? :` **False**\n"
+            )
+
 def setup(bot):
     bot.add_cog(telephone(bot))

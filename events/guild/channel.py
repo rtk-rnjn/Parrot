@@ -6,7 +6,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_delete(self, channel):
-        db = await self.bot.db('parrot_db')
+        parrot_db = await self.bot.db('parrot_db')
         
         if data := await db['global_chat'].find_one({'_id': channel.guild.id}):
             if data['channel_id'] == channel.id:

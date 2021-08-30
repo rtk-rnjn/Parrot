@@ -28,7 +28,7 @@ class Parrot(commands.AutoShardedBot):
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,
-            allowed_mentions=discord.AllowedMentions.(
+            allowed_mentions=discord.AllowedMentions(
                 everyone=False,
                 replied_user=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(

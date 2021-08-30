@@ -21,3 +21,4 @@ dnspython
 motor
 aiofile
 async-property
+git+https://github.com/Rapptz/discord.py

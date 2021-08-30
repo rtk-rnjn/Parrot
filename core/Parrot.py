@@ -65,6 +65,11 @@ class Parrot(commands.AutoShardedBot):
         return "https://discord.gg/NEyJxM7G7f"
 
     @async_property
+    async def change_log(self) -> typing.Optional[discord.Message]:
+        msg = await self.get_channel(796932292458315776).history(limit=1).flatten()
+        return msg[0]
+    
+    @async_property
     async def db_latency(self) -> int:
         ini = time()
         data = await collection.find_one({'_id': 741614680652644382})

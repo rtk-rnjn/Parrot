@@ -13,6 +13,7 @@ class telephone(Cog):
     @commands.command(aliases=['call'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
+    @commands.bot_has_permissions(add_reactions=True)
     @Context.with_type
     async def dial(self, ctx: Context, *, server: discord.Guild):
         """

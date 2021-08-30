@@ -6,7 +6,6 @@ from utilities.paginator import Paginator
 from utilities.config import DEV_LOGO
 from core import Parrot, Cog
 from cogs.help.method import common_command_formatting, get_command_signature
-from main import CHANGES
 
 ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
 owner_url = "[Made by Ritik Ranjan](https://discord.com/users/741614468546560092)"
@@ -31,7 +30,8 @@ class HelpCommand(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         bot = self.context.bot
-
+        change_log_msg = await self.bot.change_log
+        
         em_list = []
 
         description = f"```ini\n[Prefixes are '{self.context.clean_prefix}' and '@Parrot#9209']\n```"
@@ -52,7 +52,7 @@ class HelpCommand(commands.HelpCommand):
                 else:
                     CATEGORY = CATEGORY + str(cog.qualified_name).upper() + '\n'
         embed.add_field(name="Categories", value=f"```{CATEGORY}```")
-        embed.add_field(name="Latest News", value=f"{CHANGES}")
+        embed.add_field(name="Latest News", value=f"{change_log_msg.content[:128:]}... [Read More]({change_log_msg.jump_url})")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 

@@ -68,17 +68,17 @@ async def dial(bot, ctx, server, reverse=False):
         return
 
     if _talk.content.lower() == 'hangup':
-        await ctx.send(f'Disconnected')
-        await target_channel.send(f'Disconnected')
+        await ctx.send(f'Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**')
+        await target_channel.send(f'Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**')
         await telephone_update(ctx.guild.id, 'is_line_busy', False)
         await telephone_update(number, 'is_line_busy', False)
         return
 
     elif _talk.content.lower() == 'pickup':
         await ctx.send(
-            f"Connected. Say {random.choice(['hi', 'hello', 'heya'])}")
+            f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
         await target_channel.send(
-            f"Connected. Say {random.choice(['hi', 'hello', 'heya'])}")
+            f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
 
         await telephone_update(ctx.guild.id, 'is_line_busy', True)
         await telephone_update(number, 'is_line_busy', True)

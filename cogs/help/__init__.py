@@ -52,7 +52,7 @@ class HelpCommand(commands.HelpCommand):
                 else:
                     CATEGORY = CATEGORY + str(cog.qualified_name).upper() + '\n'
         embed.add_field(name="Categories", value=f"```{CATEGORY}```")
-        embed.add_field(name="Latest News", value=f"{change_log_msg.content[:1000:]}... [Read More]({change_log_msg.jump_url})")
+        embed.add_field(name="Latest News", value=f"{change_log_msg.content[:512:]}... [Read More]({change_log_msg.jump_url})")
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 

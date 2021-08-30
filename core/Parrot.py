@@ -28,10 +28,7 @@ class Parrot(commands.AutoShardedBot):
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,
-            allowed_mentions=discord.AllowedMentions(everyone=False,
-                                                     roles=True,
-                                                     replied_user=True,
-                                                     users=True),
+            allowed_mentions=discord.AllowedMentions.none(),
             member_cache_flags=discord.MemberCacheFlags.from_intents(
                 discord.Intents.all()),
             shard_count=3,

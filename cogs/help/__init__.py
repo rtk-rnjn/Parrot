@@ -34,7 +34,7 @@ class HelpCommand(commands.HelpCommand):
         
         em_list = []
 
-        description = f"```ini\n[Prefixes are '{self.context.clean_prefix}' and '@Parrot#9209']\n```"
+        description = f"```ini\n[Default '@Parrot#9209']\n```"
 
         embed = discord.Embed(color=discord.Colour(0x55ddff))
 
@@ -42,7 +42,7 @@ class HelpCommand(commands.HelpCommand):
             name=f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
-        embed.description = description + f"\n• [Invite the bot]({bot.invite})\n• [Support Server]({bot.support_server})\n• [Bot is Open Source]({bot.github})\n• {owner_url}"
+        embed.description = description + f"**Important Links**\n• [Invite the bot]({bot.invite})\n• [Support Server]({bot.support_server})\n• [Bot is Open Source]({bot.github})\n• {owner_url}"
         embed.set_thumbnail(url=self.context.me.avatar.url)
         CATEGORY = '\n'
         for cog in mapping:

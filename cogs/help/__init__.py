@@ -30,7 +30,7 @@ class HelpCommand(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         bot = self.context.bot
-        change_log_msg = await self.bot.change_log
+        change_log_msg = await bot.change_log
         
         em_list = []
 

@@ -17,3 +17,15 @@ class Context(commands.Context):
             async with context.typing():
                 await func(*args, **kwargs)
         return wrapped
+    
+    async def send(self, content: any = None, **kwargs):
+        if not (_perms := self.channel.permissions_for(self.me)).send_messages:
+            try:
+                await self.author.send(
+                    "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
+                )
+            except discord.Forbidden:
+                pass
+            return
+        
+        return await super().send(content, **kwargs)

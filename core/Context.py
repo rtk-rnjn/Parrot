@@ -1,7 +1,7 @@
 from __future__ import annotations
 from discord.ext import commands
 import functools
-
+import discord, typing
 __all__ = ("Context", )
 
 
@@ -18,7 +18,7 @@ class Context(commands.Context):
                 await func(*args, **kwargs)
         return wrapped
     
-    async def send(self, content: any = None, **kwargs):
+    async def send(self, content: typing.Optional[str] = None, **kwargs) -> typing.Optional[discord.Message]:
         if not (_perms := self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
@@ -29,3 +29,16 @@ class Context(commands.Context):
             return
         
         return await super().send(content, **kwargs)
+    
+    async def reply(self, content: typing.Optional[str] = None, **kwargs) -> typing.Optional[discord.Message]:
+        if not (_perms := self.channel.permissions_for(self.me)).send_messages:
+            try:
+                await self.author.send(
+                    "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
+                )
+            except discord.Forbidden:
+                pass
+            return
+        
+        return await super().reply(content, **kwargs)
+    

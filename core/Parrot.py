@@ -129,17 +129,15 @@ class Parrot(commands.AutoShardedBot):
         await self.process_commands(message)
     
     async def get_prefix(self, message: discord.Message) -> str:
-        if not message.guild: return ''
-        else:
-            data = await collection.find_one({"_id": message.guild.id})
-            if not data:
-                await collection.insert_one({
-                    '_id': message.guild.id,
-                    'prefix': '$',
-                    'mod_role': None,
-                    'action_log': None,
-                    'mute_role': None
-                })
-                return commands.when_mentioned_or('$')(self, message)
-            prefix = data['prefix']
+        data = await collection.find_one({"_id": message.guild.id})
+        if not data:
+            await collection.insert_one({
+                '_id': message.guild.id,
+                'prefix': '$',
+                'mod_role': None,
+                'action_log': None,
+                'mute_role': None
+            })
+            return commands.when_mentioned_or('$')(self, message)
+        prefix = data['prefix']
         return commands.when_mentioned_or(prefix)(self, message)

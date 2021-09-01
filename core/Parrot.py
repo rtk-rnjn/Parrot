@@ -4,12 +4,15 @@ import jishaku
 import os, typing
 from async_property import async_property
 from discord.ext import commands
-import discord, traceback
+import discord, traceback, asyncio
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
 from time import time
 
+from .Context import Context
+
 collection = parrot_db['server_config']
+collection_ban = parrot_db['banned_users']
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -34,7 +37,9 @@ class Parrot(commands.AutoShardedBot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(
                 discord.Intents.all()),
             shard_count=3,
-            **kwargs)  
+            **kwargs)
+        self._seen_messages = 0
+        self._change_log = None
         self._BotBase__cogs = commands.core._CaseInsensitiveDict() # to make cog case insensitive
         self.color = 0x87CEEB
 
@@ -65,8 +70,10 @@ class Parrot(commands.AutoShardedBot):
 
     @async_property
     async def change_log(self) -> typing.Optional[discord.Message]:
-        msg = await self.get_channel(796932292458315776).history(limit=1).flatten()
-        return msg[0]
+        if self._change_log is None:
+            self._change_log = await self.get_channel(796932292458315776).history(limit=1).flatten()
+            
+        return self._change_log[0]
     
     @async_property
     async def db_latency(self) -> int:
@@ -97,14 +104,30 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_disconnect(self) -> None:
         print(
-            f"[PARROT] {self.user.name}#{self.user.discriminator} disconnect from discord"
+            f"[Parrot] {self.user.name}#{self.user.discriminator} disconnect from discord"
         )
         return
 
     async def on_resumed(self) -> None:
-        print(f"[PARROT] resumed {self.user.name}#{self.user.discriminator}")
+        print(f"[Parrot] resumed {self.user.name}#{self.user.discriminator}")
         return
 
+    async def process_commands(self, message: discord.Message):
+        ctx = await self.get_context(message, cls=Context)
+
+        if ctx.command is None:
+            return
+
+        await self.invoke(ctx)
+    
+    async def on_message(self, message: discord.Message):
+        self._seen_messages += 1
+
+        if not message.guild:
+            return
+
+        await self.process_commands(message)
+    
     async def get_prefix(self, message: discord.Message) -> str:
         if not message.guild: return ''
         else:

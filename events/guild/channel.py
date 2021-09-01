@@ -8,9 +8,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     async def on_guild_channel_delete(self, channel):
         parrot_db = await self.bot.db('parrot_db')
         
-        if data := await db['global_chat'].find_one({'_id': channel.guild.id}):
+        if data := await parrot_db['global_chat'].find_one({'_id': channel.guild.id}):
             if data['channel_id'] == channel.id:
-                await db['global_chat'].delete_one({'_id': channel.guild.id})
+                await parrot_db['global_chat'].delete_one({'_id': channel.guild.id})
         
         if data := await parrot_db["telephone"].find_one({'_id': channel.guild.id}):
             if data['channel'] == channel.id:

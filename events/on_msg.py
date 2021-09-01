@@ -161,6 +161,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_message_delete(self, payload):
+        # guild_id = payload.guild_id
+        # collection = parrot_db['ticket']
+        # if data := await collection.find_one({'_id': guild_id}):
+        #     if data['message_id'] == payload.message_id:
+        #         await collection.update_one({'_id': channel.guild.id}, {'$set': {'message_id': None, 'channel_id': None}})
         pass
 
     @Cog.listener()

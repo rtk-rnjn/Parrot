@@ -361,17 +361,17 @@ class mod(Cog):
         await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()
-    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
+    #@commands.check_any(is_mod(), commands.has_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
     @commands.bot_has_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True)
-    @Context.with_type
+    #@Context.with_type
     async def voice(self, ctx: Context):
         """Voice Moderation"""
         pass
     
     @voice.command(name='mute')
-    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
+    #@commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
     @commands.bot_has_permissions(mute_members=True)
-    @Context.with_type
+    #@Context.with_type
     async def voice_mute(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice mute"""
         await mt._voice_mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)

@@ -583,6 +583,64 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
         )
 
 
+# VOICE MOD
+
+async def _voice_mute(guild, command_name, ctx_author, destination, member, reason):
+    try:
+        await member.edit(mute=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice muted {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
+async def _voice_unmute(guild, command_name, ctx_author, destination, member, reason):
+    try:
+        await member.edit(mute=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice unmuted {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
+async def _voice_defean(guild, command_name, ctx_author, destination, member, reason):
+    try:
+        await member.edit(deafen=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice deafened {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
+async def _voice_defean(guild, command_name, ctx_author, destination, member, reason):
+    try:
+        await member.edit(deafen=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice undeafened {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
+async def _voice_kick(guild, command_name, ctx_author, destination, member, reason):
+    try:
+        await member.edit(voice_channel=None, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice kicked {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
+async def _voice_ban(guild, command_name, ctx_author, destination, member, channel, reason):
+    try:
+        await channel.set_permissions(member, connect=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice banned {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
+async def _voice_unban(guild, command_name, ctx_author, destination, member, channel, reason):
+    try:
+        await channel.set_permissions(member, overwrite=None, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} voice unbanned {member.name}#{member.discriminator}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+
+
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
 TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']
 VC_REACTION = ['🔒', '🔓', '🖋️']

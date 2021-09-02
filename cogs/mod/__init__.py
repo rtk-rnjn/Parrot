@@ -358,7 +358,90 @@ class mod(Cog):
         To change the nickname of the specified member
         """
         await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
-        await self.log(ctx, 'nickname chang', member, 'Action Requested by {ctx.author.name} ({ctx.author.id})')
+        await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
+    
+    @commands.group()
+    @commands.check_any(is_mod())
+    @Context.with_type
+    async def voice(self, ctx: Context):
+        """Voice Moderation"""
+        pass
+    
+    @voice.command(name='mute')
+    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
+    @commands.bot_has_permissions(mute_members=True)
+    @Context.with_type
+    async def voice_mute(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
+        """To give the member voice mute"""
+        await mt._voice_mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+
+    @voice.command(name='unmute')
+    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
+    @commands.bot_has_permissions(mute_members=True)
+    @Context.with_type
+    async def voice_unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+        """To give the member voice unmute"""
+        await mt._voice_unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+    
+    @voice.command(name='ban')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True, manage_permissions=True))
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True)
+    @Context.with_type
+    async def voice_ban(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+        """To give the member voice ban"""
+        await mt._voice_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+    
+    @voice.command(name='unban')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True, manage_permissions=True))
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True)
+    @Context.with_type
+    async def voice_unban(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+        """To give the member voice unban"""
+        await mt._voice_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+    
+    @voice.command(name='deafen')
+    @commands.check_any(is_mod(), commands.has_permissions(deafen_members=True))
+    @commands.bot_has_permissions(deafen_members=True)
+    @Context.with_type
+    async def voice_deafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+        """To give the member voice deafen"""
+        await mt._voice_deafen(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+
+    @voice.command(name='undeafen')
+    @commands.check_any(is_mod(), commands.has_permissions(deafen_members=True))
+    @commands.bot_has_permissions(deafen_members=True)
+    @Context.with_type
+    async def voice_undeafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+        """To give the member voice undeafen"""
+        await mt._voice_undeafen(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+
+    @voice.command(name='kick')
+    @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
+    @commands.bot_has_permissions(move_members=True)
+    @Context.with_type
+    async def voice_kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+        """To give the member voice kick"""
+        await mt._voice_kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
+
+    # @voice.command(name='move')
+    # @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
+    # @commands.bot_has_permissions(move_members=True)
+    # @Context.with_type
+    # async def voice_move(self, ctx: Context, member: commands.Greedy[discord.Member], channel: typing.Optional[discord.VoiceChannel]=None, *, reason: reason_convert):
+    #     """To give the member voice move"""
+        
+    #     check(m, b, a):
+    #         return m.id == ctx.me.id and (b.channel.id != a.channel.id)
+
+    #     if channel is None:
+    #         await self.bot.wait_for('voice_state_update')
     
     @commands.command()
     @commands.check_any(is_mod(),
@@ -379,13 +462,7 @@ class mod(Cog):
                                   add_reactions=True,
                                   manage_nicknames=True)
     @Context.with_type
-    async def mod(self,
-                  ctx: Context,
-                  target: typing.Union[discord.Member, discord.User,
-                                       discord.TextChannel,
-                                       discord.VoiceChannel, discord.Role],
-                  *,
-                  reason: reason_convert = None):
+    async def mod(self, ctx: Context, target: typing.Union[discord.Member, discord.User, discord.TextChannel, discord.VoiceChannel, discord.Role], *, reason: reason_convert = None):
         """
         Why to learn the commands. This is all in one mod command.
         """

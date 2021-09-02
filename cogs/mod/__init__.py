@@ -361,7 +361,8 @@ class mod(Cog):
         await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()
-    @commands.check_any(is_mod())
+    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
+    @commands.bot_has_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True)
     @Context.with_type
     async def voice(self, ctx: Context):
         """Voice Moderation"""
@@ -380,7 +381,7 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
     @commands.bot_has_permissions(mute_members=True)
     @Context.with_type
-    async def voice_unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+    async def voice_unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice unmute"""
         await mt._voice_unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
@@ -389,7 +390,7 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True, manage_permissions=True))
     @commands.bot_has_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
-    async def voice_ban(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+    async def voice_ban(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice ban"""
         await mt._voice_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
@@ -398,16 +399,16 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True, manage_permissions=True))
     @commands.bot_has_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
-    async def voice_unban(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+    async def voice_unban(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice unban"""
-        await mt._voice_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
+        await mt._voice_unban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
     
     @voice.command(name='deafen')
     @commands.check_any(is_mod(), commands.has_permissions(deafen_members=True))
     @commands.bot_has_permissions(deafen_members=True)
     @Context.with_type
-    async def voice_deafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+    async def voice_deafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice deafen"""
         await mt._voice_deafen(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
@@ -416,7 +417,7 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(deafen_members=True))
     @commands.bot_has_permissions(deafen_members=True)
     @Context.with_type
-    async def voice_undeafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+    async def voice_undeafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice undeafen"""
         await mt._voice_undeafen(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
@@ -425,7 +426,7 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
     @commands.bot_has_permissions(move_members=True)
     @Context.with_type
-    async def voice_kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert):
+    async def voice_kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
         """To give the member voice kick"""
         await mt._voice_kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')

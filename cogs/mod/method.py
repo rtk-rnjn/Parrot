@@ -601,7 +601,7 @@ async def _voice_unmute(guild, command_name, ctx_author, destination, member, re
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
 
-async def _voice_defean(guild, command_name, ctx_author, destination, member, reason):
+async def _voice_deafen(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(deafen=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
         await destination.send(f"{ctx_author.mention} voice deafened **{member.name}#{member.discriminator}**")
@@ -609,7 +609,7 @@ async def _voice_defean(guild, command_name, ctx_author, destination, member, re
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
 
-async def _voice_defean(guild, command_name, ctx_author, destination, member, reason):
+async def _voice_undeafen(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(deafen=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
         await destination.send(f"{ctx_author.mention} voice undeafened **{member.name}#{member.discriminator}**")
@@ -660,24 +660,43 @@ async def _view_emoji(guild, command_name, ctx_author, destination, emoji):
         em.add_field(name=name, value=value, inline=inline)
     await destination.send(embed=em)
 
-# async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, reason):
-#     for emoji in emoji:
-#         try:
-#             await emoji.delete(reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-#             await destination.send(f"{ctx_author.mention} emoji deleted!")
-#         except Exception as e:
-#             await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, reason):
+    for emoji in emoji:
+        try:
+            if emoji.guild.id == guild.id:
+                await emoji.delete(reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+                await destination.send(f"{ctx_author.mention} {emoji} deleted!")
+        except Exception as e:
+            await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
 
-# async def _emoji_add(guild, command_name, ctx_author, destination, emoji, name, reason):
-#     ls = []
-#     for emoji in emoji:
-#         try:
-#             async with aiohttp.ClientSession() as session:
-#                 async with session.get(emoji.url) as res:
-#                     raw = await res.read()
-#             await guild.create_custom_emoji(name=name, image=raw, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-#         except Exception as e:
-#             await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+async def _emoji_add(guild, command_name, ctx_author, destination, emoji, reason):
+    ls = []
+    for emoji in emoji:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(emoji.url) as res:
+                    raw = await res.read()
+            ej = await guild.create_custom_emoji(name=emoji.name, image=raw, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+            await destination.send(f"{ctx_author.mention} emoji created {ej}")
+        except Exception as e:
+            await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+
+async def _emoji_addurl(guild, command_name, ctx_author, destination, url, name, reason):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as res:
+                raw = await res.read()
+        ej = await guild.create_custom_emoji(name=name, image=raw, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} emoji created {ej}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+
+async def _emoji_rename(guild, command_name, ctx_author, destination, emoji, name, reason):
+    try:
+        await emoji.edit(name=name, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} {emoji} name edited to {name}")
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
 
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
 TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']

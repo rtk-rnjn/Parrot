@@ -24,38 +24,24 @@ class mod(Cog):
         if type(performed_on) is not list:
             if type(performed_on) in (discord.Member, discord.User,):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
-            elif type(target) in (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
+            elif type(target) in (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji):
                 target = f"{performed_on.name} (ID: {performed_on.id})"
         elif type(target) is list:
             target = ''
             for temp in performed_on:
                 if type(temp) is discord.Member:
                     target = target + f"{temp.name}#{temp.discriminator}, "
-                elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
+                elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji):
                     target = target + f"{temp.name} (ID: {temp.id}), "
 
-        embed = discord.Embed(
-            description=
-            f"**{cmd.upper()}-ED** {target}\n**Reason:** {reason if reason else 'No Reason Provided'} ",
-            timestamp=datetime.utcnow(),
-            colour=ctx.author.color)
+        embed = discord.Embed(description=f"**{cmd.upper()}-ED** {target}\n**Reason:** {reason if reason else 'No Reason Provided'} ",timestamp=datetime.utcnow(),colour=ctx.author.color)
 
-        embed.set_thumbnail(
-            url=f"{performed_on.avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}"
-        )
-
-        embed.set_author(
-            name=
-            f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})',
-            icon_url=ctx.author.display_avatar.url,
-            url=f"https://discord.com/users/{ctx.author.id}")
-
+        embed.set_thumbnail(url=f"{performed_on.avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}")
+        embed.set_author(name=f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})', icon_url=ctx.author.display_avatar.url, url=f"https://discord.com/users/{ctx.author.id}")
         embed.set_footer(text=f"{ctx.guild.name}")
-
         channel = self.bot.get_channel(data['action_log'])
         if channel:
-            return await self.bot.get_channel(data['action_log']
-                                              ).send(embed=embed)
+            return await self.bot.get_channel(data['action_log']).send(embed=embed)
 
     @commands.group()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -71,8 +57,7 @@ class mod(Cog):
     @Context.with_type
     async def add_role_bots(self, ctx: Context, operator: str, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the all bots."""
-        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel,
-                                operator, role, reason)
+        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
         await self.log(ctx, 'Role', 'Bots', f'{reason}')
 
     @role.command(name="humans")
@@ -81,8 +66,7 @@ class mod(Cog):
     @Context.with_type
     async def add_role_human(self, ctx: Context, operator: str, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the all humans."""
-        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel,
-                                   operator, role, reason)
+        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
         await self.log(ctx, 'Role', 'Humans', f'{reason}')
 
     @role.command(name="add", aliases=['arole', 'giverole', 'grole'])
@@ -91,8 +75,7 @@ class mod(Cog):
     @Context.with_type
     async def add_role(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the specified member(s)."""
-        await mt._add_roles(ctx.guild, ctx.command.name, ctx.author,
-                            ctx.channel, member, role, reason)
+        await mt._add_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
         await self.log(ctx, 'Role add', member, f'{reason}')
 
     @role.command(name='remove', aliases=['urole', 'removerole', 'rrole'])
@@ -101,8 +84,7 @@ class mod(Cog):
     @Context.with_type
     async def remove_role(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason: reason_convert = None):
         """Remove the mentioned role from mentioned/id member"""
-        await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author,
-                               ctx.channel, member, role, reason)
+        await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
         await self.log(ctx, 'Role removed', member, f'{reason}')
 
     @commands.command(aliases=['hackban'])
@@ -111,10 +93,8 @@ class mod(Cog):
     @Context.with_type
     async def ban(self, ctx: Context, member: discord.User, days: typing.Optional[int] = None, *, reason: reason_convert = None):
         """To ban a member from guild."""
-
         if days is None: days = 0
-        await mt._ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                      member, days, reason)
+        await mt._ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, days, reason)
         await self.log(ctx, 'Ban', member, f'{reason}')
 
     @commands.command(name='massban')
@@ -124,11 +104,8 @@ class mod(Cog):
     async def mass_ban(self, ctx: Context, members: commands.Greedy[discord.User], days: typing.Optional[int] = None, *, reason: reason_convert = None):
         """To Mass ban list of members, from the guild"""
         if days is None: days = 0
-        await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author,
-                           ctx.channel, members, days, reason)
-        await self.log(ctx, 'Mass Ban',
-                       f'{", ".join([str(member) for member in members])}',
-                       f'{reason}')
+        await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, days, reason)
+        await self.log(ctx, 'Mass Ban', f'{", ".join([str(member) for member in members])}', f'{reason}')
 
     @commands.command(aliases=['softkill'])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -136,34 +113,26 @@ class mod(Cog):
     @Context.with_type
     async def softban(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """To Ban a member from a guild then immediately unban"""
-        await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                          member, reason)
-        await self.log(ctx, 'Soft Ban',
-                       f'{", ".join([str(member) for member in member])}',
-                       f'{reason}')
+        await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, 'Soft Ban', f'{", ".join([str(member) for member in member])}', f'{reason}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(manage_channels=True,
-                                  manage_permissions=True,
-                                  manage_roles=True)
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
     async def block(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """Blocks a user from replying message in that channel."""
 
-        await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                        ctx.channel, member, reason)
+        await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel, member, reason)
         await self.log(ctx, 'Block', member, f'{reason}')
 
     @commands.command(aliases=['nuke'])
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_channels=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
     @commands.bot_has_permissions(manage_channels=True)
     @Context.with_type
     async def clone(self, ctx: Context, channel: discord.TextChannel = None, *, reason: reason_convert = None):
         """To clone the channel or to nukes the channel (clones and delete)."""
-        await mt._clone(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                        channel or ctx.channel, reason)
+        await mt._clone(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel, reason)
         await self.log(ctx, 'Clone', channel or ctx.channel, f'{reason}')
 
     @commands.command()
@@ -172,8 +141,7 @@ class mod(Cog):
     @Context.with_type
     async def kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
         """To kick a member from guild."""
-        await mt._kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                       member, reason)
+        await mt._kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Kick', member, f'{reason}')
 
     @commands.command(name='masskick')
@@ -182,17 +150,14 @@ class mod(Cog):
     @Context.with_type
     async def mass_kick(self, ctx: Context, members: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """To kick a member from guild."""
-        await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author,
-                            ctx.channel, members, reason)
+        await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, reason)
         await self.log(ctx, 'Mass Kick',
                        f'{", ".join([str(member) for member in members])}',
                        f'{reason}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(manage_channels=True,
-                                  manage_permissions=True,
-                                  manage_roles=True)
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
     async def lock(self, ctx: Context, channel: commands.Greedy[typing.Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]], *, reason: reason_convert=None):
         """To lock the channel"""
@@ -208,11 +173,8 @@ class mod(Cog):
         await self.log(ctx, 'lock', channel if channel else ctx.channel, reason)
 
     @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_channels=True))
-    @commands.bot_has_permissions(manage_channels=True,
-                                  manage_roles=True,
-                                  manage_permissions=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True, manage_permissions=True)
     @Context.with_type
     async def unlock(self, ctx: Context, channel: commands.Greedy[typing.Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]], *, reason: reason_convert=None):
         """To unlock the channel"""
@@ -229,13 +191,11 @@ class mod(Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_roles=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @Context.with_type
     async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Union[convert_time, int] = 0, *, reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
-        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                       member, seconds, reason)
+        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
         await self.log(ctx, 'Mute', member, f'{reason} | For {seconds}s')
 
     @commands.command()
@@ -244,15 +204,12 @@ class mod(Cog):
     @Context.with_type
     async def unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
         """To allow a member to sending message in the Text Channels, if muted."""
-        await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                         member, reason)
+        await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, 'Un-Mute', member, f'{reason}')
 
     @commands.command(aliases=['purge'])
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_messages=True))
-    @commands.bot_has_permissions(read_message_history=True,
-                                  manage_messages=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     @Context.with_type
     async def clear(self, ctx, num: int, *, target: discord.Member=None):
         """To delete bulk message"""
@@ -266,10 +223,8 @@ class mod(Cog):
         await ctx.send(f'Deleted **{len(deleted)}/{num}** possible messages for you.', delete_after=10)
 
     @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_messages=True))
-    @commands.bot_has_permissions(manage_messages=True,
-                                  read_message_history=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(manage_messages=True, read_message_history=True)
     @Context.with_type
     async def purgebots(self, ctx: Context, amount: int):
         """To delete bulk message, of bots"""
@@ -280,18 +235,15 @@ class mod(Cog):
             return m.author.bot
 
         deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
-        await ctx.send(f"{ctx.author.mention} message deleted :')",
-                       delete_after=5)
+        await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
         await self.log(
             ctx, 'Clean Bots', ctx.channel,
             f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
         )
 
     @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_messages=True))
-    @commands.bot_has_permissions(manage_messages=True,
-                                  read_message_history=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(manage_messages=True, read_message_history=True)
     @Context.with_type
     async def purgeregex(self, ctx: Context, amount: int, *, regex: str):
         """To delete bulk message, matching the regex"""
@@ -299,23 +251,19 @@ class mod(Cog):
             return re.search(regex, m.content)
 
         deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
-        await ctx.send(f"{ctx.author.mention} message deleted :')",
-                       delete_after=5)
+        await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
         await self.log(
             ctx, 'Clean Regex', ctx.channel,
             f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id}) | Total message deleted {len(deleted)}'
         )
 
     @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_channels=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
     @commands.bot_has_permissions(manage_channels=True)
     @Context.with_type
     async def slowmode(self, ctx: Context, seconds: typing.Union[int, str], channel: discord.TextChannel = None, *,  reason: reason_convert = None):
         """To set slowmode in the specified channel"""
-        await mt._slowmode(ctx.guild, ctx.command.name, ctx.author,
-                           ctx.channel, seconds, channel or ctx.channel,
-                           reason)
+        await mt._slowmode(ctx.guild, ctx.command.name, ctx.author, ctx.channel, seconds, channel or ctx.channel, reason)
         await self.log(ctx, 'Slowmode', channel, f'{reason} | For {seconds}s')
 
     @commands.command(brief='To Unban a member from a guild')
@@ -329,26 +277,14 @@ class mod(Cog):
         await self.log(ctx, 'UnBan', member, f'{reason}')
 
     @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_permissions=True,
-                                                 manage_roles=True,
-                                                 manage_channels=True))
-    @commands.bot_has_permissions(manage_channels=True,
-                                  manage_permissions=True,
-                                  manage_roles=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True))
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
-    async def unblock(self,
-                      ctx: Context,
-                      member: commands.Greedy[discord.Member],
-                      *,
-                      reason: reason_convert = None):
+    async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """Unblocks a user from the text channel"""
+        await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel, member, reason)
+        await self.log(ctx, 'Un-Block', f'{", ".join([str(member) for member in member])}', f'{reason}')
 
-        await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
-                          ctx.channel, member, reason)
-        await self.log(ctx, 'Un-Block',
-                       f'{", ".join([str(member) for member in member])}',
-                       f'{reason}')
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_nicknames=True))
     @commands.bot_has_permissions(manage_nicknames=True)
@@ -435,7 +371,7 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
     @commands.bot_has_guild_permissions(connect=True, move_members=True)
     @Context.with_type
-    async def voice_move(self, ctx: Context, member: commands.Greedy[discord.Member], channel: typing.Union[discord.VoiceChannel, None], *, reason: reason_convert):
+    async def voice_move(self, ctx: Context, member: commands.Greedy[discord.Member], channel: typing.Union[discord.VoiceChannel, None], *, reason: reason_convert=None):
         """To give the member voice move"""
         
         def check(m, b, a):
@@ -464,23 +400,63 @@ class mod(Cog):
                 await mem.edit(voice_channel=a, reason=f"Action Requested by {ctx.author.name} ({ctx.author.id}) | Reason: {reason}")
 
 
-    # @commands.group(aliases=['emote'])
-    # @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
-    # @commands.bot_has_guild_permissions(manage_emojis=True)
-    # @Context.with_type
-    # async def emoji(self, ctx: Context):
-    #     """For Emoji Moderation"""
-    #     pass
+    @commands.group(aliases=['emote'])
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    @commands.bot_has_guild_permissions(manage_emojis=True)
+    @Context.with_type
+    async def emoji(self, ctx: Context):
+        """For Emoji Moderation"""
+        pass
     
-    # @emoji.command(name='view')
-    # @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
-    # @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
-    # @Context.with_type
-    # async def emoji_view(self, ctx: Context, *, emoji: discord.Emoji):
-    #     """To get the emoji details"""
-    #     pass
-        
+    @emoji.command(name='view')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    @Context.with_type
+    async def emoji_view(self, ctx: Context, *, emoji: discord.Emoji):
+        """To get the emoji details"""
+        await mt._view_emoji(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji)
+    
+    @emoji.command(name='delete')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    @Context.with_type
+    async def emoji_delete(self, ctx: Context, emoji: commands.Greedy[discord.Emoji], *, reason: reason_convert=None):
+        """To delete the emoji"""
+        if not emoji:
+            return
+        await mt._emoji_delete(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, reason)
+        await self.log(ctx, ctx.command.qualified_name, emoji, f'{reason}')
+    
+    @emoji.command(name='add')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    @Context.with_type
+    async def emoji_add(self, ctx: Context, emoji: commands.Greedy[discord.Emoji], *, reason: reason_convert=None):
+        """To add the emoji"""
+        if not emoji:
+            return
+        await mt._emoji_add(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, reason)
+        await self.log(ctx, ctx.command.qualified_name, emoji, f'{reason}')
 
+    @emoji.command(name='addurl')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    @Context.with_type
+    async def emoji_addurl(self, ctx: Context, url: str, name: commands.clean_content, *, reason: reason_convert=None):
+        """To add the emoji from url"""
+        await mt._emoji_addurl(ctx.guild, ctx.command.name, ctx.author, ctx.channel, url, name, reason)
+        await self.log(ctx, ctx.command.qualified_name, emoji, f'{reason}')
+
+    @emoji.command(name='rename')
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    @Context.with_type
+    async def emoji_rename(self, ctx: Context, emoji: discord.Emoji, name: commands.clean_content, *, reason: reason_convert=None):
+        """To rename the emoji"""
+        await mt._emoji_rename(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, name, reason)
+        await self.log(ctx, ctx.command.qualified_name, emoji, f'{reason}')
+
+    
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, manage_nicknames=True))
     @commands.bot_has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, read_message_history=True, add_reactions=True, manage_nicknames=True)

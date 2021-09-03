@@ -393,18 +393,20 @@ class misc(Cog):
         await paginator.start(ctx)
 
     @commands.command()
+    @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def embed(self, ctx: Context, channel: typing.Optional[discord.TextChannel]=None, *, data: typing.Union[dict, str]=None):
         """A nice command to make custom embeds, from a `Python Dictionary` or form `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
+        channel = channel or ctx.channel
         if not data:
             return
         if type(data) is dict:
-            await ctx.send(embed=discord.Embed.from_dict(data))
+            await channel.send(embed=discord.Embed.from_dict(data))
         else:
             try:
                 data = json.loads(data)
-                await ctx.send(embed=discord.Embed.from_dict(data))
+                await channel.send(embed=discord.Embed.from_dict(data))
             except Exception:
                 pass
 
@@ -416,7 +418,7 @@ class misc(Cog):
         embed = discord.Embed(title="Snowflake lookup", color=ctx.author.color, timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Type", value=f"`{target.__class__.__name__}`", inline=True)
         embed.add_field(name="Created At", value=f"`{target.created_at}`", inline=True)
-        embed.add_field(name="ID", value=f"{target.id}", inline=True)
+        embed.add_field(name="ID", value=f"`{target.id}`", inline=True)
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.send(embed=embed)
 
@@ -440,11 +442,11 @@ class misc(Cog):
 
     @commands.command(aliases=['src'])
     @Context.with_type
-    async def source(self, ctx: Context, branch: str=None, *, command: str = None):
+    async def source(self, ctx: Context, *, command: str = None):
         """Displays my full source code or for a specific command.
         """
         source_url = 'https://github.com/ritik0ranjan/Parrot'
-        branch = branch or 'main'
+        branch = 'main'
         if command is None:
             return await ctx.send(source_url)
 

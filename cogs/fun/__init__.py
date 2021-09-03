@@ -490,7 +490,7 @@ class fun(Cog):
           embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}", timestamp=datetime.datetime.utcnow())
           embed.add_field(name="Example", value=f"{example}")
           embed.set_author(name=f"Author: {author}")
-          embed.set_footer(text=f"Page {i+1}/{len(res['list'])} | UP(s) {thumbs_up}, DOWNS(s) {thumbs_down}")
+          embed.set_footer(text=f"Page {i+1}/{len(res['list'])} • 👍 {thumbs_up} • 👎 {thumbs_down}")
           em_list.append(embed)
 
       paginator = Paginator(pages=em_list, timeout=60.0)

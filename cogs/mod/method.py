@@ -1,5 +1,5 @@
 from utilities.database import parrot_db
-import discord, asyncio
+import discord, asyncio, aiohttp
 
 collection = parrot_db['server_config']
 async def is_role_mod(guild, role) -> bool:
@@ -588,7 +588,7 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
 async def _voice_mute(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(mute=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice muted {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice muted **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
@@ -596,7 +596,7 @@ async def _voice_mute(guild, command_name, ctx_author, destination, member, reas
 async def _voice_unmute(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(mute=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice unmuted {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice unmuted **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
@@ -604,7 +604,7 @@ async def _voice_unmute(guild, command_name, ctx_author, destination, member, re
 async def _voice_defean(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(deafen=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice deafened {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice deafened **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
@@ -612,7 +612,7 @@ async def _voice_defean(guild, command_name, ctx_author, destination, member, re
 async def _voice_defean(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(deafen=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice undeafened {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice undeafened **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
@@ -620,7 +620,7 @@ async def _voice_defean(guild, command_name, ctx_author, destination, member, re
 async def _voice_kick(guild, command_name, ctx_author, destination, member, reason):
     try:
         await member.edit(voice_channel=None, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice kicked {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice kicked **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
@@ -628,7 +628,7 @@ async def _voice_kick(guild, command_name, ctx_author, destination, member, reas
 async def _voice_ban(guild, command_name, ctx_author, destination, member, channel, reason):
     try:
         await channel.set_permissions(member, connect=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice banned {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice banned **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
@@ -636,10 +636,48 @@ async def _voice_ban(guild, command_name, ctx_author, destination, member, chann
 async def _voice_unban(guild, command_name, ctx_author, destination, member, channel, reason):
     try:
         await channel.set_permissions(member, overwrite=None, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice unbanned {member.name}#{member.discriminator}")
+        await destination.send(f"{ctx_author.mention} voice unbanned **{member.name}#{member.discriminator}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
 
+# emoji
+
+async def _view_emoji(guild, command_name, ctx_author, destination, emoji):
+    em = discord.Embed(title="Details", description=f"• [Download the emoji]({emoji.url})]\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx.author.color)
+    data = [("Name", emoji.name, True),
+            ("Is Animated?", emoji.animated, True),
+            ("Created At", emoji.created_at, True),
+            ("Server Owned", emoji.guild.name, True),
+            ("Server ID", emoji.guild_id, True),
+            ("Created By", emoji.user if emoji.user else 'Not Found', True),
+            ("Available?", emoji.available, True),
+            ("Managed by Twitch?", emoji.managed, True),
+            ("Require Colons?", emoji.require_colons, True)
+            ]
+    em.set_footer(text=f"{ctx_author}")
+    em.set_thumbnail(url=emoji.url)
+    for name, value, inline in data:
+        em.add_field(name=name, value=value, inline=inline)
+    await destination.send(embed=em)
+
+# async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, reason):
+#     for emoji in emoji:
+#         try:
+#             await emoji.delete(reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+#             await destination.send(f"{ctx_author.mention} emoji deleted!")
+#         except Exception as e:
+#             await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+
+# async def _emoji_add(guild, command_name, ctx_author, destination, emoji, name, reason):
+#     ls = []
+#     for emoji in emoji:
+#         try:
+#             async with aiohttp.ClientSession() as session:
+#                 async with session.get(emoji.url) as res:
+#                     raw = await res.read()
+#             await guild.create_custom_emoji(name=name, image=raw, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+#         except Exception as e:
+#             await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
 
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
 TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']

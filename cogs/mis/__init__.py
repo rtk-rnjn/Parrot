@@ -37,7 +37,7 @@ class misc(Cog):
         string = re.sub(invitere2, '[INVITE REDACTED]', string)
         return string
 
-    @commands.command(aliases=['emote'])
+    @commands.command(aliases=['bigemote'])
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True)
     @Context.with_type
@@ -103,9 +103,7 @@ class misc(Cog):
     @Context.with_type
     @Context.with_type
     async def news(self, ctx: Context, nat: str):
-        """
-				This command will fetch the latest news from all over the world.
-				"""
+        """This command will fetch the latest news from all over the world."""
 
         key = os.environ['NEWSKEY']
 
@@ -245,13 +243,11 @@ class misc(Cog):
     @commands.command(aliases=['trutht', 'tt', 'ttable'])
     @Context.with_type
     async def truthtable(self, ctx: Context, *, data: commands.clean_content):
-        """
-				A simple command to generate Truth Table of given data. Make sure you use proper syntax.
-				
-				Syntax:
-				`Truthtable -var *variable1*, *variable2*, *variable3* ... -con *condition1*, *condition2*, *condition3* ...`
-				(Example: `tt -var a, b -con a and b, a or b`)
-				"""
+        """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
+           Syntax:
+		   Truthtable -var *variable1*, *variable2*, *variable3* ... -con *condition1*, *condition2*, *condition3* ...`
+           (Example: `tt -var a, b -con a and b, a or b`)
+		"""
         data = data.split("-")
         if data[-2][:3:] == "var":
             var = data[-2][4::].replace(" ", "").split(",")
@@ -263,15 +259,13 @@ class misc(Cog):
 
         table = ttg.Truths(var, con, ints=False).as_prettytable()
 
-        await ctx.reply(f"```\n{table}```")
+        await ctx.reply(f"```\n{table}\n```")
 
     @commands.command(aliases=['w'])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def weather(self, ctx: Context, *, location: str):
-        """
-				Weather API, for current weather forecast, supports almost every city.
-				"""
+        """Weather API, for current weather forecast, supports almost every city."""
 
         appid = os.environ['WEATHERID']
 
@@ -336,9 +330,7 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def wikipedia(self, ctx: Context, *, text: str):
-        """
-				Web articles from Wikipedia.
-				"""
+        """Web articles from Wikipedia."""
         link = str(wikipedia.page(text).url)
         try:
             summary = str(wikipedia.summary(text,
@@ -419,12 +411,7 @@ class misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def snowflakeid(
-        self, ctx: Context, *,
-        target: typing.Union[discord.Member, discord.Role, discord.Thread,
-                             discord.TextChannel, discord.VoiceChannel,
-                             discord.StageChannel, discord.Guild,
-                             discord.Message]):
+    async def snowflakeid(self, ctx: Context, *, target: typing.Union[discord.User, discord.Role, discord.Thread, discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Guild, discord.Emoji, discord.Message, discord.Invite, discord.Template, discord.CategoryChannel, discord.DMChannel, discord.GroupChannel]):
         """To get the ID of discord models"""
         embed = discord.Embed(title="Snowflake lookup", color=ctx.author.color, timestamp=datetime.datetime.utcnow())
         await ctx.send(

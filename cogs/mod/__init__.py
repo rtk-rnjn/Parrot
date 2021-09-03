@@ -26,7 +26,7 @@ class mod(Cog):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
             elif type(target) in (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role,):
                 target = f"{performed_on.name} (ID: {performed_on.id})"
-        elif typ(target) is list:
+        elif type(target) is list:
             target = ''
             for temp in performed_on:
                 if type(temp) is discord.Member:
@@ -224,7 +224,7 @@ class mod(Cog):
             else:
                 pass
         else:
-            await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
+            await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, 'unlock', channel if channel else ctx.channel, reason)
 
     @commands.command()
@@ -463,24 +463,27 @@ class mod(Cog):
             for mem in member:
                 await mem.edit(voice_channel=a, reason=f"Action Requested by {ctx.author.name} ({ctx.author.id}) | Reason: {reason}")
 
+
+    # @commands.group(aliases=['emote'])
+    # @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    # @commands.bot_has_guild_permissions(manage_emojis=True)
+    # @Context.with_type
+    # async def emoji(self, ctx: Context):
+    #     """For Emoji Moderation"""
+    #     pass
+    
+    # @emoji.command(name='view')
+    # @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    # @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    # @Context.with_type
+    # async def emoji_view(self, ctx: Context, *, emoji: discord.Emoji):
+    #     """To get the emoji details"""
+    #     pass
+        
+
     @commands.command()
-    @commands.check_any(is_mod(),
-                        commands.has_permissions(manage_permissions=True,
-                                                 manage_messages=True,
-                                                 manage_channels=True,
-                                                 ban_members=True,
-                                                 manage_roles=True,
-                                                 kick_members=True,
-                                                 manage_nicknames=True))
-    @commands.bot_has_permissions(manage_permissions=True,
-                                  manage_messages=True,
-                                  manage_channels=True,
-                                  ban_members=True,
-                                  manage_roles=True,
-                                  kick_members=True,
-                                  read_message_history=True,
-                                  add_reactions=True,
-                                  manage_nicknames=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, manage_nicknames=True))
+    @commands.bot_has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, read_message_history=True, add_reactions=True, manage_nicknames=True)
     @Context.with_type
     async def mod(self, ctx: Context, target: typing.Union[discord.Member, discord.User, discord.TextChannel, discord.VoiceChannel, discord.Role], *, reason: reason_convert = None):
         """

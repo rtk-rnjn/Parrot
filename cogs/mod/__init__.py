@@ -435,7 +435,7 @@ class mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
     @commands.bot_has_guild_permissions(connect=True, move_members=True)
     @Context.with_type
-    async def voice_move(self, ctx: Context, channel: typing.Optional[discord.VoiceChannel]=None, member: commands.Greedy[discord.Member], *, reason: reason_convert):
+    async def voice_move(self, ctx: Context, member: commands.Greedy[discord.Member], channel: typing.Union[discord.VoiceChannel, None], *, reason: reason_convert):
         """To give the member voice move"""
         
         def check(m, b, a):

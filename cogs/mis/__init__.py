@@ -477,10 +477,12 @@ class misc(Cog):
         pass
     
     @poll.command(name='create')
-    @commands.has_permissions(embed_links=True, add_reactions=True)
     @Context.with_type
     async def create_poll(self, ctx: Context, question: str, *, options: str):
         """To create a poll, options should be seperated by commas"""
+        parrot_db = await self.bot.db('parrot_db')
+        collection = parrot_db['poll']
+        BASE_URL = f"https://strawpoll.com/api/poll/"
         options = options.split(',')
         data = {
             "poll": {
@@ -489,9 +491,53 @@ class misc(Cog):
                 "only_reg": True
             }
         }
+        if len(options) > 10: return await ctx.send(f"{ctx.author.mention} can not provide more than 10 options")
         async with aiohttp.ClientSession() as session:
-            poll = await session.post(BASE_URL, json=data, headers=headers)
+            poll = await session.post(BASE_URL, json=data, headers={'API-KEY': os.environ['STRAW_POLL']})
         
+        data = await poll.json()
+        _exist = await collection.find_one_and_update({'_id': ctx.author.id}, {'content_id': data['content_id']})
         
+        if not _exists:
+            await collection.insert_one({'_id': ctx.author.id, 'content_id': data['content_id']})
+        
+        msg = await ctx.send(f"Poll created: <https://strawpoll.com/{data['content_id']}>")
+        await msg.reply(f"{ctx.author.mention} your poll content id is: {data['content_id']}")
+
+    @poll.command(name='get')
+    @Context.with_type
+    async def get_poll(self, ctx: Context, content_id: str):
+        """To get the poll data"""
+        URL = f"https://strawpoll.com/api/poll/{_exists['content_id']}"
+        
+        async with aiohttp.ClientSession() as session:
+            poll = await session.get(URL, headers={'API-KEY': os.environ['STRAW_POLL']})
+        try:
+            data = await poll.json()
+        except Exception:
+            return
+        embed = discord.Embed(
+            title=data['title'], 
+            description=f"Total Options: {len(data['poll_answers'])} | Total Votes: {data['total_votes']}",
+            timestamp=datetime.datetime.utcnow(),
+            color=ctx.author.color)
+        for answer, _id, sorting, _type, votes in data['poll_answers']:
+            embed.add_field(name=answer, value=f"Votes: **{votes}** | ID: {_id}", inline=False)
+        embed.set_footer(text=f"{ctx.author}")
+        await ctx.send(embed=embed)
+    
+    @poll.command(name='delete')
+    @Context.with_type
+    async def delete_poll(self, ctx: Context, content_id: str):
+        """To delete the poll. Only if it's yours"""
+        parrot_db = await self.bot.db('parrot_db')
+        collection = parrot_db['poll']
+        _exists = await collection.find_one({'_id': ctx.author.id})
+        if not _exists: return
+        URL = f"https://strawpoll.com/api/content/delete"
+        async with aiohttp.ClientSession() as session:
+            await session.delete(URL, data={'content_id': content_id}, headers={'API-KEY': os.environ['STRAW_POLL']})
+        await ctx.send(f"{ctx.author.mention} deleted")
+    
 def setup(bot):
     bot.add_cog(misc(bot))

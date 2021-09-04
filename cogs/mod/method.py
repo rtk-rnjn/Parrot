@@ -645,7 +645,7 @@ async def _voice_unban(guild, command_name, ctx_author, destination, member, cha
 # emoji
 
 async def _view_emoji(guild, command_name, ctx_author, destination, emoji):
-    em = discord.Embed(title="Details", description=f"• [Download the emoji]({emoji.url})]\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx.author.color)
+    em = discord.Embed(title="Details", description=f"• [Download the emoji]({emoji.url})]\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx_author.color)
     data = [("Name", emoji.name, True),
             ("Is Animated?", emoji.animated, True),
             ("Created At", emoji.created_at, True),

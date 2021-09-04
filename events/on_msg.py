@@ -10,7 +10,6 @@ collection = parrot_db['global_chat']
 with open('extra/profanity.json') as f:
     bad_dict = json.load(f)
 
-
 class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot

@@ -469,5 +469,29 @@ class misc(Cog):
         final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.send(final_url)
 
+    @commands.group()
+    @commands.has_permissions(embed_link=True, add_reactions=True)
+    @Context.with_type
+    async def poll(self, ctx: Context,):
+        """To make polls. Thanks to Strawpoll API"""
+        pass
+    
+    @poll.command(name='create')
+    @commands.has_permissions(embed_links=True, add_reactions=True)
+    @Context.with_type
+    async def create_poll(self, ctx: Context, question: str, *, options: str):
+        """To create a poll, options should be seperated by commas"""
+        options = options.split(',')
+        data = {
+            "poll": {
+                "title": question,
+                "answers": options,
+                "only_reg": True
+            }
+        }
+        async with aiohttp.ClientSession() as session:
+            poll = await session.post(BASE_URL, json=data, headers=headers)
+        
+        
 def setup(bot):
     bot.add_cog(misc(bot))

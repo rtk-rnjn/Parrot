@@ -1,5 +1,7 @@
 from utilities.database import parrot_db
 import discord, asyncio, aiohttp
+import datetime
+from datetime import datetime
 
 collection = parrot_db['server_config']
 async def is_role_mod(guild, role) -> bool:

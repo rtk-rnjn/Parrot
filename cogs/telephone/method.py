@@ -1,6 +1,8 @@
 from utilities.database import parrot_db, telephone_update
 collection = parrot_db['telephone']
 import asyncio, discord, random, time
+from discord.ext import commands
+cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 async def dial(bot, ctx, server, reverse=False):
     if server.id == ctx.guild.id: 
@@ -104,6 +106,13 @@ async def dial(bot, ctx, server, reverse=False):
 
                 await telephone_update(ctx.guild.id, 'is_line_busy', False)
                 await telephone_update(number, 'is_line_busy', False)
+                return
+
+            bucket = cd_mapping.get_bucket(talk_message)
+            retry_after = bucket.update_rate_limit()
+            if retry_after:
+                await target_channel.send("Disconnect due to channel spam")
+                await ctx.send("Disconnect due to channel spam")
                 return
 
             if talk_message.content.lower() == 'hangup':

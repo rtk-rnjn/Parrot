@@ -470,7 +470,7 @@ class misc(Cog):
         await ctx.send(final_url)
 
     @commands.group()
-    @commands.has_permissions(embed_link=True, add_reactions=True)
+    @commands.has_permissions(embed_links=True, add_reactions=True)
     @Context.with_type
     async def poll(self, ctx: Context,):
         """To make polls. Thanks to Strawpoll API"""

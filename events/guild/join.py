@@ -8,7 +8,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.channel = None
-        self.url = BASE_URL + os.environ('CHANNEL_TOKEN1')
+        self.url = BASE_URL + os.environ['CHANNEL_TOKEN1']
 
     @Cog.listener()
     async def on_guild_join(self, guild):

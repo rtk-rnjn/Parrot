@@ -496,7 +496,7 @@ class misc(Cog):
             poll = await session.post(BASE_URL, json=data, headers={'API-KEY': os.environ['STRAW_POLL']})
         
         data = await poll.json()
-        _exist = await collection.find_one_and_update({'_id': ctx.author.id}, {'content_id': data['content_id']})
+        _exist = await collection.find_one_and_update({'_id': ctx.author.id}, {'$set':{'content_id': data['content_id']}})
         
         if not _exists:
             await collection.insert_one({'_id': ctx.author.id, 'content_id': data['content_id']})

@@ -411,7 +411,7 @@ async def _unblock(guild, command_name, ctx_author, destination, channel,
             else:
                 await channel.set_permissions(
                     member,
-                    overwrite=None,
+                    send_messages=None, view_channel=None, 
                     reason=
                     f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
                 )
@@ -468,7 +468,7 @@ async def _text_unlock(guild, command_name, ctx_author, destination, channel):
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx_author.name}({ctx_author.id})",
-            overwrite=None)
+            send_messages=None)
         await destination.send(f'{ctx_author.mention} channel unlocked.')
     except Exception as e:
         await destination.send(
@@ -482,7 +482,7 @@ async def _vc_unlock(guild, command_name, ctx_author, destination, channel):
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx_author.name}({ctx_author.id})",
-            overwrite=None)
+            connect=None)
         await destination.send(f'{ctx_author.mention} channel unlocked.')
     except Exception as e:
         await destination.send(
@@ -494,12 +494,12 @@ async def _vc_unlock(guild, command_name, ctx_author, destination, channel):
 
 
 async def _change_nickname(guild, command_name, ctx_author, destination,
-                           member, name, reason):
+                           member, name):
     try:
         await member.edit(
             nick=name,
             reason=
-            f'Action Requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}'
+            f'Action Requested by {ctx_author.name}({ctx_author.id})'
         )
         await destination.send(f"{ctx_author.mention} **{member.name}#{member.discriminator}** nickname changed to **{name}**")
     except Exception as e:

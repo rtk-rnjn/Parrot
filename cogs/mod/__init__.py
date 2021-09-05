@@ -164,12 +164,15 @@ class mod(Cog):
         for chn in channel:
             if type(chn) is discord.TextChannel:
                 await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
+                return
             elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
+                return
             else:
                 pass
         else:
             await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
+            return
         await self.log(ctx, 'lock', channel if channel else ctx.channel, reason)
 
     @commands.command()
@@ -181,12 +184,15 @@ class mod(Cog):
         for chn in channel:
             if type(chn) is discord.TextChannel:
                 await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
+                return
             elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
                 await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
+                return
             else:
                 pass
         else:
             await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
+            return
         await self.log(ctx, 'unlock', channel if channel else ctx.channel, reason)
 
     @commands.command()
@@ -293,7 +299,7 @@ class mod(Cog):
         """
         To change the nickname of the specified member
         """
-        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
+        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name, reason=None)
         await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()

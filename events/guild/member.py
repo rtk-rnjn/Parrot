@@ -40,11 +40,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         muted = member.guild.get_role(data['mute_role']) or discord.utils.get(member.guild.roles, name="Muted")
         if not muted:
             return
-
-        if member.guild.id in self.muted:
-            self.muted[member.guild.id].add(member.id)
-        elif member.guild.id not in self.muted:
-            self.muted[member.guild.id] = {member.id}
+        if muted in member.roles:
+            if member.guild.id in self.muted:
+                self.muted[member.guild.id].add(member.id)
+            elif member.guild.id not in self.muted:
+                self.muted[member.guild.id] = {member.id}
 
     @Cog.listener()
     async def on_member_update(self, before, after):

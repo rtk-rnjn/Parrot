@@ -136,13 +136,16 @@ class botConfig(Cog):
             overwrites = {ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True), ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True)}
             channel = await ctx.guild.create_text_channel('global-chat', topic="Hmm. Please be calm, be very calm", overwrites=overwrites)
             webhook = await channel.create_webhook(name="GlobalChat", reason=f"Action requested by {ctx.author.name} ({ctx.author.id})")
-
+            print(1)
             if data:=await c.find_one({'_id': ctx.guild.id}):
+                print(2)
                 await c.update_one({'_id': ctx.guild.id}, {'$set': {'channel_id': channel.id, 'webhook': webhook.url}})
+                print(3)
             else:
-                await c.insert_one({'_id': ctx.guild.id, 'channel_id': channel.id, 'webhook': webhook.url})
+                await c.insert_one({'_id': ctx.guild.id, 'channel_id': channel.id, 'webhook': webhook.url, 'ignore-role': None})
+                print(4)
             await ctx.send(f"{channel.mention} created successfully.")
-
+            print(5)
         elif (setting.lower() in ('ignore-role', 'ignore_role', 'ignorerole')):
             post = {'ignore-role': role.id if role else None}
             await gchat_update(ctx.guild.id, post)

@@ -142,9 +142,8 @@ class botConfig(Cog):
             else:
                 await c.insert_one({'_id': ctx.guild.id, 'channel_id': channel.id, 'webhook': webhook.url})
             await ctx.send(f"{channel.mention} created successfully.")
-            return
 
-        if (setting.lower() in ('ignore-role', 'ignore_role', 'ignorerole')):
+        elif (setting.lower() in ('ignore-role', 'ignore_role', 'ignorerole')):
             post = {'ignore-role': role.id if role else None}
             await gchat_update(ctx.guild.id, post)
             if not role:

@@ -130,15 +130,17 @@ class botConfig(Cog):
     @Context.with_type
     async def gsetup(self, ctx: Context, setting: str = None, *, role: typing.Union[discord.Role] = None):
         """This command will connect your server with other servers which then connected to #global-chat must try this once"""
-        # c = parrot_db['global_chat']
+        c = parrot_db['global_chat']
         if not setting:
 
             overwrites = {ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True), ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True)}
             channel = await ctx.guild.create_text_channel('global-chat', topic="Hmm. Please be calm, be very calm", overwrites=overwrites)
             webhook = await channel.create_webhook(name="GlobalChat", reason=f"Action requested by {ctx.author.name} ({ctx.author.id})")
-            post = {'channel_id': channel.id, 'webhook': webhook.url}
 
-            await gchat_update(ctx.guild.id, post)
+            if data:=await c.find_one({'_id': ctx.guild.id}):
+                await c.update_one({'_id': ctx.guild.id}, {'$set': {'channel_id': channel.id, 'webhook': webhook.url}})
+            else:
+                await c.insert_one({'_id': ctx.guild.id, 'channel_id': channel.id, 'webhook': webhook.url})
             await ctx.send(f"{channel.mention} created successfully.")
             return
 

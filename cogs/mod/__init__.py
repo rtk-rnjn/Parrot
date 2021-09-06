@@ -299,7 +299,7 @@ class mod(Cog):
         """
         To change the nickname of the specified member
         """
-        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name, reason=None)
+        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
         await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()
@@ -481,7 +481,7 @@ class mod(Cog):
                                          ':x: Block\n'
                                          ':o: Unblock\n'
                                          ':arrow_up: Add role\n'
-                                         ':arrow_down: Remove role'
+                                         ':arrow_down: Remove role\n'
                                          ':pen_fountain: Change Nickname',
                                          timestamp=datetime.utcnow(),
                                          color=ctx.author.color)

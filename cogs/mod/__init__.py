@@ -481,7 +481,7 @@ class mod(Cog):
                                          ':x: Block\n'
                                          ':o: Unblock\n'
                                          ':arrow_up: Add role\n'
-                                         ':arrow_down: Remove role'
+                                         ':arrow_down: Remove role\n'
                                          ':pen_fountain: Change Nickname',
                                          timestamp=datetime.utcnow(),
                                          color=ctx.author.color)

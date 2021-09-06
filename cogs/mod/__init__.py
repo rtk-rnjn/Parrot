@@ -299,7 +299,7 @@ class mod(Cog):
         """
         To change the nickname of the specified member
         """
-        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name, reason=None)
+        await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
         await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()

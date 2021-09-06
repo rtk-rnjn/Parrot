@@ -35,8 +35,8 @@ async def ge_update(user_id: int, bank: int, wallet: int):
 
 async def gchat_update(guild_id: int, post: dict):
     collection = parrot_db['global_chat']
-    data = await collection.find_one({'_id': guild_id})
-    if not data:
+    
+    if not data := await collection.find_one({'_id': guild_id})
         await collection.insert_one({'_id': guild_id})
 
     await collection.update_one({'_id': guild_id}, {'$set': post})

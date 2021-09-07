@@ -54,6 +54,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToe']):
 class TicTacToe(discord.ui.View):
     # This tells the IDE or linter that all our children will be TicTacToeButtons
     # This is not required
+
     children: List[TicTacToeButton]
     X = -1
     O = 1

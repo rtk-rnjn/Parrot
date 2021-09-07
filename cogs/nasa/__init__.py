@@ -22,11 +22,11 @@ class nasa(Cog):
                     date: str):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
         if not (-90 <= latitude and latitude <= 90):
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90"
             )
         if not (-180 <= latitude and latitude <= 180):
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} Invalid longitude range, must be between -180 to 180"
             )
         link = f'https://api.nasa.gov/planetary/earth/imagery?lon={longitute}&lat={latitude}&date={date}&dim=0.15&api_key={NASA_KEY}'
@@ -40,7 +40,7 @@ class nasa(Cog):
             'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png')
         embed.set_footer(text=f"{ctx.author.name}")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -75,7 +75,7 @@ class nasa(Cog):
             'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png')
         embed.set_footer(text=f"{ctx.author.name}")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -246,7 +246,7 @@ class nasa(Cog):
             'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png')
         embed.set_footer(text=f"{ctx.author.name}")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=['mrp'])
     @commands.bot_has_permissions(embed_links=True)
@@ -297,17 +297,17 @@ class nasa(Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:
                 if r.status == 404:
-                    return await ctx.send(
+                    return await ctx.reply(
                         f'{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.'
                     )
                 else:
                     try:
                         res = await r.json(content_type='text/html')
                     except Exception as e:
-                        return await ctx.send(f"For some reason, can not search any image or video at this time: Error raised {e}")
+                        return await ctx.reply(f"For some reason, can not search any image or video at this time: Error raised {e}")
         
         if not res['collection']['items']:
-            await ctx.send(
+            await ctx.reply(
                 f'{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.'
             )
         em_list = []

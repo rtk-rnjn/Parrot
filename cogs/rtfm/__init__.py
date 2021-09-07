@@ -149,7 +149,7 @@ class rtfm(Cog):
                 # Code in file
                 file = ctx.message.attachments[0]
                 if file.size > 20000:
-                    return await ctx.send("File must be smaller than 20 kio.")
+                    return await ctx.reply("File must be smaller than 20 kio.")
                 buffer = BytesIO()
                 await ctx.message.attachments[0].save(buffer)
                 text = buffer.read().decode('utf-8')
@@ -163,15 +163,15 @@ class rtfm(Cog):
                 async with aiohttp.ClientSession() as client_session:
                     async with client_session.get(url) as response:
                         if response.status == 404:
-                            return await ctx.send(
+                            return await ctx.reply(
                                 'Nothing found. Check your link')
                         elif response.status != 200:
-                            return await ctx.send(
+                            return await ctx.reply(
                                 f'An error occurred (status code: {response.status}). Retry later.'
                             )
                         text = await response.text()
                         if len(text) > 20000:
-                            return await ctx.send(
+                            return await ctx.reply(
                                 'Code must be shorter than 20,000 characters.')
             elif code.strip('`'):
                 # Code in message
@@ -215,14 +215,14 @@ class rtfm(Cog):
                 if matches:
                     message = message + f" Did you mean:\n{matches}"
 
-                return await ctx.send(message)
+                return await ctx.reply(message)
 
             if options['--wrapped']:
                 if not (any(
                         map(lambda x: lang.split('-')[0] == x,
                             self.wrapping))) or lang in ('cs-mono-shell',
                                                          'cs-csi'):
-                    return await ctx.send(f'`{lang}` cannot be wrapped')
+                    return await ctx.reply(f'`{lang}` cannot be wrapped')
 
                 for beginning in self.wrapping:
                     if lang.split('-')[0] == beginning:
@@ -254,10 +254,10 @@ class rtfm(Cog):
                 link = await paste(result)
 
                 if link is None:
-                    return await ctx.send(
+                    return await ctx.reply(
                         "Your output was too long, but I couldn't make an online bin out of it"
                     )
-                return await ctx.send(
+                return await ctx.reply(
                     f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}'
                 )
 
@@ -266,7 +266,7 @@ class rtfm(Cog):
 
             # ph, as placeholder, prevents Discord from taking the first line
             # as a language identifier for markdown and remove it
-            returned = await ctx.send(f'```ph\n{result}```')
+            returned = await ctx.reply(f'```ph\n{result}```')
 
         await returned.add_reaction('🗑')
         returnedID = returned.id
@@ -291,7 +291,7 @@ class rtfm(Cog):
         lang = language.strip('`')
 
         if not lang.lower() in self.referred:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{lang} not available. See `[p]list references` for available ones."
             )
         await self.referred[lang.lower()](ctx, query.strip('`'))
@@ -305,7 +305,7 @@ class rtfm(Cog):
         lang = language.strip('`')
 
         if not lang.lower() in self.documented:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{lang} not available. See `[p]list documentations` for available ones."
             )
         await self.documented[lang.lower()](ctx, query.strip('`'))
@@ -322,7 +322,7 @@ class rtfm(Cog):
         async with aiohttp.ClientSession() as client_session:
             async with client_session.get(url) as response:
                 if response.status != 200:
-                    return await ctx.send(
+                    return await ctx.reply(
                         'An error occurred (status code: {response.status}). Retry later.'
                     )
 
@@ -332,7 +332,7 @@ class rtfm(Cog):
 
                 if not nameTag:
                     # No NAME, no page
-                    return await ctx.send(
+                    return await ctx.reply(
                         f'No manual entry for `{page}`. (Debian)')
 
                 # Get the two (or less) first parts from the nav aside
@@ -359,7 +359,7 @@ class rtfm(Cog):
                             }).parents)[0]
                     emb.add_field(name=tag.string, value=self.get_content(h2))
 
-                await ctx.send(embed=emb)
+                await ctx.reply(embed=emb)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -379,19 +379,19 @@ class rtfm(Cog):
                 description=
                 'View them on [tio.run](https://tio.run/#), or in [JSON format](https://tio.run/languages.json)'
             )
-            return await ctx.send(embed=emb)
+            return await ctx.reply(embed=emb)
 
         if not group in choices:
             emb = discord.Embed(
                 title="Available listed commands",
                 description=f"`languages`, `{'`, `'.join(choices)}`")
-            return await ctx.send(embed=emb)
+            return await ctx.reply(embed=emb)
 
         availables = choices[group]
         description = f"`{'`, `'.join([*availables])}`"
         emb = discord.Embed(title=f"Available for {group}: {len(availables)}",
                             description=description)
-        await ctx.send(embed=emb)
+        await ctx.reply(embed=emb)
 
 
     @commands.command()
@@ -403,7 +403,7 @@ class rtfm(Cog):
                             description=' '.join(
                                 [str(ord(letter)) for letter in text]))
         emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
-        await ctx.send(embed=emb)
+        await ctx.reply(embed=emb)
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
@@ -415,9 +415,9 @@ class rtfm(Cog):
             emb = discord.Embed(title="Unicode convert",
                                 description=''.join(codes))
             emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
-            await ctx.send(embed=emb)
+            await ctx.reply(embed=emb)
         except ValueError:
-            await ctx.send(
+            await ctx.reply(
                 "Invalid sequence. Example usage : `[p]unascii 104 101 121`")
 
     @commands.bot_has_permissions(embed_links=True)
@@ -429,7 +429,7 @@ class rtfm(Cog):
         unit = unit.capitalize()
 
         if not unit in units and unit != 'O':
-            return await ctx.send(
+            return await ctx.reply(
                 f"Available units are `{'`, `'.join(units)}`.")
 
         emb = discord.Embed(title="Binary conversions")
@@ -439,7 +439,7 @@ class rtfm(Cog):
             result = round(value / 2**((i - index) * 10), 14)
             emb.add_field(name=u, value=result)
 
-        await ctx.send(embed=emb)
+        await ctx.reply(embed=emb)
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name='hash')
@@ -458,7 +458,7 @@ class rtfm(Cog):
             message = f"`{algorithm}` not available."
             if matches:
                 message += f" Did you mean:\n{matches}"
-            return await ctx.send(message)
+            return await ctx.reply(message)
 
         try:
             # Guaranteed one
@@ -471,7 +471,7 @@ class rtfm(Cog):
                             description=hash_object.hexdigest())
         emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
 
-        await ctx.send(embed=emb)
+        await ctx.reply(embed=emb)
 
 
 def setup(bot):

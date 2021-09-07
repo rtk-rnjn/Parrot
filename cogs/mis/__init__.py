@@ -42,11 +42,8 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True, manage_messages=True)
     @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
-        """
-				To view the emoji in bigger form
-				"""
-        await ctx.message.delete()
-        await ctx.send(emoji.url)
+        """To view the emoji in bigger form"""
+        await ctx.reply(emoji.url)
 
     @commands.command(aliases=['calc', 'cal'])
     @commands.bot_has_permissions(embed_links=True)
@@ -211,10 +208,10 @@ class misc(Cog):
         try:
             snipe = self.snipes[ctx.channel.id]
         except KeyError:
-            return await ctx.send(
+            return await ctx.reply(
                 f'{ctx.author.mention} no snipes in this channel!')
         if snipe is None:
-            return await ctx.send(
+            return await ctx.reply(
                 f'{ctx.author.mention} no snipes in this channel!')
         # there's gonna be a snipe after this point
         emb = discord.Embed()
@@ -420,7 +417,7 @@ class misc(Cog):
         embed.add_field(name="Created At", value=f"`{target.created_at}`", inline=True)
         embed.add_field(name="ID", value=f"`{target.id}`", inline=True)
         embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -436,7 +433,7 @@ class misc(Cog):
         else:
             timedelta = first - second
 
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} total seconds between **{snowflake1}** and **{snowflake2}** is **{timedelta.total_seconds()}**"
         )
 
@@ -448,7 +445,7 @@ class misc(Cog):
         source_url = 'https://github.com/ritik0ranjan/Parrot'
         branch = 'main'
         if command is None:
-            return await ctx.send(source_url)
+            return await ctx.reply(source_url)
 
         if command == 'help':
             src = type(self.bot.help_command)
@@ -457,7 +454,7 @@ class misc(Cog):
         else:
             obj = self.bot.get_command(command.replace('.', ' '))
             if obj is None:
-                return await ctx.send('Could not find command.')
+                return await ctx.reply('Could not find command.')
             src = obj.callback.__code__
             module = obj.callback.__module__
             filename = src.co_filename
@@ -467,7 +464,7 @@ class misc(Cog):
         location = module.replace('.', '/') + '.py'
 
         final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
-        await ctx.send(final_url)
+        await ctx.reply(final_url)
 
     @commands.group()
     @commands.has_permissions(embed_links=True, add_reactions=True)
@@ -491,7 +488,7 @@ class misc(Cog):
                 "only_reg": True
             }
         }
-        if len(options) > 10: return await ctx.send(f"{ctx.author.mention} can not provide more than 10 options")
+        if len(options) > 10: return await ctx.reply(f"{ctx.author.mention} can not provide more than 10 options")
         async with aiohttp.ClientSession() as session:
             poll = await session.post(BASE_URL, json=data, headers={'API-KEY': os.environ['STRAW_POLL']})
         
@@ -501,7 +498,7 @@ class misc(Cog):
         if not _exists:
             await collection.insert_one({'_id': ctx.author.id, 'content_id': data['content_id']})
         
-        msg = await ctx.send(f"Poll created: <https://strawpoll.com/{data['content_id']}>")
+        msg = await ctx.reply(f"Poll created: <https://strawpoll.com/{data['content_id']}>")
         await msg.reply(f"{ctx.author.mention} your poll content id is: {data['content_id']}")
 
     @poll.command(name='get')
@@ -524,7 +521,7 @@ class misc(Cog):
         for answer, _id, sorting, _type, votes in data['poll_answers']:
             embed.add_field(name=answer, value=f"Votes: **{votes}** | ID: {_id}", inline=False)
         embed.set_footer(text=f"{ctx.author}")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
     
     @poll.command(name='delete')
     @Context.with_type
@@ -537,7 +534,7 @@ class misc(Cog):
         URL = f"https://strawpoll.com/api/content/delete"
         async with aiohttp.ClientSession() as session:
             await session.delete(URL, data={'content_id': content_id}, headers={'API-KEY': os.environ['STRAW_POLL']})
-        await ctx.send(f"{ctx.author.mention} deleted")
+        await ctx.reply(f"{ctx.author.mention} deleted")
     
 def setup(bot):
     bot.add_cog(misc(bot))

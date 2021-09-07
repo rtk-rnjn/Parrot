@@ -106,7 +106,7 @@ class fun(Cog):
           ]
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
       
   
     @commands.command()
@@ -127,7 +127,7 @@ class fun(Cog):
         embed.add_field(name="Decoded text:", value=f'```\n{sample_string}\n```', inline=False)
         embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
         embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
 
 
@@ -150,7 +150,7 @@ class fun(Cog):
         embed.add_field(name="Encoded [binary]:", value=f'```\n{str(res)}\n```', inline=False)
         embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
         embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
   
       
@@ -397,7 +397,7 @@ class fun(Cog):
         Slap virtually with is shit command.
         """
         await ctx.message.delete()
-        await ctx.send(f"{ctx.author.mention} slapped **{member.name}#{member.discriminator}** {reason}!")
+        await ctx.reply(f"{ctx.author.mention} slapped **{member.name}#{member.discriminator}** {reason}!")
   
     
     @commands.command(aliases=['trans'])
@@ -442,7 +442,7 @@ class fun(Cog):
         embed.add_field(name="Info", value=f"Tranlated from **{lg[lang]['name']}** to **{lg[translated_lang]['name']}**", inline=False)
         embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=['triggered'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -549,7 +549,7 @@ class fun(Cog):
             em = discord.Embed(title=f"{member.name} Dared", description=f"{random.choice(dare)}", timestamp=datetime.datetime.utcnow())
         
         em.set_footer(text=f'{ctx.author.name}')
-        await ctx.send(embed=em)
+        await ctx.reply(embed=em)
 
 
     @commands.command() 
@@ -566,7 +566,7 @@ class fun(Cog):
         else:
             em = discord.Embed(title=f"{member.name} reply!", description=f"{random.choice(t)}", timestamp=datetime.datetime.utcnow())
             em.set_footer(text=f'{ctx.author.name}')
-        await ctx.send(embed=em)
+        await ctx.reply(embed=em)
 
 
 

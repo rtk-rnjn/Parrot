@@ -53,7 +53,7 @@ class botConfig(Cog):
                     data['mod_role']).name if data['mod_role'] else None
                 mod_log = ctx.guild.get_channel(
                     data['action_log']).name if data['action_log'] else None
-                await ctx.send(
+                await ctx.reply(
                     f"Configuration of this server [server_config]\n\n"
                     f"`Prefix :` **{data['prefix']}**\n"
                     f"`ModRole:` **{role} ({data['mod_role'] if data['mod_role'] else None})**\n"
@@ -73,7 +73,7 @@ class botConfig(Cog):
         post = {'prefix': arg}
         await guild_update(ctx.guild.id, post)
 
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
         )
 
@@ -86,9 +86,9 @@ class botConfig(Cog):
         post = {'mute_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
         if not role:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} mute role reseted! or removed")
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} success! Mute role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
@@ -100,9 +100,9 @@ class botConfig(Cog):
         post = {'mod_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
         if not role:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} mod role reseted! or removed")
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
@@ -118,7 +118,7 @@ class botConfig(Cog):
         post = {'action_log': channel.id if channel else None}
         await guild_update(ctx.guild.id, post)
         if not channel:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} action log reseted! or removed")
         await ctx.reply(
             f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**"
@@ -140,13 +140,13 @@ class botConfig(Cog):
                 await c.update_one({'_id': ctx.guild.id}, {'$set': {'channel_id': channel.id, 'webhook': webhook.url}})
             else:
                 await c.insert_one({'_id': ctx.guild.id, 'channel_id': channel.id, 'webhook': webhook.url, 'ignore-role': None})
-            await ctx.send(f"{channel.mention} created successfully.")
+            await ctx.reply(f"{channel.mention} created successfully.")
         elif (setting.lower() in ('ignore-role', 'ignore_role', 'ignorerole')):
             post = {'ignore-role': role.id if role else None}
             await gchat_update(ctx.guild.id, post)
             if not role:
-                return await ctx.send(f"{ctx.author.mention} ignore role reseted! or removed")
-            await ctx.send(f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!")
+                return await ctx.reply(f"{ctx.author.mention} ignore role reseted! or removed")
+            await ctx.reply(f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!")
 
     @commands.group(aliases=['telconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -169,7 +169,7 @@ class botConfig(Cog):
                 role = ctx.guild.get_role(data['pingrole']).name if data['pingrole'] else None
                 channel = ctx.guild.get_channel(data['channel']).name if data['channel'] else None
                 member = ctx.guild.get_member(data['memberping']).name if data['memberping'] else None
-                await ctx.send(
+                await ctx.reply(
                     f"Configuration of this server [telsetup]\n\n"
                     f"`Channel   :` **{channel}**\n"
                     f"`Pingrole  :` **{role} ({data['pingrole'] or None})**\n"
@@ -188,10 +188,10 @@ class botConfig(Cog):
         await telephone_update(ctx.guild.id, 'channel',
                                channel.id if channel else None)
         if not channel:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} global telephone line is reseted! or removed"
             )
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} success! **#{channel.name}** is now added to global telephone line."
         )
 
@@ -207,9 +207,9 @@ class botConfig(Cog):
         await telephone_update(ctx.guild.id, 'pingrole',
                                role.id if role else None)
         if not role:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} ping role reseted! or removed")
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} success! **@{role.name}** will be now pinged when someone calls your server."
         )
 
@@ -225,9 +225,9 @@ class botConfig(Cog):
         await telephone_update(ctx.guild.id, 'memberping',
                                member.id if member else None)
         if not member:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.menton} member ping reseted! or removed")
-        await ctx.send(
+        await ctx.reply(
             f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."
         )
 
@@ -237,14 +237,14 @@ class botConfig(Cog):
     async def tel_config_block(self, ctx: Context, *, server: discord.Guild):
         """There are people who are really anonying, you can block them."""
         if server is ctx.guild:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} can't block your own server")
 
         await ct.update_one({'_id': ctx.guild.id},
                       {'$addToSet': {
                           'blocked': server.id
                       }})
-        await ctx.send(f'{ctx.author.mention} success! blocked: **{server.name}**')
+        await ctx.reply(f'{ctx.author.mention} success! blocked: **{server.name}**')
 
     @telsetup.command(name='unblock')
     @commands.has_permissions(administrator=True)
@@ -252,11 +252,11 @@ class botConfig(Cog):
     async def tel_config_unblock(self, ctx: Context, *, server: discord.Guild):
         """Now they understood their mistake. You can now unblock them."""
         if server is ctx.guild:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} ok google, let the server admin get some rest"
             )
         await ct.update_one({'_id': ctx.guild.id}, {'$pull': {'blocked': server.id}})
-        await ctx.send(f'{ctx.author.mention} Success! unblocked: {server.id}')
+        await ctx.reply(f'{ctx.author.mention} Success! unblocked: {server.id}')
 
     @commands.group(aliases=['ticketsetup'], invoke_without_command=True)
     @commands.check_any(commands.has_permissions(administrator=True),
@@ -298,7 +298,7 @@ class botConfig(Cog):
                 data['verified-roles']) if data['verified-roles'] else None
             category = ctx.guild.get_channel(
                 data['category']) if data['category'] else None
-            await ctx.send(
+            await ctx.reply(
                 f"Configuration of this server [ticket]\n\n"
                 f"`Total Ticket made  :` **{ticket_counter}**\n"
                 f"`Valid Roles (admin):` **{valid_roles}**\n"
@@ -414,7 +414,7 @@ class botConfig(Cog):
         # target = True if target is None else target.id
         cmd = self.bot.get_command(command)
         if not cmd:
-            return await ctx.send(f"{ctx.author.mention} that commands do not exists")
+            return await ctx.reply(f"{ctx.author.mention} that commands do not exists")
         if server: type_ = 'server'
         else: type_ = str(target.type)
         if type(target) is discord.TextChannel:
@@ -424,7 +424,7 @@ class botConfig(Cog):
         else:
             await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
         
-        await ctx.send(f"{ctx.author.mention} success! **{cmd.qualified_name}** is disabled; to **{type_}** wide")
+        await ctx.reply(f"{ctx.author.mention} success! **{cmd.qualified_name}** is disabled; to **{type_}** wide")
     
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -439,7 +439,7 @@ class botConfig(Cog):
         # target = True if target is None else target.id
         cmd = self.bot.get_command(command)
         if not cmd:
-            return await ctx.send(f"{ctx.author.mention} that commands do not exists")
+            return await ctx.reply(f"{ctx.author.mention} that commands do not exists")
         if server: type_ = 'server'
         else: type_ = str(target.type)
         if type(target) is discord.TextChannel:
@@ -449,7 +449,7 @@ class botConfig(Cog):
         else:
             await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
         
-        await ctx.send(f"{ctx.author.mention} success! **{cmd.qualified_name}** is enabled; to **{type_}** wide")
+        await ctx.reply(f"{ctx.author.mention} success! **{cmd.qualified_name}** is enabled; to **{type_}** wide")
 
 def setup(bot):
     bot.add_cog(botConfig(bot))

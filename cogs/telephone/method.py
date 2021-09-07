@@ -61,7 +61,7 @@ async def dial(bot, ctx, server, reverse=False):
         await target_channel.send(
             f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
         )
-        await ctx.reply(
+        await ctx.send(
             f"Line disconnected from **{number} ({bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds"
         )
 
@@ -100,7 +100,7 @@ async def dial(bot, ctx, server, reverse=False):
                 await target_channel.send(
                     f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
                 )
-                await ctx.reply(
+                await ctx.send(
                     f"Line disconnected from **{number} ({bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds"
                 )
 

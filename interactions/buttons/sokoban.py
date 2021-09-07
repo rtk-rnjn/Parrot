@@ -1,2 +1,1 @@
-from discord.ext import commands
-import discord
+# comming soon

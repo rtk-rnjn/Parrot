@@ -18,7 +18,7 @@ class game(Cog):
     @commands.command()
     async def ttt(self, ctx: Context, *, member: discord.Member):
         """Basic Tic-Tac-Toe game"""
-        await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
+        await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe(member.id))
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -105,25 +105,41 @@ class game(Cog):
         await ctx.send(embed=embed)
 
         def check(m):
-            return (m.content.lower() in ["yes", "y"]
-                    and m.channel == ctx.channel and m.author == ctx.author)
+            return (m.content.lower() in ["yes", "y"] and m.channel == ctx.channel and m.author == ctx.author)
 
         try: 
             correct = await self.bot.wait_for("message", check=check, timeout=30)
         except Exception: 
             return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if correct.content.lower() == "yes" or correct.content.lower() == "y":
-            embed = discord.Embed(title="Yay! I guessed it right",
-                                  color=0xFF0000)
+            embed = discord.Embed(title="Yay! I guessed it right", color=0xFF0000)
             await ctx.send(embed=embed)
         else:
-            embed = discord.Embed(title="Oof! Kinda hard one",
-                                  color=0xFF0000)
+            embed = discord.Embed(title="Oof! Kinda hard one", color=0xFF0000)
             await ctx.send(embed=embed)
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(GuessName.guess())
         loop.close()
     
+    @commands.group()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def uno(self, ctx: Context):
+        """To play UNO"""
+        pass
+    
+    @uno.command()
+    async def uno_play(self, ctx: Context, members: commands.Greedy[discord.member]):
+        """To play the UNO game"""
+        if not members:
+            return
+        pass
+    
+    @uno.command()
+    async def uno_stop(self, ctx: Context):
+        """To stop the game"""
+        pass
+
 def setup(bot):
     bot.add_cog(game(bot))

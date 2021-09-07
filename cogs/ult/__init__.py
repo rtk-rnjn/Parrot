@@ -196,5 +196,21 @@ class utilities(Cog):
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)
 
+    @commands.command(aliases=['suggest'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def request(self, ctx: Context, *, text: str):
+        """To request directly from the owner"""
+        def check(m):
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+        await ctx.reply(f"{ctx.author.id} are you sure want to request for the same. Abuse of this feature may result in mute. Type `YES` to continue (case insensitive)")
+        try:
+            msg = await self.bot.wait_for('message', timeout=60, check=check)
+        except Exception:
+            return
+        if msg.content == "YES":
+            await self.bot.get_user(741614468546560092).send(f"`{ctx.author}` {text[:190:]}")
+
 def setup(bot):
   bot.add_cog(utilities(bot))

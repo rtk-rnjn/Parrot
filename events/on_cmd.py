@@ -96,13 +96,16 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         elif isinstance(error, commands.MissingRole):
-
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
             _message = '**{}**\nMissing Role. You need the the following role(s) to use the command```\n{}```'.format(
                 random.choice(quote), fmt)
             await ctx.send(_message)
             return
 
         elif isinstance(error, commands.MissingAnyRole):
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
             missing = [role for role in error.missing_roles]
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
@@ -124,12 +127,16 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         elif isinstance(error, commands.NSFWChannelRequired):
-            em = discord.Embed(timestamp=datetime.utcnow())
-            em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
-            await ctx.send(
-                content=
-                f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
-                embed=em)
+            is_owner = await ctx.bot.is_owner(ctx.author)
+            if is_owner: return await ctx.reinvoke()
+            
+            if ctx.channel.permissions_for(ctx.guild.me).embed_links:
+                em = discord.Embed(timestamp=datetime.utcnow())
+                em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
+                await ctx.send(content=f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
+                               embed=em)
+            else:
+                await ctx.send(content=f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif")
             return
 
         elif isinstance(error, commands.NotOwner):
@@ -186,13 +193,13 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.CheckAnyFailure):
             return await ctx.send(' or '.join(
                 [error.__str__().format(ctx=ctx) for error in error.errors]))
-
+        
         else:
             is_owner = await ctx.bot.is_owner(ctx.author)
             if is_owner: 
                 tb = traceback.format_exception(type(error), error, error.__traceback__)
                 tbe = "".join(tb) + ""
-                er = '```py\nIgnoring exception in command {}: {}\n```'.format(ctx.command.name, tbe)
+                er = f'```py\nIgnoring exception in command {ctx.command.name}: {tbe}\n```'
                 text = await self.paste(er)
                 if len(tbe) < 1800:
                     await ctx.send(er, delete_after=60)

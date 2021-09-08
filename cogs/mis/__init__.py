@@ -49,9 +49,7 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def calculator(self, ctx: Context, *, text: str):
-        """
-				This is basic calculator with all the expression supported. Syntax is similar to python math module.
-				"""
+        """This is basic calculator with all the expression supported. Syntax is similar to python math module"""
         new_text = urllib.parse.quote(text)
         link = 'http://twitch.center/customapi/math?expr=' + new_text
 
@@ -72,12 +70,11 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def maths(self, ctx: Context, operation: str, *, expression: str):
-        """
-				Another calculator but quite advance one
+        """Another calculator but quite advance one
 
-				NOTE: Available operation - Simplify, Factor, Derive, Integrate, Zeroes, Tangent, Area, Cos, Sin, Tan, Arccos, Arcsin, Arctan, Abs, Log
-				For more detailed use, visit: `https://github.com/aunyks/newton-api/blob/master/README.md`
-				"""
+        Note: Available operation - Simplify, Factor, Derive, Integrate, Zeroes, Tangent, Area, Cos, Sin, Tan, Arccos, Arcsin, Arctan, Abs, Log
+        For more detailed use, visit: `https://github.com/aunyks/newton-api/blob/master/README.md`
+        """
         new_expression = urllib.parse.quote(expression)
         link = 'https://newton.now.sh/api/v2/' + operation + '/' + new_expression
         async with aiohttp.ClientSession() as session:
@@ -145,9 +142,7 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def search(self, ctx: Context, *, search: str):
-        """
-				Simple google search Engine.
-				"""
+        """Simple google search Engine"""
         search = urllib.parse.quote(search)
 
         url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}"
@@ -160,7 +155,7 @@ class misc(Cog):
                         f"{ctx.author.mention} No results found.```\n{search}```"
                     )
 
-        searchInfoTime = round(json_['searchInformation']['searchTime'])
+        searchInfoTime = json_['searchInformation']['searchTime']
         context = json_['context']['title']
         pages = []
 
@@ -202,9 +197,7 @@ class misc(Cog):
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
     @Context.with_type
     async def snipe(self, ctx: Context):
-        """
-				"Snipes" someone\'s message that\'s deleted
-				"""
+        """"Snipes someone's message that's deleted"""
         try:
             snipe = self.snipes[ctx.channel.id]
         except KeyError:
@@ -330,8 +323,7 @@ class misc(Cog):
         """Web articles from Wikipedia."""
         link = str(wikipedia.page(text).url)
         try:
-            summary = str(wikipedia.summary(text,
-                                            sentences=3)).replace("\n", "")
+            summary = str(wikipedia.summary(text, sentences=3)).replace("\n", "")
         except wikipedia.exceptions.DisambiguationError as e:
             return await ctx.reply(
                 f'{ctx.author.mention} please provide more arguments, like {e.options[0]}'
@@ -353,9 +345,7 @@ class misc(Cog):
     @commands.is_nsfw()
     @Context.with_type
     async def youtube(self, ctx: Context, *, query: str):
-        """
-		Search for videos on YouTube.
-		"""
+        """Search for videos on YouTube"""
         results = await YoutubeSearch(query, max_results=5).to_json()
         main = json.loads(results)
 
@@ -394,18 +384,14 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def embed(self, ctx: Context, channel: typing.Optional[discord.TextChannel]=None, *, data: typing.Union[dict, str]=None):
-        """A nice command to make custom embeds, from a `Python Dictionary` or form `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
+        """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
         channel = channel or ctx.channel
-        if not data:
-            return
-        if type(data) is dict:
+        if not data: return
+        try:
+            data = json.loads(data)
             await channel.send(embed=discord.Embed.from_dict(data))
-        else:
-            try:
-                data = json.loads(data)
-                await channel.send(embed=discord.Embed.from_dict(data))
-            except Exception:
-                pass
+        except Exception as e:
+            await ctx.reply(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -422,8 +408,7 @@ class misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def snowflaketime(self, ctx: Context, snowflake1: int,
-                            snowflake2: int):
+    async def snowflaketime(self, ctx: Context, snowflake1: int, snowflake2: int):
         """Get the time difference in seconds, between two discord SnowFlakes"""
         first = discord.utils.snowflake_time(snowflake1)
         second = discord.utils.snowflake_time(snowflake2)
@@ -440,8 +425,7 @@ class misc(Cog):
     @commands.command(aliases=['src'])
     @Context.with_type
     async def source(self, ctx: Context, *, command: str = None):
-        """Displays my full source code or for a specific command.
-        """
+        """Displays my full source code or for a specific command."""
         source_url = 'https://github.com/ritik0ranjan/Parrot'
         branch = 'main'
         if command is None:

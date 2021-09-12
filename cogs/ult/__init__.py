@@ -204,7 +204,7 @@ class utilities(Cog):
         """To request directly from the owner"""
         def check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-        await ctx.reply(f"{ctx.author.id} are you sure want to request for the same. Abuse of this feature may result in mute. Type `YES` to continue (case insensitive)")
+        await ctx.reply(f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in mute. Type `YES` to continue (case insensitive)")
         try:
             msg = await self.bot.wait_for('message', timeout=60, check=check)
         except Exception:

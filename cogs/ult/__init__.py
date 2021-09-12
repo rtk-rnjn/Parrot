@@ -227,7 +227,7 @@ class utilities(Cog):
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 
-    @commands.commands()
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type

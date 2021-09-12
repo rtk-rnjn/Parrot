@@ -9,6 +9,5 @@ async def bot_before_invoke(ctx):
         if not ctx.guild.chunked:
             await ctx.guild.chunk()
 
-@bot.check
 if __name__ == '__main__':
     bot.run()

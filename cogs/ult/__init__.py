@@ -225,13 +225,13 @@ class utilities(Cog):
         for name, value, inline in data:
             embed.add_field(name=name, value=value, inline=inline)
         perms=[]
-        if role.guild_permissions.administrator:
+        if role.permissions.administrator:
             perms.append("Administrator")
-        if role.guild_permissions.kick_members and target.guild_permissions.ban_members and target.guild_permissions.manage_messages:
+        if role.permissions.kick_members and role.permissions.ban_members and role.permissions.manage_messages:
             perms.append("Server Moderator")
-        if role.guild_permissions.manage_guild:
+        if role.permissions.manage_guild:
             perms.append("Server Manager")
-        if role.guild_permissions.manage_roles:
+        if role.permissions.manage_roles:
             perms.append("Role Manager")
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         embed.set_footer(text=f"{ctx.author}")
@@ -243,7 +243,7 @@ class utilities(Cog):
     @Context.with_type
     async def emojiinfo(self, ctx: Context, *, emoji: discord.Emoji):
         """To get the info regarding the server emoji"""
-        em = discord.Embed(title="Emoji Info", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx_author.color)
+        em = discord.Embed(title="Emoji Info", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx.author.color)
         data = [("Name", emoji.name, True),
                 ("Is Animated?", emoji.animated, True),
                 ("Created At", f"<t:{int(emoji.created_at.timestamp())}>", True),

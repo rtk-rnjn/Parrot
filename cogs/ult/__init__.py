@@ -56,7 +56,7 @@ class utilities(Cog):
             embed=discord.Embed(
                 title="Owner Info", 
                 description='This bot is being hosted by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', 
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
                 color=ctx.author.color,
                 url="https://discord.com/users/741614468546560092")
             )

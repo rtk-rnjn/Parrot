@@ -258,7 +258,7 @@ class utilities(Cog):
         em.set_thumbnail(url=emoji.url)
         for name, value, inline in data:
             em.add_field(name=name, value=f"`{value}`", inline=inline)
-        await ctx.reply(embed=embed)
+        await ctx.reply(embed=em)
 
     @commands.command(aliases=['suggest'])
     @commands.cooldown(1, 5, commands.BucketType.member)

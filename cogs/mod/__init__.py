@@ -36,7 +36,7 @@ class mod(Cog):
 
         embed = discord.Embed(description=f"**{cmd.upper()}-ED** {target}\n**Reason:** {reason if reason else 'No Reason Provided'} ",timestamp=datetime.utcnow(),colour=ctx.author.color)
 
-        embed.set_thumbnail(url=f"{performed_on.avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}")
+        embed.set_thumbnail(url=f"{performed_on.display_avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}")
         embed.set_author(name=f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})', icon_url=ctx.author.display_avatar.url, url=f"https://discord.com/users/{ctx.author.id}")
         embed.set_footer(text=f"{ctx.guild.name}")
         channel = self.bot.get_channel(data['action_log'])

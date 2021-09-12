@@ -478,7 +478,7 @@ class misc(Cog):
             poll = await session.post(BASE_URL, json=data, headers={'API-KEY': os.environ['STRAW_POLL']})
         
         data = await poll.json()
-        _exist = await collection.find_one_and_update({'_id': ctx.author.id}, {'$set':{'content_id': data['content_id']}})
+        _exists = await collection.find_one_and_update({'_id': ctx.author.id}, {'$set':{'content_id': data['content_id']}})
         
         if not _exists:
             await collection.insert_one({'_id': ctx.author.id, 'content_id': data['content_id']})
@@ -490,7 +490,7 @@ class misc(Cog):
     @Context.with_type
     async def get_poll(self, ctx: Context, content_id: str):
         """To get the poll data"""
-        URL = f"https://strawpoll.com/api/poll/{_exists['content_id']}"
+        URL = f"https://strawpoll.com/api/poll/{content_id}"
         
         async with aiohttp.ClientSession() as session:
             poll = await session.get(URL, headers={'API-KEY': os.environ['STRAW_POLL']})

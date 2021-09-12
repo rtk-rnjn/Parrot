@@ -234,7 +234,7 @@ class utilities(Cog):
         if role.permissions.manage_roles:
             perms.append("Role Manager")
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
-        embed.set_footer(text=f"{ctx.author}")
+        embed.set_footer(text=f"ID: {role.id}")
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -254,7 +254,7 @@ class utilities(Cog):
                 ("Managed by Twitch?", emoji.managed, True),
                 ("Require Colons?", emoji.require_colons, True)
                 ]
-        em.set_footer(text=f"{ctx_author}")
+        em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=emoji.url)
         for name, value, inline in data:
             em.add_field(name=name, value=f"`{value}`", inline=inline)

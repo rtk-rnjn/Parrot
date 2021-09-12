@@ -130,7 +130,7 @@ class game(Cog):
         pass
     
     @uno.command()
-    async def uno_play(self, ctx: Context, members: commands.Greedy[discord.member]):
+    async def uno_play(self, ctx: Context, members: commands.Greedy[discord.Member]):
         """To play the UNO game"""
         if not members:
             return

@@ -195,6 +195,26 @@ class utilities(Cog):
         em.set_footer(text=f"{ctx.author.name}#{ctx.author.discriminator}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def roleinfo(self, ctx: Context, *, role: discord.Role):
+        """To get the info regarding the server role"""
+        embed = discord.Embed(title="Role Information", description=f"ID: `{role.id}`", color=role.color, timestamp=datetime.utcnow())
+        data = [("Created At", f"<t:{role.created_at.timestamp()}>", True),
+                ("Is Hoisted?", role.hoist, True),
+                ("Position", role.position, True),
+                ("Managed", role.managed, True),
+                ("Mentionalble?", role.mentionable, True),
+                ("Members", len(role.members), True),
+                ("Mention", role.mention, True)
+               ]
+        for name, value, inline in data:
+            embed.add_field(name=name, value=value, inline=inline)
+        embed.set_footer(text=f"{ctx.author}")
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=['suggest'])
     @commands.cooldown(1, 5, commands.BucketType.member)

@@ -257,7 +257,7 @@ class utilities(Cog):
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=emoji.url)
         for name, value, inline in data:
-            em.add_field(name=name, value=f"`{value}`", inline=inline)
+            em.add_field(name=name, value=f"{value}", inline=inline)
         await ctx.reply(embed=em)
 
     @commands.command(aliases=['suggest'])

@@ -496,6 +496,7 @@ class misc(Cog):
             poll = await session.get(URL, headers={'API-KEY': os.environ['STRAW_POLL']})
         try:
             data = await poll.json()
+            data = data['content']
         except Exception:
             return
         embed = discord.Embed(

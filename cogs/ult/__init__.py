@@ -101,7 +101,7 @@ class utilities(Cog):
               ("Created at", f"<t:{int(ctx.guild.created_at.timestamp())}>", True),
               ("Total Members", f'Members: {len(ctx.guild.members)}\nHumans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\nBots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))} ', True),
               ("Total channels", f'Categories: {len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}', True),
-              ("General", f"Roles: {len(ctx.guild.roles)}\n Emojis: {len(guild.emojis)}\n Boost Level: {ctx.guild.premium_tier}", True),
+              ("General", f"Roles: {len(ctx.guild.roles)}\n Emojis: {len(ctx.guild.emojis)}\n Boost Level: {ctx.guild.premium_tier}", True),
               ("Statuses", f":green_circle: {statuses[0]} :yellow_circle:  {statuses[1]} :red_circle: {statuses[2]} :black_circle: {statuses[3]}", True),
               ]
 
@@ -134,8 +134,6 @@ class utilities(Cog):
             mem_of_total = proc.memory_percent()
             mem_usage = mem_total * (mem_of_total / 100)
         
-        x = len(self.bot.users)
-        y = len(self.bot.guilds)
         fields = [
             ("Bot version", f"`{VERSION}`", True),
             ("Python version", "`"+str(python_version())+"`", True),
@@ -143,9 +141,9 @@ class utilities(Cog):
             ("Uptime", "`"+str(uptime)+"`", True),
             ("CPU time", "`"+str(cpu_time)+"`", True),
             ("Memory usage", f"`{mem_usage:,.3f} / {mem_total:,.0f} MiB ({mem_of_total:.0f}%)`", True),
-            ("Total users on count", "`"+str(x)+"`", True),
+            ("Total users on count", f"`{len(self.bot.users)}`", True),
             ("Owner",'`!! Ritik Ranjan [*.*]#9230`', True),
-            ("Total guild on count", "`"+str(y)+"`", True)]
+            ("Total guild on count", f"`{len(self.bot.guilds)}`", True)]
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
         await ctx.reply(embed=embed)
@@ -168,13 +166,13 @@ class utilities(Cog):
         embed.set_thumbnail(url=target.avatar.url)
         embed.set_footer(text=f"ID: {target.id}")
         fields = [("Name", str(target), True),
-              #("ID", target.id, True),
               ("Created at", f"<t:{int(target.created_at.timestamp())}>", True),
               ("Status", str(target.status).title(), True),
               ("Activity", f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''}", True),
               ("Joined at", f"<t:{int(target.joined_at.timestamp())}>", True),
               ("Boosted", bool(target.premium_since), True),
               ("Bot?", target.bot, True),
+              ("Nickname", target.display_name, True),
               (f"Top Role [{len(roles)}]", target.top_role.mention, True)]
         perms = []  
         for name, value, inline in fields:
@@ -187,7 +185,7 @@ class utilities(Cog):
             perms.append("Server Manager")
         if target.guild_permissions.manage_roles:
             perms.append("Role Manager")
-        embed.description = f"Key perms: {', '.join(perms)}"
+        embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         await ctx.reply(embed=embed)
 
 
@@ -220,10 +218,22 @@ class utilities(Cog):
                 ("Managed", role.managed, True),
                 ("Mentionalble?", role.mentionable, True),
                 ("Members", len(role.members), True),
-                ("Mention", role.mention, True)
+                ("Mention", role.mention, True),
+                ("Is Boost role?", role.is_premium_subscriber(), True),
+                ("Is Bot role?", role.is_bot_managed(), True)
                ]
         for name, value, inline in data:
             embed.add_field(name=name, value=value, inline=inline)
+        perms=[]
+        if role.guild_permissions.administrator:
+            perms.append("Administrator")
+        if role.guild_permissions.kick_members and target.guild_permissions.ban_members and target.guild_permissions.manage_messages:
+            perms.append("Server Moderator")
+        if role.guild_permissions.manage_guild:
+            perms.append("Server Manager")
+        if role.guild_permissions.manage_roles:
+            perms.append("Role Manager")
+        embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 

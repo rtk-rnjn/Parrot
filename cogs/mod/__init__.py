@@ -414,13 +414,13 @@ class mod(Cog):
         """For Emoji Moderation"""
         pass
     
-    @emoji.command(name='view')
-    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
-    @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
-    @Context.with_type
-    async def emoji_view(self, ctx: Context, *, emoji: discord.Emoji):
-        """To get the emoji details"""
-        await mt._view_emoji(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji)
+    # @emoji.command(name='view')
+    # @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
+    # @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
+    # @Context.with_type
+    # async def emoji_view(self, ctx: Context, *, emoji: discord.Emoji):
+    #     """To get the emoji details"""
+    #     await mt._view_emoji(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji)
     
     @emoji.command(name='delete')
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))

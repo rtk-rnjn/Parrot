@@ -362,7 +362,8 @@ class misc(Cog):
             _1_thunb = str(main['videos'][i]['thumbnails'][0])
             embed = discord.Embed(title=f"YouTube search results: {query}",
                                   description=f"{_1_urlsu}",
-                                  colour=discord.Colour.red())
+                                  colour=discord.Colour.red(),
+                                  url=_1_urlsu)
             embed.add_field(
                 name=f"Video title:`{_1_title}`\n",
                 value=
@@ -400,7 +401,7 @@ class misc(Cog):
         """To get the ID of discord models"""
         embed = discord.Embed(title="Snowflake lookup", color=ctx.author.color, timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Type", value=f"`{target.__class__.__name__}`", inline=True)
-        embed.add_field(name="Created At", value=f"`{target.created_at}`", inline=True)
+        embed.add_field(name="Created At", value=f"<t:{int(target.created_at.timestamp())}>", inline=True)
         embed.add_field(name="ID", value=f"`{target.id}`", inline=True)
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.reply(embed=embed)

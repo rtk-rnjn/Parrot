@@ -644,23 +644,23 @@ async def _voice_unban(guild, command_name, ctx_author, destination, member, cha
 
 # emoji
 
-async def _view_emoji(guild, command_name, ctx_author, destination, emoji):
-    em = discord.Embed(title="Details", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx_author.color)
-    data = [("Name", emoji.name, True),
-            ("Is Animated?", emoji.animated, True),
-            ("Created At", emoji.created_at, True),
-            ("Server Owned", emoji.guild.name, True),
-            ("Server ID", emoji.guild_id, True),
-            ("Created By", emoji.user if emoji.user else 'Not Found', True),
-            ("Available?", emoji.available, True),
-            ("Managed by Twitch?", emoji.managed, True),
-            ("Require Colons?", emoji.require_colons, True)
-            ]
-    em.set_footer(text=f"{ctx_author}")
-    em.set_thumbnail(url=emoji.url)
-    for name, value, inline in data:
-        em.add_field(name=name, value=f"`{value}`", inline=inline)
-    await destination.send(embed=em)
+# async def _view_emoji(guild, command_name, ctx_author, destination, emoji):
+#     em = discord.Embed(title="Details", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx_author.color)
+#     data = [("Name", emoji.name, True),
+#             ("Is Animated?", emoji.animated, True),
+#             ("Created At", emoji.created_at, True),
+#             ("Server Owned", emoji.guild.name, True),
+#             ("Server ID", emoji.guild_id, True),
+#             ("Created By", emoji.user if emoji.user else 'Not Found', True),
+#             ("Available?", emoji.available, True),
+#             ("Managed by Twitch?", emoji.managed, True),
+#             ("Require Colons?", emoji.require_colons, True)
+#             ]
+#     em.set_footer(text=f"{ctx_author}")
+#     em.set_thumbnail(url=emoji.url)
+#     for name, value, inline in data:
+#         em.add_field(name=name, value=f"`{value}`", inline=inline)
+#     await destination.send(embed=em)
 
 async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, reason):
     for emoji in emoji:

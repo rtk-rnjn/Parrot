@@ -17,7 +17,6 @@ class utilities(Cog):
 
     @commands.command(name="ping")
     @commands.cooldown(1, 5, commands.BucketType.member)
-    # @commands.check(is_cmd_enabled)
     @Context.with_type
     async def ping(self, ctx: Context):
         """
@@ -32,14 +31,12 @@ class utilities(Cog):
     @commands.command(aliases=['av'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
-    # @commands.check(is_cmd_enabled)
     @Context.with_type
     async def avatar(self, ctx: Context, *, member: discord.Member= None):
         """
         Get the avatar of the user. Make sure you don't misuse.
         """
-        if member is None:
-            member = ctx.author
+        member = member or ctx.author
         embed = discord.Embed(timestamp=datetime.utcnow())
         embed.add_field(name=member.name,value=f'[Download]({member.display_avatar.url})')
         embed.set_image(url=member.display_avatar.url)
@@ -55,18 +52,25 @@ class utilities(Cog):
         """
         Get the freaking bot owner name.
         """
-        await ctx.reply(embed=discord.Embed(title="Owner Info", description='This bot is being hosted by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', timestamp=datetime.utcnow()))
+        await ctx.reply(
+            embed=discord.Embed(
+                title="Owner Info", 
+                description='This bot is being hosted by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', 
+                timestamp=datetime.utcnow()
+                color=ctx.author.color,
+                url="https://discord.com/users/741614468546560092")
+            )
 
 
     @commands.command(aliases=['guildavatar', 'serverlogo', 'servericon'])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def guildicon(self, ctx: Context, server:int=None):
+    async def guildicon(self, ctx: Context, *, server: discord.Guild=None):
         """
         Get the freaking server icon
         """
-        guild = self.bot.get_guild(server) or ctx.guild
+        guild = server or ctx.guild
         embed = discord.Embed(timestamp=datetime.utcnow())
         embed.set_image(url = guild.icon.url)
         embed.set_footer(text=f"{ctx.author.name}")
@@ -81,7 +85,7 @@ class utilities(Cog):
         """
         Get the basic stats about the server
         """
-        embed = discord.Embed(title="Server information",
+        embed = discord.Embed(title=f"Server Info: {ctx.guild.name}",
                 colour=ctx.guild.owner.colour,
                 timestamp=datetime.utcnow())
 
@@ -96,19 +100,17 @@ class utilities(Cog):
               ("Region", str(ctx.guild.region).capitalize(), True),
               ("Created at", f"<t:{int(ctx.guild.created_at.timestamp())}>", True),
               ("Total Members", f'Members: {len(ctx.guild.members)}\nHumans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\nBots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))} ', True),
-              ("Humans", len(list(filter(lambda m: not m.bot, ctx.guild.members))), True),
-              ("Bots", len(list(filter(lambda m: m.bot, ctx.guild.members))), True),
+              ("Total channels", f'Categories: {len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}', True),
+              ("General", f"Roles: {len(ctx.guild.roles)}\n Emojis: {len(guild.emojis)}\n Boost Level: {ctx.guild.premium_tier}", True),
               ("Statuses", f":green_circle: {statuses[0]} :yellow_circle:  {statuses[1]} :red_circle: {statuses[2]} :black_circle: {statuses[3]}", True),
-              ("Total channels", f'Categories:{len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}', True),
-              #("Banned members", len(await ctx.guild.bans()), True),
-              ("Roles", len(ctx.guild.roles), True),
-              #("Invites", len(await ctx.guild.invites()), True),
               ]
 
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
-        try: embed.add_field(name="Banned Members", value=f"{len(await ctx.guild.bans())}", inline=True)
-        except: pass
+        if ctx.guild.me.guild_permissions.ban_members:
+            embed.add_field(name="Banned Members", value=f"{len(await ctx.guild.bans())}", inline=True)
+        if ctx.guild.me.guild_permissions.manage_guild:
+            embed.add_field(name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True)
         await ctx.reply(embed=embed)
 
 
@@ -164,7 +166,7 @@ class utilities(Cog):
                 timestamp=datetime.utcnow())
 
         embed.set_thumbnail(url=target.avatar.url)
-        embed.set_footer(text=f"{target.id}")
+        embed.set_footer(text=f"ID: {target.id}")
         fields = [("Name", str(target), True),
               #("ID", target.id, True),
               ("Created at", f"<t:{int(target.created_at.timestamp())}>", True),
@@ -173,11 +175,19 @@ class utilities(Cog):
               ("Joined at", f"<t:{int(target.joined_at.timestamp())}>", True),
               ("Boosted", bool(target.premium_since), True),
               ("Bot?", target.bot, True),
-              (f"Roles ({len(roles)})", " ".join([role.mention for role in roles]), False)]
-              
+              (f"Top Role [{len(roles)}]", target.top_role.mention, True)]
+        perms = []  
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
-
+        if target.guild_permissions.administrator:
+            perms.append("Administrator")
+        if target.guild_permissions.kick_members and target.guild_permissions.ban_members and target.guild_permissions.manage_messages:
+            perms.append("Server Moderator")
+        if target.guild_permissions.manage_guild:
+            perms.append("Server Manager")
+        if target.guild_permissions.manage_roles:
+            perms.append("Role Manager")
+        embed.description = f"Key perms: {', '.join(perms)}"
         await ctx.reply(embed=embed)
 
 
@@ -191,8 +201,9 @@ class utilities(Cog):
         """
         em = discord.Embed(title="Click here to add", 
                            description="```ini\n[Default Prefix: `$` and `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
-                           url=f"https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FNEyJxM7G7f&scope=bot%20applications.commands", timestamp=datetime.utcnow())
-        em.set_footer(text=f"{ctx.author.name}#{ctx.author.discriminator}")
+                           url=f"https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FNEyJxM7G7f&scope=bot%20applications.commands", 
+                           timestamp=datetime.utcnow())
+        em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)
     
@@ -202,7 +213,7 @@ class utilities(Cog):
     @Context.with_type
     async def roleinfo(self, ctx: Context, *, role: discord.Role):
         """To get the info regarding the server role"""
-        embed = discord.Embed(title="Role Information", description=f"ID: `{role.id}`", color=role.color, timestamp=datetime.utcnow())
+        embed = discord.Embed(title=f"Role Information: {role.name}", description=f"ID: `{role.id}`", color=role.color, timestamp=datetime.utcnow())
         data = [("Created At", f"<t:{int(role.created_at.timestamp())}>", True),
                 ("Is Hoisted?", role.hoist, True),
                 ("Position", role.position, True),
@@ -214,6 +225,29 @@ class utilities(Cog):
         for name, value, inline in data:
             embed.add_field(name=name, value=value, inline=inline)
         embed.set_footer(text=f"{ctx.author}")
+        await ctx.reply(embed=embed)
+
+    @commands.commands()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def emojiinfo(self, ctx: Context, *, emoji: discord.Emoji):
+        """To get the info regarding the server emoji"""
+        em = discord.Embed(title="Emoji Info", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.utcnow(), color=ctx_author.color)
+        data = [("Name", emoji.name, True),
+                ("Is Animated?", emoji.animated, True),
+                ("Created At", f"<t:{int(emoji.created_at.timestamp())}>", True),
+                ("Server Owned", emoji.guild.name, True),
+                ("Server ID", emoji.guild_id, True),
+                ("Created By", emoji.user if emoji.user else 'User Not Found', True),
+                ("Available?", emoji.available, True),
+                ("Managed by Twitch?", emoji.managed, True),
+                ("Require Colons?", emoji.require_colons, True)
+                ]
+        em.set_footer(text=f"{ctx_author}")
+        em.set_thumbnail(url=emoji.url)
+        for name, value, inline in data:
+            em.add_field(name=name, value=f"`{value}`", inline=inline)
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=['suggest'])

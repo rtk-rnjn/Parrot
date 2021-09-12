@@ -94,7 +94,7 @@ class utilities(Cog):
 
         fields = [("Owner", ctx.guild.owner, True),
               ("Region", str(ctx.guild.region).capitalize(), True),
-              ("Created at", ctx.guild.created_at.strftime("%d/%m/%Y %H:%M:%S"), True),
+              ("Created at", f"<t:{int(ctx.guild.created_at.timestamp())}>", True),
               ("Total Members", f'Members: {len(ctx.guild.members)}\nHumans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\nBots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))} ', True),
               ("Humans", len(list(filter(lambda m: not m.bot, ctx.guild.members))), True),
               ("Bots", len(list(filter(lambda m: m.bot, ctx.guild.members))), True),
@@ -167,10 +167,10 @@ class utilities(Cog):
         embed.set_footer(text=f"{target.id}")
         fields = [("Name", str(target), True),
               #("ID", target.id, True),
-              ("Created at", target.created_at.strftime("%d/%m/%Y %H:%M:%S"), True),
+              ("Created at", f"<t:{int(target.created_at.timestamp())}>", True),
               ("Status", str(target.status).title(), True),
               ("Activity", f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''}", True),
-              ("Joined at", target.joined_at.strftime("%d/%m/%Y %H:%M:%S"), True),
+              ("Joined at", f"<t:{int(target.joined_at.timestamp())}>", True),
               ("Boosted", bool(target.premium_since), True),
               ("Bot?", target.bot, True),
               (f"Roles ({len(roles)})", " ".join([role.mention for role in roles]), False)]
@@ -203,7 +203,7 @@ class utilities(Cog):
     async def roleinfo(self, ctx: Context, *, role: discord.Role):
         """To get the info regarding the server role"""
         embed = discord.Embed(title="Role Information", description=f"ID: `{role.id}`", color=role.color, timestamp=datetime.utcnow())
-        data = [("Created At", f"<t:{role.created_at.timestamp()}>", True),
+        data = [("Created At", f"<t:{int(role.created_at.timestamp())}>", True),
                 ("Is Hoisted?", role.hoist, True),
                 ("Position", role.position, True),
                 ("Managed", role.managed, True),

@@ -389,15 +389,15 @@ class fun(Cog):
                 await ctx.reply(file=discord.File(imageData, 'simpcard.png')) # replying the file
       
   
-    @command(name="slap", aliases=["hit"])
-    @commands.bot_has_permissions(manage_messages=True)
-    @Context.with_type
-    async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
-        """
-        Slap virtually with is shit command.
-        """
-        await ctx.message.delete()
-        await ctx.reply(f"{ctx.author.mention} slapped **{member.name}#{member.discriminator}** {reason}!")
+    # @command(name="slap", aliases=["hit"])
+    # @commands.bot_has_permissions(manage_messages=True)
+    # @Context.with_type
+    # async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
+    #     """
+    #     Slap virtually with is shit command.
+    #     """
+    #     await ctx.message.delete()
+    #     await ctx.reply(f"{ctx.author.mention} slapped **{member.name}#{member.discriminator}** {reason}!")
   
     
     @commands.command(aliases=['trans'])

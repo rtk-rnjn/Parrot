@@ -405,7 +405,7 @@ class actions(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def slap(self, ctx: Context, *, member: discord.Member=None):
+    async def slap(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content=None):
         """Slap pics?"""
         async with aiohttp.ClientSession() as session:
             data = await session.get(f"{self.url}/{ctx.command.name}")
@@ -416,7 +416,7 @@ class actions(Cog):
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
         
-        await ctx.reply(embed=em)
+        await ctx.reply(content=f"{ctx.author.mention} slapped {member.name} for {reason if reason else 'No reason'}", embed=em)
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

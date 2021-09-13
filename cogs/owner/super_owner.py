@@ -4,6 +4,8 @@ import traceback
 from discord.ext import commands
 import discord, aiohttp
 from utilities.database import ban
+import os
+
 class Owner(Cog):
     """You can not use these commands"""
     def __init__(self, bot: Parrot):
@@ -13,6 +15,7 @@ class Owner(Cog):
 
     @commands.command()
     @commands.is_owner()
+    @Context.with_type
     async def gitload(self, ctx: Context, *, link: str):
         """To load the cog extension from github"""
         async with aiohttp.ClientSession() as session:
@@ -41,9 +44,9 @@ class Owner(Cog):
         
         self.count += 1
 
-
     @commands.command()
     @commands.is_owner()
+    @Context.with_type
     async def makefile(self, ctx: Context, name: str, *, text: str):
         """To make a file in ./temp/ directly"""
         try:
@@ -58,6 +61,7 @@ class Owner(Cog):
             
     @commands.command()
     @commands.is_owner()
+    @Context.with_type
     async def leave_guild(self, ctx: Context, *, guild: discord.Guild):
         """To leave the guild"""
         await ctx.send(f"Leaving Guild in a second!")
@@ -65,6 +69,7 @@ class Owner(Cog):
     
     @commands.command()
     @commands.is_owner()
+    @Context.with_type
     async def ban_user(self, ctx: Context, user: discord.User, cmd: bool=True, chat: bool=True, global_: bool=True, *, reason: str=None):
         """To ban the user"""
         reason = reason or "No reason provided"
@@ -75,6 +80,7 @@ class Owner(Cog):
             pass
     
     @commands.command(aliases=['report-user', 'report', 'report_user', 'ru'])
+    @Context.with_type
     async def reportuser(self, ctx: Context, *, text: str):
         """To report someone"""
         if self.owner is None:
@@ -89,3 +95,27 @@ class Owner(Cog):
         if msg.content.upper() == "YES":
             await ctx.send(f"{ctx.author.mention} reported")
             await self.owner.send(f"{ctx.author.mention} {text[:1000:]}")
+
+    @commands.command(name='image-search', aliases=['imagesearch', 'imgs'], hidden=True)
+    @commands.is_owner()
+    @Context.with_type
+    async def imgsearch(self, ctx: Context, *, text: str):
+        """Image Search. Anything"""
+        try:
+            async with aiohttp.ClientSession() as session:
+                res = await session.get(f"https://normal-api.ml/image-search?query={text}", timeout=aiohttp.ClientTimeout(total=60))
+        except Exception as e: 
+            return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
+        json = await res.json()
+        if str(json['status']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
+        img = json['image']
+        await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=img).set_footer(text=f"{ctx.author}"))
+
+    @commands.command(name='ss', hidden=True)
+    @commands.is_owner()
+    @Context.with_type
+    async def ss(self, ctx: Context, *, site: str):
+        """To take the ss"""
+        link = f"https://api.apiflash.com/v1/urltoimage?access_key={os.environ['SCREEN_SHOT']}&delay=1&format=png&no_ads=true&no_cookie_banners=true&no_tracking=true&response_type=image&transparent=true&url={site}&wait_until=page_loaded"
+        return await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=link))
+        

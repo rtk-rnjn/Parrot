@@ -547,21 +547,5 @@ class misc(Cog):
         """To generate the QR"""
         await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=f"https://normal-api.ml/createqr?text={text}").set_footer(text=f"{ctx.author}"))
 
-    @commands.command(name='image-search', aliases=['imagesearch', 'imgs'], hidden=True)
-    @commands.is_nsfw()
-    @commands.is_owner()
-    @Context.with_type
-    async def imgsearch(self, ctx: Context, *, text: str):
-        """Image Search. Anything"""
-        try:
-            async with aiohttp.ClientSession() as session:
-                res = await session.get(f"https://normal-api.ml/image-search?query={text}")
-        except Exception as e: 
-            return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
-        json = await res.json()
-        if str(json['status']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
-        img = json['image']
-        await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=img).set_footer(text=f"{ctx.author}"))
-
 def setup(bot):
     bot.add_cog(misc(bot))

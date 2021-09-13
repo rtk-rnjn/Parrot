@@ -536,7 +536,7 @@ class misc(Cog):
         except Exception as e: 
             return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
         json = await res.json()
-        if str(json['success']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
+        if str(json['status']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
         msg = json['message'][:2000:]
         await ctx.reply(embed=discord.Embed(description=msg, color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}"))
 
@@ -558,7 +558,7 @@ class misc(Cog):
         except Exception as e: 
             return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
         json = await res.json()
-        if str(json['success']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
+        if str(json['status']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
         img = json['image']
         await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=img).set_footer(text=f"{ctx.author}"))
 

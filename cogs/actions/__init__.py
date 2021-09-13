@@ -8,7 +8,7 @@ class actions(Cog):
     
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.url = "https://api.waifu.pics/sfw/"
+        self.url = "https://api.waifu.pics/sfw"
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

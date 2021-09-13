@@ -547,8 +547,9 @@ class misc(Cog):
         """To generate the QR"""
         await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=f"https://normal-api.ml/createqr?text={text}").set_footer(text=f"{ctx.author}"))
 
-    @commands.command(name='image-search', aliases=['imagesearch', 'imgs'])
+    @commands.command(name='image-search', aliases=['imagesearch', 'imgs'], hidden=True)
     @commands.is_nsfw()
+    @commands.is_owner()
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
         """Image Search. Anything"""

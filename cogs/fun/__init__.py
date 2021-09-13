@@ -387,19 +387,7 @@ class fun(Cog):
                 await wastedSession.close() # closing the session and;
                 
                 await ctx.reply(file=discord.File(imageData, 'simpcard.png')) # replying the file
-      
-  
-    # @command(name="slap", aliases=["hit"])
-    # @commands.bot_has_permissions(manage_messages=True)
-    # @Context.with_type
-    # async def slap_member(self, ctx: Context, member: discord.Member, *, reason: commands.clean_content = "for no reason"):
-    #     """
-    #     Slap virtually with is shit command.
-    #     """
-    #     await ctx.message.delete()
-    #     await ctx.reply(f"{ctx.author.mention} slapped **{member.name}#{member.discriminator}** {reason}!")
-  
-    
+
     @commands.command(aliases=['trans'])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
@@ -568,7 +556,12 @@ class fun(Cog):
             em.set_footer(text=f'{ctx.author.name}')
         await ctx.reply(embed=em)
 
-
+    @commands.command(aliases=['httpcat']) 
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def http(self, ctx: Context, *, status_code: int):
+        """To understand HTTP Errors, try: `http 404`"""
+        await ctx.reply(embed=discord.Embed(timestamp=datetime.datetime.utcnow(), color=ctx.author.color).set_image(url=f"https://http.cat/{status_code}").set_footer(text=f"{ctx.author}"))
 
 def setup(bot):
   bot.add_cog(fun(bot))

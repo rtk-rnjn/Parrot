@@ -95,7 +95,6 @@ class misc(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    @Context.with_type
     async def news(self, ctx: Context, nat: str):
         """This command will fetch the latest news from all over the world."""
 
@@ -522,5 +521,46 @@ class misc(Cog):
             await session.delete(URL, data={'content_id': content_id}, headers={'API-KEY': os.environ['STRAW_POLL']})
         await ctx.reply(f"{ctx.author.mention} deleted")
     
+    @commands.command(name='orc')
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def ocr(self, ctx: Context, *, link: str=None):
+        """To convert image to text"""
+        if not link:
+            link = ctx.message.attachments[0].url
+        else:
+            await ctx.reply(f"{ctx.author.mention} must provide the link")
+        try:
+            async with aiohttp.ClientSession() as session:
+                res = await session.get(link)
+        except Exception as e: 
+            return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
+        json = await res.json()
+        if str(json['success']) != str(200): return return await ctx.reply(f"{ctx.author.mention} something not right.")
+        msg = json['message'][:2000:]
+        await ctx.reply(embed=discord.Embed(description=msg, color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}"))
+
+    @commands.command(name='qr', aliases=['createqr', 'cqr'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def qrcode(self, ctx: Context, *, text: str):
+        """To generate the QR"""
+        await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=f"https://normal-api.ml/createqr?text={text}").set_footer(text=f"{ctx.author}"))
+
+    @commands.command(name='image-search', aliases=['imagesearch', 'imgs'])
+    @commands.is_nsfw()
+    @Context.with_type
+    async def imgsearch(self, ctx: Context, *, text: str):
+        """Image Search. Anything"""
+        try:
+            async with aiohttp.ClientSession() as session:
+                res = await session.get(f"https://normal-api.ml/image-search?query={text}")
+        except Exception as e: 
+            return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
+        json = await res.json()
+        if str(json['success']) != str(200): return return await ctx.reply(f"{ctx.author.mention} something not right.")
+        img = json['image']
+        await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=img).set_footer(text=f"{ctx.author}"))
+
 def setup(bot):
     bot.add_cog(misc(bot))

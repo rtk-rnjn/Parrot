@@ -439,10 +439,10 @@ class actions(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def kick(self, ctx: Context, *, member: discord.Member=None):
+    async def hit(self, ctx: Context, *, member: discord.Member=None):
         """Kick pics?"""
         async with aiohttp.ClientSession() as session:
-            data = await session.get(f"{self.url}/{ctx.command.name}")
+            data = await session.get(f"{self.url}/kick")
         
         json = await data.json()
         url = json['url']

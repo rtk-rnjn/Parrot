@@ -14,4 +14,5 @@ TOKEN = os.environ['TOKEN']
 DEV_LOGO = data['dev_logo']
 DATABASE_KEY = os.environ['DATABASE_KEY']
 my_secret = DATABASE_KEY
-MEME_PASS = "***qwerty123" # this is not the real pass, just to tell the website from where the API call is comming from.
+MEME_PASS = "***qwerty123" # this is not the real pass, just to tell the website from where the API call is comming from. 
+                           # yes you can use. but i suggest you to use your own. 

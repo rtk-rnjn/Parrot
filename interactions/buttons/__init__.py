@@ -69,23 +69,18 @@ class game(Cog):
             embed = discord.Embed(color=0xFF0000)
             embed.add_field(
                 name=f"Q-{question_num}\n{question}",
-                value=
-                "Reply with `yes/y` | `no/n` | `i/idk/i don't know` | `p/probably` | `proably not/pn`",
+                value="Reply with `yes/y` | `no/n` | `i/idk/i don't know` | `p/probably` | `proably not/pn`",
             )
             await ctx.send(embed=embed)
 
             def check(m):
-                replies = [
-                    "yes", "y", "no", "n", "i", "idk", "i don't know",
-                    "probably", "p", "probably not", "pn"
-                ]
-                return (m.content in replies and m.channel == ctx.channel
-                        and m.author == ctx.author)
+                replies = ("yes", "y", "no", "n", "i", "idk", "i don't know", "probably", "p", "probably not", "pn")
+                return (m.content.lower() in replies and m.channel == ctx.channel and m.author == ctx.author)
             try:
               msg = await self.bot.wait_for("message", check=check, timeout=30)
             except Exception:
               return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
-            if msg.content == "b":
+            if msg.content.lower() in ("b", "back"):
                 try:
                     q = await aki.back()
                 except akinator.CantGoBackAnyFurther:
@@ -105,7 +100,7 @@ class game(Cog):
         await ctx.send(embed=embed)
 
         def check(m):
-            return (m.content.lower() in ["yes", "y"] and m.channel == ctx.channel and m.author == ctx.author)
+            return (m.content.lower() in ("yes", "y") and m.channel == ctx.channel and m.author == ctx.author)
 
         try: 
             correct = await self.bot.wait_for("message", check=check, timeout=30)
@@ -117,17 +112,13 @@ class game(Cog):
         else:
             embed = discord.Embed(title="Oof! Kinda hard one", color=0xFF0000)
             await ctx.send(embed=embed)
-
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(GuessName.guess())
-        loop.close()
     
     @commands.group()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def uno(self, ctx: Context):
         """To play UNO"""
-        pass
+        await ctx.send(f"{ctx.author.mention} comming soon!")
     
     @uno.command()
     async def uno_play(self, ctx: Context, members: commands.Greedy[discord.Member]):

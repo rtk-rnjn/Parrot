@@ -168,6 +168,3 @@ class HelpCog(Cog):
 
     def cog_unload(self):
         self.bot.help_command = self.old_help_command
-
-
-

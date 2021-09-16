@@ -19,7 +19,7 @@ class Context(commands.Context):
         return wrapped
     
     async def send(self, content: typing.Optional[str] = None, **kwargs) -> typing.Optional[discord.Message]:
-        if not (_perms := self.channel.permissions_for(self.me)).send_messages:
+        if not (self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
                     "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
@@ -31,14 +31,19 @@ class Context(commands.Context):
         return await super().send(content, **kwargs)
     
     async def reply(self, content: typing.Optional[str] = None, **kwargs) -> typing.Optional[discord.Message]:
-        if not (_perms := self.channel.permissions_for(self.me)).send_messages:
+        print(1)
+        if not (self.channel.permissions_for(self.me)).send_messages:
+            print(2)
             try:
+                print(3)
                 await self.author.send(
                     "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
                 )
             except discord.Forbidden:
+                print(4)
                 pass
+            print(5)
             return
-        
+        print(6)
         return await super().reply(content, **kwargs)
     

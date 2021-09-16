@@ -19,13 +19,16 @@ class Infraction:
         self._parrot_collection = None
         self._warn_db = None
 
+    @async_property
+    async def total_warns(self):
+        pass
     async def get_case_id(self) -> int:
         if self._parrot_collection is None:
             parrot_db = await self.bot.db('parrot_db')
             self._parrot_collection = parrot_db['server_config']
         
         if self._warn_db is None:
-            self._warn_db = self.bot.db('warn_db')
+            self._warn_db = await self.bot.db('warn_db')
         
         data = await collection.find_one({'_id': self.guild_id})
         try:
@@ -48,7 +51,7 @@ class Infraction:
 
     async def _add_warn(self) -> None:
         warn = self._make_warn()
-        collection = self._warn_db[self.guild_id]
+        collection = self._warn_db[f"{self.guild_id}"]
         user_exists = await collection.find_one({'_id': self.user_id})
         if user_exists:
             await collection.insert_one({'_id': self.user_id, 'warns': [warn]})
@@ -56,16 +59,16 @@ class Infraction:
             await collection.update_one({'_id': self.user_id}, {'$addToSet': {'warns': warn}})
     
     async def _del_warn_all(self) -> None:
-        collection = self._warn_db[self.guild_id]
+        collection = self._warn_db[f"{self.guild_id}"]
         user_exists = await collection.find_one({'_id': self.user_id})
         if not user_exists:
             return
         await collection.update_one({'_id': self.user_id}, {'$set': {'warns': []}})
     
     async def _del_warn_by_id(self, case_id: int) -> None:
-        pass
+        collection = self._warn_db[f"{self.guild_id}"]
+        await collection.update_one({'_id': self.user_id}, {'$pull': {'warns': {'case_id': case_id}}})
     
-    async def _del_warn_by_mod(self, case_id: int) -> None:
-        pass
-    
-    
+    async def _del_warn_by_mod(self, mod: int) -> None:
+        collection = self._warn_db[f"{self.guild_id}"]
+        await collection.update_one({'_id': self.user_id}, {'$pull': {'warns': {'mod': mod}}}, {'multi': True})

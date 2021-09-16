@@ -26,7 +26,7 @@ class misc(Cog):
         @bot.listen('on_message_edit')
         async def on_message_edit(before, after):
             if before.author.bot or after.author.bot:
-                return  # DEPARTMENT OF REDUNDANCY DEPARTMENT
+                return 
             if (editdistance.eval(before.content, after.content) >=
                     10) and (len(before.content) > len(after.content)):
                 self.snipes[before.channel.id] = [before, after]
@@ -161,7 +161,7 @@ class misc(Cog):
         embed = discord.Embed(
             title=f"{context}",
             description=
-            f"```\nSEARCH ENGINE: GOOGLE\nTIME TAKEN   : {searchInfoTime}```",
+            f"```\nSEARCH ENGINE: GOOGLE\nTIME TAKEN   : {searchInfoTime} ms```",
             timestamp=datetime.datetime.utcnow())
         embed.set_footer(text=f"{ctx.author.name}")
         embed.set_thumbnail(
@@ -386,12 +386,15 @@ class misc(Cog):
     async def embed(self, ctx: Context, channel: typing.Optional[discord.TextChannel]=None, *, data: typing.Union[dict, str]=None):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
         channel = channel or ctx.channel
-        if not data: return
-        try:
-            data = json.loads(data)
-            await channel.send(embed=discord.Embed.from_dict(data))
-        except Exception as e:
-            await ctx.reply(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
+        if channel.permissions_for(ctx.author).embed_links:
+            if not data: return
+            try:
+                data = json.loads(data)
+                await channel.send(embed=discord.Embed.from_dict(data))
+            except Exception as e:
+                await ctx.reply(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
+        else:
+            await ctx.reply(f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -543,8 +546,7 @@ class misc(Cog):
     @commands.command(name='qr', aliases=['createqr', 'cqr'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def qrcode(self, ctx: Context, *, text: str):
+    async def qrcode(self, ctx: Context, text: str):
         """To generate the QR"""
+        text = text.split(" ")[0]
         await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=f"https://normal-api.ml/createqr?text={text}").set_footer(text=f"{ctx.author}"))
-
-

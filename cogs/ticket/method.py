@@ -59,7 +59,7 @@ async def _new(ctx, args):
     cat = ctx.guild.get_channel(data['category'])
 
     ticket_channel = await ctx.guild.create_text_channel(
-        "ticket-{}".format(ticket_number), category=cat, reason="Parrot Ticket bot feature | On request from {ctx.author.name}#{ctx.author.discriminator}")
+        "ticket-{}".format(ticket_number), category=cat, reason=f"Parrot Ticket bot feature | On request from {ctx.author.name}#{ctx.author.discriminator}")
     await ticket_channel.set_permissions(
         ctx.guild.get_role(ctx.guild.id),
         send_messages=False,
@@ -81,7 +81,23 @@ async def _new(ctx, args):
                 external_emojis=True,
                 view_channel=True,
                 reason="Parrot Ticket Bot on action | Role Access")
+    
+    if data['verified-roles']:
+        for role_id in data["verified-roles"]:
+            role = ctx.guild.get_role(role_id)
 
+            await ticket_channel.set_permissions(
+                role,
+                send_messages=True,
+                read_messages=True,
+                add_reactions=True,
+                embed_links=True,
+                attach_files=True,
+                read_message_history=True,
+                external_emojis=True,
+                view_channel=True,
+                reason="Parrot Ticket Bot on action | Role Access")
+    
     await ticket_channel.set_permissions(
         ctx.author,
         send_messages=True,

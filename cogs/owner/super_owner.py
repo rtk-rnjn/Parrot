@@ -76,7 +76,7 @@ class Owner(Cog):
         reason = reason or "No reason provided"
         await ban(user.id, cmd, chat, globals_, reason)
         try:
-            await user.send(f"{user.mention} you are banned from Parrot bot. From now you can not use any command neither you can chat on #global-chat. Reason: {reason}\n\nContact `!! Ritik Ranjan [*.*]#9230` (741614468546560092) for unban.")
+            await user.send(f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `!! Ritik Ranjan [*.*]#9230` (741614468546560092) for unban.")
         except Exception:
             pass
     

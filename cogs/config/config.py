@@ -3,7 +3,6 @@ import discord, typing
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
-from utilities.database import enable_cog, disable_cog, enable_cmd, disable_cmd, enable_disable
 
 ct = parrot_db['telephone']
 csc = parrot_db['server_config']
@@ -401,54 +400,139 @@ class botConfig(Cog):
         """This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""
         await mt._delpingedrole(ctx, role)
 
-    @commands.command()
+    @commands.group()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def disable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.CategoryChannel]=None):
-        """To disable the command | NOT WORKING FOR SOME REASON"""
-        server = False
-        if target is None:
-            server = True
-        else:
-            tar = target.id 
-        # target = True if target is None else target.id
-        cmd = self.bot.get_command(command)
-        if not cmd:
-            return await ctx.reply(f"{ctx.author.mention} that commands do not exists")
-        if server: type_ = 'server'
-        else: type_ = str(target.type)
-        if type(target) is discord.TextChannel:
-            await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, tar, None, server)
-        elif type(target) is discord.CategoryChannel:
-            await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, tar, server)
-        else:
-            await disable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
-        
-        await ctx.reply(f"{ctx.author.mention} success! **{cmd.qualified_name}** is disabled; to **{type_}** wide")
+    async def cmd(self, ctx: Context):
+        """Command Management of the server"""
+        pass
     
-    @commands.command()
+    @cmd.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def enable(self, ctx: Context, command: commands.clean_content, *, target: typing.Union[discord.TextChannel, discord.CategoryChannel]=None):
-        """To enable the command | NOT WORKING FOR SOME REASON"""
-        server = True
-        if target is None:
-            server = True
-        else:
-            tar = target.id 
-        # target = True if target is None else target.id
+    async def enable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.Role]=None, force: str=None):
+        """To enable the command"""
         cmd = self.bot.get_command(command)
-        if not cmd:
-            return await ctx.reply(f"{ctx.author.mention} that commands do not exists")
-        if server: type_ = 'server'
-        else: type_ = str(target.type)
-        if type(target) is discord.TextChannel:
-            await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, tar, None, server)
-        elif type(target) is discord.CategoryChannel:
-            await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, tar, server)
+        cog = self.bot.get_cog(command)
+        if cmd is not None:
+            enable_disable = await self.bot.db('enable_disable')
+            collection = enable_disable[f"{ctx.guild.id}"]
+            data = await collection.find_one({'_id': cmd.qualified_name})
+            if not data:
+                await collection.insert_one({'_id': cmd.qualified_name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False})
+            if not target:
+                if force:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$set': {'server': False, 'channel_out': []}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable **server** wide, forcely")
+                else:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$set': {'server': False}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable **server** wide")
+            elif type(target) is discord.TextChannel:
+                if force:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$pull': {'channel_out': target.id}, '$addToSet': {'channel_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable in {target.mention}, forcely")
+                else:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable in {target.mention}")
+            elif type(target) is discord.Role:
+                if force:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$pull': {'role_out': target.id}, '$addToSet': {'role_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable for **{role.name} ({role.id})**, forcely")
+                else:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$addToSet': {'role_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable in **{role.name} ({role.id})**")
+
+        elif cog is not None:
+            enable_disable = await self.bot.db('enable_disable')
+            collection = enable_disable[f"{ctx.guild.id}"]
+            data = await collection.find_one({'_id': cog.name})
+            if not data:
+                await collection.insert_one({'_id': cog.name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False})
+            if not target:
+                if force:
+                    await collection.update_one({'_id': cog.name}, {'$set': {'server': True, 'channel_out': []}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled **server** wide, forcely")
+                else:
+                    await collection.update_one({'_id': cog.name}, {'$set': {'server': True}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled **server** wide")
+            elif type(target) is discord.TextChannel:
+                if force:
+                    await collection.update_one({'_id': cog.name}, {'$pull': {'channel_out': target.id}, '$addToSet': {'channel_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in {target.mention}, forcely")
+                else:
+                    await collection.update_one({'_id': cog.name}, {'$addToSet': {'channel_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in {target.mention}")
+            elif type(target) is discord.Role:
+                if force:
+                    await collection.update_one({'_id': cog.name}, {'$pull': {'role_out': target.id}, '$addToSet': {'role_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{role.name} ({role.id})**, forcely")
+                else:
+                    await collection.update_one({'_id': cog.name}, {'$addToSet': {'role_in': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{role.name} ({role.id})**")
         else:
-            await enable_cmd(ctx.guild.id, cmd.qualified_name, type_, None, None, server)
+            await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         
-        await ctx.reply(f"{ctx.author.mention} success! **{cmd.qualified_name}** is enabled; to **{type_}** wide")
+    @cmd.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def disable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.Role]=None, force: str=None):
+        """To disable the command"""
+        cmd = self.bot.get_command(command)
+        cog = self.bot.get_cog(command)
+        if cmd is not None:
+            enable_disable = await self.bot.db('enable_disable')
+            collection = enable_disable[f"{ctx.guild.id}"]
+            data = await collection.find_one({'_id': cmd.qualified_name})
+            if not data:
+                await collection.insert_one({'_id': cmd.qualified_name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False})
+            if not target:
+                if force:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$set': {'server': True, 'channel_in': []}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled **server** wide, forcely")
+                else:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$set': {'server': True}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled **server** wide")
+            elif type(target) is discord.TextChannel:
+                if force:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$pull': {'channel_in': target.id}, '$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled in {target.mention}, forcely")
+                else:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled in {target.mention}")
+            elif type(target) is discord.Role:
+                if force:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled for **{role.name} ({role.id})**, forcely")
+                else:
+                    await collection.update_one({'_id': cmd.qualified_name}, {'$addToSet': {'role_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled in **{role.name} ({role.id})**")
 
-
+        elif cog is not None:
+            enable_disable = await self.bot.db('enable_disable')
+            collection = enable_disable[f"{ctx.guild.id}"]
+            data = await collection.find_one({'_id': cog.name})
+            if not data:
+                await collection.insert_one({'_id': cog.name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False})
+            if not target:
+                if force:
+                    await collection.update_one({'_id': cog.name}, {'$set': {'server': True, 'channel_in': []}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled **server** wide, forcely")
+                else:
+                    await collection.update_one({'_id': cog.name}, {'$set': {'server': True}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled **server** wide")
+            elif type(target) is discord.TextChannel:
+                if force:
+                    await collection.update_one({'_id': cog.name}, {'$pull': {'channel_in': target.id}, '$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in {target.mention}, forcely")
+                else:
+                    await collection.update_one({'_id': cog.name}, {'$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in {target.mention}")
+            elif type(target) is discord.Role:
+                if force:
+                    await collection.update_one({'_id': cog.name}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{role.name} ({role.id})**, forcely")
+                else:
+                    await collection.update_one({'_id': cog.name}, {'$addToSet': {'role_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{role.name} ({role.id})**")
+        else:
+            await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")

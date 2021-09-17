@@ -25,12 +25,6 @@ async def can_run(ctx):
             
             if ctx.channel.id in data['channel_out']:
                 return False
-            
-            if ctx.channel.category_id in data['cat_in']:
-                return True
-            
-            if ctx.channel.category_id in data['cat_out']:
-                return False
 
             if data['server']:
                 return False

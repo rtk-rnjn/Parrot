@@ -400,14 +400,14 @@ class botConfig(Cog):
         """This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""
         await mt._delpingedrole(ctx, role)
 
-    @commands.group()
+    @commands.group(aliases=['cmdc', 'configcmd'])
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def cmd(self, ctx: Context):
+    async def cmdconfig(self, ctx: Context):
         """Command Management of the server"""
         pass
     
-    @cmd.command()
+    @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def enable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.Role]=None, force: str=None):
@@ -472,7 +472,7 @@ class botConfig(Cog):
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         
-    @cmd.command()
+    @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def disable(self, ctx: Context, command: commands.clean_content, target: typing.Union[discord.TextChannel, discord.Role]=None, force: str=None):
@@ -536,3 +536,10 @@ class botConfig(Cog):
                     await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{role.name} ({role.id})**")
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
+        
+    @cmdconfig.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def list(self, ctx: Context):
+        """To view what all configuation are being made with command"""
+        return

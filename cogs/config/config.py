@@ -3,6 +3,7 @@ import discord, typing
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
+from datetime import datetime
 
 ct = parrot_db['telephone']
 csc = parrot_db['server_config']
@@ -12,26 +13,12 @@ from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
 
-class botConfig(Cog):
+class botconfig(Cog):
     """To config the bot. In the server"""
     def __init__(self, bot: Parrot):
         self.bot = bot
-
-    async def get_disabled_cmd(self, guild_id: int):
-        collection = enable_disable[f"{guild_id}"]
         
-        if not data:
-            await collection.insert_one({
-                '_id': cmd,
-                'channel': [],
-                'category': [],
-                'server': False
-            })
-            return []
-        
-    @commands.group(name='serverconfig',
-                    aliases=['config'],
-                    invoke_without_command=True)
+    @commands.group(name='serverconfig', aliases=['config'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def config(self, ctx: Context):
@@ -108,10 +95,7 @@ class botConfig(Cog):
     @config.command(aliases=['action-log', 'modlog', 'mod-log'])
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def actionlog(self,
-                        ctx: Context,
-                        *,
-                        channel: discord.TextChannel = None):
+    async def actionlog(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To set the action log, basically the mod log."""
 
         post = {'action_log': channel.id if channel else None}
@@ -178,10 +162,7 @@ class botConfig(Cog):
     @telsetup.command(name='channel')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def tel_config_channel(self,
-                                 ctx: Context,
-                                 *,
-                                 channel: discord.TextChannel = None):
+    async def tel_config_channel(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To setup the telephone line in the channel."""
 
         await telephone_update(ctx.guild.id, 'channel',
@@ -197,10 +178,7 @@ class botConfig(Cog):
     @telsetup.command(name='pingrole')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def tel_config_pingrole(self,
-                                  ctx: Context,
-                                  *,
-                                  role: discord.Role = None):
+    async def tel_config_pingrole(self, ctx: Context, *, role: discord.Role = None):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
 
         await telephone_update(ctx.guild.id, 'pingrole',
@@ -215,20 +193,14 @@ class botConfig(Cog):
     @telsetup.command(name='memberping')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def tel_config_memberping(self,
-                                    ctx: Context,
-                                    *,
-                                    member: discord.Member = None):
+    async def tel_config_memberping(self, ctx: Context, *, member: discord.Member = None):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
 
         await telephone_update(ctx.guild.id, 'memberping',
                                member.id if member else None)
         if not member:
-            return await ctx.reply(
-                f"{ctx.author.menton} member ping reseted! or removed")
-        await ctx.reply(
-            f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."
-        )
+            return await ctx.reply(f"{ctx.author.menton} member ping reseted! or removed")
+        await ctx.reply(f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server.")
 
     @telsetup.command(name='block')
     @commands.has_permissions(administrator=True)
@@ -258,8 +230,7 @@ class botConfig(Cog):
         await ctx.reply(f'{ctx.author.mention} Success! unblocked: {server.id}')
 
     @commands.group(aliases=['ticketsetup'], invoke_without_command=True)
-    @commands.check_any(commands.has_permissions(administrator=True),
-                        has_verified_role_ticket())
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def ticketconfig(self, ctx: Context):
@@ -502,10 +473,10 @@ class botConfig(Cog):
             elif type(target) is discord.Role:
                 if force:
                     await collection.update_one({'_id': cmd.qualified_name}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled for **{role.name} ({role.id})**, forcely")
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled for **{target.name} ({target.id})**, forcely")
                 else:
                     await collection.update_one({'_id': cmd.qualified_name}, {'$addToSet': {'role_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled in **{role.name} ({role.id})**")
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now disabled in **{target.name} ({target.id})**")
 
         elif cog is not None:
             enable_disable = await self.bot.db('enable_disable')
@@ -530,10 +501,10 @@ class botConfig(Cog):
             elif type(target) is discord.Role:
                 if force:
                     await collection.update_one({'_id': cog.name}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{role.name} ({role.id})**, forcely")
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{target.name} ({target.id})**, forcely")
                 else:
                     await collection.update_one({'_id': cog.name}, {'$addToSet': {'role_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{role.name} ({role.id})**")
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{target.name} ({target.id})**")
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         
@@ -542,4 +513,9 @@ class botConfig(Cog):
     @Context.with_type
     async def list(self, ctx: Context):
         """To view what all configuation are being made with command"""
-        return
+        enable_disable = await self.bot.db('enable_disable')
+        em_lis = []
+        collection = enable_disable[f"{ctx.guild.id}"]
+        em = discord.Embed(timestamp=datetime.utcnow(), color=ctx.author.color)
+        async for data in collection.find({}):
+            

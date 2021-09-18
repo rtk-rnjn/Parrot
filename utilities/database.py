@@ -154,7 +154,8 @@ async def guild_remove(guild_id: int):
     await collection.delete_one({'_id': guild_id})
     collection = parrot_db["ticket"]
     await collection.delete_one({'_id': guild_id})
-
+    collection = enable_disable[f'{guild_id}']
+    await collection.drop()
 
 async def ban(user_id: int, cmd: bool, chat: bool, global_: bool, reason: str): # chat, cmd, global
     collection = parrot_db['banned_users']

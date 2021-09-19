@@ -1,5 +1,5 @@
-from .config import botConfig
+from .config import botconfig
 from core import Parrot
 
 def setup(bot: Parrot):
-    bot.add_cog(botConfig(bot))
+    bot.add_cog(botconfig(bot))

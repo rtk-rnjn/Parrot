@@ -4,7 +4,7 @@ import discord, typing
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
 from datetime import datetime
-
+from utilities.paginator import Paginator
 ct = parrot_db['telephone']
 csc = parrot_db['server_config']
 ctt = parrot_db['ticket']
@@ -514,8 +514,11 @@ class botconfig(Cog):
     async def list(self, ctx: Context):
         """To view what all configuation are being made with command"""
         enable_disable = await self.bot.db('enable_disable')
-        em_lis = []
+        em_lis = [] # {'_id': cog.name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False}
         collection = enable_disable[f"{ctx.guild.id}"]
-        em = discord.Embed(timestamp=datetime.utcnow(), color=ctx.author.color)
         async for data in collection.find({}):
-            
+            em = discord.Embed(timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f'{ctx.author}')
+            em.description = f"{data['_id']}\n\n`Channel In :` {', '.join(data['channel_in'])}\n`Channel Out:` {', '.join(data['channel_out'])}\n`Role In   :` {', '.join(data['role_in'])}\n`Role Out  :` {', '.join(data['role_out'])}\n\nServer Wide?:{data['server'])}\n"
+            em_lis.append(em)
+        paginator = Paginator(pages=em_lis, timeout=60.0)
+        await paginator.start(ctx)

@@ -518,7 +518,7 @@ class botconfig(Cog):
         collection = enable_disable[f"{ctx.guild.id}"]
         async for data in collection.find({}):
             em = discord.Embed(timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f'{ctx.author}')
-            em.description = f"{data['_id']}\n\n`Channel In :` {', '.join(data['channel_in'])}\n`Channel Out:` {', '.join(data['channel_out'])}\n`Role In   :` {', '.join(data['role_in'])}\n`Role Out  :` {', '.join(data['role_out'])}\n\nServer Wide?:{data['server']}\n"
+            em.description = f"{data['_id']}\n\n`Channel In :` {', '.join(str(data['channel_in']))}\n`Channel Out:` {', '.join(str(data['channel_out']))}\n`Role In   :` {', '.join(str(data['role_in']))}\n`Role Out  :` {', '.join(str(data['role_out']))}\n\nServer Wide?:{data['server']}\n"
             em_lis.append(em)
         paginator = Paginator(pages=em_lis, timeout=60.0)
         await paginator.start(ctx)

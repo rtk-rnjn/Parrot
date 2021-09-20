@@ -17,14 +17,11 @@ async def can_run(ctx):
         collection = enable_disable[f'{ctx.guild.id}']
         if data := await collection.find_one({'_id': ctx.command.qualified_name}):
             if ctx.channel.id in data['channel_in']: 
-                print(1)
                 return True
             for role in ctx.author.roles:
                 if role.id in data['role_in']: 
-                    print(2)
                     return True
                 if role.id in data['role_out']: 
-                    print(3)
                     return False
             if ctx.channel.id in data['channel_out']: return False
             if data['server']: return False

@@ -481,30 +481,30 @@ class botconfig(Cog):
         elif cog is not None:
             enable_disable = await self.bot.db('enable_disable')
             collection = enable_disable[f"{ctx.guild.id}"]
-            data = await collection.find_one({'_id': cog.name})
+            data = await collection.find_one({'_id': cog.qualified_name})
             if not data:
-                await collection.insert_one({'_id': cog.name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False})
+                await collection.insert_one({'_id': cog.qualified_name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False})
             if not target:
                 if force:
-                    await collection.update_one({'_id': cog.name}, {'$set': {'server': True, 'channel_in': []}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled **server** wide, forcely")
+                    await collection.update_one({'_id': cog.qualified_name}, {'$set': {'server': True, 'channel_in': []}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.qualified_name}** is now disabled **server** wide, forcely")
                 else:
-                    await collection.update_one({'_id': cog.name}, {'$set': {'server': True}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled **server** wide")
+                    await collection.update_one({'_id': cog.qualified_name}, {'$set': {'server': True}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.qualified_name}** is now disabled **server** wide")
             elif type(target) is discord.TextChannel:
                 if force:
-                    await collection.update_one({'_id': cog.name}, {'$pull': {'channel_in': target.id}, '$addToSet': {'channel_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in {target.mention}, forcely")
+                    await collection.update_one({'_id': cog.qualified_name}, {'$pull': {'channel_in': target.id}, '$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.qualified_name}** is now disabled in {target.mention}, forcely")
                 else:
-                    await collection.update_one({'_id': cog.name}, {'$addToSet': {'channel_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in {target.mention}")
+                    await collection.update_one({'_id': cog.qualified_name}, {'$addToSet': {'channel_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.qualified_name}** is now disabled in {target.mention}")
             elif type(target) is discord.Role:
                 if force:
-                    await collection.update_one({'_id': cog.name}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{target.name} ({target.id})**, forcely")
+                    await collection.update_one({'_id': cog.qualified_name}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.qualified_name}** is now disabled for **{target.name} ({target.id})**, forcely")
                 else:
-                    await collection.update_one({'_id': cog.name}, {'$addToSet': {'role_out': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{target.name} ({target.id})**")
+                    await collection.update_one({'_id': cog.qualified_name}, {'$addToSet': {'role_out': target.id}})
+                    await ctx.send(f"{ctx.author.mention} **{cog.qualified_name}** is now disabled in **{target.name} ({target.id})**")
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         

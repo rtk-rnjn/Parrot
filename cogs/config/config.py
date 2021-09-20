@@ -522,3 +522,14 @@ class botconfig(Cog):
             em_lis.append(em)
         paginator = Paginator(pages=em_lis, timeout=60.0)
         await paginator.start(ctx)
+    
+    @cmdconfig.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def clear(self, ctx: Context):
+        """To clear all overrides"""
+        enable_disable = await self.bot.db('enable_disable')
+        em_lis = [] # {'_id': cog.name, 'channel_in': [], 'channel_out': [], 'role_in': [], 'role_out': [], 'server': False}
+        collection = enable_disable[f"{ctx.guild.id}"]
+        await collection.drop()
+        await ctx.send(f"{ctx.author.mention} reseted everything!")

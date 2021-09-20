@@ -408,10 +408,10 @@ class botconfig(Cog):
             elif type(target) is discord.Role:
                 if force:
                     await collection.update_one({'_id': cmd.qualified_name}, {'$pull': {'role_out': target.id}, '$addToSet': {'role_in': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable for **{role.name} ({role.id})**, forcely")
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable for **{target.name} ({target.id})**, forcely")
                 else:
                     await collection.update_one({'_id': cmd.qualified_name}, {'$addToSet': {'role_in': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable in **{role.name} ({role.id})**")
+                    await ctx.send(f"{ctx.author.mention} **{cmd.qualified_name}** is now enable in **{target.name} ({target.id})**")
 
         elif cog is not None:
             enable_disable = await self.bot.db('enable_disable')
@@ -518,7 +518,7 @@ class botconfig(Cog):
         collection = enable_disable[f"{ctx.guild.id}"]
         async for data in collection.find({}):
             em = discord.Embed(timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f'{ctx.author}')
-            em.description = f"{data['_id']}\n\n`Channel In :` {', '.join(str(data['channel_in']))}\n`Channel Out:` {', '.join(str(data['channel_out']))}\n`Role In   :` {', '.join(str(data['role_in']))}\n`Role Out  :` {', '.join(str(data['role_out']))}\n\nServer Wide?:{data['server']}\n"
+            em.description = f"{data['_id']}\n\n`Channel In :` {(str(data['channel_in']))}\n`Channel Out:` {(str(data['channel_out']))}\n`Role In   :` {(str(data['role_in']))}\n`Role Out  :` {(str(data['role_out']))}\n\nServer Wide?:{data['server']}\n"
             em_lis.append(em)
         paginator = Paginator(pages=em_lis, timeout=60.0)
         await paginator.start(ctx)

@@ -10,7 +10,7 @@ from datetime import datetime
 collection = parrot_db['server_config']
 
 
-class mod(Cog):
+class moderation(Cog):
     """A simple moderator's tool for managing the server."""
     def __init__(self, bot: Parrot):
         self.bot = bot

@@ -436,10 +436,10 @@ class botconfig(Cog):
             elif type(target) is discord.Role:
                 if force:
                     await collection.update_one({'_id': cog.name}, {'$pull': {'role_out': target.id}, '$addToSet': {'role_in': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{role.name} ({role.id})**, forcely")
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled for **{target.name} ({target.id})**, forcely")
                 else:
                     await collection.update_one({'_id': cog.name}, {'$addToSet': {'role_in': target.id}})
-                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{role.name} ({role.id})**")
+                    await ctx.send(f"{ctx.author.mention} **{cog.name}** is now disabled in **{target.name} ({target.id})**")
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         

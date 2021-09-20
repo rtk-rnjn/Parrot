@@ -12,8 +12,7 @@ async def bot_before_invoke(ctx):
 @bot.check
 async def can_run(ctx):
     if ctx.guild is not None:
-        # is_owner = await bot.is_owner(ctx.author)
-        # if is_owner: return True
+        if ctx.author.id == ctx.guild.owner.id: return True
         collection = enable_disable[f'{ctx.guild.id}']
         if data := await collection.find_one({'_id': ctx.command.qualified_name}):
             if ctx.channel.id in data['channel_in']: 

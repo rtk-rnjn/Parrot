@@ -13,7 +13,7 @@ ctt = parrot_db['ticket']
 from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
-from cog.config import method as mt
+from cogs.config import method as mt
 
 class botconfig(Cog):
     """To config the bot. In the server"""

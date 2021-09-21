@@ -18,6 +18,8 @@ os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
 os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
+intents = discord.Intents.default()
+intents.members = True
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -25,7 +27,7 @@ class Parrot(commands.AutoShardedBot):
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
-            intents=discord.Intents.all(),
+            intents=intents,
             activity=discord.Activity(type=discord.ActivityType.listening,
                                       name="100k members"),
             status=discord.Status.dnd,

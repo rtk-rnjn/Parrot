@@ -13,7 +13,7 @@ ctt = parrot_db['ticket']
 from utilities.checks import has_verified_role_ticket
 from cogs.ticket import method as mt
 
-from cogs.config import method as mt
+from cogs.config import method as mt_
 
 class botconfig(Cog):
     """To config the bot. In the server"""
@@ -388,9 +388,9 @@ class botconfig(Cog):
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
-            await mt._enable(self.bot, ctx, cmd.qualified_name, target, force)
+            await mt_._enable(self.bot, ctx, cmd.qualified_name, target, force)
         elif cog is not None:
-            await mt._enable(self.bot, ctx, cog.qualified_name, target, force)
+            await mt_._enable(self.bot, ctx, cog.qualified_name, target, force)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         
@@ -402,9 +402,9 @@ class botconfig(Cog):
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
-            await mt._disable(self.bot, ctx, cmd.qualified_name, target, force)
+            await mt_._disable(self.bot, ctx, cmd.qualified_name, target, force)
         elif cog is not None:
-            await mt._disable(self.bot, ctx, cog.qualified_name, target, force)
+            await mt_._disable(self.bot, ctx, cog.qualified_name, target, force)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         

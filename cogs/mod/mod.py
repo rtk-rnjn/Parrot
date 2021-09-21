@@ -303,7 +303,7 @@ class moderation(Cog):
         await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()
-    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
     @commands.bot_has_guild_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True)
     @Context.with_type
     async def voice(self, ctx: Context):
@@ -311,7 +311,7 @@ class moderation(Cog):
         pass
     
     @voice.command(name='mute')
-    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_mute(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -320,7 +320,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @voice.command(name='unmute')
-    @commands.check_any(is_mod(), commands.has_permissions(mute_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -329,7 +329,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
     
     @voice.command(name='ban')
-    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True, manage_permissions=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(manage_channels=True, manage_permissions=True))
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
     async def voice_ban(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -338,7 +338,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
     
     @voice.command(name='unban')
-    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True, manage_permissions=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(manage_channels=True, manage_permissions=True))
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
     async def voice_unban(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -347,7 +347,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
     
     @voice.command(name='deafen')
-    @commands.check_any(is_mod(), commands.has_permissions(deafen_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_deafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -356,7 +356,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @voice.command(name='undeafen')
-    @commands.check_any(is_mod(), commands.has_permissions(deafen_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_undeafen(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -365,7 +365,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @voice.command(name='kick')
-    @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
     @commands.bot_has_guild_permissions(move_members=True)
     @Context.with_type
     async def voice_kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert=None):
@@ -374,7 +374,7 @@ class moderation(Cog):
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @voice.command(name='move')
-    @commands.check_any(is_mod(), commands.has_permissions(move_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
     @commands.bot_has_guild_permissions(connect=True, move_members=True)
     @Context.with_type
     async def voice_move(self, ctx: Context, member: commands.Greedy[discord.Member], channel: typing.Union[discord.VoiceChannel, None], *, reason: reason_convert=None):

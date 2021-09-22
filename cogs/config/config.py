@@ -391,6 +391,8 @@ class botconfig(Cog):
             await mt_._enable(self.bot, ctx, cmd.qualified_name, target, force)
         elif cog is not None:
             await mt_._enable(self.bot, ctx, cog.qualified_name, target, force)
+        elif command == 'all':
+            await mt_._enable(self.bot, ctx, 'all', target, force)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         
@@ -405,6 +407,8 @@ class botconfig(Cog):
             await mt_._disable(self.bot, ctx, cmd.qualified_name, target, force)
         elif cog is not None:
             await mt_._disable(self.bot, ctx, cog.qualified_name, target, force)
+        elif command == 'all':
+            await mt_._disable(self.bot, ctx, 'all', target, force)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
         

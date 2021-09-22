@@ -9,24 +9,24 @@ async def _enable(bot, ctx, cmd_cog, target, force=None):
     if not target:
         if force:
             await collection.update_one({'_id': cmd_cog}, {'$set': {'server': False, 'channel_out': []}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now enable **server** wide, forcely")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable **server** wide, forcely")
         else:
             await collection.update_one({'_id': cmd_cog}, {'$set': {'server': False}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now enable **server** wide")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable **server** wide")
     elif type(target) is discord.TextChannel:
         if force:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'channel_out': target.id}, '$addToSet': {'channel_in': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now enable in {target.mention}, forcely")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in {target.mention}, forcely")
         else:
             await collection.update_one({'_id': cmd_coge}, {'$pull': {'channel_out': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now enable in {target.mention}")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in {target.mention}")
     elif type(target) is discord.Role:
         if force:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'role_out': target.id}, '$addToSet': {'role_in': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now enable for **{target.name} ({target.id})**, forcely")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable for **{target.name} ({target.id})**, forcely")
         else:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'role_out': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now enable in **{target.name} ({target.id})**")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in **{target.name} ({target.id})**")
 
 
 async def _disable(bot, ctx, cmd_cog, target, force=None):
@@ -38,21 +38,21 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
     if not target:
         if force:
             await collection.update_one({'_id': cmd_cog}, {'$set': {'server': True, 'channel_in': []}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now disabled **server** wide, forcely")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled **server** wide, forcely")
         else:
             await collection.update_one({'_id': cmd_cog}, {'$set': {'server': True}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now disabled **server** wide")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled **server** wide")
     elif type(target) is discord.TextChannel:
         if force:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'channel_in': target.id}, '$addToSet': {'channel_out': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now disabled in {target.mention}, forcely")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}, forcely")
         else:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'channel_in': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now disabled in {target.mention}")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}")
     elif type(target) is discord.Role:
         if force:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'role_in': target.id}, '$addToSet': {'role_out': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now disabled for **{target.name} ({target.id})**, forcely")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled for **{target.name} ({target.id})**, forcely")
         else:
             await collection.update_one({'_id': cmd_cog}, {'$pull': {'role_in': target.id}})
-            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** is now disabled in **{target.name} ({target.id})**")
+            await ctx.send(f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in **{target.name} ({target.id})**")

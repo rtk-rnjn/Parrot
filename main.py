@@ -10,7 +10,7 @@ async def bot_before_invoke(ctx):
             await ctx.guild.chunk()
 
 @bot.check
-async def can_run(ctx):
+async def bot_check(ctx):
     _true = await _can_run(ctx)
     return _true
 

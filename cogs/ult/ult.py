@@ -5,8 +5,7 @@ import discord
 from datetime import datetime, timedelta 
 from psutil import Process, virtual_memory
 from discord import __version__ as discord_version
-from platform import python_version
-from utilities.checks import is_cmd_enabled
+from platform import python_version 
 from core import Parrot, Context, Cog
 from utilities.config import VERSION
 

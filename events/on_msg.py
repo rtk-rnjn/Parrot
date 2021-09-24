@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from core import Parrot, Cog
 
 from discord.ext import commands
@@ -5,6 +7,7 @@ from discord.ext import commands
 import aiohttp, re, asyncio, json
 from discord import Webhook
 from utilities.database import msg_increment, parrot_db
+
 collection = parrot_db['global_chat']
 
 with open('extra/profanity.json') as f:

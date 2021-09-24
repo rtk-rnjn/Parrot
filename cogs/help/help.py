@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import discord
 from discord.ext import commands
@@ -40,7 +41,7 @@ class HelpCommand(commands.HelpCommand):
 
         embed.set_author(
             name=f"Server: {self.context.guild.name or self.context.author.name}",
-            icon_url=self.context.guild.icon.url if self.context.guild.icon else self.context.me.avatar.url)
+            icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
         embed.description = description + f"**Important Links**\n• [Invite the bot]({bot.invite})\n• [Support Server]({bot.support_server})\n• [Bot is Open Source]({bot.github})\n• {owner_url}"
         embed.set_thumbnail(url=self.context.me.avatar.url)

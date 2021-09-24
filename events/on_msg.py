@@ -22,7 +22,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if 'chod' in msg:
             return False
         for bad_word in bad_dict:
-            if bad_word in msg:
+            if bad_word.lower() in msg:
                 return False
         return True
 
@@ -112,7 +112,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     f"{message.author.mention} | Advertisements aren't allowed.",
                     delete_after=5)
 
-        to_send = self.refrain_message(message.content)
+        to_send = self.refrain_message(message.content.lower())
         if to_send:
             pass
         elif not to_send:

@@ -1,12 +1,16 @@
 
 from __future__ import annotations
+
 import jishaku
 import os, typing
 from async_property import async_property
+
 from discord.ext import commands
 import discord, traceback, asyncio
+
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
+
 from time import time
 
 from .Context import Context

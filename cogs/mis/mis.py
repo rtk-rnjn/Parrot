@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
+
 import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect
 from utilities.paginator import Paginator
 from discord import Embed
+
 from core import Parrot, Context, Cog
 
 invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"

@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 from discord.ext import commands
 import discord, typing, re, asyncio
+
 from core import Parrot, Context, Cog
+
 from utilities.checks import is_mod
 from utilities.converters import reason_convert, convert_time
-from cogs.mod import method as mt
 from utilities.database import parrot_db
+
+from cogs.mod import method as mt
 from datetime import datetime
 
 collection = parrot_db['server_config']

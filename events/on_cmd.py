@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import discord, traceback, math, random, aiohttp
 from discord.ext import commands
 from datetime import datetime

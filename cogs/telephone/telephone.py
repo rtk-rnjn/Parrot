@@ -1,8 +1,11 @@
-from core import Parrot, Cog, Context
+from __future__ import annotations
+
 from discord.ext import commands
-from .method import dial
 import discord 
 from time import time
+
+from core import Parrot, Cog, Context
+from .method import dial
 
 class telephone(Cog):
     """To Make calls"""

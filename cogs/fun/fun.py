@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time, json
 from discord.ext import commands

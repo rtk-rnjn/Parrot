@@ -1,12 +1,12 @@
+from __future__ import annotations
+
 from core import Parrot, Context, Cog
 from aiofile import async_open
-import traceback
-from discord.ext import commands
-import discord, aiohttp
-from utilities.database import ban
-import datetime
-import os
 
+from discord.ext import commands
+import discord, aiohttp, datetime, os, traceback
+
+from utilities.database import ban
 class Owner(Cog):
     """You can not use these commands"""
     def __init__(self, bot: Parrot):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .mod import moderation
 from core import Parrot
 

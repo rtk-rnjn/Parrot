@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 def get_command_signature(command) -> str:
     return f'[p]{command.qualified_name}{"|" if command.aliases else ""}{"|".join(command.aliases if command.aliases else "")} {command.signature}'
 

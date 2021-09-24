@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import re
 import heapq
-from difflib import SequenceMatcher
 
+from difflib import SequenceMatcher
 
 def ratio(a, b):
     m = SequenceMatcher(None, a, b)

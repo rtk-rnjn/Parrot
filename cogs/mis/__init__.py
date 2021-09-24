@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .mis import misc
 from core import Parrot
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .actions import actions
 from core import Parrot
 

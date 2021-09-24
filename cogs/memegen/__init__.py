@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from core import Parrot
 from .memegen import memegen
 

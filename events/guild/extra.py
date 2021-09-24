@@ -1,5 +1,6 @@
-from core import Cog, Parrot
+from __future__ import annotations
 
+from core import Cog, Parrot
 
 class Extra(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):

@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import urllib.parse
 from functools import partial
 from string import ascii_uppercase
 
-import aiohttp
-import discord
+import aiohttp, discord
 from bs4 import BeautifulSoup
 
 

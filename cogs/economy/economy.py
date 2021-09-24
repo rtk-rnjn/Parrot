@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from discord.ext import commands
 import discord, random
 from core import Parrot, Context, Cog

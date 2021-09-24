@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import discord, aiohttp
 from discord.ext import commands
+
 from datetime import datetime
 from core import Parrot, Context, Cog
 

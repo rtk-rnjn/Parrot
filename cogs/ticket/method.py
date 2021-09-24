@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import discord, asyncio, os
-from utilities.database import ticket_update, parrot_db
 from datetime import datetime
+
+from utilities.database import ticket_update, parrot_db
 
 collection = parrot_db['ticket']
 

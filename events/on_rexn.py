@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from core import Parrot, Cog
 from utilities.database import parrot_db, ticket_update
 import discord

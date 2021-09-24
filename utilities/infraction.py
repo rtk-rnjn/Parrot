@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from async_property import async_property
+
 from tabulate import tabulate
 from prettytable import PrettyTable 
+
 import datetime
 
 class Infraction:

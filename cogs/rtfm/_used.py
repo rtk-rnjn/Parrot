@@ -1,6 +1,6 @@
-import functools
+from __future__ import annotations
 
-import aiohttp
+import functools, aiohttp
 from discord.ext import commands
 
 

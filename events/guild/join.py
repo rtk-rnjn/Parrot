@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from core import Parrot, Cog
 from utilities.database import guild_join, guild_remove
 import aiohttp, os
@@ -23,7 +25,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(self.url, json=data) as res:
-                if res == 200:
+                if res in range(200, 300+1):
                     pass
                 else:
                     await self.channel.send(CONTENT)

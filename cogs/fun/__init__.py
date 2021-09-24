@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .fun import fun
 from core import Parrot
 

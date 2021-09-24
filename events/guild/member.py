@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from core import Cog, Parrot
 from utilities.database import parrot_db

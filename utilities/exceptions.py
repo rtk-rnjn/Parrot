@@ -45,7 +45,9 @@ class NotMe(ParrotCheckFaliure):
             f"**{random.choice(quote)}**\nNot !! Ritik Ranjan [\*.*]#9230. I don't know how you reach this error. Thing is, you can't use this command"
         )
 
+
 # command disabled
+
 
 class DisabledCommandChannel(ParrotCheckFaliure):
     def __init__(self):
@@ -53,11 +55,13 @@ class DisabledCommandChannel(ParrotCheckFaliure):
             f"**{random.choice(quote)}**\nCommand Disabled. This command is disabled in this channel"
         )
 
+
 class CommandDisabledCategory(ParrotCheckFaliure):
     def __init__(self):
         super().__init__(
             f"**{random.choice(quote)}**\nCommand Disabled. This command is disabled in this category"
         )
+
 
 class CommandDisabledServer(ParrotCheckFaliure):
     def __init__(self):

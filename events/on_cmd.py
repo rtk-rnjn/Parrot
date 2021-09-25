@@ -14,11 +14,12 @@ with open("extra/quote.txt") as f:
 
 quote = quote.split('\n')
 
+
 class Cmd(Cog, command_attrs=dict(hidden=True)):
     """This category is of no use for you, ignore it."""
     def __init__(self, bot: Parrot):
         self.bot = bot
-    
+
     async def paste(self, text):
         """Return an online bin of given text"""
 
@@ -52,7 +53,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         # get the original exception
         error = getattr(error, 'original', error)
 
-        ignore = (commands.CommandNotFound, discord.errors.NotFound, discord.Forbidden)
+        ignore = (commands.CommandNotFound, discord.errors.NotFound,
+                  discord.Forbidden)
 
         if isinstance(error, ignore): return
 
@@ -131,14 +133,19 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.NSFWChannelRequired):
             is_owner = await ctx.bot.is_owner(ctx.author)
             if is_owner: return await ctx.reinvoke()
-            
+
             if ctx.channel.permissions_for(ctx.guild.me).embed_links:
                 em = discord.Embed(timestamp=datetime.utcnow())
                 em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
-                await ctx.send(content=f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
-                               embed=em)
+                await ctx.send(
+                    content=
+                    f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
+                    embed=em)
             else:
-                await ctx.send(content=f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif")
+                await ctx.send(
+                    content=
+                    f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
+                )
             return
 
         elif isinstance(error, commands.NotOwner):
@@ -188,27 +195,31 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.send(
                 f"**{random.choice(quote)}**\nMax Concurrenry Reached. This command is already running in this server. You have wait for it to finish"
             )
-        
+
         elif isinstance(error, ParrotCheckFaliure):
             return await ctx.send(error.__str__().format(ctx=ctx))
-        
+
         elif isinstance(error, commands.CheckAnyFailure):
             return await ctx.send(' or '.join(
                 [error.__str__().format(ctx=ctx) for error in error.errors]))
-        
+
         else:
             is_owner = await ctx.bot.is_owner(ctx.author)
-            if is_owner: 
-                tb = traceback.format_exception(type(error), error, error.__traceback__)
+            if is_owner:
+                tb = traceback.format_exception(type(error), error,
+                                                error.__traceback__)
                 tbe = "".join(tb) + ""
                 er = f'```py\nIgnoring exception in command {ctx.command.name}: {tbe}\n```'
                 text = await self.paste(er)
                 if len(tbe) < 1800:
                     await ctx.send(er, delete_after=60)
-                else: 
+                else:
                     await ctx.send(text)
             else:
-                ctx.send(f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working")
+                ctx.send(
+                    f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working"
+                )
+
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

@@ -3,7 +3,6 @@ from __future__ import annotations
 from discord.ext import commands
 import discord, random
 from core import Parrot, Context, Cog
-from datetime import datetime
 
 from utilities.database import ge_update, economy_db
 
@@ -14,7 +13,7 @@ class economy(Cog):
     """Parrot Economy to get some Parrot Coins as to make calls"""
     def __init__(self, bot: Parrot):
         self.bot = bot
-    
+
     @commands.command(aliases=['reseteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
@@ -22,19 +21,28 @@ class economy(Cog):
         """To reset the economy, this can not be undone"""
         x = await collection.find_one({'_id': ctx.author.id})
         if not x:
-            return await ctx.reply(f"{ctx.author.mention} you already dont have a economy")
+            return await ctx.reply(
+                f"{ctx.author.mention} you already dont have a economy")
         else:
-            await ctx.reply(f"{ctx.author.mention} Are you sure about that? If yes, then type `YES`")
+            await ctx.reply(
+                f"{ctx.author.mention} Are you sure about that? If yes, then type `YES`"
+            )
+
             def check(m):
                 return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+
             try:
-                msg = await self.bot.wait_for('message', timeout=60, check=check)
+                msg = await self.bot.wait_for('message',
+                                              timeout=60,
+                                              check=check)
             except Exception:
-                return await ctx.reply(f"{ctx.author.mention} you didnt answer on time")
+                return await ctx.reply(
+                    f"{ctx.author.mention} you didnt answer on time")
             if msg.content.upper() == 'YES':
                 await collection.delete_one({'_id': ctx.author.id})
-                return await ctx.reply(f"{ctx.author.mention} deleted successfully")
-        
+                return await ctx.reply(
+                    f"{ctx.author.mention} deleted successfully")
+
     @commands.command(aliases=['starteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
@@ -43,11 +51,18 @@ class economy(Cog):
         To start the Parrot Economy.
         """
         x = await collection.find_one({'_id': ctx.author.id})
-        if not x: 
-            await collection.insert_one({'_id':ctx.author.id, 'bank': 0, 'wallet': 400})
-            await ctx.reply(f"{ctx.author.mention} successfully started your Parort Bank. You have **0** coins in the bank and **400** coins in the wallet")
+        if not x:
+            await collection.insert_one({
+                '_id': ctx.author.id,
+                'bank': 0,
+                'wallet': 400
+            })
+            await ctx.reply(
+                f"{ctx.author.mention} successfully started your Parort Bank. You have **0** coins in the bank and **400** coins in the wallet"
+            )
         else:
-            await ctx.reply(f"{ctx.author.mention} you already started your Parort Bank.")
+            await ctx.reply(
+                f"{ctx.author.mention} you already started your Parort Bank.")
 
     @commands.command(aliases=["with"])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -77,7 +92,9 @@ class economy(Cog):
                     f"{ctx.author.mention} deposited **{money}** coins in the bank"
                 )
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
 
     @commands.command(aliases=['rob'])
     @commands.cooldown(1, 30, commands.BucketType.member)
@@ -114,7 +131,9 @@ class economy(Cog):
                 f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Bank"
             )
         if not x:
-            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.member)
@@ -153,7 +172,9 @@ class economy(Cog):
 
             await ge_update(ctx.author.id, coins_bank, coins_walt)
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
 
     @commands.command(aliases=['send'])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -191,7 +212,9 @@ class economy(Cog):
                 f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
             )
         if not x:
-            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
 
     @commands.command(aliases=["dep"])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -222,7 +245,9 @@ class economy(Cog):
                     f"{ctx.author.mention} deposited **{money}** coins in the bank"
                 )
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.member)
@@ -234,9 +259,11 @@ class economy(Cog):
 
         inc = random.randint(0, 100)
         someone = [
-            "someone", "Mr. X", "Mother nature", "PewDiePie", "CarryMinati", "Discord",
-            "Parrot", "this internet", "the guy who punched you yesterday", "Ritik Ranjan",
-            "girl with whom you had fun last night", "your father", "the Boss", "your mom"
+            "someone", "Mr. X", "Mother nature", "PewDiePie", "CarryMinati",
+            "Discord", "Parrot", "this internet",
+            "the guy who punched you yesterday", "Ritik Ranjan",
+            "girl with whom you had fun last night", "your father", "the Boss",
+            "your mom"
         ]
 
         gives = [
@@ -254,7 +281,9 @@ class economy(Cog):
             await ge_update(ctx.author.id, coins_bank, coins_walt)
             return
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
 
     @commands.command(aliases=['bal', 'wallet', 'bank'])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -270,14 +299,17 @@ class economy(Cog):
 
         if not x:
             if target is ctx.author:
-                return await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
+                return await ctx.reply(
+                    f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+                )
             else:
                 return await ctx.reply(
                     f"{ctx.author.mention} **{member.name}#{member.discriminator}** don't have Parrot Economy"
                 )
-        
-        return await ctx.reply(f"{ctx.author.mention if target is ctx.author else target.name} has **{x['bank']}** in bank and **{x['wallet']}** in wallet")
-        
+
+        return await ctx.reply(
+            f"{ctx.author.mention if target is ctx.author else target.name} has **{x['bank']}** in bank and **{x['wallet']}** in wallet"
+        )
 
     @commands.command(aliases=['cointoss', 'cf', 'ct'])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -287,22 +319,26 @@ class economy(Cog):
         A another gambling command for earn more money
         """
         choose = 'tails' if choose in ['tails', 'tail', 't'] else 'heads'
-        
+
         x = await collection.find_one({'_id': ctx.author.id})
-        if not x: 
-            return await ctx.reply(f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!")
-        
+        if not x:
+            return await ctx.reply(
+                f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
+            )
+
         coins_bank = x['bank']
         coins_walt = x['wallet']
         result = random.choice(['heads', 'tails'])
         if result == choose:
             coins_walt = coins_walt + money
             await ge_update(ctx.author.id, coins_bank, coins_walt)
-            await ctx.reply(f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You won {money}")
+            await ctx.reply(
+                f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You won {money}"
+            )
 
         elif result != choose:
             coins_walt = coins_walt - money
             await ge_update(ctx.author.id, coins_bank, coins_walt)
-            await ctx.reply(f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You lose {money}")
-            
-
+            await ctx.reply(
+                f"{ctx.author.mention} you choose {choose} | Coin landed on {result} | You lose {money}"
+            )

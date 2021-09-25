@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import jishaku
@@ -25,6 +24,7 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 intents = discord.Intents.default()
 intents.members = True
 
+
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
     def __init__(self, *args, **kwargs):
@@ -37,16 +37,16 @@ class Parrot(commands.AutoShardedBot):
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,
-            allowed_mentions=discord.AllowedMentions(
-                everyone=False,
-                replied_user=False),
+            allowed_mentions=discord.AllowedMentions(everyone=False,
+                                                     replied_user=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(
                 discord.Intents.all()),
             shard_count=3,
             **kwargs)
         self._seen_messages = 0
         self._change_log = None
-        self._BotBase__cogs = commands.core._CaseInsensitiveDict() # to make cog case insensitive
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict(
+        )  # to make cog case insensitive
         self.color = 0x87CEEB
 
         for ext in EXTENSIONS:
@@ -60,11 +60,14 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def server(self) -> typing.Optional[discord.Guild]:
-        return self.get_guild(741614680652644382) # Main server
+        return self.get_guild(741614680652644382)  # Main server
 
     @property
     def invite(self) -> str:
-        return discord.utils.oauth_url(self.user.id, permissions=discord.Permissions.all_channel(), redirect_uri='https://discord.gg/NEyJxM7G7f')
+        return discord.utils.oauth_url(
+            self.user.id,
+            permissions=discord.Permissions.all_channel(),
+            redirect_uri='https://discord.gg/NEyJxM7G7f')
 
     @property
     def github(self) -> str:
@@ -77,10 +80,11 @@ class Parrot(commands.AutoShardedBot):
     @async_property
     async def change_log(self) -> typing.Optional[discord.Message]:
         if self._change_log is None:
-            self._change_log = await self.get_channel(796932292458315776).history(limit=1).flatten()
-            
+            self._change_log = await self.get_channel(
+                796932292458315776).history(limit=1).flatten()
+
         return self._change_log[0]
-    
+
     @async_property
     async def db_latency(self) -> int:
         ini = time()
@@ -125,7 +129,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         await self.invoke(ctx)
-    
+
     async def on_message(self, message: discord.Message):
         self._seen_messages += 1
 
@@ -133,7 +137,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         await self.process_commands(message)
-    
+
     async def get_prefix(self, message: discord.Message) -> str:
         data = await collection.find_one({"_id": message.guild.id})
         if not data:

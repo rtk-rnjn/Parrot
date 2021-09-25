@@ -6,19 +6,25 @@ import datetime
 from datetime import datetime
 
 collection = parrot_db['server_config']
+
+
 async def is_role_mod(guild, role) -> bool:
     data = await collection.find_one({'_id': guild.id})
     if not data: return False
-    r = guild.get_role(data['mod_role']) 
+    r = guild.get_role(data['mod_role'])
     if not r: return False
     if role.id == r.id: return True
 
-# ROLES
-async def _add_roles_bot(guild, command_name, destination, operator, role,
-                         reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+
+async def _add_roles_bot(guild, command_name, ctx_author, destination,
+                         operator, role, reason):
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     for member in guild.members:
         try:
             if not member.bot: pass
@@ -33,11 +39,15 @@ async def _add_roles_bot(guild, command_name, destination, operator, role,
             )
 
 
-async def _add_roles_humans(guild, command_name, destination, operator, role,
-                            reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+async def _add_roles_humans(guild, command_name, ctx_author, destination,
+                            operator, role, reason):
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     for member in guild.members:
         try:
             if member.bot: pass
@@ -54,9 +64,13 @@ async def _add_roles_humans(guild, command_name, destination, operator, role,
 
 async def _add_roles(guild, command_name, ctx_author, destination, member,
                      role, reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await member.add_roles(
             role,
@@ -74,9 +88,13 @@ async def _add_roles(guild, command_name, ctx_author, destination, member,
 
 async def _remove_roles(guild, command_name, ctx_author, destination, member,
                         role, reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await member.remove_roles(
             role,
@@ -94,9 +112,13 @@ async def _remove_roles(guild, command_name, ctx_author, destination, member,
 
 async def _role_hoist(guild, command_name, ctx_author, destination, role,
                       _bool, reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await role.edit(
             hoist=_bool,
@@ -111,9 +133,13 @@ async def _role_hoist(guild, command_name, ctx_author, destination, role,
 
 async def _change_role_name(guild, command_name, ctx_author, destination, role,
                             text, reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await role.edit(
             name=text,
@@ -128,9 +154,13 @@ async def _change_role_name(guild, command_name, ctx_author, destination, role,
 
 async def _change_role_color(guild, command_name, ctx_author, destination,
                              role, int_, reason):
-    if role.permissions.administrator: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit admin role.")
+    if role.permissions.administrator:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit admin role.")
     is_mod = await is_role_mod(guild, role)
-    if is_mod: return await destination.send(f"{ctx_author.mention} can not assign/remove/edit mod role")
+    if is_mod:
+        return await destination.send(
+            f"{ctx_author.mention} can not assign/remove/edit mod role")
     try:
         await role.edit(
             color=discord.Color.value(int(int_)),
@@ -150,7 +180,9 @@ async def _ban(guild, command_name, ctx_author, destination, member, days,
                reason):
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
-            await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+            await destination.send(
+                f"{ctx_author.mention} don't do that, Bot is only trying to help"
+            )
         else:
             await guild.ban(
                 member,
@@ -172,7 +204,9 @@ async def _mass_ban(guild, command_name, ctx_author, destination, members,
     for member in members:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
             else:
                 await guild.ban(
                     member,
@@ -194,7 +228,9 @@ async def _softban(guild, command_name, ctx_author, destination, member,
     for member in member:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
             else:
                 await member.ban(
                     reason=
@@ -274,7 +310,9 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
     if seconds is None: seconds = 0
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
-            await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+            await destination.send(
+                f"{ctx_author.mention} don't do that, Bot is only trying to help"
+            )
         else:
             await member.add_roles(
                 muted,
@@ -339,7 +377,9 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
 async def _kick(guild, command_name, ctx_author, destination, member, reason):
     try:
         if member.id == ctx_author.id or member.id == 800780974274248764:
-            await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+            await destination.send(
+                f"{ctx_author.mention} don't do that, Bot is only trying to help"
+            )
         else:
             await member.kick(
                 reason=
@@ -360,7 +400,9 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members,
     for member in members:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
             else:
                 await member.kick(
                     reason=
@@ -385,11 +427,14 @@ async def _block(guild, command_name, ctx_author, destination, channel, member,
     for member in member:
         try:
             if member.id == ctx_author.id or member.id == 800780974274248764:
-                await destination.send(f"{ctx_author.mention} don't do that, Bot is only trying to help")
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
             else:
                 await channel.set_permissions(
                     member,
-                    send_messages=False, view_channel=False, 
+                    send_messages=False,
+                    view_channel=False,
                     reason=
                     f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
                 )
@@ -413,7 +458,8 @@ async def _unblock(guild, command_name, ctx_author, destination, channel,
             else:
                 await channel.set_permissions(
                     member,
-                    send_messages=None, view_channel=None, 
+                    send_messages=None,
+                    view_channel=None,
                     reason=
                     f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
                 )
@@ -500,10 +546,10 @@ async def _change_nickname(guild, command_name, ctx_author, destination,
     try:
         await member.edit(
             nick=name,
-            reason=
-            f'Action Requested by {ctx_author.name}({ctx_author.id})'
+            reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
+        await destination.send(
+            f"{ctx_author.mention} **{member.name}#{member.discriminator}** nickname changed to **{name}**"
         )
-        await destination.send(f"{ctx_author.mention} **{member.name}#{member.discriminator}** nickname changed to **{name}**")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
@@ -516,7 +562,9 @@ async def _change_channel_topic(guild, command_name, ctx_author, destination,
         await channel.edit(
             topic=text,
             reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
-        await destination.send(f"{ctx_author.mention} **{channel.name}** topic changed to **{text}**")
+        await destination.send(
+            f"{ctx_author.mention} **{channel.name}** topic changed to **{text}**"
+        )
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} {channel.name}. Error raised: {e}"
@@ -529,7 +577,8 @@ async def _change_channel_name(guild, command_name, ctx_author, destination,
         await channel.edit(
             name=text,
             reason=f'Action Requested by {ctx_author.name}({ctx_author.id})')
-        await destination.send(f"{ctx_author.mention} **{channel}** name changed to **{text}**")
+        await destination.send(
+            f"{ctx_author.mention} **{channel}** name changed to **{text}**")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} {channel.name}. Error raised: {e}"
@@ -589,99 +638,200 @@ async def _clone(guild, command_name, ctx_author, destination, channel,
 
 # VOICE MOD
 
-async def _voice_mute(guild, command_name, ctx_author, destination, member, reason):
+
+async def _voice_mute(guild, command_name, ctx_author, destination, member,
+                      reason):
     try:
-        await member.edit(mute=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice muted **{member.name}#{member.discriminator}**")
+        await member.edit(
+            mute=True,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice muted **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _voice_unmute(guild, command_name, ctx_author, destination, member, reason):
+async def _voice_unmute(guild, command_name, ctx_author, destination, member,
+                        reason):
     try:
-        await member.edit(mute=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice unmuted **{member.name}#{member.discriminator}**")
+        await member.edit(
+            mute=False,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice unmuted **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _voice_deafen(guild, command_name, ctx_author, destination, member, reason):
+async def _voice_deafen(guild, command_name, ctx_author, destination, member,
+                        reason):
     try:
-        await member.edit(deafen=True, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice deafened **{member.name}#{member.discriminator}**")
+        await member.edit(
+            deafen=True,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice deafened **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _voice_undeafen(guild, command_name, ctx_author, destination, member, reason):
+async def _voice_undeafen(guild, command_name, ctx_author, destination, member,
+                          reason):
     try:
-        await member.edit(deafen=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice undeafened **{member.name}#{member.discriminator}**")
+        await member.edit(
+            deafen=False,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice undeafened **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _voice_kick(guild, command_name, ctx_author, destination, member, reason):
+async def _voice_kick(guild, command_name, ctx_author, destination, member,
+                      reason):
     try:
-        await member.edit(voice_channel=None, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice kicked **{member.name}#{member.discriminator}**")
+        await member.edit(
+            voice_channel=None,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice kicked **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _voice_ban(guild, command_name, ctx_author, destination, member, channel, reason):
+async def _voice_ban(guild, command_name, ctx_author, destination, member,
+                     channel, reason):
     try:
-        await channel.set_permissions(member, connect=False, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice banned **{member.name}#{member.discriminator}**")
+        await channel.set_permissions(
+            member,
+            connect=False,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice banned **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _voice_unban(guild, command_name, ctx_author, destination, member, channel, reason):
+async def _voice_unban(guild, command_name, ctx_author, destination, member,
+                       channel, reason):
     try:
-        await channel.set_permissions(member, overwrite=None, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} voice unbanned **{member.name}#{member.discriminator}**")
+        await channel.set_permissions(
+            member,
+            overwrite=None,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} voice unbanned **{member.name}#{member.discriminator}**"
+        )
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {member.name}#{member.discriminator}. Error raised: {e}"
+        )
 
 
-async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, reason):
+async def _emoji_delete(guild, command_name, ctx_author, destination, emoji,
+                        reason):
     for emoji in emoji:
         try:
             if emoji.guild.id == guild.id:
-                await emoji.delete(reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-                await destination.send(f"{ctx_author.mention} {emoji} deleted!")
+                await emoji.delete(
+                    reason=
+                    f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+                )
+                await destination.send(f"{ctx_author.mention} {emoji} deleted!"
+                                       )
         except Exception as e:
-            await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+            await destination.send(
+                f"Can not able to {command_name} {emoji.name} ({emoji.id}). Error raised: {e}"
+            )
 
-async def _emoji_add(guild, command_name, ctx_author, destination, emoji, reason):
+
+async def _emoji_add(guild, command_name, ctx_author, destination, emoji,
+                     reason):
     ls = []
     for emoji in emoji:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(emoji.url) as res:
                     raw = await res.read()
-            ej = await guild.create_custom_emoji(name=emoji.name, image=raw, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
+            ej = await guild.create_custom_emoji(
+                name=emoji.name,
+                image=raw,
+                reason=
+                f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+            )
             await destination.send(f"{ctx_author.mention} emoji created {ej}")
         except Exception as e:
-            await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+            await destination.send(
+                f"Can not able to {command_name} {emoji.name} ({emoji.id}). Error raised: {e}"
+            )
 
-async def _emoji_addurl(guild, command_name, ctx_author, destination, url, name, reason):
+
+async def _emoji_addurl(guild, command_name, ctx_author, destination, url,
+                        name, reason):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as res:
                 raw = await res.read()
-        ej = await guild.create_custom_emoji(name=name, image=raw, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} emoji created {ej}")
+        emoji = await guild.create_custom_emoji(
+            name=name,
+            image=raw,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(f"{ctx_author.mention} emoji created {emoji}")
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {emoji.name} ({emoji.id}). Error raised: {e}"
+        )
 
-async def _emoji_rename(guild, command_name, ctx_author, destination, emoji, name, reason):
+
+async def _emoji_rename(guild, command_name, ctx_author, destination, emoji,
+                        name, reason):
     try:
-        await emoji.edit(name=name, reason=f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}")
-        await destination.send(f"{ctx_author.mention} {emoji} name edited to {name}")
+        await emoji.edit(
+            name=name,
+            reason=
+            f"Action requested by {ctx_author.name}({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(
+            f"{ctx_author.mention} {emoji} name edited to {name}")
     except Exception as e:
-        await destination.send(f"Can not able to {command_name} {member.name} ({emoji.id}). Error raised: {e}")
+        await destination.send(
+            f"Can not able to {command_name} {emoji.name} ({emoji.id}). Error raised: {e}"
+        )
+
 
 MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
 TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']

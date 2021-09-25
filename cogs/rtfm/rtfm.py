@@ -395,7 +395,6 @@ class rtfm(Cog):
                             description=description)
         await ctx.reply(embed=emb)
 
-
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def ascii(self, ctx: Context, *, text: str):
@@ -474,5 +473,3 @@ class rtfm(Cog):
         emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
 
         await ctx.reply(embed=emb)
-
-

@@ -804,6 +804,3 @@ class memegen(Cog):
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
-
-
-

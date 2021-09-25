@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from discord.ext import commands
-import discord 
+import discord
 from time import time
 
 from core import Parrot, Cog, Context
 from .method import dial
+
 
 class telephone(Cog):
     """To Make calls"""
@@ -13,7 +14,7 @@ class telephone(Cog):
         self.bot = bot
         self.redial = {}
         self.las_call_detail = {}
-    
+
     @commands.command(aliases=['call'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
@@ -24,7 +25,9 @@ class telephone(Cog):
         To dial to other server. Do not misuse this. Else you RIP :|
         """
         if not server:
-            await ctx.send("That server no longer exists or bot is being removed from that server")
+            await ctx.send(
+                "That server no longer exists or bot is being removed from that server"
+            )
         self.redial[ctx.guild.id] = server.id
         self.redial[server.id] = ctx.guild.id
         ini = time()
@@ -36,8 +39,8 @@ class telephone(Cog):
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
             f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
             f"`Can Redial?     :` **True**\n"
-            f"`Call log saved? :` **False**\n"
-            )
+            f"`Call log saved? :` **False**\n")
+
     @commands.command(aliases=['recall'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
@@ -60,11 +63,12 @@ class telephone(Cog):
                     f"`Tried to call   :` **{server.name} ({server.id})**\n"
                     f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
                     f"`Can Redial?     :` **True**\n"
-                    f"`Call log saved? :` **False**\n"
-                    )
+                    f"`Call log saved? :` **False**\n")
             else:
-                await ctx.send("That server no longer exists or bot is being removed from that server")
-    
+                await ctx.send(
+                    "That server no longer exists or bot is being removed from that server"
+                )
+
     @commands.command(aliases=['reversecall'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
@@ -72,7 +76,9 @@ class telephone(Cog):
     async def reversedial(self, ctx: Context, *, server: discord.Guild):
         """To make the calls but contents are reverted"""
         if not server:
-            await ctx.send("That server no longer exists or bot is being removed from that server")
+            await ctx.send(
+                "That server no longer exists or bot is being removed from that server"
+            )
         self.redial[ctx.guild.id] = server.id
         self.redial[server.id] = ctx.guild.id
         ini = time()
@@ -84,5 +90,4 @@ class telephone(Cog):
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
             f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
             f"`Can Redial?     :` **True**\n"
-            f"`Call log saved? :` **False**\n"
-            )
+            f"`Call log saved? :` **False**\n")

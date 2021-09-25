@@ -46,5 +46,3 @@ class ticket(Cog):
 			"""
         await self.bot.wait_until_ready()
         await mt._save(ctx, self.bot)
-
-

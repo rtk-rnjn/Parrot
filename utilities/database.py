@@ -12,6 +12,7 @@ msg_db = cluster['msg_db']
 tags = cluster['tags']
 enable_disable = cluster['enable_disable']
 
+
 async def cmd_increment(cmd: str):
     collection = parrot_db['cmd_count']
     data = await collection.find_one({'_id': cmd})

@@ -15,12 +15,16 @@ class Context(commands.Context):
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
-            context = args[0] if isinstance(args[0], commands.Context) else args[1]
+            context = args[0] if isinstance(args[0],
+                                            commands.Context) else args[1]
             async with context.typing():
                 await func(*args, **kwargs)
+
         return wrapped
-    
-    async def send(self, content: typing.Optional[str] = None, **kwargs) -> typing.Optional[discord.Message]:
+
+    async def send(self,
+                   content: typing.Optional[str] = None,
+                   **kwargs) -> typing.Optional[discord.Message]:
         if not (self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
@@ -29,10 +33,12 @@ class Context(commands.Context):
             except discord.Forbidden:
                 pass
             return
-        
+
         return await super().send(content, **kwargs)
-    
-    async def reply(self, content: typing.Optional[str] = None, **kwargs) -> typing.Optional[discord.Message]:
+
+    async def reply(self,
+                    content: typing.Optional[str] = None,
+                    **kwargs) -> typing.Optional[discord.Message]:
         if not (self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
@@ -42,4 +48,3 @@ class Context(commands.Context):
                 pass
             return
         return await super().send(content, reference=self.message, **kwargs)
-    

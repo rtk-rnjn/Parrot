@@ -4,12 +4,9 @@ import typing
 import unicodedata
 from datetime import datetime
 if typing.TYPE_CHECKING:
-    from bot import Parrot
+    from core import Parrot
 
-import re
-import io
-import os
-import zlib
+import re, io, os, zlib
 import discord
 
 from . import fuzzy
@@ -48,7 +45,7 @@ class SphinxObjectFileReader:
             pos = buf.find(b"\n")
             while pos != -1:
                 yield buf[:pos].decode("utf-8")
-                buf = buf[pos + 1 :]
+                buf = buf[pos + 1:]
                 pos = buf.find(b"\n")
 
 
@@ -75,10 +72,12 @@ class Utility(Cog):
         # next line says if it's a zlib header
         line = stream.readline()
         if "zlib" not in line:
-            raise RuntimeError("Invalid objects.inv file, not z-lib compatible.")
+            raise RuntimeError(
+                "Invalid objects.inv file, not z-lib compatible.")
 
         # This code mostly comes from the Sphinx repository.
-        entry_regex = re.compile(r"(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
+        entry_regex = re.compile(
+            r"(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
         for line in stream.read_compressed_lines():
             match = entry_regex.match(line.rstrip())
             if not match:
@@ -105,7 +104,8 @@ class Utility(Cog):
             prefix = f"{subdirective}:" if domain == "std" else ""
 
             if projname == "discord.py":
-                key = key.replace("discord.ext.commands.", "").replace("discord.", "")
+                key = key.replace("discord.ext.commands.",
+                                  "").replace("discord.", "")
 
             result[f"{prefix}{key}"] = os.path.join(url, location)
 
@@ -118,7 +118,8 @@ class Utility(Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get(page + "/objects.inv") as resp:
                     if resp.status != 200:
-                        raise RuntimeError("Cannot build rtfm lookup table, try again later.")
+                        raise RuntimeError(
+                            "Cannot build rtfm lookup table, try again later.")
 
                     stream = SphinxObjectFileReader(await resp.read())
                     cache[key] = self.parse_object_inv(stream, page)
@@ -141,7 +142,8 @@ class Utility(Cog):
             await ctx.trigger_typing()
             await self.build_rtfm_lookup_table(page_types)
 
-        obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1", obj)
+        obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1",
+                     obj)
 
         if key.startswith("latest"):
             # point the abc.Messageable types properly:
@@ -160,14 +162,19 @@ class Utility(Cog):
 
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
-        e = discord.Embed(title="Read the Fine Manual", timestamp=datetime.utcnow())
+        e = discord.Embed(title="Read the Fine Manual",
+                          timestamp=datetime.utcnow())
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
-        e.set_thumbnail(url='http://assets.stickpng.com/images/5848152fcef1014c0b5e4967.png')
+        e.set_thumbnail(
+            url='http://assets.stickpng.com/images/5848152fcef1014c0b5e4967.png'
+        )
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
-        e.set_footer(text=f"Request by {ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.display_avatar.url)
+        e.set_footer(
+            text=f"Request by {ctx.author.name}#{ctx.author.discriminator}",
+            icon_url=ctx.author.display_avatar.url)
         await ctx.send(embed=e)
 
     @group(aliases=["rtfd"], invoke_without_command=True)
@@ -199,7 +206,6 @@ class Utility(Cog):
         Shows you information about a number of characters.
         Only up to 25 characters at a time.
         """
-
         def to_string(c):
             digit = f"{ord(c):x}"
             name = unicodedata.name(c, "Name not found.")
@@ -209,4 +215,3 @@ class Utility(Cog):
         if len(msg) > 2000:
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
-

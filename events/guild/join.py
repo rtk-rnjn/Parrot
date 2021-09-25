@@ -6,6 +6,7 @@ import aiohttp, os
 
 BASE_URL = "https://discord.com/api/webhooks/883368274501460039/"
 
+
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -25,7 +26,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(self.url, json=data) as res:
-                if res in range(200, 300+1):
+                if res in range(200, 300 + 1):
                     pass
                 else:
                     await self.channel.send(CONTENT)

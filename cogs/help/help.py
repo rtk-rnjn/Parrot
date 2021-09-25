@@ -11,6 +11,7 @@ from cogs.help.method import common_command_formatting, get_command_signature
 ignored = ('jishaku', 'rtfm', 'helpcog', 'owner', 'utility')
 owner_url = "[Made by Ritik Ranjan](https://discord.com/users/741614468546560092)"
 
+
 class HelpCommand(commands.HelpCommand):
     """Shows help about the bot, a command, or a category"""
     def __init__(self, *args, **kwargs):
@@ -32,7 +33,7 @@ class HelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         bot = self.context.bot
         change_log_msg = await bot.change_log
-        
+
         em_list = []
 
         description = f"```ini\n[Default '@Parrot#9209']\n```"
@@ -40,7 +41,8 @@ class HelpCommand(commands.HelpCommand):
         embed = discord.Embed(color=discord.Colour(0x55ddff))
 
         embed.set_author(
-            name=f"Server: {self.context.guild.name or self.context.author.name}",
+            name=
+            f"Server: {self.context.guild.name or self.context.author.name}",
             icon_url=self.context.guild.icon.url or self.context.me.avatar.url)
 
         embed.description = description + f"**Important Links**\n• [Invite the bot]({bot.invite})\n• [Support Server]({bot.support_server})\n• [Bot is Open Source]({bot.github})\n• {owner_url}"
@@ -48,12 +50,17 @@ class HelpCommand(commands.HelpCommand):
         CATEGORY = '\n'
         for cog in mapping:
             if cog and cog.get_commands():
-                if cog.qualified_name.lower() in ignored: 
+                if cog.qualified_name.lower() in ignored:
                     pass
                 else:
-                    CATEGORY = CATEGORY + str(cog.qualified_name).upper() + '\n'
+                    CATEGORY = CATEGORY + str(
+                        cog.qualified_name).upper() + '\n'
         embed.add_field(name="Categories", value=f"```{CATEGORY}```")
-        embed.add_field(name="Latest News", value=f"{change_log_msg.content[:512:]}... [Read More]({change_log_msg.jump_url})")
+        embed.add_field(
+            name="Latest News",
+            value=
+            f"{change_log_msg.content[:512:]}... [Read More]({change_log_msg.jump_url})"
+        )
         embed.set_footer(text=f"Page 1/{10} | Built with ❤️ and `discord.py`",
                          icon_url=f"{DEV_LOGO}")
 
@@ -69,8 +76,10 @@ class HelpCommand(commands.HelpCommand):
                         f"**Commands**```\n{', '.join([cmd.name for cmd in cmds])}\n```",
                         color=discord.Colour(0x55ddff))
                     em.set_author(name=f"COG: {str(cog).upper()}")
-                    em.set_footer(text=f"Page {i+1}/{10} | Built with ❤️ and `discord.py`",
-                                icon_url=f"{DEV_LOGO}")
+                    em.set_footer(
+                        text=
+                        f"Page {i+1}/{10} | Built with ❤️ and `discord.py`",
+                        icon_url=f"{DEV_LOGO}")
                     em_list.append(em)
                     em.set_thumbnail(url=self.context.me.avatar.url)
                     i += 1
@@ -90,8 +99,9 @@ class HelpCommand(commands.HelpCommand):
             description=
             f"Sub commands\n```\n{', '.join([cmd.name for cmd in cmds])}\n```")
 
-        e.set_footer(text=f"Page 1/{len(cmds)+1} | Built with ❤️ and `discord.py`",
-                     icon_url=f"{DEV_LOGO}")
+        e.set_footer(
+            text=f"Page 1/{len(cmds)+1} | Built with ❤️ and `discord.py`",
+            icon_url=f"{DEV_LOGO}")
         e.set_thumbnail(url=self.context.me.avatar.url)
         em_list.append(e)
 
@@ -106,16 +116,16 @@ class HelpCommand(commands.HelpCommand):
                 name="Usage",
                 value=
                 f"```\n[p]{group.qualified_name}{'|' if group.aliases else ''}{'|'.join(group.aliases) if group.aliases else ''} {cmd.name}{'|' if cmd.aliases else ''}{'|'.join(cmd.aliases if cmd.aliases else '')} {cmd.signature}\n```",
-                inline=False
-            )
+                inline=False)
             e.add_field(
                 name="Aliases",
                 value=
                 f"```\n{', '.join(group.aliases) if group.aliases else 'NA'}\n```",
-                inline=False
-            )
-            e.set_footer(text=f"Page {i+1}/{len(cmds)+1} | Built with ❤️ and `discord.py`",
-                     icon_url=f"{DEV_LOGO}")
+                inline=False)
+            e.set_footer(
+                text=
+                f"Page {i+1}/{len(cmds)+1} | Built with ❤️ and `discord.py`",
+                icon_url=f"{DEV_LOGO}")
             em_list.append(e)
             e.set_thumbnail(url=self.context.me.avatar.url)
             i += 1
@@ -132,8 +142,10 @@ class HelpCommand(commands.HelpCommand):
             description=
             f"```\n{cog.description if cog.description else 'NA'}\n```\nCommands\n```\n{', '.join([cmd.name for cmd in cog.get_commands()])}\n```",
             color=discord.Colour(0x55ddff))
-        embed.set_footer(text=f"Page 1/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`",
-                         icon_url=f"{DEV_LOGO}")
+        embed.set_footer(
+            text=
+            f"Page 1/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`",
+            icon_url=f"{DEV_LOGO}")
         em_list.append(embed)
         i = 1
         for cmd in cog.get_commands():
@@ -141,17 +153,21 @@ class HelpCommand(commands.HelpCommand):
                 if cmd.hidden: pass
                 else:
                     em = discord.Embed(title=f"Help with {cmd.name}",
-                                    description=f"```\n{cmd.help}\n```",
-                                    color=discord.Colour(0x55ddff))
-                    em.add_field(name=f"Usage",
-                                value=f"```\n{get_command_signature(cmd)}\n```")
+                                       description=f"```\n{cmd.help}\n```",
+                                       color=discord.Colour(0x55ddff))
+                    em.add_field(
+                        name=f"Usage",
+                        value=f"```\n{get_command_signature(cmd)}\n```")
                     em.add_field(
                         name="Aliases",
                         value=
                         f"```\n{', '.join(cmd.aliases if cmd.aliases else 'NA')}\n```"
                     )
 
-                    em.set_footer(text=f"Page {i+1}/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`")
+                    em.set_footer(
+                        text=
+                        f"Page {i+1}/{len(cog.get_commands())+1} | Built with ❤️ and `discord.py`"
+                    )
                     em_list.append(em)
                     i += 1
 

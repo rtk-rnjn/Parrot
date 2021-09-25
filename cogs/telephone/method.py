@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from utilities.database import parrot_db, telephone_update
+
 collection = parrot_db['telephone']
 
 import asyncio, discord, random, time
 from discord.ext import commands
 
-cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
+cd_mapping = commands.CooldownMapping.from_cooldown(
+    5, 5, commands.BucketType.channel)
+
 
 async def dial(bot, ctx, server, reverse=False):
-    if server.id == ctx.guild.id: 
+    if server.id == ctx.guild.id:
         return await ctx.send(f"Can't make a self call")
     number = server.id
     channel = ctx.channel
@@ -35,11 +38,13 @@ async def dial(bot, ctx, server, reverse=False):
             "Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission."
         )
 
-    if (target_guild['_id'] in self_guild['blocked']) or (self_guild['_id'] in target_guild['blocked']):
+    if (target_guild['_id']
+            in self_guild['blocked']) or (self_guild['_id']
+                                          in target_guild['blocked']):
         return await ctx.send(
             f'Calling failed! Possible reasons: They blocked You, You blocked Them.'
         )
-    
+
     await ctx.send(
         f"Calling to **{number} ({bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ..."
     )
@@ -56,7 +61,9 @@ async def dial(bot, ctx, server, reverse=False):
         pass
 
     def check(m):
-        return (m.content.lower() in ("pickup", "hangup")) and (m.channel == channel or m.channel == target_channel) # and not m.author.bot
+        return (m.content.lower() in ("pickup", "hangup")) and (
+            m.channel == channel or m.channel == target_channel
+        )  # and not m.author.bot
 
     try:
         _talk = await bot.wait_for('message', check=check, timeout=60)
@@ -74,8 +81,12 @@ async def dial(bot, ctx, server, reverse=False):
         return
 
     if _talk.content.lower() == 'hangup':
-        await ctx.send(f'Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**')
-        await target_channel.send(f'Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**')
+        await ctx.send(
+            f'Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**'
+        )
+        await target_channel.send(
+            f'Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**'
+        )
         await telephone_update(ctx.guild.id, 'is_line_busy', False)
         await telephone_update(number, 'is_line_busy', False)
         return
@@ -92,13 +103,14 @@ async def dial(bot, ctx, server, reverse=False):
         while True:
 
             def check(m):
-                if (m.channel == target_channel) or (m.channel == channel) and (not m.author.bot): 
+                if (m.channel == target_channel
+                    ) or (m.channel == channel) and (not m.author.bot):
                     return True
 
             try:
                 talk_message = await bot.wait_for('message',
-                                                        check=check,
-                                                        timeout=60.0)
+                                                  check=check,
+                                                  timeout=60.0)
             except Exception:
                 await asyncio.sleep(0.5)
                 await target_channel.send(
@@ -126,7 +138,10 @@ async def dial(bot, ctx, server, reverse=False):
                 await target_channel.send(f'Disconnected')
                 return
             TALK = discord.utils.escape_mentions(talk_message.content[:1000:])
-            if reverse: TALK = discord.utils.escape_mentions("".join(reversed(talk_message.content[:1000:]))) # this is imp, cause people can bypass so i added discord.utils
+            if reverse:
+                TALK = discord.utils.escape_mentions(
+                    "".join(reversed(talk_message.content[:1000:]))
+                )  # this is imp, cause people can bypass so i added discord.utils
 
             if talk_message.channel == target_channel:
                 await channel.send(
@@ -137,9 +152,11 @@ async def dial(bot, ctx, server, reverse=False):
                 await target_channel.send(
                     f"**{talk_message.author.name}#{talk_message.author.discriminator}** {TALK}"
                 )
-            if ini - time.time() <= 60: 
-                await channel.send(f'Disconnected. Call duration reached its maximum limit')
-                await target_channel.send(f'Disconnected. Call duration reached its maximum limit')
+            if ini - time.time() <= 60:
+                await channel.send(
+                    f'Disconnected. Call duration reached its maximum limit')
+                await target_channel.send(
+                    f'Disconnected. Call duration reached its maximum limit')
                 await telephone_update(ctx.guild.id, 'is_line_busy', False)
                 await telephone_update(number, 'is_line_busy', False)
                 return

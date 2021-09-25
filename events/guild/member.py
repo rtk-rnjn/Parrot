@@ -10,7 +10,7 @@ collection = parrot_db['server_config']
 class Member(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.muted = {} # {GUILD_ID: {*MEMBER_IDS}}
+        self.muted = {}  # {GUILD_ID: {*MEMBER_IDS}}
 
     @Cog.listener()
     async def on_member_join(self, member):
@@ -18,18 +18,23 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if not data:
             return
 
-        muted = member.guild.get_role(data['mute_role']) or discord.utils.get(member.guild.roles, name="Muted")
+        muted = member.guild.get_role(data['mute_role']) or discord.utils.get(
+            member.guild.roles, name="Muted")
         if not muted:
-            return 
-        
+            return
+
         if member.guild.id in self.muted:
             if member.id in self.muted[member.guild.id]:
                 self.muted[member.guild.id].remove(member.id)
                 try:
-                    await member.add_roles(muted, reason=f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server")
+                    await member.add_roles(
+                        muted,
+                        reason=
+                        f"Action auto performed | Reason: {member.name}#{member.discriminator} Attempt to mute bypass, by rejoining the server"
+                    )
                 except discord.errors.Forbidden:
                     pass
-        else: 
+        else:
             return
 
     @Cog.listener()
@@ -38,7 +43,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if not data:
             return
 
-        muted = member.guild.get_role(data['mute_role']) or discord.utils.get(member.guild.roles, name="Muted")
+        muted = member.guild.get_role(data['mute_role']) or discord.utils.get(
+            member.guild.roles, name="Muted")
         if not muted:
             return
         if muted in member.roles:
@@ -50,7 +56,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_member_update(self, before, after):
         pass
-    
+
     @Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         pass
@@ -58,6 +64,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_presence_update(self, before, after):
         pass
+
 
 def setup(bot):
     bot.add_cog(Member(bot))

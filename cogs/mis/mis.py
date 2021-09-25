@@ -15,6 +15,7 @@ invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\
 google_key = os.environ['GOOGLE_KEY']
 cx = os.environ['GOOGLE_CX']
 
+
 class misc(Cog):
     """Those commands which can't be listed"""
     def __init__(self, bot: Parrot):
@@ -30,7 +31,7 @@ class misc(Cog):
         @bot.listen('on_message_edit')
         async def on_message_edit(before, after):
             if before.author.bot or after.author.bot:
-                return 
+                return
             if (editdistance.eval(before.content, after.content) >=
                     10) and (len(before.content) > len(after.content)):
                 self.snipes[before.channel.id] = [before, after]
@@ -326,7 +327,8 @@ class misc(Cog):
         """Web articles from Wikipedia."""
         link = str(wikipedia.page(text).url)
         try:
-            summary = str(wikipedia.summary(text, sentences=3)).replace("\n", "")
+            summary = str(wikipedia.summary(text,
+                                            sentences=3)).replace("\n", "")
         except wikipedia.exceptions.DisambiguationError as e:
             return await ctx.reply(
                 f'{ctx.author.mention} please provide more arguments, like {e.options[0]}'
@@ -387,7 +389,11 @@ class misc(Cog):
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def embed(self, ctx: Context, channel: typing.Optional[discord.TextChannel]=None, *, data: typing.Union[dict, str]=None):
+    async def embed(self,
+                    ctx: Context,
+                    channel: typing.Optional[discord.TextChannel] = None,
+                    *,
+                    data: typing.Union[dict, str] = None):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
         channel = channel or ctx.channel
         if channel.permissions_for(ctx.author).embed_links:
@@ -396,18 +402,35 @@ class misc(Cog):
                 data = json.loads(data)
                 await channel.send(embed=discord.Embed.from_dict(data))
             except Exception as e:
-                await ctx.reply(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
+                await ctx.reply(
+                    f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}"
+                )
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}")
+            await ctx.reply(
+                f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}"
+            )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def snowflakeid(self, ctx: Context, *, target: typing.Union[discord.User, discord.Role, discord.Thread, discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Guild, discord.Emoji, discord.Message, discord.Invite, discord.Template, discord.CategoryChannel, discord.DMChannel, discord.GroupChannel]):
+    async def snowflakeid(
+        self, ctx: Context, *,
+        target: typing.Union[discord.User, discord.Role, discord.Thread,
+                             discord.TextChannel, discord.VoiceChannel,
+                             discord.StageChannel, discord.Guild,
+                             discord.Emoji, discord.Message, discord.Invite,
+                             discord.Template, discord.CategoryChannel,
+                             discord.DMChannel, discord.GroupChannel]):
         """To get the ID of discord models"""
-        embed = discord.Embed(title="Snowflake lookup", color=ctx.author.color, timestamp=datetime.datetime.utcnow())
-        embed.add_field(name="Type", value=f"`{target.__class__.__name__}`", inline=True)
-        embed.add_field(name="Created At", value=f"<t:{int(target.created_at.timestamp())}>", inline=True)
+        embed = discord.Embed(title="Snowflake lookup",
+                              color=ctx.author.color,
+                              timestamp=datetime.datetime.utcnow())
+        embed.add_field(name="Type",
+                        value=f"`{target.__class__.__name__}`",
+                        inline=True)
+        embed.add_field(name="Created At",
+                        value=f"<t:{int(target.created_at.timestamp())}>",
+                        inline=True)
         embed.add_field(name="ID", value=f"`{target.id}`", inline=True)
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.reply(embed=embed)
@@ -415,7 +438,8 @@ class misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def snowflaketime(self, ctx: Context, snowflake1: int, snowflake2: int):
+    async def snowflaketime(self, ctx: Context, snowflake1: int,
+                            snowflake2: int):
         """Get the time difference in seconds, between two discord SnowFlakes"""
         first = discord.utils.snowflake_time(snowflake1)
         second = discord.utils.snowflake_time(snowflake2)
@@ -451,7 +475,7 @@ class misc(Cog):
             filename = src.co_filename
 
         lines, firstlineno = inspect.getsourcelines(src)
-    
+
         location = module.replace('.', '/') + '.py'
 
         final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
@@ -460,10 +484,13 @@ class misc(Cog):
     @commands.group()
     @commands.has_permissions(embed_links=True, add_reactions=True)
     @Context.with_type
-    async def poll(self, ctx: Context,):
+    async def poll(
+        self,
+        ctx: Context,
+    ):
         """To make polls. Thanks to Strawpoll API"""
         pass
-    
+
     @poll.command(name='create')
     @Context.with_type
     async def create_poll(self, ctx: Context, question: str, *, options: str):
@@ -479,42 +506,61 @@ class misc(Cog):
                 "only_reg": True
             }
         }
-        if len(options) > 10: return await ctx.reply(f"{ctx.author.mention} can not provide more than 10 options")
+        if len(options) > 10:
+            return await ctx.reply(
+                f"{ctx.author.mention} can not provide more than 10 options")
         async with aiohttp.ClientSession() as session:
-            poll = await session.post(BASE_URL, json=data, headers={'API-KEY': os.environ['STRAW_POLL']})
-        
+            poll = await session.post(
+                BASE_URL,
+                json=data,
+                headers={'API-KEY': os.environ['STRAW_POLL']})
+
         data = await poll.json()
-        _exists = await collection.find_one_and_update({'_id': ctx.author.id}, {'$set':{'content_id': data['content_id']}})
-        
+        _exists = await collection.find_one_and_update(
+            {'_id': ctx.author.id},
+            {'$set': {
+                'content_id': data['content_id']
+            }})
+
         if not _exists:
-            await collection.insert_one({'_id': ctx.author.id, 'content_id': data['content_id']})
-        
-        msg = await ctx.reply(f"Poll created: <https://strawpoll.com/{data['content_id']}>")
-        await msg.reply(f"{ctx.author.mention} your poll content id is: {data['content_id']}")
+            await collection.insert_one({
+                '_id': ctx.author.id,
+                'content_id': data['content_id']
+            })
+
+        msg = await ctx.reply(
+            f"Poll created: <https://strawpoll.com/{data['content_id']}>")
+        await msg.reply(
+            f"{ctx.author.mention} your poll content id is: {data['content_id']}"
+        )
 
     @poll.command(name='get')
     @Context.with_type
     async def get_poll(self, ctx: Context, content_id: str):
         """To get the poll data"""
         URL = f"https://strawpoll.com/api/poll/{content_id}"
-        
+
         async with aiohttp.ClientSession() as session:
-            poll = await session.get(URL, headers={'API-KEY': os.environ['STRAW_POLL']})
+            poll = await session.get(
+                URL, headers={'API-KEY': os.environ['STRAW_POLL']})
         try:
             data = await poll.json()
             data = data['content']
         except Exception:
             return
         embed = discord.Embed(
-            title=data['title'], 
-            description=f"Total Options: {len(data['poll_answers'])} | Total Votes: {data['total_votes']}",
+            title=data['title'],
+            description=
+            f"Total Options: {len(data['poll_answers'])} | Total Votes: {data['total_votes']}",
             timestamp=datetime.datetime.utcnow(),
             color=ctx.author.color)
         for answer, _id, sorting, _type, votes in data['poll_answers']:
-            embed.add_field(name=answer, value=f"Votes: **{votes}** | ID: {_id}", inline=False)
+            embed.add_field(name=answer,
+                            value=f"Votes: **{votes}** | ID: {_id}",
+                            inline=False)
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
-    
+
     @poll.command(name='delete')
     @Context.with_type
     async def delete_poll(self, ctx: Context, content_id: str):
@@ -525,13 +571,15 @@ class misc(Cog):
         if not _exists: return
         URL = f"https://strawpoll.com/api/content/delete"
         async with aiohttp.ClientSession() as session:
-            await session.delete(URL, data={'content_id': content_id}, headers={'API-KEY': os.environ['STRAW_POLL']})
+            await session.delete(URL,
+                                 data={'content_id': content_id},
+                                 headers={'API-KEY': os.environ['STRAW_POLL']})
         await ctx.reply(f"{ctx.author.mention} deleted")
-    
+
     @commands.command(name='orc')
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def ocr(self, ctx: Context, *, link: str=None):
+    async def ocr(self, ctx: Context, *, link: str = None):
         """To convert image to text"""
         if not link:
             link = ctx.message.attachments[0].url
@@ -540,12 +588,19 @@ class misc(Cog):
         try:
             async with aiohttp.ClientSession() as session:
                 res = await session.get(link)
-        except Exception as e: 
-            return await ctx.reply(f"{ctx.author.mention} something not right. Error raised {e}")
+        except Exception as e:
+            return await ctx.reply(
+                f"{ctx.author.mention} something not right. Error raised {e}")
         json = await res.json()
-        if str(json['status']) != str(200): return await ctx.reply(f"{ctx.author.mention} something not right.")
+        if str(json['status']) != str(200):
+            return await ctx.reply(f"{ctx.author.mention} something not right."
+                                   )
         msg = json['message'][:2000:]
-        await ctx.reply(embed=discord.Embed(description=msg, color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}"))
+        await ctx.reply(embed=discord.Embed(
+            description=msg,
+            color=ctx.author.color,
+            timestamp=datetime.datetime.utcnow()).set_footer(
+                text=f"{ctx.author}"))
 
     @commands.command(name='qr', aliases=['createqr', 'cqr'])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -553,4 +608,8 @@ class misc(Cog):
     async def qrcode(self, ctx: Context, text: str):
         """To generate the QR"""
         text = text.split(" ")[0]
-        await ctx.reply(embed=discord.Embed(color=ctx.author.color, timestamp=datetime.datetime.utcnow()).set_image(url=f"https://normal-api.ml/createqr?text={text}").set_footer(text=f"{ctx.author}"))
+        await ctx.reply(embed=discord.Embed(
+            color=ctx.author.color,
+            timestamp=datetime.datetime.utcnow()).set_image(
+                url=f"https://normal-api.ml/createqr?text={text}").set_footer(
+                    text=f"{ctx.author}"))

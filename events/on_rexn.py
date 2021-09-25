@@ -7,6 +7,7 @@ from datetime import datetime
 
 collection = parrot_db['ticket']
 
+
 class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -19,7 +20,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         embed.add_field(name='Status', value=status)
         embed.set_footer(text=f"{guild.name}")
         await channel.send(embed=embed)
-    
+
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
         pass
@@ -29,11 +30,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
         data = await collection.find_one({'_id': guild_id})
-        if not data: 
+        if not data:
             return
         user_id = payload.user_id
         member = guild.get_member(user_id)
-        if member.bot: 
+        if member.bot:
             return
         channel_id = payload.channel_id
         channel = self.bot.get_channel(channel_id)
@@ -41,7 +42,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         message_id = payload.message_id
         emoji = payload.emoji.name
 
-        if message_id == data['message_id'] and channel_id == data['channel_id']:
+        if message_id == data['message_id'] and channel_id == data[
+                'channel_id']:
             message = await channel.fetch_message(message_id)
         else:
             return
@@ -49,7 +51,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             try:
                 await message.remove_reaction("✉️", member)
             except Exception:
-                return await channel.send('Missing Manage Message permisssion to work properly', delete_after=10)
+                return await channel.send(
+                    'Missing Manage Message permisssion to work properly',
+                    delete_after=10)
 
             ticket_number = data['ticket-counter'] + 1
             cat = guild.get_channel(data['category'])

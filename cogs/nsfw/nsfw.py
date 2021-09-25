@@ -16,9 +16,7 @@ class nsfw(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def anal(self, ctx: Context):
-        """
-		To get Random Anal
-		"""
+        """To get Random Anal"""
 
         url = 'https://nekobot.xyz/api/image'
         params = {"type": "anal"}
@@ -69,9 +67,7 @@ class nsfw(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def hanal(self, ctx: Context):
-        """
-		To get Random Hentai Anal
-		"""
+        """To get Random Hentai Anal"""
         url = 'https://nekobot.xyz/api/image'
         params = {"type": "hanal"}
 
@@ -95,9 +91,7 @@ class nsfw(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def hentai(self, ctx: Context):
-        """
-		To get Random Hentai
-		"""
+        """To get Random Hentai"""
         url = 'https://nekobot.xyz/api/image'
         params = {"type": "hentai"}
 
@@ -661,6 +655,3 @@ class nsfw(Cog):
         em.set_image(url=img)
 
         await ctx.reply(embed=em)
-
-
-

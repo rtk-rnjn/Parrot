@@ -349,9 +349,9 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.is_nsfw()
     @Context.with_type
-    async def youtube(self, ctx: Context, *, query: str):
+    async def youtube(self, ctx: Context, limit: typing.Optional[int]=None, *, query: str):
         """Search for videos on YouTube"""
-        results = await YoutubeSearch(query, max_results=5).to_json()
+        results = await YoutubeSearch(query, max_results=limit or 5).to_json()
         main = json.loads(results)
 
         em_list = []
@@ -415,7 +415,8 @@ class misc(Cog):
     @Context.with_type
     async def snowflakeid(
         self, ctx: Context, *,
-        target: typing.Union[discord.User, discord.Role, discord.Thread,
+        target: typing.Union[discord.User, discord.Member,
+                             discord.Role, discord.Thread,
                              discord.TextChannel, discord.VoiceChannel,
                              discord.StageChannel, discord.Guild,
                              discord.Emoji, discord.Message, discord.Invite,

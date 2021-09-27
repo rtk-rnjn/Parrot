@@ -3,7 +3,7 @@ from __future__ import annotations
 from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
 
-import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect
+import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect, base64
 from utilities.paginator import Paginator
 from discord import Embed
 
@@ -546,7 +546,6 @@ class misc(Cog):
                 URL, headers={'API-KEY': os.environ['STRAW_POLL']})
         try:
             data = await poll.json()
-            data = data['content']
         except Exception:
             return
         embed = discord.Embed(
@@ -614,3 +613,29 @@ class misc(Cog):
             timestamp=datetime.datetime.utcnow()).set_image(
                 url=f"https://normal-api.ml/createqr?text={text}").set_footer(
                     text=f"{ctx.author}"))
+
+    # @commands.command(name='minecraftstatus', aliases=['mcs', 'mcstatus'])
+    # @commands.cooldown(1, 5, commands.BucketType.member)
+    # @Context.with_type
+    # async def mine_server_status(self, ctx: Context, address: str, bedrock: bool=False):
+    #     """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
+    #     if bedrock:
+    #         link = f"https://api.mcsrvstat.us/bedrock/2/{address}"
+    #     else:
+    #         link = f"https://api.mcsrvstat.us/2/{address}"
+        
+    #     async with aiohttp.ClientSession() as session:
+    #         res = await session.get(link)
+    #         data = await res.json()
+        
+    #     if data['online']:
+    #         ip = data['ip']
+    #         port = data['port']
+    #         motd = '\n'.join(data['motd'])
+    #         players_max = data['players']['max']
+    #         players_onl = data['players']['online']
+    #         version = data['version']
+    #         protocol = data['protocol']
+    #         hostname = data['hostname']
+    #         icon = data['icon'].split(',', 1)[1]
+            

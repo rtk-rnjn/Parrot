@@ -550,12 +550,12 @@ class misc(Cog):
         except Exception:
             return
         embed = discord.Embed(
-            title=data['title'],
+            title=data['content']['poll']['title'],
             description=
-            f"Total Options: {len(data['poll_answers'])} | Total Votes: {data['total_votes']}",
+            f"Total Options: {len(data['content']['poll']['poll_answers'])} | Total Votes: {data['content']['poll']['total_votes']}",
             timestamp=datetime.datetime.utcnow(),
             color=ctx.author.color)
-        for answer, _id, sorting, _type, votes in data['poll_answers']:
+        for answer, _id, sorting, _type, votes in data['content']['poll']['poll_answers']:
             embed.add_field(name=answer,
                             value=f"Votes: **{votes}** | ID: {_id}",
                             inline=False)

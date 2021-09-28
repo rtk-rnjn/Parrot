@@ -39,7 +39,11 @@ class moderation(Cog):
                 elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji):
                     target = target + f"{temp.name} (ID: {temp.id}), "
 
-        embed = discord.Embed(description=f"**{cmd.upper()}-ED** {target}\n**Reason:** {reason if reason else 'No Reason Provided'} ",timestamp=datetime.utcnow(),colour=ctx.author.color)
+        embed = discord.Embed(description=f"**Command Used:** {cmd}\n"
+                                          f"**Used On:** {target}\n"
+                                          f"**Reason:** {reason if reason else 'No Reason Provided'}",
+                            timestamp=datetime.utcnow(),
+                            colour=ctx.author.color)
 
         embed.set_thumbnail(url=f"{performed_on.display_avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}")
         embed.set_author(name=f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})', icon_url=ctx.author.display_avatar.url, url=f"https://discord.com/users/{ctx.author.id}")
@@ -204,10 +208,10 @@ class moderation(Cog):
     @commands.has_permissions(manage_roles=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     @Context.with_type
-    async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Union[convert_time, int] = 0, *, reason: reason_convert = None):
+    async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[convert_time]=None, *, reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
         await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
-        await self.log(ctx, 'Mute', member, f'{reason} | For {seconds}s')
+        await self.log(ctx, 'Mute', member, f'{reason} | For {seconds + "s" if seconds else "till end"}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))

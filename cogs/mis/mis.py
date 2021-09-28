@@ -4,7 +4,9 @@ from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
 
 import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect, base64
+from aiofile import async_open
 from utilities.paginator import Paginator
+from utilities.converters import convert_bool
 from discord import Embed
 
 from core import Parrot, Context, Cog
@@ -614,28 +616,40 @@ class misc(Cog):
                 url=f"https://normal-api.ml/createqr?text={text}").set_footer(
                     text=f"{ctx.author}"))
 
-    # @commands.command(name='minecraftstatus', aliases=['mcs', 'mcstatus'])
-    # @commands.cooldown(1, 5, commands.BucketType.member)
-    # @Context.with_type
-    # async def mine_server_status(self, ctx: Context, address: str, bedrock: bool=False):
-    #     """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
-    #     if bedrock:
-    #         link = f"https://api.mcsrvstat.us/bedrock/2/{address}"
-    #     else:
-    #         link = f"https://api.mcsrvstat.us/2/{address}"
+    @commands.command(name='minecraftstatus', aliases=['mcs', 'mcstatus'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def mine_server_status(self, ctx: Context, address: str, bedrock: typing.Optional[convert_bool]=False):
+        """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
+        if bedrock:
+            link = f"https://api.mcsrvstat.us/bedrock/2/{address}"
+        else:
+            link = f"https://api.mcsrvstat.us/2/{address}"
         
-    #     async with aiohttp.ClientSession() as session:
-    #         res = await session.get(link)
-    #         data = await res.json()
+        async with aiohttp.ClientSession() as session:
+            res = await session.get(link)
+            data = await res.json()
+        try:
+            if data['online']:
+                ip = data['ip']
+                port = data['port']
+                motd = '\n'.join(data['motd'])
+                players_max = data['players']['max']
+                players_onl = data['players']['online']
+                version = data['version']
+                protocol = data['protocol']
+                hostname = data['hostname']
+        except KeyError:
+            return await ctx.reply(f"{ctx.author.mention} no server exists")
+
+        embed = discord.Embed(title=f"IP: {ip}", description=motd, timestamp=datetime.datetime.utcnow(), color=ctx.author.color)
+        embed.add_field(name='Port', value=port, inline=True)
+        embed.add_field(name='Max Players', value=players_max, inline=True)
+        embed.add_field(name='Player Online', value=players_onl, inline=True)
+        embed.add_field(name='Hostname', value=hostname, inline=True)
+        embed.add_field(name='Protocol', value=protocol, inline=True)
+        embed.add_field(name='MC Version', value=version, inline=True)
         
-    #     if data['online']:
-    #         ip = data['ip']
-    #         port = data['port']
-    #         motd = '\n'.join(data['motd'])
-    #         players_max = data['players']['max']
-    #         players_onl = data['players']['online']
-    #         version = data['version']
-    #         protocol = data['protocol']
-    #         hostname = data['hostname']
-    #         icon = data['icon'].split(',', 1)[1]
-            
+        embed.set_footer(text=f"{ctx.author}")
+
+        await ctx.send(embed=embed)

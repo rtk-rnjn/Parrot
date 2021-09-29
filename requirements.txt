@@ -22,5 +22,6 @@ motor
 aiofile
 async-property
 git+https://github.com/Rapptz/discord.py
+git+https://github.com/Rapptz/discord-ext-menus
 tabulate
 prettytable

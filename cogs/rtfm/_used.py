@@ -9,6 +9,10 @@ from yaml import safe_load as yaml_load
 
 from _tio import Tio
 
+
+with open('extra/lang.txt') as f:
+    languages = f.read().split('\n')
+
 wrapping = {
     'c': '#include <stdio.h>\nint main() {code}',
     'cpp': '#include <iostream>\nint main() {code}',
@@ -186,10 +190,10 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
 
     if lang in default_langs:
         lang = default_langs[lang]
-    if not lang in bot.languages:
+    if not lang in languages:
         matches = []
         i = 0
-        for language in bot.languages:
+        for language in languages:
             if language.startswith(lang[:3]):
                 matches.append(language)
                 i += 1

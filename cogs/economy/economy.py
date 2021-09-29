@@ -24,7 +24,7 @@ class economy(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} you already dont have a economy")
         else:
-            view = Prompt()
+            view = Prompt(ctx.author.id)
             msg = await ctx.reply(
                 f"{ctx.author.mention} Are you sure about that? If yes, then press `YES`", view=view
             )

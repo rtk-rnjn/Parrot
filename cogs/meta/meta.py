@@ -294,7 +294,7 @@ class meta(Cog):
     @Context.with_type
     async def request(self, ctx: Context, *, text: str):
         """To request directly from the owner"""
-        view = Prompt()
+        view = Prompt(ctx.author.id)
         msg = await ctx.reply(f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue (case insensitive)", view=view)
         await view.wait()
         if view.value is None:

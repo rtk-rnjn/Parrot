@@ -35,7 +35,7 @@ async def _create_tag(bot, ctx, tag, text):
     if data := await collection.find_one({"_id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
     else:
-        view = Prompt()
+        view = Prompt(ctx.author.id)
         await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)
         await view.wait()
         if view.value is None:

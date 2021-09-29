@@ -3,6 +3,7 @@ from __future__ import annotations
 from discord.ext import commands
 import functools
 import discord, typing
+from utilities.emotes import emojis
 
 __all__ = ("Context", )
 
@@ -48,3 +49,6 @@ class Context(commands.Context):
                 pass
             return
         return await super().send(content, reference=self.message, **kwargs)
+
+    async def emoji(self, emoji: str) -> str:
+        return emojis[emoji]

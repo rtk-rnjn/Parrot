@@ -5,7 +5,7 @@ import discord, random
 from core import Parrot, Context, Cog
 
 from utilities.database import ge_update, economy_db
-
+from utilities.buttons import Prompt
 collection = economy_db['global_economy']
 
 
@@ -24,24 +24,21 @@ class economy(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} you already dont have a economy")
         else:
-            await ctx.reply(
-                f"{ctx.author.mention} Are you sure about that? If yes, then type `YES`"
+            view = Prompt()
+            msg = await ctx.reply(
+                f"{ctx.author.mention} Are you sure about that? If yes, then press `YES`", view=view
             )
-
-            def check(m):
-                return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-
-            try:
-                msg = await self.bot.wait_for('message',
-                                              timeout=60,
-                                              check=check)
-            except Exception:
-                return await ctx.reply(
-                    f"{ctx.author.mention} you didnt answer on time")
-            if msg.content.upper() == 'YES':
+            await view.wait()
+            if view.value is None:
+                await msg.reply(f"{ctx.author.mention} you ran out time!")
+            elif view.value:
                 await collection.delete_one({'_id': ctx.author.id})
                 return await ctx.reply(
                     f"{ctx.author.mention} deleted successfully")
+            else:
+                return await ctx.reply(
+                  f"{ctx.author.mention} nvm, nothing happing!"
+                )    
 
     @commands.command(aliases=['starteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)

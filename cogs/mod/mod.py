@@ -207,7 +207,7 @@ class moderation(Cog):
     @commands.command()
     @commands.has_permissions(manage_roles=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
-    @Context.with_type
+    #@Context.with_type
     async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[convert_time]=None, *, reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
         await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
@@ -775,6 +775,3 @@ class moderation(Cog):
                 await self.log(ctx, 'Role name chang', target, reason)
 
         return await msg.delete()
-
-
-

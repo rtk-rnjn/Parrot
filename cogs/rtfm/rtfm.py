@@ -4,11 +4,12 @@ from os import system
 
 system('pip install lxml')
 
-from datetime import datetime
-
-import asyncio, os, re, sys, discord, aiohttp, hashlib
+# from datetime import datetime
+import unicodedata
+import os, re, sys, discord, aiohttp, hashlib
+# import asyncio
 from hashlib import algorithms_available as algorithms
-from yaml import safe_load as yaml_load
+# from yaml import safe_load as yaml_load
 
 import urllib.parse
 from io import BytesIO
@@ -19,13 +20,13 @@ from bs4.element import NavigableString
 from core import Parrot, Context, Cog
 
 from discord.ext import commands
-from discord.utils import escape_mentions
+# from discord.utils import escape_mentions
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import _ref, _doc
-from _used import typing, get_raw, paste
-from _tio import Tio
+from _used import typing, get_raw, paste, Refresh, wrapping, prepare_payload, execute_run
+# from _tio import Tio
 
 with open("extra/lang.txt") as f:
     languages = f.read()
@@ -61,18 +62,6 @@ class rtfm(Cog):
 
         return content
 
-    wrapping = {
-        'c': '#include <stdio.h>\nint main() {code}',
-        'cpp': '#include <iostream>\nint main() {code}',
-        'cs':
-        'using System;class Program {static void Main(string[] args) {code}}',
-        'java':
-        'public class Main {public static void main(String[] args) {code}}',
-        'rust': 'fn main() {code}',
-        'd': 'import std.stdio; void main(){code}',
-        'kotlin': 'fun main(args: Array<String>) {code}'
-    }
-
     referred = {
         "csp-directives": _ref.csp_directives,
         "git": _ref.git_ref,
@@ -94,195 +83,93 @@ class rtfm(Cog):
     }
 
     @commands.command(
-        help=
-        '''run <language> [--wrapped] [--stats] <code> for command-line-options, compiler-flags and arguments you may add a line starting with this argument, and after a space add your options, flags or args. Stats option displays more informations on execution consumption wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument` <code> may be normal code, but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com) If you use a link, your command must end with this syntax: `link=<link>` (no space around `=`)''',
-        brief='Execute code in a given programming language')
-    async def run(self, ctx: Context, language, *, code=''):
+help='''run <language> [--wrapped] [--stats] <code>
+for command-line-options, compiler-flags and arguments you may
+add a line starting with this argument, and after a space add
+your options, flags or args.
+stats option displays more informations on execution consumption
+wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
+<code> may be normal code, but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com)
+If you use a link, your command must end with this syntax:
+`link=<link>` (no space around `=`)
+for instance : `do run python link=https://hastebin.com/resopedahe.py`
+The link may be the raw version, and with/without the file extension
+If the output exceeds 40 lines or Discord max message length, it will be put
+in a new hastebin and the link will be returned.
+When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
+Useful to hide your syntax fails or when you forgot to print the result.''',
+brief='Execute code in a given programming language'
+        )
+    async def run(self, ctx, *, payload=''):
         """Execute code in a given programming language"""
-        # Powered by tio.run
-        with open('extra/default_langs.yml', 'r') as file:
-            default = yaml_load(file)
-        options = {'--stats': False, '--wrapped': False}
 
-        lang = language.strip('`').lower()
+        if not payload:
+            emb = discord.Embed(title='SyntaxError',description=f"Command `run` missing a required argument: `language`",colour=0xff0000)
+            return await ctx.send(embed=emb)
 
-        optionsAmount = len(options)
+        no_rerun = True
+        language = payload
+        lang = None # to override in 2 first cases
 
-        # Setting options and removing them from the beginning of the command
-        # options may be separated by any single whitespace, which we keep in the list
-        code = re.split(r'(\s)', code, maxsplit=optionsAmount)
+        if ctx.message.attachments:
+            # Code in file
+            file = ctx.message.attachments[0]
+            if file.size > 20000:
+                return await ctx.send("File must be smaller than 20 kio.")
+            buffer = BytesIO()
+            await ctx.message.attachments[0].save(buffer)
+            text = buffer.read().decode('utf-8')
+            lang = re.split(r'\s+', payload, maxsplit=1)[0]
+        elif payload.split(' ')[-1].startswith('link='):
+            # Code in a webpage
+            base_url = urllib.parse.quote_plus(payload.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
 
-        for option in options:
-            if option in code[:optionsAmount * 2]:
-                options[option] = True
-                i = code.index(option)
-                code.pop(i)
-                code.pop(i)  # remove following whitespace character
+            url = get_raw(base_url)
 
-        code = ''.join(code)
+            async with self.bot.session.get(url) as response:
+                if response.status == 404:
+                    return await ctx.send('Nothing found. Check your link')
+                elif response.status != 200:
+                    return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+                text = await response.text()
+                if len(text) > 20000:
+                    return await ctx.send('Code must be shorter than 20,000 characters.')
+                lang = re.split(r'\s+', payload, maxsplit=1)[0]
+        else:
+            no_rerun = False
 
-        compilerFlags = []
-        commandLineOptions = []
-        args = []
-        inputs = []
+            language,text,errored = prepare_payload(payload) # we call it text but it's an embed if it errored #JustDynamicTypingThings
 
-        lines = code.split('\n')
-        code = []
-        for line in lines:
-            if line.startswith('input '):
-                inputs.append(' '.join(line.split(' ')[1:]).strip('`'))
-            elif line.startswith('compiler-flags '):
-                compilerFlags.extend(line[15:].strip('`').split(' '))
-            elif line.startswith('command-line-options '):
-                commandLineOptions.extend(line[21:].strip('`').split(' '))
-            elif line.startswith('arguments '):
-                args.extend(line[10:].strip('`').split(' '))
-            else:
-                code.append(line)
-
-        inputs = '\n'.join(inputs)
-
-        code = '\n'.join(code)
-
-        text = None
+            if errored:
+                return await ctx.send(embed=text)
 
         async with ctx.typing():
-            if ctx.message.attachments:
-                # Code in file
-                file = ctx.message.attachments[0]
-                if file.size > 20000:
-                    return await ctx.reply("File must be smaller than 20 kio.")
-                buffer = BytesIO()
-                await ctx.message.attachments[0].save(buffer)
-                text = buffer.read().decode('utf-8')
-            elif code.split(' ')[-1].startswith('link='):
-                # Code in a webpage
-                base_url = urllib.parse.quote_plus(
-                    code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
+            if lang:
+                language = lang
 
-                url = get_raw(base_url)
 
-                async with aiohttp.ClientSession() as client_session:
-                    async with client_session.get(url) as response:
-                        if response.status == 404:
-                            return await ctx.reply(
-                                'Nothing found. Check your link')
-                        elif response.status != 200:
-                            return await ctx.reply(
-                                f'An error occurred (status code: {response.status}). Retry later.'
-                            )
-                        text = await response.text()
-                        if len(text) > 20000:
-                            return await ctx.reply(
-                                'Code must be shorter than 20,000 characters.')
-            elif code.strip('`'):
-                # Code in message
-                text = code.strip('`')
-                firstLine = text.splitlines()[0]
-                if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
-                    text = text[len(firstLine) + 1:]
+            output = await execute_run(self.bot, language, text)
 
-            if text is None:
-                # Ensures code isn't empty after removing options
-                raise commands.MissingRequiredArgument(
-                    ctx.command.clean_params['code'])
+            view = Refresh(self.bot, no_rerun)
 
-            # common identifiers, also used in highlight.js and thus discord codeblocks
-            quickmap = {
-                'asm': 'assembly',
-                'c#': 'cs',
-                'c++': 'cpp',
-                'csharp': 'cs',
-                'f#': 'fs',
-                'fsharp': 'fs',
-                'js': 'javascript',
-                'nimrod': 'nim',
-                'py': 'python',
-                'q#': 'qs',
-                'rs': 'rust',
-                'sh': 'bash',
-            }
+            try:
+                returned = await ctx.reply(output, view=view)
+                buttons = True
+            except discord.HTTPException: # message deleted
+                returned = await ctx.send(output, view=view)
+                buttons = False
 
-            if lang in quickmap:
-                lang = quickmap[lang]
+        if buttons:
 
-            if lang in default:
-                lang = default[lang]
-            if not lang in languages:  #self.bot.languages:
-                matches = '\n'.join([
-                    language for language in languages if lang in language
-                ][:10])
-                lang = escape_mentions(lang)
-                message = f"`{lang}` not available."
-                if matches:
-                    message = message + f" Did you mean:\n{matches}"
+            await view.wait()
 
-                return await ctx.reply(message)
+            try:
+                await returned.edit(view=None)
+                view.stop()
+            except:
+                # We deleted the message
+                pass
 
-            if options['--wrapped']:
-                if not (any(
-                        map(lambda x: lang.split('-')[0] == x,
-                            self.wrapping))) or lang in ('cs-mono-shell',
-                                                         'cs-csi'):
-                    return await ctx.reply(f'`{lang}` cannot be wrapped')
-
-                for beginning in self.wrapping:
-                    if lang.split('-')[0] == beginning:
-                        text = self.wrapping[beginning].replace('code', text)
-                        break
-
-            tio = Tio(lang,
-                      text,
-                      compilerFlags=compilerFlags,
-                      inputs=inputs,
-                      commandLineOptions=commandLineOptions,
-                      args=args)
-
-            result = await tio.send()
-
-            if not options['--stats']:
-                try:
-                    start = result.rindex("Real time: ")
-                    end = result.rindex("%\nExit code: ")
-                    result = result[:start] + result[end + 2:]
-                except ValueError:
-                    # Too much output removes this markers
-                    pass
-
-            if len(result) > 1991 or result.count('\n') > 40:
-                # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
-                # Or if it floods with more than 40 lines
-                # Create a hastebin and send it back
-                link = await paste(result)
-
-                if link is None:
-                    return await ctx.reply(
-                        "Your output was too long, but I couldn't make an online bin out of it"
-                    )
-                return await ctx.reply(
-                    f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}'
-                )
-
-            zero = '\N{zero width space}'
-            result = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', result)
-
-            # ph, as placeholder, prevents Discord from taking the first line
-            # as a language identifier for markdown and remove it
-            returned = await ctx.reply(f'```ph\n{result}```')
-
-        await returned.add_reaction('🗑')
-        returnedID = returned.id
-
-        def check(reaction, user):
-            return user == ctx.author and str(
-                reaction.emoji) == '🗑' and reaction.message.id == returnedID
-
-        try:
-            await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
-        except asyncio.TimeoutError:
-            pass
-        else:
-            await returned.delete()
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(aliases=['ref'])
@@ -372,7 +259,7 @@ class rtfm(Cog):
             "documentations": self.documented,
             "hashing": sorted([h for h in algorithms if h.islower()]),
             "references": self.referred,
-            "wrapped argument": self.wrapping,
+            "wrapped argument": wrapping,
         }
 
         if group == 'languages':
@@ -473,3 +360,19 @@ class rtfm(Cog):
         emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
 
         await ctx.reply(embed=emb)
+
+    @commands.command()
+    async def charinfo(self, ctx, *, characters: str):
+        """
+        Shows you information about a number of characters.
+        Only up to 25 characters at a time.
+        """
+        def to_string(c):
+            digit = f"{ord(c):x}"
+            name = unicodedata.name(c, "Name not found.")
+            return f"`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>"
+
+        msg = "\n".join(map(to_string, characters))
+        if len(msg) > 2000:
+            return await ctx.send("Output too long to display.")
+        await ctx.send(msg)

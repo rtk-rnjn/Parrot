@@ -351,7 +351,11 @@ class misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.is_nsfw()
     @Context.with_type
-    async def youtube(self, ctx: Context, limit: typing.Optional[int]=None, *, query: str):
+    async def youtube(self,
+                      ctx: Context,
+                      limit: typing.Optional[int] = None,
+                      *,
+                      query: str):
         """Search for videos on YouTube"""
         results = await YoutubeSearch(query, max_results=limit or 5).to_json()
         main = json.loads(results)
@@ -417,13 +421,13 @@ class misc(Cog):
     @Context.with_type
     async def snowflakeid(
         self, ctx: Context, *,
-        target: typing.Union[discord.User, discord.Member,
-                             discord.Role, discord.Thread,
-                             discord.TextChannel, discord.VoiceChannel,
-                             discord.StageChannel, discord.Guild,
-                             discord.Emoji, discord.Message, discord.Invite,
-                             discord.Template, discord.CategoryChannel,
-                             discord.DMChannel, discord.GroupChannel]):
+        target: typing.Union[discord.User, discord.Member, discord.Role,
+                             discord.Thread, discord.TextChannel,
+                             discord.VoiceChannel, discord.StageChannel,
+                             discord.Guild, discord.Emoji, discord.Message,
+                             discord.Invite, discord.Template,
+                             discord.CategoryChannel, discord.DMChannel,
+                             discord.GroupChannel]):
         """To get the ID of discord models"""
         embed = discord.Embed(title="Snowflake lookup",
                               color=ctx.author.color,
@@ -556,7 +560,8 @@ class misc(Cog):
             f"Total Options: {len(data['content']['poll']['poll_answers'])} | Total Votes: {data['content']['poll']['total_votes']}",
             timestamp=datetime.datetime.utcnow(),
             color=ctx.author.color)
-        for answer, _id, sorting, _type, votes in data['content']['poll']['poll_answers']:
+        for answer, _id, sorting, _type, votes in data['content']['poll'][
+                'poll_answers']:
             embed.add_field(name=answer,
                             value=f"Votes: **{votes}** | ID: {_id}",
                             inline=False)
@@ -619,13 +624,17 @@ class misc(Cog):
     @commands.command(name='minecraftstatus', aliases=['mcs', 'mcstatus'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def mine_server_status(self, ctx: Context, address: str, bedrock: typing.Optional[convert_bool]=False):
+    async def mine_server_status(
+            self,
+            ctx: Context,
+            address: str,
+            bedrock: typing.Optional[convert_bool] = False):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"
         else:
             link = f"https://api.mcsrvstat.us/2/{address}"
-        
+
         async with aiohttp.ClientSession() as session:
             res = await session.get(link)
             data = await res.json()
@@ -642,14 +651,17 @@ class misc(Cog):
         except KeyError:
             return await ctx.reply(f"{ctx.author.mention} no server exists")
 
-        embed = discord.Embed(title=f"IP: {ip}", description=motd, timestamp=datetime.datetime.utcnow(), color=ctx.author.color)
+        embed = discord.Embed(title=f"IP: {ip}",
+                              description=motd,
+                              timestamp=datetime.datetime.utcnow(),
+                              color=ctx.author.color)
         embed.add_field(name='Port', value=port, inline=True)
         embed.add_field(name='Max Players', value=players_max, inline=True)
         embed.add_field(name='Player Online', value=players_onl, inline=True)
         embed.add_field(name='Hostname', value=hostname, inline=True)
         embed.add_field(name='Protocol', value=protocol, inline=True)
         embed.add_field(name='MC Version', value=version, inline=True)
-        
+
         embed.set_footer(text=f"{ctx.author}")
 
         await ctx.send(embed=embed)

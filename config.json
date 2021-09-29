@@ -17,7 +17,7 @@
     "events.guild.join",
     "events.guild.member",
     "events.guild.role_emoji",
-    "cogs.ult",
+    "cogs.meta",
     "cogs.mod",
     "cogs.fun",
     "cogs.memegen",

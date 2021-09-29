@@ -322,10 +322,10 @@ class botconfig(Cog):
     @Context.with_type
     async def addaccess(self, ctx: Context, *, role: discord.Role):
         """
-		This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
-			
-		Parrot Ticket `Admin-Level` role or Administrator permission for the user.
-		"""
+        This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
+          
+        Parrot Ticket `Admin-Level` role or Administrator permission for the user.
+        """
         await mt._addaccess(ctx, role)
 
     @ticketconfig.command()
@@ -337,7 +337,7 @@ class botconfig(Cog):
         """
         This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
 			
-		Parrot Ticket `Admin-Level` role or Administrator permission for the user.
+		    Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
         await mt._delaccess(ctx, role)
 

@@ -150,3 +150,4 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in **{target.name} ({target.id})**"
             )
+

@@ -1,26 +1,54 @@
-REMOVE = "<:remove:855002325340913665>"
-EDIT = "<:edit:855002325440266251>"
-ADD = "<:add:855002325487452170>"
-
-ANDROID_KALI = "<:android_kali:855002670482194453>"
-WINDOWS_KALI = "<:WindowsKali:855002672057942036>"
-KALI_TRANSPARENT = "<:kali_transparent:855002672846471179>"
-
-PARROT_BETA = "<:Parrot_Beta:855002672755245076>"
-PARROT_LOGO = "<:Parrot:855002672948183060>"
-PARROT_ALPHA = "<:Parrot_Alpha:855002673288183829>"
-
-NUKEBOT_LOGO = "<:NukeBot:855002672985538560>"
-
-X = ":x:"
-O = ":o:"
-
-CHECK = ":white_check_mark:"
-CROSS = ":negative_squared_cross_mark:"
-
-DOUBLE_EXLM = ":bangbang:"
-QUESTION_EXLM = ":interrobang:"
-WARNING = ":warning:"
-
-NO_ENTRY = ":no_entry:"
-NO_ENTRY_SIGN = ":no_entry_sign:"
+emojis = {
+    'remove': '<:remove:855002325340913665>',
+    'edit': '<:edit:855002325440266251>',
+    'add': '<:add:855002325487452170>',
+    'kali_transparent': '<:kali_transparent:855002672846471179>',
+    'Parrot': '<:Parrot:855002672948183060>',
+    'Parrot_Alpha': '<:Parrot_Alpha:855002673288183829>',
+    'moderator': '<:moderator:892424227007918121>',
+    'admin': '<:admin:892424347782889553>',
+    'Staff': '<:Staff:892424463818309633>',
+    'Utilities': '<:Utilities:892424737840582776>',
+    'Config': '<:Config:892425561807417354>',
+    'nasa': '<:nasa:892425662864982056>',
+    'ticket': '<:ticket:892425759287824415>',
+    'issue': '<:issue:892426388336955422>',
+    'nsfw': '<a:nsfw:892426918073368607>',
+    'nsfw_static': '<:nsfw_892426918073368607:892426938134695998>',
+    'dollor': '<:dollor:892427274253631548>',
+    'channel_locked': '<:channel_locked:892432117764620289>',
+    'fun': '<:fun:892432619374014544>',
+    '404parrot': '<a:404parrot:892432991186464808>',
+    'channel_nsfw': '<:channel_nsfw:892433335274582026>',
+    'announcement_channel': '<:announcement_channel:892433370708082739>',
+    'on': '<:on:892433654201061407>',
+    'off': '<:off:892433704444641290>',
+    'early_verified_bot_developer':
+    '<:early_verified_bot_developer:892433993537032262>',
+    'Lights_Camera_Action':
+    '<:Lights_Camera_Action__Emoticon__:892434144364220497>',
+    'crown': '<a:crown:892434461269061663>',
+    'tt_telephone': '<a:tt_telephone:892434529346809856>',
+    'badge_muted': '<:badge_muted:892434757588242472>',
+    'unmuted': '<:unmuted:892434891113906247>',
+    'sparkles': '<:sparkles:892435276264259665>',
+    'badge_undeafeaned': '<:badge_undeafeaned:892435342274211890>',
+    'deafened': '<:deafened:892435492547743825>',
+    'telephone': '<:telephone:892435924238073878>',
+    'hangup': '<:hangup:892435951245217842>',
+    'vc': '<:vc:892436998223175740>',
+    'game': '<:game:892437014291554364>',
+    'vc_locked': '<:vc_locked:892437078456016927>',
+    'badge_vchidden': '<:badge_vchidden:892437445344383076>',
+    'kick': '<a:kick:892437781563998218>',
+    'BAN': '<a:BAN:892437990465503283>',
+    'announcement_channel_locked':
+    '<:announcement_channel_locked:892438741111701544>',
+    'message': '<:message:892438787433562132>',
+    'messageDelete': '<:messageDelete:892438822569267242>',
+    'Messages': '<:Messages:892438869285437480>',
+    'messageUpdate': '<:messageUpdate:892438874641547326>',
+    'blocked': '<a:blocked:892439366625001632>',
+    'money': '<:money:892439854271570010>',
+    'Plus': '<:Plus:892440360750555136>'
+}

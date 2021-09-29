@@ -1,17 +1,21 @@
 from __future__ import annotations
 
-from typing import Optional
-from discord.ext import commands
-from time import time 
-import discord
-from datetime import datetime, timedelta 
-from psutil import Process, virtual_memory
 from discord import __version__ as discord_version
-from platform import python_version 
-from core import Parrot, Context, Cog
-from utilities.config import VERSION
+import discord, typing
+from discord.ext import commands
 
-class utilities(Cog):
+from time import time
+from datetime import datetime, timedelta 
+
+from psutil import Process, virtual_memory
+from platform import python_version 
+
+from utilities.config import VERSION
+from utilities.buttons import Prompt
+
+from core import Parrot, Context, Cog
+
+class meta(Cog):
     """Basic commands for the bots."""
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -137,10 +141,10 @@ class utilities(Cog):
         
         fields = [
             ("Bot version", f"`{VERSION}`", True),
-            ("Python version", "`"+str(python_version())+"`", True),
-            ("discord.py version", "`"+str(discord_version)+"`", True),
-            ("Uptime", "`"+str(uptime)+"`", True),
-            ("CPU time", "`"+str(cpu_time)+"`", True),
+            ("Python version", f"`{str(python_version())}", True),
+            ("discord.py version", f"`{str(discord_version)}`", True),
+            ("Uptime", f"`{str(uptime)}`", True),
+            ("CPU time", f"{(cpu_time)}", True),
             ("Memory usage", f"`{mem_usage:,.3f} / {mem_total:,.0f} MiB ({mem_of_total:.0f}%)`", True),
             ("Total users on count", f"`{len(self.bot.users)}`", True),
             ("Owner",'`!! Ritik Ranjan [*.*]#9230`', True),
@@ -200,7 +204,7 @@ class utilities(Cog):
         """
         em = discord.Embed(title="Click here to add", 
                            description="```ini\n[Default Prefix: `$` and `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
-                           url=f"https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FNEyJxM7G7f&scope=bot%20applications.commands", 
+                           url=f"https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=52288&redirect_uri=https%3A%2F%2Fdiscord.gg%2FNEyJxM7G7f&scope=bot%20applications.commands", 
                            timestamp=datetime.utcnow())
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
@@ -261,18 +265,62 @@ class utilities(Cog):
             em.add_field(name=name, value=f"{value}", inline=inline)
         await ctx.reply(embed=em)
 
+    @commands.command(name='channel_info')
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def channel_info(self, ctx: Context, *, channel: typing.Union[discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.StageChannel]=None):
+        channel = channel or ctx.channel
+        id_ = channel.id
+        created_at = f"<t:{int(channel.create_at.timestamp())}>"
+        mention = channel.mention
+        position = channel.position
+        type_ = str(channel.type).capitalize()
+        embed = discord.Embed(title='Channel Info', color=ctx.author.color, timestamp=datetime.utcnow())
+        embed.add_field(name='Name', value=channel.name)
+        embed.add_field(name='ID', value=f"{id_}")
+        embed.add_field(name='Created At', value=created_at)
+        embed.add_field(name='Mention', value=mention)
+        embed.add_field(name='Position', value=position)
+        embed.add_field(name='Type', value=type_)
+        embed.set_footer(text=f"{ctx.author}")
+        if ctx.guild.icon:
+            embed.set_thumbnail(url=ctx.guild.icon.url)
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=['suggest'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def request(self, ctx: Context, *, text: str):
         """To request directly from the owner"""
-        def check(m):
-            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-        await ctx.reply(f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Type `YES` to continue (case insensitive)")
-        try:
-            msg = await self.bot.wait_for('message', timeout=60, check=check)
-        except Exception:
-            return
-        if msg.content == "YES":
-            await self.bot.get_user(741614468546560092).send(f"`{ctx.author}` {text[:1900:]}")
+        view = Prompt()
+        msg = await ctx.reply(f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue (case insensitive)", view=view)
+        await view.wait()
+        if view.value is None:
+            await msg.reply(f"{ctx.author.mention} you did not responds on time. No request is being sent!")
+        elif view.value:
+            await msg.reply(f"{ctx.author.mention} your message is being delivered!")
+            await bot.get_user(741614468546560092).send(text[:1800:])
+        else:
+            await msg.reply(f"{ctx.author.mention} nvm, reverting the process")
+
+    @commands.command(hidden=True)
+    async def hello(self, ctx: Context):
+        """Displays my intro message."""
+        await ctx.reply('Hello! Parrot is a robot. !! Ritik Ranjan [\*.*]#9230 made me.')
+
+    @commands.command(rest_is_raw=True, hidden=True)
+    @commands.is_owner()
+    async def echo(self, ctx: Context, *, content):
+        await ctx.send(content)
+
+    @commands.command(hidden=True)
+    async def cud(self, ctx: Context):
+        """pls no spam"""
+
+        for i in range(3):
+            await ctx.send(3 - i)
+            await asyncio.sleep(1)
+
+        await ctx.send('go')

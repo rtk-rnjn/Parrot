@@ -4,6 +4,7 @@ from async_property import async_property
 
 from tabulate import tabulate
 from prettytable import PrettyTable 
+from core import Parrot
 
 import datetime
 
@@ -49,7 +50,7 @@ class Infraction:
         try:
             return data['warn_count']
         except KeyError:
-            await self._parrot_collection.update_one({'_id': guild_id}, {'$set':{'warn_count': 1}})
+            await self._parrot_collection.update_one({'_id': self.guild_id}, {'$set':{'warn_count': 1}})
             return 0
     
     @async_property
@@ -78,11 +79,11 @@ class Infraction:
         if self._warn_db is None:
             self._warn_db = await self.bot.db('warn_db')
         
-        data = await collection.find_one({'_id': self.guild_id})
+        data = await self._parrot_collection.find_one({'_id': self.guild_id})
         try:
             return data['warn_count']
         except KeyError:
-            await self._parrot_collection.update_one({'_id': guild_id}, {'$set':{'warn_count': 1}})
+            await self._parrot_collection.update_one({'_id': self.guild_id}, {'$set':{'warn_count': 1}})
             return 1
         
     async def _make_warn(self) -> dict:

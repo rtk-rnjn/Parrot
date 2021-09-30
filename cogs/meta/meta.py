@@ -251,7 +251,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                     discord.HTTPException) and error.original.code == 50013:
                 return
 
-            await ctx.send(str(error.original))
+            await ctx.send(f"Well this is embarrassing. Please tell this to developer {error.original}")
 
     def get_command_signature(self, command):
         parent = command.full_parent_name
@@ -266,6 +266,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         return f'{alias} {command.signature}'
 
     async def send_bot_help(self, mapping):
+        await self.context.trigger_typing()
         bot = self.context.bot
 
         def key(command) -> str:
@@ -286,16 +287,16 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         menu = HelpMenu(FrontPageSource(), ctx=self.context)
         menu.add_categories(all_commands)
-        await self.context.trigger_typing()
         await menu.start()
 
     async def send_cog_help(self, cog):
+        await self.context.trigger_typing()
         entries = await self.filter_commands(cog.get_commands(), sort=True)
         menu = HelpMenu(GroupHelpPageSource(cog,
                                             entries,
                                             prefix=self.context.clean_prefix),
                         ctx=self.context)
-        await self.context.trigger_typing()
+
         await menu.start()
 
     def common_command_formatting(self, embed_like, command):
@@ -306,12 +307,14 @@ class PaginatedHelpCommand(commands.HelpCommand):
             embed_like.description = command.help or 'No help found...'
 
     async def send_command_help(self, command):
+        await self.context.trigger_typing()
         # No pagination necessary for a single command.
         embed = discord.Embed(colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow())
         self.common_command_formatting(embed, command)
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
+        await self.context.trigger_typing()
         subcommands = group.commands
         if len(subcommands) == 0:
             return await self.send_command_help(group)
@@ -325,7 +328,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                                      prefix=self.context.clean_prefix)
         self.common_command_formatting(source, group)
         menu = HelpMenu(source, ctx=self.context)
-        await self.context.trigger_typing()
+
         await menu.start()
 
 class Meta(commands.Cog):
@@ -440,10 +443,6 @@ class Meta(commands.Cog):
 
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
-        if ctx.guild.me.guild_permissions.ban_members:
-            embed.add_field(name="Banned Members", value=f"{len(await ctx.guild.bans())}", inline=True)
-        if ctx.guild.me.guild_permissions.manage_guild:
-            embed.add_field(name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True)
         
         info = []
         features = set(ctx.guild.features)
@@ -497,6 +496,11 @@ class Meta(commands.Cog):
 
         fmt = f'{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}'
         embed.add_field(name='Emoji', value=fmt, inline=True)
+        
+        if ctx.guild.me.guild_permissions.ban_members:
+            embed.add_field(name="Banned Members", value=f"{len(await ctx.guild.bans())}", inline=True)
+        if ctx.guild.me.guild_permissions.manage_guild:
+            embed.add_field(name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True)
 
         await ctx.reply(embed=embed)
 

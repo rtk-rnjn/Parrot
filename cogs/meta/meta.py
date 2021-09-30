@@ -73,7 +73,7 @@ class GroupHelpPageSource(menus.ListPageSource):
     async def format_page(self, menu, commands):
         embed = discord.Embed(title=self.title,
                               description=self.description,
-                              colour=discord.Color.blue(), timestamp=datetime.datetime.datetime.utcnow()())
+                              colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow())
 
         for command in commands:
             signature = f'{command.qualified_name} {command.signature}'
@@ -159,7 +159,7 @@ class FrontPageSource(menus.PageSource):
 
     def format_page(self, menu: HelpMenu, page):
         embed = discord.Embed(title='Bot Help',
-                              colour=discord.Color.blue(), timestamp=datetime.datetime.datetime.utcnow()())
+                              colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow())
         embed.description = inspect.cleandoc(f"""
             Hello! Welcome to the help page.
             Use "`{menu.ctx.clean_prefix}help command`" for more info on a command.
@@ -307,7 +307,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     async def send_command_help(self, command):
         # No pagination necessary for a single command.
-        embed = discord.Embed(colour=discord.Color.blue(), timestamp=datetime.datetime.datetime.utcnow()())
+        embed = discord.Embed(colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow())
         self.common_command_formatting(embed, command)
         await self.context.send(embed=embed)
 
@@ -369,7 +369,7 @@ class Meta(commands.Cog):
         Get the avatar of the user. Make sure you don't misuse.
         """
         member = member or ctx.author
-        embed = discord.Embed(timestamp=datetime.datetime.utcnow()())
+        embed = discord.Embed(timestamp=datetime.datetime.utcnow())
         embed.add_field(name=member.name,value=f'[Download]({member.display_avatar.url})')
         embed.set_image(url=member.display_avatar.url)
         embed.set_footer(text=f'Requested by {ctx.author.name}', icon_url= ctx.author.display_avatar.url)
@@ -388,7 +388,7 @@ class Meta(commands.Cog):
             embed=discord.Embed(
                 title="Owner Info", 
                 description='This bot is being hosted by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', 
-                timestamp=datetime.datetime.utcnow()(),
+                timestamp=datetime.datetime.utcnow(),
                 color=ctx.author.color,
                 url="https://discord.com/users/741614468546560092")
             )
@@ -403,7 +403,7 @@ class Meta(commands.Cog):
         Get the freaking server icon
         """
         guild = server or ctx.guild
-        embed = discord.Embed(timestamp=datetime.datetime.utcnow()())
+        embed = discord.Embed(timestamp=datetime.datetime.utcnow())
         embed.set_image(url = guild.icon.url)
         embed.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=embed)
@@ -420,7 +420,7 @@ class Meta(commands.Cog):
         guild = ctx.guild
         embed = discord.Embed(title=f"Server Info: {ctx.guild.name}",
                 colour=ctx.guild.owner.colour,
-                timestamp=datetime.datetime.utcnow()())
+                timestamp=datetime.datetime.utcnow())
 
         embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.set_footer(text=f'ID: {ctx.guild.id}')
@@ -511,7 +511,7 @@ class Meta(commands.Cog):
         """
         embed = discord.Embed(title="Bot stats",
                 colour=ctx.author.colour,
-                timestamp=datetime.datetime.utcnow()())
+                timestamp=datetime.datetime.utcnow())
         embed.set_thumbnail(url=f'{ctx.guild.me.avatar.url}')
         proc = Process()
         with proc.oneshot():
@@ -548,7 +548,7 @@ class Meta(commands.Cog):
         roles = [role for role in target.roles]
         embed = discord.Embed(title="User information",
                 colour=target.colour,
-                timestamp=datetime.datetime.utcnow()())
+                timestamp=datetime.datetime.utcnow())
 
         embed.set_thumbnail(url=target.avatar.url)
         embed.set_footer(text=f"ID: {target.id}")
@@ -603,7 +603,7 @@ class Meta(commands.Cog):
         em = discord.Embed(title="Click here to add", 
                            description="```ini\n[Default Prefix: `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
                            url=url, 
-                           timestamp=datetime.datetime.utcnow()())
+                           timestamp=datetime.datetime.utcnow())
         
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
@@ -615,7 +615,7 @@ class Meta(commands.Cog):
     @Context.with_type
     async def roleinfo(self, ctx: Context, *, role: discord.Role):
         """To get the info regarding the server role"""
-        embed = discord.Embed(title=f"Role Information: {role.name}", description=f"ID: `{role.id}`", color=role.color, timestamp=datetime.datetime.utcnow()())
+        embed = discord.Embed(title=f"Role Information: {role.name}", description=f"ID: `{role.id}`", color=role.color, timestamp=datetime.datetime.utcnow())
         data = [("Created At", f"<t:{int(role.created_at.timestamp())}>", True),
                 ("Is Hoisted?", role.hoist, True),
                 ("Position", role.position, True),
@@ -647,7 +647,7 @@ class Meta(commands.Cog):
     @Context.with_type
     async def emojiinfo(self, ctx: Context, *, emoji: discord.Emoji):
         """To get the info regarding the server emoji"""
-        em = discord.Embed(title="Emoji Info", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.datetime.utcnow()(), color=ctx.author.color)
+        em = discord.Embed(title="Emoji Info", description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`" ,timestamp=datetime.datetime.utcnow(), color=ctx.author.color)
         data = [("Name", emoji.name, True),
                 ("Is Animated?", emoji.animated, True),
                 ("Created At", f"<t:{int(emoji.created_at.timestamp())}>", True),
@@ -675,7 +675,7 @@ class Meta(commands.Cog):
         mention = channel.mention
         position = channel.position
         type_ = str(channel.type).capitalize()
-        embed = discord.Embed(title='Channel Info', color=ctx.author.color, timestamp=datetime.datetime.utcnow()())
+        embed = discord.Embed(title='Channel Info', color=ctx.author.color, timestamp=datetime.datetime.utcnow())
         embed.add_field(name='Name', value=channel.name)
         embed.add_field(name='ID', value=f"{id_}")
         embed.add_field(name='Created At', value=created_at)

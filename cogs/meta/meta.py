@@ -77,11 +77,11 @@ class GroupHelpPageSource(menus.ListPageSource):
 
         for command in commands:
             signature = f'{command.qualified_name} {command.signature}'
-            embed.add_field(name=command.qualified_name, value=f"> `{signature}`\n{command.short_doc or 'No help given for the time being...'}")
+            embed.add_field(name=command.qualified_name, value=f"> `{signature}`\n{command.short_doc or 'No help given for the time being...'}", inline=False)
         maximum = self.get_max_pages()
         if maximum > 1:
             embed.set_footer(
-                name=
+                text=
                 f'Page {menu.current_page + 1}/{maximum} ({len(self.entries)} commands)'
             )
 
@@ -90,7 +90,7 @@ class GroupHelpPageSource(menus.ListPageSource):
 
 class HelpSelectMenu(discord.ui.Select['HelpMenu']):
     def __init__(self, commands: Dict[commands.Cog, List[commands.Command]],
-                 bot: commands.AutoShardedBot):
+                 bot: Parrot):
         super().__init__(
             placeholder='Select a category...',
             min_values=1,
@@ -210,7 +210,7 @@ class FrontPageSource(menus.PageSource):
 
 
 class HelpMenu(RoboPages):
-    def __init__(self, source: menus.PageSource, ctx: commands.Context):
+    def __init__(self, source: menus.PageSource, ctx: Context):
         super().__init__(source, ctx=ctx, compact=True)
 
     def add_categories(
@@ -238,7 +238,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             command_attrs={
                 'cooldown':
                 commands.CooldownMapping.from_cooldown(
-                    1, 15.0, commands.BucketType.member),
+                    1, 3.0, commands.BucketType.member),
                 'help':
                 'Shows help about the bot, a command, or a category',
             })

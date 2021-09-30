@@ -14,7 +14,11 @@ class game(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-  
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='\N{VIDEO GAME}')
+    
     @commands.command()
     async def ttt(self, ctx: Context, *, member: discord.Member):
         """Basic Tic-Tac-Toe game"""

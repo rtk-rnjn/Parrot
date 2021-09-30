@@ -13,9 +13,9 @@ async def bot_before_invoke(ctx):
 
 @bot.check
 async def bot_check(ctx):
-    if ctx.command is not None:
-        _true = await _can_run(ctx)
-        return _true
+    #if ctx.command is not None:
+    _true = await _can_run(ctx)
+    return _true
 
 
 if __name__ == '__main__':

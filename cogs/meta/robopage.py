@@ -131,11 +131,11 @@ class RoboPages(discord.ui.View):
     async def on_error(self, error: Exception, item: discord.ui.Item,
                        interaction: discord.Interaction) -> None:
         if interaction.response.is_done():
-            await interaction.followup.send('An unknown error occurred, sorry',
-                                            ephemeral=True)
+            await interaction.followup.send(
+                f'An error occurred, sorry: {error}', ephemeral=True)
         else:
             await interaction.response.send_message(
-                'An unknown error occurred, sorry', ephemeral=True)
+                f'An error occurred, sorry: {error}', ephemeral=True)
 
     async def start(self) -> None:
         if self.check_embeds and not self.ctx.channel.permissions_for(

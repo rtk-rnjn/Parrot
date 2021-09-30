@@ -67,15 +67,15 @@ class Prompt(discord.ui.View):
     @discord.ui.button(label="YES", style=discord.ButtonStyle.green)
     async def confirm(self, button: discord.ui.Button,
                       interaction: discord.Interaction):
-        self.value = True
         self.yes = button
-        self.yes.disabled, self.no.disbaled = True, True
+        self.value = True
+        self.yes.disabled, self.no.disabled = True, True
         await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="NO", style=discord.ButtonStyle.danger)
     async def cancel(self, button: discord.ui.Button,
                      interaction: discord.Interaction):
-        self.value = False
         self.no = button
-        self.yes.disabled, self.no.disbaled = True, True
+        self.value = False
+        self.no.disabled, self.yes.disabled = True, True
         await interaction.response.edit_message(view=self)

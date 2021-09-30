@@ -15,7 +15,7 @@ class Ticket(Cog):
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:ticket_:892425759287824415>')
+        return discord.PartialEmoji(name='ticket_', id=892425759287824415)
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.member)

@@ -16,7 +16,7 @@ class Utils(Cog):
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:sparkles_:892435276264259665>')
+        return discord.PartialEmoji(name='sparkles_', id=892435276264259665)
 
     @commands.group(invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)

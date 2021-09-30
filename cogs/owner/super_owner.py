@@ -21,7 +21,7 @@ class Owner(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:early_verified_bot_developer:892433993537032262>')
+        return discord.PartialEmoji(name='early_verified_bot_developer', id=892433993537032262)
 
     @commands.command()
     @commands.is_owner()
@@ -200,7 +200,7 @@ class DiscordPy(Cog):
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:dpy:596577034537402378>')
+        return discord.PartialEmoji(name='dpy', id=596577034537402378)
     
     def parse_object_inv(self, stream, url):
         # key: URL

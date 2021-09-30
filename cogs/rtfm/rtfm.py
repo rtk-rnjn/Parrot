@@ -84,7 +84,7 @@ class RTFM(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:rtfm:893097656375722024>')
+        return discord.PartialEmoji(name='rtfm', id=893097656375722024)
 
     @commands.command(
 help='''run <language> [--wrapped] [--stats] <code>

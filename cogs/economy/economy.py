@@ -16,7 +16,7 @@ class Economy(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:dollor:892427274253631548>')
+        return discord.PartialEmoji(name='dollor', id=892427274253631548)
 
     @commands.command(aliases=['reseteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)

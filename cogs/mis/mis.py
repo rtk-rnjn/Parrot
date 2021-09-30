@@ -46,7 +46,7 @@ class Misc(Cog):
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:Plus:892440360750555136>')
+        return discord.PartialEmoji(name='Plus', id=892440360750555136)
 
     @commands.command(aliases=['bigemote'])
     @commands.has_permissions(embed_links=True)

@@ -24,7 +24,7 @@ class BotConfig(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:Config:892425561807417354>')
+        return discord.PartialEmoji(name='Config', id=892425561807417354)
 
 
     @commands.group(name='serverconfig', aliases=['config'], invoke_without_command=True)

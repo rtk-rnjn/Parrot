@@ -22,7 +22,7 @@ class Mod(Cog):
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:moderator:892424227007918121>')
+        return discord.PartialEmoji(name='moderator', id=892424227007918121)
 
     async def log(self, ctx, cmd, performed_on, reason):
         """A simple and nerdy Logging System"""

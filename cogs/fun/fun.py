@@ -35,7 +35,7 @@ class Fun(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:fun:892432619374014544>')
+        return discord.PartialEmoji(name='fun', id=892432619374014544)
 
 
     @command(name='8ball')

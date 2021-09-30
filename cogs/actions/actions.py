@@ -15,7 +15,7 @@ class Actions(Cog):
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='<:Lights_Camera_Action__Emoticon__:892434144364220497>')
+        return discord.PartialEmoji(name='Lights_Camera_Action__Emoticon__', id=892434144364220497)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

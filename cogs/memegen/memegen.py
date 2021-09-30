@@ -9,10 +9,14 @@ from core import Parrot, Context, Cog
 from utilities.config import MEME_PASS as meme_pass
 
 
-class memegen(Cog):
+class Memegen(Cog):
     """Be a memer, make memes using Parrot."""
     def __init__(self, bot: Parrot):
         self.bot = bot
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='\N{FACE WITH TEARS OF JOY}')
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

@@ -18,7 +18,7 @@ google_key = os.environ['GOOGLE_KEY']
 cx = os.environ['GOOGLE_CX']
 
 
-class misc(Cog):
+class Misc(Cog):
     """Those commands which can't be listed"""
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -43,6 +43,10 @@ class misc(Cog):
             string = string[0:1021] + "..."
         string = re.sub(invitere2, '[INVITE REDACTED]', string)
         return string
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:Plus:892440360750555136>')
 
     @commands.command(aliases=['bigemote'])
     @commands.has_permissions(embed_links=True)

@@ -9,11 +9,15 @@ from utilities.converters import reason_convert
 from cogs.utils import method as mt
 
 
-class utils(Cog):
+class Utils(Cog):
     """Tag System for your server"""
     def __init__(self, bot: Parrot):
         self.bot = bot
     
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:sparkles_:892435276264259665>')
+
     @commands.group(invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)
     async def tag(self, ctx: Context, *, tag: str=None):

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .mod import moderation
+from .mod import Mod
 from core import Parrot
 
 
 def setup(bot: Parrot):
-    bot.add_cog(moderation(bot))
+    bot.add_cog(Mod(bot))

@@ -15,10 +15,14 @@ from datetime import datetime
 collection = parrot_db['server_config']
 
 
-class moderation(Cog):
+class Mod(Cog):
     """A simple moderator's tool for managing the server."""
     def __init__(self, bot: Parrot):
         self.bot = bot
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:moderator:892424227007918121>')
 
     async def log(self, ctx, cmd, performed_on, reason):
         """A simple and nerdy Logging System"""

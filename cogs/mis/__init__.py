@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .mis import misc
+from .mis import Misc
 from core import Parrot
 
 
 def setup(bot: Parrot):
-    bot.add_cog(misc(bot))
+    bot.add_cog(Misc(bot))

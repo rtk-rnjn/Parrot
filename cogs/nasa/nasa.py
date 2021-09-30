@@ -12,10 +12,14 @@ from core import Cog, Parrot, Context
 NASA_KEY = os.environ['NASA_KEY']
 
 
-class nasa(Cog):
+class NASA(Cog):
     '''Incridible NASA API Integration'''
     def __init__(self, bot: Parrot):
         self.bot = bot
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:nasa:892425662864982056>')
 
     @commands.command(aliases=['sat', 'satelite'])
     @commands.bot_has_permissions(embed_links=True)

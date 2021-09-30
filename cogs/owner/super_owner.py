@@ -12,12 +12,16 @@ import re, io, zlib
 from . import fuzzy
 
 
-class owner(Cog):
+class Owner(Cog):
     """You can not use these commands"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.count = 0
         self.owner = None
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:early_verified_bot_developer:892433993537032262>')
 
     @commands.command()
     @commands.is_owner()
@@ -190,10 +194,14 @@ class SphinxObjectFileReader:
                 pos = buf.find(b"\n")
 
 
-class discordpy(Cog):
+class DiscordPy(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:dpy:596577034537402378>')
+    
     def parse_object_inv(self, stream, url):
         # key: URL
         # n.b.: key doesn't have `discord` or `discord.ext.commands` namespaces

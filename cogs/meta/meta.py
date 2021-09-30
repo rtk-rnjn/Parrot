@@ -671,7 +671,7 @@ class Meta(commands.Cog):
     async def channel_info(self, ctx: Context, *, channel: typing.Union[discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.StageChannel]=None):
         channel = channel or ctx.channel
         id_ = channel.id
-        created_at = f"<t:{int(channel.create_at.timestamp())}>"
+        created_at = f"<t:{int(channel.created_at.timestamp())}>"
         mention = channel.mention
         position = channel.position
         type_ = str(channel.type).capitalize()
@@ -723,3 +723,15 @@ class Meta(commands.Cog):
             await asyncio.sleep(1)
 
         await ctx.send('go')
+
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def announcement(self, ctx: Context):
+        """To get the latest news from the support server | Change Log"""
+        embed = discord.Embed(title='Announcement', timestamp=datetime.datetime.utcnow(), color=ctx.author.color)
+        embed.set_footer(text=f"{ctx.author}")
+        change_log = await self.bot.change_log
+        embed.description = f"Message at: <t:{int(change_log.created_at.timestamp())}>\n\n{change_log.content}"
+        await ctx.reply(embed=embed)

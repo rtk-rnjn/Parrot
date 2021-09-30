@@ -3,8 +3,8 @@ from __future__ import annotations
 from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
 
-import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect, base64
-from aiofile import async_open
+import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect
+
 from utilities.paginator import Paginator
 from utilities.converters import convert_bool
 from discord import Embed
@@ -642,7 +642,7 @@ class misc(Cog):
             if data['online']:
                 ip = data['ip']
                 port = data['port']
-                motd = '\n'.join(data['motd'])
+                motd = '\n'.join(data['motd']['clean'])
                 players_max = data['players']['max']
                 players_onl = data['players']['online']
                 version = data['version']
@@ -651,15 +651,15 @@ class misc(Cog):
         except KeyError:
             return await ctx.reply(f"{ctx.author.mention} no server exists")
 
-        embed = discord.Embed(title=f"IP: {ip}",
-                              description=motd,
+        embed = discord.Embed(title=f"SERVER STATUS",
+                              description=f"IP: {ip}\n```\n{motd}\n```",
                               timestamp=datetime.datetime.utcnow(),
                               color=ctx.author.color)
-        embed.add_field(name='Port', value=port, inline=True)
+        embed.add_field(name='Hostname', value=hostname, inline=True)
         embed.add_field(name='Max Players', value=players_max, inline=True)
         embed.add_field(name='Player Online', value=players_onl, inline=True)
-        embed.add_field(name='Hostname', value=hostname, inline=True)
         embed.add_field(name='Protocol', value=protocol, inline=True)
+        embed.add_field(name='Port', value=port, inline=True)
         embed.add_field(name='MC Version', value=version, inline=True)
 
         embed.set_footer(text=f"{ctx.author}")

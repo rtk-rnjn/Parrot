@@ -90,6 +90,7 @@ class meta(Cog):
         """
         Get the basic stats about the server
         """
+        guild = ctx.guild
         embed = discord.Embed(title=f"Server Info: {ctx.guild.name}",
                 colour=ctx.guild.owner.colour,
                 timestamp=datetime.utcnow())
@@ -116,6 +117,60 @@ class meta(Cog):
             embed.add_field(name="Banned Members", value=f"{len(await ctx.guild.bans())}", inline=True)
         if ctx.guild.me.guild_permissions.manage_guild:
             embed.add_field(name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True)
+        
+        info = []
+        features = set(ctx.guild.features)
+        all_features = {
+            'PARTNERED': 'Partnered',
+            'VERIFIED': 'Verified',
+            'DISCOVERABLE': 'Server Discovery',
+            'COMMUNITY': 'Community Server',
+            'FEATURABLE': 'Featured',
+            'WELCOME_SCREEN_ENABLED': 'Welcome Screen',
+            'INVITE_SPLASH': 'Invite Splash',
+            'VIP_REGIONS': 'VIP Voice Servers',
+            'VANITY_URL': 'Vanity Invite',
+            'COMMERCE': 'Commerce',
+            'LURKABLE': 'Lurkable',
+            'NEWS': 'News Channels',
+            'ANIMATED_ICON': 'Animated Icon',
+            'BANNER': 'Banner',
+        }
+
+        for feature, label in all_features.items():
+            if feature in features:
+                info.append(f':ballot_box_with_check: {label}')
+        
+        if info:
+            embed.add_field(name='Features', value='\n'.join(info))
+
+        if guild.premium_tier != 0:
+            boosts = f'Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts'
+            last_boost = max(guild.members,
+                             key=lambda m: m.premium_since or guild.created_at)
+            if last_boost.premium_since is not None:
+                boosts = f'{boosts}\nLast Boost: {last_boost} ({format_relative(last_boost.premium_since)})'
+            embed.add_field(name='Boosts', value=boosts, inline=True)
+        else:
+            embed.add_field(name='Boosts', value='Level 0', inline=True)
+
+        emoji_stats = Counter()
+        for emoji in guild.emojis:
+            if emoji.animated:
+                emoji_stats['animated'] += 1
+                emoji_stats['animated_disabled'] += not emoji.available
+            else:
+                emoji_stats['regular'] += 1
+                emoji_stats['disabled'] += not emoji.available
+
+        fmt = (f'Regular: {emoji_stats["regular"]}/{guild.emoji_limit}\n'
+               f'Animated: {emoji_stats["animated"]}/{guild.emoji_limit}\n')
+        if emoji_stats['disabled'] or emoji_stats['animated_disabled']:
+            fmt = f'{fmt}Disabled: {emoji_stats["disabled"]} regular, {emoji_stats["animated_disabled"]} animated\n'
+
+        fmt = f'{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}'
+        embed.add_field(name='Emoji', value=fmt, inline=True)
+
         await ctx.reply(embed=embed)
 
 
@@ -202,10 +257,27 @@ class meta(Cog):
         """
         Get the invite of the bot! Thanks for seeing this command
         """
+        clientId = ctx.me.id 
+        perms = discord.Permissions.none()
+        perms.read_messages = True
+        perms.external_emojis = True
+        perms.send_messages = True
+        perms.manage_roles = True
+        perms.manage_channels = True
+        perms.ban_members = True
+        perms.kick_members = True
+        perms.manage_messages = True
+        perms.embed_links = True
+        perms.read_message_history = True
+        perms.attach_files = True
+        perms.add_reactions = True
+
+        url = f"https://discord.com/api/oauth2/authorize?client_id={clientId}&permissions={perms.value}&redirect_uri={self.bot.support_server}&scope=bot%20applications.commands"
         em = discord.Embed(title="Click here to add", 
-                           description="```ini\n[Default Prefix: `$` and `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
-                           url=f"https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=52288&redirect_uri=https%3A%2F%2Fdiscord.gg%2FNEyJxM7G7f&scope=bot%20applications.commands", 
+                           description="```ini\n[Default Prefix: `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
+                           url=url, 
                            timestamp=datetime.utcnow())
+        
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)
@@ -265,7 +337,7 @@ class meta(Cog):
             em.add_field(name=name, value=f"{value}", inline=inline)
         await ctx.reply(embed=em)
 
-    @commands.command(name='channel_info')
+    @commands.command(name='channelinfo')
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
@@ -295,7 +367,7 @@ class meta(Cog):
     async def request(self, ctx: Context, *, text: str):
         """To request directly from the owner"""
         view = Prompt(ctx.author.id)
-        msg = await ctx.reply(f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue (case insensitive)", view=view)
+        msg = await ctx.reply(f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue", view=view)
         await view.wait()
         if view.value is None:
             await msg.reply(f"{ctx.author.mention} you did not responds on time. No request is being sent!")

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from core import Parrot
-from .meta import meta
+from .meta import Meta
 
 
 def setup(bot: Parrot):
-    bot.add_cog(meta(bot))
+    bot.add_cog(Meta(bot))

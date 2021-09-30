@@ -32,7 +32,7 @@ with open("extra/lang.txt") as f:
     languages = f.read()
 
 
-class rtfm(Cog):
+class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -81,6 +81,10 @@ class rtfm(Cog):
         'haskell': _doc.haskell_doc,
         'python': _doc.python_doc
     }
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:rtfm:893097656375722024>')
 
     @commands.command(
 help='''run <language> [--wrapped] [--stats] <code>

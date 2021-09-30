@@ -7,11 +7,15 @@ import aiohttp
 from datetime import datetime
 
 
-class actions(Cog):
+class Actions(Cog):
     """Action commands like hug and kiss"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.url = "https://api.waifu.pics/sfw"
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:Lights_Camera_Action__Emoticon__:892434144364220497>')
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

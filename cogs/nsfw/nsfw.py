@@ -6,10 +6,14 @@ from discord.ext import commands
 from core import Parrot, Context, Cog
 
 
-class nsfw(Cog):
-    '''Want some fun? These are best commands! :')'''
+class NSFW(Cog):
+    """Want some fun? These are best commands! :') :warning: 18+"""
     def __init__(self, bot: Parrot):
         self.bot = bot
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='\N{NO ONE UNDER EIGHTEEN SYMBOL}')
 
     @commands.command()
     @commands.is_nsfw()

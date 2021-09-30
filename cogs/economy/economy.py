@@ -9,10 +9,14 @@ from utilities.buttons import Prompt
 collection = economy_db['global_economy']
 
 
-class economy(Cog):
+class Economy(Cog):
     """Parrot Economy to get some Parrot Coins as to make calls"""
     def __init__(self, bot: Parrot):
         self.bot = bot
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:dollor:892427274253631548>')
 
     @commands.command(aliases=['reseteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)

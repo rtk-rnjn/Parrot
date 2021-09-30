@@ -17,11 +17,16 @@ from cogs.ticket import method as mt
 
 from cogs.config import method as mt_
 
-class botconfig(Cog):
+class BotConfig(Cog):
     """To config the bot. In the server"""
     def __init__(self, bot: Parrot):
         self.bot = bot
-        
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='<:Config:892425561807417354>')
+
+
     @commands.group(name='serverconfig', aliases=['config'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type

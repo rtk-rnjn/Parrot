@@ -8,13 +8,17 @@ from core import Parrot, Cog, Context
 from .method import dial
 
 
-class telephone(Cog):
+class Telephone(Cog):
     """To Make calls"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.redial = {}
         self.las_call_detail = {}
-
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='\N{BLACK TELEPHONE}')
+    
     @commands.command(aliases=['call'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)

@@ -11,7 +11,7 @@ from utilities.buttons import Confirm, Prompt
 
 async def _show_tag(bot, ctx, tag, msg_ref=None):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         if not data['nsfw']:
             if msg_ref is not None:
                 await msg_ref.reply(data["text"])
@@ -27,12 +27,12 @@ async def _show_tag(bot, ctx, tag, msg_ref=None):
                 await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
-    await collection.update_one({"_id": tag}, {"$inc": {"count": 1}})
+    await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
 
 
 async def _create_tag(bot, ctx, tag, text):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
     else:
         view = Prompt(ctx.author.id)
@@ -47,7 +47,7 @@ async def _create_tag(bot, ctx, tag, text):
             nsfw = False
         await collection.insert_one(
             {
-                "_id": tag,
+                "id": tag,
                 "text": text,
                 "count": 0,
                 "owner": ctx.author.id,
@@ -60,9 +60,9 @@ async def _create_tag(bot, ctx, tag, text):
 
 async def _delete_tag(bot, ctx, tag):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
-            await collection.delete_one({"_id": tags})
+            await collection.delete_one({"id": tags})
             await ctx.reply(f"{ctx.author.mention} tag deleted successfully")
         else:
             await ctx.reply(f"{ctx.author.mention} you don't own this tag")
@@ -72,13 +72,13 @@ async def _delete_tag(bot, ctx, tag):
 
 async def _name_edit(bot, ctx, tag, name):
     collection = tags[f"{ctx.guild.id}"]
-    if exists := await collection.find_one({"_id": name}):
+    if exists := await collection.find_one({"id": name}):
         await ctx.reply(
             f"{ctx.author.mention} that name already exists in the database"
         )
-    elif data := await collection.find_one({"_id": tag}):
+    elif data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
-            await collection.update_one({"_id": tag}, {"$set": {"_id": name}})
+            await collection.update_one({"id": tag}, {"$set": {"id": name}})
             await ctx.reply(f"{ctx.author.mention} tag name successfully changed")
         else:
             await ctx.reply(f"{ctx.author.mention} you don't own this tag")
@@ -88,9 +88,9 @@ async def _name_edit(bot, ctx, tag, name):
 
 async def _text_edit(bot, ctx, tag, text):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
-            await collection.update_one({"_id": tag}, {"$set": {"text": text}})
+            await collection.update_one({"id": tag}, {"$set": {"text": text}})
             await ctx.reply(f"{ctx.author.mention} tag name successfully changed")
         else:
             await ctx.reply(f"{ctx.author.mention} you don't own this tag")
@@ -100,13 +100,13 @@ async def _text_edit(bot, ctx, tag, text):
 
 async def _claim_owner(bot, ctx, tag):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         member = ctx.guild.get_member(data["owner"])
         if member:
             return await ctx.reply(
                 f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server"
             )
-        await collection.update_one({"_id": tag}, {"$set": {"owner": ctx.author.id}})
+        await collection.update_one({"id": tag}, {"$set": {"owner": ctx.author.id}})
         await ctx.reply(f"{ctx.author.mention} ownership of tag `{tag}` claimed!")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
@@ -114,7 +114,7 @@ async def _claim_owner(bot, ctx, tag):
 
 async def _transfer_owner(bot, ctx, tag, member):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
         view = Confirm(ctx.author.id)
@@ -126,7 +126,7 @@ async def _transfer_owner(bot, ctx, tag, member):
         if view.value is None:
             await msg.reply(f"{ctx.author.mention} you did not responds on time")
         elif view.value:
-            await collection.update_one({"_id": tag}, {"$set": {"owner": member.id}})
+            await collection.update_one({"id": tag}, {"$set": {"owner": member.id}})
             await msg.reply(
                 f"{ctx.author.mention} tag ownership successfully transfered to **{member}**"
             )
@@ -138,11 +138,11 @@ async def _transfer_owner(bot, ctx, tag, member):
 
 async def _toggle_nsfw(bot, ctx, tag):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({'_id': tag}):
+    if data := await collection.find_one({'id': tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
         nsfw = not data['nsfw']
-        await collection.update_one({'_id': tag}, {'$set': {'nsfw': nsfw}})
+        await collection.update_one({'id': tag}, {'$set': {'nsfw': nsfw}})
         await ctx.reply(
             f"{ctx.author.mention} NSFW status of tag named `{tag}` is set to **{nsfw}**"
           )
@@ -152,7 +152,7 @@ async def _toggle_nsfw(bot, ctx, tag):
 
 async def _view_tag(bot, ctx, tag):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"id": tag}):
         em = discord.Embed(
             title=f"Tag: {tag}", timestamp=datetime.utcnow(), color=ctx.author.color
         )

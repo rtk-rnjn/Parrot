@@ -23,7 +23,7 @@ class Utils(Cog):
     async def tag(self, ctx: Context, *, tag: str=None):
         """Tag management, or to show the tag"""
         if not ctx.invoked_subcommand:
-            await mt._show_tag(self.bot, ctx, tag, ctx.message.reference.resolved)
+            await mt._show_tag(self.bot, ctx, tag, ctx.message.reference.resolved if ctx.message.reference else None)
     
     @tag.command(name='create', aliases=['add'])
     @commands.bot_has_permissions(embed_links=True)

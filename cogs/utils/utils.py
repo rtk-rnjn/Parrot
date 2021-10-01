@@ -3,9 +3,9 @@ from __future__ import annotations
 from core import Parrot, Cog, Context
 from discord.ext import commands
 import discord
-
+import datetime
 from utilities.converters import reason_convert
-
+from utilities.database import guild_update
 from cogs.utils import method as mt
 
 
@@ -64,7 +64,7 @@ class Utils(Cog):
     @tag.command(name='togglensfw', aliases=['nsfw', 'tnsfw'])
     @commands.bot_has_permissions(embed_links=True)
     async def toggle_nsfw(self, ctx: Context, *, tag: commands.clean_content):
-        """To claim the ownership of the tag, if the owner of the tag left the server"""
+        """To enable/disable the NSFW of a Tag."""
         await mt._toggle_nsfw(self.bot, ctx, tag)
 
     @tag.command(name='give', aliases=['transfer'])
@@ -75,22 +75,114 @@ class Utils(Cog):
     
     @commands.group(name='starboard', invoke_without_command=True)
     @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True) # manage_permissions=True
-    async def starboard(self, ctx: Context, *, message: discord.Message=None):
+    async def starboard(self, ctx: Context, *, message: int):
         """Starboard Management system"""
         if not ctx.invoked_subcommand:
+            db = await self.bot.db('parrot_db')
+            collection = db['server_config']
+            if data := collection.find_one({'_id': ctx.guild.id, 'starboard': {}}):
+                try:
+                    channel = ctx.guild.get_channel(data['starboard']['channel'])
+                except KeyError:
+                    return await ctx.reply(f"{ctx.author.mention} starboard channel is either deleted or bot can not see that channel")
+                finally:
+                    if msg := await channel.fetch_message(message.id):
+                        pass # TODO: to show the info regarding the star message
+                    else:
+                        return await ctx.reply(f"{ctx.author.mention} Something not right. Message either deleted or the ID is invalid")
+            else:
+                return await ctx.reply(f"{ctx.author.mention} Starboard channel not found!")
+                    
+    @starboard.command(name='lock')
+    @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True)
+    async def star_lock(self, ctx: Context):
+        """To lock the starboard channel"""
+        db = await self.bot.db('parrot_db')
+        collection = parrot_db['server_config']
+        await collection.update_one({'_id': ctx.guild.id, {'$set': {'star_lock': True}}})
+        await ctx.reply(
+            f"{ctx.author.mention} starboard channel is locked!"
+        )
+
+    @starboard.command(name='unlock')
+    @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True)
+    async def star_unlock(self, ctx: Context):
+        """To lock the starboard channel"""
+        db = await self.bot.db('parrot_db')
+        collection = parrot_db['server_config']
+        await collection.update_one({'_id': ctx.guild.id, {'$set': {'star_lock': False}}})
+        await ctx.reply(
+            f"{ctx.author.mention} starboard channel is unlocked!"
+        )
+    
+    @starboard.command(aliases=['starc'])
+    @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True)
+    @Context.with_type
+    async def starchannel(self, ctx: Context, *, channel: discord.TextChannel=None):
+        """To set the starboard channel in your server"""
+        if not channel:
+            post = {'starboard': {'channel': None}}
+            await guild_update(ctx.guild.id, post)
+            return await ctx.reply(
+                f"{ctx.author.mention} starboard channel removed"
+            )
+        post = {'starboard': {'channel': channel.id}}
+        await guild_update(ctx.guild.id, post)
+        await ctx.reply(
+          f"{ctx.author.mention} starboard channel for the server is being set to {channel.mention}"
+        )
+
+    @starboard.command(aliases=['stare'])
+    @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True)
+    @Context.with_type
+    async def staremoji(self, ctx: Context, *, emoji: typing.Union[discord.Emoji, discord.PartialEmoji, str]):
+        """To set the starboard channel in your server"""
+        channel = channel or ctx.channel
+        post = {'starboard': {'emoji': str(emoji)}}
+        await guild_update(ctx.guild.id, post)
+        await ctx.reply(
+          f"{ctx.author.mention} starboard emoji for the server is being set to {emoji}"
+        )
+    
+    @starboard.command(aliases=['starc'])
+    @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True)
+    @Context.with_type
+    async def starcount(self, ctx: Context, *, number: int):
+        """To set the starboard channel in your server"""
+        channel = channel or ctx.channel
+        post = {'starboard': {'count': number}}
+        await guild_update(ctx.guild.id, post)
+        await ctx.reply(
+          f"{ctx.author.mention} starboard emoji count for the server is being set to {number}"
+        )
+    
+    @commands.command()
+    @commands.has_permissions(manage_messages=True, add_reactions=True)
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
+    @Context.with_type
+    async def quickpoll(self, ctx: Context, *questions_and_choices: str):
+        """
+        To make a quick poll for making quick decision. 'Question must be in quotes' and Options, must, be, seperated, by, commans.
+        Not more than 10 options. :)
+        """
+        def to_emoji(c):
+            base = 0x1f1e6
+            return chr(base + c)
+
+        if len(questions_and_choices) < 3:
+            return await ctx.send('Need at least 1 question with 2 choices.')
+        elif len(questions_and_choices) > 21:
+            return await ctx.send('You can only have up to 20 choices.')
+
+        question = questions_and_choices[0]
+        choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
+
+        try:
+            await ctx.message.delete()
+        except:
             pass
 
-    @starboard.command(name='lock')
-    async def star_lock(self, ctx: Context, *, reason: reason_convert=None):
-        """To lock the starboard channel"""
-        pass
-    
-    # @starboard.command(name='emoji')
-    # async def star_emoji(self, ctx: Context):
-    #     """Displays the starboard emoji"""
-    #     pass
-    
-    # @starboard.command(name='channel')
-    # async def star_view(self, ctx: Context):
-    #     """Displays the starboard channel"""
-    #     pass
+        body = "\n".join(f"{key}: {c}" for key, c in choices)
+        poll = await ctx.send(f'**Poll: {question}**\n\n{body}')
+        for emoji, _ in choices:
+            await poll.add_reaction(emoji)

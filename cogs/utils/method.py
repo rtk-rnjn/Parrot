@@ -163,9 +163,10 @@ async def _view_tag(bot, ctx, tag):
         created_at = f"<t:{data['created_at']}>"
         claimable = True if owner is None else False
         em.add_field(name="Owner", value=f"**{owner.mention if owner else None}** ")
+        em.add_field(name="Created At?", value=created_at)
         em.add_field(name="Text Length", value=str(text_len))
         em.add_field(name="Is NSFW?", value=nsfw)
-        em.add_field(name="Created At?", value=created_at)
+        em.add_field(name="Tag Used", value=count)
         em.add_field(name="Can Claim?", value=claimable)
         em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)

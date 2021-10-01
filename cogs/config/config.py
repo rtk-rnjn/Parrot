@@ -72,30 +72,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
         )
 
-    @config.command(aliases=['starc'])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def starchannel(self, ctx: Context, *, channel: discord.TextChannel=None):
-        """To set the starboard channel in your server"""
-        channel = channel or ctx.channel
-        post = {'starboard': {'channel': channel.id}}
-        await guild_update(ctx.guild.id, post)
-        await ctx.reply(
-          f"{ctx.author.mention} starboard channel for the server is being set to {channel.mention}"
-        )
-
-    @config.command(aliases=['stare'])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def staremoji(self, ctx: Context, *, emoji: typing.Union[discord.Emoji, discord.PartialEmoji, str]):
-        """To set the starboard channel in your server"""
-        channel = channel or ctx.channel
-        post = {'starboard': {'emoji': str(emoji)}}
-        await guild_update(ctx.guild.id, post)
-        await ctx.reply(
-          f"{ctx.author.mention} starboard emoji for the server is being set to {emoji}"
-        )
-
+    
     @config.command(aliases=['mute-role'])
     @commands.has_permissions(administrator=True)
     @Context.with_type

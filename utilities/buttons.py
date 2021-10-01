@@ -23,17 +23,13 @@ class Confirm(discord.ui.View):
     async def confirm(self, button: discord.ui.Button,
                       interaction: discord.Interaction):
         self.value = True
-        self.confirm = button
-        self.cancel.disabled, self.confirm.disabled = True, True
-        await interaction.response.edit_message(view=self)
+        self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey)
     async def cancel(self, button: discord.ui.Button,
                      interaction: discord.Interaction):
         self.value = False
-        self.cancel = button
-        self.cancel.disabled, self.confirm.disabled = True, True
-        await interaction.response.edit_message(view=self)
+        self.stop()
 
 
 class LinkButton(discord.ui.View):
@@ -67,15 +63,11 @@ class Prompt(discord.ui.View):
     @discord.ui.button(label="YES", style=discord.ButtonStyle.green)
     async def confirm(self, button: discord.ui.Button,
                       interaction: discord.Interaction):
-        self.yes = button
         self.value = True
-        self.yes.disabled, self.no.disabled = True, True
-        await interaction.response.edit_message(view=self)
+        self.stop()
 
     @discord.ui.button(label="NO", style=discord.ButtonStyle.danger)
     async def cancel(self, button: discord.ui.Button,
                      interaction: discord.Interaction):
-        self.no = button
         self.value = False
-        self.no.disabled, self.yes.disabled = True, True
-        await interaction.response.edit_message(view=self)
+        self.stop()

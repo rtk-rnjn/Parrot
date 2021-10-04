@@ -314,7 +314,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
-        await self.context.trigger_typing()
+        try:
+            await self.context.trigger_typing()
+        except Exception:
+            await self.context.reply(f"{self.context.author.mention} preparing help menu...")
         subcommands = group.commands
         if len(subcommands) == 0:
             return await self.send_command_help(group)

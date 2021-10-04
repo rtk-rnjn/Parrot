@@ -22,7 +22,7 @@ class Context(commands.Context):
                 async with context.typing():
                     await func(*args, **kwargs)
             except discord.errors.Forbidden:
-                pass
+                await func(*args, **kwargs)
         return wrapped
 
     async def send(self,

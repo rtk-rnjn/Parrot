@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from discord import __version__ as discord_version
-import discord, typing
+import discord, typing, asyncio
 from discord.ext import commands
 
 from time import time
@@ -348,10 +348,6 @@ class Meta(commands.Cog):
     def cog_unload(self):
         self.bot.help_command = self.old_help_command
 
-    # async def cog_command_error(self, ctx, error):
-    #     if isinstance(error, commands.BadArgument):
-    #         await ctx.send(error)
-
     @commands.command(name="ping")
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
@@ -529,7 +525,7 @@ class Meta(commands.Cog):
         
         fields = [
             ("Bot version", f"`{VERSION}`", True),
-            ("Python version", f"`{str(python_version())}", True),
+            ("Python version", f"`{str(python_version())}`", True),
             ("discord.py version", f"`{str(discord_version)}`", True),
             ("Uptime", f"`{str(uptime)}`", True),
             ("CPU time", f"{(cpu_time)}", True),
@@ -606,10 +602,11 @@ class Meta(commands.Cog):
         perms.add_reactions = True
 
         url = f"https://discord.com/api/oauth2/authorize?client_id={clientId}&permissions={perms.value}&redirect_uri={self.bot.support_server}&scope=bot%20applications.commands"
-        em = discord.Embed(title="Click here to add", 
-                           description="```ini\n[Default Prefix: `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
-                           url=url, 
-                           timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(
+            title="Click here to add", 
+            description="```ini\n[Default Prefix: `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
+            url=url, 
+            timestamp=datetime.datetime.utcnow())
         
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)

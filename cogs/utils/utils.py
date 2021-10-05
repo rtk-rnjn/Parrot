@@ -99,7 +99,7 @@ class Utils(Cog):
         """To lock the starboard channel"""
         db = await self.bot.db('parrot_db')
         collection = parrot_db['server_config']
-        await collection.update_one({'_id': ctx.guild.id, {'$set': {'star_lock': True}}})
+        await collection.update_one({'_id': ctx.guild.id}, {'$set': {'star_lock': True}})
         await ctx.reply(
             f"{ctx.author.mention} starboard channel is locked!"
         )
@@ -110,7 +110,7 @@ class Utils(Cog):
         """To lock the starboard channel"""
         db = await self.bot.db('parrot_db')
         collection = parrot_db['server_config']
-        await collection.update_one({'_id': ctx.guild.id, {'$set': {'star_lock': False}}})
+        await collection.update_one({'_id': ctx.guild.id}, {'$set': {'star_lock': False}})
         await ctx.reply(
             f"{ctx.author.mention} starboard channel is unlocked!"
         )

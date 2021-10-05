@@ -317,7 +317,7 @@ class DiscordPy(Cog):
             return await ctx.send("Could not find anything. Sorry.")
 
         e.set_thumbnail(
-            url='http://assets.stickpng.com/images/5848152fcef1014c0b5e4967.png'
+            url='https://cdn.discordapp.com/attachments/894938379697913916/894938401294401576/3aa641b21acded468308a37eef43d7b3.png'
         )
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 

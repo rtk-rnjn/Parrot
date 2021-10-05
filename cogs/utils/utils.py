@@ -146,7 +146,7 @@ class Utils(Cog):
           f"{ctx.author.mention} starboard emoji for the server is being set to {emoji}"
         )
     
-    @starboard.command(aliases=['starc'])
+    @starboard.command(aliases=['starnumber'])
     @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True)
     @Context.with_type
     async def starcount(self, ctx: Context, *, number: int):

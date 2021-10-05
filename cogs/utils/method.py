@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import discord
+import discord, typing
 
 from datetime import datetime
 from time import time

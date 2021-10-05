@@ -15,7 +15,6 @@ from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
 
-
 from discord.ext import commands, menus
 from collections import OrderedDict, deque, Counter
 from .robopage import RoboPages

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from core import Parrot, Cog, Context
 from discord.ext import commands
-import discord
+import discord, typing
 import datetime
+
 from utilities.converters import reason_convert
 from utilities.database import guild_update
+
 from cogs.utils import method as mt
 
 

@@ -7,20 +7,21 @@ from discord.ext import commands
 from discord.ext.commands import Paginator as CommandPaginator
 from discord.ext import menus
 
+from core import Context
 
 class RoboPages(discord.ui.View):
     def __init__(
         self,
         source: menus.PageSource,
         *,
-        ctx: commands.Context,
+        ctx: Context,
         check_embeds: bool = True,
         compact: bool = False,
     ):
         super().__init__()
         self.source: menus.PageSource = source
         self.check_embeds: bool = check_embeds
-        self.ctx: commands.Context = ctx
+        self.ctx: Context = ctx
         self.message: Optional[discord.Message] = None
         self.current_page: int = 0
         self.compact: bool = compact
@@ -284,6 +285,6 @@ class SimplePages(RoboPages):
     """A simple pagination session reminiscent of the old Pages interface.
     Basically an embed with some normal formatting.
     """
-    def __init__(self, entries, *, ctx: commands.Context, per_page: int = 12):
+    def __init__(self, entries, *, ctx: Context, per_page: int = 12):
         super().__init__(SimplePageSource(entries, per_page=per_page), ctx=ctx)
         self.embed = discord.Embed(colour=discord.Colour.blurple())

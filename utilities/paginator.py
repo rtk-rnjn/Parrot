@@ -108,7 +108,7 @@ class Paginator:
                                                timeout=30.0)
         except asyncio.TimeoutError:
             to_delete.append(
-                await self._ctx.send("You took too long to enter a number."))
+                await self._ctx.send(f"{self._ctx.author.mention} You took too long to enter a number."))
             await asyncio.sleep(5)
         else:
             to_delete.append(message)

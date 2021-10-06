@@ -75,17 +75,16 @@ class RerunBtn(discord.ui.Button):
         if interaction.user.id != message.author.id:
             await interaction.response.send_message('Only the one who used the run command can use these buttons.', ephemeral=True)
 
-        prefixes = [f'<@!{self.bot.user.id}> ', f'<@{self.bot.user.id}> ']
-        prefixes.append(self.bot.prefixes.get(interaction.guild_id) or self.bot.config['PREFIX'])
-
         payload = message.content
 
         # we need to strip the prefix and command name ('do run '), the prefix 
         # having multiple and even custom possible values
-        for prefix in prefixes:
-            if payload.startswith(prefix):
-                payload = payload[len(prefix)+4:]
-                break
+        parrot_db = await self.bot.db('parrot_db')
+        collection = parrot_db['server_config']
+        data = await collection.find_one({'_id': interaction.guild_id})
+        if payload.startswith(data['prefix']):
+            payload = payload[len(data['prefix'])+4:]
+            break
 
         language,text,errored = prepare_payload(payload)
 

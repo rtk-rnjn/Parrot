@@ -6,7 +6,7 @@ from datetime import datetime
 import discord, aiohttp
 from discord.ext import commands
 
-from utilities.paginator import Paginator
+from utilities.paginator import Paginator, PaginationView
 from core import Cog, Parrot, Context
 
 NASA_KEY = os.environ['NASA_KEY']
@@ -116,10 +116,9 @@ class NASA(Cog):
                 'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
             )
             em_list.append(embed)
-
-        paginator = Paginator(pages=em_list, timeout=60.0)
-
-        await paginator.start(ctx)
+        await PaginationView(em_list).start(ctx=ctx)
+        # paginator = Paginator(pages=em_list, timeout=60.0)
+        # await paginator.start(ctx)
 
     @commands.command(aliases=['finda', 'asteroid', 'neo'])
     @commands.bot_has_permissions(embed_links=True)
@@ -199,10 +198,10 @@ class NASA(Cog):
                 )
                 embed.set_footer(
                     text=f"Page {index+1}/{len(date)} | {ctx.author.name}")
+        await PaginationView(em_list).start(ctx=ctx)
+        # paginator = Paginator(pages=em_list, timeout=60.0)
 
-        paginator = Paginator(pages=em_list, timeout=60.0)
-
-        await paginator.start(ctx)
+        # await paginator.start(ctx)
 
     @commands.command(aliases=['findaid', 'asteroidid'])
     @commands.bot_has_permissions(embed_links=True)
@@ -288,9 +287,11 @@ class NASA(Cog):
                 'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
             )
             em_list.append(embed)
-        paginator = Paginator(pages=em_list, timeout=60.0)
+        
+        await PaginationView(em_list).start(ctx=ctx)
+        # paginator = Paginator(pages=em_list, timeout=60.0)
 
-        await paginator.start(ctx)
+        # await paginator.start(ctx)
 
     @commands.command(aliases=['nsearch', 'ns'])
     @commands.bot_has_permissions(embed_links=True)
@@ -368,6 +369,6 @@ class NASA(Cog):
                 'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
             )
             em_list.append(embed)
-        paginator = Paginator(pages=em_list, timeout=60.0)
-
-        await paginator.start(ctx)
+        await PaginationView(em_list).start(ctx=ctx)
+        # paginator = Paginator(pages=em_list, timeout=60.0)
+        # await paginator.start(ctx)

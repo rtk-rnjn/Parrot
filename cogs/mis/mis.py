@@ -5,7 +5,7 @@ from utilities.youtube_search import YoutubeSearch
 
 import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect
 
-from utilities.paginator import Paginator
+from utilities.paginator import Paginator, PaginationView
 from utilities.converters import convert_bool
 from discord import Embed
 
@@ -144,8 +144,9 @@ class Misc(Cog):
             embed.set_footer(text=f'Page {data+1}/{len(res["articles"])}')
             em_list.append(embed)
 
-        paginator = Paginator(pages=em_list, timeout=60.0)
-        await paginator.start(ctx)
+        # paginator = Paginator(pages=em_list, timeout=60.0)
+        # await paginator.start(ctx)
+        await PaginationView(em_list).start(ctx=ctx)
 
     @commands.command(name="search", aliases=['googlesearch', 'google'])
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -200,8 +201,9 @@ class Misc(Cog):
             else: em.set_thumbnail(url=img)
             pages.append(em)
 
-        paginator = Paginator(pages=pages, timeout=60.0)
-        await paginator.start(ctx)
+        # paginator = Paginator(pages=pages, timeout=60.0)
+        # await paginator.start(ctx)
+        await PaginationView(pages).start(ctx=ctx)
 
     @commands.command()
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
@@ -392,8 +394,9 @@ class Misc(Cog):
             embed.set_footer(text=f"{ctx.author.name}")
             em_list.append(embed)
 
-        paginator = Paginator(pages=em_list, timeout=60.0)
-        await paginator.start(ctx)
+        # paginator = Paginator(pages=em_list, timeout=60.0)
+        # await paginator.start(ctx)
+        await PaginationView(em_list).start(ctx=ctx)
 
     @commands.command()
     @commands.has_permissions(embed_links=True)

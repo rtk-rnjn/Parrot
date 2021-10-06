@@ -9,7 +9,7 @@ from discord import Embed
 from utilities.database import parrot_db
 from aiohttp import request
 
-from utilities.paginator import Paginator
+from utilities.paginator import Paginator, PaginationView
 from core import Parrot, Context, Cog
 
 
@@ -487,9 +487,9 @@ class Fun(Cog):
           embed.set_footer(text=f"Page {i+1}/{len(res['list'])} • 👍 {thumbs_up} • 👎 {thumbs_down}")
           em_list.append(embed)
 
-      paginator = Paginator(pages=em_list, timeout=60.0)
-    
-      await paginator.start(ctx)
+      # paginator = Paginator(pages=em_list, timeout=60.0)
+      # await paginator.start(ctx)
+      await PaginationView(em_list).start(ctx=ctx)
 
 
     @commands.command()

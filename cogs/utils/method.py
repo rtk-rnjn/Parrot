@@ -5,7 +5,7 @@ import discord, typing
 from datetime import datetime
 from time import time
 
-from utilities.database import tags
+from utilities.database import tags, todo
 from utilities.buttons import Confirm, Prompt
 
 
@@ -170,3 +170,37 @@ async def _view_tag(bot, ctx, tag):
         em.add_field(name="Can Claim?", value=claimable)
         em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)
+
+async def _create_todo(bot, ctx, name, text):
+    collection = todo[f"{ctx.author.id}"]
+    if data := await collection.find_one({"id": name}):
+        await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
+    else:
+        await collection.insert_one({'id': name, 'text': text, 'time': int(time()})
+        await ctx.reply(f"{ctx.author.mention} created as your TODO list")
+
+async def _update_todo_name(bot, ctx, name, new_name):
+    collection = todo[f"{ctx.author.id}"]
+    if data := await collection.find_one({"id": name}):
+        if new_data := await collection.find_one({"id": new_name}):
+            await ctx.reply(f"{ctx.author.mention} `{new_name}` already exists as your TODO list")
+        else:
+            await collection.update_one({'id': name}, {'$set': {'id': new_name}})
+            await ctx.reply(f"{ctx.author.mention} name changed from `{name}` to `{new_name}`")
+    else:
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+
+async def _update_todo_text(bot, ctx, name, text):
+    collection = todo[f"{ctx.author.id}"]
+    if data := await collection.find_one({"id": name}):
+        await collection.update_one({'id': name}, {'$set': {'text': new_name}})
+        await ctx.reply(f"{ctx.author.mention} TODO list of name `{name}` has been updated")
+    else:
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+
+# async def _list_todo(bot, ctx):
+#     collection = todo[f"{ctx.author.id}"]
+#     ls = []
+#     async for data in await collection.find({}):
+#         ls.append(data)
+# TODO: To MAKE TODO LIST

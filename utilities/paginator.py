@@ -282,6 +282,51 @@ class Pages:
         return len(self.pages)
 
 
+class ParrotPaginator:
+    def __init__(self, ctx, *, per_page=10, timeout=60.0, title=None, show_page_count=True):
+        self.ctx = ctx
+        self.per_page = per_page
+        self.timeout = timeout
+        self.title = title
+        self.show_page_count = show_page_count
+
+        self.lines = []
+        self.pages = None
+
+    def add_line(self, line: str, sep="\n"):
+        self.lines.append(f"{line}{sep}")
+
+    @property
+    def embed(self):
+        page = self.pages.current_page
+
+        e = discord.Embed(color=self.ctx.bot.color)
+        if self.title:
+            e.title = self.title
+
+        e.description = page.content
+
+        if self.show_page_count:
+            e.set_footer(text=f"Page {page.index} of {self.pages.total}")
+
+        return e
+
+    async def start(self):
+        _pages = []
+        for page in get_chunks(self.lines, self.per_page):
+            _pages.append("".join(page))
+
+        self.pages = Pages(_pages)
+
+        if not self.pages.total > 1:
+            return await self.ctx.send(embed=self.embed)
+
+        view = PaginatorView(
+            self.ctx, pages=self.pages, embed=self.embed, timeout=self.timeout, show_page_count=self.show_page_count
+        )
+        view.message = await self.ctx.send(embed=self.embed, view=view)
+
+
 class PaginatorView(discord.ui.View):
     def __init__(self, ctx, pages: Pages, embed, timeout, show_page_count):
 

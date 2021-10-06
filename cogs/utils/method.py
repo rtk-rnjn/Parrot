@@ -176,7 +176,13 @@ async def _create_todo(bot, ctx, name, text):
     if data := await collection.find_one({"id": name}):
         await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
     else:
-        await collection.insert_one({'id': name, 'text': text, 'time': int(time())})
+        await collection.insert_one(
+          {
+            'id': name, 
+            'text': text, 
+            'time': int(time())
+          }
+        )
         await ctx.reply(f"{ctx.author.mention} created as your TODO list")
 
 async def _update_todo_name(bot, ctx, name, new_name):

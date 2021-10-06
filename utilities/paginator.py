@@ -352,8 +352,8 @@ class PaginatorView(discord.ui.View):
         self.show_page_count = show_page_count
 
         if self.pages.cur_page == 1:
-            self.children[0].disabled = True
-            self.children[1].disabled = True
+            self.children[0].disabled = False
+            self.children[1].disabled = False
 
     def lock_bro(self):
 
@@ -361,12 +361,12 @@ class PaginatorView(discord.ui.View):
             self.children[0].disabled = False
             self.children[1].disabled = False
 
-            self.children[2].disabled = True
-            self.children[3].disabled = True
+            self.children[2].disabled = False
+            self.children[3].disabled = False
 
         elif self.pages.cur_page == 1:
-            self.children[0].disabled = True
-            self.children[1].disabled = True
+            self.children[0].disabled = False
+            self.children[1].disabled = False
 
             self.children[2].disabled = False
             self.children[3].disabled = False
@@ -471,32 +471,29 @@ class PaginationView(discord.ui.View):
                                 interaction: discord.Interaction) -> bool:
         if self.user == interaction.user:
             return True
-        await interaction.response.send_message(
-            f'Only {self.user} can interact. Run the command if you want to.',
-            ephemeral=True)
+        await interaction.response.send_message(f'Only {self.user} can interact. Run the command if you want to.', ephemeral=True)
         return False
 
     @discord.ui.button(label="First",
                        style=discord.ButtonStyle.red,
                        disabled=True)
-    async def first(self, button, interaction):
+    async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current = 0
         button.disabled = True
         self.previous.disabled = True
         self.next.disabled = False
-        self.last.disabled = False
+        self._last.disabled = False
         button.style = discord.ButtonStyle.red
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-        await interaction.response.edit_message(
-            embed=self.embed_list[self.current], view=self)
+        await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
     
     @discord.ui.button(label="Previous",
                        style=discord.ButtonStyle.red,
                        disabled=True)
-    async def previous(self, button, interaction):
+    async def previous(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current -= 1
         self.next.disabled = False
-        self.last.disabled = False
+        self._last.disabled = False
         self.next.style = discord.ButtonStyle.green
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
         if self.current == 0:
@@ -510,11 +507,11 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current], view=self)
 
     @discord.ui.button(disabled=True, style=discord.ButtonStyle.blurple)
-    async def count(self, btn, _):
+    async def count(self, button: discord.ui.Button, _):
         pass
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.green)
-    async def next(self, button, interaction):
+    async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current += 1
         self.previous.disabled = False
         self.first.disabled = False
@@ -522,16 +519,14 @@ class PaginationView(discord.ui.View):
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
         if self.current == len(self.embed_list) - 1:
             button.disabled = True
-            self.last = True
+            self._last.disabled = True
             button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self)
+            await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
         else:
-            await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self)
+            await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
 
     @discord.ui.button(label='Last', style=discord.ButtonStyle.green)
-    async def last(self, button, interaction):
+    async def _last(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current = len(self.embed_list) - 1
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
         button.disabled = True
@@ -539,8 +534,7 @@ class PaginationView(discord.ui.View):
         self.first.disabled = False
         self.previous.disabled = False
         button.style = discord.ButtonStyle.red
-        await interaction.response.edit_message(
-            embed=self.embed_list[self.current], view=self)
+        await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
 
     async def start(self, ctx):
         self.message = await ctx.reply(embed=self.embed_list[0], view=self)

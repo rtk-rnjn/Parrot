@@ -7,6 +7,7 @@ from time import time
 
 from utilities.database import tags, todo
 from utilities.buttons import Confirm, Prompt
+from utilities.paginator import ParrotPaginator
 
 
 async def _show_tag(bot, ctx, tag, msg_ref=None):
@@ -204,9 +205,31 @@ async def _update_todo_text(bot, ctx, name, text):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-# async def _list_todo(bot, ctx):
-#     collection = todo[f"{ctx.author.id}"]
-#     ls = []
-#     async for data in await collection.find({}):
-#         ls.append(data)
-# TODO: To MAKE TODO LIST
+async def _list_todo(bot, ctx):
+    collection = todo[f"{ctx.author.id}"]
+    i = 1
+    paginator = ParrotPaginator(ctx, title=f"Your Pending Tasks", per_page=12)
+    async for data in collection.find({}):
+        paginator.add_line(f"`{i}` {data['id']}")
+        i += 1
+    await paginator.start()
+  
+async def _show_todo(bot, ctx, name):
+    collection = todo[f"{ctx.author.id}"]
+    if data := await collection.find_one({'id': name}):
+        await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
+    else:
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+
+async def _show_all_tags(bot, ctx):
+    collection = tags[f"{ctx.guild.id}"]
+    i = 1
+    paginator = ParrotPaginator(ctx, title=f"Tags", per_page=12)
+    async for data in collection.find({}):
+      if not data:
+        return await ctx.reply(f"{ctx.author.mention} this server don't have any tags yet")
+      else:
+        paginator.add_line(f"`{i}` {data['id']}")
+        i += 1
+    await paginator.start()
+  

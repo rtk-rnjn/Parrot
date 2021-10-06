@@ -71,7 +71,7 @@ class Mod(Cog):
     async def add_role_bots(self, ctx: Context, operator: str, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the all bots."""
         await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
-        await self.log(ctx, 'Role', 'Bots', f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, 'Bots', f'{reason}')
 
     @role.command(name="humans")
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -80,7 +80,7 @@ class Mod(Cog):
     async def add_role_human(self, ctx: Context, operator: str, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the all humans."""
         await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
-        await self.log(ctx, 'Role', 'Humans', f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, 'Humans', f'{reason}')
 
     @role.command(name="add", aliases=['arole', 'giverole', 'grole'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -89,7 +89,7 @@ class Mod(Cog):
     async def add_role(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the specified member(s)."""
         await mt._add_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
-        await self.log(ctx, 'Role add', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @role.command(name='remove', aliases=['urole', 'removerole', 'rrole'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -98,7 +98,7 @@ class Mod(Cog):
     async def remove_role(self, ctx: Context, member: discord.Member, role: discord.Role, *, reason: reason_convert = None):
         """Remove the mentioned role from mentioned/id member"""
         await mt._remove_roles(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason)
-        await self.log(ctx, 'Role removed', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @commands.command(aliases=['hackban'])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -108,7 +108,7 @@ class Mod(Cog):
         """To ban a member from guild."""
         if days is None: days = 0
         await mt._ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, days, reason)
-        await self.log(ctx, 'Ban', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @commands.command(name='massban')
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -118,7 +118,7 @@ class Mod(Cog):
         """To Mass ban list of members, from the guild"""
         if days is None: days = 0
         await mt._mass_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, days, reason)
-        await self.log(ctx, 'Mass Ban', f'{", ".join([str(member) for member in members])}', f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, f'{", ".join([str(member) for member in members])}', f'{reason}')
 
     @commands.command(aliases=['softkill'])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -127,7 +127,7 @@ class Mod(Cog):
     async def softban(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """To Ban a member from a guild then immediately unban"""
         await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
-        await self.log(ctx, 'Soft Ban', f'{", ".join([str(member) for member in member])}', f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, f'{", ".join([str(member) for member in member])}', f'{reason}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -137,7 +137,7 @@ class Mod(Cog):
         """Blocks a user from replying message in that channel."""
 
         await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel, member, reason)
-        await self.log(ctx, 'Block', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @commands.command(aliases=['nuke'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -146,7 +146,7 @@ class Mod(Cog):
     async def clone(self, ctx: Context, channel: discord.TextChannel = None, *, reason: reason_convert = None):
         """To clone the channel or to nukes the channel (clones and delete)."""
         await mt._clone(ctx.guild, ctx.command.name, ctx.author, ctx.channel, channel or ctx.channel, reason)
-        await self.log(ctx, 'Clone', channel or ctx.channel, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, channel or ctx.channel, f'{reason}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -155,7 +155,7 @@ class Mod(Cog):
     async def kick(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
         """To kick a member from guild."""
         await mt._kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
-        await self.log(ctx, 'Kick', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @commands.command(name='masskick')
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -164,7 +164,7 @@ class Mod(Cog):
     async def mass_kick(self, ctx: Context, members: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """To kick a member from guild."""
         await mt._mass_kick(ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, reason)
-        await self.log(ctx, 'Mass Kick',
+        await self.log(ctx, ctx.command.qualified_name,
                        f'{", ".join([str(member) for member in members])}',
                        f'{reason}')
 
@@ -186,7 +186,7 @@ class Mod(Cog):
         else:
             await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
             return
-        await self.log(ctx, 'lock', channel if channel else ctx.channel, reason)
+        await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -206,7 +206,7 @@ class Mod(Cog):
         else:
             await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
             return
-        await self.log(ctx, 'unlock', channel if channel else ctx.channel, reason)
+        await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
@@ -215,7 +215,7 @@ class Mod(Cog):
     async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[convert_time]=None, *, reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
         await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
-        await self.log(ctx, 'Mute', member, f'{reason} | For {seconds + "s" if seconds else "till end"}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason} | For {seconds + "s" if seconds else "till end"}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -224,7 +224,7 @@ class Mod(Cog):
     async def unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
         """To allow a member to sending message in the Text Channels, if muted."""
         await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
-        await self.log(ctx, 'Un-Mute', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @commands.command(aliases=['purge'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -283,7 +283,7 @@ class Mod(Cog):
     async def slowmode(self, ctx: Context, seconds: typing.Union[int, str], channel: discord.TextChannel = None, *,  reason: reason_convert = None):
         """To set slowmode in the specified channel"""
         await mt._slowmode(ctx.guild, ctx.command.name, ctx.author, ctx.channel, seconds, channel or ctx.channel, reason)
-        await self.log(ctx, 'Slowmode', channel, f'{reason} | For {seconds}s')
+        await self.log(ctx, ctx.command.qualified_name, channel, f'{reason} | For {seconds}s')
 
     @commands.command(brief='To Unban a member from a guild')
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -293,7 +293,7 @@ class Mod(Cog):
         """To Unban a member from a guild"""
         await mt._unban(ctx.guild, ctx.command.name, ctx.author, ctx.channel,
                         member, reason)
-        await self.log(ctx, 'UnBan', member, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True))
@@ -302,7 +302,7 @@ class Mod(Cog):
     async def unblock(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """Unblocks a user from the text channel"""
         await mt._unblock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel, member, reason)
-        await self.log(ctx, 'Un-Block', f'{", ".join([str(member) for member in member])}', f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, f'{", ".join([str(member) for member in member])}', f'{reason}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_nicknames=True))
@@ -313,7 +313,7 @@ class Mod(Cog):
         To change the nickname of the specified member
         """
         await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
-        await self.log(ctx, 'nickname chang', member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
+        await self.log(ctx, ctx.command.qualified_name, member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
     
     @commands.group()
     @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
@@ -587,7 +587,7 @@ class Mod(Cog):
                 await mt._change_nickname(ctx.guild, ctx.command.name,
                                           ctx.author, ctx.channel, target,
                                           (m.content)[:31:], reason)
-                await self.log(ctx, 'nickname chang', target, reason)
+                await self.log(ctx, 'nickname changed', target, reason)
 
         if (type(target) is discord.TextChannel):
             tc_embed = discord.Embed(title='Mod Menu',
@@ -640,7 +640,7 @@ class Mod(Cog):
                 await mt._change_channel_topic(ctx.guild, ctx.command.name,
                                                ctx.author, ctx.channel, target,
                                                m.content)
-                await self.log(ctx, 'Text topic chang', target, reason)
+                await self.log(ctx, 'Text topic changed', target, reason)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
@@ -654,7 +654,7 @@ class Mod(Cog):
                 await mt._change_channel_name(ctx.guild, ctx.command.name,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
-                await self.log(ctx, 'Text name chang', target, reason)
+                await self.log(ctx, 'Text name changeded', target, reason)
 
         if (type(target) in (discord.VoiceChannel, discord.StageChannel,)):
             vc_embed = discord.Embed(title='Mod Menu',
@@ -708,7 +708,7 @@ class Mod(Cog):
                 await mt._change_channel_name(ctx.guild, ctx.command.name,
                                               ctx.author, ctx.channel,
                                               ctx.channel, m.content)
-                await self.log(ctx, 'VC name chang', target, reason)
+                await self.log(ctx, 'VC name changed', target, reason)
 
         if (type(target) is discord.Role):
             role_embed = discord.Embed(title='Mod Menu',
@@ -747,7 +747,7 @@ class Mod(Cog):
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:
                 await mt._role_hoist(ctx.guild, ctx.command.name, ctx.author,
                                      ctx.channel, target, False, reason)
-                await self.log(ctx, 'Role De-Hoist', target, reason)
+                await self.log(ctx, 'Role Dehoist', target, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[2]:
                 await ctx.send(
@@ -776,6 +776,6 @@ class Mod(Cog):
                 await mt._change_role_name(ctx.guild, ctx.command.name,
                                            ctx.author, ctx.channel, target,
                                            m.content, reason)
-                await self.log(ctx, 'Role name chang', target, reason)
+                await self.log(ctx, 'Role name changed', target, reason)
 
         return await msg.delete()

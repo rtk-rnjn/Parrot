@@ -1,7 +1,7 @@
 #AUTHOR: https://github.com/davidetacchini/
 
 import asyncio
-from typing import List, Union, Optional
+from typing import List, Union, Optional, NamedTuple
 from contextlib import suppress
 
 import discord
@@ -234,3 +234,141 @@ class Paginator:
         if self.compact is False:
             self._reactions["⏭"] = self._end
         self.__tasks.append(self._loop.create_task(self.paginator()))
+
+
+
+class Page(NamedTuple):
+    index: int
+    content: str
+
+
+class Pages:
+    def __init__(self, pages: list):
+        self.pages = pages
+        self.cur_page = 1
+
+    @property
+    def current_page(self) -> Page:
+        return Page(self.cur_page, self.pages[self.cur_page - 1])
+
+    @property
+    def next_page(self) -> Optional[Page]:
+        if self.cur_page == self.total:
+            return None
+
+        self.cur_page += 1
+        return self.current_page
+
+    @property
+    def previous_page(self) -> Optional[Page]:
+        if self.cur_page == 1:
+            return None
+
+        self.cur_page -= 1
+        return self.current_page
+
+    @property
+    def first_page(self) -> Page:
+        self.cur_page = 1
+        return self.current_page
+
+    @property
+    def last_page(self) -> Page:
+        self.cur_page = self.total
+        return self.current_page
+
+    @property
+    def total(self):
+        return len(self.pages)
+
+
+class PaginatorView(discord.ui.View):
+    def __init__(self, ctx, pages: Pages, embed, timeout, show_page_count):
+
+        super().__init__(timeout=timeout)
+
+        self.ctx = ctx
+        self.pages = pages
+        self.embed = embed
+        self.show_page_count = show_page_count
+
+        if self.pages.cur_page == 1:
+            self.children[0].disabled = True
+            self.children[1].disabled = True
+
+    def lock_bro(self):
+
+        if self.pages.cur_page == self.pages.total:
+            self.children[0].disabled = False
+            self.children[1].disabled = False
+
+            self.children[2].disabled = True
+            self.children[3].disabled = True
+
+        elif self.pages.cur_page == 1:
+            self.children[0].disabled = True
+            self.children[1].disabled = True
+
+            self.children[2].disabled = False
+            self.children[3].disabled = False
+
+        elif 1 < self.pages.cur_page < self.pages.total:
+            for b in self.children:
+                b.disabled = False
+
+    def update_embed(self, page: Page):
+        if self.show_page_count:
+            self.embed.set_footer(text=f"Page {page.index} of {self.pages.total}")
+
+        self.embed.description = page.content
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.ctx.author.id:
+            await interaction.response.send_message(
+                "Sorry, you can't use this interaction as it is not started by you.", ephemeral=True
+            )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+
+        for b in self.children:
+            b.style, b.disabled = discord.ButtonStyle.grey, True
+
+        await self.message.edit(view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.green, custom_id="first", emoji=discord.PartialEmoji(name="\N{BLACK LEFT-POINTING DOUBLE TRIANGLE}"))
+    async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
+        page = self.pages.first_page
+
+        self.update_embed(page)
+        self.lock_bro()
+        await interaction.message.edit(embed=self.embed, view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.green, custom_id="previous", emoji=discord.PartialEmoji(name="\N{BLACK LEFT-POINTING TRIANGLE}"))
+    async def previous(self, button: discord.ui.Button, interaction: discord.Interaction):
+        page = self.pages.previous_page
+        self.update_embed(page)
+        self.lock_bro()
+        await interaction.message.edit(embed=self.embed, view=self)
+    
+    @discord.ui.button(style=discord.ButtonStyle.green, custom_id="stop", emoji=discord.PartialEmoji(name="\N{BLACK SQUARE FOR STOP}"))
+    async def stop(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.message.delete()
+        self.stop()
+
+    @discord.ui.button(style=discord.ButtonStyle.green, custom_id="next", emoji=discord.PartialEmoji(name="\N{BLACK RIGHT-POINTING TRIANGLE}"))
+    async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
+        page = self.pages.next_page
+        self.update_embed(page)
+
+        self.lock_bro()
+        await interaction.message.edit(embed=self.embed, view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.green, custom_id="last", emoji=discord.PartialEmoji(name="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}"))
+    async def last(self, button: discord.ui.Button, interaction: discord.Interaction):
+        page = self.pages.last_page
+
+        self.update_embed(page)
+        self.lock_bro()
+        await interaction.message.edit(embed=self.embed, view=self)

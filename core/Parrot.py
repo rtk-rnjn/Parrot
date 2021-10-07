@@ -100,14 +100,15 @@ class Parrot(commands.AutoShardedBot):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
-        if not self.persistent_views_added:
-          self.add_view(AutoTicket(self))
-          self.persistent_views_added = True
         print(
             f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
         )
         print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
         print(f"[Parrot] Connected to {len(self.users)} Users")
+        await asyncio.sleep(60)
+        if not self.persistent_views_added:
+            self.add_view(AutoTicket(self))
+            self.persistent_views_added = True
 
     async def on_connect(self) -> None:
         print(

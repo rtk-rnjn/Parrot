@@ -9,7 +9,7 @@ import discord, traceback, asyncio
 
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
-
+from cogs.ticket.method import AutoTicket
 from time import time
 
 from .Context import Context
@@ -48,6 +48,7 @@ class Parrot(commands.AutoShardedBot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict(
         )  # to make cog case insensitive
         self.color = 0x87CEEB
+        self.persistent_views_added = False
 
         for ext in EXTENSIONS:
             try:
@@ -99,12 +100,14 @@ class Parrot(commands.AutoShardedBot):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
+        if not self.persistent_views_added:
+          self.add_view(AutoTicket(self))
+          self.persistent_views_added = True
         print(
             f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
         )
         print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
         print(f"[Parrot] Connected to {len(self.users)} Users")
-        print(f"[Parrot] Spawned {len(self.shards)} Shards")
 
     async def on_connect(self) -> None:
         print(

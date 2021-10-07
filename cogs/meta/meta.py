@@ -333,7 +333,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         await menu.start()
 
-class Meta(commands.Cog):
+class Meta(Cog):
     """Commands for utilities related to Discord or the Bot itself."""
     def __init__(self, bot: Parrot):
         self.bot = bot

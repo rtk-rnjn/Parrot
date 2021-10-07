@@ -24,10 +24,9 @@ class BotConfig(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='Config', id=892425561807417354)
+        return discord.PartialEmoji(name='\N{GEAR}')
 
-
-    @commands.group(name='serverconfig', aliases=['config'], invoke_without_command=True)
+    @commands.group(name='config', aliases=['serverconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def config(self, ctx: Context):

@@ -9,7 +9,7 @@ import discord, traceback, asyncio
 
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
-from cogs.ticket.method import AutoTicket
+
 from time import time
 
 from .Context import Context

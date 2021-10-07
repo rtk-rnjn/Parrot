@@ -216,7 +216,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 else:
                     await ctx.send(text)
             else:
-                ctx.send(
+                await ctx.send(
                     f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working"
                 )
 

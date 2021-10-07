@@ -41,7 +41,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                         title=f"{reaction.message.author}", url=f"{reaction.message.jump_url}",
                         description=message.content, timestamp=datetime.utcnow(), color=reaction.message.author.color
                     ).set_footer(text=f"{reaction.message.guild.name}", icon_url=reaction.message.author.display_avatar.url)
-                    msg = await channel.send(content=f'Star Count: {starboard['count']}', embed=embed)
+                    msg = await channel.send(content=f'Star Count: {starboard["count"]}', embed=embed)
                     self.message_cache[reaction.message.id] = {'emoji': starboard['emoji'], 'count': starboard['count']}
                     self.msg_obj[reaction.message.id] = msg
                     await msg.add_reaction(starboard['emoji'])

@@ -100,6 +100,13 @@ class Parrot(commands.AutoShardedBot):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
+        try:
+            from cogs.ticket.method import AutoTicket
+            if not bot.persistent_views_added:
+                bot.add_view(AutoTicket(bot))
+                bot.persistent_views_added = True
+        except Exception:
+            pass
         print(
             f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
         )

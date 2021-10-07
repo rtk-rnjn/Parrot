@@ -3,7 +3,6 @@ from utilities.database import parrot_db
 collection = parrot_db['banned_users']
 
 from core import Parrot
-from cogs.ticket.method import AutoTicket
 
 bot = Parrot()
 
@@ -24,10 +23,6 @@ async def bot_check(ctx):
 
 @bot.check_once
 async def check_once(ctx):
-    if not bot.persistent_views_added:
-        bot.add_view(AutoTicket(bot))
-        bot.persistent_views_added = True
-    
     if data := await collection.find_one({'_id': ctx.author.id}):
         return False
     return True

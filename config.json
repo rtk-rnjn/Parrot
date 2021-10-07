@@ -24,6 +24,7 @@
     "cogs.mis",
     "cogs.nsfw",
     "cogs.rtfm",
+    "cogs.ticket",
     "cogs.config",
     "cogs.economy",
     "cogs.nasa",

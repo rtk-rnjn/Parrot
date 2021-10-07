@@ -48,7 +48,7 @@ class Parrot(commands.AutoShardedBot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict(
         )  # to make cog case insensitive
         self.color = 0x87CEEB
-        self.persistent_views_added = False
+        # self.persistent_views_added = False
 
         for ext in EXTENSIONS:
             try:
@@ -100,13 +100,13 @@ class Parrot(commands.AutoShardedBot):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
-        try:
-            from cogs.ticket.method import AutoTicket
-            if not bot.persistent_views_added:
-                bot.add_view(AutoTicket(bot))
-                bot.persistent_views_added = True
-        except Exception:
-            pass
+        # try:
+        #     from cogs.ticket.method import AutoTicket
+        #     if not bot.persistent_views_added:
+        #         bot.add_view(AutoTicket(bot))
+        #         bot.persistent_views_added = True
+        # except Exception:
+        #     pass
         print(
             f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
         )

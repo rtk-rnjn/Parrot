@@ -25,9 +25,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        if data := collection.find_one({'_id': payload.guild_id}):
-            if data['star_lock']:
-                return
+        if data := await collection.find_one({'_id': payload.guild_id}):
+            try:
+                if data['star_lock']:
+                    return
+            except Exception:
+                pass
             try:
                 starboard = data['starboard']
             except KeyError:
@@ -48,6 +51,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                     
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        collection = parrot_db['ticket']
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
         data = await collection.find_one({'_id': guild_id})

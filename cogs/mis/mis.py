@@ -80,6 +80,23 @@ class Misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
+    async def firstmessage(self,
+                           ctx: Context,
+                           *,
+                           channel: discord.TextChannel = None):
+        """To get the first message of the specified channel"""
+        channel = channel or ctx.channel
+        async for msg in channel.history(limit=1, oldest_first=True):
+            return await ctx.send(
+                embed=discord.Embed(title=f"First message in {channel.name}",
+                                    url=msg.jump_url,
+                                    description=msg.content,
+                                    timestamp=datetime.datetime.utcnow()).set_footer(
+                                        text=f"Message sent by {msg.author}"))
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def maths(self, ctx: Context, operation: str, *, expression: str):
         """Another calculator but quite advance one
 

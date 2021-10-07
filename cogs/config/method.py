@@ -123,8 +123,8 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
             )
         else:
             await collection.update_one({'_id': cmd_cog},
-                                        {'$pull': {
-                                            'channel_in': target.id
+                                        {'$addToSet': {
+                                            'channel_out': target.id
                                         }})
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}"
@@ -144,8 +144,8 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
             )
         else:
             await collection.update_one({'_id': cmd_cog},
-                                        {'$pull': {
-                                            'role_in': target.id
+                                        {'$addToSet': {
+                                            'role_out': target.id
                                         }})
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in **{target.name} ({target.id})**"

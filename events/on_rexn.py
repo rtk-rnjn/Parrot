@@ -12,15 +12,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def log(self, guild, channel, description, status):
-        embed = discord.Embed(title='Parrot Ticket Bot',
-                              timestamp=datetime.utcnow(),
-                              description=f"```\n{description}\n```",
-                              color=discord.Color.blue())
-        embed.add_field(name='Status', value=status)
-        embed.set_footer(text=f"{guild.name}")
-        await channel.send(embed=embed)
-
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
         pass

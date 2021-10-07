@@ -472,10 +472,10 @@ class AutoTicket(discord.ui.View):
                            description="{}".format(message_content),
                            color=0x00a8ff)
 
-        await ticket_channel.send(content=f"{self.ctx.author.mention}",
+        await ticket_channel.send(content=f"{self.user.mention}",
                                   embed=em)
         await ticket_channel.send(
-            f"To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`"
+            f"To close the ticket, type `{self.ctx.clean_prefix}close`\nTo save the ticket transcript, type `{self.ctx.clean_prefix}save`"
         )
         pinged_msg_content = ""
         non_mentionable_roles = []

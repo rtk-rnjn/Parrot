@@ -93,6 +93,13 @@ async def guild_update(guild_id: int, post: dict):
             'mod_role': None,
             'action_log': None,
             'mute_role': None,
+            'warn_count': 0,
+            'starboard': {
+                'channel': None,
+                'count': None,
+                'emoji': None
+            },
+            'star_lock': True
         })
 
     await collection.update_one({'_id': guild_id}, {"$set": post})
@@ -106,6 +113,13 @@ async def guild_join(guild_id: int):
         'mod_role': None,
         'action_log': None,
         'mute_role': None,
+        'warn_count': 0,
+        'starboard': {
+            'channel': None,
+            'count': None,
+            'emoji': None
+        },
+        'star_lock': True
     }
     await collection.insert_one(post)
     collection = parrot_db['global_chat']

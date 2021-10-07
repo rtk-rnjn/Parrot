@@ -84,7 +84,6 @@ class RerunBtn(discord.ui.Button):
         data = await collection.find_one({'_id': interaction.guild_id})
         if payload.startswith(data['prefix']):
             payload = payload[len(data['prefix'])+4:]
-            break
 
         language,text,errored = prepare_payload(payload)
 

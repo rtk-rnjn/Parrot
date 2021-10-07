@@ -75,6 +75,12 @@ class Utils(Cog):
         """To transfer the ownership of tag you own to other member"""
         await mt._transfer_owner(self.bot, ctx, tag, member)
     
+    @tag.command(name='all')
+    @commands.bot_has_permissions(embed_links=True)
+    async def tag_all(self, ctx: Context):
+        """To show all tags"""
+        await mt._show_all_tags(self.bot, ctx)
+
     @commands.group(name='starboard', invoke_without_command=True)
     @commands.has_permissions(manage_messages=True, add_reactions=True, manage_channels=True) # manage_permissions=True
     async def starboard(self, ctx: Context, *, message: int):
@@ -188,3 +194,40 @@ class Utils(Cog):
         poll = await ctx.send(f'**Poll: {question}**\n\n{body}')
         for emoji, _ in choices:
             await poll.add_reaction(emoji)
+    
+    @commands.group(name='todo', invoke_without_command=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def todo(self, ctx: Context):
+        """For making the TODO list"""
+        if not ctx.invoked_subcommand:
+            await mt._list_todo(self.bot, ctx)
+    
+    @todo.command(name='show')
+    @commands.bot_has_permissions(embed_links=True)
+    async def todu_show(self, ctx: Context, *, name: str):
+        """To show the TODO task you created"""
+        await mt._show_todo(self.bot, ctx, name)
+    
+    @todo.command(name='create')
+    @commands.bot_has_permissions(embed_links=True)
+    async def todo_create(self, ctx: Context, name: str, *, text: commands.clean_content):
+        """To create a new TODO"""
+        await mt._create_todo(self.bot, ctx, name, text)
+    
+    @todo.command(name='editname')
+    @commands.bot_has_permissions(embed_links=True)
+    async def todo_editname(self, ctx: Context, name: str, *, new_name: commands.clean_content):
+        """To edit the TODO name"""
+        await mt._update_todo_name(self.bot, ctx, name, new_name)
+    
+    @todo.command(name='edittext')
+    @commands.bot_has_permissions(embed_links=True)
+    async def todo_edittext(self, ctx: Context, name: str, *, text: commands.clean_content):
+        """To edit the TODO text"""
+        await mt._update_todo_text(self.bot, ctx, name, text)
+    
+    @todo.command(name='delete')
+    @commands.bot_has_permissions(embed_links=True)
+    async def delete_todo(self, ctx: Context, *, name: str):
+        """To delete the TODO task"""
+        await mt._delete_todo(self.bot, ctx, name)

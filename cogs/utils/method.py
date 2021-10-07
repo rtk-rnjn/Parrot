@@ -172,6 +172,7 @@ async def _view_tag(bot, ctx, tag):
         em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)
 
+
 async def _create_todo(bot, ctx, name, text):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
@@ -218,6 +219,14 @@ async def _show_todo(bot, ctx, name):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({'id': name}):
         await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
+    else:
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+
+async def _delete_todo(bot, ctx, name):
+    collection = todo[f"{ctx.author.id}"]
+    if data := await collection.find_one({'id': name}):
+        await collection.delete_one({'id': name})
+        await ctx.reply(f"{ctx.author.mention} delete `{name}` task")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 

@@ -400,7 +400,7 @@ class AutoTicket(discord.ui.View):
     async def ticket(self, button: discord.ui.Button,
                      interaction: discord.Interaction):
         if self.ctx is None:
-            self.ctx = self.bot.get_context(interaction.message, cls=Context)
+            self.ctx = await self.bot.get_context(interaction.message, cls=Context)
         await check_if_server(self.ctx.guild.id)
 
         if not self.args:

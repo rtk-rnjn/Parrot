@@ -427,6 +427,9 @@ class Fun(Cog):
         else: 
             return await ctx.reply(f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{lang}**")
         
+        if ctx.author.id == 741614468546560092: # its kinda spammy for me. lol
+            return await ctx.send(f"{translated_text}")
+
         embed = discord.Embed(
             title="Translated", 
             description=f"```\n{translated_text}\n```",
@@ -434,7 +437,7 @@ class Fun(Cog):
             timestamp=datetime.datetime.utcnow())
         embed.set_footer(text=f"{ctx.author.name}")
         embed.add_field(name="Info", value=f"Tranlated from **{lg[lang]['name']}** to **{lg[translated_lang]['name']}**", inline=False)
-        embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
+        # embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png")
         await ctx.reply(embed=embed)
 

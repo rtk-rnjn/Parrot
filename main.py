@@ -1,6 +1,6 @@
 from utilities.checks import _can_run
 from utilities.database import parrot_db
-collection = parrot_dbT['banned_users']
+collection = parrot_db['banned_users']
 
 from core import Parrot
 from cogs.ticket.method import AutoTicket

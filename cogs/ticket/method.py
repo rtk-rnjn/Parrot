@@ -475,7 +475,7 @@ class AutoTicket(discord.ui.View):
         await ticket_channel.send(content=f"{self.ctx.author.mention}",
                                   embed=em)
         await ticket_channel.send(
-            "To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`"
+            f"To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`"
         )
         pinged_msg_content = ""
         non_mentionable_roles = []
@@ -521,7 +521,7 @@ async def _auto(ctx, channel, message):
                           description=message,
                           color=discord.Color.blue())
     embed.set_footer(text=f"{ctx.guild.name}")
-    message = await channel.send(embed=embed, view=AutoTicket(ctx))
+    message = await channel.send(embed=embed, view=AutoTicket(ctx.bot))
     em = discord.Embed(title="Parrot Ticket Bot",
                        description="All set at {}".format(channel.name),
                        color=discord.Color.blue())

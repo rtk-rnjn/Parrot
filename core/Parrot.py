@@ -9,7 +9,7 @@ import discord, traceback, asyncio
 
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
-from cogs.ticket.method import AutoTicket
+# from cogs.ticket.method import AutoTicket
 from time import time
 
 from .Context import Context
@@ -100,9 +100,9 @@ class Parrot(commands.AutoShardedBot):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
-        if not self.persistent_views_added:
-          self.add_view(AutoTicket(self))
-          self.persistent_views_added = True
+        # if not self.persistent_views_added:
+        #   self.add_view(AutoTicket(self))
+        #   self.persistent_views_added = True
         print(
             f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
         )

@@ -4,6 +4,7 @@ import discord, asyncio, os
 from datetime import datetime
 
 from utilities.database import ticket_update, parrot_db
+from core import Context, Parrot
 
 collection = parrot_db['ticket']
 
@@ -122,10 +123,10 @@ async def _new(ctx, args):
                        description="{}".format(message_content),
                        color=0x00a8ff)
 
-    await ticket_channel.send(embed=em)
-    await ticket_channel.send("To close the ticket, type `[p]close`")
-    await ticket_channel.send("To save the ticket transcript, type `[p]save`")
-    await ticket_channel.send(f'{ctx.author.mention}', delete_after=2)
+    await ticket_channel.send(content=f"{ctx.author.mention}", embed=em)
+    await ticket_channel.send(
+        "To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`"
+    )
     pinged_msg_content = ""
     non_mentionable_roles = []
     if data["pinged-roles"]:
@@ -384,16 +385,143 @@ async def _setlog(ctx, channel):
 # AUTO/ REACTION
 
 
+class AutoTicket(discord.ui.View):
+    args = None
+
+    def __init__(self, bot: Parrot):
+        super().__init__(timeout=None)
+        self.bot = bot
+        self.ctx = None
+    @discord.ui.button(label='Open Here!',
+                       style=discord.ButtonStyle.green,
+                       custom_id='ticket',
+                       emoji=discord.PartialEmoji(
+                           name="\N{ENVELOPE WITH DOWNWARDS ARROW ABOVE}"))
+    async def ticket(self, button: discord.ui.Button,
+                     interaction: discord.Interaction):
+        if self.ctx is None:
+            self.ctx = self.bot.get_context(interaction.message, cls=Context)
+        await check_if_server(self.ctx.guild.id)
+
+        if not self.args:
+            message_content = "Please wait, we will be with you shortly!"
+
+        else:
+            message_content = "".join(self.args)
+
+        data = await collection.find_one({'_id': self.ctx.guild.id})
+        ticket_number = data['ticket-counter'] + 1
+        cat = self.ctx.guild.get_channel(data['category'])
+
+        ticket_channel = await self.ctx.guild.create_text_channel(
+            "ticket-{}".format(ticket_number),
+            category=cat,
+            reason=
+            f"Parrot Ticket bot feature | On request from {self.ctx.author}")
+        await ticket_channel.set_permissions(
+            self.ctx.guild.get_role(self.ctx.guild.id),
+            send_messages=False,
+            read_messages=False,
+            view_channel=False,
+            reason="Parrot Ticket Bot on action | Basic")
+        if data['valid-roles']:
+            for role_id in data["valid-roles"]:
+                role = self.ctx.guild.get_role(role_id)
+
+                await ticket_channel.set_permissions(
+                    role,
+                    send_messages=True,
+                    read_messages=True,
+                    add_reactions=True,
+                    embed_links=True,
+                    attach_files=True,
+                    read_message_history=True,
+                    external_emojis=True,
+                    view_channel=True,
+                    reason="Parrot Ticket Bot on action | Role Access")
+
+        if data['verified-roles']:
+            for role_id in data["verified-roles"]:
+                role = self.ctx.guild.get_role(role_id)
+
+                await ticket_channel.set_permissions(
+                    role,
+                    send_messages=True,
+                    read_messages=True,
+                    add_reactions=True,
+                    embed_links=True,
+                    attach_files=True,
+                    read_message_history=True,
+                    external_emojis=True,
+                    view_channel=True,
+                    reason="Parrot Ticket Bot on action | Role Access")
+
+        await ticket_channel.set_permissions(
+            self.ctx.author,
+            send_messages=True,
+            read_messages=True,
+            add_reactions=True,
+            embed_links=True,
+            attach_files=True,
+            read_message_history=True,
+            external_emojis=True,
+            view_channel=True,
+            reason="Parrot Ticket Bot on action | Basic")
+
+        em = discord.Embed(title="New ticket from {}".format(self.ctx.author),
+                           description="{}".format(message_content),
+                           color=0x00a8ff)
+
+        await ticket_channel.send(content=f"{self.ctx.author.mention}",
+                                  embed=em)
+        await ticket_channel.send(
+            "To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`"
+        )
+        pinged_msg_content = ""
+        non_mentionable_roles = []
+        if data["pinged-roles"]:
+            for role_id in data["pinged-roles"]:
+                role = self.ctx.guild.get_role(role_id)
+                pinged_msg_content += role.mention
+                pinged_msg_content += " "
+                if role.mentionable:
+                    pass
+                else:
+                    await role.edit(mentionable=True)
+                    non_mentionable_roles.append(role)
+            await ticket_channel.send(pinged_msg_content)
+            for role in non_mentionable_roles:
+                await role.edit(mentionable=False)
+
+        ticket_channel_ids = data["ticket-channel-ids"]
+        ticket_channel_ids.append(ticket_channel.id)
+        post = {
+            'ticket-counter': ticket_number,
+            'ticket-channel-ids': ticket_channel_ids
+        }
+        await ticket_update(self.ctx.guild.id, post)
+        created_em = discord.Embed(
+            title="Parrot Ticket Bot",
+            description="Your ticket has been created at {}".format(
+                ticket_channel.mention),
+            color=discord.Color.blue())
+        await interaction.response.send_message(embed=created_em,
+                                                ephemeral=True)
+        if data['log']:
+            log_channel = self.ctx.guild.get_channel(data['log'])
+            await log(
+                self.ctx.guild, log_channel,
+                f'ticket-{ticket_number} opened by, {self.ctx.author} ({self.ctx.author.id})',
+                'RUNNING')
+
+
 async def _auto(ctx, channel, message):
 
     embed = discord.Embed(title='Parrot Ticket Bot',
                           description=message,
                           color=discord.Color.blue())
     embed.set_footer(text=f"{ctx.guild.name}")
-    message = await channel.send(embed=embed)
-    await message.add_reaction('✉️')
-    post = {'message_id': message.id, 'channel_id': channel.id}
-    await ticket_update(ctx.guild.id, post)
+    message = await channel.send(embed=embed, view=AutoTicket(ctx))
     em = discord.Embed(title="Parrot Ticket Bot",
                        description="All set at {}".format(channel.name),
                        color=discord.Color.blue())

@@ -141,7 +141,7 @@ class Misc(Cog):
             embed.add_field(name=f'{source}', value=f'{content}')
             embed.set_image(url=f'{img}')
             embed.set_author(name=f'{author}')
-            embed.set_footer(text=f'Page {data+1}/{len(res["articles"])}')
+            embed.set_footer(text=f'{ctx.author}')
             em_list.append(embed)
 
         # paginator = Paginator(pages=em_list, timeout=60.0)

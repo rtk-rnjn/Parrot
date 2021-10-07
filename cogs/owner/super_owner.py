@@ -103,28 +103,6 @@ class Owner(Cog):
         except Exception:
             pass
 
-    @commands.command(aliases=['report-user', 'report', 'report_user', 'ru'])
-    @Context.with_type
-    async def reportuser(self, ctx: Context, *, text: str):
-        """To report someone"""
-        if self.owner is None:
-            self.owner = self.bot.get_user(741614468546560092)
-        await ctx.send(
-            f"{ctx.author.mention} are you sure? Abuse of this command will result in ban from parrot commands. Type `YES` to continue (case sensitive)"
-        )
-
-        def check(m):
-            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-
-        try:
-            msg = await self.bot.wait_for('message', timeout=60, check=check)
-        except Exception:
-            return await ctx.send(
-                f"{ctx.author.mention} you didn't answer on time")
-        if msg.content.upper() == "YES":
-            await ctx.send(f"{ctx.author.mention} reported")
-            await self.owner.send(f"{ctx.author.mention} {text[:1000:]}")
-
     @commands.command(name='image-search',
                       aliases=['imagesearch', 'imgs'],
                       hidden=True)

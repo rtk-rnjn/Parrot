@@ -17,7 +17,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     async def on_guild_join(self, guild):
         if self.channel is None:
             self.channel = self.bot.get_channel(883368274501460039)
-        CONTENT = f"Joined {guild.name} ({guild.id}). Total member in {guild.name}: {guild.member_count}. Server Region: {str(guild.region).replace('_', ' ').title()}. Total server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
+        CONTENT = f"Joined {guild.name} ({guild.id}). Total member in {guild.name}: {guild.member_count}. Server Owner: {guild.owner} ({guild.owner.id}). Server Region: {str(guild.region).replace('_', ' ').title()}. \n\nTotal server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
         await guild_join(guild.id)
         data = {
             'username': "Parrot",
@@ -35,7 +35,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     async def on_guild_remove(self, guild):
         if self.channel is None:
             self.channel = self.bot.get_channel(883368274501460039)
-        CONTENT = f"Left {guild.name} ({guild.id}). Total member in {guild.name}: {guild.member_count}. Server Region: {str(guild.region).replace('_', ' ').title()}. Total server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
+        CONTENT = f"Left {guild.name} ({guild.id}). Total member in {guild.name}: {guild.member_count}. Server Owner: {guild.owner} ({guild.owner.id}). Server Region: {str(guild.region).replace('_', ' ').title()}. \n\nTotal server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
         await guild_remove(guild.id)
         data = {
             'username': "Parrot",
@@ -44,7 +44,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(self.url, json=data) as res:
-                if res == 200:
+                if res in range(200, 300 + 1):
                     pass
                 else:
                     await self.channel.send(CONTENT)

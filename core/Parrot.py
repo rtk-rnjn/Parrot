@@ -33,7 +33,7 @@ class Parrot(commands.AutoShardedBot):
             case_insensitive=CASE_INSENSITIVE,
             intents=intents,
             activity=discord.Activity(type=discord.ActivityType.listening,
-                                      name="100k members"),
+                                      name="@Parrot config gsetup"),
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,

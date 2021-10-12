@@ -209,7 +209,7 @@ class Mod(Cog):
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
     @commands.command()
-    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     #@Context.with_type
     async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[convert_time]=None, *, reason: reason_convert = None):

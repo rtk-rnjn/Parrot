@@ -27,12 +27,12 @@ jobs:
       - name: Setting up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
           architecture: "x64"
           
       - name: Running main
         env:
-          SECRET_KEY: ${{ secrets.key }}
+          TOKEN: ${{ secrets.key }}
         run: |
           pip install --upgrade -r requirements.txt
           python main.py

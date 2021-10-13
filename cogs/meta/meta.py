@@ -738,3 +738,15 @@ class Meta(Cog):
         change_log = await self.bot.change_log
         embed.description = f"Message at: <t:{int(change_log.created_at.timestamp())}>\n\n{change_log.content}"
         await ctx.reply(embed=embed)
+    
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def vote(self, ctx: Context):
+        """Vote the bot for better discovery on top.gg"""
+        await ctx.reply(
+            embed=discord.Embed(title="Click here to vote!", url="https://top.gg/bot/800780974274248764/vote", description=f"**{ctx.author}** thank you for using this command!\n\nYou can vote in every 12h", timestamp=datetime.datetime.utcnow(), color=ctx.author.color).set_footer(f"{text=ctx.author}").set_thumbnail(url=ctx.guild.me.avatar.url)
+        )
+    
+    

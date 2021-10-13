@@ -528,7 +528,7 @@ class Meta(Cog):
             ("Python version", f"`{str(python_version())}`", True),
             ("discord.py version", f"`{str(discord_version)}`", True),
             ("Uptime", f"`{str(uptime)}`", True),
-            ("CPU time", f"{(cpu_time)}", True),
+            ("CPU time", f"`{(cpu_time)}`", True),
             ("Memory usage", f"`{mem_usage:,.3f} / {mem_total:,.0f} MiB ({mem_of_total:.0f}%)`", True),
             ("Total users on count", f"`{len(self.bot.users)}`", True),
             ("Owner",'`!! Ritik Ranjan [*.*]#9230`', True),

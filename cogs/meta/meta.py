@@ -745,8 +745,11 @@ class Meta(Cog):
     @Context.with_type
     async def vote(self, ctx: Context):
         """Vote the bot for better discovery on top.gg"""
-        await ctx.reply(
-            embed=discord.Embed(title="Click here to vote!", url="https://top.gg/bot/800780974274248764/vote", description=f"**{ctx.author}** thank you for using this command!\n\nYou can vote in every 12h", timestamp=datetime.datetime.utcnow(), color=ctx.author.color).set_footer(f"{text=ctx.author}").set_thumbnail(url=ctx.guild.me.avatar.url)
-        )
-    
-    
+        embed = discord.Embed(title="Click here to vote!", 
+                              url="https://top.gg/bot/800780974274248764/vote", 
+                              description=f"**{ctx.author}** thank you for using this command!\n\nYou can vote in every 12h", 
+                              timestamp=datetime.datetime.utcnow(),
+                              color=ctx.author.color)
+        embed.set_footer(text=f"{ctx.author}")
+        embed.set_thumbnail(url=ctx.guild.me.avatar.url)
+        await ctx.reply(embed=embed)

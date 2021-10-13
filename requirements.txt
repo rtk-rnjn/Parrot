@@ -24,3 +24,7 @@ async-property
 git+https://github.com/Rapptz/discord.py
 tabulate
 prettytable
+lru_dict
+python-dateutil
+click
+parsedatetime

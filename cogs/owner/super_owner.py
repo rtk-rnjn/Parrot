@@ -4,12 +4,37 @@ from core import Parrot, Context, Cog
 from aiofile import async_open
 
 from discord.ext import commands
-import discord, aiohttp, datetime, os, traceback
+import discord, aiohttp, datetime, os, traceback, typing
 
 from utilities.database import ban
 import re, io, zlib
 
 from . import fuzzy
+
+class nitro(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=None)
+        self.ctx = ctx
+        self.bot = ctx.bot
+
+    @discord.ui.button(custom_id="fun (nitro)", label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀", style=discord.ButtonStyle.green)
+    async def func(self, button: discord.ui.Button, interaction: discord.Interaction):
+
+        i = discord.Embed()
+        i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
+        await interaction.response.send_message(f"https://imgur.com/NQinKJB", ephemeral=True)
+
+        
+        button.disabled = True
+        button.style = discord.ButtonStyle.grey
+        button.label = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claimed⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+
+        ni = discord.Embed(title=f"You received a gift, but...", description=f"The gift link has either expired or has been\nrevoked.")
+        ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
+        try:
+          await interaction.message.edit(embed=ni,view=self)
+        except:
+          pass
 
 
 class Owner(Cog):
@@ -73,6 +98,15 @@ class Owner(Cog):
                 f"[ERROR] Could not create file `{name}`: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] File `{name}` created")
+    @commands.command()
+    @commands.is_owner()
+    async def nitro_scam(self, ctx: Context, *, target: typing.Union[discord.User, discord.TextChannel, discord.Thread]=None):
+        """Fun command"""
+        await ctx.send(embed=discord.Embed(
+                            title="You've been gifted a subscription!", 
+                            description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
+                            timestamp=datetime.datetime.utcnow()).set_thumbnail(url="https://i.imgur.com/w9aiD6F.png"), 
+                       view=nitro(ctx))
 
     @commands.command()
     @commands.is_owner()

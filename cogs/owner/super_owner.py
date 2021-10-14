@@ -98,11 +98,17 @@ class Owner(Cog):
                 f"[ERROR] Could not create file `{name}`: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] File `{name}` created")
+    
     @commands.command()
     @commands.is_owner()
-    async def nitro_scam(self, ctx: Context, *, target: typing.Union[discord.User, discord.TextChannel, discord.Thread]=None):
+    async def nitro_scam(self, 
+                         ctx: Context, 
+                         *, 
+                         target: typing.Union[discord.User, 
+                                              discord.TextChannel, 
+                                              discord.Thread]=None):
         """Fun command"""
-        await ctx.send(embed=discord.Embed(
+        await target.send(embed=discord.Embed(
                             title="You've been gifted a subscription!", 
                             description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
                             timestamp=datetime.datetime.utcnow()).set_thumbnail(url="https://i.imgur.com/w9aiD6F.png"), 

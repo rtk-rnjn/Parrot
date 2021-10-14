@@ -5,7 +5,7 @@ import os, typing
 from async_property import async_property
 
 from discord.ext import commands
-import discord, traceback, asyncio
+import discord, traceback, asyncio, topgg
 
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
@@ -23,6 +23,8 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 intents = discord.Intents.default()
 intents.members = True
+
+dbl_token = os.environ['TOPGG']
 
 
 class Parrot(commands.AutoShardedBot):
@@ -45,9 +47,12 @@ class Parrot(commands.AutoShardedBot):
             **kwargs)
         self._seen_messages = 0
         self._change_log = None
-        self._BotBase__cogs = commands.core._CaseInsensitiveDict(
-        )  # to make cog case insensitive
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self.color = 0x87CEEB
+        self.topggpy = topgg.DBLClient(self,
+                                       dbl_token,
+                                       autopost=True,
+                                       post_shard_count=True)
         # self.persistent_views_added = False
 
         for ext in EXTENSIONS:
@@ -96,17 +101,23 @@ class Parrot(commands.AutoShardedBot):
     async def db(self, db_name: str):
         return cluster[db_name]
 
+    async def on_dbl_vote(self, data):
+        """An event that is called whenever someone votes for the bot on Top.gg."""
+        if data["type"] == "test":
+            # this is roughly equivalent to
+            # `return await on_dbl_test(data)` in this case
+            return self.dispatch("dbl_test", data)
+
+        print(f"Received a vote:\n{data}")
+
+    async def on_dbl_test(self, data):
+        """An event that is called whenever someone tests the webhook system for your bot on Top.gg."""
+        print(f"Received a test vote:\n{data}")
+
     def run(self):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
-        # try:
-        #     from cogs.ticket.method import AutoTicket
-        #     if not bot.persistent_views_added:
-        #         bot.add_view(AutoTicket(bot))
-        #         bot.persistent_views_added = True
-        # except Exception:
-        #     pass
         print(
             f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
         )

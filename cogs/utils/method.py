@@ -37,7 +37,7 @@ async def _create_tag(bot, ctx, tag, text):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
     else:
         view = Prompt(ctx.author.id)
-        await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)
+        msg = await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)
         await view.wait()
         if view.value is None:
             await msg.reply(f"{ctx.author.mention} you did not responds on time. Considering as non NSFW")
@@ -201,7 +201,7 @@ async def _update_todo_name(bot, ctx, name, new_name):
 async def _update_todo_text(bot, ctx, name, text):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
-        await collection.update_one({'id': name}, {'$set': {'text': new_name}})
+        await collection.update_one({'id': name}, {'$set': {'text': text}})
         await ctx.reply(f"{ctx.author.mention} TODO list of name `{name}` has been updated")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
@@ -213,8 +213,11 @@ async def _list_todo(bot, ctx):
     async for data in collection.find({}):
         paginator.add_line(f"`{i}` {data['id']}")
         i += 1
-    await paginator.start()
-  
+    try:
+        await paginator.start()
+    except IndexError:
+        await ctx.reply(f"{ctx.author.mention} you do not have task to do")
+
 async def _show_todo(bot, ctx, name):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({'id': name}):

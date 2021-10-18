@@ -29,49 +29,49 @@ class Utils(Cog):
     
     @tag.command(name='create', aliases=['add'])
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_create(self, ctx: Context, tag: commands.clean_content, *, text: commands.clean_content):
+    async def tag_create(self, ctx: Context, tag: str, *, text: str):
         """To create tag. All tag have unique name"""
         await mt._create_tag(self.bot, ctx, tag, text)
 
     @tag.command(name='delete', aliases=['del'])
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_delete(self, ctx: Context, tag: commands.clean_content):
+    async def tag_delete(self, ctx: Context, *, tag: str):
         """To delete tag. You must own the tag to delete"""
         await mt._delete_tag(self.bot, ctx, tag)
 
     @tag.command(name='editname')
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_edit_name(self, ctx: Context, tag: commands.clean_content, *, name: commands.clean_content):
+    async def tag_edit_name(self, ctx: Context, tag: str, *, name: str):
         """To edit the tag name. You must own the tag to edit"""
         await mt._name_edit(self.bot, ctx, tag, name)
 
     @tag.command(name='edittext')
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_edit_text(self, ctx: Context, tag: commands.clean_content, *, text: commands.clean_content):
+    async def tag_edit_text(self, ctx: Context, tag: str, *, text: str):
         """To edit the tag text. You must own the tag to edit"""
         await mt._text_edit(self.bot, ctx, tag, text)
 
     @tag.command(name='owner', alises=['info'])
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_owner(self, ctx: Context, *, tag: commands.clean_content):
+    async def tag_owner(self, ctx: Context, *, tag: str):
         """To check the tag details."""
         await mt._view_tag(self.bot, ctx, tag)
     
     @tag.command(name='snipe', aliases=['steal', 'claim'])
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_claim(self, ctx: Context, *, tag: commands.clean_content):
+    async def tag_claim(self, ctx: Context, *, tag: str):
         """To claim the ownership of the tag, if the owner of the tag left the server"""
         await mt._claim_owner(self.bot, ctx, tag)
     
     @tag.command(name='togglensfw', aliases=['nsfw', 'tnsfw'])
     @commands.bot_has_permissions(embed_links=True)
-    async def toggle_nsfw(self, ctx: Context, *, tag: commands.clean_content):
+    async def toggle_nsfw(self, ctx: Context, *, tag: str):
         """To enable/disable the NSFW of a Tag."""
         await mt._toggle_nsfw(self.bot, ctx, tag)
 
     @tag.command(name='give', aliases=['transfer'])
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_tranfer(self, ctx: Context, tag: commands.clean_content, *, member: discord.Member):
+    async def tag_tranfer(self, ctx: Context, tag: str, *, member: discord.Member):
         """To transfer the ownership of tag you own to other member"""
         await mt._transfer_owner(self.bot, ctx, tag, member)
     
@@ -127,19 +127,19 @@ class Utils(Cog):
     
     @todo.command(name='create')
     @commands.bot_has_permissions(embed_links=True)
-    async def todo_create(self, ctx: Context, name: str, *, text: commands.clean_content):
+    async def todo_create(self, ctx: Context, name: str, *, text: str):
         """To create a new TODO"""
         await mt._create_todo(self.bot, ctx, name, text)
     
     @todo.command(name='editname')
     @commands.bot_has_permissions(embed_links=True)
-    async def todo_editname(self, ctx: Context, name: str, *, new_name: commands.clean_content):
+    async def todo_editname(self, ctx: Context, name: str, *, new_name: str):
         """To edit the TODO name"""
         await mt._update_todo_name(self.bot, ctx, name, new_name)
     
     @todo.command(name='edittext')
     @commands.bot_has_permissions(embed_links=True)
-    async def todo_edittext(self, ctx: Context, name: str, *, text: commands.clean_content):
+    async def todo_edittext(self, ctx: Context, name: str, *, text: str):
         """To edit the TODO text"""
         await mt._update_todo_text(self.bot, ctx, name, text)
     

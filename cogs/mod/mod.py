@@ -456,7 +456,7 @@ class Mod(Cog):
     async def emoji_addurl(self, ctx: Context, url: str, name: commands.clean_content, *, reason: reason_convert=None):
         """To add the emoji from url"""
         await mt._emoji_addurl(ctx.guild, ctx.command.name, ctx.author, ctx.channel, url, name, reason)
-        await self.log(ctx, ctx.command.qualified_name, emoji, f'{reason}')
+        await self.log(ctx, ctx.command.qualified_name, 'Emoji', f'{reason}')
 
     @emoji.command(name='rename')
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))

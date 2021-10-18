@@ -432,11 +432,8 @@ class Stars(commands.Cog):
                    RETURNING entry_id;
                 """
 
-        try:
-            record = await connection.fetchrow(query, message_id, channel.id, guild_id, msg.author.id, starrer_id)
-        except asyncpg.UniqueViolationError:
-            raise StarError('\N{NO ENTRY SIGN} You already starred this message.')
-
+        record = await connection.fetchrow(query, message_id, channel.id, guild_id, msg.author.id, starrer_id)
+        
         entry_id = record[0]
 
         query = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"

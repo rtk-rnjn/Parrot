@@ -102,6 +102,14 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.MissingRole):
             is_owner = await ctx.bot.is_owner(ctx.author)
             if is_owner: return await ctx.reinvoke()
+            missing = [
+                role for role in error.missing_role
+            ]
+            if len(missing) > 2:
+                fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
+                                          missing[-1])
+            else:
+                fmt = ' and '.join(missing)
             _message = '**{}**\nMissing Role. You need the the following role(s) to use the command```\n{}```'.format(
                 random.choice(quote), fmt)
             await ctx.send(_message)

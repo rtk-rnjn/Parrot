@@ -703,7 +703,7 @@ class Meta(Cog):
             await msg.reply(f"{ctx.author.mention} you did not responds on time. No request is being sent!")
         elif view.value:
             await msg.reply(f"{ctx.author.mention} your message is being delivered!")
-            await bot.get_user(741614468546560092).send(text[:1800:])
+            await self.bot.get_user(741614468546560092).send(text[:1800:])
         else:
             await msg.reply(f"{ctx.author.mention} nvm, reverting the process")
 

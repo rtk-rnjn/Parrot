@@ -238,23 +238,6 @@ class Actions(Cog):
 
         await ctx.reply(embed=em)
 
-    # @commands.command()
-    # @commands.bot_has_permissions(embed_links=True)
-    # @commands.cooldown(1, 5, commands.BucketType.member)
-    # @Context.with_type
-    # async def bonk(self, ctx: Context, *, member: discord.Member = None):
-    #     """Bonk pics?"""
-    #     async with aiohttp.ClientSession() as session:
-    #         data = await session.get(f"{self.url}/{ctx.command.name}")
-
-    #     json = await data.json()
-    #     url = json['url']
-    #     em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
-    #     em.set_image(url=url)
-    #     em.set_footer(text=f"{ctx.author}")
-
-    #     await ctx.reply(embed=em)
-
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)

@@ -425,7 +425,7 @@ class Fun(Cog):
             translated_lang = data['translated']['lang']
             translated_pronunciation = data['translated']['pronunciation']
         else: 
-            return await ctx.reply(f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{lang}**")
+            return await ctx.reply(f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{to}**")
         
         if ctx.author.id == 741614468546560092: # its kinda spammy for me. lol
             return await ctx.send(f"{translated_text}")

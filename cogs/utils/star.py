@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 from discord.ext import commands, tasks, menus
-from .utils import checks, db, cache
-from .utils.formats import plural, human_join
-from .utils.paginator import SimplePages
+from utilities.cache import cache
+from utilities.formats import plural, human_join
+from meta.robopage import SimplePages
 from collections import Counter, defaultdict
 
 import discord
-import datetime
 import time
-import json
-import random
+
+from utilities.checks import is_mod
+
 import asyncio
-import asyncpg
 import logging
 import weakref
 import re
@@ -40,33 +41,33 @@ def MessageID(argument):
     except ValueError:
         raise StarError(f'"{argument}" is not a valid message ID. Use Developer Mode to get the Copy ID option.')
 
-class Starboard(db.Table):
-    id = db.Column(db.Integer(big=True), primary_key=True)
+# class Starboard(db.Table):
+#     id = db.Column(db.Integer(big=True), primary_key=True)
 
-    channel_id = db.Column(db.Integer(big=True))
-    threshold = db.Column(db.Integer, default=1, nullable=False)
-    locked = db.Column(db.Boolean, default=False)
-    max_age = db.Column(db.Interval, default="'7 days'::interval", nullable=False)
+#     channel_id = db.Column(db.Integer(big=True))
+#     threshold = db.Column(db.Integer, default=1, nullable=False)
+#     locked = db.Column(db.Boolean, default=False)
+#     max_age = db.Column(db.Interval, default="'7 days'::interval", nullable=False)
 
-class StarboardEntry(db.Table, table_name='starboard_entries'):
-    id = db.PrimaryKeyColumn()
+# class StarboardEntry(db.Table, table_name='starboard_entries'):
+#     id = db.PrimaryKeyColumn()
 
-    bot_message_id = db.Column(db.Integer(big=True), index=True)
-    message_id = db.Column(db.Integer(big=True), index=True, unique=True, nullable=False)
-    channel_id = db.Column(db.Integer(big=True))
-    author_id = db.Column(db.Integer(big=True))
-    guild_id = db.Column(db.ForeignKey('starboard', 'id', sql_type=db.Integer(big=True)), index=True, nullable=False)
+#     bot_message_id = db.Column(db.Integer(big=True), index=True)
+#     message_id = db.Column(db.Integer(big=True), index=True, unique=True, nullable=False)
+#     channel_id = db.Column(db.Integer(big=True))
+#     author_id = db.Column(db.Integer(big=True))
+#     guild_id = db.Column(db.ForeignKey('starboard', 'id', sql_type=db.Integer(big=True)), index=True, nullable=False)
 
-class Starrers(db.Table):
-    id = db.PrimaryKeyColumn()
-    author_id = db.Column(db.Integer(big=True), nullable=False)
-    entry_id = db.Column(db.ForeignKey('starboard_entries', 'id'), index=True, nullable=False)
+# class Starrers(db.Table):
+#     id = db.PrimaryKeyColumn()
+#     author_id = db.Column(db.Integer(big=True), nullable=False)
+#     entry_id = db.Column(db.ForeignKey('starboard_entries', 'id'), index=True, nullable=False)
 
-    @classmethod
-    def create_table(cls, *, exists_ok=True):
-        statement = super().create_table(exists_ok=exists_ok)
-        sql = "CREATE UNIQUE INDEX IF NOT EXISTS starrers_uniq_idx ON starrers (author_id, entry_id);"
-        return statement + '\n' + sql
+#     @classmethod
+#     def create_table(cls, *, exists_ok=True):
+#         statement = super().create_table(exists_ok=exists_ok)
+#         sql = "CREATE UNIQUE INDEX IF NOT EXISTS starrers_uniq_idx ON starrers (author_id, entry_id);"
+#         return statement + '\n' + sql
 
 class StarboardConfig:
     __slots__ = ('bot', 'id', 'channel_id', 'threshold', 'locked', 'needs_migration', 'max_age')
@@ -572,7 +573,8 @@ class Stars(commands.Cog):
             await bot_message.edit(content=content, embed=embed)
 
     @commands.group(invoke_without_command=True)
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def starboard(self, ctx, *, name='starboard'):
         """Sets up the starboard for this server.
         This creates a new channel with the specified name
@@ -600,12 +602,6 @@ class Stars(commands.Cog):
                     await ctx.db.execute('DELETE FROM starboard WHERE id=$1;', ctx.guild.id)
                 else:
                     return await ctx.send('Aborting starboard creation. Join the bot support server for more questions.')
-
-        perms = ctx.channel.permissions_for(ctx.me)
-
-        if not perms.manage_roles or not perms.manage_channels:
-            return await ctx.send('\N{NO ENTRY SIGN} I do not have proper permissions (Manage Roles and Manage Channel)')
-
         overwrites = {
             ctx.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True,
                                                 embed_links=True, read_message_history=True),
@@ -685,7 +681,7 @@ class Stars(commands.Cog):
             await ctx.message.delete()
 
     @star.command(name='clean')
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @requires_starboard()
     async def star_clean(self, ctx, stars=1):
         """Cleans the starboard
@@ -813,7 +809,7 @@ class Stars(commands.Cog):
 
     @star.command(name='migrate')
     @requires_starboard()
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     async def star_migrate(self, ctx):
         """Migrates the starboard to the newest version.
         While doing this, the starboard is locked.
@@ -1088,7 +1084,7 @@ class Stars(commands.Cog):
             await ctx.send(message.content)
 
     @star.command(name='lock')
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @requires_starboard()
     async def star_lock(self, ctx):
         """Locks the starboard from being processed.
@@ -1111,7 +1107,7 @@ class Stars(commands.Cog):
         await ctx.send('Starboard is now locked.')
 
     @star.command(name='unlock')
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @requires_starboard()
     async def star_unlock(self, ctx):
         """Unlocks the starboard for re-processing.
@@ -1128,7 +1124,7 @@ class Stars(commands.Cog):
         await ctx.send('Starboard is now unlocked.')
 
     @star.command(name='limit', aliases=['threshold'])
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @requires_starboard()
     async def star_limit(self, ctx, stars: int):
         """Sets the minimum number of stars required to show up.
@@ -1153,7 +1149,7 @@ class Stars(commands.Cog):
         await ctx.send(f'Messages now require {plural(stars):star} to show up in the starboard.')
 
     @star.command(name='age')
-    @checks.is_mod()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @requires_starboard()
     async def star_age(self, ctx, number: int, units='days'):
         """Sets the maximum age of a message valid for starring.

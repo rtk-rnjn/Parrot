@@ -110,10 +110,6 @@ class Parrot(commands.AutoShardedBot):
 
         print(f"Received a vote:\n{data}")
 
-    async def on_dbl_test(self, data):
-        """An event that is called whenever someone tests the webhook system for your bot on Top.gg."""
-        print(f"Received a test vote:\n{data}")
-
     def run(self):
         super().run(TOKEN, reconnect=True)
 

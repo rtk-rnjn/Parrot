@@ -63,7 +63,7 @@ async def _delete_tag(bot, ctx, tag):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
-            await collection.delete_one({"id": tags})
+            await collection.delete_one({"id": tag})
             await ctx.reply(f"{ctx.author.mention} tag deleted successfully")
         else:
             await ctx.reply(f"{ctx.author.mention} you don't own this tag")

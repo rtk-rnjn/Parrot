@@ -17,7 +17,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def log(guild, channel, description, status):
         embed = discord.Embed(title='Parrot Ticket Bot',
                             timestamp=datetime.utcnow(),
-                            description=f"```\n{description}\n```",
+                            description=f"{description}",
                             color=discord.Color.blue())
         embed.add_field(name='Status', value=status)
         embed.set_footer(text=f"{guild.name}")
@@ -122,10 +122,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await ticket_update(guild.id, post)
 
             log_channel = guild.get_channel(data['log'])
-            await self.log(
-                guild, log_channel,
-                f"ticket-{ticket_number} opened by, {member.name}#{member.discriminator} ({member.id})",
-                'RUNNING')
+            await self.log(guild, log_channel, f"Channel: **#ticket-{ticket_number}**\n**Opened by:** {member} ({member.id})", 'RUNNING')
 
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):

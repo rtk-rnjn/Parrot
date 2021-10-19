@@ -127,7 +127,10 @@ class RoboPages(discord.ui.View):
 
     async def on_timeout(self) -> None:
         if self.message:
-            await self.message.edit(view=None)
+            try:
+                await self.message.edit(view=None)
+            except discord.errors.Forbidden:
+                return
 
     async def on_error(self, error: Exception, item: discord.ui.Item,
                        interaction: discord.Interaction) -> None:

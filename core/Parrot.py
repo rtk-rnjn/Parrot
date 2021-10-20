@@ -26,6 +26,8 @@ intents.members = True
 
 dbl_token = os.environ['TOPGG']
 
+CHANGE_LOG_ID = 796932292458315776
+SUPPORT_SERVER_ID = 741614680652644382
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -66,7 +68,7 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def server(self) -> typing.Optional[discord.Guild]:
-        return self.get_guild(741614680652644382)  # Main server
+        return self.get_guild(SUPPORT_SERVER_ID)  # Main server
 
     @property
     def invite(self) -> str:
@@ -85,9 +87,10 @@ class Parrot(commands.AutoShardedBot):
 
     @async_property
     async def change_log(self) -> typing.Optional[discord.Message]:
+        """For the command `announcement` to let the users know the most recent change"""
         if self._change_log is None:
             self._change_log = await self.get_channel(
-                796932292458315776).history(limit=1).flatten()
+                CHANGE_LOG_ID).history(limit=1).flatten()
 
         return self._change_log[0]
 
@@ -111,11 +114,12 @@ class Parrot(commands.AutoShardedBot):
         print(f"Received a vote:\n{data}")
 
     def run(self):
+        """"To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
         print(
-            f"[Parrot] {self.user.name}#{self.user.discriminator} ready to take commands"
+            f"[Parrot] {self.user} ready to take commands"
         )
         print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
         print(f"[Parrot] Connected to {len(self.users)} Users")
@@ -140,6 +144,7 @@ class Parrot(commands.AutoShardedBot):
         ctx = await self.get_context(message, cls=Context)
 
         if ctx.command is None:
+            # ignore if no command found
             return
 
         await self.invoke(ctx)
@@ -148,20 +153,23 @@ class Parrot(commands.AutoShardedBot):
         self._seen_messages += 1
 
         if not message.guild:
+            # to prevent the usage of command in DMs
             return
 
         await self.process_commands(message)
 
     async def get_prefix(self, message: discord.Message) -> str:
+        """Dynamic prefixing"""
         data = await collection.find_one({"_id": message.guild.id})
-        if not data:
+        if data := await collection.find_one({"_id": message.guild.id}):
+            prefix = data['prefix']
+        else:
+            prefix = '$' # default prefix
             await collection.insert_one({
                 '_id': message.guild.id,
-                'prefix': '$',
-                'mod_role': None,
+                'prefix': '$',     # to make entry
+                'mod_role': None,  # in database
                 'action_log': None,
                 'mute_role': None
             })
-            return commands.when_mentioned_or('$')(self, message)
-        prefix = data['prefix']
         return commands.when_mentioned_or(prefix)(self, message)

@@ -1,22 +1,21 @@
 from __future__ import annotations
 
-from discord.ext import commands, tasks, menus
-from utilities.cache import cache
-from utilities.formats import plural, human_join
+from discord.ext import commands, tasks
 from meta.robopage import SimplePages
-from collections import Counter, defaultdict
 
 import discord
 import time
 
 from utilities.checks import is_mod
+from utilities.database import parrot_db, cluster
+from utilities.cache import cache
+from utilities.formats import plural, human_join
 
-import asyncio
-import logging
+import asyncio, typing
 import weakref
 import re
 
-log = logging.getLogger(__name__)
+from core import Parrot, Cog, Context
 
 class StarError(commands.CheckFailure):
     pass
@@ -72,7 +71,7 @@ def MessageID(argument):
 class StarboardConfig:
     __slots__ = ('bot', 'id', 'channel_id', 'threshold', 'locked', 'needs_migration', 'max_age')
 
-    def __init__(self, *, guild_id, bot, record=None):
+    def __init__(self, *, guild_id: int, bot: Parrot, record=None):
         self.id = guild_id
         self.bot = bot
 
@@ -93,7 +92,7 @@ class StarboardConfig:
         guild = self.bot.get_guild(self.id)
         return guild and guild.get_channel(self.channel_id)
 
-class Stars(commands.Cog):
+class Stars(Cog):
     """A starboard to upvote posts obviously.
     There are two ways to make use of this feature, the first is
     via reactions, react to a message with \N{WHITE MEDIUM STAR} and
@@ -103,7 +102,7 @@ class Stars(commands.Cog):
     and using the star/unstar commands.
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
 
         # cache message objects to save Discord some HTTP requests.
@@ -123,21 +122,31 @@ class Stars(commands.Cog):
     def cog_unload(self):
         self.clean_message_cache.cancel()
 
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, StarError):
-            await ctx.send(error)
-
     @tasks.loop(hours=1.0)
     async def clean_message_cache(self):
         self._message_cache.clear()
 
     @cache.cache()
-    async def get_starboard(self, guild_id, *, connection=None):
-        connection = connection or self.bot.pool
-        query = "SELECT * FROM starboard WHERE id=$1;"
-        record = await connection.fetchrow(query, guild_id)
-        return StarboardConfig(guild_id=guild_id, bot=self.bot, record=record)
-
+    async def get_starboard(self, guild_id, *, collection=None):
+        collection = collection or parrot_db['server_config']
+        if data := await collection.find_one({'_id': guild_id}):
+            return StarboardConfig(guild_id=guild_id, bot=self.bot, record=data)
+        else:
+            await collection.update_one(
+                {'_id': guild_id}, 
+                {'$set': 
+                    {'star':
+                        {
+                            'channel_id': None,
+                            'threshold': None,
+                            'locked': True,
+                            'max_age': None,
+                            'need_migration': False
+                        }
+                    }
+                }
+            )
+        
     def star_emoji(self, stars):
         if 5 > stars >= 0:
             return '\N{WHITE MEDIUM STAR}'
@@ -172,7 +181,7 @@ class Stars(commands.Cog):
                 return True
         return False
 
-    def get_emoji_message(self, message, stars):
+    def get_emoji_message(self, message: discord.Message, stars):
         emoji = self.star_emoji(stars)
 
         if stars > 1:
@@ -207,7 +216,7 @@ class Stars(commands.Cog):
         embed.colour = self.star_gradient_colour(stars)
         return content, embed
 
-    async def get_message(self, channel, message_id):
+    async def get_message(self, channel: typing.Union[discord.TextChannel, discord.Thread], message_id: int):
         try:
             return self._message_cache[message_id]
         except KeyError:
@@ -330,10 +339,10 @@ class Stars(commands.Cog):
             if msg is not None:
                 await msg.delete()
 
-    async def star_message(self, channel, message_id, starrer_id, *, verify=False):
+    async def star_message(self, channel: typing.Union[discord.TextChannel, discord.Thread], message_id: int, starrer_id: int, *, verify=False):
         guild_id = channel.guild.id
         lock = self._locks.get(guild_id)
-        if lock is None:
+        if not lock:
             self._locks[guild_id] = lock = asyncio.Lock(loop=self.bot.loop)
 
         async with lock:
@@ -350,7 +359,7 @@ class Stars(commands.Cog):
 
                 await self._star_message(channel, message_id, starrer_id, connection=con)
 
-    async def _star_message(self, channel, message_id, starrer_id, *, connection):
+    async def _star_message(self, channel: discord.TextChannel, message_id: int, starrer_id: int, *, connection):
         """Stars a message.
         Parameters
         ------------
@@ -465,7 +474,7 @@ class Stars(commands.Cog):
             else:
                 await new_msg.edit(content=content, embed=embed)
 
-    async def unstar_message(self, channel, message_id, starrer_id, *, verify=False):
+    async def unstar_message(self, channel: typing.Union[discord.TextChannel, discord.Thread], message_id: int, starrer_id: int, *, verify=False):
         guild_id = channel.guild.id
         lock = self._locks.get(guild_id)
         if lock is None:
@@ -485,20 +494,7 @@ class Stars(commands.Cog):
 
                 await self._unstar_message(channel, message_id, starrer_id, connection=con)
 
-    async def _unstar_message(self, channel, message_id, starrer_id, *, connection):
-        """Unstars a message.
-        Parameters
-        ------------
-        channel: :class:`TextChannel`
-            The channel that the starred message belongs to.
-        message_id: int
-            The message ID of the message being unstarred.
-        starrer_id: int
-            The ID of the person who unstarred this message.
-        connection: asyncpg.Connection
-            The connection to use.
-        """
-
+    async def _unstar_message(self, channel: typing.Union[discord.TextChannel, discord.Thread], message_id: int, starrer_id: int, *, connection):
         guild_id = channel.guild.id
         starboard = await self.get_starboard(guild_id)
         starboard_channel = starboard.channel
@@ -573,11 +569,8 @@ class Stars(commands.Cog):
     @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def starboard(self, ctx, *, name='starboard'):
-        """Sets up the starboard for this server.
-        This creates a new channel with the specified name
-        and makes it into the server's "starboard". If no
-        name is passed in then it defaults to "starboard".
-        You must have Manage Server permission to use this.
+        """
+        Sets up the starboard for this server. This creates a new channel with the specified name and makes it into the server's "starboard". If no name is passed in then it defaults to "starboard". You must have Manage Server permission to use this.
         """
 
         # bypass the cache just in case someone used the star
@@ -585,9 +578,9 @@ class Stars(commands.Cog):
         # decided to use the ?star command
         self.get_starboard.invalidate(self, ctx.guild.id)
 
-        starboard = await self.get_starboard(ctx.guild.id, connection=ctx.db)
+        starboard = await self.get_starboard(ctx.guild.id, collection=parrot_db['server_config'])
         if starboard.channel is not None:
-            return await ctx.send(f'This server already has a starboard ({starboard.channel.mention}).')
+            return await ctx.reply(f'{ctx.author.mention} this server already has a starboard ({starboard.channel.mention}).')
 
         if hasattr(starboard, 'locked'):
             try:

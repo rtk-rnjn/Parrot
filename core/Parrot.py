@@ -38,6 +38,8 @@ dbl_token = os.environ['TOPGG']
 CHANGE_LOG_ID = 796932292458315776
 SUPPORT_SERVER_ID = 741614680652644382
 
+description = """Hi! This bot is made by Ritik Ranjan (!! Ritik Ranjan [*.*]#9230). It's a mutipurpose discord bot with lots of features"""
+
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
     def __init__(self, *args, **kwargs):
@@ -55,6 +57,7 @@ class Parrot(commands.AutoShardedBot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(
                 discord.Intents.all()),
             shard_count=3,
+            description=description
             **kwargs)
         self._seen_messages = 0
         self._change_log = None
@@ -200,7 +203,7 @@ class Parrot(commands.AutoShardedBot):
 
         await self.process_commands(message)
 
-    async def resolve_member_ids(self, guild, member_ids):
+    async def resolve_member_ids(self, guild: discord.Guild, member_ids: list):
         needs_resolution = []
         for member_id in member_ids:
             member = guild.get_member(member_id)

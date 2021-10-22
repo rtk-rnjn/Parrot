@@ -129,7 +129,7 @@ class RoboPages(discord.ui.View):
         if self.message:
             try:
                 await self.message.edit(view=None)
-            except discord.errors.Forbidden:
+            except Exception:
                 return
 
     async def on_error(self, error: Exception, item: discord.ui.Item,

@@ -10,6 +10,7 @@ from utilities.checks import is_mod
 from utilities.database import parrot_db, cluster
 from utilities.cache import cache
 from utilities.formats import plural, human_join
+from utilities import time
 
 import asyncio, typing
 import weakref
@@ -18,7 +19,7 @@ import re
 from core import Parrot, Cog, Context
 
 starboard_entry = cluster['starboard_entry']
-starer = cluster['starer']
+starrer = cluster['starrer']
 server_config = parrot_db['server_config']
 
 class StarError(commands.CheckFailure):
@@ -45,7 +46,7 @@ def MessageID(argument):
         raise StarError(f'"{argument}" is not a valid message ID. Use Developer Mode to get the Copy ID option.')
 
 class StarboardConfig:
-    __slots__ = ('bot', 'id', 'channel_id', 'threshold', 'locked', 'needs_migration', 'max_age')
+    __slots__ = ('bot', 'id', 'channel_id', 'threshold', 'locked', 'max_age')
 
     def __init__(self, *, guild_id: int, bot: Parrot, record=None):
         self.id = guild_id
@@ -55,9 +56,6 @@ class StarboardConfig:
             self.channel_id = record['channel_id']
             self.threshold = record['threshold']
             self.locked = record['locked']
-            self.needs_migration = self.locked is None
-            if self.needs_migration:
-                self.locked = True
 
             self.max_age = record['max_age']
         else:
@@ -104,7 +102,7 @@ class Stars(Cog):
             await collection.update_one(
                 {'_id': guild_id}, 
                 {'$set': 
-                    {'star':
+                    {'starboard':
                         {
                             'channel_id': None,
                             'threshold': None,
@@ -218,7 +216,7 @@ class Stars(Cog):
             return
 
         try:
-            await method(channel, payload.message_id, payload.user_id, verify=True)
+            await method(channel, payload.message_id, payload.user_id)
         except StarError:
             pass
 
@@ -314,9 +312,13 @@ class Stars(Cog):
                             db
                         ) -> None:
         guild_id = channel.guild.id
+        
         collection = db[f'{guild_id}']
+        collection_starrer = db['starrer']
+        
         starboard = await self.get_starboard(guild_id)
         starboard_channel = starboard.channel
+        
         if starboard_channel is None:
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
 
@@ -358,12 +360,21 @@ class Stars(Cog):
         oldest_allowed = discord.utils.utcnow() - starboard.max_age
         if msg.created_at < oldest_allowed:
             raise StarError('\N{NO ENTRY SIGN} This message is too old.')
-
-        # check if this is freshly starred
-        # originally this was a single query but it seems
-        # WHERE ... = (SELECT ... in some_cte) is bugged
-        # so I'm going to do two queries instead
-        query = """WITH to_insert AS (
+        post = {
+                    '_id': guild_id,
+                    'message_id': message_id,
+                    'channel_id': channel.id,
+                    'author_id': msg.author.id
+                }
+        try:
+            await collection.insert_one(post)
+        except Exception:
+            pass
+        try:
+            await collection_starrer.insert_one({'author_id': starrer_id})
+        except Exception:
+            pass
+         = """WITH to_insert AS (
                        INSERT INTO starboard_entries AS entries (message_id, channel_id, guild_id, author_id)
                        VALUES ($1, $2, $3, $4)
                        ON CONFLICT (message_id) DO NOTHING
@@ -380,12 +391,12 @@ class Stars(Cog):
                    RETURNING entry_id;
                 """
 
-        record = await collection.fetchrow(query, message_id, channel.id, guild_id, msg.author.id, starrer_id)
+        record = await collection.fetchrow(, message_id, channel.id, guild_id, msg.author.id, starrer_id)
         
         entry_id = record[0]
 
-        query = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"
-        record = await collection.fetchrow(query, entry_id)
+         = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"
+        record = await collection.fetchrow(, entry_id)
 
         count = record[0]
         if count < starboard.threshold:
@@ -396,20 +407,20 @@ class Stars(Cog):
         content, embed = self.get_emoji_message(msg, count)
 
         # get the message ID to edit:
-        query = "SELECT bot_message_id FROM starboard_entries WHERE message_id=$1;"
-        record = await collection.fetchrow(query, message_id)
-        bot_message_id = record[0]
-
+        
+        data = await collection.find_one({'message_id': message_id})
+        try:
+            bot_message_id = data['bot_messag_id']
+        except KeyError:
+            bot_message_id = None
+        
         if bot_message_id is None:
             new_msg = await starboard_channel.send(content, embed=embed)
-            query = "UPDATE starboard_entries SET bot_message_id=$1 WHERE message_id=$2;"
-            await collection.execute(query, new_msg.id, message_id)
+            await collection.update_one({'message_id': message_id}, {'$set': {'bot_message_id': new_msg.id}})
         else:
             new_msg = await self.get_message(starboard_channel, bot_message_id)
             if new_msg is None:
-                # deleted? might as well purge the data
-                query = "DELETE FROM starboard_entries WHERE message_id=$1;"
-                await collection.execute(query, message_id)
+                await collection.delete_one({'message_id': message_id})
             else:
                 await new_msg.edit(content=content, embed=embed)
 
@@ -450,28 +461,28 @@ class Stars(Cog):
         if not starboard_channel.permissions_for(starboard_channel.guild.me).send_messages:
             raise StarError('\N{NO ENTRY SIGN} Cannot edit messages in starboard channel.')
 
-        query = """DELETE FROM starrers USING starboard_entries entry
+         = """DELETE FROM starrers USING starboard_entries entry
                    WHERE entry.message_id=$1
                    AND   entry.id=starrers.entry_id
                    AND   starrers.author_id=$2
                    RETURNING starrers.entry_id, entry.bot_message_id
                 """
 
-        record = await collection.fetchrow(query, message_id, starrer_id)
+        record = await collection.fetchrow(, message_id, starrer_id)
         if record is None:
             raise StarError('\N{NO ENTRY SIGN} You have not starred this message.')
 
         entry_id = record[0]
         bot_message_id = record[1]
 
-        query = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"
-        count = await collection.fetchrow(query, entry_id)
+         = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"
+        count = await collection.fetchrow(, entry_id)
         count = count[0]
 
         if count == 0:
             # delete the entry if we have no more stars
-            query = "DELETE FROM starboard_entries WHERE id=$1;"
-            await collection.execute(query, entry_id)
+             = "DELETE FROM starboard_entries WHERE id=$1;"
+            await collection.execute(, entry_id)
 
         if bot_message_id is None:
             return
@@ -484,8 +495,8 @@ class Stars(Cog):
             self._about_to_be_deleted.add(bot_message_id)
             if count:
                 # update the bot_message_id to be NULL in the table since we're deleting it
-                query = "UPDATE starboard_entries SET bot_message_id=NULL WHERE id=$1;"
-                await collection.execute(query, entry_id)
+                 = "UPDATE starboard_entries SET bot_message_id=NULL WHERE id=$1;"
+                await collection.execute(, entry_id)
 
             await bot_message.delete()
         else:
@@ -539,7 +550,6 @@ class Stars(Cog):
         except discord.HTTPException:
             return await ctx.reply('\N{NO ENTRY SIGN} This channel name is bad or an unknown error happened.')
 
-        query = "INSERT INTO starboard (id, channel_id) VALUES ($1, $2);"
         try:
             await server_config.update_one(
                         {'_id': ctx.guild.id}, 
@@ -593,11 +603,7 @@ class Stars(Cog):
     @commands.command()
     @commands.bot_has_permissions(manage_messages=True)
     async def unstar(self, ctx, message: MessageID):
-        """Unstars a message via message ID.
-        To unstar a message you should right click on the on a message and then
-        click "Copy ID". You must have Developer Mode enabled to get that
-        functionality.
-        """
+        """Unstars a message via message ID. To unstar a message you should right click on the on a message and then click "Copy ID". You must have Developer Mode enabled to get that functionality. """
         try:
             await self.unstar_message(ctx.channel, message, ctx.author.id, verify=True)
         except StarError as e:
@@ -616,7 +622,7 @@ class Stars(Cog):
 
         last_messages = await channel.history(limit=100).map(lambda m: m.id).flatten()
 
-        query = """WITH bad_entries AS (
+         = """WITH bad_entries AS (
                        SELECT entry_id
                        FROM starrers
                        INNER JOIN starboard_entries
@@ -631,7 +637,7 @@ class Stars(Cog):
                    RETURNING starboard_entries.bot_message_id
                 """
 
-        to_delete = await .db.fetch(query, ctx.guild.id, last_messages, stars)
+        to_delete = await .db.fetch(, ctx.guild.id, last_messages, stars)
 
         # we cannot bulk delete entries over 14 days old
         min_snowflake = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
@@ -641,7 +647,7 @@ class Stars(Cog):
             self._about_to_be_deleted.update(o.id for o in to_delete)
             await channel.delete_messages(to_delete)
         except discord.HTTPException:
-            await ctx.reply('Could not delete messages.')
+            await ctx.reply(f'{ctx.author.mention} could not delete messages.')
         else:
             await ctx.reply(f'\N{PUT LITTER IN ITS PLACE SYMBOL} Deleted {plural(len(to_delete)):message}.')
 
@@ -651,25 +657,16 @@ class Stars(Cog):
         """
         Shows a starred message via its ID. To get the ID of a message you should right click on the message and then click "Copy ID". You must have Developer Mode enabled to get that functionality. You can only use this command once per 10 seconds.
         """
-
-        query = """SELECT entry.channel_id,
-                          entry.message_id,
-                          entry.bot_message_id,
-                          COUNT(*) OVER(PARTITION BY entry_id) AS "Stars"
-                   FROM starrers
-                   INNER JOIN starboard_entries entry
-                   ON entry.id = starrers.entry_id
-                   WHERE entry.guild_id=$1
-                   AND (entry.message_id=$2 OR entry.bot_message_id=$2)
-                   LIMIT 1
-                """
-
-        record = await .db.fetchrow(query, ctx.guild.id, message)
-        if record is None:
-            return await ctx.reply('This message has not been starred.')
-
+        collection = starboard_entry[f'{ctx.guild.id}']
+        if data := await collection.find_one({'message_id': message}):
+            bot_message_id = data['bot_message_id']
+        elif data := await collection.find_one({'bot_message_id': message}):
+                bot_message_id = data['bot_message_id']
+        else:
+            return await ctx.reply(f'{ctx.author.mention} this message has not been starred.')
+        data = record
         bot_message_id = record['bot_message_id']
-        if bot_message_id is not None:
+        if not bot_message_id:
             # "fast" path, just redirect the message
             msg = await self.get_message(ctx.starboard.channel, bot_message_id)
             if msg is not None:
@@ -677,18 +674,16 @@ class Stars(Cog):
                 return await ctx.reply(msg.content, embed=embed)
             else:
                 # somehow it got deleted, so just delete the entry
-                query = "DELETE FROM starboard_entries WHERE message_id=$1;"
-                await .db.execute(query, record['message_id'])
-                return
-
+                await collection.delete_one({'message_id': message})
+                
         # slow path, try to fetch the content
         channel = ctx.guild.get_channel_or_thread(record['channel_id'])
         if channel is None:
-            return await ctx.reply("The message's channel has been deleted.")
+            return await ctx.reply(f"{ctx.author.mention} the message's channel has been deleted.")
 
         msg = await self.get_message(channel, record['message_id'])
         if msg is None:
-            return await ctx.reply('The message has been deleted.')
+            return await ctx.reply(f'{ctx.author.mention} the message has been deleted.')
 
         content, embed = self.get_emoji_message(msg, record['Stars'])
         await ctx.reply(content, embed=embed)
@@ -696,23 +691,19 @@ class Stars(Cog):
     @star.command(name='who')
     @requires_starboard()
     async def star_who(self, ctx, message: MessageID):
-        """Show who starred a message.
-        The ID can either be the starred message ID
-        or the message ID in the starboard channel.
-        """
-
-        query = """SELECT starrers.author_id
-                   FROM starrers
-                   INNER JOIN starboard_entries entry
-                   ON entry.id = starrers.entry_id
-                   WHERE entry.message_id = $1 OR entry.bot_message_id = $1
-                """
-
-        records = await .db.fetch(query, message)
-        if records is None or len(records) == 0:
+        """Show who starred a message. The ID can either be the starred message ID or the message ID in the starboard channel. """
+        
+        collection = starboard_entry[f'{ctx.guild.id}']
+        if data := await collection.find_one({'message_id': message}):
+            pass
+        if not data:
+            data = await collection.find_one({'bot_message_id': message})
+        
+        records = [data]
+        
+        if records is None:
             return await ctx.reply(f'{ctx.author.mention} no one starred this message or this is an invalid message ID.')
 
-        records = [r[0] for r in records]
         members = [str(member) async for member in self.bot.resolve_member_ids(ctx.guild, records)]
 
         p = SimplePages(entries=members, per_page=20, ctx=ctx)
@@ -723,96 +714,6 @@ class Stars(Cog):
             p.embed.title = base
 
         await p.start()
-
-    @star.command(name='migrate')
-    @requires_starboard()
-    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
-    async def star_migrate(self, ctx):
-        """
-        Migrates the starboard to the newest version. While doing this, the starboard is locked. Note: This is an **incredibly expensive operation**. It will take a very long time. You must have Manage Server permissions to use this.
-        """
-
-        perms = ctx.starboard.channel.permissions_for(ctx.me)
-        if not perms.read_message_history:
-            return await ctx.reply(f'{ctx.author.mention} bot does not have Read Message History in {ctx.starboard.channel.mention}.')
-
-        if ctx.starboard.locked:
-            return await ctx.reply(f'{ctx.author.mention} starboard must be unlocked to migrate. It will be locked during the migration.')
-
-        stats = self.bot.get_cog('Stats')
-        if stats is None:
-            return await ctx.reply(f'{ctx.author.mention} internal error occurred: Stats cog not loaded')
-
-        webhook = stats.webhook
-
-        start = time.time()
-        guild_id = ctx.guild.id
-        await server_config.update_one(
-                {'_id': ctx.guild.id}, 
-                {'$set':{
-                        'starboard': {'locked':True}
-                    }
-                }
-            )
-        self.get_starboard.invalidate(self, guild_id)
-
-        await ctx.reply(f'{ctx.author.mention} starboard is now locked and migration will now begin.')
-
-        valid_msg = re.compile(r'.+?<#(?P<channel_id>[0-9]{17,21})>\s*ID\:\s*(?P<message_id>[0-9]{17,21})')
-        async with ctx.typing():
-            fetched = 0
-            updated = 0
-            failed = 0
-
-            # At the time of writing, the average server only had ~256 entries.
-            async for message in ctx.starboard.channel.history(limit=1000):
-                fetched += 1
-
-                match = valid_msg.match(message.content)
-                if match is None:
-                    continue
-
-                groups = match.groupdict()
-                groups['guild_id'] = guild_id
-                fmt = 'https://discord.com/channels/{guild_id}/{channel_id}/{message_id}'.format(**groups)
-                if len(message.embeds) == 0:
-                    continue
-
-                embed = message.embeds[0]
-                if len(embed.fields) == 0 or embed.fields[0].name == 'Attachments':
-                    embed.add_field(name='Original', value=f'[Jump!]({fmt})', inline=False)
-                    try:
-                        await message.edit(embed=embed)
-                    except discord.HTTPException:
-                        failed += 1
-                    else:
-                        updated += 1
-
-            delta = time.time() - start
-            await server_config.update_one(
-                {'_id': ctx.guild.id}, 
-                {'$set':{
-                        'starboard': {'locked':False}
-                    }
-                }
-            )
-            self.get_starboard.invalidate(self, guild_id)
-
-            m = await ctx.reply(f'{ctx.author.mention}, we are done migrating!\n' \
-                                'The starboard has been unlocked.\n' \
-                               f'Updated {updated}/{fetched} entries to the new format.\n' \
-                               f'Took {delta:.2f}s.')
-
-            e = discord.Embed(title='Starboard Migration', colour=discord.Colour.gold())
-            e.add_field(name='Updated', value=updated)
-            e.add_field(name='Fetched', value=fetched)
-            e.add_field(name='Failed', value=failed)
-            e.add_field(name='Name', value=ctx.guild.name)
-            e.add_field(name='ID', value=guild_id)
-            e.set_footer(text=f'Took {delta:.2f}s to migrate')
-            e.timestamp = m.created_at
-            await webhook.send(embed=e)
-
 
     def records_to_value(self, records, fmt=None, default='None!'):
         if not records:
@@ -828,32 +729,29 @@ class Stars(Cog):
         e.timestamp = ctx.starboard.channel.created_at
         e.set_footer(text='Adding stars since')
 
-        # messages starred
-        query = "SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1;"
+        collection = starboard_entry[f'{ctx.guild.id}']
+        
+         = "SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1;"
 
-        record = await .db.fetchrow(query, ctx.guild.id)
+        record = await .db.fetchrow(, ctx.guild.id)
         total_messages = record[0]
 
         # total stars given
-        query = """SELECT COUNT(*)
+         = """SELECT COUNT(*)
                    FROM starrers
                    INNER JOIN starboard_entries entry
                    ON entry.id = starrers.entry_id
                    WHERE entry.guild_id=$1;
                 """
 
-        record = await .db.fetchrow(query, ctx.guild.id)
+        record = await .db.fetchrow(, ctx.guild.id)
         total_stars = record[0]
 
         e.description = f'{plural(total_messages):message} starred with a total of {total_stars} stars.'
         e.colour = discord.Colour.gold()
 
-        # this big query fetches 3 things:
-        # top 3 starred posts (Type 3)
-        # top 3 most starred authors  (Type 1)
-        # top 3 star givers (Type 2)
 
-        query = """WITH t AS (
+         = """WITH t AS (
                        SELECT
                            entry.author_id AS entry_author_id,
                            starrers.author_id,
@@ -890,7 +788,7 @@ class Stars(Cog):
                    );
                 """
 
-        records = await .db.fetch(query, ctx.guild.id)
+        records = await .db.fetch(, ctx.guild.id)
         starred_posts = [r for r in records if r['Type'] == 3]
         e.add_field(name='Top Starred Posts', value=self.records_to_value(starred_posts), inline=False)
 
@@ -910,7 +808,7 @@ class Stars(Cog):
         e = discord.Embed(colour=discord.Colour.gold())
         e.set_author(name=member.display_name, icon_url=member.display_avatar.url)
 
-        query = """WITH t AS (
+         = """WITH t AS (
                        SELECT entry.author_id AS entry_author_id,
                               starrers.author_id,
                               entry.message_id
@@ -941,14 +839,14 @@ class Stars(Cog):
                    )
                 """
 
-        records = await .db.fetch(query, ctx.guild.id, member.id)
+        records = await .db.fetch(, ctx.guild.id, member.id)
         received = records[0]['Stars']
         given = records[1]['Stars']
         top_three = records[2:]
 
-        # this query calculates how many of our messages were starred
-        query = """SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1 AND author_id=$2;"""
-        record = await .db.fetchrow(query, ctx.guild.id, member.id)
+        # this  calculates how many of our messages were starred
+         = """SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1 AND author_id=$2;"""
+        record = await .db.fetchrow(, ctx.guild.id, member.id)
         messages_starred = record[0]
 
         e.add_field(name='Messages Starred', value=messages_starred)
@@ -997,15 +895,9 @@ class Stars(Cog):
         """Unlocks the starboard for re-processing.
         To use this command you need Manage Server permission.
         """
-
-        if ctx.starboard.needs_migration:
-            return await ctx.reply('Your starboard requires migration!')
-
-        query = "UPDATE starboard SET locked=FALSE WHERE id=$1;"
-        await .db.execute(query, ctx.guild.id)
+        await server_config.update_one({'_id': ctx.guild.id}, {'$set': {'starboard': {'locked': False}}})
         self.get_starboard.invalidate(self, ctx.guild.id)
-
-        await ctx.reply('Starboard is now unlocked.')
+        await ctx.reply(f'{ctx.author.mention} starboard is now unlocked.')
 
     @star.command(name='limit', aliases=['threshold'])
     @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
@@ -1031,34 +923,17 @@ class Stars(Cog):
     @star.command(name='age')
     @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
     @requires_starboard()
-    async def star_age(self, ctx, number: int, units='days'):
+    async def star_age(self, ctx, *, age: time.ShortTime):
         """
         Sets the maximum age of a message valid for starring. By default, the maximum age is 7 days. Any message older than this specified age is invalid of being starred. To set the limit you must specify a number followed by a unit. The valid units are "days", "weeks", "months", or "years". They do not have to be pluralized. The default unit is "days". The number cannot be negative, and it must be a maximum of 35. If the unit is years then the cap is 10 years. You cannot mix and match units. You must have Manage Server permissions to use this.
         """
+        seconds = age.dt.timestamp()
+        if seconds >= 31622400:
+            return await ctx.reply(f"{ctx.author.mention} maximum age can not be more than 1 year")
 
-        valid_units = ('days', 'weeks', 'months', 'years')
-
-        if units[-1] != 's':
-            units = units + 's'
-
-        if units not in valid_units:
-            return await ctx.reply(f'Not a valid unit! I expect only {human_join(valid_units)}.')
-
-        number = min(max(number, 1), 35)
-
-        if units == 'years' and number > 10:
-            return await ctx.reply(f'{ctx.author.mention} the maximum is 10 years!')
-
-        query = f"UPDATE starboard SET max_age='{number} {units}'::interval WHERE id=$1;"
-        await .db.execute(query, ctx.guild.id)
+        await server_config.update_one({'_id': ctx.guild.id}, {'$set': {'starboard': {'max_age': seconds}}})
         self.get_starboard.invalidate(self, ctx.guild.id)
-
-        if number == 1:
-            age = f'1 {units[:-1]}'
-        else:
-            age = f'{number} {units}'
-
-        await ctx.reply(f'Messages must now be less than {age} old to be starred.')
+        await ctx.reply(f"{ctx.author.mention} starboard max age is set to {age}")
 
 def setup(bot):
     bot.add_cog(Stars(bot))

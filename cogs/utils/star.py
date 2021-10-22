@@ -300,9 +300,9 @@ class Stars(Cog):
                            channel: typing.Union[discord.TextChannel, discord.Thread], 
                            message_id: int, 
                            starrer_id: int
-                        ):
+                        ) -> None:
         
-        await self._star_message(channel, message_id, starrer_id, collection=starboard_entry)
+        await self._star_message(channel, message_id, starrer_id, db=starboard_entry)
 
     async def _star_message(self, 
                             channel: discord.TextChannel, 
@@ -314,7 +314,7 @@ class Stars(Cog):
         guild_id = channel.guild.id
         
         collection = db[f'{guild_id}']
-        collection_starrer = db['starrer']
+        collection_starrer = starrer['starrer']
         
         starboard = await self.get_starboard(guild_id)
         starboard_channel = starboard.channel
@@ -371,42 +371,19 @@ class Stars(Cog):
         except Exception:
             pass
         try:
-            await collection_starrer.insert_one({'author_id': starrer_id})
+            await collection_starrer.insert_one({'author_id': starrer_id, 'entry_id': message_id})
         except Exception:
             pass
-         = """WITH to_insert AS (
-                       INSERT INTO starboard_entries AS entries (message_id, channel_id, guild_id, author_id)
-                       VALUES ($1, $2, $3, $4)
-                       ON CONFLICT (message_id) DO NOTHING
-                       RETURNING entries.id
-                   )
-                   INSERT INTO starrers (author_id, entry_id)
-                   SELECT $5, entry.id
-                   FROM (
-                       SELECT id FROM to_insert
-                       UNION ALL
-                       SELECT id FROM starboard_entries WHERE message_id=$1
-                       LIMIT 1
-                   ) AS entry
-                   RETURNING entry_id;
-                """
-
-        record = await collection.fetchrow(, message_id, channel.id, guild_id, msg.author.id, starrer_id)
         
-        entry_id = record[0]
-
-         = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"
-        record = await collection.fetchrow(, entry_id)
-
-        count = record[0]
-        if count < starboard.threshold:
+        counter = 0
+        async for i in collection_starrer.find({'entry_id': message_id}):
+            counter += 1
+        
+        if counter < starboard.threshold:
             return
 
-        # at this point, we either edit the message or we create a message
-        # with our star info
-        content, embed = self.get_emoji_message(msg, count)
+        content, embed = self.get_emoji_message(msg, counter)
 
-        # get the message ID to edit:
         
         data = await collection.find_one({'message_id': message_id})
         try:
@@ -429,19 +406,20 @@ class Stars(Cog):
                              message_id: int, 
                              starrer_id: int, 
                         ) -> None:
-        collection = starboard_entry[f'{channel.guild.id}']
-        await self._unstar_message(channel, message_id, starrer_id, collection=collection)
+        await self._unstar_message(channel, message_id, starrer_id, db=starboard_entry)
 
     async def _unstar_message(self, 
                               channel: typing.Union[discord.TextChannel, discord.Thread], 
                               message_id: int, 
                               starrer_id: int, 
                               *, 
-                              collection
+                              db
                         ) -> None:
         guild_id = channel.guild.id
         starboard = await self.get_starboard(guild_id)
         starboard_channel = starboard.channel
+        collection_starrer = starrer['starrer']
+        collection = db[f"{guild_id}"]
         if starboard_channel is None:
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
 
@@ -460,29 +438,23 @@ class Stars(Cog):
 
         if not starboard_channel.permissions_for(starboard_channel.guild.me).send_messages:
             raise StarError('\N{NO ENTRY SIGN} Cannot edit messages in starboard channel.')
+        temp = await collection.find_one({'message_id': message_id})
 
-         = """DELETE FROM starrers USING starboard_entries entry
-                   WHERE entry.message_id=$1
-                   AND   entry.id=starrers.entry_id
-                   AND   starrers.author_id=$2
-                   RETURNING starrers.entry_id, entry.bot_message_id
-                """
-
-        record = await collection.fetchrow(, message_id, starrer_id)
-        if record is None:
+        data = await collection_starrer.delete_one({'starrer_id': starrer_id, 'entry_id': message_id})
+        data_ = await collection.delete_one({'message_id': message_id})
+        if (not data_):
             raise StarError('\N{NO ENTRY SIGN} You have not starred this message.')
 
-        entry_id = record[0]
-        bot_message_id = record[1]
-
-         = "SELECT COUNT(*) FROM starrers WHERE entry_id=$1;"
-        count = await collection.fetchrow(, entry_id)
-        count = count[0]
-
-        if count == 0:
-            # delete the entry if we have no more stars
-             = "DELETE FROM starboard_entries WHERE id=$1;"
-            await collection.execute(, entry_id)
+        counter = 0
+        async for i in collection_starrer.find({'entry_id': message_id}):
+            counter += 1
+        
+        if counter == 0:
+            await collection.delete_one({'message_id': message_id})
+        try:
+            bot_message_id = temp['bot_message_id']
+        except KeyError:
+            bot_message_id = None
 
         if bot_message_id is None:
             return
@@ -491,20 +463,18 @@ class Stars(Cog):
         if bot_message is None:
             return
 
-        if count < starboard.threshold:
+        if counter < starboard.threshold:
             self._about_to_be_deleted.add(bot_message_id)
-            if count:
-                # update the bot_message_id to be NULL in the table since we're deleting it
-                 = "UPDATE starboard_entries SET bot_message_id=NULL WHERE id=$1;"
-                await collection.execute(, entry_id)
-
+            if counter:
+                await collection.update_one({'message_id': message_id}, {'$set': {'bot_message_id': None}})
+                
             await bot_message.delete()
         else:
             msg = await self.get_message(channel, message_id)
             if msg is None:
                 raise StarError('\N{BLACK QUESTION MARK ORNAMENT} This message could not be found.')
 
-            content, embed = self.get_emoji_message(msg, count)
+            content, embed = self.get_emoji_message(msg, counter)
             await bot_message.edit(content=content, embed=embed)
 
     @commands.group(invoke_without_command=True)
@@ -611,46 +581,6 @@ class Stars(Cog):
         else:
             await ctx.message.delete()
 
-    @star.command(name='clean')
-    @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))
-    @requires_starboard()
-    async def star_clean(self, ctx, stars=1):
-        """Cleans the starboard. This removes messages in the starboard that only have less than or equal to the number of specified stars. This defaults to 1. Note that this only checks the last 100 messages in the starboard. This command requires the Manage Server permission. """
-
-        stars = max(stars, 1)
-        channel = ctx.starboard.channel
-
-        last_messages = await channel.history(limit=100).map(lambda m: m.id).flatten()
-
-         = """WITH bad_entries AS (
-                       SELECT entry_id
-                       FROM starrers
-                       INNER JOIN starboard_entries
-                       ON starboard_entries.id = starrers.entry_id
-                       WHERE starboard_entries.guild_id=$1
-                       AND   starboard_entries.bot_message_id = ANY($2::bigint[])
-                       GROUP BY entry_id
-                       HAVING COUNT(*) <= $3
-                   )
-                   DELETE FROM starboard_entries USING bad_entries
-                   WHERE starboard_entries.id = bad_entries.entry_id
-                   RETURNING starboard_entries.bot_message_id
-                """
-
-        to_delete = await .db.fetch(, ctx.guild.id, last_messages, stars)
-
-        # we cannot bulk delete entries over 14 days old
-        min_snowflake = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        to_delete = [discord.Object(id=r[0]) for r in to_delete if r[0] > min_snowflake]
-
-        try:
-            self._about_to_be_deleted.update(o.id for o in to_delete)
-            await channel.delete_messages(to_delete)
-        except discord.HTTPException:
-            await ctx.reply(f'{ctx.author.mention} could not delete messages.')
-        else:
-            await ctx.reply(f'\N{PUT LITTER IN ITS PLACE SYMBOL} Deleted {plural(len(to_delete)):message}.')
-
     @star.command(name='show')
     @requires_starboard()
     async def star_show(self, ctx, message: MessageID):
@@ -664,7 +594,7 @@ class Stars(Cog):
                 bot_message_id = data['bot_message_id']
         else:
             return await ctx.reply(f'{ctx.author.mention} this message has not been starred.')
-        data = record
+        record = data
         bot_message_id = record['bot_message_id']
         if not bot_message_id:
             # "fast" path, just redirect the message
@@ -724,148 +654,6 @@ class Stars(Cog):
         return '\n'.join(f'{chr(emoji + i)}: {fmt(r["ID"])} ({plural(r["Stars"]):star})'
                          for i, r in enumerate(records))
 
-    async def star_guild_stats(self, ctx):
-        e = discord.Embed(title='Server Starboard Stats')
-        e.timestamp = ctx.starboard.channel.created_at
-        e.set_footer(text='Adding stars since')
-
-        collection = starboard_entry[f'{ctx.guild.id}']
-        
-         = "SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1;"
-
-        record = await .db.fetchrow(, ctx.guild.id)
-        total_messages = record[0]
-
-        # total stars given
-         = """SELECT COUNT(*)
-                   FROM starrers
-                   INNER JOIN starboard_entries entry
-                   ON entry.id = starrers.entry_id
-                   WHERE entry.guild_id=$1;
-                """
-
-        record = await .db.fetchrow(, ctx.guild.id)
-        total_stars = record[0]
-
-        e.description = f'{plural(total_messages):message} starred with a total of {total_stars} stars.'
-        e.colour = discord.Colour.gold()
-
-
-         = """WITH t AS (
-                       SELECT
-                           entry.author_id AS entry_author_id,
-                           starrers.author_id,
-                           entry.bot_message_id
-                       FROM starrers
-                       INNER JOIN starboard_entries entry
-                       ON entry.id = starrers.entry_id
-                       WHERE entry.guild_id=$1
-                   )
-                   (
-                       SELECT t.entry_author_id AS "ID", 1 AS "Type", COUNT(*) AS "Stars"
-                       FROM t
-                       WHERE t.entry_author_id IS NOT NULL
-                       GROUP BY t.entry_author_id
-                       ORDER BY "Stars" DESC
-                       LIMIT 3
-                   )
-                   UNION ALL
-                   (
-                       SELECT t.author_id AS "ID", 2 AS "Type", COUNT(*) AS "Stars"
-                       FROM t
-                       GROUP BY t.author_id
-                       ORDER BY "Stars" DESC
-                       LIMIT 3
-                   )
-                   UNION ALL
-                   (
-                       SELECT t.bot_message_id AS "ID", 3 AS "Type", COUNT(*) AS "Stars"
-                       FROM t
-                       WHERE t.bot_message_id IS NOT NULL
-                       GROUP BY t.bot_message_id
-                       ORDER BY "Stars" DESC
-                       LIMIT 3
-                   );
-                """
-
-        records = await .db.fetch(, ctx.guild.id)
-        starred_posts = [r for r in records if r['Type'] == 3]
-        e.add_field(name='Top Starred Posts', value=self.records_to_value(starred_posts), inline=False)
-
-        to_mention = lambda o: f'<@{o}>'
-
-        star_receivers = [r for r in records if r['Type'] == 1]
-        value = self.records_to_value(star_receivers, to_mention, default='No one!')
-        e.add_field(name='Top Star Receivers', value=value, inline=False)
-
-        star_givers = [r for r in records if r['Type'] == 2]
-        value = self.records_to_value(star_givers, to_mention, default='No one!')
-        e.add_field(name='Top Star Givers', value=value, inline=False)
-
-        await ctx.reply(embed=e)
-
-    async def star_member_stats(self, ctx, member):
-        e = discord.Embed(colour=discord.Colour.gold())
-        e.set_author(name=member.display_name, icon_url=member.display_avatar.url)
-
-         = """WITH t AS (
-                       SELECT entry.author_id AS entry_author_id,
-                              starrers.author_id,
-                              entry.message_id
-                       FROM starrers
-                       INNER JOIN starboard_entries entry
-                       ON entry.id=starrers.entry_id
-                       WHERE entry.guild_id=$1
-                   )
-                   (
-                       SELECT '0'::bigint AS "ID", COUNT(*) AS "Stars"
-                       FROM t
-                       WHERE t.entry_author_id=$2
-                   )
-                   UNION ALL
-                   (
-                       SELECT '0'::bigint AS "ID", COUNT(*) AS "Stars"
-                       FROM t
-                       WHERE t.author_id=$2
-                   )
-                   UNION ALL
-                   (
-                       SELECT t.message_id AS "ID", COUNT(*) AS "Stars"
-                       FROM t
-                       WHERE t.entry_author_id=$2
-                       GROUP BY t.message_id
-                       ORDER BY "Stars" DESC
-                       LIMIT 3
-                   )
-                """
-
-        records = await .db.fetch(, ctx.guild.id, member.id)
-        received = records[0]['Stars']
-        given = records[1]['Stars']
-        top_three = records[2:]
-
-        # this  calculates how many of our messages were starred
-         = """SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1 AND author_id=$2;"""
-        record = await .db.fetchrow(, ctx.guild.id, member.id)
-        messages_starred = record[0]
-
-        e.add_field(name='Messages Starred', value=messages_starred)
-        e.add_field(name='Stars Received', value=received)
-        e.add_field(name='Stars Given', value=given)
-
-        e.add_field(name='Top Starred Posts', value=self.records_to_value(top_three), inline=False)
-
-        await ctx.reply(embed=e)
-
-    @star.command(name='stats')
-    @requires_starboard()
-    async def star_stats(self, ctx, *, member: discord.Member = None):
-        """Shows statistics on the starboard usage of the server or a member."""
-
-        if member is None:
-            await self.star_guild_stats(ctx)
-        else:
-            await self.star_member_stats(ctx, member)
 
     @star.command(name='lock')
     @commands.check_any(is_mod(), commands.has_permissions(manage_guild=True))

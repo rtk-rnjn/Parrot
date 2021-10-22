@@ -4,6 +4,15 @@ import jishaku
 import os, typing
 from async_property import async_property
 
+import datetime, re
+import json, asyncio
+import copy
+import logging
+import traceback
+import aiohttp
+import sys
+from collections import Counter, deque, defaultdict
+
 from discord.ext import commands
 import discord, traceback, asyncio, topgg
 
@@ -55,8 +64,14 @@ class Parrot(commands.AutoShardedBot):
                                        dbl_token,
                                        autopost=True,
                                        post_shard_count=True)
-        # self.persistent_views_added = False
+        self.persistent_views_added = False
+        self.spam_control = commands.CooldownMapping.from_cooldown(10, 12.0, commands.BucketType.user)
+        self._auto_spam_count = Counter()
+        self.resumes = defaultdict(list)
+        self.identifies = defaultdict(list)
+        self._prev_events = deque(maxlen=10)
 
+        self.session = aiohttp.ClientSession(loop=self.loop)
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -101,6 +116,26 @@ class Parrot(commands.AutoShardedBot):
         fin = time()
         return fin - ini
 
+    def _clear_gateway_data(self):
+        one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
+        for shard_id, dates in self.identifies.items():
+            to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
+            for index in reversed(to_remove):
+                del dates[index]
+
+        for shard_id, dates in self.resumes.items():
+            to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
+            for index in reversed(to_remove):
+                del dates[index]
+
+    async def on_socket_raw_receive(self, msg):
+        self._prev_events.append(msg)
+
+    async def before_identify_hook(self, shard_id, *, initial):
+        self._clear_gateway_data()
+        self.identifies[shard_id].append(discord.utils.utcnow())
+        await super().before_identify_hook(shard_id, initial=initial)
+
     async def db(self, db_name: str):
         return cluster[db_name]
 
@@ -118,26 +153,29 @@ class Parrot(commands.AutoShardedBot):
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self):
-        print(
-            f"[Parrot] {self.user} ready to take commands"
-        )
-        print(f"[Parrot] Currently in {len(self.guilds)} Guilds")
-        print(f"[Parrot] Connected to {len(self.users)} Users")
+        if not hasattr(self, 'uptime'):
+            self.uptime = discord.utils.utcnow()
+
+        print(f'Ready: {self.user} (ID: {self.user.id})')
 
     async def on_connect(self) -> None:
         print(
-            f"[Parrot] Logged in as {self.user.name}#{self.user.discriminator}"
+            f"[Parrot] Logged in as {self.user}"
         )
         return
 
     async def on_disconnect(self) -> None:
         print(
-            f"[Parrot] {self.user.name}#{self.user.discriminator} disconnect from discord"
+            f"[Parrot] {self.user} disconnect from discord"
         )
         return
-
+    
+    async def on_shard_resumed(self, shard_id):
+        print(f'Shard ID {shard_id} has resumed...')
+        self.resumes[shard_id].append(discord.utils.utcnow())
+        
     async def on_resumed(self) -> None:
-        print(f"[Parrot] resumed {self.user.name}#{self.user.discriminator}")
+        print(f"[Parrot] resumed {self.user}")
         return
 
     async def process_commands(self, message: discord.Message):
@@ -146,7 +184,11 @@ class Parrot(commands.AutoShardedBot):
         if ctx.command is None:
             # ignore if no command found
             return
-
+        
+        if await collection_ban.find_one({'_id': message.author.id}):
+            # if user is banned
+            return
+        
         await self.invoke(ctx)
 
     async def on_message(self, message: discord.Message):
@@ -158,6 +200,42 @@ class Parrot(commands.AutoShardedBot):
 
         await self.process_commands(message)
 
+    async def resolve_member_ids(self, guild, member_ids):
+        needs_resolution = []
+        for member_id in member_ids:
+            member = guild.get_member(member_id)
+            if member is not None:
+                yield member
+            else:
+                needs_resolution.append(member_id)
+
+        total_need_resolution = len(needs_resolution)
+        if total_need_resolution == 1:
+            shard = self.get_shard(guild.shard_id)
+            if shard.is_ws_ratelimited():
+                try:
+                    member = await guild.fetch_member(needs_resolution[0])
+                except discord.HTTPException:
+                    pass
+                else:
+                    yield member
+            else:
+                members = await guild.query_members(limit=1, user_ids=needs_resolution, cache=True)
+                if members:
+                    yield members[0]
+        elif total_need_resolution <= 100:
+            # Only a single resolution call needed here
+            resolved = await guild.query_members(limit=100, user_ids=needs_resolution, cache=True)
+            for member in resolved:
+                yield member
+        else:
+            # We need to chunk these in bits of 100...
+            for index in range(0, total_need_resolution, 100):
+                to_resolve = needs_resolution[index : index + 100]
+                members = await guild.query_members(limit=100, user_ids=to_resolve, cache=True)
+                for member in members:
+                    yield member
+    
     async def get_prefix(self, message: discord.Message) -> str:
         """Dynamic prefixing"""
         data = await collection.find_one({"_id": message.guild.id})

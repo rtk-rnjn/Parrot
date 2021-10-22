@@ -22,12 +22,5 @@ async def bot_check(ctx):
             await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!')
         return _true
 
-
-@bot.check_once
-async def check_once(ctx):
-    if data := await collection.find_one({'_id': ctx.author.id}):
-        return False
-    return True
-
 if __name__ == '__main__':
     bot.run()

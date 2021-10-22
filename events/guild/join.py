@@ -4,7 +4,8 @@ from core import Parrot, Cog
 from utilities.database import guild_join, guild_remove
 import aiohttp, os
 
-BASE_URL = "https://discord.com/api/webhooks/883368274501460039/"
+CHANNEL_ID = 883368274501460039
+BASE_URL = f"https://discord.com/api/webhooks/{CHANNEL_ID}/"
 
 
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):

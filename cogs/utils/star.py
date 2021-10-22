@@ -18,6 +18,8 @@ import re
 from core import Parrot, Cog, Context
 
 starboard_entry = cluster['starboard_entry']
+starer = cluster['starer']
+server_config = parrot_db['server_config']
 
 class StarError(commands.CheckFailure):
     pass
@@ -261,10 +263,12 @@ class Stars(Cog):
         if starboard.channel is None or starboard.channel.id != channel.id:
             return
 
-        # the starboard channel got deleted, so let's clear it from the database.
-        async with self.bot.pool.acquire(timeout=300.0) as con:
-            query = "DELETE FROM starboard WHERE id=$1;"
-            await con.execute(query, channel.guild.id)
+        await server_config.update_one(
+                        {'_id': channel.guild.id}, 
+                        {'$set': 
+                            {'starboard': {}}
+                        }
+                    )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -276,24 +280,19 @@ class Stars(Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
+        collection = starboard_entry[f'{payload.guild_id}']
         if payload.message_id in self._about_to_be_deleted:
-            # we triggered this deletion ourselves and
-            # we don't need to drop it from the database
             self._about_to_be_deleted.discard(payload.message_id)
             return
 
         starboard = await self.get_starboard(payload.guild_id)
         if starboard.channel is None or starboard.channel.id != payload.channel_id:
             return
-
-        # at this point a message got deleted in the starboard
-        # so just delete it from the database
-        async with self.bot.pool.acquire(timeout=300.0) as con:
-            query = "DELETE FROM starboard_entries WHERE bot_message_id=$1;"
-            await con.execute(query, payload.message_id)
+        await collection.delete_one({'bot_message_id': payload.message_id})
 
     @commands.Cog.listener()
     async def on_raw_bulk_message_delete(self, payload):
+        collection = starboard_entry[f'{payload.guild_id}']
         if payload.message_ids <= self._about_to_be_deleted:
             # see comment above
             self._about_to_be_deleted.difference_update(payload.message_ids)
@@ -302,13 +301,12 @@ class Stars(Cog):
         starboard = await self.get_starboard(payload.guild_id)
         if starboard.channel is None or starboard.channel.id != payload.channel_id:
             return
-
-        async with self.bot.pool.acquire(timeout=300.0) as con:
-            query = "DELETE FROM starboard_entries WHERE bot_message_id=ANY($1::bigint[]);"
-            await con.execute(query, list(payload.message_ids))
+        for msg_id in payload.message_ids:
+            await collection.delete_one({'bot_message_id': msg_id})
 
     @commands.Cog.listener()
     async def on_raw_reaction_clear(self, payload):
+        collection = starboard_entry[f'{payload.guild_id}']
         guild = self.bot.get_guild(payload.guild_id)
         if guild is None:
             return
@@ -334,27 +332,21 @@ class Stars(Cog):
             if msg is not None:
                 await msg.delete()
 
-    async def star_message(self, channel: typing.Union[discord.TextChannel, discord.Thread], message_id: int, starrer_id: int, *, verify=False):
-        guild_id = channel.guild.id
-        lock = self._locks.get(guild_id)
-        if not lock:
-            self._locks[guild_id] = lock = asyncio.Lock(loop=self.bot.loop)
+    async def star_message(self, 
+                           channel: typing.Union[discord.TextChannel, discord.Thread], 
+                           message_id: int, 
+                           starrer_id: int
+                        ):
+        
+        await self._star_message(channel, message_id, starrer_id, connection=starboard_entry)
 
-        async with lock:
-            async with self.bot.pool.acquire(timeout=300.0) as con:
-                if verify:
-                    config = self.bot.get_cog('Config')
-                    if config:
-                        plonked = await config.is_plonked(guild_id, starrer_id, channel=channel, connection=con)
-                        if plonked:
-                            return
-                        perms = await config.get_command_permissions(guild_id, connection=con)
-                        if perms.is_command_blocked('star', channel.id):
-                            return
-
-                await self._star_message(channel, message_id, starrer_id, connection=con)
-
-    async def _star_message(self, channel: discord.TextChannel, message_id: int, starrer_id: int, *, db):
+    async def _star_message(self, 
+                            channel: discord.TextChannel, 
+                            message_id: int, 
+                            starrer_id: int, 
+                            *, 
+                            db
+                        ) -> None:
         guild_id = channel.guild.id
         collection = db[f'{guild_id}']
         starboard = await self.get_starboard(guild_id)
@@ -555,10 +547,10 @@ class Stars(Cog):
             try:
                 confirm = await ctx.prompt('Apparently, a previously configured starboard channel was deleted. Is this true?')
             except RuntimeError as e:
-                await ctx.send(e)
+                await ctx.send(f"Something not right. Report this to developers\n```py\n{e}```")
             else:
                 if confirm:
-                    await .db.execute('DELETE FROM starboard WHERE id=$1;', ctx.guild.id)
+                    await server_config.update_one({'_id': ctx.guild.id}, {'$set': {'starboard': {}}})
                 else:
                     return await ctx.send('Aborting starboard creation. Join the bot support server for more questions.')
         overwrites = {
@@ -579,7 +571,14 @@ class Stars(Cog):
 
         query = "INSERT INTO starboard (id, channel_id) VALUES ($1, $2);"
         try:
-            await .db.execute(query, ctx.guild.id, channel.id)
+            await server_config.update_one(
+                        {'_id': ctx.guild.id}, 
+                        {'$set': 
+                            {'starboard':
+                                {'channel_id': channel.id}
+                            }
+                        }
+                    )
         except:
             await channel.delete(reason='Failure to commit to create the ')
             await ctx.send('Could not create the channel due to an internal error. Join the bot support server for help.')

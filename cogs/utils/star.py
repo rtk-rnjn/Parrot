@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from discord.ext import commands, tasks
-from meta.robopage import SimplePages
+from cogs.meta.robopage import SimplePages
 
 import discord
 import time

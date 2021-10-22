@@ -17,6 +17,8 @@ import re
 
 from core import Parrot, Cog, Context
 
+starboard_entry = cluster['starboard_entry']
+
 class StarError(commands.CheckFailure):
     pass
 
@@ -27,7 +29,7 @@ def requires_starboard():
 
         cog = ctx.bot.get_cog('Stars')
 
-        ctx.starboard = await cog.get_starboard(ctx.guild.id, connection=ctx.db)
+        ctx.starboard = await cog.get_starboard(ctx.guild.id, collection=parrot_db['server_config'])
         if ctx.starboard.channel is None:
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
 
@@ -158,13 +160,6 @@ class Stars(Cog):
             return '\N{SPARKLES}'
 
     def star_gradient_colour(self, stars):
-        # We define as 13 stars to be 100% of the star gradient (half of the 26 emoji threshold)
-        # So X / 13 will clamp to our percentage,
-        # We start out with 0xfffdf7 for the beginning colour
-        # Gradually evolving into 0xffc20c
-        # rgb values are (255, 253, 247) -> (255, 194, 12)
-        # To create the gradient, we use a linear interpolation formula
-        # Which for reference is X = X_1 * p + X_2 * (1 - p)
         p = stars / 13
         if p > 1.0:
             p = 1.0
@@ -359,21 +354,9 @@ class Stars(Cog):
 
                 await self._star_message(channel, message_id, starrer_id, connection=con)
 
-    async def _star_message(self, channel: discord.TextChannel, message_id: int, starrer_id: int, *, connection):
-        """Stars a message.
-        Parameters
-        ------------
-        channel: :class:`TextChannel`
-            The channel that the starred message belongs to.
-        message_id: int
-            The message ID of the message being starred.
-        starrer_id: int
-            The ID of the person who starred this message.
-        connection: asyncpg.Connection
-            The connection to use.
-        """
-
+    async def _star_message(self, channel: discord.TextChannel, message_id: int, starrer_id: int, *, db):
         guild_id = channel.guild.id
+        collection = db[f'{guild_id}']
         starboard = await self.get_starboard(guild_id)
         starboard_channel = starboard.channel
         if starboard_channel is None:
@@ -389,17 +372,15 @@ class Stars(Cog):
             # special case redirection code goes here
             # ergo, when we add a reaction from starboard we want it to star
             # the original message
-
-            query = "SELECT channel_id, message_id FROM starboard_entries WHERE bot_message_id=$1;"
-            record = await connection.fetchrow(query, message_id)
-            if record is None:
+            if data := await collection.find_one({'bot_message_id': message_id}):
+                ch = channel.guild.get_channel_or_thread(data['channel_id'])
+            else:
                 raise StarError('Could not find message in the starboard.')
 
-            ch = channel.guild.get_channel_or_thread(record['channel_id'])
             if ch is None:
                 raise StarError('Could not find original channel.')
 
-            return await self._star_message(ch, record['message_id'], starrer_id, connection=connection)
+            return await self._star_message(ch, data['message_id'], starrer_id, db=db)
 
         if not starboard_channel.permissions_for(starboard_channel.guild.me).send_messages:
             raise StarError('\N{NO ENTRY SIGN} Cannot post messages in starboard channel.')
@@ -480,19 +461,7 @@ class Stars(Cog):
         if lock is None:
             self._locks[guild_id] = lock = asyncio.Lock(loop=self.bot.loop)
 
-        async with lock:
-            async with self.bot.pool.acquire(timeout=300.0) as con:
-                if verify:
-                    config = self.bot.get_cog('Config')
-                    if config:
-                        plonked = await config.is_plonked(guild_id, starrer_id, channel=channel, connection=con)
-                        if plonked:
-                            return
-                        perms = await config.get_command_permissions(guild_id, connection=con)
-                        if perms.is_command_blocked('star', channel.id):
-                            return
-
-                await self._unstar_message(channel, message_id, starrer_id, connection=con)
+        await self._unstar_message(channel, message_id, starrer_id, connection=parrot_db['server_config'])
 
     async def _unstar_message(self, channel: typing.Union[discord.TextChannel, discord.Thread], message_id: int, starrer_id: int, *, connection):
         guild_id = channel.guild.id
@@ -589,7 +558,7 @@ class Stars(Cog):
                 await ctx.send(e)
             else:
                 if confirm:
-                    await ctx.db.execute('DELETE FROM starboard WHERE id=$1;', ctx.guild.id)
+                    await .db.execute('DELETE FROM starboard WHERE id=$1;', ctx.guild.id)
                 else:
                     return await ctx.send('Aborting starboard creation. Join the bot support server for more questions.')
         overwrites = {
@@ -610,7 +579,7 @@ class Stars(Cog):
 
         query = "INSERT INTO starboard (id, channel_id) VALUES ($1, $2);"
         try:
-            await ctx.db.execute(query, ctx.guild.id, channel.id)
+            await .db.execute(query, ctx.guild.id, channel.id)
         except:
             await channel.delete(reason='Failure to commit to create the ')
             await ctx.send('Could not create the channel due to an internal error. Join the bot support server for help.')
@@ -638,13 +607,10 @@ class Stars(Cog):
         await ctx.send('\n'.join(data))
 
     @commands.group(invoke_without_command=True, ignore_extra=False)
-    @commands.guild_only()
+    @commands.bot_has_permissions(manage_messages=True)
     async def star(self, ctx, message: MessageID):
-        """Stars a message via message ID.
-        To star a message you should right click on the on a message and then
-        click "Copy ID". You must have Developer Mode enabled to get that
-        functionality.
-        It is recommended that you react to a message with \N{WHITE MEDIUM STAR} instead.
+        """
+        Stars a message via message ID. To star a message you should right click on the on a message and then click "Copy ID". You must have Developer Mode enabled to get that functionality. It is recommended that you react to a message with \N{WHITE MEDIUM STAR} instead.
         You can only star a message once.
         """
 
@@ -656,7 +622,7 @@ class Stars(Cog):
             await ctx.message.delete()
 
     @commands.command()
-    @commands.guild_only()
+    @commands.bot_has_permissions(manage_messages=True)
     async def unstar(self, ctx, message: MessageID):
         """Unstars a message via message ID.
         To unstar a message you should right click on the on a message and then
@@ -701,7 +667,7 @@ class Stars(Cog):
                    RETURNING starboard_entries.bot_message_id
                 """
 
-        to_delete = await ctx.db.fetch(query, ctx.guild.id, last_messages, stars)
+        to_delete = await .db.fetch(query, ctx.guild.id, last_messages, stars)
 
         # we cannot bulk delete entries over 14 days old
         min_snowflake = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
@@ -718,11 +684,8 @@ class Stars(Cog):
     @star.command(name='show')
     @requires_starboard()
     async def star_show(self, ctx, message: MessageID):
-        """Shows a starred message via its ID.
-        To get the ID of a message you should right click on the
-        message and then click "Copy ID". You must have
-        Developer Mode enabled to get that functionality.
-        You can only use this command once per 10 seconds.
+        """
+        Shows a starred message via its ID. To get the ID of a message you should right click on the message and then click "Copy ID". You must have Developer Mode enabled to get that functionality. You can only use this command once per 10 seconds.
         """
 
         query = """SELECT entry.channel_id,
@@ -737,7 +700,7 @@ class Stars(Cog):
                    LIMIT 1
                 """
 
-        record = await ctx.db.fetchrow(query, ctx.guild.id, message)
+        record = await .db.fetchrow(query, ctx.guild.id, message)
         if record is None:
             return await ctx.send('This message has not been starred.')
 
@@ -751,7 +714,7 @@ class Stars(Cog):
             else:
                 # somehow it got deleted, so just delete the entry
                 query = "DELETE FROM starboard_entries WHERE message_id=$1;"
-                await ctx.db.execute(query, record['message_id'])
+                await .db.execute(query, record['message_id'])
                 return
 
         # slow path, try to fetch the content
@@ -781,7 +744,7 @@ class Stars(Cog):
                    WHERE entry.message_id = $1 OR entry.bot_message_id = $1
                 """
 
-        records = await ctx.db.fetch(query, message)
+        records = await .db.fetch(query, message)
         if records is None or len(records) == 0:
             return await ctx.send('No one starred this message or this is an invalid message ID.')
 
@@ -824,7 +787,7 @@ class Stars(Cog):
         start = time.time()
         guild_id = ctx.guild.id
         query = "UPDATE starboard SET locked=TRUE WHERE id=$1;"
-        await ctx.db.execute(query, guild_id)
+        await .db.execute(query, guild_id)
         self.get_starboard.invalidate(self, guild_id)
 
         await ctx.send('Starboard is now locked and migration will now begin.')
@@ -861,7 +824,7 @@ class Stars(Cog):
 
             delta = time.time() - start
             query = "UPDATE starboard SET locked = FALSE WHERE id=$1;"
-            await ctx.db.execute(query, guild_id)
+            await .db.execute(query, guild_id)
             self.get_starboard.invalidate(self, guild_id)
 
             m = await ctx.send(f'{ctx.author.mention}, we are done migrating!\n' \
@@ -897,7 +860,7 @@ class Stars(Cog):
         # messages starred
         query = "SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1;"
 
-        record = await ctx.db.fetchrow(query, ctx.guild.id)
+        record = await .db.fetchrow(query, ctx.guild.id)
         total_messages = record[0]
 
         # total stars given
@@ -908,7 +871,7 @@ class Stars(Cog):
                    WHERE entry.guild_id=$1;
                 """
 
-        record = await ctx.db.fetchrow(query, ctx.guild.id)
+        record = await .db.fetchrow(query, ctx.guild.id)
         total_stars = record[0]
 
         e.description = f'{plural(total_messages):message} starred with a total of {total_stars} stars.'
@@ -956,7 +919,7 @@ class Stars(Cog):
                    );
                 """
 
-        records = await ctx.db.fetch(query, ctx.guild.id)
+        records = await .db.fetch(query, ctx.guild.id)
         starred_posts = [r for r in records if r['Type'] == 3]
         e.add_field(name='Top Starred Posts', value=self.records_to_value(starred_posts), inline=False)
 
@@ -1012,14 +975,14 @@ class Stars(Cog):
                    )
                 """
 
-        records = await ctx.db.fetch(query, ctx.guild.id, member.id)
+        records = await .db.fetch(query, ctx.guild.id, member.id)
         received = records[0]['Stars']
         given = records[1]['Stars']
         top_three = records[2:]
 
         # this query calculates how many of our messages were starred
         query = """SELECT COUNT(*) FROM starboard_entries WHERE guild_id=$1 AND author_id=$2;"""
-        record = await ctx.db.fetchrow(query, ctx.guild.id, member.id)
+        record = await .db.fetchrow(query, ctx.guild.id, member.id)
         messages_starred = record[0]
 
         e.add_field(name='Messages Starred', value=messages_starred)
@@ -1058,7 +1021,7 @@ class Stars(Cog):
                    LIMIT 1
                 """
 
-        record = await ctx.db.fetchrow(query, ctx.guild.id)
+        record = await .db.fetchrow(query, ctx.guild.id)
 
         if record is None:
             return await ctx.send('Could not find anything.')
@@ -1091,7 +1054,7 @@ class Stars(Cog):
             return await ctx.send('Your starboard requires migration!')
 
         query = "UPDATE starboard SET locked=TRUE WHERE id=$1;"
-        await ctx.db.execute(query, ctx.guild.id)
+        await .db.execute(query, ctx.guild.id)
         self.get_starboard.invalidate(self, ctx.guild.id)
 
         await ctx.send('Starboard is now locked.')
@@ -1108,7 +1071,7 @@ class Stars(Cog):
             return await ctx.send('Your starboard requires migration!')
 
         query = "UPDATE starboard SET locked=FALSE WHERE id=$1;"
-        await ctx.db.execute(query, ctx.guild.id)
+        await .db.execute(query, ctx.guild.id)
         self.get_starboard.invalidate(self, ctx.guild.id)
 
         await ctx.send('Starboard is now unlocked.')
@@ -1133,7 +1096,7 @@ class Stars(Cog):
 
         stars = min(max(stars, 1), 100)
         query = "UPDATE starboard SET threshold=$2 WHERE id=$1;"
-        await ctx.db.execute(query, ctx.guild.id, stars)
+        await .db.execute(query, ctx.guild.id, stars)
         self.get_starboard.invalidate(self, ctx.guild.id)
 
         await ctx.send(f'Messages now require {plural(stars):star} to show up in the starboard.')
@@ -1172,7 +1135,7 @@ class Stars(Cog):
         # only doing this because asyncpg requires a timedelta object but
         # generating that with these clamp units is overkill
         query = f"UPDATE starboard SET max_age='{number} {units}'::interval WHERE id=$1;"
-        await ctx.db.execute(query, ctx.guild.id)
+        await .db.execute(query, ctx.guild.id)
         self.get_starboard.invalidate(self, ctx.guild.id)
 
         if number == 1:
@@ -1187,7 +1150,7 @@ class Stars(Cog):
     async def star_announce(self, ctx, *, message):
         """Announce stuff to every starboard."""
         query = "SELECT id, channel_id FROM starboard;"
-        records = await ctx.db.fetch(query)
+        records = await .db.fetch(query)
         await ctx.release()
 
         to_send = []

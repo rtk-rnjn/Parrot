@@ -136,7 +136,7 @@ class Economy(Cog):
                 f"{ctx.author.mention} you don't have started your Parrot Bank yet. Consider doing `{ctx.clean_prefix}starteco` to get started!"
             )
 
-    @commands.command()
+    @commands.command(aliases=['slot'])
     @commands.cooldown(1, 10, commands.BucketType.member)
     @Context.with_type
     async def slots(self, ctx: Context, money: int):
@@ -162,14 +162,14 @@ class Economy(Cog):
             third = random.choice(emoji)
             if first == second == third:
                 await ctx.reply(
-                    f"{ctx.author.mention}\n\nYour slots results:\n> |{first}|{second}|{third}|\n\nYayy!! you won **{money*10}** money"
+                    f"{ctx.author.mention}\n\nYour slots results:\n> **|{first}|{second}|{third}|**\n\nYayy!! you won **{money*10}** money"
                 )
-                coins_walt['wallet'] += (money * 10)
+                coins_walt = x['wallet'] + (money * 10)
             else:
                 await ctx.reply(
-                    f"{ctx.author.mention}\n\nYour slots results:\n> |{first}|{second}|{third}|\n\nYou lost {money} money :'("
+                    f"{ctx.author.mention}\n\nYour slots results:\n> **|{first}|{second}|{third}|**\n\nYou lost {money} money :'("
                 )
-                coins_walt['wallet'] -= money
+                coins_walt = x['wallet'] - money
 
             await ge_update(ctx.author.id, coins_bank, coins_walt)
         else:
@@ -181,9 +181,9 @@ class Economy(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def give(self, ctx: Context, member: discord.Member, money: int):
-        '''
-				You can give your Parrot coins to other user too
-				'''
+        """
+        You can give your Parrot coins to other user too
+		"""
 
         if money < 0:
             return await ctx.reply(
@@ -221,9 +221,9 @@ class Economy(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def deposit(self, ctx: Context, money: int):
-        '''
-				Save your money by depositing all the money in the bank
-				'''
+        """
+		Save your money by depositing all the money in the bank
+		"""
 
         if money < 0:
             return await ctx.reply(
@@ -254,9 +254,9 @@ class Economy(Cog):
     @commands.cooldown(1, 30, commands.BucketType.member)
     @Context.with_type
     async def beg(self, ctx: Context):
-        '''
-				Beg from internet, hope someone will give you money
-				'''
+        """
+        Beg from internet, hope someone will give you money
+		"""
 
         inc = random.randint(0, 100)
         someone = [
@@ -264,12 +264,12 @@ class Economy(Cog):
             "Discord", "Parrot", "this internet",
             "the guy who punched you yesterday", "Ritik Ranjan",
             "girl with whom you had fun last night", "your father", "the Boss",
-            "your mom"
+            "your mom", "Trump", "Mr. Beast"
         ]
 
         gives = [
             'gives you', 'gifted you', 'unconditionally gives you',
-            'slaps, and give', 'transfer'
+            'slaps, and give', 'transfer', 'lends'
         ]
 
         x = await collection.find_one({'_id': ctx.author.id})
@@ -290,11 +290,10 @@ class Economy(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def balance(self, ctx: Context, *, member: discord.User = None):
-        '''
-				To check your balance, if not, then it will open a Parrot Economy bank account for you
-				'''
-        target = ctx.author or member
-        if target.bot: return
+        """
+        To check your balance, if not, then it will open a Parrot Economy bank account for you
+		"""
+        target = member or ctx.author
 
         x = await collection.find_one({'_id': target.id})
 

@@ -107,13 +107,12 @@ class Stars(Cog):
                             'channel_id': None,
                             'threshold': None,
                             'locked': True,
-                            'max_age': None,
-                            'need_migration': False
+                            'max_age': None
                         }
                     }
                 }
             )
-        
+
     def star_emoji(self, stars):
         if 5 > stars >= 0:
             return '\N{WHITE MEDIUM STAR}'
@@ -252,6 +251,7 @@ class Stars(Cog):
             return
 
         starboard = await self.get_starboard(payload.guild_id)
+        if not starboard: return
         if starboard.channel is None or starboard.channel.id != payload.channel_id:
             return
         await collection.delete_one({'bot_message_id': payload.message_id})
@@ -265,6 +265,7 @@ class Stars(Cog):
             return
 
         starboard = await self.get_starboard(payload.guild_id)
+        if not starboard: return
         if starboard.channel is None or starboard.channel.id != payload.channel_id:
             return
         for msg_id in payload.message_ids:
@@ -282,8 +283,8 @@ class Stars(Cog):
             return
 
         starboard = await self.get_starboard(channel.guild.id, collection=collection)
-        if starboard.channel is None:
-            return
+        if not starboard: return
+        
         data = await collection.find_one({'bot_message_id': payload.message_id})
         await collection.delete_one({'bot_message_id': payload.message_id})
         
@@ -317,9 +318,7 @@ class Stars(Cog):
         collection_starrer = starrer['starrer']
         
         starboard = await self.get_starboard(guild_id)
-        starboard_channel = starboard.channel
-        
-        if starboard_channel is None:
+        if not starboard: 
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
 
         if starboard.locked:
@@ -329,9 +328,7 @@ class Stars(Cog):
             raise StarError('\N{NO ENTRY SIGN} Cannot star NSFW in non-NSFW starboard channel.')
 
         if channel.id == starboard_channel.id:
-            # special case redirection code goes here
-            # ergo, when we add a reaction from starboard we want it to star
-            # the original message
+           
             if data := await collection.find_one({'bot_message_id': message_id}):
                 ch = channel.guild.get_channel_or_thread(data['channel_id'])
             else:

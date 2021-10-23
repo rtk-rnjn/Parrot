@@ -560,9 +560,9 @@ class Misc(Cog):
             })
 
         msg = await ctx.reply(
-            f"Poll created: <https://strawpoll.com/{data['content_id']}>")
+            f"Poll created: <https://strawpoll.com/{temp['content_id']}>")
         await msg.reply(
-            f"{ctx.author.mention} your poll content id is: {data['content_id']}"
+            f"{ctx.author.mention} your poll content id is: {temp['content_id']}"
         )
 
     @poll.command(name='get')

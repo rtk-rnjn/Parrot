@@ -47,7 +47,7 @@ class Timer(Cog):
         await collection.insert_one(post)
     
     async def delete_timer(self, member: discord.Member, message_id: int):
-        collection = self.reminder_db[f'{member.id}']
+        collection = self.collection
         await collection.delete_one({'_id': message_id})
     
     async def get_all_timers(self, member: discord.User) -> list[discord.Embed]:
@@ -107,11 +107,17 @@ class Timer(Cog):
                 await self.collection.delete_one({'_id': data['id']})
             else:
                 if not data['dm']:
-                    await channel.send(f"<@{data['author']}> reminder for: {data['remark']}")
+                    try:
+                        await channel.send(f"<@{data['author']}> reminder for: {data['remark']}")
+                    except Exception:
+                        pass # this is done as bot may have being denied to send message
                 else:
                     member = channel.guild.get_member(data['author'])
                     if not member:
                         await self.collection.delete_one({'_id': data['id']})
                     else:
-                        await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
+                        try:
+                            await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
+                        except Exception:
+                            pass # what if member DM are blocked?
             await self.collection.delete_one({'_id': data['id']})

@@ -14,7 +14,12 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def log(self, guild, channel: discord.TextChannel, description: str, status: str) -> Optional[discord.Message]:
+    async def log(self, 
+                 guild, 
+                 channel: discord.TextChannel, 
+                 description: str, 
+                 status: str
+            ) -> Optional[discord.Message]:
         await channel.send(embed=discord.Embed(
                                         title='Parrot Ticket Bot',
                                         timestamp=datetime.utcnow(),

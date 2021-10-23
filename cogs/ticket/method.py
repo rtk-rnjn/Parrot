@@ -40,13 +40,18 @@ async def chat_exporter(channel, limit=None):
 
 
 async def log(guild, channel, description, status):
-    embed = discord.Embed(title='Parrot Ticket Bot',
-                          timestamp=datetime.utcnow(),
-                          description=f"```\n{description}\n```",
-                          color=discord.Color.blue())
-    embed.add_field(name='Status', value=status)
-    embed.set_footer(text=f"{guild.name}")
-    await channel.send(embed=embed)
+    await channel.send(embed=discord.Embed(
+                                        title='Parrot Ticket Bot',
+                                        timestamp=datetime.utcnow(),
+                                        description=f"{description}",
+                                        color=discord.Color.blue()
+                                ).add_field(
+                                        name='Status', 
+                                        value=status
+                                ).set_footer(
+                                        text=f"{guild.name}"
+                            )
+                        )
 
 
 async def _new(ctx, args):
@@ -158,10 +163,7 @@ async def _new(ctx, args):
     await ctx.reply(embed=created_em)
     if data['log']:
         log_channel = ctx.guild.get_channel(data['log'])
-        await log(
-            ctx.guild, log_channel,
-            f'ticket-{ticket_number} opened by, {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})',
-            'RUNNING')
+        await log(ctx.guild, log_channel, f"Channel: **#ticket-{ticket_number}**\n**Opened by:** {ctx.author} ({ctx.author.id})", 'RUNNING')
 
 
 async def _close(ctx, bot):

@@ -488,7 +488,7 @@ class Stars(Cog):
         self.get_starboard.invalidate(self, ctx.guild.id)
 
         starboard = await self.get_starboard(ctx.guild.id, collection=parrot_db['server_config'])
-        if starboard.channel is not None:
+        if starboard is not None:
             return await ctx.reply(f'{ctx.author.mention} this server already has a starboard ({starboard.channel.mention}).')
 
         if hasattr(starboard, 'locked'):

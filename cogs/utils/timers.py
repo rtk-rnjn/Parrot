@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 import discord, asyncio
 
 from utilities.database import parrot_db
-from utilities import time
+from utilities.time import ShortTime
 from utilities.paginator import PaginationView
 
 from typing import Optional, Union
@@ -67,7 +67,7 @@ class Timer(Cog):
         return records
     
     @commands.command()
-    async def remindme(self, ctx: Context, age: time.ShortTime, *, task: commands.clean_content):
+    async def remindme(self, ctx: Context, age: ShortTime, *, task: commands.clean_content):
         """To make reminders as to get your tasks done on time"""
         seconds = age.dt.timestamp()
         await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned here at **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
@@ -90,7 +90,7 @@ class Timer(Cog):
         await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
     
     @commands.command()
-    async def remindmedm(self, ctx: Context, age: time.ShortTime, *, task: commands.clean_content):
+    async def remindmedm(self, ctx: Context, age: ShortTime, *, task: commands.clean_content):
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = age.dt.timestamp()
         await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) within **{seconds}**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")

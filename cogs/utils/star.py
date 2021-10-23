@@ -8,9 +8,9 @@ import time
 
 from utilities.checks import is_mod
 from utilities.database import parrot_db, cluster
-from utilities.cache import cache
 from utilities.formats import plural, human_join
 from utilities import time
+from utilities import cache
 
 import asyncio, typing
 import weakref

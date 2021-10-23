@@ -560,9 +560,9 @@ class Misc(Cog):
             })
 
         msg = await ctx.reply(
-            f"Poll created: <https://strawpoll.com/{temp['content_id']}>")
+            f"Poll created: <https://strawpoll.com/{data['content_id']}>")
         await msg.reply(
-            f"{ctx.author.mention} your poll content id is: {temp['content_id']}"
+            f"{ctx.author.mention} your poll content id is: {data['content_id']}"
         )
 
     @poll.command(name='get')
@@ -585,8 +585,8 @@ class Misc(Cog):
             timestamp=datetime.datetime.utcnow(),
             color=ctx.author.color)
         for temp in data['content']['poll']['poll_answers']:
-            embed.add_field(name=data['answer'],
-                            value=f"Votes: **{data['votes']}**",
+            embed.add_field(name=temp['answer'],
+                            value=f"Votes: **{temp['votes']}**",
                             inline=False)
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)

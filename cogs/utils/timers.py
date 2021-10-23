@@ -13,6 +13,7 @@ from utilities.paginator import PaginationView
 
 from typing import Optional, Union
 from datetime import datetime
+from time import time
 
 class Timer(Cog):
     """For timers and reminders"""
@@ -69,7 +70,7 @@ class Timer(Cog):
     async def remindme(self, ctx: Context, age: time.ShortTime, *, task: commands.clean_content):
         """To make reminders as to get your tasks done on time"""
         seconds = age.dt.timestamp()
-        await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned here within **{seconds}** or **{age}**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
+        await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned here at **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
         if seconds < 60:
             await asyncio.sleep(seconds)
             await ctx.send(f"{ctx.author.mention} reminder for **{age}** is over. Remark: **{task}**")
@@ -92,10 +93,10 @@ class Timer(Cog):
     async def remindmedm(self, ctx: Context, age: time.ShortTime, *, task: commands.clean_content):
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = age.dt.timestamp()
-        await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) within **{seconds}** or **{age}**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
+        await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) within **{seconds}**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
         if seconds < 60:
             await asyncio.sleep(seconds)
-            await ctx.author.send(f"{ctx.author.mention} reminder for **{age}** is over. Remark: **{task}**")
+            await ctx.author.send(f"{ctx.author.mention} reminder for is over. Remark: **{task}**")
         else:
             await self.create_timer(ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=True)
     
@@ -111,6 +112,7 @@ class Timer(Cog):
                         await channel.send(f"<@{data['author']}> reminder for: {data['remark']}")
                     except Exception:
                         pass # this is done as bot may have being denied to send message
+                    await self.collection.delete_one({'_id': data['id']})
                 else:
                     member = channel.guild.get_member(data['author'])
                     if not member:
@@ -120,4 +122,4 @@ class Timer(Cog):
                             await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
                         except Exception:
                             pass # what if member DM are blocked?
-            await self.collection.delete_one({'_id': data['id']})
+                        await self.collection.delete_one({'_id': data['id']})

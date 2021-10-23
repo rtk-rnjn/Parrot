@@ -85,7 +85,7 @@ class Timer(Cog):
     @commands.command()
     async def delremind(self, ctx: Context, message: int):
         """To delete the reminder"""
-        await self.delete_timer(ctx.author, message.id)
+        await self.delete_timer(ctx.author, message)
         await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
     
     @commands.command()
@@ -114,3 +114,4 @@ class Timer(Cog):
                         await self.collection.delete_one({'_id': data['id']})
                     else:
                         await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
+            await self.collection.delete_one({'_id': data['id']})

@@ -33,7 +33,7 @@ def requires_starboard():
         cog = ctx.bot.get_cog('Stars')
 
         ctx.starboard = await cog.get_starboard(ctx.guild.id, collection=parrot_db['server_config'])
-        if ctx.starboard.channel is None:
+        if ctx.starboard is None:
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
 
         return True
@@ -67,7 +67,7 @@ class StarboardConfig:
         return guild and guild.get_channel(self.channel_id)
 
 class Stars(Cog):
-    """A starboard to upvote posts obviously. There are two ways to make use of this feature, the first is via reactions, react to a message with \N{WHITE MEDIUM STAR} and the bot will automatically add (or remove) it to the starboard. The second way is via Developer Mode."""
+    """A starboard to upvote posts obviously"""
 
     def __init__(self, bot: Parrot):
         self.bot = bot

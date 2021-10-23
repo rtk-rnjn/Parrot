@@ -105,21 +105,21 @@ class Timer(Cog):
         async for data in self.collection.find({'age': {'$lte': datetime.utcnow().timestamp()}}):
             channel = self.bot.get_channel(data['channel'])
             if not channel:
-                await self.collection.delete_one({'_id': data['id']})
+                await self.collection.delete_one({'_id': data['_id']})
             else:
                 if not data['dm']:
                     try:
                         await channel.send(f"<@{data['author']}> reminder for: {data['remark']}")
                     except Exception:
                         pass # this is done as bot may have being denied to send message
-                    await self.collection.delete_one({'_id': data['id']})
+                    await self.collection.delete_one({'_id': data['_id']})
                 else:
                     member = channel.guild.get_member(data['author'])
                     if not member:
-                        await self.collection.delete_one({'_id': data['id']})
+                        await self.collection.delete_one({'_id': data['_id']})
                     else:
                         try:
                             await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
                         except Exception:
                             pass # what if member DM are blocked?
-                        await self.collection.delete_one({'_id': data['id']})
+                        await self.collection.delete_one({'_id': data['_id']})

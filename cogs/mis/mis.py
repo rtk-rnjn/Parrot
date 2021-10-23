@@ -584,9 +584,9 @@ class Misc(Cog):
             f"Total Options: {len(data['content']['poll']['poll_answers'])} | Total Votes: {data['content']['poll']['total_votes']}",
             timestamp=datetime.datetime.utcnow(),
             color=ctx.author.color)
-        for answer, _id, _, _, votes, _ in data['content']['poll']['poll_answers']:
-            embed.add_field(name=answer,
-                            value=f"Votes: **{votes}** | ID: {_id}",
+        for temp in data['content']['poll']['poll_answers']:
+            embed.add_field(name=data['answer'],
+                            value=f"Votes: **{data['votes']}**",
                             inline=False)
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
@@ -648,10 +648,10 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def mine_server_status(
-            self,
-            ctx: Context,
-            address: str,
-            bedrock: typing.Optional[convert_bool] = False):
+                                self,
+                                ctx: Context,
+                                address: str,
+                                bedrock: typing.Optional[convert_bool] = False):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"

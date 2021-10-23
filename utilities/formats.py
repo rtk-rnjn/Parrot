@@ -76,10 +76,13 @@ class TabularData:
         to_draw.append(sep)
         return '\n'.join(to_draw)
 
-def format_dt(dt, style=None):
+def format_dt(dt, style=None) -> str:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=datetime.timezone.utc)
 
     if style is None:
         return f'<t:{int(dt.timestamp())}>'
     return f'<t:{int(dt.timestamp())}:{style}>'
+
+def format_dt_with_int(dt: int, style=None) -> str:
+    return f"<t:{dt}:{style}>"

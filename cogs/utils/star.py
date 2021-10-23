@@ -94,24 +94,24 @@ class Stars(Cog):
         self._message_cache.clear()
 
     @cache.cache()
-    async def get_starboard(self, guild_id, *, collection=None):
+    async def get_starboard(self, guild_id, *, collection=None) -> StarboardConfig:
         collection = collection or parrot_db['server_config']
         if data := await collection.find_one({'_id': guild_id, 'starboard': {}}):
             return StarboardConfig(guild_id=guild_id, bot=self.bot, record=data)
         else:
+            post = {
+                    'channel_id': None,
+                    'threshold': None,
+                    'locked': True,
+                    'max_age': None
+                }
             await collection.update_one(
                 {'_id': guild_id}, 
                 {'$set': 
-                    {'starboard':
-                        {
-                            'channel_id': None,
-                            'threshold': None,
-                            'locked': True,
-                            'max_age': None
-                        }
-                    }
+                    {'starboard': post}
                 }
             )
+            return StarboardConfig(guild_id=guild_id, bot=self.bot, record=post)
 
     def star_emoji(self, stars):
         if 5 > stars >= 0:
@@ -251,7 +251,7 @@ class Stars(Cog):
             return
 
         starboard = await self.get_starboard(payload.guild_id)
-        if not starboard: return
+        if not starboard.channel: return
         if starboard.channel is None or starboard.channel.id != payload.channel_id:
             return
         await collection.delete_one({'bot_message_id': payload.message_id})
@@ -265,7 +265,7 @@ class Stars(Cog):
             return
 
         starboard = await self.get_starboard(payload.guild_id)
-        if not starboard: return
+        if not starboard.channel: return
         if starboard.channel is None or starboard.channel.id != payload.channel_id:
             return
         for msg_id in payload.message_ids:
@@ -283,7 +283,7 @@ class Stars(Cog):
             return
 
         starboard = await self.get_starboard(channel.guild.id, collection=collection)
-        if not starboard: return
+        if not starboard.channel: return
         
         data = await collection.find_one({'bot_message_id': payload.message_id})
         await collection.delete_one({'bot_message_id': payload.message_id})
@@ -318,12 +318,12 @@ class Stars(Cog):
         collection_starrer = starrer['starrer']
         
         starboard = await self.get_starboard(guild_id)
-        if not starboard: 
+        if not starboard.channel: 
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
 
         if starboard.locked:
             raise StarError('\N{NO ENTRY SIGN} Starboard is locked.')
-
+        starboard_channel = starboard.channel
         if channel.is_nsfw() and not starboard_channel.is_nsfw():
             raise StarError('\N{NO ENTRY SIGN} Cannot star NSFW in non-NSFW starboard channel.')
 
@@ -354,7 +354,7 @@ class Stars(Cog):
         if empty_message or msg.type not in (discord.MessageType.default, discord.MessageType.reply):
             raise StarError('\N{NO ENTRY SIGN} This message cannot be starred.')
 
-        oldest_allowed = discord.utils.utcnow() - starboard.max_age
+        oldest_allowed = discord.utils.utcnow().timestamp() - starboard.max_age
         if msg.created_at < oldest_allowed:
             raise StarError('\N{NO ENTRY SIGN} This message is too old.')
         post = {
@@ -488,7 +488,7 @@ class Stars(Cog):
         self.get_starboard.invalidate(self, ctx.guild.id)
 
         starboard = await self.get_starboard(ctx.guild.id, collection=parrot_db['server_config'])
-        if starboard is not None:
+        if starboard.channel is not None:
             return await ctx.reply(f'{ctx.author.mention} this server already has a starboard ({starboard.channel.mention}).')
 
         if hasattr(starboard, 'locked'):

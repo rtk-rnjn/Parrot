@@ -235,7 +235,26 @@ class Parrot(commands.AutoShardedBot):
                 members = await guild.query_members(limit=100, user_ids=to_resolve, cache=True)
                 for member in members:
                     yield member
-    
+
+    async def get_or_fetch_member(self, guild, member_id):
+        member = guild.get_member(member_id)
+        if member is not None:
+            return member
+
+        shard = self.get_shard(guild.shard_id)
+        if shard.is_ws_ratelimited():
+            try:
+                member = await guild.fetch_member(member_id)
+            except discord.HTTPException:
+                return None
+            else:
+                return member
+
+        members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
+        if not members:
+            return None
+        return members[0]
+
     async def get_prefix(self, message: discord.Message) -> str:
         """Dynamic prefixing"""
         data = await collection.find_one({"_id": message.guild.id})

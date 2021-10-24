@@ -93,7 +93,7 @@ class Stars(Cog):
     async def clean_message_cache(self):
         self._message_cache.clear()
 
-    @cache.cache()
+    # @cache.cache()
     async def get_starboard(self, guild_id, *, collection=None) -> StarboardConfig:
         collection = collection or parrot_db['server_config']
         if data := await collection.find_one({'_id': guild_id, 'starboard': {}}):

@@ -6,7 +6,7 @@ from discord.ext import commands
 
 import aiohttp, re, asyncio, json
 from discord import Webhook
-from utilities.database import msg_increment, parrot_db
+from utilities.database import parrot_db
 
 collection = parrot_db['global_chat']
 
@@ -42,8 +42,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message(self, message):
         if not message.guild or message.author.bot: return
-        await msg_increment(message.guild.id, message.author.id)
-
+        
         channel = await collection.find_one({
             '_id': message.guild.id,
             'channel_id': message.channel.id

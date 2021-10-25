@@ -1,5 +1,5 @@
 import discord
-
+from utilities.database import parrot_db
 
 async def _enable(bot, ctx, cmd_cog, target, force=None):
     enable_disable = await bot.db('enable_disable')

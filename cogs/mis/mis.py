@@ -587,7 +587,7 @@ class Misc(Cog):
         for temp in data['content']['poll']['poll_answers']:
             embed.add_field(name=temp['answer'],
                             value=f"Votes: **{temp['votes']}**",
-                            inline=False)
+                            inline=True)
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 

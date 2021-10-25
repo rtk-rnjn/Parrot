@@ -178,6 +178,12 @@ class Owner(Cog):
             timestamp=datetime.datetime.utcnow()).set_image(url=link))
 
 
+    @commands.command()
+    @commands.is_owner()
+    @Context.with_type
+    async def dr(self, ctx: Context):
+        """To delete the message reference"""
+        await ctx.message.referece.resolved.delete()
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

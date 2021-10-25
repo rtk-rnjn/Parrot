@@ -232,6 +232,7 @@ class Mod(Cog):
     @Context.with_type
     async def clear(self, ctx, num: int, *, target: discord.Member=None):
         """To delete bulk message"""
+        await ctx.message.delete()
         if num > 100 or num < 0:
             return await ctx.send("Invalid amount. Maximum is 100.")
         def msgcheck(amsg):
@@ -239,7 +240,7 @@ class Mod(Cog):
                 return amsg.author.id == target.id
             return True
         deleted = await ctx.channel.purge(limit=num, check=msgcheck)
-        await ctx.send(f'Deleted **{len(deleted)}/{num}** possible messages for you.', delete_after=10)
+        await ctx.send(f'{ctx.author.mention} deleted **{len(deleted)}/{num}** possible messages for you.', delete_after=10)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -247,6 +248,7 @@ class Mod(Cog):
     @Context.with_type
     async def purgebots(self, ctx: Context, amount: int):
         """To delete bulk message, of bots"""
+        await ctx.message.delete()
         if amount > 100 or amount < 0:
             return await ctx.send("Invalid amount. Maximum is 100.")
         
@@ -254,10 +256,10 @@ class Mod(Cog):
             return m.author.bot
 
         deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
-        await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
+        await ctx.send(f"{ctx.author.mention} deleted **{len(deleted)}/{amount}** possible messages for you.", delete_after=10)
         await self.log(
             ctx, 'Clean Bots', ctx.channel,
-            f'Action Requested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) | Total message deleted {len(deleted)}'
+            f'Action Requested by {ctx.author} ({ctx.author.id}) | Total message deleted {len(deleted)}'
         )
 
     @commands.command()
@@ -266,26 +268,27 @@ class Mod(Cog):
     @Context.with_type
     async def purgeregex(self, ctx: Context, amount: int, *, regex: str):
         """To delete bulk message, matching the regex"""
+        await ctx.message.delete()
         def check(m):
             return re.search(regex, m.content)
 
         deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
-        await ctx.send(f"{ctx.author.mention} message deleted :')", delete_after=5)
+        await ctx.send(f"{ctx.author.mention} deleted **{len(deleted)}/{amount}** possible messages for you.", delete_after=10)
         await self.log(
             ctx, 'Clean Regex', ctx.channel,
-            f'Action Requested by {ctx.author.name}#{ctx.author.mention} ({ctx.author.id}) | Total message deleted {len(deleted)}'
+            f'Action Requested by {ctx.author} ({ctx.author.id}) | Total message deleted {len(deleted)}'
         )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
     @commands.bot_has_permissions(manage_channels=True)
     @Context.with_type
-    async def slowmode(self, ctx: Context, seconds: typing.Union[int, str], channel: discord.TextChannel = None, *,  reason: reason_convert = None):
+    async def slowmode(self, ctx: Context, seconds: int, channel: discord.TextChannel = None, *, reason: reason_convert = None):
         """To set slowmode in the specified channel"""
         await mt._slowmode(ctx.guild, ctx.command.name, ctx.author, ctx.channel, seconds, channel or ctx.channel, reason)
         await self.log(ctx, ctx.command.qualified_name, channel, f'{reason} | For {seconds}s')
 
-    @commands.command(brief='To Unban a member from a guild')
+    @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)
     @Context.with_type
@@ -467,7 +470,6 @@ class Mod(Cog):
         await mt._emoji_rename(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, name, reason)
         await self.log(ctx, ctx.command.qualified_name, emoji, f'{reason}')
 
-    
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, manage_nicknames=True))
     @commands.bot_has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, read_message_history=True, add_reactions=True, manage_nicknames=True)

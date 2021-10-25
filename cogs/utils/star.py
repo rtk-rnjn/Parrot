@@ -197,9 +197,6 @@ class Stars(Cog):
                 return None
 
     async def reaction_action(self, fmt, payload):
-        if str(payload.emoji) != '\N{WHITE MEDIUM STAR}':
-            return
-
         guild = self.bot.get_guild(payload.guild_id)
         if guild is None:
             return
@@ -237,10 +234,14 @@ class Stars(Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        if str(payload.emoji) != '\N{WHITE MEDIUM STAR}':
+            return
         await self.reaction_action('star', payload)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+        if str(payload.emoji) != '\N{WHITE MEDIUM STAR}':
+            return
         await self.reaction_action('unstar', payload)
 
     @commands.Cog.listener()

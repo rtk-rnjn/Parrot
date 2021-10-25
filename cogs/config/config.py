@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from discord.ext import commands
-import discord, typing
+import discord, typing, re
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
@@ -13,8 +13,9 @@ csc = parrot_db['server_config']
 ctt = parrot_db['ticket']
 
 from utilities.checks import has_verified_role_ticket
-from cogs.ticket import method as mt
+from utilities.converters import convert_bool
 
+from cogs.ticket import method as mt
 from cogs.config import method as mt_
 
 class BotConfig(Cog):
@@ -120,7 +121,7 @@ class BotConfig(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True, manage_webhooks=True, manage_roles=True)
     @Context.with_type
-    async def gsetup(self, ctx: Context, setting: str = None, *, role: typing.Union[discord.Role] = None):
+    async def gsetup(self, ctx: Context, setting: str = None, *, role: typing.Optional[discord.Role] = None):
         """This command will connect your server with other servers which then connected to #global-chat must try this once"""
         c = parrot_db['global_chat']
         if not setting:
@@ -139,6 +140,321 @@ class BotConfig(Cog):
             if not role:
                 return await ctx.reply(f"{ctx.author.mention} ignore role reseted! or removed")
             await ctx.reply(f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!")
+
+    @commands.group(invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def automod(self, ctx: Context):
+        """To configure the automoderation"""
+        pass
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def spam(self, ctx: Context, to_enable: convert_bool):
+        """To toggle the spam protection in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'spam': {
+                            'enable': to_enable 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**. Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. Bot will be issuing warning if someone exceeds the limit.")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def nudedetection(self, ctx: Context, to_enable: convert_bool):
+        """To toggle the spam protection in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'nudedetection': {
+                            'enable': to_enable 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} nudes detection is set to **{to_enable}**")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def spamignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To whitelist the spam channel. Pass None to delete the setting"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'spam': {
+                            'channel': channel.id 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} spam protection wont be working in **{channel.name}**")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def spamremove(self, ctx: Context, *, channel: discord.TextChannel):
+        """To whitelist the spam channel. Pass None to delete the setting"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'spam': {
+                            'channel': channel.id 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} spam protection will be working in **{channel.name}**")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def antilinks(self, ctx: Context, *, to_enable: convert_bool):
+        """To toggle the invite protection in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'antilinks': {
+                            'enable': to_enable
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def antilinksignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To whitelist the channel from anti links protection"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'antilinks':{
+                            'channel': channel.id 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def antilinksremove(self, ctx: Context, *, channel: discord.TextChannel):
+        """To remove whitelisted channel from anti links protection"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'antilinks':{
+                            'channel': channel.id 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def whitelistlink(self, ctx: Context, *, link: str):
+        """To whitelist a link."""
+        try:
+            re.compile(link)
+        except re.error:
+            return await ctx.reply(f"{ctx.author.mention} invalid regex expression")
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'antilinks': {
+                            'whitelist': link
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} **<{link}>** added for the whitelist link")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def blacklistlink(self, ctx: Context, *, link: str):
+        """To remove whitelisted link."""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'antilinks': {
+                            'whitelist': link
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} **<{link}>** removed for the whitelist link")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def profanityadd(self, ctx: Context, *, word: str):
+        """To add profanity words. Can also work for regex"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'profanity': {
+                            'words': word
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} **||{word}||** added in the list")
+        
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def profanityremove(self, ctx: Context, *, word: str):
+        """To remove profanity word from list. Can also work for regex"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'profanity': {
+                            'words': word
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} **||{word}||** removed from the list")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def profanity(self, ctx: Context, *, to_enable: convert_bool):
+        """To add profanity words. Can also work for regex"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'profanity': {
+                            'enable': to_enable
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} profanity system in this server is set to **{to_enable}**")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def capsprotection(self, ctx: Context, *, to_enable: convert_bool):
+        """To toggle the caps protection in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'caps': {
+                            'enable': to_enable
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} caps protection for this server is set to **{to_enable}**")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def capslimit(self, ctx: Context, *, limit: int):
+        """To toggle the caps protection in the server. It wont work if the limit is less than 0"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'caps': {
+                            'limit': limit if limit > 0 else None
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} caps protection limit for this server is set to **{limit}**")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def emojiprotection(self, ctx: Context, *, to_enable: convert_bool):
+        """To toggle the emoji protection in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'emoji': {
+                            'enable': to_enable
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} emoji protection for this server is set to **{to_enable}**")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def emojilimit(self, ctx: Context, *, limit: int):
+        """To toggle the emoji protection in the server. It wont work if the limit is less than 0"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod': {
+                        'emoji': {
+                            'limit': limit if limit > 0 else None
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} emoji protection limit for this server is set to **{limit}**")
 
     @commands.group(aliases=['telconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)

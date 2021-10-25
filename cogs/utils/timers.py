@@ -81,8 +81,10 @@ class Timer(Cog):
     async def reminders(self, ctx: Context):
         """To get all your reminders"""
         em_list = await self.get_all_timers(ctx.author)
-        await PaginationView(em_list).start()
-    
+        if not em_list:
+            return await ctx.reply(f"{ctx.author.mention} you don't have any reminders")
+        await PaginationView(em_list).start(ctx)
+        
     @commands.command()
     async def delremind(self, ctx: Context, message: int):
         """To delete the reminder"""
@@ -93,12 +95,8 @@ class Timer(Cog):
     async def remindmedm(self, ctx: Context, age: ShortTime, *, task: commands.clean_content):
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = age.dt.timestamp()
-        await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) within **{seconds}**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
-        if seconds < 60:
-            await asyncio.sleep(seconds)
-            await ctx.author.send(f"{ctx.author.mention} reminder for is over. Remark: **{task}**")
-        else:
-            await self.create_timer(ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=True)
+        await ctx.reply(f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```")
+        await self.create_timer(ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=True)
     
     @tasks.loop(seconds=1.0)
     async def reminder_task(self):

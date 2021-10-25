@@ -18,6 +18,7 @@ import discord, traceback, asyncio, topgg
 
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
 from utilities.database import parrot_db, cluster
+from utilities.checks import _can_run
 
 from time import time
 
@@ -188,7 +189,12 @@ class Parrot(commands.AutoShardedBot):
         if await collection_ban.find_one({'_id': message.author.id}):
             # if user is banned
             return
-        
+
+        if ctx.command is not None:
+            _true = await _can_run(ctx)
+            if not _true: 
+                await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!')
+
         await self.invoke(ctx)
 
     async def on_message(self, message: discord.Message):

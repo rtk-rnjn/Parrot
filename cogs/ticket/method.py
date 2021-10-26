@@ -35,7 +35,7 @@ async def chat_exporter(channel, limit=None):
                 f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
             )
     with open(f'extra/{channel.id}.txt', 'rb') as fp:
-        await channel.send(file=discord.File(fp, 'FUCKING_FILE_NAME.txt'))
+        await channel.send(file=discord.File(fp, 'FILE.txt'))
     os.remove(f'extra/{channel.id}.txt')
 
 
@@ -64,7 +64,7 @@ async def _new(ctx, args):
         message_content = "".join(args)
 
     data = await collection.find_one({'_id': ctx.guild.id})
-    ticket_number = data['ticket-counter'] + 1
+    ticket_number = data['ticket_counter'] + 1
     cat = ctx.guild.get_channel(data['category'])
 
     ticket_channel = await ctx.guild.create_text_channel(
@@ -79,24 +79,24 @@ async def _new(ctx, args):
         read_messages=False,
         view_channel=False,
         reason="Parrot Ticket Bot on action | Basic")
-    if data['valid-roles']:
-        for role_id in data["valid-roles"]:
+    if data['valid_roles']:
+        for role_id in data["valid_roles"]:
             role = ctx.guild.get_role(role_id)
+            if role:
+                await ticket_channel.set_permissions(
+                    role,
+                    send_messages=True,
+                    read_messages=True,
+                    add_reactions=True,
+                    embed_links=True,
+                    attach_files=True,
+                    read_message_history=True,
+                    external_emojis=True,
+                    view_channel=True,
+                    reason="Parrot Ticket Bot on action | Role Access")
 
-            await ticket_channel.set_permissions(
-                role,
-                send_messages=True,
-                read_messages=True,
-                add_reactions=True,
-                embed_links=True,
-                attach_files=True,
-                read_message_history=True,
-                external_emojis=True,
-                view_channel=True,
-                reason="Parrot Ticket Bot on action | Role Access")
-
-    if data['verified-roles']:
-        for role_id in data["verified-roles"]:
+    if data['verified_roles']:
+        for role_id in data["verified_roles"]:
             role = ctx.guild.get_role(role_id)
 
             await ticket_channel.set_permissions(
@@ -134,8 +134,8 @@ async def _new(ctx, args):
     )
     pinged_msg_content = ""
     non_mentionable_roles = []
-    if data["pinged-roles"]:
-        for role_id in data["pinged-roles"]:
+    if data["pinged_roles"]:
+        for role_id in data["pinged_roles"]:
             role = ctx.guild.get_role(role_id)
             pinged_msg_content += role.mention
             pinged_msg_content += " "
@@ -148,11 +148,11 @@ async def _new(ctx, args):
         for role in non_mentionable_roles:
             await role.edit(mentionable=False)
 
-    ticket_channel_ids = data["ticket-channel-ids"]
+    ticket_channel_ids = data["ticket_channel_ids"]
     ticket_channel_ids.append(ticket_channel.id)
     post = {
-        'ticket-counter': ticket_number,
-        'ticket-channel-ids': ticket_channel_ids
+        'ticket_counter': ticket_number,
+        'ticket_channel_ids': ticket_channel_ids
     }
     await ticket_update(ctx.guild.id, post)
     created_em = discord.Embed(
@@ -163,19 +163,22 @@ async def _new(ctx, args):
     await ctx.reply(embed=created_em)
     if data['log']:
         log_channel = ctx.guild.get_channel(data['log'])
-        await log(ctx.guild, log_channel, f"Channel: **#ticket-{ticket_number}**\n**Opened by:** {ctx.author} ({ctx.author.id})", 'RUNNING')
+        if log_channel:
+            await log(ctx.guild, 
+                    log_channel, f"**Channel:** #ticket-{ticket_number}\n"
+                                f"**Opened by:** {ctx.author} ({ctx.author.id})"
+                                            , 'RUNNING')
 
 
 async def _close(ctx, bot):
     await check_if_server(ctx.guild.id)
 
     data = await collection.find_one({'_id': ctx.guild.id})
-    if ctx.channel.id in data["ticket-channel-ids"]:
+    if ctx.channel.id in data["ticket_channel_ids"]:
         channel_id = ctx.channel.id
 
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower(
-            ) == "close"
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() == "close"
 
         try:
             em = discord.Embed(
@@ -189,17 +192,18 @@ async def _close(ctx, bot):
                 reason=
                 f"Parrot Ticket bot feature | On request from {ctx.author.name}#{ctx.author.discriminator}"
             )
-            index = data["ticket-channel-ids"].index(channel_id)
-            ticket_channel_ids = data['ticket-channel-ids']
+            index = data["ticket_channel_ids"].index(channel_id)
+            ticket_channel_ids = data['ticket_channel_ids']
             del ticket_channel_ids[index]
-            post = {'ticket-channel-ids': ticket_channel_ids}
+            post = {'ticket_channel_ids': ticket_channel_ids}
             await ticket_update(ctx.guild.id, post)
             if data['log']:
                 log_channel = ctx.guild.get_channel(data['log'])
-                await log(
-                    ctx.guild, log_channel,
-                    f'{ctx.channel.name} closed by, {message.author.name}#{message.author.discriminator} ({message.author.id})',
-                    'CLOSED')
+                if log_channel:
+                    await log(ctx.guild, 
+                              log_channel, f"**Channel:** #{ctx.channel.name}\n"
+                                           f"**Closed by:** {ctx.author} ({ctx.author.id})"
+                                                , 'CLOSED')
         except asyncio.TimeoutError:
             em = discord.Embed(
                 title="Parrot Ticket Bot",
@@ -213,7 +217,7 @@ async def _save(ctx, bot):
     await check_if_server(ctx.guild.id)
 
     data = await collection.find_one({'_id': ctx.guild.id})
-    if ctx.channel.id in data["ticket-channel-ids"]:
+    if ctx.channel.id in data["ticket_channel_ids"]:
 
         def check(message):
             return message.author == ctx.author and message.channel == ctx.channel and message.content.lower(
@@ -231,10 +235,11 @@ async def _save(ctx, bot):
 
             if data['log']:
                 log_channel = ctx.guild.get_channel(data['log'])
-                await log(
-                    ctx.guild, log_channel,
-                    f'{ctx.channel.name} transcript created by, {message.author.name}#{message.author.discriminator} ({message.author.id})',
-                    'RUNNING')
+                if log_channel:
+                   await log(ctx.guild,
+                             log_channel, f"**Channel:** #{ctx.channel.name}\n"
+                                          f"**Opened by:** {ctx.author} ({ctx.author.id})"
+                                            , 'RUNNING')
         except asyncio.TimeoutError:
             em = discord.Embed(
                 title="Parrot Ticket Bot",
@@ -269,7 +274,7 @@ async def _delaccess(ctx, role):
     await check_if_server(ctx.guild.id)
     await collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
-                                    'valid-roles': role.id
+                                    'valid_roles': role.id
                                 }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -286,7 +291,7 @@ async def _addadimrole(ctx, role):
     await check_if_server(ctx.guild.id)
     await collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
-                                    "verified-roles": role.id
+                                    "verified_roles": role.id
                                 }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -303,7 +308,7 @@ async def _addpingedrole(ctx, role):
     await check_if_server(ctx.guild.id)
     await collection.update_one({'_id': ctx.guild.id},
                                 {'$addToSet': {
-                                    'pinged-roles': role.id
+                                    'pinged_roles': role.id
                                 }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -320,7 +325,7 @@ async def _deladminrole(ctx, role):
     await check_if_server(ctx.guild.id)
     await collection.update_one({'_id': ctx.guild.id},
                                 {'$pull': {
-                                    'verified-roles': role.id
+                                    'verified_roles': role.id
                                 }})
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -337,7 +342,7 @@ async def _delpingedrole(ctx, role):
     await check_if_server(ctx.guild.id)
     await collection.update_one({'_id': ctx.guild.id},
                                 {'$pull': {
-                                    'pinged-roles': role.id
+                                    'pinged_roles': role.id
                                 }})
     em = discord.Embed(
         title="Parrot Ticket Bot",

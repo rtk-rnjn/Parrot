@@ -96,7 +96,7 @@ class Stars(Cog):
     # @cache.cache()
     async def get_starboard(self, guild_id, *, collection=None) -> StarboardConfig:
         collection = collection or parrot_db['server_config']
-        if data := await collection.find_one({'_id': guild_id, 'starboard': {}}):
+        if data := await collection.find_one({'_id': guild_id, 'starboard': {'$exists': True}}):
             return StarboardConfig(guild_id=guild_id, bot=self.bot, record=data)
         else:
             post = {

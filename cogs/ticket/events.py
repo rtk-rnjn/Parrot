@@ -67,7 +67,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                     'Missing Manage Message permisssion to work properly',
                     delete_after=10)
 
-            ticket_number = data['ticket-counter'] + 1
+            ticket_number = data['ticket_counter'] + 1
             cat = guild.get_channel(data['category'])
 
             ticket_channel = await guild.create_text_channel(
@@ -122,11 +122,11 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 for role in non_mentionable_roles:
                     await role.edit(mentionable=False)
 
-            ticket_channel_ids = data["ticket-channel-ids"]
+            ticket_channel_ids = data["ticket_channel_ids"]
             ticket_channel_ids.append(ticket_channel.id)
             post = {
-                'ticket-counter': ticket_number,
-                'ticket-channel-ids': ticket_channel_ids
+                'ticket_counter': ticket_number,
+                'ticket_channel_ids': ticket_channel_ids
             }
             await ticket_update(guild.id, post)
 

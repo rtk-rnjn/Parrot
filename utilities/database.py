@@ -67,11 +67,11 @@ async def ticket_update(guild_id: int, post):
     if not data:
         await collection.insert_one({
             '_id': guild_id,
-            "ticket-counter": 0,
-            "valid-roles": [],
-            "pinged-roles": [],
-            "ticket-channel-ids": [],
-            "verified-roles": [],
+            "ticket_counter": 0,
+            "valid_roles": [],
+            "pinged_roles": [],
+            "ticket_channel_ids": [],
+            "verified_roles": [],
             "message_id": None,
             "log": None,
             "category": None,
@@ -131,11 +131,11 @@ async def guild_join(guild_id: int):
     collection = parrot_db["ticket"]
     post = {
         "_id": guild_id,
-        "ticket-counter": 0,
-        "valid-roles": [],
-        "pinged-roles": [],
-        "ticket-channel-ids": [],
-        "verified-roles": [],
+        "ticket_counter": 0,
+        "valid_roles": [],
+        "pinged_roles": [],
+        "ticket_channel_ids": [],
+        "verified_roles": [],
         "message_id": None,
         "log": None,
         "category": None,

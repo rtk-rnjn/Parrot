@@ -419,7 +419,7 @@ class BotConfig(Cog):
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def profanityremove(self, ctx: Context, *, word: str):
+    async def profanitydel(self, ctx: Context, *, word: str):
         """To remove profanity word from list. Can also work for regex"""
         await csc.update_one(
             {'_id': ctx.guild.id},

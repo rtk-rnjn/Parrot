@@ -10,3 +10,10 @@ class purgeFlag(commands.FlagConverter,
     attachment: typing.Optional[bool]
     links: typing.Optional[bool]
     iregex: typing.Optional[str]
+
+
+class reasonFlag(commands.FlagConverter,
+                 case_insensitive=True,
+                 prefix='-',
+                 delimiter=' '):
+    reason: typing.Optional[str]

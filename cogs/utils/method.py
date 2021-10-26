@@ -238,10 +238,10 @@ async def _show_all_tags(bot, ctx):
     i = 1
     paginator = ParrotPaginator(ctx, title=f"Tags", per_page=12)
     async for data in collection.find({}):
-      if not data:
-        return await ctx.reply(f"{ctx.author.mention} this server don't have any tags yet")
-      else:
         paginator.add_line(f"`{i}` {data['id']}")
         i += 1
-    await paginator.start()
-  
+    try:
+        await paginator.start()
+    except Exception:
+        await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
+    

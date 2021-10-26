@@ -62,11 +62,12 @@ class Timer(Cog):
             ).set_footer(
                 text=f'{member}'
             )
-            embed.description = f"```\n{data['remark'] if data['remark'] else 'No description was given'}```\n\nMessage ID:` **{data['_id']}**\n`Channel ID:` **{data['channel']}**\n`Age:` {time.format_dt_with_int(data['age'])}"
+            embed.description = f"```\n{data['remark'] if data['remark'] else 'No description was given'}```\n\nMessage ID:` **{data['_id']}**\n`Channel ID:` **{data['channel']}**\n`Age:` <t:{data['age']}>"
             records.append(embed)
         return records
     
     @commands.command()
+    @Context.with_type
     async def remindme(self, ctx: Context, age: ShortTime, *, task: commands.clean_content):
         """To make reminders as to get your tasks done on time"""
         seconds = age.dt.timestamp()
@@ -77,7 +78,8 @@ class Timer(Cog):
         else:
             await self.create_timer(ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=False)
         
-    @commands.command()
+    @commands.command(aliases=['myreminds', 'myreminders'])
+    @Context.with_type
     async def reminders(self, ctx: Context):
         """To get all your reminders"""
         em_list = await self.get_all_timers(ctx.author)
@@ -85,13 +87,15 @@ class Timer(Cog):
             return await ctx.reply(f"{ctx.author.mention} you don't have any reminders")
         await PaginationView(em_list).start(ctx)
         
-    @commands.command()
+    @commands.command(aliases=['delreminder', 'delremind'])
+    @Context.with_type
     async def delremind(self, ctx: Context, message: int):
         """To delete the reminder"""
         await self.delete_timer(ctx.author, message)
         await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
     
     @commands.command()
+    @Context.with_type
     async def remindmedm(self, ctx: Context, age: ShortTime, *, task: commands.clean_content):
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = age.dt.timestamp()

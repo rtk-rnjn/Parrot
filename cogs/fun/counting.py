@@ -25,7 +25,7 @@ class OneWordStory(Cog):
             else:
                 return msg
 
-    @Cog.listener
+    @Cog.listener()
     async def on_message(self, message: discord.Message):
         if not message.guild or message.author.bot:
             return
@@ -69,7 +69,7 @@ class OneWordStory(Cog):
             except Exception:
                 return await message.channel.send(f"Bot need manage message permission to work properly")
     
-    @task.loop(hour=1)
+    @task.loop(hours=1)
     async def clear_cache(self):
         self.cache = {}
     

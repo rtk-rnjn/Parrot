@@ -116,7 +116,8 @@ class Context(commands.Context):
         timeout: float = 60.0,
         delete_after: bool = True,
         reacquire: bool = True,
-        author_id: typing.Optional[int] = None,
+        author_id: typing.Optional[int] = None, 
+        **kwargs
     ) -> typing.Optional[bool]:
         author_id = author_id or self.author.id
         view = ConfirmationView(
@@ -126,7 +127,7 @@ class Context(commands.Context):
             ctx=self,
             author_id=author_id,
         )
-        view.message = await self.send(message, view=view)
+        view.message = await self.send(message, view=view, **kwargs)
         await view.wait()
         return view.value
     

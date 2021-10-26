@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord, typing, re, asyncio
 
 from core import Parrot, Context, Cog
@@ -8,12 +8,13 @@ from core import Parrot, Context, Cog
 from utilities.checks import is_mod
 from utilities.converters import reason_convert, convert_time
 from utilities.database import parrot_db
+from utilities.time import ShortTime
 
 from cogs.mod import method as mt
 from datetime import datetime
 
 collection = parrot_db['server_config']
-
+mute_collection = parrot_db['mute']
 
 class Mod(Cog):
     """A simple moderator's tool for managing the server."""
@@ -212,10 +213,10 @@ class Mod(Cog):
     @commands.bot_has_permissions(manage_roles=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
     #@Context.with_type
-    async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[convert_time]=None, *, reason: reason_convert = None):
+    async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[ShortTime]=None, *, reason: reason_convert = None):
         """To restrict a member to sending message in the Server"""
-        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds, reason)
-        await self.log(ctx, ctx.command.qualified_name, member, f'{reason} | For {seconds + "s" if seconds else "till end"}')
+        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds.dt.timestamp(), reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason} | Till {"<t:" + str(int(seconds.dt.timestamp())) + ">" if seconds else "end"}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -781,3 +782,20 @@ class Mod(Cog):
                 await self.log(ctx, 'Role name changed', target, reason)
 
         return await msg.delete()
+    
+    @tasks.loop(seconds=1)
+    async def unmute_task(self):
+        async for data in mute_collection.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):
+            guild = self.bot.get_guild(data['guild_id'])
+            if not guild:
+                return await mute_collection.delete_one({'_id': data['_id']})
+            role = guild.get_role(data['role_id'])
+            if not role:
+                return await mute_collection.delete_one({'_id': data['_id']})
+            member = guild.get_member(data['author_id'])
+            if not member:
+                return await mute_collection.delete_one({'_id': data['_id']})
+            try:
+                await member.remove_roles(role, reason=f"Mute expires")
+            except Exception:
+                return

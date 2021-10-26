@@ -66,7 +66,7 @@ class Profanity(Cog):
 
     @tasks.loop(seconds=5)
     async def update_data(self):
-        async for data in self.collection.find_one({}):
+        async for data in self.collection.find({}):
             try:
                 bad_words = data['automod']['profanity']['words']
             except KeyError:

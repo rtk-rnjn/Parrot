@@ -12,4 +12,4 @@ def setup(bot: Parrot):
     bot.add_cog(Mod(bot))
     bot.add_cog(Profanity(bot))
     bot.add_cog(LinkProt(bot))
-    bot.add_cog(NudeDetection)
+    bot.add_cog(NudeDetection(bot))

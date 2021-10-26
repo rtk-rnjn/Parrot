@@ -1,12 +1,16 @@
 from __future__ import annotations
 from typing import Collection
+import typing
 
 from discord.ext import commands, tasks
-import discord
+import discord, random
 
 from utilities.database import parrot_db
 
 from core import Parrot, Cog
+
+with open('extra/duke_nekum.txt') as f:
+    quotes = f.read().split('\n')
 
 
 class Profanity(Cog):
@@ -14,25 +18,57 @@ class Profanity(Cog):
         self.bot = bot
         self.collection = parrot_db['server_config']
         self.data = {}
+        self.update_data.start()
 
+    async def get_bad_words(self, message) -> typing.Optional[list]:
+        try:
+            return self.data[message.guild]
+        except KeyError:
+            return None
+        
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
+        
+        bad_words = await self.get_bad_words(self, message)
         
         if data := self.collection.find_one({'_id': message.guild.id, 'automod.profanity.enable': {'$exists': True}}):
             try:
                 profanity = data['automod']['profanity']['enable']
             except KeyError:
                 return
-        
-        if profanity:
+            try:
+                ignore = data['automod']['profanity']['channel']
+            except KeyError:
+                pass
+            
+            if message.channel.id in ignore:
+                return
+            
+            if (not bad_words) and profanity:
+                try:
+                    bad_words = data['automod']['profanity']['words']
+                except KeyError:
+                    return
+
+            if not bad_words:
+                return
+
+            if any(temp in message.content for temp in bad_words):
+                await message.channel.send(f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] [Warning]**", delete_after=10)
+
+                try:
+                    await message.delete()
+                except Exception:
+                    pass
+
+    @tasks.loop(hours=0.5)
+    async def update_data(self):
+        async for data in self.collection.find_one({}):
             try:
                 bad_words = data['automod']['profanity']['words']
             except KeyError:
                 return
-        
-        if not bad_words:
-            return
-        
-        
+            self.data[data['_id']] = bad_words
+

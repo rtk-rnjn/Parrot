@@ -78,7 +78,7 @@ class Timer(Cog):
         else:
             await self.create_timer(ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=False)
         
-    @commands.command(aliases=['myreminds', 'myreminders'])
+    @commands.command()
     @Context.with_type
     async def reminders(self, ctx: Context):
         """To get all your reminders"""
@@ -87,7 +87,7 @@ class Timer(Cog):
             return await ctx.reply(f"{ctx.author.mention} you don't have any reminders")
         await PaginationView(em_list).start(ctx)
         
-    @commands.command(aliases=['delreminder', 'delremind'])
+    @commands.command()
     @Context.with_type
     async def delremind(self, ctx: Context, message: int):
         """To delete the reminder"""

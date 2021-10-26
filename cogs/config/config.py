@@ -327,7 +327,7 @@ class BotConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityadd(self, ctx: Context, *, word: str):
-        """To add profanity words. Can also work for regex"""
+        """To add profanity words. Can also work for regex. May take 1h to update"""
         await csc.update_one(
             {'_id': ctx.guild.id},
             {
@@ -383,6 +383,44 @@ class BotConfig(Cog):
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
+    async def profanityignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To ignore the channel from profanity"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'profanity': {
+                            'channel': channel.id
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for profanity protection")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def profanityremove(self, ctx: Context, *, channel: discord.TextChannel):
+        """To remove the ignored channel from profanity"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'profanity': {
+                            'channel': channel.id
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for profanity protection")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def capsprotection(self, ctx: Context, *, to_enable: convert_bool):
         """To toggle the caps protection in the server"""
         await csc.update_one(
@@ -421,6 +459,44 @@ class BotConfig(Cog):
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
+    async def capsignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To ignore the channel from caps protection"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'caps': {
+                            'channel': channel.id
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for caps protection")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def capsremove(self, ctx: Context, *, channel: discord.TextChannel):
+        """To remove the ignored channel from caps protection"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'caps': {
+                            'channel': channel.id
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for caps protection")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def emojiprotection(self, ctx: Context, *, to_enable: convert_bool):
         """To toggle the emoji protection in the server"""
         await csc.update_one(
@@ -456,6 +532,44 @@ class BotConfig(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} emoji protection limit for this server is set to **{limit}**")
 
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def emojiignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To ignore the channel from emoji protection"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'automod': {
+                        'emoji': {
+                            'channel': channel.id
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for emoji protection")
+
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def emojiremove(self, ctx: Context, *, channel: discord.TextChannel):
+        """To remove the ignored channel from emoji protection"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'emoji': {
+                            'channel': channel.id
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for emoji protection")
+    
     @commands.group(aliases=['telconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type

@@ -32,7 +32,6 @@
     "cogs.actions",
     "cogs.telephone",
     "cogs.utils",
-    "cogs.utils.star",
     "interactions.buttons",
     "jishaku"
   ],

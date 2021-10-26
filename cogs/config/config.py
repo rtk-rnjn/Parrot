@@ -194,11 +194,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'spam': {
-                            'enable': to_enable 
-                        }
-                    }
+                    'automod.spam.enable': to_enable 
                 }
             }
         )
@@ -213,11 +209,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'nudedetection': {
-                            'enable': to_enable 
-                        }
-                    }
+                    'automod.nudedetection.enable': to_enable 
                 }
             }
         )
@@ -231,11 +223,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'nudedetection': {
-                        'spam': {
-                            'channel': channel.id 
-                        }
-                    }
+                    'automod.nudedetection.channel': channel.id 
                 }
             }
         )
@@ -250,11 +238,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'nudedetection': {
-                            'channel': channel.id 
-                        }
-                    }
+                    'automod.nudedetection.channel': channel.id 
                 }
             }
         )
@@ -269,11 +253,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'spam': {
-                            'channel': channel.id 
-                        }
-                    }
+                    'automod.spam.channel': channel.id 
                 }
             }
         )
@@ -288,11 +268,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'spam': {
-                            'channel': channel.id 
-                        }
-                    }
+                    'automod.spam.channel': channel.id 
                 }
             }
         )
@@ -307,11 +283,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'antilinks': {
-                            'enable': to_enable
-                        }
-                    }
+                    'automod.antilinks.enable': to_enable
                 }
             }
         )
@@ -326,11 +298,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'antilinks':{
-                            'channel': channel.id 
-                        }
-                    }
+                    'automod.antilinks.channel': channel.id 
                 }
             }
         )
@@ -345,11 +313,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'antilinks':{
-                            'channel': channel.id 
-                        }
-                    }
+                    'automod.antilinks.channel': channel.id 
                 }
             }
         )
@@ -368,11 +332,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'antilinks': {
-                            'whitelist': link
-                        }
-                    }
+                    'automod.antilinks.whitelist': link
                 }
             }
         )
@@ -387,12 +347,8 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'antilinks': {
-                            'whitelist': link
-                        }
-                    }
-                }
+                    'automod.antilinks.whitelist': link
+                }    
             }
         )
         await ctx.reply(f"{ctx.author.mention} **<{link}>** removed for the whitelist link")
@@ -406,11 +362,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'profanity': {
-                            'words': word
-                        }
-                    }
+                    'automod.profanity.words': word
                 }
             }
         )
@@ -425,11 +377,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'profanity': {
-                            'words': word
-                        }
-                    }
+                    'automod.profanity.words': word
                 }
             }
         )
@@ -444,11 +392,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'profanity': {
-                            'enable': to_enable
-                        }
-                    }
+                    'automod.profanity.enable': to_enable
                 }
             }
         )
@@ -463,11 +407,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'profanity': {
-                            'channel': channel.id
-                        }
-                    }
+                    'automod.profanity.channel': channel.id
                 }
             }
         )
@@ -482,11 +422,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'profanity': {
-                            'channel': channel.id
-                        }
-                    }
+                    'automod.profanity.channel': channel.id
                 }
             }
         )
@@ -501,11 +437,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'caps': {
-                            'enable': to_enable
-                        }
-                    }
+                    'automod.caps.enable': to_enable
                 }
             }
         )
@@ -520,11 +452,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'caps': {
-                            'limit': limit if limit > 0 else None
-                        }
-                    }
+                    'automod.caps.limit': limit if limit > 0 else None
                 }
             }
         )
@@ -539,11 +467,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'caps': {
-                            'channel': channel.id
-                        }
-                    }
+                    'automod.caps.channel': channel.id
                 }
             }
         )
@@ -558,11 +482,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'caps': {
-                            'channel': channel.id
-                        }
-                    }
+                    'automod.caps.channel': channel.id
                 }
             }
         )
@@ -577,11 +497,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'emoji': {
-                            'enable': to_enable
-                        }
-                    }
+                    'automod.emoji.enable': to_enable
                 }
             }
         )
@@ -596,11 +512,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$set': {
-                    'automod': {
-                        'emoji': {
-                            'limit': limit if limit > 0 else None
-                        }
-                    }
+                    'automod.emoji.limit': limit if limit > 0 else None
                 }
             }
         )
@@ -615,11 +527,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod': {
-                        'emoji': {
-                            'channel': channel.id
-                        }
-                    }
+                    'automod.emoji.channel': channel.id
                 }
             }
         )
@@ -634,11 +542,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod': {
-                        'emoji': {
-                            'channel': channel.id
-                        }
-                    }
+                    'automod.emoji.channel': channel.id
                 }
             }
         )

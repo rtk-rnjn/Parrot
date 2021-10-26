@@ -391,7 +391,7 @@ class BotConfig(Cog):
         await csc.update_one(
             {'_id': ctx.guild.id},
             {
-                '$pull': {
+                '$set': {
                     'automod.profanity.enable': to_enable
                 }
             }

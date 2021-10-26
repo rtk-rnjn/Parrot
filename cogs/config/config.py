@@ -141,6 +141,43 @@ class BotConfig(Cog):
                 return await ctx.reply(f"{ctx.author.mention} ignore role reseted! or removed")
             await ctx.reply(f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!")
 
+    @config.command()
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def countchannel(self, ctx: Context, *, channel: discord.TextChannel=None):
+        """To set the counting channel in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'counting': channel.id if channel else None
+                }
+            }
+        )
+        if channel:
+            await ctx.reply(f"{ctx.author.mention} counting channel for the server is set to **{channel.name}**")
+        else:
+            await ctx.reply(f"{ctx.author.mention} counting channel for the server is not removed")
+    
+    @config.command()
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def onewordchannel(self, ctx: Context, *, channel: discord.TextChannel=None):
+        """To set the one word channel in the server"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'oneword': channel.id if channel else None
+                }
+            }
+        )
+        if channel:
+            await ctx.reply(f"{ctx.author.mention} one word channel for the server is set to **{channel.name}**")
+        else:
+            await ctx.reply(f"{ctx.author.mention} one word channel for the server is not removed")
+    
+    
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -185,7 +222,44 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} nudes detection is set to **{to_enable}**")
-
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def nudeignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To whitelist the spam channel. Pass None to delete the setting"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    'nudedetection': {
+                        'spam': {
+                            'channel': channel.id 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} NSFW protection won't be working in **{channel.name}**")
+    
+    @automod.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def nuderemove(self, ctx: Context, *, channel: discord.TextChannel):
+        """To whitelist the spam channel. Pass None to delete the setting"""
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    'automod': {
+                        'nudedetection': {
+                            'channel': channel.id 
+                        }
+                    }
+                }
+            }
+        )
+        await ctx.reply(f"{ctx.author.mention} NSFW protection will be working in **{channel.name}**")
+    
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -203,7 +277,7 @@ class BotConfig(Cog):
                 }
             }
         )
-        await ctx.reply(f"{ctx.author.mention} spam protection wont be working in **{channel.name}**")
+        await ctx.reply(f"{ctx.author.mention} spam protection won't be working in **{channel.name}**")
     
     @automod.command()
     @commands.has_permissions(administrator=True)
@@ -441,7 +515,7 @@ class BotConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capslimit(self, ctx: Context, *, limit: int):
-        """To toggle the caps protection in the server. It wont work if the limit is less than 0"""
+        """To toggle the caps protection in the server. It won't work if the limit is less than 0"""
         await csc.update_one(
             {'_id': ctx.guild.id},
             {
@@ -517,7 +591,7 @@ class BotConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojilimit(self, ctx: Context, *, limit: int):
-        """To toggle the emoji protection in the server. It wont work if the limit is less than 0"""
+        """To toggle the emoji protection in the server. It won't work if the limit is less than 0"""
         await csc.update_one(
             {'_id': ctx.guild.id},
             {

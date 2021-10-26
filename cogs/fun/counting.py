@@ -31,10 +31,12 @@ class OneWordStory(Cog):
             return
         
         if not self.cache:
-            data = await collection.find_one({'_id': message.guild.id, 'count': {}})
+            data = await collection.find_one({'_id': message.guild.id, 'counting': {'$exists': True}})
+            if not data:
+                return
             self.cache[message.guild.id] = data
         
-        channel = self.bot.get_channel(self.cache[message.guild.id]['count']['channel'])
+        channel = self.bot.get_channel(self.cache[message.guild.id]['counting']['channel'])
         if not channel: return
         
         if message.channel.id != channel.id:

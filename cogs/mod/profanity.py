@@ -30,7 +30,8 @@ class Profanity(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        
+        if message.author.guild_permissions.administrator:
+            return
         bad_words = await self.get_bad_words(self, message)
         
         if data := self.collection.find_one({'_id': message.guild.id, 'automod.profanity.enable': {'$exists': True}}):
@@ -63,7 +64,7 @@ class Profanity(Cog):
                 except Exception:
                     pass
 
-    @tasks.loop(hours=0.5)
+    @tasks.loop(seconds=5)
     async def update_data(self):
         async for data in self.collection.find_one({}):
             try:

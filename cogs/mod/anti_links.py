@@ -14,7 +14,7 @@ with open('extra/duke_nekum.txt') as f:
     quotes = f.read().split('\n')
 
 
-class Profanity(Cog):
+class LinkProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.collection = parrot_db['server_config']
@@ -32,7 +32,8 @@ class Profanity(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        
+        if message.author.guild_permissions.administrator:
+            return
         if data := await self.collection.find_one({'_id': message.guild.id, 'automod.antilinks.enable': {'$exists': True}}):
             prot = data['automod']['antilinks']['enable']
             
@@ -45,7 +46,7 @@ class Profanity(Cog):
                 pass
             
             try:
-                ignore = data['autompd']['antilinks']['channel']
+                ignore = data['automod']['antilinks']['channel']
             except KeyError:
                 pass
             

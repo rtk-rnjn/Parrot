@@ -31,7 +31,9 @@ class OneWordStory(Cog):
             return
         
         if not self.cache:
-            data = await collection.find_one({'_id': message.guild.id, 'oneword': {}})
+            data = await collection.find_one({'_id': message.guild.id, 'oneword': {'$exists': True}})
+            if not data:
+                return
             self.cache[message.guild.id] = data
         
         channel = self.bot.get_channel(self.cache[message.guild.id]['oneword']['channel'])

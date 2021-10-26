@@ -22,7 +22,7 @@ class Profanity(Cog):
 
     async def get_bad_words(self, message) -> typing.Optional[list]:
         try:
-            return self.data[message.guild]
+            return self.data[message.guild.id]
         except KeyError:
             return None
         
@@ -32,7 +32,7 @@ class Profanity(Cog):
             return
         if message.author.guild_permissions.administrator:
             return
-        bad_words = await self.get_bad_words(self, message)
+        bad_words = await self.get_bad_words(message)
         
         if data := self.collection.find_one({'_id': message.guild.id, 'automod.profanity.enable': {'$exists': True}}):
             try:

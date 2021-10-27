@@ -16,7 +16,7 @@ class SpamProt(Cog):
         self.bot = bot
         self.collection = parrot_db['server_config']
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            5, 5, commands.BucketType.member)
+            10, 10, commands.BucketType.member)
         
     async def delete(self, message: discord.Message, *, reason: str=None) -> None:
         def check(m: discord.Message):
@@ -31,7 +31,10 @@ class SpamProt(Cog):
         if message.author.bot or (not message.guild):
             return
         if message.author.guild_permissions.administrator:
-            return
+            if message.author.id == 741614468546560092:
+                pass
+            else:
+                return
         bucket = self.cd_mapping.get_bucket(message)
         retry_after = bucket.update_rate_limit()
         if retry_after:

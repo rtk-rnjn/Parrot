@@ -797,5 +797,6 @@ class Mod(Cog):
                 return await mute_collection.delete_one({'_id': data['_id']})
             try:
                 await member.remove_roles(role, reason=f"Mute expires")
+                return await mute_collection.delete_one({'_id': data['_id']})
             except Exception:
                 return

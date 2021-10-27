@@ -16,7 +16,7 @@ class SpamProt(Cog):
         self.bot = bot
         self.collection = parrot_db['server_config']
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            5, 5, commands.BucketType.Member)
+            5, 5, commands.BucketType.member)
         
     async def delete(self, message: discord.Message, *, reason: str=None) -> None:
         def check(m: discord.Message):

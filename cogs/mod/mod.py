@@ -787,17 +787,22 @@ class Mod(Cog):
     @tasks.loop(seconds=1)
     async def unmute_task(self):
         async for data in mute_collection.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):
+            print(1)
             guild = self.bot.get_guild(data['guild_id'])
             if not guild:
                 return await mute_collection.delete_one({'_id': data['_id']})
+            print(2)
             role = guild.get_role(data['role_id'])
             if not role:
                 return await mute_collection.delete_one({'_id': data['_id']})
+            print(3)
             member = guild.get_member(data['author_id'])
             if not member:
                 return await mute_collection.delete_one({'_id': data['_id']})
-            try:
+            print(4)
+            try:           
                 await member.remove_roles(role, reason=f"Mute expires")
-                return await mute_collection.delete_one({'_id': data['_id']})
+                await mute_collection.delete_one({'_id': data['_id']})
+                print(5)
             except Exception:
-                return
+                print(8)

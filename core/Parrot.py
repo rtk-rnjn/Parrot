@@ -194,7 +194,8 @@ class Parrot(commands.AutoShardedBot):
             _true = await _can_run(ctx)
             if not _true: 
                 await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!')
-
+                return
+    
         await self.invoke(ctx)
 
     async def on_message(self, message: discord.Message):

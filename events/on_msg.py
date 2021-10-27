@@ -55,7 +55,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         if retry_after:
             return await message.channel.send(
-                f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {retry_after}s**", delete_after=10)
+                f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**", delete_after=10)
 
         guild = await collection.find_one({'_id': message.guild.id})
         # data = await collection.find({})

@@ -71,7 +71,8 @@ class EmojiCapsProt(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        
+        if message.author.guild_permissions.administrator:
+            return
         caps_ = await self.is_caps_infilterated(message)
         emoj_ = await self.is_emoji_infilterated(message)
         

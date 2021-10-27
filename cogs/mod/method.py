@@ -345,7 +345,7 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                 f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
             )
             await create_mute_task(guild.id, ctx_author.id, muted.id, seconds)
-            await destination.send(f"{ctx_author.mention} **{}** member is muted till **<t:{int(seconds)}>**")
+            await destination.send(f"{ctx_author.mention} **{member}** is muted till **<t:{int(seconds)}>**")
             return
         except Exception as e:
             await destination.send(f"Can not able to {command_name} **{member.name}#{member.discriminator}**. Error raised: **{e}**")

@@ -22,8 +22,8 @@ class LinkProt(Cog):
         self.update_data.start()
 
     async def has_links(self, message_content: str) -> bool:
-        link = LINKS_NO_PROTOCOLS.search(message_content)
-        if link:
+        url = LINKS_NO_PROTOCOLS.search(message_content)
+        if url:
             return True
         else:
             return False

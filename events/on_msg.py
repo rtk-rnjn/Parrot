@@ -7,6 +7,7 @@ from discord.ext import commands
 import aiohttp, re, asyncio, json
 from discord import Webhook
 from utilities.database import parrot_db
+from utilities.regex import LINKS_NO_PROTOCOLS
 
 collection = parrot_db['global_chat']
 
@@ -21,7 +22,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.collection = None
 
     def refrain_message(self, msg: str):
-        msg = msg.split(" ")
         if 'chod' in msg:
             return False
         for bad_word in bad_dict:
@@ -55,7 +55,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         if retry_after:
             return await message.channel.send(
-                f"Chill out | Reached the ratelimit", delete_after=5.0)
+                f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {retry_after}s**", delete_after=10)
 
         guild = await collection.find_one({'_id': message.guild.id})
         # data = await collection.find({})
@@ -65,12 +65,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if role in message.author.roles:
                 return
 
-        if message.content.startswith("$"):
+        if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/")):
             return
 
-        urls = re.findall(
-            'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
-            message.content.lower())
+        urls = LINKS_NO_PROTOCOLS.search(message.content)
         if urls:
             try:
                 await message.delete()
@@ -146,7 +144,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
                     await webhook.send(
                         content=message.clean_content,
-                        username=f"{message.author.name}#{message.author.discriminator}",
+                        username=f"{message.author}",
                         avatar_url=message.author.display_avatar.url)
 
             except Exception:

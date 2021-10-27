@@ -20,6 +20,7 @@ class Mod(Cog):
     """A simple moderator's tool for managing the server."""
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.unmute_task.start()
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:

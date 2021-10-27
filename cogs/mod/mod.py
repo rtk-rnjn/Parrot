@@ -791,18 +791,6 @@ class Mod(Cog):
             guild = self.bot.get_guild(data['guild_id'])
             if not guild:
                 return await mute_collection.delete_one({'_id': data['_id']})
+            await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']))
+            await mute_collection.delete_one({'_id': data['_id']})
             print(2)
-            role = guild.get_role(data['role_id'])
-            if not role:
-                return await mute_collection.delete_one({'_id': data['_id']})
-            print(3)
-            member = guild.get_member(data['author_id'])
-            if not member:
-                return await mute_collection.delete_one({'_id': data['_id']})
-            print(4)
-            try:           
-                await member.remove_roles(role, reason=f"Mute expires")
-                await mute_collection.delete_one({'_id': data['_id']})
-                print(5)
-            except Exception:
-                print(8)

@@ -380,6 +380,7 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
         else:
             await destination.send(
                 f"{ctx_author.mention} **{member.name}** already unmuted :')")
+        await mute_collection.delete_one({'author_id': member.id, 'guild_id': guild.id})
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member.name}#{member.discriminator}**. Error raised: **{e}**"

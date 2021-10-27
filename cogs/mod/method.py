@@ -344,7 +344,7 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                 reason=
                 f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
             )
-            await create_mute_task(guild.id, ctx_author.id, muted.id, seconds)
+            await create_mute_task(guild.id, member.id, muted.id, seconds)
             await destination.send(f"{ctx_author.mention} **{member}** is muted till **<t:{int(seconds)}>**")
             return
         except Exception as e:

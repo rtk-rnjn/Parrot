@@ -2,14 +2,14 @@ from __future__ import annotations
 from typing import Collection
 
 from core import Parrot, Cog
-from discord.ext import commands, task
+from discord.ext import commands, tasks
 import discord, typing
 
 from utilities.database import parrot_db
 collection = parrot_db['server_config']
 
 
-class OneWordStory(Cog):
+class Counting(Cog):
     
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -71,7 +71,7 @@ class OneWordStory(Cog):
             except Exception:
                 return await message.channel.send(f"Bot need manage message permission to work properly")
     
-    @task.loop(hours=1)
+    @tasks.loop(hours=1)
     async def clear_cache(self):
         self.cache = {}
     

@@ -326,16 +326,28 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                                     {'$set': {
                                         'mute_role': muted.id
                                     }})
-    if seconds is None: 
-        await member.add_roles(
+    if seconds is None:
+        try:
+            await member.add_roles(
                 muted,
                 reason=
                 f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
             )
-        return
+            return
+        except Exception as e:
+            await destination.send(f"Can not able to {command_name} **{member.name}#{member.discriminator}**. Error raised: **{e}**")
     else:
-        await create_mute_task(guild.id, ctx_author.id, muted.id, seconds)
-
+        try:
+            await member.add_roles(
+                muted,
+                reason=
+                f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
+            )
+            await create_mute_task(guild.id, ctx_author.id, muted.id, seconds)
+            return
+        except Exception as e:
+            await destination.send(f"Can not able to {command_name} **{member.name}#{member.discriminator}**. Error raised: **{e}**")
+        
 
 async def _unmute(guild, command_name, ctx_author, destination, member,
                   reason):

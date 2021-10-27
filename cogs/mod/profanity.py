@@ -31,10 +31,7 @@ class Profanity(Cog):
         if message.author.bot or (not message.guild):
             return
         if message.author.guild_permissions.administrator:
-            if message.author.id == 741614468546560092:
-                pass
-            else:
-                return
+            return
         bad_words = await self.get_bad_words(message)
         
         if data := await self.collection.find_one({'_id': message.guild.id, 'automod.profanity.enable': {'$exists': True}}):
@@ -44,8 +41,10 @@ class Profanity(Cog):
                 return
             try:
                 ignore = data['automod']['profanity']['channel']
+            
             except KeyError:
                 ignore = []
+            
             if ignore and (message.channel.id in ignore):
                 return
             

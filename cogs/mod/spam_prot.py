@@ -45,4 +45,4 @@ class SpamProt(Cog):
                 if message.channel.id in ignore:
                     return
                 await self.delete(message)
-                await message.channel.send(f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**", delete_after=10)
+                await message.channel.send(f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] [Warning]**", delete_after=10)

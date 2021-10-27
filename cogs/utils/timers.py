@@ -62,7 +62,7 @@ class Timer(Cog):
             ).set_footer(
                 text=f'{member}'
             )
-            embed.description = f"```\n{data['remark'] if data['remark'] else 'No description was given'}```\n\nMessage ID:` **{data['_id']}**\n`Channel ID:` **{data['channel']}**\n`Age:` <t:{data['age']}>"
+            embed.description = f"```\nTASK: {data['remark'] if data['remark'] else 'No description was given'}```\n`Message ID:` **{data['_id']}**\n`Channel ID:` **{data['channel']}**\n`Age:` <t:{int(data['age'])}>"
             records.append(embed)
         return records
     

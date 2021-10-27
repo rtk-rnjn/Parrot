@@ -17,13 +17,13 @@ class SpamProt(Cog):
         self.bot = bot
         self.collection = parrot_db['server_config']
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            5, 5, commands.BucketType.member)
+            4, 5, commands.BucketType.member)
         
-    async def delete(self, message: discord.Message, *, reason: str=None) -> None:
+    async def delete(self, message: discord.Message) -> None:
         def check(m: discord.Message):
             return m.author.id == message.author.id
         try:
-            await message.channel.purge(5, check=check, reason=reason)
+            await message.channel.purge(5, check=check)
         except Exception:
             pass
     
@@ -31,24 +31,13 @@ class SpamProt(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        print(1)
         if message.author.guild_permissions.administrator:
-            if message.author.id == 741614468546560092:
-                print(2)
-                pass
-            else:
-                print(3)
-                return
+            return
         bucket = self.cd_mapping.get_bucket(message)
-        print(4)
         retry_after = bucket.update_rate_limit()
-        print(5, retry_after)
         if retry_after:
-            print(6)
             if data := await self.collection.find_one({'_id': message.guild.id, 'automod.spam.enable': {'$exists': True}}):
-                print(7)
                 if not data['automod']['spam']['enable']:
-                    print(8)
                     return
                 try:
                     ignore = data['automod']['spam']['channel']

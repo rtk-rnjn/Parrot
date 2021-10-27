@@ -791,6 +791,13 @@ class Mod(Cog):
             guild = self.bot.get_guild(data['guild_id'])
             if not guild:
                 return await mute_collection.delete_one({'_id': data['_id']})
-            await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']))
+            try:
+                await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']))
+            except AttributeError:
+                pass
+            except discord.errors.Forbidden:
+                pass
+            except discord.errors.NotFound:
+                pass
             await mute_collection.delete_one({'_id': data['_id']})
             print(2)

@@ -77,7 +77,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                                                  read_messages=False,
                                                  view_channel=False)
 
-            for role_id in data["valid-roles"]:
+            for role_id in data["valid_roles"]:
                 role = guild.get_role(role_id)
 
                 await ticket_channel.set_permissions(role,
@@ -108,8 +108,8 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             await ticket_channel.send("To close the ticket, type `[p]close`\nTo save the ticket transcript, type `[p]save`")
             pinged_msg_content = ""
             non_mentionable_roles = []
-            if data["pinged-roles"]:
-                for role_id in data["pinged-roles"]:
+            if data["pinged_roles"]:
+                for role_id in data["pinged_roles"]:
                     role = guild.get_role(role_id)
                     pinged_msg_content += role.mention
                     pinged_msg_content += " "

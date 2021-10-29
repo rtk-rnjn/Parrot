@@ -63,6 +63,13 @@ class Context(commands.Context):
     def session(self):
         return self.bot.session
 
+    @discord.utils.cached_property
+    def replied_reference(self):
+        ref = self.message.reference
+        if ref and isinstance(ref.resolved, discord.Message):
+            return ref.resolved.to_reference()
+        return None
+
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
@@ -75,11 +82,21 @@ class Context(commands.Context):
                 await func(*args, **kwargs)
         return wrapped
 
-    async def send(self,
-                   content: typing.Optional[str] = None,
-                   **kwargs
-                  ) -> typing.Optional[discord.Message]:
-        if not (self.channel.permissions_for(self.me)).send_messages:
+    async def show_help(self, command=None):
+        cmd = self.bot.get_command('help')
+        command = command or self.command.qualified_name
+        await self.invoke(cmd, command=command)
+
+    async def send(
+        self,
+        content: typing.Optional[str] = None,
+        **kwargs
+    ) -> typing.Optional[discord.Message]:
+        if not (
+            self.channel.permissions_for(
+                self.me
+            )
+        ).send_messages:
             try:
                 await self.author.send(
                     "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
@@ -90,7 +107,10 @@ class Context(commands.Context):
 
         return await super().send(content, **kwargs)
 
-    async def entry_to_code(self, entries):
+    async def entry_to_code(
+        self, 
+        entries
+    ):
         width = max(len(a) for a, b in entries)
         output = ['```']
         for name, entry in entries:
@@ -98,7 +118,10 @@ class Context(commands.Context):
         output.append('```')
         await self.send('\n'.join(output))
 
-    async def indented_entry_to_code(self, entries):
+    async def indented_entry_to_code(
+        self, 
+        entries
+    ):
         width = max(len(a) for a, b in entries)
         output = ['```']
         for name, entry in entries:
@@ -106,8 +129,13 @@ class Context(commands.Context):
         output.append('```')
         await self.send('\n'.join(output))
 
-    async def emoji(self, emoji: str) -> str:
-        return emojis[emoji]
+    async def emoji(
+        self, 
+        emoji: str
+    ) -> str:
+        return emojis[
+            emoji
+        ]
     
     async def prompt(
         self,
@@ -127,7 +155,11 @@ class Context(commands.Context):
             ctx=self,
             author_id=author_id,
         )
-        view.message = await self.send(message, view=view, **kwargs)
+        view.message = await self.send(
+            message, 
+            view=view, 
+            **kwargs
+        )
         await view.wait()
         return view.value
     
@@ -136,7 +168,8 @@ class Context(commands.Context):
     
     async def safe_send(self, 
                         content, 
-                        *, escape_mentions=True, 
+                        *, 
+                        escape_mentions=True, 
                         **kwargs):
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
@@ -144,6 +177,12 @@ class Context(commands.Context):
         if len(content) > 2000:
             fp = io.BytesIO(content.encode())
             kwargs.pop('file', None)
-            return await self.send(file=discord.File(fp, filename='message_too_long.txt'), **kwargs)
+            return await self.send(
+                file=discord.File(
+                    fp, 
+                    filename='message_too_long.txt'
+                ), 
+                **kwargs
+            )
         else:
             return await self.send(content)

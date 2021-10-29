@@ -174,10 +174,6 @@ class Parrot(commands.AutoShardedBot):
     async def on_shard_resumed(self, shard_id):
         print(f'Shard ID {shard_id} has resumed...')
         self.resumes[shard_id].append(discord.utils.utcnow())
-        
-    async def on_resumed(self) -> None:
-        print(f"[Parrot] resumed {self.user}")
-        return
 
     async def process_commands(self, message: discord.Message):
         ctx = await self.get_context(message, cls=Context)
@@ -185,13 +181,12 @@ class Parrot(commands.AutoShardedBot):
         if ctx.command is None:
             # ignore if no command found
             return
-        
-        if await collection_ban.find_one({'_id': message.author.id}):
-            # if user is banned
-            return
 
         if ctx.command is not None:
             _true = await _can_run(ctx)
+            if await collection_ban.find_one({'_id': message.author.id}):
+                # if user is banned
+                return
             if not _true: 
                 await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!')
                 return

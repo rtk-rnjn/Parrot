@@ -18,9 +18,9 @@ class EmojiCapsProt(Cog):
         self.data = {} # TODO: Make cache system
         self.collection = parrot_db['server_config']
     
-    async def delete(self, message: discord.Message, *, reason: str=None) -> None:
+    async def delete(self, message: discord.Message) -> None:
         try:
-            await message.delete(reason=reason)
+            await message.delete()
         except Exception:
             return
 

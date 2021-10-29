@@ -183,8 +183,11 @@ class Owner(Cog):
     @Context.with_type
     async def dr(self, ctx: Context):
         """To delete the message reference"""
-        await ctx.message.reference.resolved.delete(reason=f"Action requested directly from the {ctx.author}")
-        await ctx.message.delete()
+        try:
+            await ctx.message.delete()
+        except Exception:
+            pass
+        await ctx.message.reference.resolved.delete()
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

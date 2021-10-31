@@ -238,13 +238,6 @@ NOTE:
 2. Bot will moderate indiscriminately. Means it hardly care about the role level. So it is adviced to place the bot role below the staff role or moderator role.
 
 
-TODO:
-
-1. To make tag system
-2. To make help commands more good
-3. To make AutoModeration
-4. To make more Todo list. LOL
-
 
 <br>
 

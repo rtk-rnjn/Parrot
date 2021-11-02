@@ -14,7 +14,7 @@ with open("extra/quote.txt") as f:
 
 quote = quote.split('\n')
 
-class ErrorView(discord.ui.view):
+class ErrorView(discord.ui.View):
     def __init__(
         self, author_id, *, ctx: Context=None, error=None
     ):

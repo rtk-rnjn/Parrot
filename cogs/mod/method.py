@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from utilities.database import parrot_db
-import discord, asyncio, aiohttp
-import datetime
+import discord, asyncio, aiohttp, time
+
 from datetime import datetime
 
 from utilities.infraction import Infraction
@@ -850,3 +850,61 @@ TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']
 VC_REACTION = ['🔒', '🔓', '🖋️']
 ROLE_REACTION = ['🔒', '🔓', '🌈', '🖋️']
 
+
+async def _warn(bot, guild, command_name, ctx_author, destination, target, reason):
+    infrn = Infraction(
+        bot, 
+        guild_id=guild.id, 
+        user_id=target.id, 
+        reason=reason, 
+        mod=ctx_author.id, 
+        at=time.time(), 
+        expires_at=None
+    )
+    if target.guild_permissions.administrator:
+        await destination.send(f"{ctx_author.mention} can not warn Server Admin")
+        return
+
+    data = await infrn.add_warn()
+    await destination.send(f"{ctx_author.mention} **{target}** warned.")
+    try:
+        await target.send(f"{target.mention} you are being warned from **{guild.name}** for: **{reason}**")
+    except Exception:
+        pass
+    
+
+async def _del_all_warn(bot, guild, command_name, ctx_author, destination, target, reason):
+    infrn = Infraction(
+        bot, 
+        guild_id=guild.id,
+        user_id=target.id,
+        reason=reason,
+        mod=ctx_author.id,
+        at=time.time(),
+        expires_at=None
+    )
+    if target.guild_permissions.administrator:
+        await destination.send(f"{ctx_author.mention} can not warn Server Admin")
+        return
+
+    await destination.send(f"{ctx_author.mention} **{target}** warned")
+    try:
+        await target.send(f"{target.mention} you are being warned from **{guild.name}** for: **{reason}**")
+    except Exception:
+        pass
+    
+    await infrn.del_warn_all()
+
+async def _del_warn(bot, guild, command_name, ctx_author, destination, target, reason):
+    infrn = Infraction(
+        bot, 
+        guild_id=guild.id,
+        user_id=target.id,
+        reason=reason,
+        mod=ctx_author.id,
+        at=time.time(),
+        expires_at=None
+    )
+    if target.guild_permissions.administrator:
+        await destination.send(f"{ctx_author.mention} can not warn Server Admin")
+        return

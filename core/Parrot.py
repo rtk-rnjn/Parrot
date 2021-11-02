@@ -188,7 +188,7 @@ class Parrot(commands.AutoShardedBot):
                 # if user is banned
                 return
             if not _true: 
-                await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!')
+                await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!', delete_after=10.0)
                 return
     
         await self.invoke(ctx)

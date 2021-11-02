@@ -85,4 +85,4 @@ def format_dt(dt, style=None) -> str:
     return f'<t:{int(dt.timestamp())}:{style}>'
 
 def format_dt_with_int(dt: int, style=None) -> str:
-    return f"<t:{dt}:{style}>"
+    return f"<t:{dt}:{style if style else ''}>"

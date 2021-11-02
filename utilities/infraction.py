@@ -5,19 +5,20 @@ from async_property import async_property
 from tabulate import tabulate
 from prettytable import PrettyTable
 from core import Parrot
-
+from utilities.database import parrot_db
 import datetime
 
 
 class Infraction:
     def __init__(self,
-                 bot: Parrot,
+                 bot: Parrot, 
+                 *,
                  guild_id: int,
                  user_id: int,
                  reason: str,
-                 at: datetime.datetime,
+                 at: int,
                  mod: int,
-                 expires_at: datetime.datetime = None):
+                 expires_at: int = None):
         self.bot = bot
         self.guild_id = guild_id
         self.user_id = user_id
@@ -25,7 +26,7 @@ class Infraction:
         self.at = at
         self.mod = mod
         self.expires_at = expires_at
-        self._parrot_collection = None
+        self._parrot_collection = parrot_db['server_config']
         self._warn_db = None
 
     @async_property
@@ -64,7 +65,7 @@ class Infraction:
             self._warn_db = await self.bot.db('warn_db')
 
         collection = self._warn_db[str(self.guild.id)]
-        data = collection.find_one({'_id': self.user.id})
+        data = await collection.find_one({'_id': self.user.id})
         if not data:
             return str(my_table)
         if len(data['warns']) == 0:
@@ -94,7 +95,7 @@ class Infraction:
                 }})
             return 1
 
-    async def _make_warn(self) -> dict:
+    async def make_warn(self) -> dict:
         case_id = self.get_case_id()
         warn = {
             'case_id': case_id,
@@ -109,7 +110,7 @@ class Infraction:
                                                  }})
         return warn
 
-    async def _add_warn(self) -> None:
+    async def add_warn(self) -> dict:
         warn = self._make_warn()
         collection = self._warn_db[f"{self.guild_id}"]
         user_exists = await collection.find_one({'_id': self.user_id})
@@ -120,8 +121,9 @@ class Infraction:
                                         {'$addToSet': {
                                             'warns': warn
                                         }})
+        return warn
 
-    async def _del_warn_all(self) -> None:
+    async def del_warn_all(self) -> None:
         collection = self._warn_db[f"{self.guild_id}"]
         user_exists = await collection.find_one({'_id': self.user_id})
         if not user_exists:
@@ -131,20 +133,18 @@ class Infraction:
                                         'warns': []
                                     }})
 
-    async def _del_warn_by_id(self, case_id: int) -> None:
+    async def del_warn_by_id(self, case_id: int) -> None:
         collection = self._warn_db[f"{self.guild_id}"]
         await collection.update_one({'_id': self.user_id},
                                     {'$pull': {
-                                        'warns': {
-                                            'case_id': case_id
+                                        'warns.case_id': case_id
                                         }
-                                    }})
+                                    })
 
-    async def _del_warn_by_mod(self, mod: int) -> None:
+    async def del_warn_by_mod(self, mod: int) -> None:
         collection = self._warn_db[f"{self.guild_id}"]
         await collection.update_one({'_id': self.user_id},
                                     {'$pull': {
-                                        'warns': {
-                                            'mod': mod
+                                        'warns.mod': mod
                                         }
-                                    }}, {'multi': True})
+                                    }, {'multi': True})

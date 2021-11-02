@@ -16,16 +16,11 @@ quote = quote.split('\n')
 
 class ErrorView(discord.ui.view):
     def __init__(
-        self,
-        *,
-        author_id: int,
-        ctx: Context,
-        timeout: int,
-        error
+        self, author_id, ctx, timeout, error
     ):
         super().__init__(timeout=timeout)
-        self.author_id: int = author_id
-        self.ctx: Context = ctx
+        self.author_id = author_id
+        self.ctx = ctx
         self.error = error
     
     async def paste(self, text):

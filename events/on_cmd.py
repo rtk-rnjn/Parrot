@@ -16,7 +16,7 @@ quote = quote.split('\n')
 
 class ErrorView(discord.ui.view):
     def __init__(
-        self, author_id, ctx, error
+        self, author_id, *, ctx: Context=None, error=None
     ):
         super().__init__(timeout=30.0)
         self.author_id = author_id
@@ -273,7 +273,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             else:
                 await ctx.reply(
                     f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working",
-                    view=ErrorView(ctx.author.id, ctx, error)
+                    view=ErrorView(ctx.author.id, ctx=ctx, error=error)
                 )
 
 

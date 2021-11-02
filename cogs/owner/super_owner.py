@@ -220,7 +220,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         for channel in json['channels']:
             em_chan = discord.Embed(
                 title=channel['name'], 
-                desciption=f"**Position:** {channel['position']}", 
+                description=f"**Position:** {channel['position']}", 
                 color=ctx.author.color, 
                 timestamp=datetime.datetime.utcnow()
             ).set_footer(text=channel['id'])

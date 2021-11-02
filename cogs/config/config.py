@@ -362,7 +362,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$addToSet': {
-                    'automod.profanity.words': word
+                    'automod.profanity.words': word.lower()
                 }
             }
         )
@@ -377,7 +377,7 @@ class BotConfig(Cog):
             {'_id': ctx.guild.id},
             {
                 '$pull': {
-                    'automod.profanity.words': word
+                    'automod.profanity.words': word.lower()
                 }
             }
         )

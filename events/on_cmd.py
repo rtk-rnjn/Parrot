@@ -54,7 +54,7 @@ class ErrorView(discord.ui.view):
             await interaction.response.send_message('Stay away', ephemeral=True)
             return False
 
-    @discord.ui.button(lable='Show full error', style=discord.ButtonStyle.green)
+    @discord.ui.button(label='Show full error', style=discord.ButtonStyle.green)
     async def show_full_traceback(self, button: discord.ui.button, interaction: discord.Interaction):
             tb = traceback.format_exception(type(self.error), self.error,
                                             self.error.__traceback__)

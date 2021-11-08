@@ -572,4 +572,200 @@ class Fun(Cog):
         """To understand HTTP Errors, try: `http 404`"""
         await ctx.reply(embed=discord.Embed(timestamp=datetime.datetime.utcnow(), color=ctx.author.color).set_image(url=f"https://http.cat/{status_code}").set_footer(text=f"{ctx.author}"))
 
-
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def patpat(self, ctx: Context, *, member: discord.Member=None):
+        """Pat pat image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def burn(self, ctx: Context, *, member: discord.Member=None):
+        """Burn image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def glitch(self, ctx: Context, *, member: discord.Member=None):
+        """Glitch image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def bomb(self, ctx: Context, *, member: discord.Member=None):
+        """Bomb image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def explict(self, ctx: Context, *, member: discord.Member=None):
+        """Explict image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def lamp(self, ctx: Context, *, member: discord.Member=None):
+        """Lamp image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def rain(self, ctx: Context, *, member: discord.Member=None):
+        """Rain image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def layers(self, ctx: Context, *, member: discord.Member=None):
+        """Layers image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def radiate(self, ctx: Context, *, member: discord.Member=None):
+        """Radiate image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def shoot(self, ctx: Context, *, member: discord.Member=None):
+        """Shoot image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def tv(self, ctx: Context, *, member: discord.Member=None):
+        """TV image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def gallery(self, ctx: Context, *, member: discord.Member=None):
+        """Gallery image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def balls(self, ctx: Context, *, member: discord.Member=None):
+        """Balls image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def equation(self, ctx: Context, *, member: discord.Member=None):
+        """Equation image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command(aliases=['halfinvert'])
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def half_invert(self, ctx: Context, *, member: discord.Member=None):
+        """Half Invert image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def roll(self, ctx: Context, *, member: discord.Member=None):
+        """Roll image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def optics(self, ctx: Context, *, member: discord.Member=None):
+        """Optics image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
+        """ScrapBook Text image generation"""
+        params = {'text': text[:20:]}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    

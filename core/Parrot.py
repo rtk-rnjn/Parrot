@@ -272,3 +272,6 @@ class Parrot(commands.AutoShardedBot):
                 'mute_role': None
             })
         return commands.when_mentioned_or(prefix)(self, message)
+    
+    async def send_raw(self, channel_id: int, content: str, **kwargs):
+        await self.http.send_message(channel_id, content, **kwargs)

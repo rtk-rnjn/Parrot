@@ -3,16 +3,29 @@ import json, os
 with open('config.json') as f:
     data = json.load(f)
 
+VERSION = "v4.0.2-stable"
+
 OWNER_IDS = data['owner_ids']
 DEFAULT_PREFIX = data['prefix']
 CASE_INSENSITIVE = data['case_insensitive']
 STRIP_AFTER_PREFIX = data['strip_after_prefix']
+
 SUPER_USER = data['super_user']
+MASTER_OWNER = SUPER_USER
+
 EXTENSIONS = data['extensions']
-VERSION = "v4.0.1-stable"
-TOKEN = os.environ['TOKEN']
 DEV_LOGO = data['dev_logo']
+
+TOKEN = os.environ['TOKEN']
 DATABASE_KEY = os.environ['DATABASE_KEY']
 my_secret = DATABASE_KEY
-MEME_PASS = "***qwerty123"  # this is not the real pass, just to tell the website from where the API call is comming from.
+
+AUTHOR_NAME = data['author_name']
+AUTHOR_DISCRIMINATOR = data['discriminator']
+
+GITHUB = data['github']
+SUPPORT_SERVER = data['support_server']
+
+MEME_PASS = "***qwerty123" 
+# this is not the real pass, just to tell the website from where the API call is comming from.
 # yes you can use. but i suggest you to use your own.

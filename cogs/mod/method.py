@@ -825,7 +825,7 @@ async def _emoji_addurl(guild, command_name, ctx_author, destination, url,
         await destination.send(f"{ctx_author.mention} emoji created {emoji}")
     except Exception as e:
         await destination.send(
-            f"Can not able to {command_name} **{emoji.name} ({emoji.id})**. Error raised: **{e}**"
+            f"Can not able to {command_name}. Error raised: **{e}**"
         )
 
 

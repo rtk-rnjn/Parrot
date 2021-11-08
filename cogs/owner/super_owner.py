@@ -140,7 +140,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ban(user.id, cmd, chat, global_, reason)
         try:
             await user.send(
-                f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `!! Ritik Ranjan [*.*]#9230` (741614468546560092) for unban."
+                f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban."
             )
         except Exception:
             pass

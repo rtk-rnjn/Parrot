@@ -121,7 +121,7 @@ class HelpSelectMenu(discord.ui.Select['HelpMenu']):
         assert self.view is not None
         value = self.values[0]
         if value == '__index':
-            await self.view.rebind(FrontPageSource(), interaction)
+            await self.view.rebind(FrontPageSource(self.bot), interaction)
         else:
             cog = self.bot.get_cog(value)
             if cog is None:
@@ -142,6 +142,9 @@ class HelpSelectMenu(discord.ui.Select['HelpMenu']):
 
 
 class FrontPageSource(menus.PageSource):
+    def __init__(self, bot: Parrot):
+        self.bot = bot
+
     def is_paginating(self) -> bool:
         # This forces the buttons to appear even in the front page
         return True
@@ -169,7 +172,7 @@ class FrontPageSource(menus.PageSource):
         embed.add_field(
             name='Support Server',
             value=
-            'For more help, consider joining the official server over at https://discord.gg/NEyJxM7G7f',
+            f'For more help, consider joining the official server over at {self.bot.support_server}',
             inline=False,
         )
 
@@ -181,7 +184,7 @@ class FrontPageSource(menus.PageSource):
                 ("The bot made by !! Ritik Ranjan [\*.*]#9230. Built with love and `discord.py`! Bot been running since "
                  f'{created_at}. Bot have features such as moderation, global-chat, and more. You can get more '
                  'information on my commands by using the dropdown below.\n\n'
-                 "Bot is also open source. You can see the code on [GitHub](https://github.com/ritik0ranjan/Parrot)!"
+                 f"Bot is also open source. You can see the code on [GitHub]({self.bot.github})!"
                  ),
                 inline=False,
             )
@@ -284,7 +287,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             all_commands[cog] = sorted(children,
                                        key=lambda c: c.qualified_name)
 
-        menu = HelpMenu(FrontPageSource(), ctx=self.context)
+        menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
         menu.add_categories(all_commands)
         await menu.start()
 
@@ -531,7 +534,7 @@ class Meta(Cog):
             ("CPU time", f"`{(cpu_time)}`", True),
             ("Memory usage", f"`{mem_usage:,.3f} / {mem_total:,.0f} MiB ({mem_of_total:.0f}%)`", True),
             ("Total users on count", f"`{len(self.bot.users)}`", True),
-            ("Owner",'`!! Ritik Ranjan [*.*]#9230`', True),
+            ("Owner",f'`{self.bot.author_name}`', True),
             ("Total guild on count", f"`{len(self.bot.guilds)}`", True)]
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
@@ -586,25 +589,10 @@ class Meta(Cog):
         """
         Get the invite of the bot! Thanks for seeing this command
         """
-        clientId = ctx.me.id 
-        perms = discord.Permissions.none()
-        perms.read_messages = True
-        perms.external_emojis = True
-        perms.send_messages = True
-        perms.manage_roles = True
-        perms.manage_channels = True
-        perms.ban_members = True
-        perms.kick_members = True
-        perms.manage_messages = True
-        perms.embed_links = True
-        perms.read_message_history = True
-        perms.attach_files = True
-        perms.add_reactions = True
-
-        url = f"https://discord.com/api/oauth2/authorize?client_id={clientId}&permissions={perms.value}&redirect_uri={self.bot.support_server}&scope=bot%20applications.commands"
+        url = self.bot.invite
         em = discord.Embed(
             title="Click here to add", 
-            description="```ini\n[Default Prefix: `@Parrot#9209`]\n```\n**Bot Owned and created by `!! Ritik Ranjan [*.*]#9230`**", 
+            description=f"```ini\n[Default Prefix: `@{self.bot.user}`]\n```\n**Bot Owned and created by `{self.bot.author_name}`**", 
             url=url, 
             timestamp=datetime.datetime.utcnow())
         
@@ -702,15 +690,19 @@ class Meta(Cog):
         if view.value is None:
             await msg.reply(f"{ctx.author.mention} you did not responds on time. No request is being sent!")
         elif view.value:
+            if self.bot.author_obj:
+                await self.bot.author_obj.send(text[:1800:])
+            else:
+                from utilities.config import SUPER_USER
+                await self.bot.get_user(SUPER_USER).send(text[:1800:])    
             await msg.reply(f"{ctx.author.mention} your message is being delivered!")
-            await self.bot.get_user(741614468546560092).send(text[:1800:])
         else:
             await msg.reply(f"{ctx.author.mention} nvm, reverting the process")
 
     @commands.command(hidden=True)
     async def hello(self, ctx: Context):
         """Displays my intro message."""
-        await ctx.reply('Hello! Parrot is a robot. !! Ritik Ranjan [\*.*]#9230 made me.')
+        await ctx.reply(f'Hello! {self.bot.user} is a robot. `{self.bot.author_name}` made me.')
 
     @commands.command(rest_is_raw=True, hidden=True)
     @commands.is_owner()
@@ -746,7 +738,7 @@ class Meta(Cog):
     async def vote(self, ctx: Context):
         """Vote the bot for better discovery on top.gg"""
         embed = discord.Embed(title="Click here to vote!", 
-                              url="https://top.gg/bot/800780974274248764/vote", 
+                              url=f"https://top.gg/bot/{self.bot.user.id}/vote", 
                               description=f"**{ctx.author}** thank you for using this command!\n\nYou can vote in every 12h", 
                               timestamp=datetime.datetime.utcnow(),
                               color=ctx.author.color)

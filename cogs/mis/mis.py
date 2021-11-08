@@ -488,7 +488,7 @@ class Misc(Cog):
     @Context.with_type
     async def source(self, ctx: Context, *, command: str = None):
         """Displays my full source code or for a specific command."""
-        source_url = 'https://github.com/ritik0ranjan/Parrot'
+        source_url = self.bot.github
         branch = 'main'
         if command is None:
             return await ctx.reply(source_url)

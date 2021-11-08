@@ -27,7 +27,7 @@ from typing import List, Optional
 
 response = ["All signs point to yes...","Yes!", "My sources say nope.", "You may rely on it.", "Concentrate and ask again...", "Outlook not so good...", "It is decidedly so!", "Better not tell you.", "Very doubtful.", "Yes - Definitely!", "It is certain!", "Most likely.", "Ask again later.", "No!", "Outlook good.", "Don't count on it.", "Why not", "Probably", "Can't say", "Well well..."]
 
-class Fun(Cog):
+class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member)}):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
 
     def __init__(self, bot: Parrot):

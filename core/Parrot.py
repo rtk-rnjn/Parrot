@@ -1,22 +1,13 @@
 from __future__ import annotations
 
-import jishaku
-import os, typing
+import jishaku, os, typing
 from async_property import async_property
 
-import datetime, re
-import json, asyncio
-import copy
-import logging
-import traceback
-import aiohttp
-import sys
+import datetime, re, json, asyncio, copy, logging, traceback, aiohttp, sys, discord, asyncio, topgg
 from collections import Counter, deque, defaultdict
-
 from discord.ext import commands
-import discord, traceback, asyncio, topgg
 
-from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN
+from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN, AUTHOR_NAME, AUTHOR_DISCRIMINATOR, MASTER_OWNER, GITHUB, SUPPORT_SERVER
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 
@@ -88,18 +79,31 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def invite(self) -> str:
-        return discord.utils.oauth_url(
-            self.user.id,
-            permissions=discord.Permissions.all_channel(),
-            redirect_uri='https://discord.gg/NEyJxM7G7f')
+        clientID = self.user.id
+        perms = discord.Permissions.none()
+        perms.read_messages = True
+        perms.external_emojis = True
+        perms.send_messages = True
+        perms.manage_roles = True
+        perms.manage_channels = True
+        perms.ban_members = True
+        perms.kick_members = True
+        perms.manage_messages = True
+        perms.embed_links = True
+        perms.read_message_history = True
+        perms.attach_files = True
+        perms.add_reactions = True
+
+        url = f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}&redirect_uri={self.bot.support_server}&scope=bot%20applications.commands"
+        return url
 
     @property
     def github(self) -> str:
-        return "https://github.com/ritik0ranjan/Parrot"
+        return GITHUB
 
     @property
     def support_server(self) -> str:
-        return "https://discord.gg/NEyJxM7G7f"
+        return SUPPORT_SERVER
 
     @async_property
     async def change_log(self) -> typing.Optional[discord.Message]:
@@ -109,11 +113,19 @@ class Parrot(commands.AutoShardedBot):
                 CHANGE_LOG_ID).history(limit=1).flatten()
 
         return self._change_log[0]
-
+    
+    @property
+    def author_obj(self) -> typing.Optional[discord.User]:
+        return self.get_user(MASTER_OWNER)
+    
+    @property
+    def author_name(self) -> str:
+        return AUTHOR_NAME + "#" + AUTHOR_DISCRIMINATOR
+    
     @async_property
-    async def db_latency(self) -> int:
+    async def db_latency(self) -> float:
         ini = time()
-        data = await collection.find_one({'_id': 741614680652644382})
+        data = await collection.find_one({})
         fin = time()
         return fin - ini
 

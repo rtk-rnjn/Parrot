@@ -619,8 +619,8 @@ class Fun(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def explict(self, ctx: Context, *, member: discord.Member=None):
-        """Explict image generation"""
+    async def explicit(self, ctx: Context, *, member: discord.Member=None):
+        """Explicit image generation"""
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
@@ -765,6 +765,17 @@ class Fun(Cog):
     async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
         """ScrapBook Text image generation"""
         params = {'text': text[:20:]}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command(aliases=['earthquack'])
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def earth_quack(self, ctx: Context, *,  member: discord.Member=None):
+        """Earth Quack image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)

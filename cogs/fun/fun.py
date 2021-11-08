@@ -718,7 +718,7 @@ class Fun(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def equation(self, ctx: Context, *, member: discord.Member=None):
+    async def equations(self, ctx: Context, *, member: discord.Member=None):
         """Equation image generation"""
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}

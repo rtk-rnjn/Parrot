@@ -94,7 +94,7 @@ class Parrot(commands.AutoShardedBot):
         perms.attach_files = True
         perms.add_reactions = True
 
-        url = f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}&redirect_uri={self.bot.support_server}&scope=bot%20applications.commands"
+        url = f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}&redirect_uri={SUPPORT_SERVER}&scope=bot%20applications.commands"
         return url
 
     @property

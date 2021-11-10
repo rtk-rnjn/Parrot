@@ -120,7 +120,7 @@ class Parrot(commands.AutoShardedBot):
     
     @property
     def author_name(self) -> str:
-        return AUTHOR_NAME + "#" + AUTHOR_DISCRIMINATOR
+        return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}" # cant join str and int, ofc
     
     @async_property
     async def db_latency(self) -> float:

@@ -104,7 +104,7 @@ class game(Cog):
         await ctx.send(embed=embed)
 
         def check(m):
-            return (m.content.lower() in ("yes", "y") and m.channel == ctx.channel and m.author == ctx.author)
+            return (m.content.lower() in ("yes", "y", "no", "n") and m.channel == ctx.channel and m.author == ctx.author)
 
         try: 
             correct = await self.bot.wait_for("message", check=check, timeout=30)

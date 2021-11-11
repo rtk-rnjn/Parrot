@@ -141,13 +141,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             try:                
                 async with aiohttp.ClientSession() as session:
                     webhook = Webhook.from_url(f"{hook}", session=session)
-
                     await webhook.send(
-                        content=message.clean_content,
-                        username=f"{message.author}",
-                        avatar_url=message.author.display_avatar.url)
-
-            except Exception:
+                            content=message.clean_content,
+                            username=f"{message.author}",
+                            avatar_url=message.author.display_avatar.url)
+            except discord.NotFound:
+                await collection.delete_one({'webhook': hook})
                 continue
 
     @Cog.listener()

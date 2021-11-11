@@ -106,7 +106,7 @@ class Actions(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def cry(self, ctx: Context, *, member: discord.Member = None):
+    async def weep(self, ctx: Context, *, member: discord.Member = None):
         """Cry pics?"""
         async with aiohttp.ClientSession() as session:
             data = await session.get(f"{self.url}/{ctx.command.name}")

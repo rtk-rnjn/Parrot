@@ -780,7 +780,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
     
-    @commands.command(aliases=['bonk'])
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @Context.with_type
     async def bonks(self, ctx: Context, *,  member: discord.Member=None):

@@ -517,7 +517,7 @@ class Mod(Cog):
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[0]:
                 await mt._ban(ctx.guild, ctx.command.name, ctx.author,
-                              ctx.channel, target, 0, reason)
+                              ctx.channel, target, None, reason)
                 await self.log(ctx, 'ban', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[1]:
@@ -590,7 +590,7 @@ class Mod(Cog):
 
                 await mt._change_nickname(ctx.guild, ctx.command.name,
                                           ctx.author, ctx.channel, target,
-                                          (m.content)[:31:], reason)
+                                          (m.content)[:32:])
                 await self.log(ctx, 'nickname changed', target, reason)
 
         if (type(target) is discord.TextChannel):

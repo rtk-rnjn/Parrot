@@ -146,8 +146,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                 content=message.clean_content,
                                 username=f"{message.author}",
                                 avatar_url=message.author.display_avatar.url)
-                except discord.NotFound:
-                    await collection.delete_one({'webhook': hook})
+                except Exception:
                     continue
 
     @Cog.listener()

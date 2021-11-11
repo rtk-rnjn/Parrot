@@ -34,7 +34,7 @@ def has_verified_role_ticket():
         if not data:
             return False
         data = await c.find_one({'_id': ctx.guild.id})
-        roles = data['verified-roles']
+        roles = data['verified_roles']
         if not roles: return False
         for role in roles:
             if ctx.guild.get_role(role) in ctx.author.roles: return True

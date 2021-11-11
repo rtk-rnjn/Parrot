@@ -517,7 +517,7 @@ class Mod(Cog):
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[0]:
                 await mt._ban(ctx.guild, ctx.command.name, ctx.author,
-                              ctx.channel, target, None, reason)
+                              ctx.channel, target, 0, reason)
                 await self.log(ctx, 'ban', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[1]:
@@ -527,7 +527,7 @@ class Mod(Cog):
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[2]:
                 await mt._mute(ctx.guild, ctx.command.name, ctx.author,
-                               ctx.channel, target, 0, reason)
+                               ctx.channel, target, None, reason)
                 await self.log(ctx, 'mute', target, reason)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[3]:

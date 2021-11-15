@@ -441,7 +441,7 @@ class Mod(Cog):
         if not emoji:
             return
         await mt._emoji_delete(ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, reason)
-        await self.log(ctx, ctx.command.qualified_name, emoji.name, f'{reason}') 
+        await self.log(ctx, ctx.command.qualified_name, [emoji.name for emoji in emoji], f'{reason}') 
 
     @emoji.command(name='add')
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))

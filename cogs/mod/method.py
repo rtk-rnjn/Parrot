@@ -194,10 +194,11 @@ async def _change_role_color(guild, command_name, ctx_author, destination,
 async def _ban(guild, command_name, ctx_author, destination, member, days,
                reason):
     try:
-        if member.id == ctx_author.id or member.id == 800780974274248764:
+        if member.id == ctx_author.id or member.id == guild.me.id:
             await destination.send(
                 f"{ctx_author.mention} don't do that, Bot is only trying to help"
             )
+            return
         else:
             await guild.ban(
                 member,
@@ -218,10 +219,11 @@ async def _mass_ban(guild, command_name, ctx_author, destination, members,
     _list = members
     for member in members:
         try:
-            if member.id == ctx_author.id or member.id == 800780974274248764:
+            if member.id == ctx_author.id or member.id == guild.me.id:
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
+                return
             else:
                 await guild.ban(
                     member,
@@ -242,10 +244,11 @@ async def _softban(guild, command_name, ctx_author, destination, member,
                    reason):
     for member in member:
         try:
-            if member.id == ctx_author.id or member.id == 800780974274248764:
+            if member.id == ctx_author.id or member.id == guild.me.id:
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
+                return
             else:
                 await member.ban(
                     reason=
@@ -289,10 +292,11 @@ async def _unban(guild, command_name, ctx_author, destination, member, reason):
 
 async def _mute(guild, command_name, ctx_author, destination, member, seconds,
                 reason):
-    if member.id == ctx_author.id or member.id == 800780974274248764:
+    if member.id == ctx_author.id or member.id == guild.me.id:
         await destination.send(
             f"{ctx_author.mention} don't do that, Bot is only trying to help"
         )
+        return
     data = await collection.find_one({'_id': guild.id})
     if not data:
         post = {
@@ -389,10 +393,11 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
 
 async def _kick(guild, command_name, ctx_author, destination, member, reason):
     try:
-        if member.id == ctx_author.id or member.id == 800780974274248764:
+        if member.id == ctx_author.id or member.id == guild.me.id:
             await destination.send(
                 f"{ctx_author.mention} don't do that, Bot is only trying to help"
             )
+            return
         else:
             await member.kick(
                 reason=
@@ -412,10 +417,11 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members,
     _list = members
     for member in members:
         try:
-            if member.id == ctx_author.id or member.id == 800780974274248764:
+            if member.id == ctx_author.id or member.id == guild.me.id:
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
+                return
             else:
                 await member.kick(
                     reason=
@@ -439,10 +445,11 @@ async def _block(guild, command_name, ctx_author, destination, channel, member,
                  reason):
     for member in member:
         try:
-            if member.id == ctx_author.id or member.id == 800780974274248764:
+            if member.id == ctx_author.id or member.id == guild.me.id:
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
+                return
             else:
                 await channel.set_permissions(
                     member,
@@ -602,7 +609,7 @@ async def _slowmode(guild, command_name, ctx_author, destination, seconds,
                     channel, reason):
     if seconds:
         try:
-            if (seconds <= 21600) and (seconds > 0):
+            if (seconds <= 21600) and (seconds > 0): # discord limit
                 await channel.edit(
                     slowmode_delay=seconds,
                     reason=
@@ -611,7 +618,7 @@ async def _slowmode(guild, command_name, ctx_author, destination, seconds,
                 await destination.send(
                     f"{ctx_author.mention} {channel} is now in slowmode of **{seconds}**, to reverse type [p]slowmode 0"
                 )
-            elif seconds == 0 or seconds.lower() == 'off':
+            elif seconds == 0 or (seconds.lower() in ('off', 'disable')):
                 await channel.edit(
                     slowmode_delay=seconds,
                     reason=

@@ -283,11 +283,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         
         response = await self.bot.session.post(
             "https://api.remove.bg/v1.0/removebg", 
-            files={
-                'image_file': imgdata
-            },
             data={
-                'size': 'auto'
+                'size': 'auto',
+                'image_file': imgdata
             },
             headers={
                 'X-Api-Key': f'{os.environ["REMOVE_BG"]}'

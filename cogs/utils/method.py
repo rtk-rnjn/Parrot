@@ -8,9 +8,13 @@ from time import time
 from utilities.database import tags, todo
 from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
+from utilities.time import ShortTime
 
+from discord.ext import commands
 
-async def _show_tag(bot, ctx, tag, msg_ref=None):
+from core import Parrot, Context
+
+async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if not data['nsfw']:
@@ -31,7 +35,7 @@ async def _show_tag(bot, ctx, tag, msg_ref=None):
     await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
 
 
-async def _create_tag(bot, ctx, tag, text):
+async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
@@ -59,7 +63,7 @@ async def _create_tag(bot, ctx, tag, text):
         await ctx.reply(f"{ctx.author.mention} tag created successfully")
 
 
-async def _delete_tag(bot, ctx, tag):
+async def _delete_tag(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
@@ -71,7 +75,7 @@ async def _delete_tag(bot, ctx, tag):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
-async def _name_edit(bot, ctx, tag, name):
+async def _name_edit(bot: Parrot, ctx: Context, tag, name):
     collection = tags[f"{ctx.guild.id}"]
     if exists := await collection.find_one({"id": name}):
         await ctx.reply(
@@ -87,7 +91,7 @@ async def _name_edit(bot, ctx, tag, name):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
-async def _text_edit(bot, ctx, tag, text):
+async def _text_edit(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
@@ -99,7 +103,7 @@ async def _text_edit(bot, ctx, tag, text):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
-async def _claim_owner(bot, ctx, tag):
+async def _claim_owner(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         member = ctx.guild.get_member(data["owner"])
@@ -113,7 +117,7 @@ async def _claim_owner(bot, ctx, tag):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
-async def _transfer_owner(bot, ctx, tag, member):
+async def _transfer_owner(bot: Parrot, ctx: Context, tag, member):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
@@ -137,7 +141,7 @@ async def _transfer_owner(bot, ctx, tag, member):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
-async def _toggle_nsfw(bot, ctx, tag):
+async def _toggle_nsfw(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({'id': tag}):
         if data["owner"] != ctx.author.id:
@@ -151,7 +155,7 @@ async def _toggle_nsfw(bot, ctx, tag):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
-async def _view_tag(bot, ctx, tag):
+async def _view_tag(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         em = discord.Embed(
@@ -173,7 +177,7 @@ async def _view_tag(bot, ctx, tag):
         await ctx.reply(embed=em)
 
 
-async def _create_todo(bot, ctx, name, text):
+async def _create_todo(bot: Parrot, ctx: Context, name, text):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
         await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
@@ -187,7 +191,7 @@ async def _create_todo(bot, ctx, name, text):
         )
         await ctx.reply(f"{ctx.author.mention} created as your TODO list")
 
-async def _update_todo_name(bot, ctx, name, new_name):
+async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
         if new_data := await collection.find_one({"id": new_name}):
@@ -198,7 +202,7 @@ async def _update_todo_name(bot, ctx, name, new_name):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-async def _update_todo_text(bot, ctx, name, text):
+async def _update_todo_text(bot: Parrot, ctx: Context, name, text):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
         await collection.update_one({'id': name}, {'$set': {'text': text}})
@@ -206,7 +210,7 @@ async def _update_todo_text(bot, ctx, name, text):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-async def _list_todo(bot, ctx):
+async def _list_todo(bot: Parrot, ctx: Context):
     collection = todo[f"{ctx.author.id}"]
     i = 1
     paginator = ParrotPaginator(ctx, title=f"Your Pending Tasks", per_page=12)
@@ -218,14 +222,14 @@ async def _list_todo(bot, ctx):
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} you do not have task to do")
 
-async def _show_todo(bot, ctx, name):
+async def _show_todo(bot: Parrot, ctx: Context, name):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({'id': name}):
         await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-async def _delete_todo(bot, ctx, name):
+async def _delete_todo(bot: Parrot, ctx: Context, name):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({'id': name}):
         await collection.delete_one({'id': name})
@@ -233,7 +237,7 @@ async def _delete_todo(bot, ctx, name):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-async def _show_all_tags(bot, ctx):
+async def _show_all_tags(bot: Parrot, ctx: Context):
     collection = tags[f"{ctx.guild.id}"]
     i = 1
     paginator = ParrotPaginator(ctx, title=f"Tags", per_page=12)
@@ -245,3 +249,69 @@ async def _show_all_tags(bot, ctx):
     except Exception:
         await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
     
+async def create_gw(bot: Parrot, ctx: Context):
+    questions = [
+        (1, "Enter the prize of Giveaway"),
+        (2, "Enter the channel in which the giveaway will be hosted"),
+        (3, "Enter amount of winners"),
+        (4, "Enter duration of giveaway"),
+        (5, "Enter Message requirements (if any)"),
+        (6, "Enter the server link incase requirement (if any)")
+    ]
+    def check(m):
+        return (m.author.id == ctx.author.id) and (m.channel.id == ctx.author.channel.id)
+    
+    answers = {}
+    
+    for i, q in questions:
+        await ctx.send(f"{ctx.author.mention} **{q}**")
+        msg = await bot.wait_for('message', check=check, timeout=30)
+        
+        if msg.content.lower() in ('end', 'cancel'):
+            return await ctx.send(f"{ctx.author.mention} alright, reverting all process")
+        
+        if i == 1:
+            answers['prize'] = msg.content
+        if i == 2:
+            channel = commands.TextChannelConverter().convert(ctx, msg.content)
+            if not channel:
+                return await ctx.send(f"{ctx.author.mention} Invalid Channel")
+            if not (channel.permissions_for(ctx.guild.me).add_reactions and channel.permissions_for(ctx.guild.me).embed_links):
+                return await ctx.send(f"{ctx.author.mention} bot don't have Add Reaction and Embed Links permission in {channel.mention}")  
+            answers['channel'] = channel.id
+        if i == 3:
+            try:
+                winner = int(msg.content)
+            except Exception:
+                return await ctx.send(f"{ctx.author.mention} Invalid Winner count")
+            answers['winners'] = winner
+        if i == 4:
+            seconds = ShortTime(f'{msg.content}').dt.timestamp()
+            answers['endtime'] = seconds
+        if i == 5:
+            if msg.content.lower() in ('none', 'no', 'na'):
+                answers['message'] = None
+            else:
+                try:
+                    message_requirement = int(msg.content)
+                    answers['message'] = message_requirement
+                except Exception:
+                    return await ctx.send(f"{ctx.author.mention} Invalid Message Requirement count")
+        if i == 6:
+            answers['link'] = None if msg.content.lower() in ('none', 'no', 'na') else msg.content
+        
+        _id = await channel.send(
+                embed=discord.Embed(
+                    description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{answers['endtime']}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
+                    timestamp=datetime.utcnow(),
+                    color=ctx.guild.owner.color
+                ).set_author(
+                    name=f"GIVEAWAY!"
+                ).set_footer(
+                    text=f"ID: {ctx.message.id}"
+                )
+            )
+        await _id.add_reaction("\N{PARTY POPPER}")
+        answers['_id'] = _id.id
+        answers['guild'] = ctx.guild.id
+            

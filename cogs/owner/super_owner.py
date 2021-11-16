@@ -274,6 +274,29 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await PaginationView(em_list_member).start(ctx=ctx)
 
 
+    @commands.command()
+    @commands.is_owner()
+    async def removebg(self, ctx: Context, *, url):
+        """To remove the background from image"""
+        async with self.bot.session.get(url) as img:
+            imgdata = io.BytesIO(await img.read())
+        
+        response = await self.bot.session.post(
+            "https://api.remove.bg/v1.0/removebg", 
+            files={
+                'image_file': imgdata
+            },
+            data={
+                'size': 'auto'
+            },
+            headers={
+                'X-Api-Key': f'{os.environ["REMOVE_BG"]}'
+            }
+        )
+        async with async_open('no-bg.png', 'wb') as out:
+            await out.write(response.content)
+        await ctx.send(file=discord.File('no-bg.png'))
+        os.system('rm no-bg.png')
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

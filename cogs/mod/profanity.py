@@ -57,7 +57,7 @@ class Profanity(Cog):
             if not bad_words:
                 return
 
-            if any(temp in message.content.lower() for temp in bad_words):
+            if any(temp in message.content.lower().split(' ') for temp in bad_words):
                 await message.channel.send(f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] [Warning]**", delete_after=10)
 
                 try:

@@ -292,7 +292,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             }
         )
         async with async_open('no-bg.png', 'wb') as out:
-            await out.write(response.content)
+            await out.write(await response.read())
         await ctx.send(file=discord.File('no-bg.png'))
         os.system('rm no-bg.png')
 

@@ -22,10 +22,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.collection = None
 
     def refrain_message(self, msg: str):
-        if 'chod' in msg:
+        if 'chod' in msg.replace(',', '').split(' '):
             return False
         for bad_word in bad_dict:
-            if bad_word.lower() in msg:
+            if bad_word.lower() in msg.replace(',', '').split(' '):
                 return False
         return True
 

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing_extensions import Required
 
 import discord, typing, random
 

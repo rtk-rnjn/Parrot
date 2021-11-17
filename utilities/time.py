@@ -18,10 +18,10 @@ class ShortTime:
                              (?:(?P<hours>[0-9]{1,5})(?:hours?|h))?        # e.g. 12h
                              (?:(?P<minutes>[0-9]{1,5})(?:minutes?|m))?    # e.g. 10m
                              (?:(?P<seconds>[0-9]{1,5})(?:seconds?|s))?    # e.g. 15s
-                          """, re.VERBOSE, re.IGNORECASE)
+                          """, re.VERBOSE)
 
     def __init__(self, argument, *, now=None):
-        match = self.compiled.fullmatch(argument)
+        match = self.compiled.fullmatch(argument.lower())
         if match is None or not match.group(0):
             raise commands.BadArgument('invalid time provided')
 

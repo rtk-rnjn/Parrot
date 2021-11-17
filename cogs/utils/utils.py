@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from core import Parrot, Cog, Context
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord, typing
 import datetime
 
@@ -9,6 +9,7 @@ from utilities.converters import reason_convert
 from utilities.database import guild_update
 
 from cogs.utils import method as mt
+from cogs.utils import giveaway
 
 
 class Utils(Cog):
@@ -148,3 +149,42 @@ class Utils(Cog):
     async def delete_todo(self, ctx: Context, *, name: str):
         """To delete the TODO task"""
         await mt._delete_todo(self.bot, ctx, name)
+
+    @commands.group(name='giveaway')
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True)
+    @commands.has_permissions(manage_guild=True, add_reactions=True)
+    async def giveaway(self, ctx: Context):
+        """To host small giveaways in the server. Do not use this as dedicated server giveaway"""
+        pass
+    
+    @giveaway.command()
+    async def create(self, ctx: Context):
+        """To create a giveaway in the server"""
+        await mt.create_gw(self.bot, ctx)
+    
+    @giveaway.command()
+    async def end(self, ctx: Context, message: int):
+        """To end the giveaway"""
+        await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
+        await giveaway.delete_one({'_id': message})
+    
+    @giveaway.command()
+    async def reroll(self, ctx: Context, message: int):
+        """To reroll the giveaway winners"""
+        await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
+    
+    @tasks.loop(seconds=1)
+    async def gw_tasks(self):
+        async for data in giveaway.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):
+            guild = self.bot.get_guild(data['guild'])
+            if not guild:
+                return await giveaway.delete_one({'_id': data['_id']})
+            try:
+                await mt.end_giveaway(self.bot, data['_id'], ctx=None, auto=False)
+            except AttributeError:
+                pass
+            except discord.errors.Forbidden:
+                pass
+            except discord.errors.NotFound:
+                pass
+            await giveaway.delete_one({'_id': data['_id']})

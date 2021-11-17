@@ -6,7 +6,7 @@ from discord.ext import commands
 
 import aiohttp, re, asyncio, json
 from discord import Webhook
-from utilities.database import parrot_db
+from utilities.database import parrot_db, msg_increment
 from utilities.regex import LINKS_NO_PROTOCOLS
 
 collection = parrot_db['global_chat']
@@ -42,7 +42,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message(self, message):
         if not message.guild or message.author.bot: return
-        
+        await msg_increment(message.guild.id, message.author.id) # for gw only
         channel = await collection.find_one({
             '_id': message.guild.id,
             'channel_id': message.channel.id
@@ -65,7 +65,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if role in message.author.roles:
                 return
 
-        if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/")):
+        if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/")): # bot commands or mention in starting
             return
 
         urls = LINKS_NO_PROTOCOLS.search(message.content)

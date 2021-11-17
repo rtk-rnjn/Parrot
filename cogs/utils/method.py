@@ -1,12 +1,13 @@
 from __future__ import annotations
+from typing_extensions import Required
 from cogs.utils.giveaway import Giveaway
 
-import discord, typing
+import discord, typing, random
 
 from datetime import datetime
 from time import time
 
-from utilities.database import tags, todo, parrot_db
+from utilities.database import tags, todo, parrot_db, msg_db
 from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
 from utilities.time import ShortTime
@@ -323,6 +324,104 @@ async def create_gw(bot: Parrot, ctx: Context):
         
         await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway ID: **{_id}**")
 
-async def end_giveaway(bot: Parrot, ctx: Context, _id: int):
+async def end_giveaway(bot: Parrot, _id: int, *, ctx: Context=None, auto: bool=False):
     if data := await giveaway.find_one({'_id': _id}):
-        pass # TODO: Goodnight
+        if not auto:
+            if not (data['guild'] == ctx.guild.id):
+                return await ctx.send(f"{ctx.author.mention} invalid message ID") if ctx else None
+            
+            channel = ctx.guild.get_channel(data['channel'])
+        else:
+            channel = bot.get_guild(data['guild']).get_channel(data['channel'])
+
+        if not channel:
+            await giveaway.delete_one({'_id': _id})
+            if not auto:
+                return await ctx.send(
+                    f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
+                ) if ctx else None
+            
+        async for msg in channel.history(limit=1, before=discord.Object(_id+1), after=discord.Object(_id-1)): # this is good. UwU
+            if msg is None:
+                if not auto:
+                    return await ctx.send(f"{ctx.author.mention} no message found! Proably deleted") if ctx else None
+            await msg.remove_reaction("\N{PARTY POPPER}", channel.guild.me)
+
+        for reaction in msg.reactions:
+            if str(reaction) == "\N{PARTY POPPER}":
+                if reaction.count < (data['winners'] - 1):
+                    if not auto:
+                        return await ctx.send(
+                            f"{ctx.author.mention} winner can not be decided due to insufficient reaction count."
+                        ) if ctx else None
+                users = await reaction.users().flatten()
+                ls = await get_winners(
+                    bot, 
+                    ctx=ctx, 
+                    msg=msg,
+                    guild=data['guild'],
+                    channel=channel, 
+                    users=users, 
+                    winners=data['winners'], 
+                    msg_required=data['message'], 
+                    server_link=data['link']
+                )
+                await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
+                if ls[0] == 0:
+                    return await ctx.send(
+                        f"{ctx.author.mention} can not determine the winner, bot isn't in the server as it is the requiremnt"
+                    ) if ctx and (not auto) else None
+        else:
+            if not auto:
+                return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.") if ctx else None
+    else:
+        if not auto:
+            await ctx.send(f"{ctx.author.mention} invalid message ID") if ctx else None
+
+async def get_winners(
+                bot: Parrot, 
+                *,
+                msg: discord.Message, 
+                guild: int, 
+                ctx: Context=None, 
+                channel: discord.TextChannel, 
+                users: list, 
+                winners: int,
+                msg_required: int=None, 
+                server_link: str=None
+            ) -> list:
+    collection = msg_db[f"{guild}"]
+    wins = random.sample(users, winners)
+    req_reroll = True
+    while req_reroll:
+        if msg_required:
+            for m in wins:
+                if data := await collection.find_one({'_id': m.id}):
+                    if data['count'] < msg_required:
+                        winners.remove(m)
+                        req_reroll = True
+                else:
+                    winners.remove(m)
+                    req_reroll = True
+            else:
+                req_reroll = False
+
+        elif server_link:
+            invite = bot.fetch_invite(server_link)
+            ignore_obj = (discord.PartialInviteGuild, discord.PartialInviteChannel) # bot isnt in guild
+            if isinstance(invite, ignore_obj):
+                return [0]
+            guild = invite.guild
+            for m in wins:
+                m_obj = guild.get_member(m.id) # to check whether member is in required guild
+                if not m_obj:
+                    winners.remove(m)
+                    req_reroll = True
+            else:
+                req_reroll = False
+
+        else:
+            req_reroll = False
+    for m in wins:
+        await msg.remove_reaction("\N{PARTY POPPER}", m)
+    return wins

@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing_extensions import Required
-from cogs.utils.giveaway import Giveaway
 
 import discord, typing, random
 

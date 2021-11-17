@@ -10,7 +10,7 @@ class Giveaway(Cog):
         self.bot = bot
         
     @commands.group(name='giveaway')
-    @commands.bot_has_permissions(embed_link=True, add_reactions=True)
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     @commands.has_permissions(manage_guild=True, add_reactions=True)
     async def giveaway(self, ctx: Context):
         """To make giveaways in the server"""

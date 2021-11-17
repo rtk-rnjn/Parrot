@@ -1,6 +1,7 @@
 import discord
 from utilities.database import parrot_db
 
+
 async def _enable(bot, ctx, cmd_cog, target, force=None):
     enable_disable = await bot.db('enable_disable')
     collection = enable_disable[f"{ctx.guild.id}"]
@@ -122,10 +123,10 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}, forcely"
             )
         else:
-            await collection.update_one({'_id': cmd_cog},
-                                        {'$addToSet': {
-                                            'channel_out': target.id
-                                        }})
+            await collection.update_one(
+                {'_id': cmd_cog}, {'$addToSet': {
+                    'channel_out': target.id
+                }})
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}"
             )

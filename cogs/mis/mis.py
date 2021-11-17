@@ -43,7 +43,7 @@ class Misc(Cog):
             string = string[0:1021] + "..."
         string = re.sub(invitere2, '[INVITE REDACTED]', string)
         return string
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='Plus', id=892440360750555136)
@@ -87,12 +87,12 @@ class Misc(Cog):
         """To get the first message of the specified channel"""
         channel = channel or ctx.channel
         async for msg in channel.history(limit=1, oldest_first=True):
-            return await ctx.send(
-                embed=discord.Embed(title=f"First message in {channel.name}",
-                                    url=msg.jump_url,
-                                    description=msg.content,
-                                    timestamp=datetime.datetime.utcnow()).set_footer(
-                                        text=f"Message sent by {msg.author}"))
+            return await ctx.send(embed=discord.Embed(
+                title=f"First message in {channel.name}",
+                url=msg.jump_url,
+                description=msg.content,
+                timestamp=datetime.datetime.utcnow()).set_footer(
+                    text=f"Message sent by {msg.author}"))
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -648,10 +648,10 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def mine_server_status(
-                                self,
-                                ctx: Context,
-                                address: str,
-                                bedrock: typing.Optional[convert_bool] = False):
+            self,
+            ctx: Context,
+            address: str,
+            bedrock: typing.Optional[convert_bool] = False):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"

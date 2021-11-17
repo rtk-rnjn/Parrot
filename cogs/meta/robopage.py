@@ -9,6 +9,7 @@ from discord.ext import menus
 
 from core import Context
 
+
 class RoboPages(discord.ui.View):
     def __init__(
         self,

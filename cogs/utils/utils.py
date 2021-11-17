@@ -16,6 +16,7 @@ class Utils(Cog):
     """Tag System for your server"""
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.gw_tasks.start()
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -181,10 +182,6 @@ class Utils(Cog):
                 return await giveaway.delete_one({'_id': data['_id']})
             try:
                 await mt.end_giveaway(self.bot, data['_id'], ctx=None, auto=False)
-            except AttributeError:
-                pass
-            except discord.errors.Forbidden:
-                pass
-            except discord.errors.NotFound:
+            except Exception:
                 pass
             await giveaway.delete_one({'_id': data['_id']})

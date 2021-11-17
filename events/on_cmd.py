@@ -14,15 +14,14 @@ with open("extra/quote.txt") as f:
 
 quote = quote.split('\n')
 
+
 class ErrorView(discord.ui.View):
-    def __init__(
-        self, author_id, *, ctx: Context=None, error=None
-    ):
+    def __init__(self, author_id, *, ctx: Context = None, error=None):
         super().__init__(timeout=30.0)
         self.author_id = author_id
         self.ctx = ctx
         self.error = error
-    
+
     async def paste(self, text):
         """Return an online bin of given text"""
 
@@ -42,24 +41,28 @@ class ErrorView(discord.ui.View):
             if post.status == 200:
                 return str(post.url)
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def interaction_check(self,
+                                interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
         else:
-            await interaction.response.send_message('Stay away', ephemeral=True)
+            await interaction.response.send_message('Stay away',
+                                                    ephemeral=True)
             return False
 
-    @discord.ui.button(label='Show full error', style=discord.ButtonStyle.green)
-    async def show_full_traceback(self, button: discord.ui.button, interaction: discord.Interaction):
-            tb = traceback.format_exception(type(self.error), self.error,
-                                            self.error.__traceback__)
-            tbe = "".join(tb) + ""
-            er = f'```py\nIgnoring exception in command {self.ctx.command.name}: {tbe}\n```'
-            text = await self.paste(er)
-            if len(er) < 1950:
-                await interaction.response.send_message(er, ephemeral=True)
-            else:
-                await interaction.response.send_message(text, ephemeral=True)
+    @discord.ui.button(label='Show full error',
+                       style=discord.ButtonStyle.green)
+    async def show_full_traceback(self, button: discord.ui.button,
+                                  interaction: discord.Interaction):
+        tb = traceback.format_exception(type(self.error), self.error,
+                                        self.error.__traceback__)
+        tbe = "".join(tb) + ""
+        er = f'```py\nIgnoring exception in command {self.ctx.command.name}: {tbe}\n```'
+        text = await self.paste(er)
+        if len(er) < 1950:
+            await interaction.response.send_message(er, ephemeral=True)
+        else:
+            await interaction.response.send_message(text, ephemeral=True)
 
 
 class Cmd(Cog, command_attrs=dict(hidden=True)):
@@ -143,9 +146,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         elif isinstance(error, commands.MissingRole):
-            missing = [
-                role for role in error.missing_role
-            ]
+            missing = [role for role in error.missing_role]
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
                                           missing[-1])
@@ -267,8 +268,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             else:
                 await ctx.reply(
                     f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working",
-                    view=ErrorView(ctx.author.id, ctx=ctx, error=error)
-                )
+                    view=ErrorView(ctx.author.id, ctx=ctx, error=error))
 
 
 def setup(bot):

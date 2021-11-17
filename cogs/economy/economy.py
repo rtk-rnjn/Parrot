@@ -6,6 +6,7 @@ from core import Parrot, Context, Cog
 
 from utilities.database import ge_update, economy_db
 from utilities.buttons import Prompt
+
 collection = economy_db['global_economy']
 
 
@@ -30,8 +31,8 @@ class Economy(Cog):
         else:
             view = Prompt(ctx.author.id)
             msg = await ctx.reply(
-                f"{ctx.author.mention} Are you sure about that? If yes, then press `YES`", view=view
-            )
+                f"{ctx.author.mention} Are you sure about that? If yes, then press `YES`",
+                view=view)
             await view.wait()
             if view.value is None:
                 await msg.reply(f"{ctx.author.mention} you ran out time!")
@@ -41,8 +42,7 @@ class Economy(Cog):
                     f"{ctx.author.mention} deleted successfully")
             else:
                 return await ctx.reply(
-                  f"{ctx.author.mention} nvm, nothing happing!"
-                )    
+                    f"{ctx.author.mention} nvm, nothing happing!")
 
     @commands.command(aliases=['starteconomy'])
     @commands.cooldown(1, 5, commands.BucketType.member)

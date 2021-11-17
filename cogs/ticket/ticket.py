@@ -12,7 +12,7 @@ class Ticket(Cog):
     """A simple ticket service, trust me it's better than YAG. LOL!"""
     def __init__(self, bot: Parrot):
         self.bot = bot
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='ticket_', id=892425759287824415)

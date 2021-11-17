@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Collection
+
 import typing
 
 from discord.ext import commands, tasks

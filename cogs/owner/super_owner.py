@@ -330,7 +330,7 @@ class SphinxObjectFileReader:
                 pos = buf.find(b"\n")
 
 
-class DiscordPy(Cog):
+class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
     

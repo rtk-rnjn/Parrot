@@ -14,25 +14,15 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def log(self, 
-                 guild, 
-                 channel: discord.TextChannel, 
-                 description: str, 
-                 status: str
-            ) -> Optional[discord.Message]:
-        await channel.send(embed=discord.Embed(
-                                        title='Parrot Ticket Bot',
-                                        timestamp=datetime.utcnow(),
-                                        description=f"{description}",
-                                        color=discord.Color.blue()
-                                ).add_field(
-                                        name='Status', 
-                                        value=status
-                                ).set_footer(
-                                        text=f"{guild.name}"
-                            )
-                        )
-                    
+    async def log(self, guild, channel: discord.TextChannel, description: str,
+                  status: str) -> Optional[discord.Message]:
+        await channel.send(embed=discord.Embed(title='Parrot Ticket Bot',
+                                               timestamp=datetime.utcnow(),
+                                               description=f"{description}",
+                                               color=discord.Color.blue()).
+                           add_field(name='Status', value=status).set_footer(
+                               text=f"{guild.name}"))
+
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
         collection = parrot_db['ticket']
@@ -47,7 +37,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             return
         if (member.bot):
             return
-        
+
         channel_id = payload.channel_id
         channel = self.bot.get_channel(channel_id)
 
@@ -105,7 +95,9 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 color=0x00a8ff)
 
             await ticket_channel.send(embed=em, content=f"{member.mention}")
-            await ticket_channel.send("To close the ticket, type `[p]close`\nTo save the ticket transcript, type `[p]save`")
+            await ticket_channel.send(
+                "To close the ticket, type `[p]close`\nTo save the ticket transcript, type `[p]save`"
+            )
             pinged_msg_content = ""
             non_mentionable_roles = []
             if data["pinged_roles"]:
@@ -131,7 +123,10 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             await ticket_update(guild.id, post)
 
             log_channel = guild.get_channel(data['log'])
-            await self.log(guild, log_channel, f"Channel: **#ticket-{ticket_number}**\n**Opened by:** {member} ({member.id})", 'RUNNING')
+            await self.log(
+                guild, log_channel,
+                f"Channel: **#ticket-{ticket_number}**\n**Opened by:** {member} ({member.id})",
+                'RUNNING')
 
 
 def setup(bot):

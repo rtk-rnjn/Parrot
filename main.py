@@ -1,5 +1,5 @@
-
 from utilities.database import parrot_db
+
 collection = parrot_db['banned_users']
 
 from core import Parrot

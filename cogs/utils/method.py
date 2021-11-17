@@ -1,11 +1,12 @@
 from __future__ import annotations
+from cogs.utils.giveaway import Giveaway
 
 import discord, typing
 
 from datetime import datetime
 from time import time
 
-from utilities.database import tags, todo
+from utilities.database import tags, todo, parrot_db
 from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
 from utilities.time import ShortTime
@@ -13,6 +14,9 @@ from utilities.time import ShortTime
 from discord.ext import commands
 
 from core import Parrot, Context
+
+giveaway = parrot_db['giveaway']
+
 
 async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
     collection = tags[f"{ctx.guild.id}"]
@@ -311,7 +315,14 @@ async def create_gw(bot: Parrot, ctx: Context):
                     text=f"ID: {ctx.message.id}"
                 )
             )
-        await _id.add_reaction("\N{PARTY POPPER}")
         answers['_id'] = _id.id
         answers['guild'] = ctx.guild.id
-            
+        await giveaway.insert_one(answers)
+        
+        await _id.add_reaction("\N{PARTY POPPER}")
+        
+        await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway ID: **{_id}**")
+
+async def end_giveaway(bot: Parrot, ctx: Context, _id: int):
+    if data := await giveaway.find_one({'_id': _id}):
+        pass # TODO: Goodnight

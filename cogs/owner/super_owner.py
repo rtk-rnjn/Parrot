@@ -296,6 +296,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(file=discord.File('no-bg.png'))
         os.system('rm no-bg.png')
 
+
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader
     BUFSIZE = 16 * 1024

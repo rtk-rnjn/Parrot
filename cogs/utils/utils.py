@@ -9,7 +9,7 @@ from utilities.converters import reason_convert
 from utilities.database import guild_update
 
 from cogs.utils import method as mt
-from cogs.utils import giveaway
+from cogs.utils.method import giveaway
 
 
 class Utils(Cog):

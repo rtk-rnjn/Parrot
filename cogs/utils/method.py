@@ -262,7 +262,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         (6, "Enter the server link incase requirement (if any)")
     ]
     def check(m):
-        return (m.author.id == ctx.author.id) and (m.channel.id == ctx.author.id)
+        return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
     
     answers = {}
     

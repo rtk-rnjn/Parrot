@@ -272,7 +272,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         
         if msg.content.lower() in ('end', 'cancel'):
             return await ctx.send(f"{ctx.author.mention} alright, reverting all process")
-        
+        channel = None
         if i == 1:
             answers['prize'] = msg.content
         if i == 2:
@@ -282,6 +282,7 @@ async def create_gw(bot: Parrot, ctx: Context):
             if not (channel.permissions_for(ctx.guild.me).add_reactions and channel.permissions_for(ctx.guild.me).embed_links):
                 return await ctx.send(f"{ctx.author.mention} bot don't have Add Reaction and Embed Links permission in {channel.mention}")  
             answers['channel'] = channel.id
+            
         if i == 3:
             try:
                 winner = int(msg.content)

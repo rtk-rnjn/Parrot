@@ -234,6 +234,10 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nEmoji Not Found. Emoji ID/Name you provided is invalid or bot can not see that Emoji'
                 )
+            else:
+                return await ctx.reply(
+                    f'**{random.choice(quote)}**\n{error}'
+                )
 
         elif isinstance(error, commands.MissingRequiredArgument):
             command = ctx.command

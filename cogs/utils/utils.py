@@ -176,7 +176,7 @@ class Utils(Cog):
     
     @tasks.loop(seconds=1)
     async def gw_tasks(self):
-        async for data in giveaway.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):
+        async for data in giveaway.find({'endtime': {'$lte': datetime.utcnow().timestamp()}}):
             guild = self.bot.get_guild(data['guild'])
             if not guild:
                 return await giveaway.delete_one({'_id': data['_id']})

@@ -424,3 +424,6 @@ async def get_winners(
     for m in wins:
         await msg.remove_reaction("\N{PARTY POPPER}", m)
     return wins
+
+async def on_reaction_add(payload):
+    pass

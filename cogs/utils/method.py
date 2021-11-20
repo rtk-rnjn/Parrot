@@ -265,6 +265,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
     
     answers = {}
+    channel = None
     
     for i, q in questions:
         await ctx.send(f"{ctx.author.mention} **{q}**")
@@ -272,7 +273,6 @@ async def create_gw(bot: Parrot, ctx: Context):
         
         if msg.content.lower() in ('end', 'cancel'):
             return await ctx.send(f"{ctx.author.mention} alright, reverting all process")
-        channel = None
         if i == 1:
             answers['prize'] = msg.content
         if i == 2:
@@ -304,24 +304,24 @@ async def create_gw(bot: Parrot, ctx: Context):
         if i == 6:
             answers['link'] = None if msg.content.lower() in ('none', 'no', 'na') else msg.content
         
-        _id = await channel.send(
-                embed=discord.Embed(
-                    description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{answers['endtime']}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
-                    timestamp=datetime.utcnow(),
-                    color=ctx.guild.owner.color
-                ).set_author(
-                    name=f"GIVEAWAY!"
-                ).set_footer(
-                    text=f"ID: {ctx.message.id}"
-                )
+    _id = await channel.send(
+            embed=discord.Embed(
+                description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{answers['endtime']}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
+                timestamp=datetime.utcnow(),
+                color=ctx.guild.owner.color
+            ).set_author(
+                name=f"GIVEAWAY!"
+            ).set_footer(
+                text=f"ID: {ctx.message.id}"
             )
-        answers['_id'] = _id.id
-        answers['guild'] = ctx.guild.id
-        await giveaway.insert_one(answers)
-        
-        await _id.add_reaction("\N{PARTY POPPER}")
-        
-        await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway ID: **{_id}**")
+        )
+    answers['_id'] = _id.id
+    answers['guild'] = ctx.guild.id
+    await giveaway.insert_one(answers)
+    
+    await _id.add_reaction("\N{PARTY POPPER}")
+    
+    await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway ID: **{_id}**")
 
 async def end_giveaway(bot: Parrot, _id: int, *, ctx: Context=None, auto: bool=False):
     if data := await giveaway.find_one({'_id': _id}):

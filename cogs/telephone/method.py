@@ -61,9 +61,7 @@ async def dial(bot, ctx, server, reverse=False):
         pass
 
     def check(m):
-        return (m.content.lower() in ("pickup", "hangup")) and (
-            m.channel == channel or m.channel == target_channel
-        )  # and not m.author.bot
+        return (m.content.lower() in ("pickup", "hangup")) and (m.channel == channel or m.channel == target_channel) and (not m.author.bot)
 
     try:
         _talk = await bot.wait_for('message', check=check, timeout=60)
@@ -103,8 +101,9 @@ async def dial(bot, ctx, server, reverse=False):
         while True:
 
             def check(m):
-                if (m.channel == target_channel
-                    ) or (m.channel == channel) and (not m.author.bot):
+                if m.author.bot:
+                    return
+                if (m.channel == target_channel) or (m.channel == channel):
                     return True
 
             try:

@@ -6,7 +6,7 @@ import discord, typing, re, asyncio
 from core import Parrot, Context, Cog
 
 from utilities.checks import is_mod
-from utilities.converters import reason_convert, convert_time
+from utilities.converters import reason_convert
 from utilities.database import parrot_db
 from utilities.time import ShortTime
 

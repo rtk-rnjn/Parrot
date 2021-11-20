@@ -306,7 +306,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         
     _id = await channel.send(
             embed=discord.Embed(
-                description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{answers['endtime']}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
+                description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{int(answers['endtime'])}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
                 timestamp=datetime.utcnow(),
                 color=ctx.guild.owner.color
             ).set_author(
@@ -321,7 +321,7 @@ async def create_gw(bot: Parrot, ctx: Context):
     
     await _id.add_reaction("\N{PARTY POPPER}")
     
-    await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway ID: **{_id}**")
+    await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**")
 
 async def end_giveaway(bot: Parrot, _id: int, *, ctx: Context=None, auto: bool=False):
     if data := await giveaway.find_one({'_id': _id}):

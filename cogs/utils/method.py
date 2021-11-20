@@ -276,7 +276,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         if i == 1:
             answers['prize'] = msg.content
         if i == 2:
-            channel = commands.TextChannelConverter().convert(ctx, msg.content)
+            channel = await commands.TextChannelConverter().convert(ctx, msg.content)
             if not channel:
                 return await ctx.send(f"{ctx.author.mention} Invalid Channel")
             if not (channel.permissions_for(ctx.guild.me).add_reactions and channel.permissions_for(ctx.guild.me).embed_links):

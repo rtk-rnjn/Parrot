@@ -72,7 +72,7 @@ class Mod(Cog):
     @Context.with_type
     async def add_role_bots(self, ctx: Context, operator: str, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the all bots."""
-        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
+        await mt._add_roles_bot(ctx.guild, ctx.command.name, ctx.author, ctx.channel, operator, role, reason)
         await self.log(ctx, ctx.command.qualified_name, 'Bots', f'{reason}')
 
     @role.command(name="humans")
@@ -81,7 +81,7 @@ class Mod(Cog):
     @Context.with_type
     async def add_role_human(self, ctx: Context, operator: str, role: discord.Role, *, reason: reason_convert = None):
         """Gives a role to the all humans."""
-        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.channel, operator, role, reason)
+        await mt._add_roles_humans(ctx.guild, ctx.command.name, ctx.author, ctx.channel, operator, role, reason)
         await self.log(ctx, ctx.command.qualified_name, 'Humans', f'{reason}')
 
     @role.command(name="add", aliases=['arole', 'giverole', 'grole'])

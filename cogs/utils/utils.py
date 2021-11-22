@@ -178,39 +178,42 @@ class Utils(Cog):
     @tasks.loop(seconds=1)
     async def gw_tasks(self):
         async for data in giveaway.find({'endtime': {'$lte': datetime.utcnow().timestamp()}}):
-            # {
-            #     '_id': int,
-            #     'link': str,
-            #     'guild': int,
-            #     'endtime': float,
-            #     'winners': int,
-            #     'message': int,
-            #     'prize': str,
-            #     'channel': int
-            # }
+            print('loop executed')
+            print(data)
+            print()
             channel = self.bot.get_channel(data['channel'])
             if not channel:
+                print('channel is none')
                 return await giveaway.delete_one({'_id': data['_id']})
             msg = self.bot.fetch_message_by_channel(channel, data['_id'])
             if not msg:
+                print(msg.jump_url)
                 return await giveaway.delete_one({'_id': data['_id']})
             for reaction in msg.reactions:
+                print('enters the loop')
                 if str(reaction) == "\N{PARTY POPPER}":
+                    print('got the reaction')
                     if reaction.count < (data['winners'] - 1):
+                        print('reaction count', reaction.count)
                         return await channel.send(
                             f"Winners of giveaway at **{msg.jump_url}** can not be decided due to insufficient reaction count."
                         )
                     users = await reaction.users().flatten()
+                    print(1)
                     await self.write_db(users, data['_id'])
+                    print(2)
                     w = await self.get_winners(users, data['_id'])
+                    print(3)
                     winners = await self.check_gw_requirements(
                         w, data['_id'], data['link'], data['guild']
                     ) if w else None
+                    print(4)
                     if winners:
+                        print(5)
                         await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
             
             await giveaway.delete_one(data['_id'])
-    
+            await self.react_collection.delete_one({'_id': data['_id']})
     async def write_db(self, users: list[typing.Union[discord.Users, discord.Members, int]], messageID: int):
         post = {
             '_id': messageID,

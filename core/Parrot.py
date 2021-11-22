@@ -269,6 +269,21 @@ class Parrot(commands.AutoShardedBot):
             return None
         return members[0]
 
+    async def fetch_message_by_channel(self, 
+                        channel: discord.TextChannel, 
+                        messageID: int
+                    ) -> typing.Optional[discord.Message]:
+        async for msg in channel.history(
+                            limit=1, 
+                            before=discord.Object(
+                                messageID+1
+                            ), 
+                            after=discord.Object(
+                                messageID-1
+                            )
+                        ):
+            return msg
+
     async def get_prefix(self, message: discord.Message) -> str:
         """Dynamic prefixing"""
         data = await collection.find_one({"_id": message.guild.id})

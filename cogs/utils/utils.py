@@ -177,7 +177,7 @@ class Utils(Cog):
 
     @tasks.loop(seconds=1)
     async def gw_tasks(self):
-        async for data in giveaway.find({'endtime': {'$lte': datetime.utcnow().timestamp()}}):
+        async for data in giveaway.find({'endtime': {'$lte': datetime.datetime.utcnow().timestamp()}}):
             print('loop executed')
             print(data)
             print()

@@ -184,12 +184,9 @@ class Utils(Cog):
                 return await giveaway.delete_one({'_id': data['_id']})
             msg = await self.bot.fetch_message_by_channel(channel, data['_id'])
             if not msg:
-                print(msg.jump_url)
                 return await giveaway.delete_one({'_id': data['_id']})
             for reaction in msg.reactions:
-                print('enters the loop')
                 if str(reaction) == "\N{PARTY POPPER}":
-                    print('got the reaction')
                     if reaction.count < (data['winners'] - 1):
                         print('reaction count', reaction.count)
                         return await channel.send(
@@ -252,7 +249,7 @@ class Utils(Cog):
         new_winners = []
         collection = msg_db[f"{g.id}"]
         for winner in winners:
-            msg_req = await collection.find({'_id': winner})
+            msg_req = await collection.find_one({'_id': winner.id if type(winner) is not int else winner})
             if (msg_req['count'] >= message) and (guild.get_member(winner) is not None):
                 new_winners.append(winner)
         

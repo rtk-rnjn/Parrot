@@ -196,9 +196,7 @@ class Utils(Cog):
                             f"Winners of giveaway at **{msg.jump_url}** can not be decided due to insufficient reaction count."
                         )
                     users = await reaction.users().flatten()
-                    print(1)
                     await self.write_db(users, data['_id'])
-                    print(2)
                     w = await self.get_winners(data['winners'], data['_id'])
                     print(3)
                     winners = await self.check_gw_requirements(

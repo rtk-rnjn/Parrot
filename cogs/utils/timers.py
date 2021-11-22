@@ -62,7 +62,7 @@ class Timer(Cog):
             ).set_footer(
                 text=f'{member}'
             )
-            embed.description = f"```\nTASK: {data['remark'] if data['remark'] else 'No description was given'}```\n`Message ID:` **{data['_id']}**\n`Channel ID:` **{data['channel']}**\n`Age:` <t:{int(data['age'])}>"
+            embed.description = f"```\nTASK: {data['remark'] if data['remark'] else 'No description was given'}```\n`Message ID :` **{data['_id']}**\n`Channel ID :` **<#{data['channel']}>**\n`Reminder at:` <t:{int(data['age'])}>"
             records.append(embed)
         return records
     
@@ -71,7 +71,7 @@ class Timer(Cog):
     async def remindme(self, ctx: Context, age: ShortTime, *, task: commands.clean_content):
         """To make reminders as to get your tasks done on time"""
         seconds = age.dt.timestamp()
-        text = f"{ctx.author.mention} alright, you will be mentioned here at **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
+        text = f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
         try:
             await ctx.author.send(text)
         except Exception:

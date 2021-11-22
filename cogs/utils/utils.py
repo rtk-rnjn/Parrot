@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from core import Parrot, Cog, Context
 from discord.ext import commands, tasks
-import discord, typing
-import datetime
+import discord, typing, datetime, random
 
 from utilities.converters import reason_convert
-from utilities.database import guild_update
+from utilities.database import parrot_db, msg_db
 
 from cogs.utils import method as mt
 from cogs.utils.method import giveaway
@@ -17,6 +16,7 @@ class Utils(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.gw_tasks.start()
+        self.react_collection = parrot_db['reactions']
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -174,14 +174,84 @@ class Utils(Cog):
         """To reroll the giveaway winners"""
         await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
     
+
     @tasks.loop(seconds=1)
     async def gw_tasks(self):
-        async for data in giveaway.find({'endtime': {'$lte': datetime.datetime.utcnow().timestamp()}}):
-            guild = self.bot.get_guild(data['guild'])
-            if not guild:
+        async for data in giveaway.find({'endtime': {'$lte': datetime.utcnow().timestamp()}}):
+            # {
+            #     '_id': int,
+            #     'link': str,
+            #     'guild': int,
+            #     'endtime': float,
+            #     'winners': int,
+            #     'message': int,
+            #     'prize': str,
+            #     'channel': int
+            # }
+            channel = self.bot.get_channel(data['channel'])
+            if not channel:
                 return await giveaway.delete_one({'_id': data['_id']})
-            try:
-                await mt.end_giveaway(self.bot, data['_id'], ctx=None, auto=False)
-            except Exception:
-                pass
-            await giveaway.delete_one({'_id': data['_id']})
+            msg = self.bot.fetch_message_by_channel(channel, data['_id'])
+            if not msg:
+                return await giveaway.delete_one({'_id': data['_id']})
+            for reaction in msg.reactions:
+                if str(reaction) == "\N{PARTY POPPER}":
+                    if reaction.count < (data['winners'] - 1):
+                        return await channel.send(
+                            f"Winners of giveaway at **{msg.jump_url}** can not be decided due to insufficient reaction count."
+                        )
+                    users = await reaction.users().flatten()
+                    await self.write_db(users, data['_id'])
+                    w = await self.get_winners(users, data['_id'])
+                    winners = await self.check_gw_requirements(
+                        w, data['_id'], data['link'], data['guild']
+                    ) if w else None
+                    if winners:
+                        await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
+            
+            await giveaway.delete_one(data['_id'])
+    
+    async def write_db(self, users: list[typing.Union[discord.Users, discord.Members, int]], messageID: int):
+        post = {
+            '_id': messageID,
+            'ids': [user.id if type(user) is not int else user for user in users]
+        }
+        await self.react_collection.insert_one(post)
+    
+    async def get_winners(self, winners: int, messageID: int) -> typing.Optional[list[int]]:
+        if data := await self.react_collection.find_one({'_id': messageID}):
+            winners = random.sample(data['ids'])
+            li2 = data['ids']
+            li1 = winners
+            ids = [i for i in li1 + li2 if i not in li1 or i not in li2]
+            await self.react_collection.update_one({'_id': data['_id'], 'ids': ids})    
+            return winners if winners else None
+    
+    async def check_gw_requirements(
+                self, 
+                winners: list[
+                        typing.Union[
+                            discord.Users, 
+                            discord.Members,
+                            int
+                        ]
+                    ], 
+                message: int,
+                link: str,
+                guild_: int
+            ) -> typing.Optional[list[int]]:
+        guild = self.bot.fetch_invite(link)
+        if not isinstance(guild, discord.Guild):
+            return None # bot isnt in the guild...
+        
+        g = self.bot.get_guild(guild_)
+        if not g:
+            return None # bot is kicked or banned...
+        new_winners = []
+        collection = msg_db[f"{g.id}"]
+        for winner in winners:
+            msg_req = await collection.find({'_id': winner})
+            if (msg_req['count'] >= message) and (guild.get_member(winner) is not None):
+                new_winners.append(winner)
+        
+        return new_winners if new_winners else None

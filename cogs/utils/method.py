@@ -5,7 +5,7 @@ import discord, typing, random
 from datetime import datetime
 from time import time
 
-from utilities.database import tags, todo, parrot_db, msg_db
+from utilities.database import tags, todo, parrot_db, msg_db, cluster
 from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
 from utilities.time import ShortTime
@@ -15,7 +15,7 @@ from discord.ext import commands
 from core import Parrot, Context
 
 giveaway = parrot_db['giveaway']
-
+reacter = cluster['reacter']
 
 async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
     collection = tags[f"{ctx.guild.id}"]
@@ -318,7 +318,16 @@ async def create_gw(bot: Parrot, ctx: Context):
     answers['_id'] = _id.id
     answers['guild'] = ctx.guild.id
     await giveaway.insert_one(answers)
-    
+    # {
+    #     '_id': int,
+    #     'link': str,
+    #     'guild': int,
+    #     'endtime': float,
+    #     'winners': int,
+    #     'message': int,
+    #     'prize': str,
+    #     'channel': int
+    # }
     await _id.add_reaction("\N{PARTY POPPER}")
     
     await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**")
@@ -365,11 +374,12 @@ async def end_giveaway(bot: Parrot, _id: int, *, ctx: Context=None, auto: bool=F
                     msg_required=data['message'], 
                     server_link=data['link']
                 )
-                await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
                 if ls[0] == 0:
                     return await ctx.send(
                         f"{ctx.author.mention} can not determine the winner, bot isn't in the server as it is the requiremnt"
                     ) if ctx and (not auto) else None
+                
+                return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
         else:
             if not auto:
                 return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.") if ctx else None
@@ -425,5 +435,3 @@ async def get_winners(
         await msg.remove_reaction("\N{PARTY POPPER}", m)
     return wins
 
-async def on_reaction_add(payload):
-    pass

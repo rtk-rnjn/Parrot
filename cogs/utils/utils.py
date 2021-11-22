@@ -204,7 +204,7 @@ class Utils(Cog):
                         print(5)
                         await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
             
-            await giveaway.delete_one(data['_id'])
+            await giveaway.delete_one({'_id': data['_id']})
             await self.react_collection.delete_one({'_id': data['_id']})
 
     async def write_db(self, users: list[typing.Union[discord.Users, discord.Members, int]], messageID: int):

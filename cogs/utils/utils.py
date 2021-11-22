@@ -199,7 +199,7 @@ class Utils(Cog):
                     print(1)
                     await self.write_db(users, data['_id'])
                     print(2)
-                    w = await self.get_winners(users, data['_id'])
+                    w = await self.get_winners(data['winners'], data['_id'])
                     print(3)
                     winners = await self.check_gw_requirements(
                         w, data['_id'], data['link'], data['guild']
@@ -211,6 +211,7 @@ class Utils(Cog):
             
             await giveaway.delete_one(data['_id'])
             await self.react_collection.delete_one({'_id': data['_id']})
+
     async def write_db(self, users: list[typing.Union[discord.Users, discord.Members, int]], messageID: int):
         post = {
             '_id': messageID,

@@ -195,13 +195,10 @@ class Utils(Cog):
                     users = await reaction.users().flatten()
                     await self.write_db(users, data['_id'])
                     w = await self.get_winners(data['winners'], data['_id'])
-                    print(3)
                     winners = await self.check_gw_requirements(
                         w, data['_id'], data['link'], data['guild']
                     ) if w else None
-                    print(4)
                     if winners:
-                        print(5)
                         await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
             
             await giveaway.delete_one({'_id': data['_id']})

@@ -226,7 +226,7 @@ class Utils(Cog):
             li2 = data['ids']
             li1 = winners
             ids = [i for i in li1 + li2 if i not in li1 or i not in li2]
-            await self.react_collection.update_one({'_id': data['_id'], 'ids': ids})    
+            await self.react_collection.update_one({'_id': data['_id']}, {'$set': {'ids': ids}})    
             return winners if winners else None
     
     async def check_gw_requirements(

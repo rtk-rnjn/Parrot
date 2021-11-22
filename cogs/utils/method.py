@@ -7,7 +7,7 @@ from time import time
 
 from utilities.database import tags, todo, parrot_db, msg_db, cluster
 from utilities.buttons import Confirm, Prompt
-from utilities.paginator import ParrotPaginator
+from utilities.paginator import PaginationView, ParrotPaginator
 from utilities.time import ShortTime
 
 from discord.ext import commands
@@ -157,6 +157,29 @@ async def _toggle_nsfw(bot: Parrot, ctx: Context, tag):
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
+async def _show_tag_mine(bot: Parrot, ctx: Context):
+    collection = tags[f'{ctx.guild.id}']
+    i = 1
+    paginator = ParrotPaginator(ctx, title="Tags")
+    async for data in collection.find({'owner': ctx.author.id}):
+        paginator.add_line(f"`{i}` {data['_id']}")
+        i += 1
+    try:
+        await paginator.start()
+    except Exception:
+        await ctx.reply(f"{ctx.author.mention} you don't have any tags registered with your name")
+
+async def _show_all_tags(bot: Parrot, ctx: Context):
+    collection = tags[f"{ctx.guild.id}"]
+    i = 1
+    paginator = ParrotPaginator(ctx, title=f"Tags", per_page=12)
+    async for data in collection.find({}):
+        paginator.add_line(f"`{i}` {data['id']}")
+        i += 1
+    try:
+        await paginator.start()
+    except Exception:
+        await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
 
 async def _view_tag(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
@@ -189,10 +212,21 @@ async def _create_todo(bot: Parrot, ctx: Context, name, text):
           {
             'id': name, 
             'text': text, 
-            'time': int(time())
+            'time': int(time()),
+            'deadline': None,
+            'msglink': ctx.message.jump_url
           }
         )
         await ctx.reply(f"{ctx.author.mention} created as your TODO list")
+
+async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float):
+    collection = todo[f"{ctx.author.id}"]
+    if data := await collection.find_one({'id': name}):
+        post = {'deadline': timestamp}
+        await collection.update_one({'_id': name}, {'$set': post})
+        await bot.get_cog('Timer').create_timer(ctx.channel, ctx.message, ctx.author, timestamp)
+    else:
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
     collection = todo[f"{ctx.author.id}"]
@@ -218,7 +252,7 @@ async def _list_todo(bot: Parrot, ctx: Context):
     i = 1
     paginator = ParrotPaginator(ctx, title=f"Your Pending Tasks", per_page=12)
     async for data in collection.find({}):
-        paginator.add_line(f"`{i}` {data['id']}")
+        paginator.add_line(f"[`{i}`]({data['msglink']}) {data['id']}")
         i += 1
     try:
         await paginator.start()
@@ -240,17 +274,6 @@ async def _delete_todo(bot: Parrot, ctx: Context, name):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-async def _show_all_tags(bot: Parrot, ctx: Context):
-    collection = tags[f"{ctx.guild.id}"]
-    i = 1
-    paginator = ParrotPaginator(ctx, title=f"Tags", per_page=12)
-    async for data in collection.find({}):
-        paginator.add_line(f"`{i}` {data['id']}")
-        i += 1
-    try:
-        await paginator.start()
-    except Exception:
-        await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
     
 async def create_gw(bot: Parrot, ctx: Context):
     questions = [

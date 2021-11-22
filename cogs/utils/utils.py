@@ -9,6 +9,7 @@ from utilities.database import parrot_db, msg_db
 
 from cogs.utils import method as mt
 from cogs.utils.method import giveaway
+from utilities.time import ShortTime
 
 
 class Utils(Cog):
@@ -83,6 +84,12 @@ class Utils(Cog):
         """To show all tags"""
         await mt._show_all_tags(self.bot, ctx)
     
+    @tag.command(name='mine')
+    @commands.bot_has_permissions(embed_links=True)
+    async def tag_mine(self, ctx: Context):
+        """To show those tag which you own"""
+        await mt._show_tag_mine(self.bot, ctx)
+
     @commands.command()
     @commands.has_permissions(manage_messages=True, add_reactions=True)
     @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
@@ -150,6 +157,12 @@ class Utils(Cog):
     async def delete_todo(self, ctx: Context, *, name: str):
         """To delete the TODO task"""
         await mt._delete_todo(self.bot, ctx, name)
+
+    @todo.command(name='settime', aliases=['set-time'])
+    @commands.bot_has_permissions(embed_links=True)
+    async def settime_todo(self, ctx: Context, name: str, *, deadline: ShortTime):
+        """To set timer for your Timer"""
+        await mt._set_timer_todo(self.bot, ctx, name, deadline.dt.timestamp())
 
     @commands.group(name='giveaway')
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)

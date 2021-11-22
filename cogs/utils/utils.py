@@ -235,11 +235,11 @@ class Utils(Cog):
                             int
                         ]
                     ], 
-                message: int,
-                link: str,
+                message: typing.Optional[int],
+                link: typing.Optional[str],
                 guild_: int
             ) -> typing.Optional[list[int]]:
-        guild = await self.bot.fetch_invite(link)
+        guild = await self.bot.fetch_invite(link) if link else None
         if not isinstance(guild, discord.Guild):
             return None # bot isnt in the guild...
         
@@ -250,7 +250,14 @@ class Utils(Cog):
         collection = msg_db[f"{g.id}"]
         for winner in winners:
             msg_req = await collection.find_one({'_id': winner.id if type(winner) is not int else winner})
-            if (msg_req['count'] >= message) and (guild.get_member(winner) is not None):
-                new_winners.append(winner)
+            if (msg_req['count'] >= message):
+                if not guild:
+                    new_winners.append(winner)
+                else:
+                    m = guild.get_member(winner)
+                    if m:
+                        new_winners.append(m.id)
+                    else:
+                        pass
         
         return new_winners if new_winners else None

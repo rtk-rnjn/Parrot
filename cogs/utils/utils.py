@@ -239,7 +239,7 @@ class Utils(Cog):
                 link: str,
                 guild_: int
             ) -> typing.Optional[list[int]]:
-        guild = self.bot.fetch_invite(link)
+        guild = await self.bot.fetch_invite(link)
         if not isinstance(guild, discord.Guild):
             return None # bot isnt in the guild...
         

@@ -169,10 +169,10 @@ class Utils(Cog):
         await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
         await giveaway.delete_one({'_id': message})
     
-    @giveaway.command()
-    async def reroll(self, ctx: Context, message: int):
-        """To reroll the giveaway winners"""
-        await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
+    # @giveaway.command()
+    # async def reroll(self, ctx: Context, message: int):
+    #     """To reroll the giveaway winners"""
+    #     await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
     
 
     @tasks.loop(seconds=1)

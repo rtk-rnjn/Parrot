@@ -73,6 +73,7 @@ class Timer(Cog):
         seconds = age.dt.timestamp()
         text = f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
         try:
+            await ctx.reply(f"{ctx.author.mention} check you DM")
             await ctx.author.send(text)
         except Exception:
             await ctx.reply(text)
@@ -101,6 +102,7 @@ class Timer(Cog):
         seconds = age.dt.timestamp()
         text = f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
         try:
+            await ctx.reply(f"{ctx.author.mention} check you DM")
             await ctx.author.send(text)
         except Exception:
             await ctx.reply(text)

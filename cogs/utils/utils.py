@@ -193,13 +193,11 @@ class Utils(Cog):
                             f"Winners of giveaway at **{msg.jump_url}** can not be decided due to insufficient reaction count."
                         )
                     users = await reaction.users().flatten()
-                    print(users)
                     await self.write_db(users, data['_id'])
                     w = await self.get_winners(data['winners'], data['_id'])
-                    print(w)
                     winners = await self.check_gw_requirements(
                         w, data['_id'], data['link'], data['guild']
-                    ) if w else None
+                    )
                     if winners:
                         await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
                     else:
@@ -242,19 +240,25 @@ class Utils(Cog):
             ) -> typing.Optional[list[int]]:
         guild = await self.bot.fetch_invite(link) if link else None
         if not isinstance(guild, discord.Guild):
+            print(1)
             return None # bot isnt in the guild...
-        
+            
         g = self.bot.get_guild(guild_)
         if not g:
             return None # bot is kicked or banned...
         new_winners = []
         collection = msg_db[f"{g.id}"]
         for winner in winners:
+            print(2)
             msg_req = await collection.find_one({'_id': winner.id if type(winner) is not int else winner})
-            if (msg_req['count'] >= message):
+            print(3)
+            if ((msg_req['count'] >= message)) or (message is None):
+                print(4)
                 if not guild:
                     new_winners.append(winner)
+                    print(5)
                 else:
+                    print(6)
                     m = guild.get_member(winner)
                     if m:
                         new_winners.append(m.id)

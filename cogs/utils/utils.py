@@ -12,7 +12,7 @@ from cogs.utils.method import giveaway
 
 
 class Utils(Cog):
-    """Tag System for your server"""
+    """Utilities for server, UwU"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.gw_tasks.start()
@@ -179,12 +179,8 @@ class Utils(Cog):
     async def gw_tasks(self):
         await self.bot.wait_until_ready()
         async for data in giveaway.find({'endtime': {'$lte': datetime.datetime.utcnow().timestamp()}}):
-            print('loop executed')
-            print(data)
-            print()
             channel = self.bot.get_channel(data['channel'])
             if not channel:
-                print('channel is none')
                 return await giveaway.delete_one({'_id': data['_id']})
             msg = await self.bot.fetch_message_by_channel(channel, data['_id'])
             if not msg:
@@ -220,11 +216,14 @@ class Utils(Cog):
             '_id': messageID,
             'ids': [user.id if type(user) is not int else user for user in users]
         }
-        await self.react_collection.insert_one(post)
+        try:
+            await self.react_collection.insert_one(post)
+        except Exception:
+            pass
     
     async def get_winners(self, winners: int, messageID: int) -> typing.Optional[list[int]]:
         if data := await self.react_collection.find_one({'_id': messageID}):
-            winners = random.sample(data['ids'])
+            winners = random.sample(data['ids'], winners)
             li2 = data['ids']
             li1 = winners
             ids = [i for i in li1 + li2 if i not in li1 or i not in li2]

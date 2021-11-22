@@ -186,7 +186,7 @@ class Utils(Cog):
             if not channel:
                 print('channel is none')
                 return await giveaway.delete_one({'_id': data['_id']})
-            msg = self.bot.fetch_message_by_channel(channel, data['_id'])
+            msg = await self.bot.fetch_message_by_channel(channel, data['_id'])
             if not msg:
                 print(msg.jump_url)
                 return await giveaway.delete_one({'_id': data['_id']})

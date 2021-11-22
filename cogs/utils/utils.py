@@ -193,14 +193,18 @@ class Utils(Cog):
                             f"Winners of giveaway at **{msg.jump_url}** can not be decided due to insufficient reaction count."
                         )
                     users = await reaction.users().flatten()
+                    print(users)
                     await self.write_db(users, data['_id'])
                     w = await self.get_winners(data['winners'], data['_id'])
+                    print(w)
                     winners = await self.check_gw_requirements(
                         w, data['_id'], data['link'], data['guild']
                     ) if w else None
                     if winners:
                         await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
-            
+                    else:
+                        await channel.send(f"Well. No one winner can not be determined")
+                    print(winners)
             await giveaway.delete_one({'_id': data['_id']})
             await self.react_collection.delete_one({'_id': data['_id']})
 

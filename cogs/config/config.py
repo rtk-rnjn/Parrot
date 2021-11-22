@@ -848,7 +848,6 @@ class BotConfig(Cog):
     async def clear(self, ctx: Context):
         """To clear all overrides"""
         enable_disable = await self.bot.db('enable_disable')
-        em_lis = [] 
         collection = enable_disable[f"{ctx.guild.id}"]
         await collection.drop()
         await ctx.send(f"{ctx.author.mention} reseted everything!")

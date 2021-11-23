@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from discord.ext import commands
-import discord, typing, re
+import discord, typing, re, json
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
 from datetime import datetime
 from utilities.paginator import Paginator
-
-ct = parrot_db['telephone']
-csc = parrot_db['server_config']
-ctt = parrot_db['ticket']
 
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
@@ -18,11 +14,27 @@ from utilities.converters import convert_bool
 from cogs.ticket import method as mt
 from cogs.config import method as mt_
 
+
+with open(r"cogs/config/events.json") as f:
+            events = json.load(f)
+
+ct = parrot_db['telephone']
+csc = parrot_db['server_config']
+ctt = parrot_db['ticket']
+logs = parrot_db['logging']
+
+
 class BotConfig(Cog):
     """To config the bot. In the server"""
     def __init__(self, bot: Parrot):
         self.bot = bot
 
+    async def log_in(self, guild: int):
+        try:
+            await logs.insert_one({'_id': guild})
+        except Exception:
+            pass
+        
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='\N{GEAR}')
@@ -54,6 +66,36 @@ class BotConfig(Cog):
                     f"`ModRole:` **{role} ({data['mod_role'] if data['mod_role'] else None})**\n"
                     f"`MogLog :` **{mod_log} ({data['action_log'] if data['action_log'] else None})**\n"
                 )
+
+    @config.command(aliases=['log'])
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(manage_channels=True, manage_webhooks=True)
+    async def logging(self, ctx: Context, event: str, *, channel: discord.TextChannel=None):
+        """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
+        await self.log_in(ctx.guild.id)
+        channel = channel or ctx.channel
+        if event not in events:
+            return await ctx.reply(
+                f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
+            )
+        hooks = await channel.webhooks()
+        if len(hooks) >= 10:
+            for hook in hooks:
+                if hook.user.id == self.bot.user.id: # bot created that
+                    webhook = hook
+                    break
+            else:
+                webhook = None
+                return await ctx.reply(
+                    f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
+                )
+        if webhook:
+            post = {
+                str(event): str(webhook.url)
+            }
+            await logs.update_one({'_id': ctx.guild.id}, {'$set': post})
+            await ctx.reply(f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}")
+
 
     @config.command(aliases=['prefix'])
     @commands.has_permissions(administrator=True)
@@ -447,7 +489,7 @@ class BotConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capslimit(self, ctx: Context, *, limit: int):
-        """To toggle the caps protection in the server. It won't work if the limit is less than 0"""
+        """To toggle the caps protection in the server. It won't work if the limit is less than or equal to 0"""
         await csc.update_one(
             {'_id': ctx.guild.id},
             {

@@ -6,6 +6,7 @@
   "case_insensitive": true,
   "strip_after_prefix": true,
   "super_user": 741614468546560092,
+  "join_leave_channel_id": 883368274501460039,
   "author_name": "!! Ritik Ranjan [*.*]",
   "discriminator": 9230,
   "extensions": [

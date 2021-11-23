@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from core import Parrot, Cog
 from utilities.database import guild_join, guild_remove, parrot_db
+from utilities.config import JOIN_LEAVE_CHANNEL_ID
+
 import aiohttp, os, discord
 
-CHANNEL_ID = 883368274501460039
+CHANNEL_ID = JOIN_LEAVE_CHANNEL_ID
 BASE_URL = f"https://discord.com/api/webhooks/{CHANNEL_ID}/"
 
 
@@ -19,7 +21,8 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
-        if not guild: return
+        if guild is None: return
+        await self.bot.wait_until_ready()
         CONTENT = f"Joined {guild.name} ({guild.id}). Total member in {guild.name}: {len(guild.members)}. Server Owner: {guild.owner} ({guild.owner.id}). Server Region: {str(guild.region).replace('_', ' ').title()}. \n\nTotal server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
         await guild_join(guild.id)
         data = {
@@ -34,7 +37,8 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
-        if not guild: return
+        if guild is None: return
+        await self.bot.wait_until_ready()
         CONTENT = f"Left {guild.name} ({guild.id}). Total member in {guild.name}: {len(guild.members)}. Server Owner: {guild.owner} ({guild.owner.id}). Server Region: {str(guild.region).replace('_', ' ').title()}. \n\nTotal server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
         await guild_remove(guild.id)
         data = {

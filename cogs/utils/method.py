@@ -223,8 +223,13 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({'id': name}):
         post = {'deadline': timestamp}
+        try:
+            await ctx.author.send(f"{ctx.author.mention} check your DM")
+        except Exception:
+            return await ctx.reply(f"{ctx.author.mention} can not complete the action as your DM(s) are locked for the bot")
         await collection.update_one({'_id': name}, {'$set': post})
-        await bot.get_cog('Timer').create_timer(ctx.channel, ctx.message, ctx.author, timestamp)
+        await bot.get_cog('Timer').create_timer(ctx.channel, ctx.message, ctx.author, timestamp, reamark=f'{ctx.author.mention} you had set TODO reminder for your task named **{name}**', dm=True)
+        await ctx.author.send(f"You will be reminded for your task named **{name}** here at <t:{int(timestamp)}>. To delete your reminder consider typing.\n```\n$delremind {ctx.message.id}```")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 

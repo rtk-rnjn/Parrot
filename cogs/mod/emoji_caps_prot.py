@@ -47,7 +47,7 @@ class EmojiCapsProt(Cog):
                 limit = data_c['automod']['caps']['limit']
             except KeyError:
                 return False
-            if limit == await self.get_caps_count(message.content):
+            if limit <= (await self.get_caps_count(message.content)):
                 return True
 
     async def is_emoji_infilterated(self, message: discord.Message) -> typing.Optional[bool]:
@@ -64,7 +64,7 @@ class EmojiCapsProt(Cog):
                 limit = data_c['automod']['emoji']['limit']
             except KeyError:
                 return False
-            if limit == await self.get_emoji_count(message.content):
+            if limit <= (await self.get_emoji_count(message.content)):
                 return True
 
     @Cog.listener()

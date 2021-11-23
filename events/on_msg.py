@@ -4,7 +4,7 @@ from core import Parrot, Cog
 
 from discord.ext import commands
 
-import aiohttp, re, asyncio, json
+import aiohttp, re, asyncio, json, discord
 from discord import Webhook
 from utilities.database import parrot_db, msg_increment
 from utilities.regex import LINKS_NO_PROTOCOLS
@@ -13,6 +13,7 @@ collection = parrot_db['global_chat']
 
 with open('extra/profanity.json') as f:
     bad_dict = json.load(f)
+
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
@@ -143,9 +144,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     async with aiohttp.ClientSession() as session:
                         webhook = Webhook.from_url(f"{hook}", session=session)
                         await webhook.send(
-                                content=message.clean_content,
+                                content=message,
                                 username=f"{message.author}",
-                                avatar_url=message.author.display_avatar.url)
+                                avatar_url=message.author.display_avatar.url,
+                                allowed_mentions=discord.AllowedMentions.none())
                 except Exception:
                     continue
 

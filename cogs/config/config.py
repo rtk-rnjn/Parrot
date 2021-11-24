@@ -92,6 +92,9 @@ class BotConfig(Cog):
                 return await ctx.reply(
                     f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
                 )
+        else:
+            webhook = await channel.create_webhook(name=self.bot.user.name, reason=f"On request from {ctx.author} | Reason: Setting Up Logging")
+            await logs.update_one({'_id': ctx.guild.id}, {'$set': {str(event): str(webhook.url)}})
         await ctx.reply(f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}")
 
 

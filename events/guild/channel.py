@@ -49,7 +49,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             embed.add_field(name="Deleted at", value=f"{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}", inline=True)
             embed.description = f"**Reason:** `{reason if reason else 'No reason provided'}`\n**User:** `{user}`"
             
-            fp = io.BytesIO(self._overwrite_to_dict(channel.overwrites).encode())
+            fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
             await webhook.send(
                 content=f"**Channel Deleted**", 
                 avatar_url=self.bot.user.avatar.url, 
@@ -81,7 +81,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             embed.add_field(name="Entry ID", value=f"{entryID}", inline=True)
             embed.description = f"**Reason:** `{reason if reason else 'No reason provided'}`\n**User:** `{user}`"
             
-            fp = io.BytesIO(self._overwrite_to_dict(channel.overwrites).encode())
+            fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
             await webhook.send(
                 content=f"**Channel Created**", 
                 avatar_url=self.bot.user.avatar.url, 

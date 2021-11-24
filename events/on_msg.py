@@ -144,7 +144,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     async with aiohttp.ClientSession() as session:
                         webhook = Webhook.from_url(f"{hook}", session=session)
                         await webhook.send(
-                                content=message,
+                                content=message.content,
                                 username=f"{message.author}",
                                 avatar_url=message.author.display_avatar.url,
                                 allowed_mentions=discord.AllowedMentions.none())

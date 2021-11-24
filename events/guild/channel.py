@@ -13,8 +13,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.collection = log
 
-    @staticmethod
-    def _overwrite_to_json(overwrites):
+    def _overwrite_to_json(self, overwrites):
         try:
             over = {
                 f"{str(target.name)} ({'Role' if type(target) is discord.Role else 'Member'})": overwrite._values for target, overwrite in overwrites.items()

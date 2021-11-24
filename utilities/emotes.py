@@ -55,4 +55,4 @@ EMOJIS = {
     'messageUpdate'               : '<:messageUpdate:892438874641547326>',
 }
 
-emoji = EMOJIS # beauty of code do matter
+emojis = EMOJIS # beauty of code do matter

@@ -56,7 +56,11 @@ class Context(commands.Context):
     """A custom implementation of commands.Context class."""
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-
+    
+    def __repr__(self):
+        # we need this for our cache key strategy
+        return f'<{self.bot.user.name} Context>'
+    
     @property
     def session(self):
         return self.bot.session

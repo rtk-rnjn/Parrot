@@ -54,6 +54,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 content=f"**Channel Deleted**", 
                 avatar_url=self.bot.user.avatar.url, 
                 username=self.bot.user.name,
+                embed=embed,
                 file=discord.File(fp, filename='overwrites.json')
             )
 
@@ -86,6 +87,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 content=f"**Channel Created**", 
                 avatar_url=self.bot.user.avatar.url, 
                 username=self.bot.user.name,
+                embed=embed,
                 file=discord.File(fp, filename='overwrites.json')
             )
         if channel.permissions_for(channel.guild.me).manage_channels:

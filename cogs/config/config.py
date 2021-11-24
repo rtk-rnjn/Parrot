@@ -83,18 +83,16 @@ class BotConfig(Cog):
             for hook in hooks:
                 if hook.user.id == self.bot.user.id: # bot created that
                     webhook = hook
+                    post = {
+                      str(event): str(webhook.url)
+                    }
+                    await logs.update_one({'_id': ctx.guild.id}, {'$set': post})
                     break
             else:
-                webhook = None
                 return await ctx.reply(
                     f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
                 )
-        if webhook:
-            post = {
-                str(event): str(webhook.url)
-            }
-            await logs.update_one({'_id': ctx.guild.id}, {'$set': post})
-            await ctx.reply(f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}")
+        await ctx.reply(f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}")
 
 
     @config.command(aliases=['prefix'])

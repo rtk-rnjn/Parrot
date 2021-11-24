@@ -26,7 +26,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_channel_delete': {'$exists': True}}):
-            webhook = discord.Webhook(data['on_channel_delete'], session=self.bot.session, bot_token=self.bot.http.token)
+            webhook = discord.Webhook(data['on_channel_delete'], session=self.bot.session)
             if not webhook: return # webhook deleted
             embed = discord.Embed(title='Channel Delete Event', color=self.bot.color)
             channel_type = str(channel.type)
@@ -61,7 +61,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_channel_create': {'$exists': True}}):
-            webhook = discord.Webhook(data['on_channel_create'], session=self.bot.session, bot_token=self.bot.http.token)
+            webhook = discord.Webhook(data['on_channel_create'], session=self.bot.session)
             if not webhook: return
             embed = discord.Embed(title='Channel Create Event', color=self.bot.color)
             channel_type = str(channel.type)

@@ -31,7 +31,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 channel_type = str(channel.type)
                 TYPE = channel_type.replace('_', ' ').title() + " Channel"
                 async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=5):
-                    if entry.taret.id == channel.id:
+                    if entry.target.id == channel.id:
                         
                         reason = entry.reason or None       # Fact is this thing has to be implemented
                         user = entry.user or "UNKNOWN#0000" # If the action is too old

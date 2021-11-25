@@ -6,6 +6,7 @@ from utilities.database import parrot_db
 import discord, time, io, json
 
 log = parrot_db['logging']
+server_config = parrot_db['server_config']
 
 
 class GuildChannel(Cog, command_attrs=dict(hidden=True)):
@@ -26,72 +27,73 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_channel_delete': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_channel_delete'], session=self.bot.session)
-            if not webhook: return # webhook deleted
-            embed = discord.Embed(title='Channel Delete Event', color=self.bot.color)
-            channel_type = str(channel.type)
-            TYPE = channel_type.replace('_', ' ').title() + " Channel"
-
-            data = [
-                ("Name", f"{channel.name} ({TYPE})"),
-                ("Created at", f"<t:{int(channel.created_at.timestamp())}>"),
-                ("Position", f"{channel.position}"),
-                ("Category", f"{channel.category.mention if channel.category else None}"),
-                ("Synced with Category?", f"{channel.permissions_synced}")
-            ]
-            
-            for name, value in data: embed.add_field(name=name, value=value, inline=True)
-            async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=1):
-                reason = entry.reason or None       # Fact is this thing has to be implemented
-                user = entry.user or "UNKNOWN#0000" # If the action is too old
-                deleted_at = entry.created_at       # The logs can't be proceeded. I dont know why
-            
-            embed.set_footer(text=f"ID: {channel.id}")
-            embed.add_field(name="Deleted at", value=f"{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}", inline=True)
-            embed.description = f"**Reason:** `{reason if reason else 'No reason provided'}`\n**User:** `{user}`"
-            
-            fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
-            await webhook.send(
-                content=f"**Channel Deleted**", 
-                avatar_url=self.bot.user.avatar.url, 
-                username=self.bot.user.name,
-                embed=embed,
-                file=discord.File(fp, filename='overwrites.json')
-            )
+            if webhook:
+                channel_type = str(channel.type)
+                TYPE = channel_type.replace('_', ' ').title() + " Channel"
+                async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=5):
+                    if entry.taret.id == channel.id:
+                        
+                        reason = entry.reason or None       # Fact is this thing has to be implemented
+                        user = entry.user or "UNKNOWN#0000" # If the action is too old
+                        deleted_at = entry.created_at       # The logs can't be proceeded. I dont know why
+                        content = f"""**Channel Delete Event**
+                
+`Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
+`Created at:` **<t:{int(channel.created_at.timestamp())}>**
+`Position  :` **{channel.position}**
+`Category  :` **{channel.category.mention if channel.category else None}**
+`Caterogy Synced?:` **{channel.permissions_synced}**
+`Reason    :` **{reason if reason else 'No reason provided'}**
+`Deleted at:` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
+`Deleted by:` **{user}**
+"""
+                fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='overwrites.json')
+                )
 
     @Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_channel_create': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_channel_create'], session=self.bot.session)
-            if not webhook: return
-            embed = discord.Embed(title='Channel Create Event', color=self.bot.color)
-            channel_type = str(channel.type)
-            TYPE = channel_type.replace('_', ' ').title() + " Channel"
-            data = [
-                ("Name", f"{channel.name} (`{TYPE}`)"),
-                ("Created at", f"<t:{int(channel.created_at.timestamp())}>"),
-                ("Position", f"{channel.position}"),
-                ("Category", f"{channel.category.mention if channel.category else 'None'}"),
-                ("Synced with Category?", f"{channel.permissions_synced}"),
-            ]
-            async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=1):
-                reason = entry.reason or None
-                user = entry.user or "UNKNOWN#0000"
-                entryID = entry.id
-
-            embed.set_footer(text=f"ID: {channel.id}")
-            embed.add_field(name="Entry ID", value=f"{entryID}", inline=True)
-            embed.description = f"**Reason:** `{reason if reason else 'No reason provided'}`\n**User:** `{user}`"
-            
-            fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
-            await webhook.send(
-                content=f"**Channel Created**", 
-                avatar_url=self.bot.user.avatar.url, 
-                username=self.bot.user.name,
-                embed=embed,
-                file=discord.File(fp, filename='overwrites.json')
-            )
-        if channel.permissions_for(channel.guild.me).manage_channels:
-            pass # TODO: TO MAKE A OVERWRITE FOR MUTED ROLE
+            if webhook:
+                embed = discord.Embed(title='Channel Create Event', color=self.bot.color)
+                channel_type = str(channel.type)
+                TYPE = channel_type.replace('_', ' ').title() + " Channel"
+                async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=5):
+                    if entry.target.id == channel.id:
+                        reason = entry.reason or None
+                        user = entry.user or "UNKNOWN#0000"
+                        entryID = entry.id
+                        content = f"""**Channel Create Event**
+                
+`Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
+`Created at:` **<t:{int(channel.created_at.timestamp())}>**
+`Position  :` **{channel.position}**
+`Category  :` **{channel.category.mention if channel.category else None}**
+`Caterogy Synced?:` **{channel.permissions_synced}**
+`Reason    :` **{reason if reason else 'No reason provided'}**
+`Entry ID  :` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
+`Deleted by:` **{user}**
+"""
+                fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='overwrites.json')
+                )
+            if channel.permissions_for(channel.guild.me).manage_channels and channel.permissions_for(channel.guild.default_role).send_messages and channel.permissions_for(channel.guild.me).manage_roles:
+                if data := await server_config.find_one({'_id': channel.guild.id}):
+                    if data['muted_role']:
+                        if role := channel.guild.get_role(data['muted_role']):
+                            await channel.edit(role, send_messages=False, add_reactions=False)
+                    else:
+                        if role := discord.utils.get(channel.guild.roles, name="Muted"):
+                            await channel.edit(role, send_messages=False, add_reactions=False)
 
     @Cog.listener()
     async def on_guild_channel_update(self, before, after):

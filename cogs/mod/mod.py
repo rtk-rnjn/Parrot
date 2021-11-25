@@ -31,7 +31,7 @@ class Mod(Cog):
         data = await collection.find_one({'_id': ctx.guild.id})
         if not data['action_log']: return
         if not data: return
-        target = str(performed_on)
+        target = 'Can\' determined'
         if type(performed_on) is not list:
             if type(performed_on) in (discord.Member, discord.User,):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
@@ -44,7 +44,7 @@ class Mod(Cog):
                     target = target + f"{temp.name}#{temp.discriminator}, "
                 elif type(target) is (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji):
                     target = target + f"{temp.name} (ID: {temp.id}), "
-
+        target = str(performed_on)
         embed = discord.Embed(description=f"**Command Used:** {cmd}\n"
                                           f"**Used On:** {target}\n"
                                           f"**Reason:** {reason if reason else 'No Reason Provided'}",
@@ -52,7 +52,7 @@ class Mod(Cog):
                             colour=ctx.author.color)
 
         embed.set_thumbnail(url=f"{performed_on.display_avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}")
-        embed.set_author(name=f'{ctx.author.name}#{ctx.author.discriminator} (ID:{ctx.author.id})', icon_url=ctx.author.display_avatar.url, url=f"https://discord.com/users/{ctx.author.id}")
+        embed.set_author(name=f'{ctx.author} (ID:{ctx.author.id})', icon_url=ctx.author.display_avatar.url, url=f"https://discord.com/users/{ctx.author.id}")
         embed.set_footer(text=f"{ctx.guild.name}")
         channel = self.bot.get_channel(data['action_log'])
         if channel:

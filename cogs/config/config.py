@@ -699,11 +699,11 @@ class BotConfig(Cog):
         if not data:
             await ctt.insert_one({
                 "_id": ctx.guild.id,
-                "ticket-counter": 0,
-                "valid-roles": [],
-                "pinged-roles": [],
-                "ticket-channel-ids": [],
-                "verified-roles": [],
+                "ticket_counter": 0,
+                "valid_roles": [],
+                "pinged_roles": [],
+                "ticket_channel_ids": [],
+                "verified_roles": [],
                 "message_id": None,
                 "log": None,
                 "category": None,
@@ -712,20 +712,20 @@ class BotConfig(Cog):
         if not ctx.invoked_subcommand:
             data = await ctt.find_one({'_id': ctx.guild.id})
 
-            ticket_counter = data['ticket-counter']
+            ticket_counter = data['ticket_counter']
             valid_roles = ', '.join(
                 ctx.guild.get_role(n).name
-                for n in data['valid-roles']) if data['valid-roles'] else None
+                for n in data['valid_roles']) if data['valid_roles'] else None
             pinged_roles = ', '.join(
                 ctx.guild.get_role(n).name for n in
-                data['pinged-roles']) if data['pinged-roles'] else None
+                data['pinged_roles']) if data['pinged_roles'] else None
             current_active_channel = ', '.join(
                 ctx.guild.get_channel(n).name
-                for n in data['ticket-channel-ids']
-            ) if data['ticket-channel-ids'] else None
+                for n in data['ticket_channel_ids']
+            ) if data['ticket_channel_ids'] else None
             verified_roles = ', '.join(
                 ctx.guild.get_role(n).name for n in
-                data['verified-roles']) if data['verified-roles'] else None
+                data['verified_roles']) if data['verified_roles'] else None
             category = ctx.guild.get_channel(
                 data['category']) if data['category'] else None
             await ctx.reply(
@@ -793,7 +793,7 @@ class BotConfig(Cog):
         """
         This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
 			
-		    Parrot Ticket `Admin-Level` role or Administrator permission for the user.
+        Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
         await mt._delaccess(ctx, role)
 

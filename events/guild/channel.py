@@ -76,7 +76,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Category  :` **{channel.category.mention if channel.category else None}**
 `Caterogy Synced?:` **{channel.permissions_synced}**
 `Reason    :` **{reason if reason else 'No reason provided'}**
-`Entry ID  :` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
+`Entry ID  :` **{entryID if entryID else None}**
 `Deleted by:` **{user}**
 """
                 fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())

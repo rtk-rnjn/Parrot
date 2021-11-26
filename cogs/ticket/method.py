@@ -209,7 +209,7 @@ async def _save(ctx: Context, bot):
                 title="Parrot Ticket Bot",
                 description="Are you sure you want to save the transcript of this ticket?",
                 color=discord.Color.blue())
-            a = ctx.prompt(f"{ctx.author.mention}", embed=em)
+            a = await ctx.prompt(f"{ctx.author.mention}", embed=em)
             if not a:
                 return
             await ctx.reply(embed=em)

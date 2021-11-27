@@ -476,12 +476,14 @@ class Mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, manage_nicknames=True))
     @commands.bot_has_permissions(manage_permissions=True, manage_messages=True, manage_channels=True, ban_members=True, manage_roles=True, kick_members=True, read_message_history=True, add_reactions=True, manage_nicknames=True)
     @Context.with_type
-    async def mod(self, ctx: Context, target: typing.Union[discord.Member, discord.User, discord.TextChannel, discord.VoiceChannel, discord.Role], *, reason: reason_convert = None):
+    async def mod(self, ctx: Context, target: typing.Union[discord.Member, discord.TextChannel, discord.VoiceChannel, discord.Role], *, reason: reason_convert = None):
         """
         Why to learn the commands. This is all in one mod command.
         """
-        if not target: ctx.send_help(ctx.command)
-        if (type(target) is discord.Member):
+        if not target: 
+            return await ctx.send_help(ctx.command)
+        guild = ctx.guild
+        if isinstance(target, discord.Member):
             member_embed = discord.Embed(title='Mod Menu',
                                          description=':hammer: Ban\n'
                                          ':boot: Kick\n'
@@ -495,7 +497,8 @@ class Mod(Cog):
                                          timestamp=datetime.utcnow(),
                                          color=ctx.author.color)
             member_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
-            member_embed.set_thumbnail(url=ctx.guild.icon.url)
+            if guild.icon:
+                member_embed.set_thumbnail(url=ctx.guild.icon.url)
             msg = await ctx.send(embed=member_embed)
             for reaction in mt.MEMBER_REACTION:
                 await msg.add_reaction(reaction)
@@ -593,7 +596,7 @@ class Mod(Cog):
                                           (m.content)[:32:])
                 await self.log(ctx, 'nickname changed', target, reason)
 
-        if (type(target) is discord.TextChannel):
+        if isinstance(target, discord.TextChannel):
             tc_embed = discord.Embed(title='Mod Menu',
                                      description=':lock: Lock\n'
                                      ':unlock: Unlock\n'
@@ -602,7 +605,8 @@ class Mod(Cog):
                                      timestamp=datetime.utcnow(),
                                      color=ctx.author.color)
             tc_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
-            tc_embed.set_thumbnail(url=ctx.guild.icon.url)
+            if guild.icon:
+                tc_embed.set_thumbnail(url=ctx.guild.icon.url)
             msg = await ctx.send(embed=tc_embed)
             for reaction in mt.TEXT_REACTION:
                 await msg.add_reaction(reaction)
@@ -636,7 +640,7 @@ class Mod(Cog):
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Topic',
                                delete_after=60)
                 try:
-                    m = self.bot.wait_for('message',
+                    m = await self.bot.wait_for('message',
                                           timeout=60,
                                           check=check_msg)
                 except asyncio.TimeoutError:
@@ -650,7 +654,7 @@ class Mod(Cog):
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
                                delete_after=60)
                 try:
-                    m = self.bot.wait_for('message',
+                    m = await self.bot.wait_for('message',
                                           timeout=60,
                                           check=check_msg)
                 except asyncio.TimeoutError:
@@ -668,8 +672,9 @@ class Mod(Cog):
                                      timestamp=datetime.utcnow(),
                                      color=ctx.author.color)
             vc_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
-            vc_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg = await ctx.send(embed=tc_embed)
+            if guild.icon:
+                vc_embed.set_thumbnail(url=ctx.guild.icon.url)
+            msg = await ctx.send(embed=vc_embed)
             for reaction in mt.VC_REACTION:
                 await msg.add_reaction(reaction)
 
@@ -704,7 +709,7 @@ class Mod(Cog):
                 await ctx.send(f'{ctx.author.mention} Enter the Channel Name',
                                delete_after=60)
                 try:
-                    m = self.bot.wait_for('message',
+                    m = await self.bot.wait_for('message',
                                           timeout=60,
                                           check=check_msg)
                 except asyncio.TimeoutError:
@@ -714,7 +719,7 @@ class Mod(Cog):
                                               ctx.channel, m.content)
                 await self.log(ctx, 'VC name changed', target, reason)
 
-        if (type(target) is discord.Role):
+        if isinstance(target, discord.Role):
             role_embed = discord.Embed(title='Mod Menu',
                                        description=':lock: Hoist\n'
                                        ':unlock: De-Hoist\n'
@@ -723,8 +728,9 @@ class Mod(Cog):
                                        timestamp=datetime.utcnow(),
                                        color=ctx.author.color)
             role_embed.set_footer(text=f'{ctx.author.guild.name} mod tool')
-            role_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg = await ctx.send(embed=tc_embed)
+            if ctx.guild.icon:
+                role_embed.set_thumbnail(url=ctx.guild.icon.url) 
+            msg = await ctx.send(embed=role_embed)
             for reaction in mt.ROLE_REACTION:
                 await msg.add_reaction(reaction)
 
@@ -758,7 +764,7 @@ class Mod(Cog):
                     f'{ctx.author.mention} Enter the Colour, in whole number',
                     delete_after=60)
                 try:
-                    m = self.bot.wait_for('message',
+                    m = await self.bot.wait_for('message',
                                           timeout=60,
                                           check=check_msg)
                 except asyncio.TimeoutError:
@@ -772,7 +778,7 @@ class Mod(Cog):
                 await ctx.send(f'{ctx.author.mention} Enter the Role Name',
                                delete_after=60)
                 try:
-                    m = self.bot.wait_for('message',
+                    m = await self.bot.wait_for('message',
                                           timeout=60,
                                           check=check_msg)
                 except asyncio.TimeoutError:

@@ -80,7 +80,7 @@ class Context(commands.Context):
             try:
                 async with context.typing():
                     await func(*args, **kwargs)
-            except discord.errors.Forbidden:
+            except discord.Forbidden:
                 await func(*args, **kwargs)
 
         return wrapped

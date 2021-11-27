@@ -72,7 +72,10 @@ class Parrot(commands.AutoShardedBot):
                 tb = traceback.format_exception(type(e), e, e.__traceback__)
                 tbe = "".join(tb) + ""
                 print(f"[WARNING] Could not load extension {ext}: {tbe}")
-
+    
+    def __repr__(self):
+        return f"<core.{self.user.name}>"
+    
     @property
     def server(self) -> typing.Optional[discord.Guild]:
         return self.get_guild(SUPPORT_SERVER_ID)  # Main server
@@ -173,13 +176,13 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_connect(self) -> None:
         print(
-            f"[Parrot] Logged in as {self.user}"
+            f"[self.user.name.title()] Logged in as {self.user}"
         )
         return
 
     async def on_disconnect(self) -> None:
         print(
-            f"[Parrot] {self.user} disconnect from discord"
+            f"[self.user.name.title()] {self.user} disconnect from discord"
         )
         return
     

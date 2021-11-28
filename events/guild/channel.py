@@ -46,7 +46,8 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Reason    :` **{reason if reason else 'No reason provided'}**
 `Deleted at:` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
 `Deleted by:` **{user}**
-"""
+"""                     
+                        break
                 fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
                 await webhook.send(
                     content=content, 

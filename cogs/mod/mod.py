@@ -723,7 +723,7 @@ class Mod(Cog):
             role_embed = discord.Embed(title='Mod Menu',
                                        description=':lock: Hoist\n'
                                        ':unlock: De-Hoist\n'
-                                       ':rainbow: Change Colour'
+                                       ':rainbow: Change Colour\n'
                                        ':pen_fountain: Change Name',
                                        timestamp=datetime.utcnow(),
                                        color=ctx.author.color)
@@ -769,10 +769,15 @@ class Mod(Cog):
                                           check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete()
-                await mt._change_role_name(ctx.guild, ctx.command.name,
-                                           ctx.author, ctx.channel, target,
-                                           m.content, reason)
-                await self.log(ctx, 'Role color chang', target, reason)
+                try:
+                    color = int(m.content)
+                except Exception:
+                    await ctx.send(f"{ctx.author.mention} invalid color")
+                else:
+                    await mt._change_role_color(ctx.guild, ctx.command.name,
+                                            ctx.author, ctx.channel, target,
+                                            color, reason)
+                    await self.log(ctx, 'Role color', target, reason)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[3]:
                 await ctx.send(f'{ctx.author.mention} Enter the Role Name',

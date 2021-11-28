@@ -503,7 +503,7 @@ class PaginationView(discord.ui.View):
     async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current += 1
         self.previous.style = discord.ButtonStyle.green
-        if self.current <= len(self.current):
+        if self.current <= len(self.current)-1:
             self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
             await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
         else:

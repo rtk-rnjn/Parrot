@@ -158,8 +158,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         elif isinstance(error, commands.MissingAnyRole):
-            is_owner = await ctx.bot.is_owner(ctx.author)
-            if is_owner: return await ctx.reinvoke()
             missing = [role for role in error.missing_roles]
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
@@ -181,9 +179,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         elif isinstance(error, commands.NSFWChannelRequired):
-            is_owner = await ctx.bot.is_owner(ctx.author)
-            if is_owner: return await ctx.reinvoke()
-
             if ctx.channel.permissions_for(ctx.guild.me).embed_links:
                 em = discord.Embed(timestamp=datetime.utcnow())
                 em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
@@ -258,21 +253,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 [error.__str__().format(ctx=ctx) for error in error.errors]))
 
         else:
-            is_owner = await ctx.bot.is_owner(ctx.author)
-            if is_owner:
-                tb = traceback.format_exception(type(error), error,
-                                                error.__traceback__)
-                tbe = "".join(tb) + ""
-                er = f'```py\nIgnoring exception in command {ctx.command.name}: {tbe}\n```'
-                text = await self.paste(er)
-                if len(tbe) < 1800:
-                    await ctx.reply(er, delete_after=60)
-                else:
-                    await ctx.reply(text)
-            else:
-                await ctx.reply(
-                    f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working",
-                    view=ErrorView(ctx.author.id, ctx=ctx, error=error))
+            await ctx.reply(
+                f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working",
+                view=ErrorView(ctx.author.id, ctx=ctx, error=error))
 
 
 def setup(bot):

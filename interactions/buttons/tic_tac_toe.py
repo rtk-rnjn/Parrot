@@ -264,7 +264,9 @@ class Game(discord.ui.View):
             return False
         elif interaction.user != self.current_player:
             await interaction.response.send_message("Sorry, it is not your turn!", ephemeral=True)
-        return True
+            return False
+        else:
+            return True
 
     def make_ai_move(self):
         ai = NegamaxAI(self.board.current_player)
@@ -293,8 +295,8 @@ class TicTacToe(Cog):
                 return False
             if user.bot:
                 return False
-            if user == ctx.author:
-                return False
+            # if user == ctx.author: 
+            #     return False
             return True
 
         try:
@@ -311,8 +313,6 @@ class TicTacToe(Cog):
         """Start a Tic-Tac-Toe game!
         `opponent`: Another member of the server to play against. If not is set an open challenge is started.
         """
-        if ctx.guild is None:
-            raise commands.BadArgument("You must use this command in a guild.")
 
         if opponent is None:
             opponent = await self._get_opponent(ctx)

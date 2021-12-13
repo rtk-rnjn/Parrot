@@ -47,10 +47,10 @@ class RPS(Cog):
         player_result = WINNER_DICT[move[0]][bot_move[0]]
 
         if player_result == 0:
-            message_string = f"{player_mention} You and Sir Lancebot played {bot_move}, it's a tie."
-            await ctx.send(message_string)
+            message_string = f"{player_mention} You and **{self.bot.user.name}** played {bot_move}, it's a tie."
+            await ctx.reply(message_string)
         elif player_result == 1:
-            await ctx.send(f"Sir Lancebot played {bot_move}! {player_mention} won!")
+            await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!")
         else:
-            await ctx.send(f"Sir Lancebot played {bot_move}! {player_mention} lost!")
+            await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
 

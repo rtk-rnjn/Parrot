@@ -1,10 +1,18 @@
 from __future__ import annotations
+from core.Parrot import Parrot
 
 from discord.ext import commands
 import discord, typing, asyncio, io, functools
 from utilities.emotes import emojis
 
 __all__ = ("Context", )
+
+THUMBS_UP = "\N{THUMBS UP SIGN}"
+
+CONFIRM_REACTIONS = (
+    THUMBS_UP,
+    "\N{THUMBS DOWN SIGN}",
+)
 
 
 class ConfirmationView(discord.ui.View):
@@ -158,3 +166,34 @@ class Context(commands.Context):
                                    **kwargs)
         else:
             return await self.send(content)
+
+    async def bulk_add_reactions(self, message: discord.Message, *reactions: typing.Union[discord.Emoji, str]) -> None:
+        coros = [asyncio.ensure_future(message.add_reaction(reaction)) for reaction in reactions]
+        await asyncio.wait(coros)
+    
+    async def confirm(
+        self,
+        bot: Parrot,
+        channel: discord.TextChannel,
+        user: typing.Union[discord.Member, discord.User],
+        *args: typing.Any,
+        timeout: float = 60,
+        delete_after: bool = False,
+        **kwargs: typing.Any,
+    ) -> typing.Optional[bool]:
+        message = await channel.send(*args, **kwargs)
+        await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
+
+        def check(payload: discord.RawReactionActionEvent) -> bool:
+            return (
+                payload.message_id == message.id and payload.user_id == user.id and str(payload.emoji) in CONFIRM_REACTIONS
+            )
+
+        try:
+            payload = await bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
+            return str(payload.emoji) == THUMBS_UP
+        except asyncio.TimeoutError:
+            return None
+        finally:
+            if delete_after:
+                await message.delete()

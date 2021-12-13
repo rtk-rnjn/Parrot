@@ -13,6 +13,8 @@
     "on_config_commands",
     "on_message_delete",
     "on_message_edit",
+    "on_message_pin",
+    "on_message_unpin",
     "on_bulk_message_delete",
     "on_member_ban",
     "on_member_unban",

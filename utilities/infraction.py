@@ -15,7 +15,7 @@ class Infraction:
                  *,
                  guild_id: int,
                  user_id: int,
-                 reason: str,
+                 reason: str = None,
                  at: int,
                  mod: int,
                  expires_at: int = None):

@@ -1,6 +1,7 @@
 from __future__ import annotations
+import functools
 
-import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time, json
+import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time, json, re, string
 from discord.ext import commands
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
 from random import choice
@@ -25,7 +26,81 @@ with open("extra/lang.json") as lang:
 from typing import List, Optional
 
 
-response = ["All signs point to yes...","Yes!", "My sources say nope.", "You may rely on it.", "Concentrate and ask again...", "Outlook not so good...", "It is decidedly so!", "Better not tell you.", "Very doubtful.", "Yes - Definitely!", "It is certain!", "Most likely.", "Ask again later.", "No!", "Outlook good.", "Don't count on it.", "Why not", "Probably", "Can't say", "Well well..."]
+def suppress_links(message: str) -> str:
+    """Accepts a message that may contain links, suppresses them, and returns them."""
+    for link in set(re.findall(r"https?://[^\s]+", message, re.IGNORECASE)):
+        message = message.replace(link, f"<{link}>")
+    return message
+
+
+response = ["All signs point to yes...",
+            "Yes!", 
+            "My sources say nope.", 
+            "You may rely on it.", 
+            "Concentrate and ask again...", 
+            "Outlook not so good...", 
+            "It is decidedly so!", 
+            "Better not tell you.", 
+            "Very doubtful.", 
+            "Yes - Definitely!", 
+            "It is certain!", 
+            "Most likely.", 
+            "Ask again later.", 
+            "No!", 
+            "Outlook good.", 
+            "Don't count on it.", 
+            "Why not", 
+            "Probably", 
+            "Can't say", 
+            "Well well..."
+]
+
+UWU_WORDS = {
+        "fi": "fwi",
+        "l": "w",
+        "r": "w",
+        "some": "sum",
+        "th": "d",
+        "thing": "fing",
+        "tho": "fo",
+        "you're": "yuw'we",
+        "your": "yur",
+        "you": "yuw",
+    }
+
+def replace_many(
+    sentence: str, replacements: dict, *, ignore_case: bool = False, match_case: bool = False
+) -> str:
+
+    if ignore_case:
+        replacements = dict(
+            (word.lower(), replacement) for word, replacement in replacements.items()
+        )
+
+    words_to_replace = sorted(replacements, key=lambda s: (-len(s), s))
+
+    # Join and compile words to replace into a regex
+    pattern = "|".join(re.escape(word) for word in words_to_replace)
+    regex = re.compile(pattern, re.I if ignore_case else 0)
+
+    def _repl(match: re.Match) -> str:
+        """Returns replacement depending on `ignore_case` and `match_case`."""
+        word = match.group(0)
+        replacement = replacements[word.lower() if ignore_case else word]
+
+        if not match_case:
+            return replacement
+
+        # Clean punctuation from word so string methods work
+        cleaned_word = word.translate(str.maketrans("", "", string.punctuation))
+        if cleaned_word.isupper():
+            return replacement.upper()
+        elif cleaned_word[0].isupper():
+            return replacement.capitalize()
+        else:
+            return replacement.lower()
+
+    return regex.sub(_repl, sentence)
 
 
 class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member)}):
@@ -315,7 +390,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                 
                 await ctx.reply(file=discord.File(imageData, 'lolice.png')) # replying the file
   
-      
+
     @commands.command(name='meme')
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
@@ -566,12 +641,34 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
             em.set_footer(text=f'{ctx.author.name}')
         await ctx.reply(embed=em)
 
-    @commands.command(aliases=['httpcat']) 
+    @commands.group(aliases=['https'], invoke_without_command=True) 
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @Context.with_type
     async def http(self, ctx: Context, *, status_code: int):
         """To understand HTTP Errors, try: `http 404`"""
-        await ctx.reply(embed=discord.Embed(timestamp=datetime.datetime.utcnow(), color=ctx.author.color).set_image(url=f"https://http.cat/{status_code}").set_footer(text=f"{ctx.author}"))
+        if not ctx.invoked_subcommand:
+            await ctx.reply(
+                embed=discord.Embed(
+                    timestamp=datetime.datetime.utcnow(), 
+                    color=ctx.author.color
+                ).set_image(
+                    url=f"https://http.cat/{status_code}"
+                ).set_footer(text=f"{ctx.author}")
+            )
+
+    @http.command(name='dog')
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def http_dog(self, ctx: Context, *, status_code: int):
+        """To understand HTTP Errors, in dog format"""
+        await ctx.reply(
+            embed=discord.Embed(
+                timestamp=datetime.datetime.utcnow(), 
+                color=ctx.author.color
+            ).set_image(
+                url=f"https://httpstatusdogs.com/img/{status_code}.jpg"
+            ).set_footer(text=f"{ctx.author}")
+        )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
@@ -812,3 +909,23 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def uwuify(self, ctx: Context, *, text: commands.clean_content):
+        """Converts a given `text` into it's uwu equivalent."""
+        
+        conversion_func = functools.partial(
+            replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True
+        )
+        text, embed = await Fun._get_text_and_embed(ctx, text)
+        # Convert embed if it exists
+        if embed is not None:
+            embed = Fun._convert_embed(conversion_func, embed)
+        converted_text = conversion_func(text)
+        converted_text = suppress_links(converted_text)
+        # Don't put >>> if only embed present
+        if converted_text:
+            converted_text = f">>> {converted_text.lstrip('> ')}"
+        await ctx.send(content=converted_text, embed=embed)

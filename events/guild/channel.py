@@ -14,7 +14,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.collection = log
 
-    def _overwrite_to_json(self, overwrites):
+    def _overwrite_to_json(self, overwrites) -> str:
         try:
             over = {
                 f"{str(target.name)} ({'Role' if type(target) is discord.Role else 'Member'})": overwrite._values for target, overwrite in overwrites.items()
@@ -61,7 +61,6 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_channel_create': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_channel_create'], session=self.bot.session)
             if webhook:
-                embed = discord.Embed(title='Channel Create Event', color=self.bot.color)
                 channel_type = str(channel.type)
                 TYPE = channel_type.replace('_', ' ').title() + " Channel"
                 async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=5):
@@ -80,6 +79,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Entry ID  :` **{entryID if entryID else None}**
 `Deleted by:` **{user}**
 """
+                        break
                 fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
                 await webhook.send(
                     content=content, 
@@ -98,11 +98,126 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_update(self, before, after):
-        pass
+        channel = after.channel
+        if data := await self.collection.find_one({'_id': before.guild.id, 'on_channel_update': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_channel_update'], session=self.bot.session)
+            if webhook:
+                channel_type = str(channel.type)
+                TYPE = channel_type.replace('_', ' ').title() + " Channel"
+                async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_update, limit=5):
+                    if entry.target.id == channel.id:
+                        reason = entry.reason or None
+                        user = entry.user or "UNKNOWN#0000"
+                        entryID = entry.id
+                        ls = self._channel_change(before, after, TYPE=channel_type)
+                        ext = ""
+                        for i, j in ls:
+                            ext += f"{i} **{j}**\n"
+                        content = f"""**Channel Update Event**
+`Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
+`Created at:` **<t:{int(channel.created_at.timestamp())}>**
+`Reason    :` **{reason if reason else 'No reason provided'}**
+`Entry ID  :` **{entryID if entryID else None}**
+`Updated by:` **{user}**
 
+**Change/Update**
+{ext}
+"""
+                        break
+                
+                fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='overwrites.json')
+                )
+        
+    def _channel_change(self, before, after, *, TYPE: str) -> tuple:
+        ls = []
+        if before.name != after.name:
+            ls.append(('`Name Changed     :`', after.name))
+        if before.position != after.position:
+            ls.append(('`Position Changed :`', after.position))
+        if before.overwrites != after.overwrites:
+            ls.append(('`Overwrite Changed:`', self._overwrite_to_json(after.overwrites)))
+        if before.category.id != after.category.id:
+            ls.append(('`Category Changed :`' if after.category else '`Category Removed :`', 
+                       f"{after.category.name} ({after.category.id})"))
+        if not (before.permissions_synced is after.permissions_synced):
+            ls.append(('`Toggled Permissions Sync:`', after.permissions_synced))
+
+        if 'text' in TYPE.lower():
+            if not (before.nsfw is after.nsfw):
+                ls.append(('`NSFW Toggled     :`', after.nsfw))
+            if before.topic != after.topic:
+                ls.append(('`Topic Changed    :`', after.topic))
+            if before.slowmode_delay != after.slowmode_delay:
+                ls.append(('`Slowmode Delay Changed:`' if after.slowmode_delay else '`Slowmode Delay Removed:`', 
+                           after.slowmode_delay if after.slowmode_delay else None))
+        if 'vc' in TYPE.lower():
+            if before.user_limit != after.user_limit:
+                ls.append(('`Limit Updated    :`', after.user_limit if after.user_limit else None))
+            if before.rtc_region != after.rtc_region:
+                ls.append(('`Region Updated   :`', after.rtc_region if after.rtc_region is not None else 'Auto'))
+            if before.bitrate != after.bitrate:
+                ls.append(('`Bitrate Updated  :`', after.bitrate))
+        
     @Cog.listener()
     async def on_guild_channel_pins_update(self, channel, last_pin):
-        pass
+        if data := await self.collection.find_one({'_id': channel.guild.id, 'on_message_pin': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_channel_pin'], session=self.bot.session)
+            if webhook:
+                async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.message_pin, limit=5):
+                    if entry.target.channel.id == channel.id:
+                        user = entry.user or "UNKNOWN#0000"
+                        entryID = entry.id
+                        content = f"""**Message Pinned**
+`ID       :` **{entry.target.id}**
+`Channel  :` **{entry.channel.mention} ({entry.channel.id})**
+`Author   :` **{entry.target.author}** 
+`Pinned at:` **{discord.utils.format_dt(last_pin)}**
+`Pinned by:` **{user}**
+`Entry ID :` **{entryID}**
+`Jump URL :` **<{entry.target.jump_url}>**
+
+`Content  :` **{discord.utils.escape_mentions((entry.target.content)[:250:])}**
+"""
+                        break
+                fp = io.BytesIO(self._overwrite_to_json(entry.target.content).encode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='raw_content.txt')
+                )
+
+        if data := await self.collection.find_one({'_id': channel.guild.id, 'on_message_unpin': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_channel_unpin'], session=self.bot.session)
+            if webhook:
+                async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.message_unpin, limit=5):
+                    if entry.target.channel.id == channel.id:
+                        user = entry.user or "UNKNOWN#0000"
+                        entryID = entry.id
+                        content = f"""**Message Unpinned**
+`ID       :` **{entry.target.id}**
+`Channel  :` **{entry.channel.mention} ({entry.channel.id})**
+`Author   :` **{entry.target.author}** 
+`Pinned at:` **{discord.utils.format_dt(last_pin)}**
+`Unpinned by:` **{user}**
+`Entry ID :` **{entryID}**
+`Jump URL :` **<{entry.target.jump_url}>**
+
+`Content  :` **{discord.utils.escape_mentions((entry.target.content)[:250:])}**
+"""
+                        break
+                fp = io.BytesIO(self._overwrite_to_json(entry.target.content).encode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='raw_content.txt')
+                )
 
     @Cog.listener()
     async def on_guild_integrations_update(self, guild):

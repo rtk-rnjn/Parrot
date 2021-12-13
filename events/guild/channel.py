@@ -98,7 +98,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_update(self, before, after):
-        channel = after.channel
+        channel = after
         if data := await self.collection.find_one({'_id': before.guild.id, 'on_channel_update': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_channel_update'], session=self.bot.session)
             if webhook:

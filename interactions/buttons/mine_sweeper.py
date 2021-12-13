@@ -3,7 +3,7 @@ from __future__ import annotations
 from random import sample
 
 import discord
-from discord.ext import boardgames, commands
+from discord.ext import commands, boardgames
 from discord.utils import MISSING
 from core import Parrot, Context, Cog
 

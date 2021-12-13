@@ -182,7 +182,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_disconnect(self) -> None:
         print(
-            f"[{self.user.name.title()}] {self.user} disconnect from discord"
+            f"[{self.user.name.title()}] disconnect from discord"
         )
         return
     

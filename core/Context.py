@@ -1,5 +1,6 @@
 from __future__ import annotations
-from core.Parrot import Parrot
+
+from core import Parrot
 
 from discord.ext import commands
 import discord, typing, asyncio, io, functools

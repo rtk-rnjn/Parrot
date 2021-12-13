@@ -1,15 +1,12 @@
-from utilities.database import parrot_db
 
-collection = parrot_db['banned_users']
-
-from core import Parrot
+from core import Parrot, Context
 
 bot = Parrot()
 
 
 @bot.before_invoke
-async def bot_before_invoke(ctx):
-    if ctx.guild is not None:
+async def bot_before_invoke(ctx: Context):
+    if ctx.guild:
         if not ctx.guild.chunked:
             await ctx.guild.chunk()
 

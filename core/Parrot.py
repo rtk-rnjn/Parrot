@@ -176,13 +176,13 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_connect(self) -> None:
         print(
-            f"[self.user.name.title()] Logged in as {self.user}"
+            f"[{self.user.name.title()}] Logged in"
         )
         return
 
     async def on_disconnect(self) -> None:
         print(
-            f"[self.user.name.title()] {self.user} disconnect from discord"
+            f"[{self.user.name.title()}] {self.user} disconnect from discord"
         )
         return
     

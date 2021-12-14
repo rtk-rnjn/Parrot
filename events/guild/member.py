@@ -19,6 +19,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(data['on_member_join'], session=self.bot.session)
             if webhook:
                 content = f"""**Member Joined Event**
+
 `Name (ID)  :` **{member} (`{member.id}`)** 
 `Account age:` **{discord.utils.format_dt(member.created_at)}**
 `Joined at  :` **{discord.utils.format_dt(member.joined_at)}**
@@ -56,6 +57,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(data['on_member_leave'], session=self.bot.session)
             if webhook:
                 content = f"""**Member Joined Event**
+
 `Name (ID)  :` **{member} (`{member.id}`)** 
 `Account age:` **{discord.utils.format_dt(member.created_at)}**
 `Joined at  :` **{discord.utils.format_dt(member.joined_at)}**

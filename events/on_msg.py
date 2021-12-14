@@ -8,6 +8,7 @@ import aiohttp, re, asyncio, json, discord
 from discord import Webhook
 from utilities.database import parrot_db, msg_increment
 from utilities.regex import LINKS_NO_PROTOCOLS
+from time import time
 
 collection = parrot_db['global_chat']
 
@@ -21,6 +22,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.channel)
         self.collection = None
+        self.log_collection = parrot_db['logging']
 
     def refrain_message(self, msg: str):
         if 'chod' in msg.replace(',', '').split(' '):
@@ -161,7 +163,40 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_message_delete(self, payload):
-        pass
+        if data := await self.log_collection.find_one({'_id': payload.guild_id, 'on_message_delete': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_message_delete'], session=self.bot.session)
+            if webhook:
+                if payload.cached_message:
+                    msg = payload.cached_message
+                    guild = msg.guild
+                    message_author = msg.author
+                    content = msg.content
+                else:
+                    guild = self.bot.get_guild(payload.guild_id)
+                    message_author = None
+                    content = "None"
+                async for entry in guild.guild.audit_logs(limit=1): # this is worst way, but it still works
+                    if isinstance(entry.action, discord.AuditLogAction.message_delete):
+                        deleted_by = f"{entry.target if entry.target else 'Author themself'}"
+                    else:
+                        deleted_by = 'Author themself'
+                
+                main_content = f"""**Message Delete Event**
+
+`ID      :` **{payload.message_id}**
+`Channel :` **<#{payload.channel_id}>**
+`Author  :` **{message_author}**
+`Mod?    :` **{deleted_by}**
+`Deleted at:` **<t:{int(time())}>**
+
+`Content :` **{discord.utils.escape_mentions(content[:250:])}**
+"""
+
+                await webhook.send(
+                    content=main_content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                )
 
     @Cog.listener()
     async def on_raw_bulk_message_delete(self, payload):
@@ -173,7 +208,35 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_message_edit(self, payload):
-        pass
+        if data := await self.log_collection.find_one({'_id': payload.guild_id, 'on_message_delete': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_message_delete'], session=self.bot.session)
+            if webhook:
+                if payload.cached_message:
+                    msg = payload.cached_message
+                    # guild = msg.guild
+                    message_author = msg.author
+                    content = msg.content
+                else:
+                    # guild = self.bot.get_guild(payload.guild_id)
+                    message_author = None
+                    content = "None"
+                
+                main_content = f"""**Message Edit Event**
+
+`ID       :` **{payload.message_id}**
+`Channel  :` **<#{payload.channel_id}>**
+`Author   :` **{message_author}**
+`Edited at:` **<t:{int(time())}>**
+`Jump URL :` **<https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id}>**
+
+`Content (before):` **{discord.utils.escape_mentions(content[:250:])}**
+"""
+
+                await webhook.send(
+                    content=main_content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                )
 
 
 def setup(bot):

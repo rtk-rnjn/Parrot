@@ -947,8 +947,8 @@ class Game(Cog):
                 return False
             if user.bot:
                 return False
-            # if user == ctx.author: 
-            #     return False
+            if user == ctx.author: 
+                return False
             return True
 
         try:

@@ -114,6 +114,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         for i, j in ls:
                             ext += f"{i} **{j}**\n"
                         content = f"""**Channel Update Event**
+
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
 `Created at:` **<t:{int(channel.created_at.timestamp())}>**
 `Reason    :` **{reason if reason else 'No reason provided'}**
@@ -173,23 +174,20 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id
                         content = f"""**Message Pinned**
-`ID       :` **{entry.target.id}**
-`Channel  :` **{entry.channel.mention} ({entry.channel.id})**
-`Author   :` **{entry.target.author}** 
+
+`ID       :` **{entry.extra.message_id}**
+`Channel  :` **{channel.mention} ({channel.id})**
+`Author   :` **{entry.target}** 
 `Pinned at:` **{discord.utils.format_dt(last_pin)}**
 `Pinned by:` **{user}**
 `Entry ID :` **{entryID}**
-`Jump URL :` **<{entry.target.jump_url}>**
-
-`Content  :` **{discord.utils.escape_mentions((entry.target.content)[:250:])}**
+`Jump URL :` **<https://discord.com/channels/{channel.guild.id}/{channel.id}/{entry.extra.message_id}>**
 """
                         break
-                fp = io.BytesIO(self._overwrite_to_json(entry.target.content).encode())
                 await webhook.send(
                     content=content, 
                     avatar_url=self.bot.user.avatar.url, 
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename='raw_content.txt')
                 )
 
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_message_unpin': {'$exists': True}}):
@@ -200,23 +198,20 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id
                         content = f"""**Message Unpinned**
-`ID       :` **{entry.target.id}**
-`Channel  :` **{entry.channel.mention} ({entry.channel.id})**
-`Author   :` **{entry.target.author}** 
-`Pinned at:` **{discord.utils.format_dt(last_pin)}**
-`Unpinned by:` **{user}**
-`Entry ID :` **{entryID}**
-`Jump URL :` **<{entry.target.jump_url}>**
 
-`Content  :` **{discord.utils.escape_mentions((entry.target.content)[:250:])}**
+`ID        :` **{entry.extra.message_id}**
+`Channel   :` **{channel.mention} ({channel.id})**
+`Author    :` **{entry.target}** 
+`Uninned at:` **{discord.utils.format_dt(last_pin)}**
+`Uninned by:` **{user}**
+`Entry ID  :` **{entryID}**
+`Jump URL  :` **<https://discord.com/channels/{channel.guild.id}/{channel.id}/{entry.extra.message_id}>**
 """
                         break
-                fp = io.BytesIO(self._overwrite_to_json(entry.target.content).encode())
                 await webhook.send(
                     content=content, 
                     avatar_url=self.bot.user.avatar.url, 
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename='raw_content.txt')
                 )
 
     @Cog.listener()

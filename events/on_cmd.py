@@ -103,7 +103,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         # get the original exception
         error = getattr(error, 'original', error)
 
-        ignore = (commands.CommandNotFound, discord.errors.NotFound,
+        ignore = (commands.CommandNotFound, discord.NotFound,
                   discord.Forbidden)
 
         if isinstance(error, ignore): return

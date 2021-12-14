@@ -230,7 +230,7 @@ class Button(discord.ui.Button["Game"]):
         )
 
 
-class Game(discord.ui.View):
+class GameTicTacToe(discord.ui.View):
     children: list[Button]
 
     def __init__(self, players: tuple[User, User]):
@@ -880,7 +880,7 @@ def is_game(ctx: Context):
     raise commands.CheckFailure("No Connect Four game is running.")
 
 
-class Game(Cog):
+class Games(Cog):
     """Play the classic Games!"""
 
     def __init__(self, bot: Parrot):
@@ -1040,7 +1040,7 @@ class Game(Cog):
         if opponent is None:
             raise commands.BadArgument("Challenge cancelled.")
 
-        game = Game((ctx.author, opponent))
+        game = GameTicTacToe((ctx.author, opponent))
 
         await ctx.send(f"{game.current_player.mention}'s (X) turn!", view=game)  # type: ignore
 

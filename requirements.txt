@@ -33,3 +33,4 @@ Brotli
 aiodns
 orjson
 cchardet
+rapidfuzz

@@ -383,7 +383,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='fun', id=892432619374014544)
 
-    async def _get_text_and_embed(ctx: Context, text: str) -> tuple[str, Optional[Embed]]:
+    async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, Optional[Embed]]:
         embed = None
 
         msg = await Fun._get_discord_message(ctx, text)
@@ -397,7 +397,27 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                     embed = msg.embeds[0]
 
         return (text, embed)
+    
+    def _convert_embed(self, func: Callable[[str, ], str], embed: Embed) -> Embed:
+        """
+        Converts the text in an embed using a given conversion function, then return the embed.
+        Only modifies the following fields: title, description, footer, fields
+        """
+        embed_dict = embed.to_dict()
 
+        embed_dict["title"] = func(embed_dict.get("title", ""))
+        embed_dict["description"] = func(embed_dict.get("description", ""))
+
+        if "footer" in embed_dict:
+            embed_dict["footer"]["text"] = func(embed_dict["footer"].get("text", ""))
+
+        if "fields" in embed_dict:
+            for field in embed_dict["fields"]:
+                field["name"] = func(field.get("name", ""))
+                field["value"] = func(field.get("value", ""))
+
+        return Embed.from_dict(embed_dict)
+    
     @tasks.loop(hours=24.0)
     async def get_wiki_questions(self) -> None:
         """Get yesterday's most read articles from wikipedia and format them like trivia questions."""
@@ -1623,10 +1643,10 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         conversion_func = functools.partial(
             replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True
         )
-        text, embed = await Fun._get_text_and_embed(ctx, text)
+        text, embed = await self._get_text_and_embed(ctx, text)
         # Convert embed if it exists
         if embed is not None:
-            embed = Fun._convert_embed(conversion_func, embed)
+            embed = self._convert_embed(conversion_func, embed)
         converted_text = conversion_func(text)
         converted_text = suppress_links(converted_text)
         # Don't put >>> if only embed present

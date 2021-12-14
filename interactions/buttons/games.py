@@ -418,7 +418,7 @@ class Colours:
 
 
 
-class Game:
+class GameBattleShip:
     """A Battleship Game."""
 
     def __init__(
@@ -1184,7 +1184,7 @@ class Games(Cog):
         self.waiting.remove(ctx.author)
         if self.already_playing(ctx.author):
             return
-        game = Game(self.bot, ctx.channel, ctx.author, user)
+        game = GameBattleShip(self.bot, ctx.channel, ctx.author, user)
         self.games.append(game)
         try:
             await game.start_game()

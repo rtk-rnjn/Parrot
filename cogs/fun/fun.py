@@ -15,7 +15,7 @@ import operator
 from rapidfuzz import fuzz
 from utilities.paginator import Paginator, PaginationView
 from core import Parrot, Context, Cog
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 with open("extra/truth.txt") as f:
   _truth = f.read()
@@ -383,10 +383,22 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='fun', id=892432619374014544)
 
+    async def _get_discord_message(self, ctx: Context, text: str) -> Union[discord.Message, str]:
+        """
+        Attempts to convert a given `text` to a discord Message object and return it.
+        Conversion will succeed if given a discord Message ID or link.
+        Returns `text` if the conversion fails.
+        """
+        try:
+            text = await commands.MessageConverter().convert(ctx, text)
+        except commands.BadArgument:
+            return
+        return text
+
     async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, Optional[Embed]]:
         embed = None
 
-        msg = await Fun._get_discord_message(ctx, text)
+        msg = await self._get_discord_message(ctx, text)
         # Ensure the user has read permissions for the channel the message is in
         if isinstance(msg, discord.Message):
             permissions = msg.channel.permissions_for(ctx.author)

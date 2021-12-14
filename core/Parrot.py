@@ -6,11 +6,11 @@ from async_property import async_property
 import datetime, re, json, asyncio, copy, logging, traceback, aiohttp, sys, discord, asyncio, topgg
 from collections import Counter, deque, defaultdict
 from discord.ext import commands
-
+from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN, AUTHOR_NAME, AUTHOR_DISCRIMINATOR, MASTER_OWNER, GITHUB, SUPPORT_SERVER
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
-
+import socket
 from time import time
 
 from .Context import Context
@@ -64,6 +64,9 @@ class Parrot(commands.AutoShardedBot):
         self._prev_events = deque(maxlen=10)
 
         self.session = aiohttp.ClientSession(loop=self.loop)
+        self.http_session = ClientSession(
+            connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
+        )
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)

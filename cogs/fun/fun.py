@@ -405,7 +405,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         wiki_questions = []
         # trivia_quiz.json follows a pattern, every new category starts with the next century.
         start_id = 501
-        yesterday = datetime.strftime(datetime.datetime.now() - datetime.timedelta(1), '%Y/%m/%d')
+        yesterday = datetime.datetime.strftime(datetime.datetime.now() - datetime.timedelta(1), '%Y/%m/%d')
 
         while error_fetches < MAX_ERROR_FETCH_TRIES:
             async with self.bot.http_session.get(url=WIKI_FEED_API_URL.format(date=yesterday)) as r:

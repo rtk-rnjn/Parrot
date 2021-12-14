@@ -188,7 +188,7 @@ class NegamaxAI(AI):
         return game.move(*self.negamax(game))
 
 
-class Button(discord.ui.Button["Game"]):
+class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
     def __init__(self, r: int, c: int):
         super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=c)
         self.r = r
@@ -231,7 +231,7 @@ class Button(discord.ui.Button["Game"]):
 
 
 class GameTicTacToe(discord.ui.View):
-    children: list[Button]
+    children: list[ButtonTicTacToe]
 
     def __init__(self, players: tuple[User, User]):
         self.players = list(players)
@@ -245,7 +245,7 @@ class GameTicTacToe(discord.ui.View):
 
         for r in range(3):
             for c in range(3):
-                self.add_item(Button(r, c))
+                self.add_item(ButtonTicTacToe(r, c))
 
         self.update()
 

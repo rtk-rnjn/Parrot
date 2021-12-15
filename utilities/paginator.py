@@ -459,64 +459,107 @@ class PaginatorView(discord.ui.View):
 class PaginationView(discord.ui.View):
     current = 0 
 
-    def __init__(self, embed_list):
+    def __init__(self, embed_list: list):
         super().__init__()
         self.embed_list = embed_list
-        if len(embed_list) == 1:
-            self.next.style = discord.ButtonStyle.green
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
     async def interaction_check(self,
                                 interaction: discord.Interaction) -> bool:
         if self.user == interaction.user:
             return True
-        await interaction.response.send_message(f'Only {self.user} can interact. Run the command if you want to.', ephemeral=True)
+        await interaction.response.send_message(f'Only **{self.user}** can interact. Run the command if you want to.', ephemeral=True)
         return False
 
     @discord.ui.button(label="First",
-                       style=discord.ButtonStyle.green,
+                       style=discord.ButtonStyle.red,
+                       disabled=True
                 )
     async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current = 0
-        button.style = discord.ButtonStyle.green
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
+
+        self.previous.disabled=True
+        button.disabled=True
+
+
+        if len(self.embed_list) >= 1:    
+            self.next.disabled = False
+            self._last.disabled = False
+        else:
+            self.next.disabled = True
+            self._last.disabled = True
+        
         await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
-    
+
     @discord.ui.button(label="Previous",
                        style=discord.ButtonStyle.green,
+                       disabled=True
                 )
     async def previous(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.current -= 1
-        self.next.style = discord.ButtonStyle.green
-        self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-        if self.current >= 0:
-            await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
+        self.current = (self.current - 1)
+        
+        if len(self.embed_list) >= 1:   # if list consists of 2 pages, if, 
+            self._last.disabled = False # then `last` and `next` need not to be disabled
+            self.next.disabled = False
         else:
-            self.current += 1
+            self._last.disabled = True  # else it should be disabled
+            self.next.disabled = True   # because why not
 
+        if self.current <= 0:       # if we are on first page,
+            self.current = 0        # we disabled `first` and `previous`
+            self.first.disabled = True
+            button.disabled = True
+        else:
+            self.first.disabled = False
+            button.disabled = False
+
+        self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
+
+        await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
+        
     @discord.ui.button(style=discord.ButtonStyle.blurple)
     async def count(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.message.delete()
         self.stop()
 
-    @discord.ui.button(label="Next", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.green, disabled=True)
     async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current += 1
-        self.previous.style = discord.ButtonStyle.green
-        if self.current <= len(self.current)-1:
-            self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-            await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
-        else:
-            self.current -= 1
+        
+        if self.current >= len(self.embed_list):
+            self.current = len(self.embed_list) - 1
+            button.disabled = True
+            self._last.disabled = True
 
-    @discord.ui.button(label='Last', style=discord.ButtonStyle.green)
+        if len(self.embed_list) >= 1:
+            self.first.disabled = False
+            self.previous.disabled = False
+        else:
+            self.previous.disabled = True
+            self.first.disabled = True
+        
+        self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
+        await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
+        
+    @discord.ui.button(label='Last', style=discord.ButtonStyle.red, disabled=True)
     async def _last(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current = len(self.embed_list) - 1
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-        button.style = discord.ButtonStyle.green
+        
+        button.disabled = True
+        self.next.disabled = True
+        
+        if len(self.embed_list) >= 1:
+            self.first.disabled = False
+            self.previous.disabled = False
+        else:
+            self.first.disabled = True
+            self.previous.disabled = True
+
         await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
 
     async def start(self, ctx):
-        self.message = await ctx.reply(embed=self.embed_list[0], view=self)
+        self.message = await ctx.send(embed=self.embed_list[0], view=self)
         self.user = ctx.author
         return self.message

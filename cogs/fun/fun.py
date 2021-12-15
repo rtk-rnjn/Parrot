@@ -878,7 +878,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
             description=f"The word was `{word}`.",
             color=Colours.grass_green
         )
-        await ctx.send(embed=win_embed)
+        return await ctx.send(embed=win_embed)
 
     @quiz_game.command(name="stop")
     async def stop_quiz(self, ctx: commands.Context) -> None:

@@ -523,7 +523,7 @@ class PaginationView(discord.ui.View):
         await interaction.message.delete()
         self.stop()
 
-    @discord.ui.button(label="Next", style=discord.ButtonStyle.green, disabled=True)
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.green, disabled=False)
     async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current += 1
         
@@ -542,7 +542,7 @@ class PaginationView(discord.ui.View):
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
         await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
         
-    @discord.ui.button(label='Last', style=discord.ButtonStyle.red, disabled=True)
+    @discord.ui.button(label='Last', style=discord.ButtonStyle.red, disabled=False)
     async def _last(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current = len(self.embed_list) - 1
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

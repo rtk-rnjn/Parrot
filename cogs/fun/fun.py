@@ -818,7 +818,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                     timeout=60.0,
                     check=check
                 )
-            except TimeoutError:
+            except Exception:
                 timeout_embed = Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",

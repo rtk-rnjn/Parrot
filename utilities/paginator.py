@@ -527,7 +527,7 @@ class PaginationView(discord.ui.View):
     async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.current += 1
         
-        if self.current >= len(self.embed_list):
+        if self.current >= len(self.embed_list) - 1:
             self.current = len(self.embed_list) - 1
             button.disabled = True
             self._last.disabled = True

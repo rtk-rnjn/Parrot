@@ -178,7 +178,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     message_author = None
                     content = "None"
                 async for entry in guild.audit_logs(limit=1): # this is worst way, but it still works
-                    if isinstance(entry.action, discord.AuditLogAction.message_delete):
+                    if entry.action.name.lower() == "message_delete":
                         deleted_by = f"{entry.target if entry.target else 'Author themself'}"
                     else:
                         deleted_by = 'Author themself'

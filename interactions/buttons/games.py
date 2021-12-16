@@ -116,6 +116,7 @@ class GameC4:
         else:
             self.message = await self.channel.send(content="Loading...")
             for emoji in self.unicode_numbers:
+                print(emoji)
                 await self.message.add_reaction(emoji)
             await self.message.add_reaction(CROSS_EMOJI)
             await self.message.edit(content=None, embed=embed)

@@ -5,7 +5,7 @@ import random
 import re
 from dataclasses import dataclass
 from functools import partial, cached_property
-from typing import Iterator, Literal, Optional, Union, overload
+from typing import Any, Iterator, Literal, Optional, Union, overload
 
 import discord
 from discord import Member as User
@@ -75,7 +75,7 @@ class GameC4:
         channel: discord.TextChannel,
         player1: discord.Member,
         player2: Optional[discord.Member],
-        tokens: list[str],
+        tokens: list,
         size: int = 7
     ):
         self.bot = bot
@@ -106,7 +106,7 @@ class GameC4:
             f" VS {self.bot.user.display_name if isinstance(self.player2, AI_C4) else self.player2.display_name}"
         )
 
-        rows = [" ".join(self.tokens[s] for s in row) for row in self.grid]
+        rows = [" ".join(str(self.tokens[s]) for s in row) for row in self.grid]
         first_row = " ".join(x for x in NUMBERS[:self.grid_size])
         formatted_grid = "\n".join([first_row] + rows)
         embed = discord.Embed(title=title, description=formatted_grid)
@@ -1312,11 +1312,11 @@ class Games(Cog):
         ctx: commands.Context,
         user: Optional[discord.Member],
         board_size: int,
-        emoji1: str,
-        emoji2: str
+        emoji1: Any,
+        emoji2: Any
     ) -> None:
         """Helper for playing a game of connect four."""
-        self.tokens = [":white_circle:", str(emoji1), str(emoji2)]
+        self.tokens = [":white_circle:", emoji1, emoji2]
         game = None  # if game fails to intialize in try...except
 
         try:

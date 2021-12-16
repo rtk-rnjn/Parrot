@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from core import Parrot
 
 from discord.ext import commands
 import discord, typing, asyncio, io, functools
 from utilities.emotes import emojis
+from typing import Any
 
 __all__ = ("Context", )
 
@@ -174,7 +174,7 @@ class Context(commands.Context):
     
     async def confirm(
         self,
-        bot: Parrot,
+        bot: Any,
         channel: discord.TextChannel,
         user: typing.Union[discord.Member, discord.User],
         *args: typing.Any,

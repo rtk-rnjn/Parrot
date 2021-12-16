@@ -61,7 +61,7 @@ class Emojis:
 
 NUMBERS = list(Emojis.number_emojis.values())
 CROSS_EMOJI = Emojis.incident_unactioned
-print(NUMBERS)
+
 Coordinate = Optional[tuple[int, int]]
 EMOJI_CHECK = Union[discord.Emoji, discord.PartialEmoji, str]
 
@@ -87,7 +87,7 @@ class GameC4:
         self.grid = self.generate_board(size)
         self.grid_size = size
 
-        self.unicode_numbers = NUMBERS[:self.grid_size]
+        self.unicode_numbers = [emojis.encode(i) for i in NUMBERS[:self.grid_size]]
 
         self.message = None
 
@@ -117,8 +117,7 @@ class GameC4:
             self.message = await self.channel.send(content="Loading...")
             print(self.unicode_numbers)
             for emoji in self.unicode_numbers:
-                print(emoji)
-                await self.message.add_reaction(emoji)
+                await self.message.add_reaction(emojis.encode(emoji))
             await self.message.add_reaction(CROSS_EMOJI)
             await self.message.edit(content=None, embed=embed)
 

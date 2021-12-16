@@ -39,15 +39,15 @@ class Emojis:
 
   
     number_emojis = {
-        1: "\N{DIGIT ONE}",
-        2: "\N{DIGIT TWO}",
-        3: "\N{DIGIT THREE}",
-        4: "\N{DIGIT FOUR}",
-        5: "\N{DIGIT FIVE}",
-        6: "\N{DIGIT SIX}",
-        7: "\N{DIGIT SEVEN}",
-        8: "\N{DIGIT EIGHT}",
-        9: "\N{DIGIT NINE}"
+        1: "\u0031\ufe0f\u20e3",
+        2: "\u0032\ufe0f\u20e3",
+        3: "\u0033\ufe0f\u20e3",
+        4: "\u0034\ufe0f\u20e3",
+        5: "\u0035\ufe0f\u20e3",
+        6: "\u0036\ufe0f\u20e3",
+        7: "\u0037\ufe0f\u20e3",
+        8: "\u0038\ufe0f\u20e3",
+        9: "\u0039\ufe0f\u20e3"
     }
 
     confirmation = "\u2705"
@@ -87,7 +87,7 @@ class GameC4:
         self.grid = self.generate_board(size)
         self.grid_size = size
 
-        self.unicode_numbers = ["\N{DIGIT ONE}", "\N{DIGIT TWO}", "\N{DIGIT THREE}", "\N{DIGIT FOUR}", "\N{DIGIT FIVE}", "\N{DIGIT SIX}", "\N{DIGIT SEVEN}", "\N{DIGIT EIGHT}", "\N{DIGIT NINE}"][:self.grid_size]
+        self.unicode_numbers = NUMBERS[:self.grid_size]
 
         self.message = None
 

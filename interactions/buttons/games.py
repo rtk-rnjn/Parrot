@@ -87,7 +87,7 @@ class GameC4:
         self.grid = self.generate_board(size)
         self.grid_size = size
 
-        self.unicode_numbers = NUMBERS[:self.grid_size]
+        self.unicode_numbers = ["\N{DIGIT ONE}", "\N{DIGIT TWO}", "\N{DIGIT THREE}", "\N{DIGIT FOUR}", "\N{DIGIT FIVE}", "\N{DIGIT SIX}", "\N{DIGIT SEVEN}", "\N{DIGIT EIGHT}", "\N{DIGIT NINE}"][:self.grid_size]
 
         self.message = None
 

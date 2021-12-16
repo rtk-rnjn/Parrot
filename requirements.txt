@@ -35,3 +35,4 @@ orjson
 cchardet
 rapidfuzz
 emojis
+chess

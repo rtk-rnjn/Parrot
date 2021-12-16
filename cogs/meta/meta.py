@@ -10,7 +10,7 @@ from datetime import timedelta
 from psutil import Process, virtual_memory
 from platform import python_version 
 
-from utilities.config import VERSION
+from utilities.config import VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
@@ -175,7 +175,13 @@ class FrontPageSource(menus.PageSource):
             f'For more help, consider joining the official server over at {self.bot.support_server}',
             inline=False,
         )
-
+        
+        embed.add_field(
+            name='Privacy Policy',
+            value=f'For the privacy policy of the bot: visit [Privacy Policy]({PRIVACY_POLICY})',
+            inline=False
+        )
+        
         created_at = format_dt(menu.ctx.bot.user.created_at, 'F')
         if self.index == 0:
             embed.add_field(

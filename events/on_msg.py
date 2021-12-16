@@ -170,12 +170,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     msg = payload.cached_message
                     guild = msg.guild
                     message_author = msg.author
+                    if (message_author.id == self.bot.user.id) or message_author.bot:
+                        return
                     content = msg.content
                 else:
                     guild = self.bot.get_guild(payload.guild_id)
                     message_author = None
                     content = "None"
-                async for entry in guild.guild.audit_logs(limit=1): # this is worst way, but it still works
+                async for entry in guild.audit_logs(limit=1): # this is worst way, but it still works
                     if isinstance(entry.action, discord.AuditLogAction.message_delete):
                         deleted_by = f"{entry.target if entry.target else 'Author themself'}"
                     else:
@@ -215,6 +217,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     msg = payload.cached_message
                     # guild = msg.guild
                     message_author = msg.author
+                    if message_author.bot:
+                        return
                     content = msg.content
                 else:
                     # guild = self.bot.get_guild(payload.guild_id)

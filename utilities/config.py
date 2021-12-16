@@ -30,3 +30,6 @@ JOIN_LEAVE_CHANNEL_ID = data['join_leave_channel_id']
 MEME_PASS = "***qwerty123" 
 # this is not the real pass, just to tell the website from where the API call is comming from.
 # yes you can use. but i suggest you to use your own.
+
+
+PRIVACY_POLICY = data['privacy_policy']

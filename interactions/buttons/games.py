@@ -61,9 +61,9 @@ class Emojis:
 
 NUMBERS = list(Emojis.number_emojis.values())
 CROSS_EMOJI = Emojis.incident_unactioned
-
+print(NUMBERS)
 Coordinate = Optional[tuple[int, int]]
-EMOJI_CHECK = Union[discord.Emoji, str]
+EMOJI_CHECK = Union[discord.Emoji, discord.PartialEmoji, str]
 
 
 class GameC4:
@@ -115,6 +115,7 @@ class GameC4:
             await self.message.edit(embed=embed)
         else:
             self.message = await self.channel.send(content="Loading...")
+            print(self.unicode_numbers)
             for emoji in self.unicode_numbers:
                 print(emoji)
                 await self.message.add_reaction(emoji)

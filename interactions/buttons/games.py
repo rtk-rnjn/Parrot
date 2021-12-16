@@ -1340,8 +1340,8 @@ class Games(Cog):
         self,
         ctx: commands.Context,
         board_size: int = 7,
-        emoji1: EMOJI_CHECK = "\U0001f535",
-        emoji2: EMOJI_CHECK = "\U0001f534"
+        emoji1: EMOJI_CHECK = "\N{LARGE BLUE CIRCLE}",
+        emoji2: EMOJI_CHECK = "\N{LARGE RED CIRCLE}"
     ) -> None:
         """
         Play the classic game of Connect Four with someone!
@@ -1392,15 +1392,15 @@ class Games(Cog):
         if self.already_playing_cf(ctx.author):
             return
 
-        await self._play_game(ctx, user, board_size, str(emoji1), str(emoji2))
+        await self._play_game(ctx, user, board_size, emoji1, emoji2)
 
     @connect_four.command(aliases=("bot", "computer", "cpu"))
     async def ai(
         self,
         ctx: commands.Context,
         board_size: int = 7,
-        emoji1: EMOJI_CHECK = "\U0001f535",
-        emoji2: EMOJI_CHECK = "\U0001f534"
+        emoji1: EMOJI_CHECK = "\N{LARGE BLUE CIRCLE}",
+        emoji2: EMOJI_CHECK = "\N{LARGE RED CIRCLE}"
     ) -> None:
         """Play Connect Four against a computer player."""
         check, emoji = self.check_emojis(emoji1, emoji2)
@@ -1411,7 +1411,7 @@ class Games(Cog):
         if not check_author_result:
             return
 
-        await self._play_game(ctx, None, board_size, str(emoji1), str(emoji2))
+        await self._play_game(ctx, None, board_size, emoji1, emoji2)
 
     @commands.command(aliases=['akinator'])
     @commands.bot_has_permissions(embed_links=True)

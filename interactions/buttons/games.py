@@ -87,7 +87,10 @@ class SokobanGame:
         if block_pos:
             self.block_pos = block_pos
 
-        
+    def win(self) -> bool:
+        return self.block_pos == self.target_pos
+
+ 
 class SokobanGameView(discord.ui.View):
     def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0, cords: dict=None):
         super().__init__(timeout=timeout)
@@ -103,6 +106,11 @@ class SokobanGameView(discord.ui.View):
         await interaction.response.send_message(f'Only **{self.user}** can interact. Run the command if you want to.', ephemeral=True)
         return False
 
+    def make_win_embed(self) -> discord.Embed:
+        embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {user}")
+        embed.discription = "Thanks for playing!"
+        return embed
+
     @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game = SokobanGame(man_pos=self.cords['man_pos'], target_pos=self.cords['target_pos'], block_pos=self.cords['block_pos'])
@@ -113,6 +121,9 @@ class SokobanGameView(discord.ui.View):
             description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
+
+        if self.game.win:
+            return await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
 
         await interaction.response.edit_message(embed=embed, view=self)
         
@@ -140,6 +151,9 @@ class SokobanGameView(discord.ui.View):
             description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
+
+        if self.game.win:
+            return await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -173,6 +187,9 @@ class SokobanGameView(discord.ui.View):
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
+        if self.game.win:
+            return await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="\N{DOWNWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
@@ -200,6 +217,9 @@ class SokobanGameView(discord.ui.View):
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
+        if self.game.win:
+            return await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="\N{BLACK RIGHTWARDS ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
@@ -226,6 +246,9 @@ class SokobanGameView(discord.ui.View):
             description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
+
+        if self.game.win:
+            return await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
 
         await interaction.response.edit_message(embed=embed, view=self)
     

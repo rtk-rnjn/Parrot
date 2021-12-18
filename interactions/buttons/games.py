@@ -89,19 +89,19 @@ class SokobanGame:
 
         
 class SokobanGameView(discord.ui.View):
-    def __init__(self, user: discord.Member, *, timeout: float=60.0):
+    def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0):
         super().__init__(timeout=timeout)
         self.user = user
+        self.game = game
         
-        while True:
-            self.man_pos = [random.randint(0,6), random.randint(0,6)]
-            self.block_pos = [random.randint(1,5), random.randint(1,5)]
-            self.target_pos = [random.randint(0,6), random.randint(0,6)]
-
-            if (self.man_pos == self.block_pos) or (self.block_pos == self.target_pos) or (self.target_pos == self.man_pos): pass
-            else: break
-        self.game = SokobanGame(man_pos=self.man_pos, target_pos=self.target_pos, block_pos=self.block_pos)
         self.legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
+
+    async def interaction_check(self,
+                                interaction: discord.Interaction) -> bool:
+        if self.user == interaction.user:
+            return True
+        await interaction.response.send_message(f'Only **{self.user}** can interact. Run the command if you want to.', ephemeral=True)
+        return False
 
     @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -110,7 +110,7 @@ class SokobanGameView(discord.ui.View):
         cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
@@ -137,7 +137,7 @@ class SokobanGameView(discord.ui.View):
         
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
@@ -169,7 +169,7 @@ class SokobanGameView(discord.ui.View):
         
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
@@ -196,7 +196,7 @@ class SokobanGameView(discord.ui.View):
         
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
@@ -223,7 +223,7 @@ class SokobanGameView(discord.ui.View):
         
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            description=f"{self.legends} {cord_str} {self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
@@ -1896,4 +1896,24 @@ class Games(Cog):
     @commands.command()
     async def sokoban(self, ctx: Context):
         """A classic sokoban game"""
-        await ctx.send(f"{ctx.author.mention}", view=SokobanGameView(ctx.author))
+        embed=discord.Embed()
+        while True:
+            man_pos = [random.randint(0,6), random.randint(0,6)]
+            block_pos = [random.randint(1,5), random.randint(1,5)]
+            target_pos = [random.randint(0,6), random.randint(0,6)]
+
+            if (man_pos == block_pos) or (block_pos == target_pos) or (target_pos == man_pos): pass
+            else: break
+        game = SokobanGame(man_pos=self.man_pos, target_pos=self.target_pos, block_pos=self.block_pos)
+        legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
+        
+        cords = game.coordinates()
+        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
+        
+        embed=discord.Embed(
+            title=f"Sokoban Game",
+            description=f"{legends} {cord_str} {self.game.display_board()}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+        
+        await ctx.send(f"{ctx.author.mention}", embed=embed, view=SokobanGameView(game, ctx.author))

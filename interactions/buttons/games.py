@@ -1509,9 +1509,9 @@ class Games(Cog):
         e1: EMOJI_CHECK, e2: EMOJI_CHECK
     ) -> tuple[bool, Optional[str]]:
         """Validate the emojis, the user put."""
-        if isinstance(e1, str) and emojis.count(e1) != 1:
+        if isinstance(e1, str) and emoji.count(e1) != 1:
             return False, e1
-        if isinstance(e2, str) and emojis.count(e2) != 1:
+        if isinstance(e2, str) and emoji.count(e2) != 1:
             return False, e2
         return True, None
 

@@ -108,7 +108,7 @@ class SokobanGameView(discord.ui.View):
 
     def make_win_embed(self) -> discord.Embed:
         embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}")
-        embed.discription = "Thanks for playing!"
+        embed.description = "Thanks for playing!"
         return embed
 
     @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)

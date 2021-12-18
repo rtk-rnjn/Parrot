@@ -120,7 +120,7 @@ class SokobanGameView(discord.ui.View):
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         cords = self.game.coordinates()
         if cords['man_pos'][0] == 0:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
         if [cords['man_pos'][0] - 1, cords['man_pos'][1]] == cords['block_pos']:
             if cords['block_pos'][0] == 0: 
                 return
@@ -152,7 +152,7 @@ class SokobanGameView(discord.ui.View):
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         cords = self.game.coordinates()
         if cords['man_pos'][1] == 0:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
         if [cords['man_pos'][0], cords['man_pos'][1] - 1] == cords['block_pos']:
             if cords['block_pos'][1] == 0: 
                 return
@@ -179,7 +179,7 @@ class SokobanGameView(discord.ui.View):
     async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
         cords = self.game.coordinates()
         if cords['man_pos'][0] == 6:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
         if [cords['man_pos'][0] + 1, cords['man_pos'][1]] == cords['block_pos']:
             if cords['block_pos'][0] == 6: 
                 return
@@ -206,16 +206,16 @@ class SokobanGameView(discord.ui.View):
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         cords = self.game.coordinates()
         if cords['man_pos'][1] == 6:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
-        if [cords['man_pos'][0], cords['man_pos'][1] - 1] == cords['block_pos']:
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
+        if [cords['man_pos'][0], cords['man_pos'][1] + 1] == cords['block_pos']:
             if cords['block_pos'][1] == 6: 
                 return
             else:
-                block_pos = [cords['block_pos'][0], cords['block_pos'][1] - 1]
-                man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
+                block_pos = [cords['block_pos'][0], cords['block_pos'][1] + 1]
+                man_pos = [cords['man_pos'][0], cords['man_pos'][1] + 1]
                 self.game.update(man_pos=man_pos, block_pos=block_pos)
         else:
-            man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
+            man_pos = [cords['man_pos'][0], cords['man_pos'][1] + 1]
             self.game.update(man_pos=man_pos)
         cords = self.game.coordinates()
         

@@ -89,11 +89,11 @@ class SokobanGame:
 
         
 class SokobanGameView(discord.ui.View):
-    def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0):
+    def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0, cords: dict=None):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
-        
+        self.cords = cords
         self.legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
 
     async def interaction_check(self,
@@ -105,8 +105,8 @@ class SokobanGameView(discord.ui.View):
 
     @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.game = SokobanGame(man_pos=self.man_pos, target_pos=self.target_pos, block_pos=self.block_pos)
-        cords = self.game.coordinates()
+        self.game = SokobanGame(man_pos=self.cords['man_pos'], target_pos=self.cords['target_pos'], block_pos=self.cords['block_pos'])
+        cords = self.cords
         cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
         embed=discord.Embed(
             title=f"Sokoban Game",
@@ -1916,4 +1916,4 @@ class Games(Cog):
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
         
-        await ctx.send(f"{ctx.author.mention}", embed=embed, view=SokobanGameView(game, ctx.author))
+        await ctx.send(f"{ctx.author.mention}", embed=embed, view=SokobanGameView(game, ctx.author, cords=game.coordinates()))

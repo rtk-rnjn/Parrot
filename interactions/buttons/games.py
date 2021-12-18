@@ -18,7 +18,7 @@ from discord.utils import MISSING
 import akinator
 from akinator.async_aki import Akinator
 import emojis as emoji
-
+import emojis
 BoardState = list[list[Optional[bool]]]
 
 
@@ -107,7 +107,7 @@ class SokobanGameView(discord.ui.View):
         return False
 
     def make_win_embed(self) -> discord.Embed:
-        embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {user}")
+        embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}")
         embed.discription = "Thanks for playing!"
         return embed
 

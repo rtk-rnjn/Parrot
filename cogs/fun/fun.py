@@ -428,7 +428,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
             name=f"You've guessed `{user_guess}` so far.",
             value="Guess the word by sending a message with a letter!"
         )
-        hangman_embed.set_footer(text=f"Tries remaining: {tries}")
+        hangman_embed.set_footer(text=f"Tries remaining: {tries} | You have 60s to guess.")
         return hangman_embed
 
     @property
@@ -835,6 +835,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         return error_embed
 
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def hangman(
             self,
             ctx: commands.Context,
@@ -864,7 +865,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                 description="No words could be found that fit all filters specified.",
                 color=Colours.soft_red,
             )
-            await ctx.send(embed=filter_not_found_embed)
+            await ctx.send(content=f"{ctx.author.mention}", embed=filter_not_found_embed)
             return
 
         word = choice(filtered_words)
@@ -878,7 +879,9 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         def check(msg: discord.Message) -> bool:
             return msg.author == ctx.author and msg.channel == ctx.channel
 
-        original_message = await ctx.send(embed=Embed(
+        original_message = await ctx.send(
+            content=f"{ctx.author.mention}",
+            embed=Embed(
             title="Hangman",
             description="Loading game...",
             color=Colours.soft_green
@@ -887,7 +890,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         # Game loop
         while user_guess.replace(' ', '') != word:
             # Edit the message to the current state of the game
-            await original_message.edit(embed=self.create_embed(tries, user_guess))
+            await original_message.edit(content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess))
 
             try:
                 message = await self.bot.wait_for(
@@ -901,7 +904,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",
                     color=Colours.soft_red,
                 )
-                await original_message.edit(embed=timeout_embed)
+                await original_message.edit(content=f"{ctx.author.mention}", embed=timeout_embed)
                 return
 
             # If the user enters a capital letter as their guess, it is automatically converted to a lowercase letter
@@ -913,7 +916,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                     description="You can only send one letter at a time, try again!",
                     color=Colours.dark_green,
                 )
-                await ctx.send(embed=letter_embed, delete_after=4)
+                await ctx.send(content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4)
                 continue
 
             # Checks for repeated guesses
@@ -923,7 +926,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                     description=f"You have already guessed `{normalized_content}`, try again!",
                     color=Colours.dark_green,
                 )
-                await ctx.send(embed=already_guessed_embed, delete_after=4)
+                await ctx.send(content=f"{ctx.author.mention}", embed=already_guessed_embed, delete_after=4)
                 continue
 
             # Checks for correct guesses from the user
@@ -942,20 +945,22 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                         description=f"The word was `{word}`.",
                         color=Colours.soft_red,
                     )
-                    await original_message.edit(embed=self.create_embed(tries, user_guess))
-                    await ctx.send(embed=losing_embed)
+                    await original_message.edit(
+                        content=f"{ctx.author.mention}",
+                        embed=self.create_embed(tries, user_guess))
+                    await ctx.send(content=f"{ctx.author.mention}", embed=losing_embed)
                     return
 
             guessed_letters.add(normalized_content)
 
         # The loop exited meaning that the user has guessed the word
-        await original_message.edit(embed=self.create_embed(tries, user_guess))
+        await original_message.edit(content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess))
         win_embed = Embed(
             title="You won!",
             description=f"The word was `{word}`.",
             color=Colours.grass_green
         )
-        return await ctx.send(embed=win_embed)
+        return await ctx.send(content=f"{ctx.author.mention}", embed=win_embed)
 
     @quiz_game.command(name="stop")
     async def stop_quiz(self, ctx: commands.Context) -> None:

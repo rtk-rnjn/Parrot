@@ -17,15 +17,224 @@ from core import Cog, Parrot, Context
 from discord.utils import MISSING
 import akinator
 from akinator.async_aki import Akinator
-import emojis
+import emojis as emoji
 
 BoardState = list[list[Optional[bool]]]
 
+
+class SokobanGame:
+    array = [
+        [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6]],
+        [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6]],
+        [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6]],
+        [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6]],
+        [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6]],
+        [[5, 0], [5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [5, 6]],
+        [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6]],
+    ]
+
+    def __init__(self, *, man_pos: list[int], block_pos: list[int], target_pos: list[int]):
+        self.man_pos = man_pos
+        self.block_pos = block_pos
+        self.target_pos = target_pos
+
+    def display_board(self) -> str:
+        board = ""
+        for pos in self.array:
+            x = str(
+                    pos
+                ).replace(
+                    str(self.man_pos), f'{emoji.encode(":flushed:")} '
+                ).replace(
+                    str(self.target_pos), f'{emoji.encode(":negative_squared_cross_mark:")} '
+                ).replace(
+                    str(self.block_pos), f'{emoji.encode(":8ball:")} '
+                ).replace(
+                    '[', '_'
+                ).replace(
+                    ']', ''
+                ).replace(
+                    ',', ''
+                )[1::]
+            x = x.replace(
+                    '6', ''
+                ).replace(
+                    '5', ''
+                ).replace(
+                    '4', ''
+                ).replace(
+                    '3', ''
+                ).replace(
+                    '2', ''
+                ).replace(
+                    '1', ''
+                ).replace('0', '')
+            x = x.replace('_', f"{emoji.encode(':white_large_square:')}")
+            board = board + x + "\n"
+        return board
+    
+    def coordinates(self) -> dict:
+        data = {
+            'man_pos': self.man_pos,
+            'block_pos': self.block_pos,
+            'target_pos': self.target_pos
+        }
+        return data
+    
+    def update(self, *, man_pos: list=None, block_pos: list=None) -> None:
+        if man_pos:
+            self.man_pos = man_pos
+        if block_pos:
+            self.block_pos = block_pos
+
+        
+class SokobanGameView(discord.ui.View):
+    def __init__(self, user: discord.Member, *, timeout: float=60.0):
+        super().__init__(timeout=timeout)
+        self.user = user
+        
+        while True:
+            self.man_pos = [random.randint(0,6), random.randint(0,6)]
+            self.block_pos = [random.randint(1,5), random.randint(1,5)]
+            self.target_pos = [random.randint(0,6), random.randint(0,6)]
+
+            if (self.man_pos == self.block_pos) or (self.block_pos == self.target_pos) or (self.target_pos == self.man_pos): pass
+            else: break
+        self.game = SokobanGame(man_pos=self.man_pos, target_pos=self.target_pos, block_pos=self.block_pos)
+        self.legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
+
+    @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)
+    async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.game = SokobanGame(man_pos=self.man_pos, target_pos=self.target_pos, block_pos=self.block_pos)
+        cords = self.game.coordinates()
+        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
+        embed=discord.Embed(
+            title=f"Sokoban Game",
+            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+        
+    @discord.ui.button(label="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
+    async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
+        cords = self.game.coordinates()
+        if cords['man_pos'][0] == 0:
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+        if [cords['man_pos'][0] - 1, cords['man_pos'][1]] == cords['block_pos']:
+            if cords['block_pos'][0] == 0: 
+                return
+            else:
+                block_pos = [cords['block_pos'][0] - 1, cords['block_pos'][1]]
+                man_pos = [cords['man_pos'][0] - 1, cords['man_pos'][1]]
+                self.game.update(man_pos=man_pos, block_pos=block_pos)
+        else:
+            man_pos = [cords['man_pos'][0] - 1, cords['man_pos'][1]]
+            self.game.update(man_pos=man_pos)
+        cords = self.game.coordinates()
+        
+        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
+        
+        embed=discord.Embed(
+            title=f"Sokoban Game",
+            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", style=discord.ButtonStyle.primary, disabled=False)
+    async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.message.delete()
+        self.stop()
+    
+    @discord.ui.button(label="\N{LEFTWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
+        cords = self.game.coordinates()
+        if cords['man_pos'][1] == 0:
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+        if [cords['man_pos'][0], cords['man_pos'][1] - 1] == cords['block_pos']:
+            if cords['block_pos'][1] == 0: 
+                return
+            else:
+                block_pos = [cords['block_pos'][0], cords['block_pos'][1] - 1]
+                man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
+                self.game.update(man_pos=man_pos, block_pos=block_pos)
+        else:
+            man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
+            self.game.update(man_pos=man_pos)
+        cords = self.game.coordinates()
+        
+        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
+        
+        embed=discord.Embed(
+            title=f"Sokoban Game",
+            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(label="\N{DOWNWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
+        cords = self.game.coordinates()
+        if cords['man_pos'][0] == 6:
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+        if [cords['man_pos'][0] + 1, cords['man_pos'][1]] == cords['block_pos']:
+            if cords['block_pos'][0] == 6: 
+                return
+            else:
+                block_pos = [cords['block_pos'][0] + 1, cords['block_pos'][1]]
+                man_pos = [cords['man_pos'][0] + 1, cords['man_pos'][1]]
+                self.game.update(man_pos=man_pos, block_pos=block_pos)
+        else:
+            man_pos = [cords['man_pos'][0] + 1, cords['man_pos'][1]]
+            self.game.update(man_pos=man_pos)
+        cords = self.game.coordinates()
+        
+        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
+        
+        embed=discord.Embed(
+            title=f"Sokoban Game",
+            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(label="\N{BLACK RIGHTWARDS ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
+        cords = self.game.coordinates()
+        if cords['man_pos'][1] == 6:
+            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=False,)
+        if [cords['man_pos'][0], cords['man_pos'][1] - 1] == cords['block_pos']:
+            if cords['block_pos'][1] == 6: 
+                return
+            else:
+                block_pos = [cords['block_pos'][0], cords['block_pos'][1] - 1]
+                man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
+                self.game.update(man_pos=man_pos, block_pos=block_pos)
+        else:
+            man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
+            self.game.update(man_pos=man_pos)
+        cords = self.game.coordinates()
+        
+        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
+        
+        embed=discord.Embed(
+            title=f"Sokoban Game",
+            description=f"{self.legends} {cord_str} {self.game.display_board}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
 
 STATES = (
     "\N{REGIONAL INDICATOR SYMBOL LETTER X}",
     "\N{REGIONAL INDICATOR SYMBOL LETTER O}",
 )
+
 
 class Emojis:
     cross_mark = "\u274C"
@@ -102,8 +311,8 @@ class GameC4:
     async def print_grid(self) -> None:
         """Formats and outputs the Connect Four grid to the channel."""
         title = (
-            f"Connect 4: {self.player1.display_name}"
-            f" VS {self.bot.user.display_name if isinstance(self.player2, AI_C4) else self.player2.display_name}"
+            f"Connect 4: {self.player1}"
+            f" VS {self.bot.user if isinstance(self.player2, AI_C4) else self.player2}"
         )
 
         rows = [" ".join(str(self.tokens[s]) for s in row) for row in self.grid]
@@ -296,6 +505,7 @@ class AI_C4:
         row, column = coords
         self.game.grid[row][column] = 2
         return coords
+
 
 class Board:
     def __init__(
@@ -553,7 +763,6 @@ class GameTicTacToe(discord.ui.View):
         return self.players[self.board.current_player]
 
 
-
 @dataclass
 class Square:
     """Each square on the battleship grid - if they contain a boat and if they've been aimed at."""
@@ -683,7 +892,6 @@ class Colours:
         (0, 204, 204),
         (64, 224, 208),
     ]
-
 
 
 
@@ -912,7 +1120,6 @@ class GameBattleShip:
                 alert_messages.append(await self.next.user.send("Miss!"))
 
             self.turn, self.next = self.next, self.turn
-
 
 
 class Cell:
@@ -1337,6 +1544,7 @@ class Games(Cog):
         aliases=("4inarow", "connect4", "connectfour", "c4"),
         case_insensitive=True
     )
+    @commands.bot_has_permissions(manage_messages=True, embed_links=True)
     async def connect_four(
         self,
         ctx: commands.Context,
@@ -1666,7 +1874,7 @@ class Games(Cog):
 
     @commands.command()
     async def rps(self, ctx: Context, move: str) -> None:
-        """Play the classic game of Rock Paper Scissors with your own sir-lancebot!"""
+        """Play the classic game of Rock Paper Scissors with your own Parrot!"""
         move = move.lower()
         player_mention = ctx.author.mention
 
@@ -1684,3 +1892,8 @@ class Games(Cog):
             await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!")
         else:
             await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
+    
+    @commands.command()
+    async def sokoban(self, ctx: Context):
+        """A classic sokoban game"""
+        await ctx.send(f"{ctx.author.mention}", view=SokobanGameView(ctx.author))

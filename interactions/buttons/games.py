@@ -1914,6 +1914,6 @@ class Games(Cog):
             title=f"Sokoban Game",
             description=f"{legends} {cord_str} {game.display_board()}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {ctx.author}")
         
         await ctx.send(f"{ctx.author.mention}", embed=embed, view=SokobanGameView(game, ctx.author, cords=game.coordinates()))

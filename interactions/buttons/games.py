@@ -1904,7 +1904,7 @@ class Games(Cog):
 
             if (man_pos == block_pos) or (block_pos == target_pos) or (target_pos == man_pos): pass
             else: break
-        game = SokobanGame(man_pos=self.man_pos, target_pos=self.target_pos, block_pos=self.block_pos)
+        game = SokobanGame(man_pos=man_pos, target_pos=target_pos, block_pos=block_pos)
         legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
         
         cords = game.coordinates()
@@ -1912,7 +1912,7 @@ class Games(Cog):
         
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{legends} {cord_str} {self.game.display_board()}",
+            description=f"{legends} {cord_str} {game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
         

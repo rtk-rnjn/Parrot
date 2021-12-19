@@ -118,7 +118,7 @@ class SokobanGameView(discord.ui.View):
         cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board()}",
+            description=f"{self.legends}{cord_str}{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
@@ -355,7 +355,6 @@ class GameC4:
             await self.message.edit(embed=embed)
         else:
             self.message = await self.channel.send(content="Loading...")
-            print(self.unicode_numbers)
             for emoji in self.unicode_numbers:
                 await self.message.add_reaction(emojis.encode(emoji))
             await self.message.add_reaction(CROSS_EMOJI)

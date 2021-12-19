@@ -177,18 +177,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     guild = self.bot.get_guild(payload.guild_id)
                     message_author = None
                     content = "None"
-                async for entry in guild.audit_logs(limit=1): # this is worst way, but it still works
-                    if entry.action.name.lower() == "message_delete":
-                        deleted_by = f"{entry.target if entry.target else 'Author themself'}"
-                    else:
-                        deleted_by = 'Author themself'
-                
+
                 main_content = f"""**Message Delete Event**
 
 `ID      :` **{payload.message_id}**
 `Channel :` **<#{payload.channel_id}>**
 `Author  :` **{message_author}**
-`Mod?    :` **{deleted_by}**
 `Deleted at:` **<t:{int(time())}>**
 
 `Content :` **{discord.utils.escape_mentions(content[:250:])}**

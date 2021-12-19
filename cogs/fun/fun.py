@@ -1780,8 +1780,41 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @Context.with_type
+    async def paparazzi(self, ctx: Context, *, member: discord.Member=None):
+        """Paparazzi image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+        
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def abstract(self, ctx: Context, *, member: discord.Member=None):
+        """Abstract image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
     async def balls(self, ctx: Context, *, member: discord.Member=None):
         """Balls image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def shock(self, ctx: Context, *, member: discord.Member=None):
+        """Shock image generation"""
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
@@ -1799,6 +1832,51 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
     
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def boil(self, ctx: Context, *, member: discord.Member=None):
+        """Boil image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def shear(self, ctx: Context, member: discord.Member=None, axis: str=None):
+        """Shear image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url, 'axis': axis if axis else 'X'}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def canny(self, ctx: Context, member: discord.Member=None):
+        """Canny image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def emojify(self, ctx: Context, *, member: discord.Member=None):
+        """Half Invert image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/text/{ctx.command.name}', params=params)
+        
+        embed=discord.Embed(decription=f"{(await r.json())['text']}", timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}")
+        await ctx.reply(embed=embed)
+
     @commands.command(aliases=['halfinvert'])
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @Context.with_type

@@ -1869,7 +1869,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @Context.with_type
     async def emojify(self, ctx: Context, *, member: discord.Member=None):
-        """Half Invert image generation"""
+        """Emojify the image"""
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/text/{ctx.command.name}', params=params)

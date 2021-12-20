@@ -1919,6 +1919,7 @@ class Games(Cog):
                 main.append([j for j in list(i)])
             game = SokobanGame(main)
             main_game = SokobanGameView(game, ctx.author)
+            await main_game.start(ctx)
             
     
     @sokoban.command(name='custom')

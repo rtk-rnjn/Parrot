@@ -36,11 +36,11 @@ class SokobanGame:
     }
     # Do not DM me or mail me how this works
     # Thing is, I myself forget
-    def __init__(self, level: list[list[str]]):
+    def __init__(self, level: Any):
         self.level = level
-        self.player: list = []
-        self.blocks: list = []
-        self.target: list = []
+        self.player = []
+        self.blocks = []
+        self.target = []
 
     def display_board(self) -> str:
         main = ""
@@ -149,21 +149,8 @@ class SokobanGameView(discord.ui.View):
 
     @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.game = SokobanGame(man_pos=self.cords['man_pos'], target_pos=self.cords['target_pos'], block_pos=self.cords['block_pos'])
-        cords = self.cords
-        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
-        embed=discord.Embed(
-            title=f"Sokoban Game",
-            description=f"{self.legends}{cord_str}{self.game.display_board()}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        return
 
-        if self.game.win():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
-            self.stop()
-            return
-
-        await interaction.response.edit_message(embed=embed, view=self)
         
     @discord.ui.button(label="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):

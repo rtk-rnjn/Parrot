@@ -19,85 +19,121 @@ import akinator
 from akinator.async_aki import Akinator
 import emojis as emoji
 import emojis
+from aiofile import async_open
+
 BoardState = list[list[Optional[bool]]]
 
 
 class SokobanGame:
-    array = [
-        [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6]],
-        [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6]],
-        [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6]],
-        [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6]],
-        [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6]],
-        [[5, 0], [5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [5, 6]],
-        [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6]],
-    ]
-
-    def __init__(self, *, man_pos: list[int], block_pos: list[int], target_pos: list[int]):
-        self.man_pos = man_pos
-        self.block_pos = block_pos
-        self.target_pos = target_pos
+    """The real sokoban game"""
+    legend = {
+        ' ': '<:blank:922048341964103710>',
+        '#': ':white_large_square:',
+        '@': ':flushed:',
+        '$': ':soccer:',
+        '.': ':o:',
+        'x': ':x:' # TODO: change the "x"
+    }
+    # Do not DM me or mail me how this works
+    # Thing is, I myself forget
+    def __init__(self, level: list[list[str]]):
+        self.level = level
+        self.player: list = []
+        self.blocks: list = []
+        self.target: list = []
 
     def display_board(self) -> str:
-        board = ""
-        for pos in self.array:
-            x = str(
-                    pos
-                ).replace(
-                    str(self.man_pos), f'{emoji.encode(":flushed:")} '
-                ).replace(
-                    str(self.target_pos), f'{emoji.encode(":negative_squared_cross_mark:")} '
-                ).replace(
-                    str(self.block_pos), f'{emoji.encode(":8ball:")} '
-                ).replace(
-                    '[', '_'
-                ).replace(
-                    ']', ''
-                ).replace(
-                    ',', ''
-                )[1::]
-            x = x.replace(
-                    '6', ''
-                ).replace(
-                    '5', ''
-                ).replace(
-                    '4', ''
-                ).replace(
-                    '3', ''
-                ).replace(
-                    '2', ''
-                ).replace(
-                    '1', ''
-                ).replace('0', '')
-            x = x.replace('_', f"{emoji.encode(':white_large_square:')}")
-            board = board + x + "\n"
-        return board
-    
-    def coordinates(self) -> dict:
-        data = {
-            'man_pos': self.man_pos,
-            'block_pos': self.block_pos,
-            'target_pos': self.target_pos
-        }
-        return data
-    
-    def update(self, *, man_pos: list=None, block_pos: list=None) -> None:
-        if man_pos:
-            self.man_pos = man_pos
-        if block_pos:
-            self.block_pos = block_pos
+        main = ""
+        for i in self.level:
+            for j in i:
+                main += self.legend[j]
+            main += '\n'
+        return main
 
-    def win(self) -> bool:
-        return self.block_pos == self.target_pos
+    def _get_cords(self):
+        for index, i in enumerate(self.level):
+            for _index, j in enumerate(i):
+                if j == '@':
+                    self.player = [index, _index]
+                if j in ('$', 'x'):
+                    self.blocks.append([index, _index])
+                if j == '.':
+                    self.target.append([index, _index])
+
+    def show(self) -> str:
+        main = ""
+        for i in self.level:
+            for j in i:
+                main += str(j)
+            main += '\n'
+        return main
+
+    def move_up(self) -> None:
+        if self.level[self.player[0] - 1][self.player[1]] in (' ', '.'):
+            self.level[self.player[0] - 1][self.player[1]] = '@'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0] - 1, self.player[1]]
+            return
+
+        if (self.level[self.player[0] - 1][self.player[1]] in ('$', 'x')) and (self.level[self.player[0] - 2][self.player[1]] in (' ', '.')):
+            self.level[self.player[0] - 1][self.player[1]] = '@'
+            self.level[self.player[0] - 2][self.player[1]] = '$' if self.level[self.player[0] - 2][self.player[1]] == ' ' else 'x'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0] - 1, self.player[1]]
+            return
+
+    def move_down(self) -> None:
+        if self.level[self.player[0] + 1][self.player[1]] in (' ', '.'):
+            self.level[self.player[0] + 1][self.player[1]] = '@'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0] + 1, self.player[1]]
+            return
+
+        if (self.level[self.player[0] + 1][self.player[1]] in ('$', 'x')) and (self.level[self.player[0] + 2][self.player[1]] in (' ', '.')):
+            self.level[self.player[0] + 1][self.player[1]] = '@'
+            self.level[self.player[0] + 2][self.player[1]] = '$' if self.level[self.player[0] + 2][self.player[1]] == ' ' else 'x'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0] + 1, self.player[1]]
+            return
+        
+    def move_left(self) -> None:
+        if self.level[self.player[0]][self.player[1] - 1] in (' ', '.'):
+            self.level[self.player[0]][self.player[1] - 1] = '@'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0], self.player[1] - 1]
+            return
+
+        if (self.level[self.player[0]][self.player[1] - 1] in ('$', 'x')) and (self.level[self.player[0]][self.player[1] - 2] in (' ', '.')):
+            self.level[self.player[0]][self.player[1] - 1] = '@'
+            self.level[self.player[0]][self.player[1] - 2] = '$' if self.level[self.player[0]][self.player[1] - 2] == ' ' else 'x'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0], self.player[1] - 1]
+            return
+
+    def move_right(self) -> None:
+        if self.level[self.player[0]][self.player[1] + 1] in (' ', '.'):
+            self.level[self.player[0]][self.player[1] + 1] = '@'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0], self.player[1] + 1]
+            return
+
+        if (self.level[self.player[0]][self.player[1] + 1] in ('$', 'x')) and (self.level[self.player[0]][self.player[1] + 2] in (' ', '.')):
+            self.level[self.player[0]][self.player[1] + 1] = '@'
+            self.level[self.player[0]][self.player[1] + 2] = '$' if self.level[self.player[0]][self.player[1] + 2] == ' ' else 'x'
+            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+            self.player = [self.player[0], self.player[1] + 1]
+            return
+
+    def is_game_over(self) -> bool:
+        self._get_cords()
+        return self.target == self.blocks
 
  
 class SokobanGameView(discord.ui.View):
-    def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0, cords: dict=None):
+    def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
-        self.cords = cords
-        self.legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
 
     async def interaction_check(self,
                                 interaction: discord.Interaction) -> bool:
@@ -131,31 +167,15 @@ class SokobanGameView(discord.ui.View):
         
     @discord.ui.button(label="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
-        cords = self.game.coordinates()
-        if cords['man_pos'][0] == 0:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
-        if [cords['man_pos'][0] - 1, cords['man_pos'][1]] == cords['block_pos']:
-            if cords['block_pos'][0] == 0: 
-                return
-            else:
-                block_pos = [cords['block_pos'][0] - 1, cords['block_pos'][1]]
-                man_pos = [cords['man_pos'][0] - 1, cords['man_pos'][1]]
-                self.game.update(man_pos=man_pos, block_pos=block_pos)
-        else:
-            man_pos = [cords['man_pos'][0] - 1, cords['man_pos'][1]]
-            self.game.update(man_pos=man_pos)
-        cords = self.game.coordinates()
-        
-        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
-        
+        self.game.move_up()
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board()}",
+            description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
-        if self.game.win():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+        if self.game.is_game_over():
+            await interaction.response.edit_message(embed=self.make_win_embed())
             self.stop()
             return
 
@@ -168,31 +188,15 @@ class SokobanGameView(discord.ui.View):
     
     @discord.ui.button(label="\N{LEFTWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
-        cords = self.game.coordinates()
-        if cords['man_pos'][1] == 0:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
-        if [cords['man_pos'][0], cords['man_pos'][1] - 1] == cords['block_pos']:
-            if cords['block_pos'][1] == 0: 
-                return
-            else:
-                block_pos = [cords['block_pos'][0], cords['block_pos'][1] - 1]
-                man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
-                self.game.update(man_pos=man_pos, block_pos=block_pos)
-        else:
-            man_pos = [cords['man_pos'][0], cords['man_pos'][1] - 1]
-            self.game.update(man_pos=man_pos)
-        cords = self.game.coordinates()
-        
-        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
-        
+        self.game.move_left()
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board()}",
+            description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
-        if self.game.win():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+        if self.game.is_game_over():
+            await interaction.response.edit_message(embed=self.make_win_embed())
             self.stop()
             return
 
@@ -200,31 +204,15 @@ class SokobanGameView(discord.ui.View):
     
     @discord.ui.button(label="\N{DOWNWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
-        cords = self.game.coordinates()
-        if cords['man_pos'][0] == 6:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
-        if [cords['man_pos'][0] + 1, cords['man_pos'][1]] == cords['block_pos']:
-            if cords['block_pos'][0] == 6: 
-                return
-            else:
-                block_pos = [cords['block_pos'][0] + 1, cords['block_pos'][1]]
-                man_pos = [cords['man_pos'][0] + 1, cords['man_pos'][1]]
-                self.game.update(man_pos=man_pos, block_pos=block_pos)
-        else:
-            man_pos = [cords['man_pos'][0] + 1, cords['man_pos'][1]]
-            self.game.update(man_pos=man_pos)
-        cords = self.game.coordinates()
-        
-        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
-        
+        self.game.move_down()
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board()}",
+            description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
-        if self.game.win():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+        if self.game.is_game_over():
+            await interaction.response.edit_message(embed=self.make_win_embed())
             self.stop()
             return
 
@@ -232,33 +220,26 @@ class SokobanGameView(discord.ui.View):
     
     @discord.ui.button(label="\N{BLACK RIGHTWARDS ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
-        cords = self.game.coordinates()
-        if cords['man_pos'][1] == 6:
-            return await interaction.response.send_message(content=f"{interaction.user}, Man already hitting wall", ephemeral=True,)
-        if [cords['man_pos'][0], cords['man_pos'][1] + 1] == cords['block_pos']:
-            if cords['block_pos'][1] == 6: 
-                return
-            else:
-                block_pos = [cords['block_pos'][0], cords['block_pos'][1] + 1]
-                man_pos = [cords['man_pos'][0], cords['man_pos'][1] + 1]
-                self.game.update(man_pos=man_pos, block_pos=block_pos)
-        else:
-            man_pos = [cords['man_pos'][0], cords['man_pos'][1] + 1]
-            self.game.update(man_pos=man_pos)
-        cords = self.game.coordinates()
-        
-        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
-        
+        self.game.move_right()
         embed=discord.Embed(
             title=f"Sokoban Game",
-            description=f"{self.legends} {cord_str} {self.game.display_board()}",
+            description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}")
 
-        if self.game.win():
-            return await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+        if self.game.is_game_over():            
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+            self.stop()
+            return
 
         await interaction.response.edit_message(embed=embed, view=self)
+    
+    async def start(self, ctx: Context):
+        await ctx.send(embed=discord.Embed(
+                        title=f"Sokoban Game",
+                        description=f"{self.game.display_board()}",
+                        timestamp=discord.utils.utcnow()
+                    ).set_footer(text=f"User: {self.user}"), view=self)
     
 
 STATES = (
@@ -1574,13 +1555,13 @@ class Games(Cog):
         aliases=("4inarow", "connect4", "connectfour", "c4"),
         case_insensitive=True
     )
-    @commands.bot_has_permissions(manage_messages=True, embed_links=True)
+    @commands.bot_has_permissions(manage_messages=True, embed_links=True, add_reactions=True)
     async def connect_four(
         self,
         ctx: commands.Context,
-        board_size: int = 7,
-        emoji1: EMOJI_CHECK = "\N{LARGE BLUE CIRCLE}",
-        emoji2: EMOJI_CHECK = "\N{LARGE RED CIRCLE}"
+        board_size: int = None,
+        emoji1: EMOJI_CHECK = None,
+        emoji2: EMOJI_CHECK = None
     ) -> None:
         """
         Play the classic game of Connect Four with someone!
@@ -1588,6 +1569,9 @@ class Games(Cog):
         The game will start once someone has reacted.
         All inputs will be through reactions.
         """
+        emoji1 = emoji1 or "\N{LARGE BLUE CIRCLE}"
+        emoji2 = emoji2 or "\N{LARGE RED CIRCLE}"
+        board_size = board_size or 7
         check, emoji = self.check_emojis(emoji1, emoji2)
         if not check:
             raise commands.EmojiNotFound(emoji)
@@ -1923,27 +1907,26 @@ class Games(Cog):
         else:
             await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
     
-    @commands.command()
-    async def sokoban(self, ctx: Context):
+    @commands.group(invoke_without_command=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def sokoban(self, ctx: Context, level: int=None,):
         """A classic sokoban game"""
-        embed=discord.Embed()
-        while True:
-            man_pos = [random.randint(0,6), random.randint(0,6)]
-            block_pos = [random.randint(1,5), random.randint(1,5)]
-            target_pos = [random.randint(0,6), random.randint(0,6)]
-
-            if (man_pos == block_pos) or (block_pos == target_pos) or (target_pos == man_pos): pass
-            else: break
-        game = SokobanGame(man_pos=man_pos, target_pos=target_pos, block_pos=block_pos)
-        legends = f"`Man:` {emoji.encode(':flushed:')} **|** `Tar:` {emoji.encode(':negative_squared_cross_mark:')} **|** `Blo:` {emoji.encode(':8ball:')}\n"
+        if not ctx.invoked_subcommand:
+            main = list()
+            async with async_open(fr'extra/sokoban/level{level if level else 1}.txt', 'r') as fp:
+                txt = await fp.read()
+            for i in txt.split('\n'):
+                main.append([j for j in list(i)])
+            game = SokobanGame(main)
+            main_game = SokobanGameView(game, ctx.author)
+            
+    
+    @sokoban.command(name='custom')
+    async def custom_sokoban(self, ctx: Context, *, text: str):
+        """To make a custom sokoban Game. Here are some rules to make:
+        - Your level must be enclosed with `#`
+        - Your level must have atleast one target block (`.`) one box (`$`)
+        - Your level must have only and only 1 character (`@`)
+        - There should be equal number of `.` (target) and `$` (box)
+        """
         
-        cords = game.coordinates()
-        cord_str = f"`Man Pos:` {cords['man_pos']} | `Tar Pos:` {cords['target_pos']} | `Blo Pos:` {cords['block_pos']}\n"
-        
-        embed=discord.Embed(
-            title=f"Sokoban Game",
-            description=f"{legends} {cord_str} {game.display_board()}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {ctx.author}")
-        
-        await ctx.send(f"{ctx.author.mention}", embed=embed, view=SokobanGameView(game, ctx.author, cords=game.coordinates()))

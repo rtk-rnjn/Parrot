@@ -36,7 +36,7 @@ class SokobanGame:
     }
     # Do not DM me or mail me how this works
     # Thing is, I myself forget
-    def __init__(self, level: Any):
+    def __init__(self, level):
         self.level = level
         self.player = []
         self.blocks = []
@@ -1899,12 +1899,13 @@ class Games(Cog):
     async def sokoban(self, ctx: Context, level: int=None,):
         """A classic sokoban game"""
         if not ctx.invoked_subcommand:
-            main = list()
+            ls = list()
             async with async_open(fr'extra/sokoban/level{level if level else 1}.txt', 'r') as fp:
-                txt = await fp.read()
-            for i in txt.split('\n'):
-                main.append([j for j in list(i)])
-            game = SokobanGame(main)
+                level = await fp.read()
+            for i in level.split('\n'):
+                ls.append([j for j in list(i)])
+            game = SokobanGame(ls)
+            game._get_cords()
             main_game = SokobanGameView(game, ctx.author)
             await main_game.start(ctx)
             
@@ -1917,4 +1918,11 @@ class Games(Cog):
         - Your level must have only and only 1 character (`@`)
         - There should be equal number of `.` (target) and `$` (box)
         """
-        
+        ls = list()
+        level = text.split("```")
+        for i in level.split('\n'):
+            ls.append([j for j in list(i)])
+        game = SokobanGame(ls)
+        game._get_cords()
+        main_game = SokobanGameView(game, ctx.author)
+        await main_game.start(ctx)

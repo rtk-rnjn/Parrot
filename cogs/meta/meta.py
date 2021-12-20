@@ -8,14 +8,15 @@ from time import time
 from datetime import timedelta 
 
 from psutil import Process, virtual_memory
-from platform import python_version 
+from platform import python_version
+from discord.ext import old_menus as menus 
 
 from utilities.config import VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
 
-from discord.ext import commands, menus
+from discord.ext import commands
 from collections import OrderedDict, deque, Counter
 from .robopage import RoboPages
 

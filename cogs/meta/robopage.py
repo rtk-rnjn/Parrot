@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 import discord
 from discord.ext import commands
 from discord.ext.commands import Paginator as CommandPaginator
-from discord.ext import menus
+from discord.ext import old_menus
 
 from core import Context
 
@@ -13,14 +13,14 @@ from core import Context
 class RoboPages(discord.ui.View):
     def __init__(
         self,
-        source: menus.PageSource,
+        source: old_menus.PageSource,
         *,
         ctx: Context,
         check_embeds: bool = True,
         compact: bool = False,
     ):
         super().__init__()
-        self.source: menus.PageSource = source
+        self.source: old_menus.PageSource = source
         self.check_embeds: bool = check_embeds
         self.ctx: Context = ctx
         self.message: Optional[discord.Message] = None
@@ -231,7 +231,7 @@ class RoboPages(discord.ui.View):
         self.stop()
 
 
-class FieldPageSource(menus.ListPageSource):
+class FieldPageSource(old_menus.ListPageSource):
     """A page source that requires (field_name, field_value) tuple items."""
     def __init__(self, entries, *, per_page=12):
         super().__init__(entries, per_page=per_page)
@@ -252,7 +252,7 @@ class FieldPageSource(menus.ListPageSource):
         return self.embed
 
 
-class TextPageSource(menus.ListPageSource):
+class TextPageSource(old_menus.ListPageSource):
     def __init__(self, text, *, prefix='```', suffix='```', max_size=2000):
         pages = CommandPaginator(prefix=prefix,
                                  suffix=suffix,
@@ -269,7 +269,7 @@ class TextPageSource(menus.ListPageSource):
         return content
 
 
-class SimplePageSource(menus.ListPageSource):
+class SimplePageSource(old_menus.ListPageSource):
     async def format_page(self, menu, entries):
         pages = []
         for index, entry in enumerate(entries,

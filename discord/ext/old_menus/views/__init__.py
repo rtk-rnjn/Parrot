@@ -1,8 +1,8 @@
 import discord
-from discord.ext import menus
+from discord.ext import old_menus
 
 
-class ViewMenu(menus.Menu):
+class ViewMenu(old_menus.Menu):
     def __init__(self, *, auto_defer=True, **kwargs):
         super().__init__(**kwargs)
         self.auto_defer = auto_defer
@@ -54,7 +54,7 @@ class ViewMenu(menus.Menu):
                 return wrapped()
 
             async def dummy():
-                raise menus.MenuError("Menu has not been started yet")
+                raise old_menus.MenuError("Menu has not been started yet")
             return dummy()
 
     def remove_button(self, emoji, *, react=False):
@@ -71,7 +71,7 @@ class ViewMenu(menus.Menu):
                 return wrapped()
 
             async def dummy():
-                raise menus.MenuError("Menu has not been started yet")
+                raise old_menus.MenuError("Menu has not been started yet")
             return dummy()
 
     def clear_buttons(self, *, react=False):
@@ -87,7 +87,7 @@ class ViewMenu(menus.Menu):
                 return wrapped()
 
             async def dummy():
-                raise menus.MenuError("Menu has not been started yet")
+                raise old_menus.MenuError("Menu has not been started yet")
             return dummy()
 
     async def _internal_loop(self):
@@ -158,7 +158,7 @@ class ViewMenu(menus.Menu):
         self.__tasks.clear()
 
 
-class ViewMenuPages(menus.MenuPages, ViewMenu):
+class ViewMenuPages(old_menus.MenuPages, ViewMenu):
     def __init__(self, source, **kwargs):
         self._source = source
         self.current_page = 0

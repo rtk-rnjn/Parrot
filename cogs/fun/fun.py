@@ -1874,7 +1874,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/text/{ctx.command.name}', params=params)
         
-        embed=discord.Embed(decription=f"{(await r.json())['text']}", timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}")
+        embed=discord.Embed(description=f"{(await r.json())['text']}", timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=['halfinvert'])

@@ -1919,7 +1919,7 @@ class Games(Cog):
         - There should be equal number of `.` (target) and `$` (box)
         """
         ls = list()
-        level = text.split("```")
+        level = text.strip("```")
         for i in level.split('\n'):
             ls.append([j for j in list(i)])
         game = SokobanGame(ls)

@@ -23,6 +23,7 @@ import emojis, chess
 from aiofile import async_open
 
 _2048_GAME = a = {
+        '0': '<:blank:922048341964103710>',
         '2': '<:2_:922741083983724544>', 
         '8': '<:8_:922741084004687913>', 
         '2048': '<:2048:922741084612861992>', 
@@ -298,8 +299,6 @@ class Twenty48_Button(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}")
 
         await interaction.response.edit_message(embed=embed, view=self)
-
-
 
 
 

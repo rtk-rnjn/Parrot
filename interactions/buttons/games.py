@@ -2217,7 +2217,7 @@ class Games(Cog):
         boardsize = boardsize or 4
         if boardsize < 4:
             return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
-        if boardsize < 10:
+        if boardsize > 10:
             return await ctx.send(f"{ctx.author.mention} board size must less than 10")
             
         game = Twenty48(_2048_GAME, size=boardsize)

@@ -290,7 +290,7 @@ class Twenty48_Button(discord.ui.Button['Twenty48']):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {interaction.user}")
 
         await interaction.response.edit_message(embed=embed, view=self)
     
@@ -309,7 +309,7 @@ class Twenty48_Button(discord.ui.Button['Twenty48']):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {interaction.user}")
 
         await interaction.response.edit_message(embed=embed, view=self)
     
@@ -323,7 +323,7 @@ class Twenty48_Button(discord.ui.Button['Twenty48']):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {interaction.user}")
 
         await interaction.response.edit_message(embed=embed, view=self)
     
@@ -337,7 +337,7 @@ class Twenty48_Button(discord.ui.Button['Twenty48']):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {interaction.user}")
 
         await interaction.response.edit_message(embed=embed, view=self)
 

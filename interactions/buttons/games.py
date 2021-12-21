@@ -127,7 +127,7 @@ class Chess:
 
 class Twenty48:
 
-    def __init__(self, number_to_display_dict, *, size: int):
+    def __init__(self, number_to_display_dict, *, size: int=4):
 
         self.board = [[0 for _ in range(size)] for _ in range(size)]
         self.size = size
@@ -140,7 +140,7 @@ class Twenty48:
         for i in range(self.size):
             new_board.append([])
             for j in range(self.size):
-                new_board[i].append(board[i][self.size-j])
+                new_board[i].append(board[i][(self.size - 1)-j])
         return new_board
 
     def transp(self, board):
@@ -152,7 +152,7 @@ class Twenty48:
 
     def merge(self, board):
         for i in range(self.size):
-            for j in range(self.size-1):
+            for j in range(self.size - 1):
                 if board[i][j] == board[i][j+1] and board[i][j] != 0:
                     board[i][j] += board[i][j]
                     board[i][j + 1] = 0

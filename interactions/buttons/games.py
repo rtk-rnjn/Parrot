@@ -127,41 +127,42 @@ class Chess:
 
 class Twenty48:
 
-    def __init__(self, number_to_display_dict):
+    def __init__(self, number_to_display_dict, *, size: int):
 
-        self.board = [[0 for _ in range(4)] for _ in range(4)]
+        self.board = [[0 for _ in range(size)] for _ in range(size)]
+        self.size = size
         self.message = None
         self._controls = ['w','a','s','d']
         self._conversion = number_to_display_dict
 
     def reverse(self, board):
         new_board = []
-        for i in range(4):
+        for i in range(self.size):
             new_board.append([])
-            for j in range(4):
-                new_board[i].append(board[i][3-j])
+            for j in range(self.size):
+                new_board[i].append(board[i][self.size-j])
         return new_board
 
     def transp(self, board):
-        new_board = [[0 for _ in range(4)] for _ in range(4)]
-        for i in range(4):
-            for j in range(4):
+        new_board = [[0 for _ in range(self.size)] for _ in range(self.size)]
+        for i in range(self.size):
+            for j in range(self.size):
                 new_board[i][j] = board[j][i]
         return new_board
 
     def merge(self, board):
-        for i in range(4):
-            for j in range(3):
+        for i in range(self.size):
+            for j in range(self.size-1):
                 if board[i][j] == board[i][j+1] and board[i][j] != 0:
                     board[i][j] += board[i][j]
                     board[i][j + 1] = 0
         return board
             
     def compress(self, board):
-        new_board = [[0 for _ in range(4)] for _ in range(4)]
-        for i in range(4):
+        new_board = [[0 for _ in range(self.size)] for _ in range(self.size)]
+        for i in range(self.size):
             pos = 0
-            for j in range(4):
+            for j in range(self.size):
                 if board[i][j] != 0:
                     new_board[i][pos] = board[i][j]
                     pos += 1
@@ -508,7 +509,7 @@ class SokobanGameView(discord.ui.View):
                         title=f"Sokoban Game",
                         description=f"{self.game.display_board()}",
                         timestamp=discord.utils.utcnow()
-                    ).set_footer(text=f"User: {self.user}"), view=self).set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+                    ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png'), view=self)
     
 
 STATES = (
@@ -2211,10 +2212,15 @@ class Games(Cog):
 
     @commands.command(name='2048')
     @commands.bot_has_permissions(embed_links=True)
-    async def _2048(self, ctx: Context):
+    async def _2048(self, ctx: Context, *, boardsize: int=None):
         """Classis 2048 Game"""
-        
-        game = Twenty48(_2048_GAME)
+        boardsize = boardsize or 4
+        if boardsize < 4:
+            return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
+        if boardsize < 10:
+            return await ctx.send(f"{ctx.author.mention} board size must less than 10")
+            
+        game = Twenty48(_2048_GAME, size=boardsize)
         game.start()
         BoardString = game.number_to_emoji()
         embed=discord.Embed(

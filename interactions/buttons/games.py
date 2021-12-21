@@ -325,7 +325,7 @@ class Twenty48_Button(discord.ui.View):
 
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
+    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.game.MoveRight()
         
@@ -387,7 +387,7 @@ class SokobanGame:
         return main
 
     def _get_cords(self):
-        self.player, self.blocks, self.target = [], [], []
+        self.player, self.blocks = [], []
         for index, i in enumerate(self.level):
             for _index, j in enumerate(i):
                 if j == '@':
@@ -2263,4 +2263,16 @@ class Games(Cog):
         main_game = SokobanGameView(game, ctx.author)
         await main_game.start(ctx)
 
-  
+    @commands.command(name='2048')
+    async def _2048(self, ctx: Context):
+        """Classis 2048 Game"""
+        
+        game = BetaTwenty48(
+        {
+            '0': emojis.encode(":zero:"),
+            '2': emojis.encode(":two:"),
+            '4': emojis.encode(":four:"),
+            '8': emojis.encode(":eight:"),
+            '1': emojis.encode(":one:")
+        })
+        await game.start(ctx)

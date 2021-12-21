@@ -22,6 +22,20 @@ import emojis, chess
 
 from aiofile import async_open
 
+_2048_GAME = a = {
+        '2': '<:2_:922741083983724544>', 
+        '8': '<:8_:922741084004687913>', 
+        '2048': '<:2048:922741084612861992>', 
+        '256': '<:256:922741084671602740>', 
+        '32': '<:32:922741084700966963>', 
+        '4': '<:4_:922741084738699314>', 
+        '1024': '<:1024:922741085007130624>', 
+        '16': '<:16:922741085464297472>', 
+        '64': '<:64:922741085539827772>', 
+        '128': '<:128:922741085866958868>', 
+        '4096': '<:4096:922741086009565204>', 
+        '512': '<:512:922741086017978368>'
+    }
 
 BoardState = list[list[Optional[bool]]]
 
@@ -112,14 +126,14 @@ class Chess:
 
 class Twenty48:
 
-    def __init__(self, number_to_display_dict: Dict[str, str]):
+    def __init__(self, number_to_display_dict):
 
         self.board = [[0 for _ in range(4)] for _ in range(4)]
         self.message = None
-        self._controls = [None, '⬆️', None, '⬅️', '⬇️', '➡️']
+        self._controls = ['w','a','s','d']
         self._conversion = number_to_display_dict
 
-    async def reverse(self, board: list) -> list:
+    def reverse(self, board):
         new_board = []
         for i in range(4):
             new_board.append([])
@@ -127,14 +141,14 @@ class Twenty48:
                 new_board[i].append(board[i][3-j])
         return new_board
 
-    async def transp(self, board: list) -> list:
+    def transp(self, board):
         new_board = [[0 for _ in range(4)] for _ in range(4)]
         for i in range(4):
             for j in range(4):
                 new_board[i][j] = board[j][i]
         return new_board
 
-    async def merge(self, board: list) -> list:
+    def merge(self, board):
         for i in range(4):
             for j in range(3):
                 if board[i][j] == board[i][j+1] and board[i][j] != 0:
@@ -142,7 +156,7 @@ class Twenty48:
                     board[i][j + 1] = 0
         return board
             
-    async def compress(self, board: list) -> list:
+    def compress(self, board):
         new_board = [[0 for _ in range(4)] for _ in range(4)]
         for i in range(4):
             pos = 0
@@ -152,39 +166,39 @@ class Twenty48:
                     pos += 1
         return new_board
 
-    async def MoveLeft(self) -> None:
-        stage = await self.compress(self.board)
-        stage = await self.merge(stage)
-        stage = await self.compress(stage)
+    def MoveLeft(self):
+        stage = self.compress(self.board)
+        stage = self.merge(stage)
+        stage = self.compress(stage)
         self.board = stage
         
-    async def MoveRight(self) -> None:
-        stage = await self.reverse(self.board)
-        stage = await self.compress(stage)
-        stage = await self.merge(stage)
-        stage = await self.compress(stage)
-        stage = await self.reverse(stage)
+    def MoveRight(self):
+        stage = self.reverse(self.board)
+        stage = self.compress(stage)
+        stage = self.merge(stage)
+        stage = self.compress(stage)
+        stage = self.reverse(stage)
         self.board = stage
         
-    async def MoveUp(self) -> None:
-        stage = await self.transp(self.board)
-        stage = await self.compress(stage)
-        stage = await self.merge(stage)
-        stage = await self.compress(stage)
-        stage = await self.transp(stage)
+    def MoveUp(self):
+        stage = self.transp(self.board)
+        stage = self.compress(stage)
+        stage = self.merge(stage)
+        stage = self.compress(stage)
+        stage = self.transp(stage)
         self.board = stage
         
-    async def MoveDown(self) -> None:
-        stage = await self.transp(self.board)
-        stage = await self.reverse(stage)
-        stage = await self.compress(stage)
-        stage = await self.merge(stage)
-        stage = await self.compress(stage)
-        stage = await self.reverse(stage)
-        stage = await self.transp(stage)
+    def MoveDown(self):
+        stage = self.transp(self.board)
+        stage = self.reverse(stage)
+        stage = self.compress(stage)
+        stage = self.merge(stage)
+        stage = self.compress(stage)
+        stage = self.reverse(stage)
+        stage = self.transp(stage)
         self.board = stage
 
-    async def spawn_new(self) -> None:
+    def spawn_new(self):
         board  = self.board
         zeroes = [(j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0]
         if not zeroes:
@@ -192,86 +206,32 @@ class Twenty48:
         i, j = random.choice(zeroes)
         board[i][j] = 2
 
-    async def number_to_emoji(self) -> str:
+    def number_to_emoji(self):
         board = self.board
         GameString = ""
         emoji_array = [[self._conversion[str(l)] for l in row] for row in board]
         for row in emoji_array:
-            GameString += "".join(row) + "\n"
+            GameString += "".join(str(row)) + "\n"
         return GameString
 
-    async def start(
-        self, 
-        ctx: Context, *, 
-        timeout: float = None,
-        remove_reaction_after: bool = True, 
-        delete_button: bool = False, 
-        **kwargs
-    ):
+    def start(self):
 
-        self.player = ctx.author
         self.board[random.randrange(4)][random.randrange(4)] = 2
         self.board[random.randrange(4)][random.randrange(4)] = 2
         
-        BoardString = await self.number_to_emoji()
-        self.message = await ctx.send(BoardString, **kwargs)
-
-        for button in self._controls:
-            await self.message.add_reaction(button)
-        
-        if delete_button:
-            self._controls.append("⏹️")
-            await self.message.add_reaction("⏹️")
-
-        while True:
-
-            def check(reaction, user):
-                return str(reaction.emoji) in self._controls and user == self.player and reaction.message == self.message
-            
-            try:
-                reaction, _ = await ctx.bot.wait_for("reaction_add", timeout=timeout, check=check)
-            except asyncio.TimeoutError:
-                return False
-
-            emoji = str(reaction.emoji)
-
-            if delete_button and emoji == "⏹️":
-                return await self.message.delete()
-
-            if emoji == '➡️':
-                await self.MoveRight()
-
-            elif emoji == '⬅️':
-                await self.MoveLeft()
-
-            elif emoji == '⬇️':
-                await self.MoveDown()
-
-            elif emoji == '⬆️':
-                await self.MoveUp()
-
-            await self.spawn_new()
-            BoardString = await self.number_to_emoji()
-
-            if remove_reaction_after:
-                try:
-                    await self.message.remove_reaction(emoji, ctx.author)
-                except Exception:
-                    pass
-
-            await self.message.edit(content=BoardString)
+        BoardString = self.number_to_emoji()
 
 
 class Twenty48_Button(discord.ui.View):
     
-    def __init__(self, game: BetaTwenty48, **kwargs):
+    def __init__(self, game: Any, **kwargs):
         self.game = game
         super().__init__()
 
     async def interaction_check(self,
                                 interaction: discord.Interaction) -> bool:
 
-        if interaction.user != self.game.player:
+        if interaction.user != self.user:
             return await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
 
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
@@ -280,10 +240,10 @@ class Twenty48_Button(discord.ui.View):
 
     @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.game.MoveUp()
+        self.game.MoveUp()
         
-        # await self.game.spawn_new()
-        BoardString = await self.game.number_to_emoji()
+        self.game.spawn_new()
+        BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
             description=f"{BoardString}",
@@ -299,10 +259,10 @@ class Twenty48_Button(discord.ui.View):
 
     @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.game.MoveLeft()
+        self.game.MoveLeft()
         
-        # await self.game.spawn_new()
-        BoardString = await self.game.number_to_emoji()
+        self.game.spawn_new()
+        BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
             description=f"{BoardString}",
@@ -313,10 +273,10 @@ class Twenty48_Button(discord.ui.View):
     
     @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.game.MoveDown()
+        self.game.MoveDown()
         
-        # await self.game.spawn_new()
-        BoardString = await self.game.number_to_emoji()
+        self.game.spawn_new()
+        BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
             description=f"{BoardString}",
@@ -327,10 +287,10 @@ class Twenty48_Button(discord.ui.View):
     
     @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.game.MoveRight()
+        self.game.MoveRight()
         
-        # await self.game.spawn_new()
-        BoardString = await self.game.number_to_emoji()
+        self.game.spawn_new()
+        BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
             description=f"{BoardString}",
@@ -341,23 +301,6 @@ class Twenty48_Button(discord.ui.View):
 
 
 
-class BetaTwenty48(Twenty48):
-
-    async def start(self, ctx: Context, *, timeout: float = None, **kwargs):
-        
-        self.player = ctx.author
-        self.view = discord.ui.View(timeout=timeout)
-        self.board[random.randrange(4)][random.randrange(4)] = 2
-        self.board[random.randrange(4)][random.randrange(4)] = 2
-
-        
-        BoardString = await self.number_to_emoji()
-        embed=discord.Embed(
-            title=f"2048 Game",
-            description=f"{BoardString}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {ctx.author}")
-        self.message = await ctx.send(embed=embed, view=Twenty48_Button(self), **kwargs)
 
 
 class SokobanGame:
@@ -2267,12 +2210,12 @@ class Games(Cog):
     async def _2048(self, ctx: Context):
         """Classis 2048 Game"""
         
-        game = BetaTwenty48(
-        {
-            '0': emojis.encode(":zero:"),
-            '2': emojis.encode(":two:"),
-            '4': emojis.encode(":four:"),
-            '8': emojis.encode(":eight:"),
-            '1': emojis.encode(":one:")
-        })
-        await game.start(ctx)
+        game = Twenty48(_2048_GAME)
+        game.start()
+        BoardString = game.number_to_emoji()
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{BoardString}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {ctx.author}")
+        await ctx.send(view=Twenty48_Button(game))

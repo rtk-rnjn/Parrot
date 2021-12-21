@@ -225,16 +225,19 @@ class Twenty48:
 
 class Twenty48_Button(discord.ui.View):
     
-    def __init__(self, game: Any, user: discord.Member, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, game: Any, user: discord.Member, timeout: float=60.0, **kwargs):
+        super().__init__(timeout=timeout, **kwargs)
         self.game = game
         self.user = user
 
     async def interaction_check(self,
                                 interaction: discord.Interaction):
 
-        if interaction.user != self.user:
-            return await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        if interaction.user == self.user:
+            return True
+        else:
+            await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+            return False
 
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):

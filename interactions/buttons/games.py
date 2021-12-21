@@ -2217,4 +2217,4 @@ class Games(Cog):
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}")
-        await ctx.send(view=Twenty48_Button(game))
+        await ctx.send(embed=embed, view=Twenty48_Button(game))

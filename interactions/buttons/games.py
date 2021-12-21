@@ -282,7 +282,7 @@ class Twenty48_Button(discord.ui.View):
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.game.MoveUp()
         
-        await self.game.spawn_new()
+        # await self.game.spawn_new()
         BoardString = await self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
@@ -301,7 +301,7 @@ class Twenty48_Button(discord.ui.View):
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.game.MoveLeft()
         
-        await self.game.spawn_new()
+        # await self.game.spawn_new()
         BoardString = await self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
@@ -315,7 +315,7 @@ class Twenty48_Button(discord.ui.View):
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.game.MoveDown()
         
-        await self.game.spawn_new()
+        # await self.game.spawn_new()
         BoardString = await self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",
@@ -329,7 +329,7 @@ class Twenty48_Button(discord.ui.View):
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.game.MoveRight()
         
-        await self.game.spawn_new()
+        # await self.game.spawn_new()
         BoardString = await self.game.number_to_emoji()
         embed=discord.Embed(
             title=f"2048 Game",

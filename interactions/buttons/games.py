@@ -262,13 +262,11 @@ class Twenty48:
             await self.message.edit(content=BoardString)
 
 
-class Twenty48_Button(discord.ui.Button['Twenty48']):
-
-    view: discord.ui.View
+class Twenty48_Button(discord.ui.View):
     
-    def __init__(self, game: BetaTwenty48, emoji: str, **kwargs):
+    def __init__(self, game: BetaTwenty48, **kwargs):
         self.game = game
-        super().__init__(style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=emoji) if emoji else None, label="\u200b", **kwargs)
+        super().__init__()
 
     async def interaction_check(self,
                                 interaction: discord.Interaction) -> bool:
@@ -359,7 +357,7 @@ class BetaTwenty48(Twenty48):
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}")
-        self.message = await ctx.send(embed=embed, view=self.view, **kwargs)
+        self.message = await ctx.send(embed=embed, view=Twenty48_Button(self), **kwargs)
 
 
 class SokobanGame:

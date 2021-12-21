@@ -86,9 +86,50 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
         if data := await parrot_db['ticket'].find_one({'_id': role.guild.id}):
             await parrot_db['ticket'].update_one({'_id': role.guild.id}, {'$pull': {'valid_roles': role.id, 'pinged_roles': role.id, 'verified_roles': role.id}})
 
+    async def _update_role(self, before, after,):
+        ls = []
+        if before.name != after.name:
+            ls.append(('`Name Changed      :`', after.name))
+        if before.position != after.position:
+            ls.append(('`Position Changed  :`', after.position))
+        if not (before.hoist is after.hoist):
+            ls.append(('`Hoist Toggled     :`', after.hoist))
+        if before.color != after.color:
+            ls.append(('`Color Changed     :`', after.color.to_rgb()))
+
     @Cog.listener()
     async def on_guild_role_update(self, before, after):
-        pass
+        if data := await self.collection.find_one({'_id': before.guild.id, 'on_role_update': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_role_update'], session=self.bot.session)
+            if webhook:
+                async for entry in after.guild.audit_logs(action=discord.AuditLogAction.role_update, limit=5):
+                    if entry.extra.id == after.id:
+                        reason = entry.reason or None
+                        user = entry.user or "UNKNOWN#0000"
+                        entryID = entry.id
+                        ls = self._update_change(before, after)
+                        ext = ""
+                        for i, j in ls:
+                            ext += f"{i} **{j}**\n"
+                        content = f"""**Role Update Event**
+
+`Name (ID) :` **{after.name} ({after.id})**
+`Created at:` **<t:{int(after.created_at.timestamp())}>**
+`Reason    :` **{reason if reason else 'No reason provided'}**
+`Entry ID  :` **{entryID if entryID else None}**
+`Updated by:` **{user}**
+
+**Change/Update**
+{ext}
+"""
+                        break
+                fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='permissions.json')
+                )
 
     @Cog.listener()
     async def on_guild_emojis_update(self, guild, before, after):

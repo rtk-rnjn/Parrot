@@ -199,13 +199,13 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         entryID = entry.id
                         content = f"""**Message Unpinned**
 
-`ID        :` **{entry.extra.message_id}**
-`Channel   :` **{channel.mention} ({channel.id})**
-`Author    :` **{entry.target}** 
-`Uninned at:` **{discord.utils.format_dt(last_pin)}**
-`Uninned by:` **{user}**
-`Entry ID  :` **{entryID}**
-`Jump URL  :` **<https://discord.com/channels/{channel.guild.id}/{channel.id}/{entry.extra.message_id}>**
+`ID         :` **{entry.extra.message_id}**
+`Channel    :` **{channel.mention} ({channel.id})**
+`Author     :` **{entry.target}** 
+`Unpinned at:` **{discord.utils.format_dt(last_pin)}**
+`Unpinned by:` **{user}**
+`Entry ID   :` **{entryID}**
+`Jump URL   :` **<https://discord.com/channels/{channel.guild.id}/{channel.id}/{entry.extra.message_id}>**
 """
                         break
                 await webhook.send(

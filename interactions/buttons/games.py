@@ -2232,10 +2232,40 @@ class Games(Cog):
     
     @commands.command(name='chess')
     @commands.bot_has_permissions(embed_links=True)
-    async def chess(ctx, member: discord.Member):
+    async def chess(self, ctx: Context):
+        """Chess game. In testing"""
+        announcement = await ctx.send(
+            "**Chess**: A new game is about to start!\n"
+            f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
+            f"(Cancel the game with {CROSS_EMOJI}.)"
+        )
+        self.waiting.append(ctx.author)
+        await announcement.add_reaction(HAND_RAISED_EMOJI)
+        await announcement.add_reaction(CROSS_EMOJI)
+
+        try:
+            reaction, user = await self.bot.wait_for(
+                "reaction_add",
+                check=partial(self.predicate, ctx, announcement),
+                timeout=60.0
+            )
+        except asyncio.TimeoutError:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+            return
+
+        if str(reaction.emoji) == CROSS_EMOJI:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(f"{ctx.author.mention} Game cancelled.")
+            return
+
+        await announcement.delete()
+        
         game = Chess( #initialize a game instance
             white = ctx.author, #provide the white player
-            black = member      #provide the black player
+            black = user      #provide the black player
         )
         await game.start(ctx, 
             timeout=60, 

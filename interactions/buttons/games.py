@@ -5,7 +5,7 @@ import random
 import re
 from dataclasses import dataclass
 from functools import partial, cached_property
-from typing import Any, Iterator, Literal, Optional, Union, overload
+from typing import Any, Iterator, Literal, Optional, Union, overload, Dict
 
 import discord
 from discord import Member as User
@@ -18,12 +18,299 @@ from discord.utils import MISSING
 import akinator
 from akinator.async_aki import Akinator
 import emojis as emoji
-import emojis
+import emojis, chess
 
 from aiofile import async_open
 
 
 BoardState = list[list[Optional[bool]]]
+
+class Chess:
+
+    def __init__(self, *, white: discord.Member, black: discord.Member):
+        self._base   = "http://www.fen-to-image.com/image/64/double/coords/"
+        self.white   = white
+        self.black   = black
+        self.turn    = self.white
+        self.winner  = None
+        self.board   = chess.Board()
+        self.message = None
+
+    async def BuildEmbed(self) -> discord.Embed:
+        color = "white" if self.turn == self.white else "black"
+        embed = discord.Embed()
+        embed.title       = "Chess Game"
+        embed.description = f"**Turn:** `{self.turn.name}`\n**Color:** `{color}`\n**Check:** `{self.board.is_check()}`"
+        embed.set_image(url=f"{self._base}{self.board.board_fen()}")
+        return embed
+
+    async def PlaceMove(self, uci: str) -> chess.Board:
+        self.board.push_uci(uci)
+        self.turn = self.white if self.turn == self.black else self.black
+        return self.board
+
+    async def fetch_results(self):
+        results = self.board.result()
+        embed   = discord.Embed()
+        embed.title = "Chess Game"
+
+        if self.board.is_checkmate():
+            embed.description = f"Game over\nCheckmate | Score: `{results}`"
+        elif self.board.is_stalemate():
+            embed.description = f"Game over\nStalemate | Score: `{results}`"
+        elif self.board.is_insufficient_material():
+            embed.description = f"Game over\nInsufficient material left to continue the game | Score: `{results}`"
+        elif self.board.is_seventyfive_moves():
+            embed.description = f"Game over\n75-moves rule | Score: `{results}`"
+        elif self.board.is_fivefold_repetition():
+            embed.description = f"Game over\nFive-fold repitition. | Score: `{results}`"
+        else:
+            embed.description = f"Game over\nVariant end condition. | Score: `{results}`"
+
+        embed.set_image(url=f"{self._base}{self.board.board_fen()}")
+        return embed
+
+    async def start(self, ctx: commands.Context, *, timeout: int = None, color: Union[int, discord.Color] = 0x2F3136, add_reaction_after_move: bool = False, **kwargs):
+
+        embed = await self.BuildEmbed()
+        embed.color = color
+        self.message = await ctx.send(embed=embed, **kwargs)
+
+        while True:
+
+            def check(m):
+                try:
+                    if self.board.parse_uci(m.content.lower()):
+                        return m.author == self.turn and m.channel == ctx.channel
+                    else:
+                        return False
+                except ValueError:
+                    return False
+
+            try:
+                message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
+            except asyncio.TimeoutError:
+                return
+
+            await self.PlaceMove(message.content.lower())
+            embed = await self.BuildEmbed()
+            embed.color = color
+
+            if add_reaction_after_move:
+                await message.add_reaction("✅")
+
+            if self.board.is_game_over():
+                break
+            
+            await self.message.edit(embed=embed)
+
+        embed = await self.fetch_results()
+        embed.color = color
+        await self.message.edit(embed=embed)
+        return await ctx.send("~ Game Over ~")
+
+
+class Twenty48:
+
+    def __init__(self, number_to_display_dict: Dict[str, str]):
+
+        self.board = [[0 for _ in range(4)] for _ in range(4)]
+        self.message = None
+        self._controls = ['➡️', '⬅️', '⬇️', '⬆️']
+        self._conversion = number_to_display_dict
+
+    async def reverse(self, board: list) -> list:
+        new_board = []
+        for i in range(4):
+            new_board.append([])
+            for j in range(4):
+                new_board[i].append(board[i][3-j])
+        return new_board
+
+    async def transp(self, board: list) -> list:
+        new_board = [[0 for _ in range(4)] for _ in range(4)]
+        for i in range(4):
+            for j in range(4):
+                new_board[i][j] = board[j][i]
+        return new_board
+
+    async def merge(self, board: list) -> list:
+        for i in range(4):
+            for j in range(3):
+                if board[i][j] == board[i][j+1] and board[i][j] != 0:
+                    board[i][j] += board[i][j]
+                    board[i][j + 1] = 0
+        return board
+            
+    async def compress(self, board: list) -> list:
+        new_board = [[0 for _ in range(4)] for _ in range(4)]
+        for i in range(4):
+            pos = 0
+            for j in range(4):
+                if board[i][j] != 0:
+                    new_board[i][pos] = board[i][j]
+                    pos += 1
+        return new_board
+
+    async def MoveLeft(self) -> None:
+        stage = await self.compress(self.board)
+        stage = await self.merge(stage)
+        stage = await self.compress(stage)
+        self.board = stage
+        
+    async def MoveRight(self) -> None:
+        stage = await self.reverse(self.board)
+        stage = await self.compress(stage)
+        stage = await self.merge(stage)
+        stage = await self.compress(stage)
+        stage = await self.reverse(stage)
+        self.board = stage
+        
+    async def MoveUp(self) -> None:
+        stage = await self.transp(self.board)
+        stage = await self.compress(stage)
+        stage = await self.merge(stage)
+        stage = await self.compress(stage)
+        stage = await self.transp(stage)
+        self.board = stage
+        
+    async def MoveDown(self) -> None:
+        stage = await self.transp(self.board)
+        stage = await self.reverse(stage)
+        stage = await self.compress(stage)
+        stage = await self.merge(stage)
+        stage = await self.compress(stage)
+        stage = await self.reverse(stage)
+        stage = await self.transp(stage)
+        self.board = stage
+
+    async def spawn_new(self) -> None:
+        board  = self.board
+        zeroes = [(j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0]
+        if not zeroes:
+            return
+        i, j = random.choice(zeroes)
+        board[i][j] = 2
+
+    async def number_to_emoji(self) -> str:
+        board = self.board
+        GameString = ""
+        emoji_array = [[self._conversion[str(l)] for l in row] for row in board]
+        for row in emoji_array:
+            GameString += "".join(row) + "\n"
+        return GameString
+
+    async def start(
+        self, 
+        ctx: Context, *, 
+        timeout: float = None,
+        remove_reaction_after: bool = True, 
+        delete_button: bool = False, 
+        **kwargs
+    ):
+
+        self.player = ctx.author
+        self.board[random.randrange(4)][random.randrange(4)] = 2
+        self.board[random.randrange(4)][random.randrange(4)] = 2
+        
+        BoardString = await self.number_to_emoji()
+        self.message = await ctx.send(BoardString, **kwargs)
+
+        for button in self._controls:
+            await self.message.add_reaction(button)
+        
+        if delete_button:
+            self._controls.append("⏹️")
+            await self.message.add_reaction("⏹️")
+
+        while True:
+
+            def check(reaction, user):
+                return str(reaction.emoji) in self._controls and user == self.player and reaction.message == self.message
+            
+            try:
+                reaction, _ = await ctx.bot.wait_for("reaction_add", timeout=timeout, check=check)
+            except asyncio.TimeoutError:
+                return False
+
+            emoji = str(reaction.emoji)
+
+            if delete_button and emoji == "⏹️":
+                return await self.message.delete()
+
+            if emoji == '➡️':
+                await self.MoveRight()
+
+            elif emoji == '⬅️':
+                await self.MoveLeft()
+
+            elif emoji == '⬇️':
+                await self.MoveDown()
+
+            elif emoji == '⬆️':
+                await self.MoveUp()
+
+            await self.spawn_new()
+            BoardString = await self.number_to_emoji()
+
+            if remove_reaction_after:
+                try:
+                    await self.message.remove_reaction(emoji, ctx.author)
+                except Exception:
+                    pass
+
+            await self.message.edit(content=BoardString)
+
+
+class Twenty48_Button(discord.ui.Button['Twenty48']):
+
+    view: discord.ui.View
+    
+    def __init__(self, game: BetaTwenty48, emoji: str):
+        self.game = game
+        super().__init__(style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=emoji), label="\u200b")
+
+    async def callback(self, interaction: discord.Interaction):
+
+        assert self.view
+
+        if interaction.user != self.game.player:
+            return await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+
+        emoji = str(self.emoji)
+
+        if emoji == '➡️':
+            await self.game.MoveRight()
+
+        elif emoji == '⬅️':
+            await self.game.MoveLeft()
+
+        elif emoji == '⬇️':
+            await self.game.MoveDown()
+
+        elif emoji == '⬆️':
+            await self.game.MoveUp()
+
+        await self.game.spawn_new()
+        BoardString = await self.game.number_to_emoji()
+
+        await interaction.message.edit(content=BoardString)
+
+
+class BetaTwenty48(Twenty48):
+
+    async def start(self, ctx: Context, *, timeout: float = None, **kwargs):
+        
+        self.player = ctx.author
+        self.view = discord.ui.View(timeout=timeout)
+        self.board[random.randrange(4)][random.randrange(4)] = 2
+        self.board[random.randrange(4)][random.randrange(4)] = 2
+
+        for button in self._controls:
+            self.view.add_item(Twenty48_Button(self, button))
+        
+        BoardString = await self.number_to_emoji()
+        self.message = await ctx.send(content=BoardString, view=self.view, **kwargs)
 
 
 class SokobanGame:
@@ -53,6 +340,7 @@ class SokobanGame:
         return main
 
     def _get_cords(self):
+        self.player, self.blocks, self.target = [], [], []
         for index, i in enumerate(self.level):
             for _index, j in enumerate(i):
                 if j == '@':

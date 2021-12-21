@@ -253,7 +253,7 @@ class Twenty48_Button(discord.ui.View):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}")
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
     
@@ -272,7 +272,7 @@ class Twenty48_Button(discord.ui.View):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}")
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
     
@@ -286,7 +286,7 @@ class Twenty48_Button(discord.ui.View):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}")
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
     
@@ -300,7 +300,7 @@ class Twenty48_Button(discord.ui.View):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}")
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -426,7 +426,7 @@ class SokobanGameView(discord.ui.View):
         return False
 
     def make_win_embed(self) -> discord.Embed:
-        embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}")
+        embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
         embed.description = "Thanks for playing!"
         return embed
 
@@ -441,10 +441,10 @@ class SokobanGameView(discord.ui.View):
             title=f"Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(embed=self.make_win_embed())
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
             self.stop()
             return
 
@@ -462,7 +462,7 @@ class SokobanGameView(discord.ui.View):
             title=f"Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():
             await interaction.response.edit_message(embed=self.make_win_embed())
@@ -478,7 +478,7 @@ class SokobanGameView(discord.ui.View):
             title=f"Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():
             await interaction.response.edit_message(embed=self.make_win_embed())
@@ -494,7 +494,7 @@ class SokobanGameView(discord.ui.View):
             title=f"Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():            
             await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
@@ -508,7 +508,7 @@ class SokobanGameView(discord.ui.View):
                         title=f"Sokoban Game",
                         description=f"{self.game.display_board()}",
                         timestamp=discord.utils.utcnow()
-                    ).set_footer(text=f"User: {self.user}"), view=self)
+                    ).set_footer(text=f"User: {self.user}"), view=self).set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
     
 
 STATES = (
@@ -2221,7 +2221,7 @@ class Games(Cog):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {ctx.author}")
+        ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
         await ctx.send(embed=embed, view=Twenty48_Button(game, ctx.author))
     
     @commands.command(name='chess')

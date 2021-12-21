@@ -225,9 +225,10 @@ class Twenty48:
 
 class Twenty48_Button(discord.ui.View):
     
-    def __init__(self, game: Any, **kwargs):
-        self.game = game
+    def __init__(self, game: Any, user: discord.Member, **kwargs):
         super().__init__(**kwargs)
+        self.game = game
+        self.user = user
 
     async def interaction_check(self,
                                 interaction: discord.Interaction):
@@ -2206,6 +2207,7 @@ class Games(Cog):
         await main_game.start(ctx)
 
     @commands.command(name='2048')
+    @commands.bot_has_permissions(embed_links=True)
     async def _2048(self, ctx: Context):
         """Classis 2048 Game"""
         
@@ -2217,4 +2219,16 @@ class Games(Cog):
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}")
-        await ctx.send(embed=embed, view=Twenty48_Button(game))
+        await ctx.send(embed=embed, view=Twenty48_Button(game, ctx.author))
+    
+    @commands.command(name='chess')
+    @commands.bot_has_permissions(embed_links=True)
+    async def chess(ctx, member: discord.Member):
+        game = Chess( #initialize a game instance
+            white = ctx.author, #provide the white player
+            black = member      #provide the black player
+        )
+        await game.start(ctx, 
+            timeout=60, 
+            add_reaction_after_move=True
+        ) #start the game

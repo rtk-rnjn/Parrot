@@ -212,7 +212,7 @@ class Twenty48:
         GameString = ""
         emoji_array = [[self._conversion[str(l)] for l in row] for row in board]
         for row in emoji_array:
-            GameString += "".join(str(row)) + "\n"
+            GameString += "".join(row) + "\n"
         return GameString
 
     def start(self):
@@ -227,10 +227,10 @@ class Twenty48_Button(discord.ui.View):
     
     def __init__(self, game: Any, **kwargs):
         self.game = game
-        super().__init__()
+        super().__init__(**kwargs)
 
     async def interaction_check(self,
-                                interaction: discord.Interaction) -> bool:
+                                interaction: discord.Interaction):
 
         if interaction.user != self.user:
             return await interaction.response.send_message(content="This isn't your game!", ephemeral=True)

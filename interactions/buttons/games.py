@@ -116,7 +116,7 @@ class Twenty48:
 
         self.board = [[0 for _ in range(4)] for _ in range(4)]
         self.message = None
-        self._controls = ['➡️', '⬅️', '⬇️', '⬆️']
+        self._controls = [None, '⬆️', None, '⬅️', '⬇️', '➡️']
         self._conversion = number_to_display_dict
 
     async def reverse(self, board: list) -> list:
@@ -266,9 +266,9 @@ class Twenty48_Button(discord.ui.Button['Twenty48']):
 
     view: discord.ui.View
     
-    def __init__(self, game: BetaTwenty48, emoji: str):
+    def __init__(self, game: BetaTwenty48, emoji: str, **kwargs):
         self.game = game
-        super().__init__(style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=emoji), label="\u200b")
+        super().__init__(style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=emoji) if emoji else None, label="\u200b", **kwargs)
 
     async def callback(self, interaction: discord.Interaction):
 
@@ -307,7 +307,10 @@ class BetaTwenty48(Twenty48):
         self.board[random.randrange(4)][random.randrange(4)] = 2
 
         for button in self._controls:
-            self.view.add_item(Twenty48_Button(self, button))
+            if emoji in ('⬆️', None):
+                self.view.add_item(Twenty48_Button(self, button, row=0, disabled=True if emoji is None else False))
+            else:
+                self.view.add_item(Twenty48_Button(self, button, row=1))
         
         BoardString = await self.number_to_emoji()
         self.message = await ctx.send(content=BoardString, view=self.view, **kwargs)

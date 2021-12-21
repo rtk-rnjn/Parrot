@@ -358,7 +358,7 @@ class BetaTwenty48(Twenty48):
             title=f"2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}")
+        ).set_footer(text=f"User: {ctx.author}")
         self.message = await ctx.send(embed=embed, view=self.view, **kwargs)
 
 

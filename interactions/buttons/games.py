@@ -307,7 +307,7 @@ class BetaTwenty48(Twenty48):
         self.board[random.randrange(4)][random.randrange(4)] = 2
 
         for button in self._controls:
-            if emoji in ('⬆️', None):
+            if emoji == '⬆️' or (emoji is None):
                 self.view.add_item(Twenty48_Button(self, button, row=0, disabled=True if emoji is None else False))
             else:
                 self.view.add_item(Twenty48_Button(self, button, row=1))

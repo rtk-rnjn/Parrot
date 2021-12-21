@@ -270,31 +270,77 @@ class Twenty48_Button(discord.ui.Button['Twenty48']):
         self.game = game
         super().__init__(style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=emoji) if emoji else None, label="\u200b", **kwargs)
 
-    async def callback(self, interaction: discord.Interaction):
-
-        assert self.view
+    async def interaction_check(self,
+                                interaction: discord.Interaction) -> bool:
 
         if interaction.user != self.game.player:
             return await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
 
-        emoji = str(self.emoji)
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
+    async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        return
 
-        if emoji == '➡️':
-            await self.game.MoveRight()
-
-        elif emoji == '⬅️':
-            await self.game.MoveLeft()
-
-        elif emoji == '⬇️':
-            await self.game.MoveDown()
-
-        elif emoji == '⬆️':
-            await self.game.MoveUp()
-
+    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
+    async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.game.MoveUp()
+        
         await self.game.spawn_new()
         BoardString = await self.game.number_to_emoji()
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{BoardString}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
 
-        await interaction.message.edit(content=BoardString)
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
+    async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.message.delete()
+        self.stop()
+
+    @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.game.MoveLeft()
+        
+        await self.game.spawn_new()
+        BoardString = await self.game.number_to_emoji()
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{BoardString}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.game.MoveDown()
+        
+        await self.game.spawn_new()
+        BoardString = await self.game.number_to_emoji()
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{BoardString}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
+    async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.game.MoveRight()
+        
+        await self.game.spawn_new()
+        BoardString = await self.game.number_to_emoji()
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{BoardString}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+
+        await interaction.response.edit_message(embed=embed, view=self)
+
 
 
 class BetaTwenty48(Twenty48):
@@ -306,14 +352,14 @@ class BetaTwenty48(Twenty48):
         self.board[random.randrange(4)][random.randrange(4)] = 2
         self.board[random.randrange(4)][random.randrange(4)] = 2
 
-        for button in self._controls:
-            if emoji == '⬆️' or (emoji is None):
-                self.view.add_item(Twenty48_Button(self, button, row=0, disabled=True if emoji is None else False))
-            else:
-                self.view.add_item(Twenty48_Button(self, button, row=1))
         
         BoardString = await self.number_to_emoji()
-        self.message = await ctx.send(content=BoardString, view=self.view, **kwargs)
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{BoardString}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {self.user}")
+        self.message = await ctx.send(embed=embed, view=self.view, **kwargs)
 
 
 class SokobanGame:
@@ -440,11 +486,11 @@ class SokobanGameView(discord.ui.View):
         embed.description = "Thanks for playing!"
         return embed
 
-    @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER R}", style=discord.ButtonStyle.primary, disabled=False)
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         return
         
-    @discord.ui.button(label="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
+    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_up()
         embed=discord.Embed(
@@ -460,12 +506,12 @@ class SokobanGameView(discord.ui.View):
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", style=discord.ButtonStyle.primary, disabled=False)
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.message.delete()
         self.stop()
     
-    @discord.ui.button(label="\N{LEFTWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_left()
         embed=discord.Embed(
@@ -481,7 +527,7 @@ class SokobanGameView(discord.ui.View):
 
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(label="\N{DOWNWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_down()
         embed=discord.Embed(
@@ -497,7 +543,7 @@ class SokobanGameView(discord.ui.View):
 
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(label="\N{BLACK RIGHTWARDS ARROW}", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_right()
         embed=discord.Embed(

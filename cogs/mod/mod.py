@@ -212,8 +212,11 @@ class Mod(Cog):
     @commands.command()
     @commands.bot_has_permissions(moderate_members=True)
     @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True))
-    async def timeout(self, ctx: Context, member: discord.Member, time: typing.Optional[ShortTime]=None, *, reason: reason_convert = None):
+    async def timeout(self, ctx: Context, member: discord.Member, duration: typing.Optional[ShortTime]=None, *, reason: reason_convert = None):
         """To Timeout the member, from chat."""
+        seconds = duration
+        await mt._timeout(ctx.guild, ctx.command.qualified_name, ctx.author, ctx.channel, member, duration, reason)
+        await self.log(ctx, ctx.command.qualified_name, member, f'{reason} | Till {"<t:" + str(int(seconds.dt.timestamp())) + ">" if seconds else "end"}')
 
     @commands.command()
     @commands.bot_has_permissions(manage_roles=True)

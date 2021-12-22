@@ -23,6 +23,7 @@ import emojis, chess, tabulate
 
 from aiofile import async_open
 
+
 _2048_GAME = a = {
         '0': '<:YELLO:922889092755259405>',
         '2': '<:2_:922741083983724544>', 

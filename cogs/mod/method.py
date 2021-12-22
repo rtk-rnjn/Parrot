@@ -288,6 +288,24 @@ async def _unban(guild, command_name, ctx_author, destination, member, reason):
 
 
 # MUTE
+async def _timeout(guild, command_name, ctx_author, destination, member, _datetime,
+                   reason):
+    if member.id == ctx_author.id or member.id == guild.me.id:
+        await destination.send(
+            f"{ctx_author.mention} don't do that, Bot is only trying to help"
+        )
+        return
+    if member.communication_disabled_until:
+        return await destination.send(
+            f"{ctx_author.mention} **{member}** is already on timeout untill **<t:{int(member.communication_disabled_until.timestamp())}>**"
+        )
+    try:
+        await member.timeout(_datetime, reason=f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}")
+        await destination.send(f"{ctx_author.mention} **{member}** is on timeout until **<t:{int(_datetime.timestamp())}>**")
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
+        )
 
 
 async def _mute(guild, command_name, ctx_author, destination, member, seconds,
@@ -357,6 +375,16 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
 
 async def _unmute(guild, command_name, ctx_author, destination, member,
                   reason):
+    if member.timed_out:
+        try:
+            await member.remove_timeout(reason=f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}')
+            await destination.send(f"{ctx_author.mention} removed timeout from **{member}**")
+        except Exception as e:
+            await destination.send(
+                f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
+            )
+        return
+
     data = await collection.find_one({'_id': guild.id})
     if not data:
         post = {
@@ -383,7 +411,7 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
             )
         else:
             await destination.send(
-                f"{ctx_author.mention} **{member.name}** already unmuted :')")
+                f"{ctx_author.mention} **{member.name}** already unmuted")
         await mute_collection.delete_one({'author_id': member.id, 'guild_id': guild.id})
     except Exception as e:
         await destination.send(

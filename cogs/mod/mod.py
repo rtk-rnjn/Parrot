@@ -207,8 +207,13 @@ class Mod(Cog):
                 pass
         else:
             await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
-            return
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
+
+    @commands.command()
+    @commands.bot_has_permissions(moderate_members=True)
+    @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True))
+    async def timeout(self, ctx: Context, member: discord.Member, time: typing.Optional[ShortTime]=None, *, reason: reason_convert = None):
+        """To Timeout the member, from chat."""
 
     @commands.command()
     @commands.bot_has_permissions(manage_roles=True)
@@ -224,7 +229,7 @@ class Mod(Cog):
     @commands.bot_has_permissions(manage_roles=True)
     @Context.with_type
     async def unmute(self, ctx: Context, member: discord.Member, *, reason: reason_convert = None):
-        """To allow a member to sending message in the Text Channels, if muted."""
+        """To allow a member to sending message in the Text Channels, if muted/timeouted."""
         await mt._unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 

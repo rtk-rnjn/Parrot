@@ -136,7 +136,7 @@ class SlidingPuzzleView(discord.ui.View):
 
     @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.game.MoveUp()
+        self.game.move_up()
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
@@ -153,7 +153,7 @@ class SlidingPuzzleView(discord.ui.View):
 
     @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.game.MoveLeft()
+        self.game.move_left()
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
@@ -165,7 +165,7 @@ class SlidingPuzzleView(discord.ui.View):
     
     @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.game.MoveDown()
+        self.game.move_down()
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
@@ -177,7 +177,7 @@ class SlidingPuzzleView(discord.ui.View):
     
     @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.game.MoveRight()
+        self.game.move_right()
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
@@ -492,7 +492,7 @@ class SokobanGame:
                     self.player = [index, _index]
                 if j in ('$', 'x'):
                     self.blocks.append([index, _index])
-                if j in ('.', 'x') and (self.target == []):
+                if j in ('.', 'x'):
                     self.target.append([index, _index])
 
     def show(self) -> str:
@@ -560,7 +560,14 @@ class SokobanGame:
             return
 
     def is_game_over(self) -> bool:
-        self._get_cords()
+        self.player = []
+        self.blocks = []
+        for index, i in enumerate(self.level):
+            for _index, j in enumerate(i):
+                if j == '@':
+                    self.player = [index, _index]
+                if (j == '$') or (j == 'x'):
+                    self.blocks.append([index, _index])
         return self.target == self.blocks
 
  
@@ -2436,7 +2443,7 @@ class Games(Cog):
         game = SlidingPuzzle(boardsize if boardsize else 4)
         embed=discord.Embed(
             title=f"2048 Game",
-            description=f"{game.board_str()}",
+            description=f"```\n{game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
         await ctx.send(embed=embed, view=SlidingPuzzleView(game, ctx.author))

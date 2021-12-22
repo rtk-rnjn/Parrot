@@ -7,7 +7,7 @@ from datetime import datetime
 from utilities.exceptions import ParrotCheckFaliure
 from core import Parrot, Context, Cog
 
-from utilities.database import cmd_increment
+from utilities.database import cmd_increment, parrot_db
 
 with open("extra/quote.txt") as f:
     quote = f.read()
@@ -69,6 +69,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     """This category is of no use for you, ignore it."""
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.log_collection = parrot_db['logging']
 
     async def paste(self, text):
         """Return an online bin of given text"""

@@ -7,7 +7,7 @@ from discord.ext import commands
 import aiohttp, re, asyncio, json, discord, io
 from discord import Webhook
 from utilities.database import parrot_db, msg_increment
-from utilities.regex import LINKS_NO_PROTOCOLS
+from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from time import time
 
 collection = parrot_db['global_chat']
@@ -42,6 +42,31 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         else:
             return False
 
+    async def on_invite(self, message: discord.Message, invite_link: list):
+        if data := await self.log_collection.find_one({'_id': message.guild_id, 'on_invite_post': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_invite_post'], session=self.bot.session)
+            if webhook:
+                content = f"""**Invite Link Posted**
+
+`Author (ID):` **{message.author} [`{message.author.id}`]**
+`Message ID :` **{message.id}**
+`Jump URL   :` **{message.jump_url}**
+`Invite Link:` **<{invite_link[0]}>**
+
+`Content    :` **{message.content[:250:]}**
+"""
+                msg = message
+                if content:
+                    fp = io.BytesIO(f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode())
+                else:
+                    fp = io.BytesIO("NOTHING HERE".ecnode())
+                await webhook.send(
+                    content=content, 
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name,
+                    file=discord.File(fp, filename='content.txt')
+                )
+
     @Cog.listener()
     async def on_message(self, message):
         if not message.guild or message.author.bot: return
@@ -50,108 +75,109 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             '_id': message.guild.id,
             'channel_id': message.channel.id
         })
+        if links:=INVITE_RE.findall(message.content):
+            await self.on_invite(message, links)
 
-        if not channel: return
+        if channel:
+            bucket = self.cd_mapping.get_bucket(message)
+            retry_after = bucket.update_rate_limit()
 
-        bucket = self.cd_mapping.get_bucket(message)
-        retry_after = bucket.update_rate_limit()
+            if retry_after:
+                return await message.channel.send(
+                    f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**", delete_after=10)
 
-        if retry_after:
-            return await message.channel.send(
-                f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**", delete_after=10)
+            guild = await collection.find_one({'_id': message.guild.id})
+            # data = await collection.find({})
 
-        guild = await collection.find_one({'_id': message.guild.id})
-        # data = await collection.find({})
+            role = message.guild.get_role(guild['ignore-role'])
+            if role:
+                if role in message.author.roles:
+                    return
 
-        role = message.guild.get_role(guild['ignore-role'])
-        if role:
-            if role in message.author.roles:
+            if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/")): # bot commands or mention in starting
                 return
 
-        if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/")): # bot commands or mention in starting
-            return
-
-        urls = LINKS_NO_PROTOCOLS.search(message.content)
-        if urls:
-            try:
-                await message.delete()
-                return await message.channel.send(
-                    f"{message.author.mention} | URLs aren't allowed.",
-                    delete_after=5)
-            except Exception:
-                return await message.channel.send(
-                    f"{message.author.mention} | URLs aren't allowed.",
-                    delete_after=5)
-
-        if "discord.gg" in message.content.lower():
-            try:
-                await message.delete()
-                return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed.",
-                    delete_after=5)
-            except Exception:
-                return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed.",
-                    delete_after=5)
-        if len(message.content.split('\n')) > 4:
-            try:
-                await message.delete()
-                return await message.channel.send(
-                    f"{message.author.mention} | Do not send message in 4-5 lines or above.",
-                    delete_after=5)
-            except Exception:
-                return await message.channel.send(
-                    f"{message.author.mention} | Do not send message in 4-5 lines or above.",
-                    delete_after=5)
-
-        if "discord.com" in message.content.lower():
-            try:
-                await message.delete()
-                return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed.",
-                    delete_after=5)
-            except Exception:
-                return await message.channel.send(
-                    f"{message.author.mention} | Advertisements aren't allowed.",
-                    delete_after=5)
-
-        to_send = self.refrain_message(message.content.lower())
-        if to_send:
-            pass
-        elif not to_send:
-            try:
-                await message.delete()
-                return await message.channel.send(
-                    f"{message.author.mention} | Sending Bad Word not allowed",
-                    delete_after=5)
-            except Exception:
-                return await message.channel.send(
-                    f"{message.author.mention} | Sending Bad Word not allowed",
-                    delete_after=5)
-        is_user_banned = await self.is_banned(message.author)
-        if is_user_banned:
-            return
-        try:
-            await asyncio.sleep(0.1)
-            await message.delete()
-        except:
-            return await message.channel.send(
-                "Bot requires **Manage Messages** permission(s) to function properly."
-            )
-
-        async for webhook in collection.find({}):
-            hook = webhook['webhook']
-            if hook:
-                try:                
-                    async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(f"{hook}", session=session)
-                        await webhook.send(
-                                content=message.content,
-                                username=f"{message.author}",
-                                avatar_url=message.author.display_avatar.url,
-                                allowed_mentions=discord.AllowedMentions.none())
+            urls = LINKS_NO_PROTOCOLS.search(message.content)
+            if urls:
+                try:
+                    await message.delete()
+                    return await message.channel.send(
+                        f"{message.author.mention} | URLs aren't allowed.",
+                        delete_after=5)
                 except Exception:
-                    continue
+                    return await message.channel.send(
+                        f"{message.author.mention} | URLs aren't allowed.",
+                        delete_after=5)
+
+            if "discord.gg" in message.content.lower():
+                try:
+                    await message.delete()
+                    return await message.channel.send(
+                        f"{message.author.mention} | Advertisements aren't allowed.",
+                        delete_after=5)
+                except Exception:
+                    return await message.channel.send(
+                        f"{message.author.mention} | Advertisements aren't allowed.",
+                        delete_after=5)
+            if len(message.content.split('\n')) > 4:
+                try:
+                    await message.delete()
+                    return await message.channel.send(
+                        f"{message.author.mention} | Do not send message in 4-5 lines or above.",
+                        delete_after=5)
+                except Exception:
+                    return await message.channel.send(
+                        f"{message.author.mention} | Do not send message in 4-5 lines or above.",
+                        delete_after=5)
+
+            if "discord.com" in message.content.lower():
+                try:
+                    await message.delete()
+                    return await message.channel.send(
+                        f"{message.author.mention} | Advertisements aren't allowed.",
+                        delete_after=5)
+                except Exception:
+                    return await message.channel.send(
+                        f"{message.author.mention} | Advertisements aren't allowed.",
+                        delete_after=5)
+
+            to_send = self.refrain_message(message.content.lower())
+            if to_send:
+                pass
+            elif not to_send:
+                try:
+                    await message.delete()
+                    return await message.channel.send(
+                        f"{message.author.mention} | Sending Bad Word not allowed",
+                        delete_after=5)
+                except Exception:
+                    return await message.channel.send(
+                        f"{message.author.mention} | Sending Bad Word not allowed",
+                        delete_after=5)
+            is_user_banned = await self.is_banned(message.author)
+            if is_user_banned:
+                return
+            try:
+                await asyncio.sleep(0.1)
+                await message.delete()
+            except:
+                return await message.channel.send(
+                    "Bot requires **Manage Messages** permission(s) to function properly."
+                )
+
+            async for webhook in collection.find({}):
+                hook = webhook['webhook']
+                if hook:
+                    try:                
+                        async with aiohttp.ClientSession() as session:
+                            webhook = Webhook.from_url(f"{hook}", session=session)
+                            await webhook.send(
+                                    content=message.content,
+                                    username=f"{message.author}",
+                                    avatar_url=message.author.display_avatar.url,
+                                    allowed_mentions=discord.AllowedMentions.none())
+                    except Exception:
+                        continue
 
     @Cog.listener()
     async def on_message_delete(self, message):

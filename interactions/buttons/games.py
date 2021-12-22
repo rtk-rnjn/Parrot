@@ -61,7 +61,7 @@ class SlidingPuzzle:
         return _
     
     def board_str(self) -> str:
-        return str(tabulate(self.grid, tablefmt='grid', numalign='center'))
+        return str(tabulate.tabulate(self.grid, tablefmt='grid', numalign='center'))
     
     def _make_grid(self):
         nums = list(range(self.size * self.size))

@@ -295,7 +295,7 @@ async def _timeout(guild, command_name, ctx_author, destination, member, _dateti
             f"{ctx_author.mention} don't do that, Bot is only trying to help"
         )
         return
-    if member.communication_disabled_until:
+    if member.timed_out:
         return await destination.send(
             f"{ctx_author.mention} **{member}** is already on timeout untill **<t:{int(member.communication_disabled_until.timestamp())}>**"
         )

@@ -98,7 +98,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):
         """Only for logging"""
-        if ctx.cog.name.lower() == 'mod':
+        if ctx.cog.qualified_name.lower() == 'mod':
             if data := await self.collection.find_one({'_id': ctx.guild.id, 'on_mod_command': {'$exists': True}}):
                 webhook = discord.Webhook.from_url(data['on_mod_command'], session=self.bot.session)
                 if webhook:
@@ -114,7 +114,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                         username=self.bot.user.name,
                     )
         
-        if ctx.cog.name.lower() == 'botconfig':
+        if ctx.cog.qualified_name.lower() == 'botconfig':
             if data := await self.collection.find_one({'_id': ctx.guild.id, 'on_config_command': {'$exists': True}}):
                 webhook = discord.Webhook.from_url(data['on_config_command'], session=self.bot.session)
                 if webhook:

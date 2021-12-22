@@ -53,6 +53,7 @@ class SlidingPuzzle:
         
         self._make_grid()
         self._get_blank()
+        print(1)
 
     def __repr__(self):
         _ = ''
@@ -65,7 +66,7 @@ class SlidingPuzzle:
     
     def _make_grid(self):
         nums = list(range(self.size * self.size))
-        nums[-1] = "X"
+        nums[-1] = "\u200b"
         random.shuffle(nums)
         for i in range(0, len(nums), self.size):
             self.grid.append(nums[i:i + self.size])
@@ -140,7 +141,7 @@ class SlidingPuzzleView(discord.ui.View):
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
-            description=f"```\n{self.game.board_str()}\n```",
+            description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
@@ -157,7 +158,7 @@ class SlidingPuzzleView(discord.ui.View):
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
-            description=f"```\n{self.game.board_str()}\n```",
+            description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
@@ -169,7 +170,7 @@ class SlidingPuzzleView(discord.ui.View):
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
-            description=f"```\n{self.game.board_str()}\n```",
+            description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
@@ -181,7 +182,7 @@ class SlidingPuzzleView(discord.ui.View):
 
         embed=discord.Embed(
             title=f"Sliding Puzzle",
-            description=f"```\n{self.game.board_str()}\n```",
+            description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
@@ -2443,7 +2444,7 @@ class Games(Cog):
         game = SlidingPuzzle(boardsize if boardsize else 4)
         embed=discord.Embed(
             title=f"2048 Game",
-            description=f"```\n{game.board_str()}\n```",
+            description=f"```diff\n{game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
         await ctx.send(embed=embed, view=SlidingPuzzleView(game, ctx.author))

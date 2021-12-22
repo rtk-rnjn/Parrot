@@ -18,7 +18,8 @@ from discord.utils import MISSING
 import akinator
 from akinator.async_aki import Akinator
 import emojis as emoji
-import emojis, chess
+
+import emojis, chess, tabulate
 
 from aiofile import async_open
 
@@ -39,6 +40,153 @@ _2048_GAME = a = {
     }
 
 BoardState = list[list[Optional[bool]]]
+
+
+class SlidingPuzzle:
+    def __init__(self, size):
+        self.size = size
+
+        self.grid = list()
+        self.temp = list()
+
+        self.x = []
+        
+        self._make_grid()
+        self._get_blank()
+
+    def __repr__(self):
+        _ = ''
+        for i in self.grid:
+            _ += str(i) + '\n'
+        return _
+    
+    def board_str(self) -> str:
+        return str(tabulate(self.grid, tablefmt='grid', numalign='center'))
+    
+    def _make_grid(self):
+        nums = list(range(self.size * self.size))
+        nums[-1] = "X"
+        random.shuffle(nums)
+        for i in range(0, len(nums), self.size):
+            self.grid.append(nums[i:i + self.size])
+        self.temp = self.grid
+
+    def _get_blank(self):
+        for i in self.grid:
+            for j in i:
+                if j == '\u200b':
+                    self.x = [self.grid.index(i), i.index(j)]
+                    return
+
+    def _is_game_over(self):
+        return self.grid == self.temp
+            
+    def move_up(self):
+        if self.x[0] == self.size - 1:
+            return
+        else:
+            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] + 1][self.x[1]]
+            self.x = [self.x[0] + 1, self.x[1]]
+            self.grid[self.x[0]][self.x[1]] = "\u200b"
+
+    def move_down(self):
+        if self.x[0] == 0:
+            return
+        else:
+            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] - 1][self.x[1]]
+            self.x = [self.x[0] - 1, self.x[1]]
+            self.grid[self.x[0]][self.x[1]] = "\u200b"
+
+    def move_left(self):
+        if self.x[1] == self.size - 1:
+            return
+        else:
+            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] + 1]
+            self.x = [self.x[0], self.x[1] + 1]
+            self.grid[self.x[0]][self.x[1]] = "\u200b"
+
+    def move_right(self):
+        if self.x[1] == 0:
+            return
+        else:
+            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] - 1]
+            self.x = [self.x[0], self.x[1] - 1]
+            self.grid[self.x[0]][self.x[1]] = "\u200b"
+
+
+class SlidingPuzzleView(discord.ui.View):
+    
+    def __init__(self, game: SlidingPuzzle, user: discord.Member, timeout: float=60.0, **kwargs):
+        super().__init__(timeout=timeout, **kwargs)
+        self.game = game
+        self.user = user
+
+    async def interaction_check(self,
+                                interaction: discord.Interaction):
+
+        if interaction.user == self.user:
+            return True
+        else:
+            await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+            return False
+
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=True)
+    async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        return
+
+    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
+    async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.game.MoveUp()
+
+        embed=discord.Embed(
+            title=f"Sliding Puzzle",
+            description=f"```\n{self.game.board_str()}\n```",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
+    async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.message.delete()
+        self.stop()
+
+    @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.game.MoveLeft()
+
+        embed=discord.Embed(
+            title=f"Sliding Puzzle",
+            description=f"```\n{self.game.board_str()}\n```",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.game.MoveDown()
+
+        embed=discord.Embed(
+            title=f"Sliding Puzzle",
+            description=f"```\n{self.game.board_str()}\n```",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+
+        await interaction.response.edit_message(embed=embed, view=self)
+    
+    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.game.MoveRight()
+
+        embed=discord.Embed(
+            title=f"Sliding Puzzle",
+            description=f"```\n{self.game.board_str()}\n```",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+
+        await interaction.response.edit_message(embed=embed, view=self)
+
 
 class Chess:
 
@@ -95,7 +243,7 @@ class Chess:
 
             def check(m):
                 try:
-                    if self.board.parse_uci(m.content.lower()):
+                    if self.board.push_san(m.content):
                         return m.author == self.turn and m.channel == ctx.channel
                     else:
                         return False
@@ -105,7 +253,7 @@ class Chess:
             try:
                 message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
             except asyncio.TimeoutError:
-                return
+                return await ctx.send(f"Game over! **{self.turn}**, did not responded on time!")
 
             await self.PlaceMove(message.content.lower())
             embed = await self.BuildEmbed()
@@ -240,7 +388,7 @@ class Twenty48_Button(discord.ui.View):
             await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
             return False
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
+    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=True)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         return
 
@@ -325,6 +473,9 @@ class SokobanGame:
         self.blocks = []
         self.target = []
 
+    def __repr__(self):
+        return self.show()
+
     def display_board(self) -> str:
         main = ""
         for i in self.level:
@@ -341,7 +492,7 @@ class SokobanGame:
                     self.player = [index, _index]
                 if j in ('$', 'x'):
                     self.blocks.append([index, _index])
-                if j in ('.', 'x'):
+                if j in ('.', 'x') and (self.target == []):
                     self.target.append([index, _index])
 
     def show(self) -> str:
@@ -2271,3 +2422,21 @@ class Games(Cog):
             timeout=60, 
             add_reaction_after_move=True
         ) #start the game
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def slidingpuzzle(self, ctx: Context, boardsize: int=None):
+        """A Classic Sliding game"""
+        boardsize = boardsize or 4
+        if boardsize < 4:
+            return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
+        if boardsize > 10:
+            return await ctx.send(f"{ctx.author.mention} board size must less than 10")
+        
+        game = SlidingPuzzle(boardsize if boardsize else 4)
+        embed=discord.Embed(
+            title=f"2048 Game",
+            description=f"{game.board_str()}",
+            timestamp=discord.utils.utcnow()
+        ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+        await ctx.send(embed=embed, view=SlidingPuzzleView(game, ctx.author))

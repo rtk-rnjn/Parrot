@@ -53,7 +53,6 @@ class SlidingPuzzle:
         
         self._make_grid()
         self._get_blank()
-        print(1)
 
     def __repr__(self):
         _ = ''
@@ -209,7 +208,7 @@ class Chess:
         return embed
 
     async def PlaceMove(self, uci: str) -> chess.Board:
-        self.board.push_uci(uci)
+        self.board.push_san(uci)
         self.turn = self.white if self.turn == self.black else self.black
         return self.board
 
@@ -256,7 +255,7 @@ class Chess:
             except asyncio.TimeoutError:
                 return await ctx.send(f"Game over! **{self.turn}**, did not responded on time!")
 
-            await self.PlaceMove(message.content.lower())
+            await self.PlaceMove(message.content)
             embed = await self.BuildEmbed()
             embed.color = color
 

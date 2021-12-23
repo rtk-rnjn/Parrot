@@ -2005,5 +2005,11 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
 > <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
         await asyncio.sleep(1.5)
         await msg.edit(content=f"""{ctx.author.mention} your slots results:
+> {random.choice(CHOICE)} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
+        await asyncio.sleep(1.5)
+        await msg.edit(content=f"""{ctx.author.mention} your slots results:
+> {random.choice(CHOICE)} {random.choice(CHOICE)} <a:SlotsEmoji:923478531873325076>""")
+        await asyncio.sleep(1.5)
+        await msg.edit(content=f"""{ctx.author.mention} your slots results:
 > {random.choice(CHOICE)} {random.choice(CHOICE)} {random.choice(CHOICE)}""")
 

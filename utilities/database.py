@@ -4,7 +4,6 @@ import motor.motor_asyncio
 cluster = motor.motor_asyncio.AsyncIOMotorClient(f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
 parrot_db = cluster['parrot_db']
-economy_db = cluster['economy']
 msg_db = cluster['msg_db']
 tags = cluster['tags']
 todo = cluster['todo']
@@ -17,19 +16,6 @@ async def cmd_increment(cmd: str):
     if not data:
         return await collection.insert_one({'_id': cmd, 'count': 1})
     collection.update_one({'_id': cmd}, {'$inc': {'count': 1}})
-
-
-async def ge_update(user_id: int, bank: int, wallet: int):
-    collection = economy_db['global_economy']
-    data = await collection.find_one({'_id': user_id})
-    if not data:
-        await collection.insert_one({'_id': user_id, 'bank': 0, 'wallet': 400})
-
-    await collection.update_one({"_id": user_id},
-                          {"$set": {
-                              'bank': bank,
-                              'wallet': wallet
-                          }})
 
 
 async def gchat_update(guild_id: int, post: dict):

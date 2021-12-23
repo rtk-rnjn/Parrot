@@ -760,7 +760,7 @@ class Meta(Cog):
     @Context.with_type
     async def inviteinfo(self, ctx: Context, code: str):
         """Get the info regarding the Invite Link"""
-        invite = self.bot.fetch_invite(f'https://discord.gg/{code}')
+        invite = await self.bot.fetch_invite(f'https://discord.gg/{code}')
         if (not invite.guild) or (not invite):
             return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=datetime.datetime.utcnow(), url=invite.url)

@@ -54,7 +54,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Channel     :` **<#{invite.channel.id}>**
 `Created At  :` **<t:{int(invite.created_at.timestamp())}>**
 `Temporary?  :` **{invite.temporary}**
-`Max Uses    :` **{invite.max_uses if invite.max_uses != 0 else 'Infinte'}**
+`Max Uses    :` **{invite.max_uses if invite.max_uses else 'Infinte'}**
 `Link        :` **{invite.url}**
 `Inviter?    :` **{invite.inviter}**
 `Reason?     :` **{reason}**

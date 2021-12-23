@@ -769,8 +769,8 @@ class Meta(Cog):
 `Channel     :` **<#{invite.channel.id}>**
 `Created At  :` **{'Can not determinded' if invite.created_at is None else discord.utils.format_dt(invite.created_at)}**
 `Expires At  :` **{'Invite' if invite.expires_at is None else discord.utils.format_dt(invite.expires_at)}**
-`Temporary?  :` **{invite.temporary}**
-`Max Uses    :` **{invite.max_uses if invite.max_uses != 0 else 'Infinte'}**
+`Temporary?  :` **{bool(invite.temporary)}**
+`Max Uses    :` **{invite.max_uses if invite.max_uses else 'Infinte'}**
 `Link        :` **{invite.url}**
 `Inviter?    :` **{invite.inviter}**
 """

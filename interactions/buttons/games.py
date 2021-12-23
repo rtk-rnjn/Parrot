@@ -2460,7 +2460,7 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def chess(self, ctx: Context):
         """Chess game. In testing"""
-        if ctx.invoked_subcommand:
+        if not ctx.invoked_subcommand:
             announcement = await ctx.send(
                 "**Chess**: A new game is about to start!\n"
                 f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"

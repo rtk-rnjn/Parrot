@@ -185,22 +185,7 @@ class Misc(Cog):
                         f"{ctx.author.mention} No results found.```\n{search}```"
                     )
 
-        searchInfoTime = json_['searchInformation']['searchTime']
-        context = json_['context']['title']
         pages = []
-
-        embed = discord.Embed(
-            title=f"{context}",
-            description=
-            f"```\nSEARCH ENGINE: GOOGLE\nTIME TAKEN   : {searchInfoTime} ms```",
-            timestamp=datetime.datetime.utcnow())
-        embed.set_footer(text=f"{ctx.author.name}")
-        embed.set_thumbnail(
-            url=
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png"
-        )
-
-        pages.append(embed)
 
         for item in json_['items']:
             title = item['title']

@@ -767,7 +767,7 @@ class Meta(Cog):
         embed.description = f"""`Member Count?  :` **{invite.approximate_member_count}**
 `Presence Count?:` **{invite.approximate_presence_count}**
 `Channel     :` **<#{invite.channel.id}>**
-`Created At  :` **<t:{int(invite.created_at.timestamp())}>**
+`Created At  :` **{'Can not determinded' if invite.created_at is None else discord.utils.format_dt(invite.created_at)}**
 `Expires At  :` **{'Invite' if invite.expires_at is None else discord.utils.format_dt(invite.expires_at)}**
 `Temporary?  :` **{invite.temporary}**
 `Max Uses    :` **{invite.max_uses if invite.max_uses != 0 else 'Infinte'}**

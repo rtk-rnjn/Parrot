@@ -695,7 +695,7 @@ class Misc(Cog):
         obj = await self.bot.session.get(f"https://api.coinbase.com/v2/exchange-rates?currency={currency}")
         data: dict = await obj.json()
 
-        entries = [f"`{i}` `{j}`" for i, j in zip(data['rates'].items(), data['rates'].values())]
+        entries = [f"`{i}` `{j}`" for i, j in data['data']['rates'].items()]
         p = SimplePages(entries, ctx=ctx)
         await p.start()
     

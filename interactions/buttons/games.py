@@ -190,89 +190,64 @@ class SlidingPuzzleView(discord.ui.View):
 
 
 class Chess:
+    def __init__(self, white: discord.Member, black: discord.Member, *, bot: Parrot, ctx: Context, timeout: float=300, react_on_success: bool=True):
+        self.white = white
+        self.black = black
 
-    def __init__(self, *, white: discord.Member, black: discord.Member):
-        self._base   = "http://www.fen-to-image.com/image/64/double/coords/"
-        self.white   = white
-        self.black   = black
-        self.turn    = self.white
-        self.winner  = None
-        self.board   = chess.Board()
-        self.message = None
+        self.bot = bot
+        self.ctx = ctx
+        self.timeout = timeout
+        self.react_on_success = react_on_success
 
-    async def BuildEmbed(self) -> discord.Embed:
-        color = "white" if self.turn == self.white else "black"
-        embed = discord.Embed()
-        embed.title       = "Chess Game"
-        embed.description = f"**Turn:** `{self.turn.name}`\n**Color:** `{color}`\n**Check:** `{self.board.is_check()}`"
-        embed.set_image(url=f"{self._base}{self.board.board_fen()}")
-        return embed
+        self.base_url = "http://www.fen-to-image.com/image/64/double/coords/"
+        self.board = chess.Board()
 
-    async def PlaceMove(self, uci: str) -> chess.Board:
-        print(uci)
-        self.board.push_san(uci)
-        self.turn = self.white if self.turn == self.black else self.black
-        return self.board
-
-    async def fetch_results(self):
-        results = self.board.result()
-        embed   = discord.Embed()
-        embed.title = "Chess Game"
-
+        self.turn = white
+    
+    async def wait_for_move(self) -> Optional[discord.Message]:
+        LEGAL_MOVES = [self.board.san(move) for move in self.board.legal_moves]
+        def check(m):
+            return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
+        try:
+            msg = await self.bot.wait_for('message', check=check, timeout=self.timeout)
+            return msg
+        except Exception:
+            await self.ctx.send(f"**{self.turn}** did not responded on time! Game Over!")
+            return None
+    
+    def switch(self) -> None:
+        if self.turn == self.white: self.turn = self.black
+        if self.turn == self.black: self.turn = self.white
+    
+    async def place_move(self, move: str) -> None:
+        self.board.push_san(move)
+        await self.ctx.send(
+            content=f"{self.white.mention} VS {self.black.mention}",
+            embed=discord.Embed(timestamp=discord.utils.utcnow().set_image(url=f"{self.base_url}{self.board.board_fen()}")))
+        
+    async def game_over(self,) -> Optional[bool]:
         if self.board.is_checkmate():
-            embed.description = f"Game over\nCheckmate | Score: `{results}`"
+            await self.ctx.send(f"Game over! {self.turn} wins by check-mate")
         elif self.board.is_stalemate():
-            embed.description = f"Game over\nStalemate | Score: `{results}`"
+            await self.ctx.send(f"Game over! Ended with draw!")
         elif self.board.is_insufficient_material():
-            embed.description = f"Game over\nInsufficient material left to continue the game | Score: `{results}`"
+            await self.ctx.send(f"Game over! Insfficient material left to continue the game! Draw!")
         elif self.board.is_seventyfive_moves():
-            embed.description = f"Game over\n75-moves rule | Score: `{results}`"
+            await self.ctx.send(f"Game over! 75-moves rule | Game Draw!")
         elif self.board.is_fivefold_repetition():
-            embed.description = f"Game over\nFive-fold repitition. | Score: `{results}`"
-        else:
-            embed.description = f"Game over\nVariant end condition. | Score: `{results}`"
+            await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
 
-        embed.set_image(url=f"{self._base}{self.board.board_fen()}")
-        return embed
-
-    async def start(self, ctx: commands.Context, *, timeout: int = None, color: Union[int, discord.Color] = 0x2F3136, add_reaction_after_move: bool = False, **kwargs):
-
-        embed = await self.BuildEmbed()
-        embed.color = color
-        self.message = await ctx.send(embed=embed, **kwargs)
-
-        while True:
-
-            def check(m):
-                try:
-                    if self.board.push_san(m.content):
-                        return m.author == self.turn and m.channel == ctx.channel
-                    else:
-                        return False
-                except ValueError:
-                    return False
-
-            try:
-                message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
-            except asyncio.TimeoutError:
-                return await ctx.send(f"Game over! **{self.turn}**, did not responded on time!")
-
-            await self.PlaceMove(message.content)
-            embed = await self.BuildEmbed()
-            embed.color = color
-
-            if add_reaction_after_move:
-                await message.add_reaction("✅")
-
-            if self.board.is_game_over():
-                break
-            
-            await self.message.edit(embed=embed)
-
-        embed = await self.fetch_results()
-        embed.color = color
-        await self.message.edit(embed=embed)
-        return await ctx.send("~ Game Over ~")
+    async def start(self):
+        while not (await self.game_over()):
+            msg = await self.wait_for_move()
+            if msg is None:
+                return
+            else:
+                if msg.content.lower() in ('exit', 'quit', 'resign'):
+                    return await self.ctx.send(f"**{self.turn}** resigned the game. Game Over!")
+                else:
+                    await self.place_move(msg.content)
+                    self.switch()
 
 
 class Twenty48:
@@ -2423,14 +2398,13 @@ class Games(Cog):
 
         # await announcement.delete()
         
-        game = Chess( #initialize a game instance
-            white = ctx.author, #provide the white player
-            black = user      #provide the black player
+        game = Chess( 
+            white = ctx.author,
+            black = user,
+            bot=self.bot,
+            ctx=ctx,
         )
-        await game.start(ctx, 
-            timeout=60, 
-            add_reaction_after_move=True
-        ) #start the game
+        await game.start()
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

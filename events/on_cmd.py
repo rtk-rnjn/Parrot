@@ -17,7 +17,7 @@ quote = quote.split('\n')
 
 class ErrorView(discord.ui.View):
     def __init__(self, author_id, *, ctx: Context = None, error=None):
-        super().__init__(timeout=30.0)
+        super().__init__(timeout=300.0)
         self.author_id = author_id
         self.ctx = ctx
         self.error = error

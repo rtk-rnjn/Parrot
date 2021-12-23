@@ -43,7 +43,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return False
 
     async def on_invite(self, message: discord.Message, invite_link: list):
-        if data := await self.log_collection.find_one({'_id': message.guild_id, 'on_invite_post': {'$exists': True}}):
+        if data := await self.log_collection.find_one({'_id': message.guild.id, 'on_invite_post': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_invite_post'], session=self.bot.session)
             if webhook:
                 content = f"""**Invite Link Posted**

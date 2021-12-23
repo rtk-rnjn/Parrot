@@ -223,7 +223,7 @@ class Chess:
         self.board.push_san(move)
         await self.ctx.send(
             content=f"{self.white.mention} VS {self.black.mention}",
-            embed=discord.Embed(timestamp=discord.utils.utcnow().set_image(url=f"{self.base_url}{self.board.board_fen()}")))
+            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"))
         
     async def game_over(self,) -> Optional[bool]:
         if self.board.is_checkmate():
@@ -238,6 +238,9 @@ class Chess:
             await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
 
     async def start(self):
+        await self.ctx.send(
+            content=f"{self.white.mention} VS {self.black.mention}",
+            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"))
         while not (await self.game_over()):
             msg = await self.wait_for_move()
             if msg is None:

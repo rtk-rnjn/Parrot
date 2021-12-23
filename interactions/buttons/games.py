@@ -247,7 +247,7 @@ class ChessView(discord.ui.View):
     
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Resign The Game", style=discord.ButtonStyle.danger, disabled=False)
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**{interaction.user}** to resign the game. Tpye: `RESIGN`", ephemeral=True)
+        await interaction.response.send_message(f"**{interaction.user}** to resign the game. Type: `RESIGN`", ephemeral=True)
 
 
 class Chess:
@@ -295,8 +295,12 @@ class Chess:
             return None
     
     def switch(self) -> None:
-        if self.turn == self.white: self.turn = self.black
-        if self.turn == self.black: self.turn = self.white
+        if self.turn == self.white: 
+            self.turn = self.black
+            return
+        if self.turn == self.black: 
+            self.turn = self.white
+            return
     
     async def place_move(self, move: str) -> None:
         self.board.push_san(move)

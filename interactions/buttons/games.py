@@ -195,6 +195,14 @@ class ChessView(discord.ui.View):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
 
+    async def interaction_check(self,
+                                interaction: discord.Interaction):
+        if interaction.user in (self.game.white, self.game.black):
+            return True
+        else:
+            await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+            return False
+            
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show Legal Moves", style=discord.ButtonStyle.gray, disabled=False)
     async def show_moves(self, button: discord.ui.Button, interaction: discord.Interaction):
         menu = ParrotPaginator(self.game.ctx, title="Legal Moves", embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png")

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from cogs.meta.robopage import SimplePages
+
 from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
 
@@ -688,3 +690,27 @@ class Misc(Cog):
         embed.set_footer(text=f"{ctx.author}")
 
         await ctx.send(embed=embed)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def currencies(self, ctx: Context):
+        """To see the currencies notations with names"""
+        obj = await self.bot.session.get("https://api.coinbase.com/v2/currencies")
+        data = await obj.json()
+        entries = [f"`{temp['id']}` `{temp['name']}`" for temp in data['data']]
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def exchangerate(self, ctx: Context, currency: str):
+        """To see the currencies notations with names"""
+        if len(currency) != 3:
+            return await ctx.send(f"{ctx.author.mention} please provide a **valid currency!**")
+        obj = await self.bot.session.get(f"https://api.coinbase.com/v2/exchange-rates?currency={currency}")
+        data: dict = await obj.json()
+
+        entries = [f"`{i}` `{j}`" for i, j in zip(data['rates'].items(), data['rates'].values())]
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()
+    

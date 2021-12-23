@@ -1982,3 +1982,28 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         if converted_text:
             converted_text = f">>> {converted_text.lstrip('> ')}"
         await ctx.send(content=converted_text, embed=embed)
+    
+    @commands.command(aliases=['cointoss', 'cf', 'ct'])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @Context.with_type
+    async def coinflip(self, ctx: Context, *, choose: str = None):
+        """
+        Coin Flip, It comes either HEADS or TAILS
+        """
+        choose = 'tails' if choose in ('tails', 'tail', 't') else 'heads'
+        msg = await ctx.send(f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ...")
+        await asyncio.sleep(1.5)
+        await msg.edit(content=f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on **{random.choice(['HEADS', 'TAILS'])}**")
+
+    @commands.command(aliases=['slot'])
+    @commands.cooldown(1, 10, commands.BucketType.member)
+    @Context.with_type
+    async def slots(self, ctx: Context):
+        """Basic Slots game"""
+        CHOICE = ["\N{BANKNOTE WITH DOLLAR SIGN}", "\N{FIRST PLACE MEDAL}", "\N{HUNDRED POINTS SYMBOL}", "\N{GEM STONE}"]
+        msg = await ctx.send(f"""{ctx.author.mention} your slots results:
+> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
+        await asyncio.sleep(1.5)
+        await msg.edit(content=f"""{ctx.author.mention} your slots results:
+> {random.choice(CHOICE)} {random.choice(CHOICE)} {random.choice(CHOICE)}""")
+

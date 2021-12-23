@@ -752,3 +752,26 @@ class Meta(Cog):
         embed.set_footer(text=f"{ctx.author}")
         embed.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=embed)
+
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def inviteinfo(self, ctx: Context, code: str):
+        """Get the info regarding the Invite Link"""
+        invite = self.bot.fetch_invite(f'https://discord.gg/{code}')
+        if (not invite.guild) or (not invite):
+            return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
+        embed = discord.Embed(title=invite.url, timestamp=datetime.datetime.utcnow(), url=invite.url)
+        embed.description = f"""`Member Count?  :` **{invite.approximate_member_count}**
+`Presence Count?:` **{invite.approximate_presence_count}**
+`Channel     :` **<#{invite.channel.id}>**
+`Created At  :` **<t:{int(invite.created_at.timestamp())}>**
+`Expires At  :` **{'Invite' if invite.expires_at is None else discord.utils.format_dt(invite.expires_at)}**
+`Temporary?  :` **{invite.temporary}**
+`Max Uses    :` **{invite.max_uses if invite.max_uses != 0 else 'Infinte'}**
+`Link        :` **{invite.url}**
+`Inviter?    :` **{invite.inviter}**
+"""
+        await ctx.send(embed=embed)

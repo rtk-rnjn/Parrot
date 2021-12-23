@@ -24,6 +24,41 @@ import emojis, chess, tabulate
 from aiofile import async_open
 from utilities.paginator import ParrotPaginator
 
+def fenPass(fen: str) -> bool:
+    regexMatch = re.match('\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', fen)
+    if  regexMatch:
+        regexList = regexMatch.groups()
+        fen = regexList[0].split("/")
+        if len(fen) != 8:
+            raise commands.BadArgument("Expected 8 rows in position part of FEN: `{0}`".format(repr(fen)))
+
+        for fenPart in fen:
+            field_sum = 0
+            previous_was_digit, previous_was_piece = False,False
+
+            for c in fenPart:
+                if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+                    if previous_was_digit:
+                        raise commands.BadArgument("Two subsequent digits in position part of FEN: `{0}`".format(repr(fen)))
+                    field_sum += int(c)
+                    previous_was_digit = True
+                    previous_was_piece = False
+                elif c == "~":
+                    if not previous_was_piece:
+                        raise commands.BadArgument("~ not after piece in position part of FEN: `{0}`".format(repr(fen)))
+                    previous_was_digit, previous_was_piece = False,False
+                elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
+                    field_sum += 1
+                    previous_was_digit = False
+                    previous_was_piece = True
+                else:
+                    raise commands.BadArgument("Invalid character in position part of FEN: `{0}`".format(repr(fen)))
+
+            if field_sum != 8:
+                 raise commands.BadArgument("Expected 8 columns per row in position part of FEN: `{0}`".format(repr(fen)))
+
+    else: 
+        raise commands.BadArgument("FEN doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ")
 
 _2048_GAME = a = {
         '0': '<:YELLO:922889092755259405>',
@@ -216,7 +251,15 @@ class ChessView(discord.ui.View):
 
 
 class Chess:
-    def __init__(self, white: discord.Member, black: discord.Member, *, bot: Parrot, ctx: Context, timeout: float=300, react_on_success: bool=True):
+    def __init__(
+        self, 
+        white: discord.Member, 
+        black: discord.Member, *, 
+        bot: Parrot, ctx: Context, 
+        timeout: float=300, 
+        react_on_success: bool=True, 
+        custom: str=None
+    ) -> None:
         self.white = white
         self.black = black
 
@@ -226,7 +269,10 @@ class Chess:
         self.react_on_success = react_on_success
 
         self.base_url = "http://www.fen-to-image.com/image/64/double/coords/"
-        self.board = chess.Board()
+        if custom:
+            self.board = chess.Board(custom)
+        else:
+            self.board = chess.Board()
 
         self.turn = white
         self.game_stop = False
@@ -1827,6 +1873,8 @@ class Games(Cog):
 
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
 
+        self.chess_games = list()
+
         self.max_board_size = 9
         self.min_board_size = 5
 
@@ -2260,7 +2308,6 @@ class Games(Cog):
 
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     async def battleship(self, ctx: commands.Context) -> None:
         """
         Play a game of Battleship with someone else!
@@ -2355,6 +2402,7 @@ class Games(Cog):
             await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
     
     @commands.group(invoke_without_command=True)
+    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def sokoban(self, ctx: Context, level: int=None,):
         """A classic sokoban game"""
@@ -2407,48 +2455,94 @@ class Games(Cog):
         ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
         await ctx.send(embed=embed, view=Twenty48_Button(game, ctx.author))
     
-    @commands.command(name='chess')
+    @commands.group(name='chess', invoke_without_command=True)
+    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def chess(self, ctx: Context, user: discord.Member):
+    async def chess(self, ctx: Context):
         """Chess game. In testing"""
-        # announcement = await ctx.send(
-        #     "**Chess**: A new game is about to start!\n"
-        #     f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
-        #     f"(Cancel the game with {CROSS_EMOJI}.)"
-        # )
-        # self.waiting.append(ctx.author)
-        # await announcement.add_reaction(HAND_RAISED_EMOJI)
-        # await announcement.add_reaction(CROSS_EMOJI)
+        if ctx.author.id in self.chess_games:
+            return await ctx.send(f"{ctx.author.mention} you are already playing this game!")
+        if ctx.invoked_subcommand:
+            announcement = await ctx.send(
+                "**Chess**: A new game is about to start!\n"
+                f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
+                f"(Cancel the game with {CROSS_EMOJI}.)"
+            )
+            self.waiting.append(ctx.author)
+            await announcement.add_reaction(HAND_RAISED_EMOJI)
+            await announcement.add_reaction(CROSS_EMOJI)
 
-        # try:
-        #     reaction, user = await self.bot.wait_for(
-        #         "reaction_add",
-        #         check=partial(self.predicate, ctx, announcement),
-        #         timeout=60.0
-        #     )
-        # except asyncio.TimeoutError:
-        #     self.waiting.remove(ctx.author)
-        #     await announcement.delete()
-        #     await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
-        #     return
+            try:
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add",
+                    check=partial(self.predicate, ctx, announcement),
+                    timeout=60.0
+                )
+            except asyncio.TimeoutError:
+                self.waiting.remove(ctx.author)
+                await announcement.delete()
+                await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+                return
 
-        # if str(reaction.emoji) == CROSS_EMOJI:
-        #     self.waiting.remove(ctx.author)
-        #     await announcement.delete()
-        #     await ctx.send(f"{ctx.author.mention} Game cancelled.")
-        #     return
+            if str(reaction.emoji) == CROSS_EMOJI:
+                self.waiting.remove(ctx.author)
+                await announcement.delete()
+                await ctx.send(f"{ctx.author.mention} Game cancelled.")
+                return
 
-        # await announcement.delete()
+            await announcement.delete()
+            self.chess_games.append(user.id)
+            game = Chess( 
+                white = ctx.author,
+                black = user,
+                bot=self.bot,
+                ctx=ctx,
+            )
+            await game.start()
+    
+    @chess.command()
+    async def custom_chess(self, ctx: Context, board: fenPass):
+        """To play chess, from a custom FEN notation"""
+        announcement = await ctx.send(
+            "**Chess**: A new game is about to start!\n"
+            f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
+            f"(Cancel the game with {CROSS_EMOJI}.)"
+        )
+        self.waiting.append(ctx.author)
+        await announcement.add_reaction(HAND_RAISED_EMOJI)
+        await announcement.add_reaction(CROSS_EMOJI)
+
+        try:
+            reaction, user = await self.bot.wait_for(
+                "reaction_add",
+                check=partial(self.predicate, ctx, announcement),
+                timeout=60.0
+            )
+        except asyncio.TimeoutError:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+            return
+
+        if str(reaction.emoji) == CROSS_EMOJI:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(f"{ctx.author.mention} Game cancelled.")
+            return
+
+        await announcement.delete()
         
         game = Chess( 
             white = ctx.author,
             black = user,
             bot=self.bot,
             ctx=ctx,
+            custom=board
         )
         await game.start()
 
     @commands.command()
+    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def slidingpuzzle(self, ctx: Context, boardsize: int=None):
         """A Classic Sliding game"""

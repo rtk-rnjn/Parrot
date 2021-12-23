@@ -2460,8 +2460,6 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def chess(self, ctx: Context):
         """Chess game. In testing"""
-        if ctx.author.id in self.chess_games:
-            return await ctx.send(f"{ctx.author.mention} you are already playing this game!")
         if ctx.invoked_subcommand:
             announcement = await ctx.send(
                 "**Chess**: A new game is about to start!\n"
@@ -2491,7 +2489,6 @@ class Games(Cog):
                 return
 
             await announcement.delete()
-            self.chess_games.append(user.id)
             game = Chess( 
                 white = ctx.author,
                 black = user,

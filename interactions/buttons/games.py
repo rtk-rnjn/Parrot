@@ -200,9 +200,9 @@ class ChessView(discord.ui.View):
         menu = ParrotPaginator(self.game.ctx, title="Legal Moves", embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png")
         for i in self.game.legal_moves():
             menu.add_line(i)
-            await menu.start()
+        await menu.start()
     
-    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show Legal Moves", style=discord.ButtonStyle.danger, disabled=False)
+    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Resign The Game", style=discord.ButtonStyle.danger, disabled=False)
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(f"**{interaction.user}** to resign the game. Tpye: `RESIGN`", ephemeral=True)
 

@@ -209,6 +209,7 @@ class Chess:
         return embed
 
     async def PlaceMove(self, uci: str) -> chess.Board:
+        print(uci)
         self.board.push_san(uci)
         self.turn = self.white if self.turn == self.black else self.black
         return self.board

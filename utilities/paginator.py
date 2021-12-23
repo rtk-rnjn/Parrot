@@ -295,7 +295,8 @@ class ParrotPaginator:
                  per_page=10,
                  timeout=60.0,
                  title=None,
-                 show_page_count=True):
+                 show_page_count=True,
+                 embed_url:str=None):
         self.ctx = ctx
         self.per_page = per_page
         self.timeout = timeout
@@ -304,6 +305,7 @@ class ParrotPaginator:
 
         self.lines = []
         self.pages = None
+        self.embed_url = embed_url
 
     def add_line(self, line: str, sep="\n"):
         self.lines.append(f"{line}{sep}")
@@ -312,14 +314,19 @@ class ParrotPaginator:
     def embed(self):
         page = self.pages.current_page
 
-        e = discord.Embed(color=self.ctx.bot.color)
+        e = discord.Embed(color=self.ctx.bot.color, timestamp=discord.utils.utcnow())
         if self.title:
             e.title = self.title
 
         e.description = page.content
+        e.set_footer(text=f"Requester: {self.ctx.author}")
 
         if self.show_page_count:
             e.set_footer(text=f"Page {page.index} of {self.pages.total}")
+
+        if self.embed_url:
+            e.set_thumbnail(url=self.embed_url)
+        
 
         return e
 

@@ -22,6 +22,7 @@ import emojis as emoji
 import emojis, chess, tabulate
 
 from aiofile import async_open
+from utilities.paginator import ParrotPaginator
 
 
 _2048_GAME = a = {
@@ -189,6 +190,23 @@ class SlidingPuzzleView(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
 
+class ChessView(discord.ui.View):
+    def __init__(self, *, game: Chess, timeout: float=300.0, **kwargs):
+        super().__init__(timeout=timeout, **kwargs)
+        self.game = game
+
+    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show Legal Moves", style=discord.ButtonStyle.gray, disabled=False)
+    async def show_moves(self, button: discord.ui.Button, interaction: discord.Interaction):
+        menu = ParrotPaginator(self.game.ctx, title="Legal Moves", embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png")
+        for i in self.game.legal_moves():
+            menu.add_line(i)
+            await menu.start()
+    
+    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show Legal Moves", style=discord.ButtonStyle.danger, disabled=False)
+    async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.send_message(f"**{interaction.user}** to resign the game. Tpye: `RESIGN`", ephemeral=True)
+
+
 class Chess:
     def __init__(self, white: discord.Member, black: discord.Member, *, bot: Parrot, ctx: Context, timeout: float=300, react_on_success: bool=True):
         self.white = white
@@ -203,10 +221,17 @@ class Chess:
         self.board = chess.Board()
 
         self.turn = white
+        self.game_stop = False
     
+    def legal_moves(self) -> Optional[list]:
+        return [self.board.san(move) for move in self.board.legal_moves]
+
     async def wait_for_move(self) -> Optional[discord.Message]:
-        LEGAL_MOVES = [self.board.san(move) for move in self.board.legal_moves]
+        LEGAL_MOVES = self.legal_moves()
         def check(m):
+            if m.content.lower() in ('exit', 'quit', 'resign'):
+                return True
+            
             return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
         try:
             msg = await self.bot.wait_for('message', check=check, timeout=self.timeout)
@@ -223,25 +248,31 @@ class Chess:
         self.board.push_san(move)
         await self.ctx.send(
             content=f"{self.white.mention} VS {self.black.mention}",
-            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"))
+            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"), view=ChessView(game=self))
         
     async def game_over(self,) -> Optional[bool]:
         if self.board.is_checkmate():
             await self.ctx.send(f"Game over! {self.turn} wins by check-mate")
+            self.game_stop = True
         elif self.board.is_stalemate():
             await self.ctx.send(f"Game over! Ended with draw!")
+            self.game_stop = True
         elif self.board.is_insufficient_material():
             await self.ctx.send(f"Game over! Insfficient material left to continue the game! Draw!")
+            self.game_stop = True
         elif self.board.is_seventyfive_moves():
             await self.ctx.send(f"Game over! 75-moves rule | Game Draw!")
+            self.game_stop = True
         elif self.board.is_fivefold_repetition():
             await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
+            self.game_stop = True
+        self.game_stop = False
 
     async def start(self):
         await self.ctx.send(
             content=f"{self.white.mention} VS {self.black.mention}",
-            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"))
-        while not (await self.game_over()):
+            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"), view=ChessView(game=self))
+        while not self.game_stop:
             msg = await self.wait_for_move()
             if msg is None:
                 return

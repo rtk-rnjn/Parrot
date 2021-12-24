@@ -381,6 +381,134 @@ def replace_many(
     return regex.sub(_repl, sentence)
 
 
+class BlackJackView(discord.ui.View):
+    def __init__(self, *, timeout: float=60):
+        super().__init__(timeout=timeout)
+        self.HEARTS   = "\u9829b" 
+        self.DIAMONDS = "\u9830b" 
+        self.SPADES   = "\u9824b" 
+        self.CLUBS    = "\u9827b" 
+        
+        self.BACKSIDE = 'backside'
+        self.deck = self.getDeck()
+        self.dealerHand = [self.deck.pop(), self.deck.pop()]
+        self.playerHand = [self.deck.pop(), self.deck.pop()]
+    
+    def getDeck(self) -> list:
+        deck = []
+        for suit in (self.HEARTS, self.DIAMONDS, self.SPADES, self.CLUBS):
+            for rank in range(2, 11):
+                deck.append((str(rank), suit))  # Add the numbered cards.
+            for rank in ('J', 'Q', 'K', 'A'):
+                deck.append((rank, suit))  # Add the face and ace cards.
+        random.shuffle(deck)
+        return deck
+
+    def displayHands(self, playerHand, dealerHand, showDealerHand) -> dict:
+        data = dict()
+        if showDealerHand:
+            data['DEALER'] = {'HAND_VALUE': self.getHandValue(dealerHand), 'CARDS': self.displayCards(dealerHand)}
+        else:
+            print('DEALER: ???')
+            data['DEALER'] = {'HAND_VALUE': "???", 'CARDS': self.displayCards([self.BACKSIDE] + dealerHand[1:])}
+
+        data['PLAYER'] = {'HAND_VALUE': self.getHandValue(playerHand), 'CARDS': self.displayCards(playerHand)}
+    
+    def getHandValue(self, cards) -> int:
+        value = 0
+        numberOfAces = 0
+
+        for card in cards:
+            rank = card[0]
+            if rank == 'A':
+                numberOfAces += 1
+            elif rank in ('K', 'Q', 'J'):
+                value += 10
+            else:
+                value += int(rank)
+        value += numberOfAces  # Add 1 per ace.
+        for i in range(numberOfAces):
+            if value + 10 <= 21:
+                value += 10
+
+        return value
+    
+    def displayCards(self, cards):
+        """Display all the cards in the cards list."""
+        rows = ['', '', '', '', '']  # The text to display on each row.
+
+        for i, card in enumerate(cards):
+            rows[0] += ' ___  '
+            if card == self.BACKSIDE:
+                rows[1] += '`|## |` '
+                rows[2] += '`|###|` '
+                rows[3] += '`|_##|` '
+            else:
+                rank, suit = card
+                rows[1] += '`|{} |` '.format(rank.ljust(2))
+                rows[2] += '`| {} |` '.format(suit)
+                rows[3] += '`|_{}|` '.format(rank.rjust(2, '_'))
+        st = ""
+        for row in rows:
+            st += f"{str(row)}\n"
+        return st
+
+    async def main(self, interaction):
+        data = self.displayHands(self.playerHand, self.dealerHand, True)
+        playerValue = self.getHandValue(self.playerHand)
+        dealerValue = self.getHandValue(self.dealerHand)
+
+        await interaction.response.edit_message(f"""
+DEALER: {data['DEALER']['HAND_VALUE']}
+{data['DEALER']['CARDS']}
+PLAYER: {data['PLAYER']['HAND_VALUE']}
+{data['PLAYER']['CARDS']}
+""")
+
+        if dealerValue > 21:
+            await interaction.reponse.send_message('Dealer busts! You win', ephemeral=True)
+
+        elif (playerValue > 21) or (playerValue < dealerValue):
+            await interaction.reponse.send_message('You lost!', ephemeral=True)
+
+        elif playerValue > dealerValue:
+            await interaction.reponse.send_message('You won ${}!', ephemeral=True)
+
+        elif playerValue == dealerValue:
+            await interaction.reponse.send_message('It\'s a tie, the bet is returned to you.', ephemeral=True)
+    
+    @discord.ui.button(lable='HIT', style=discord.ButtonStyle.danger)
+    async def hit(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.main(interaction)
+        newCard = self.deck.pop()
+        rank, suit = newCard
+        await interaction.response.send_message('You drew a {} of {}.'.format(rank, suit), ephemeral=True)
+        self.playerHand.append(newCard)
+        if self.getHandValue(self.playerHand) > 21:
+            await self.main(interaction)
+
+    @discord.ui.button(lable='STAND', style=discord.ButtonStyle.danger)
+    async def stand(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.main(interaction)
+        if self.getHandValue(self.playerHand) <= 21:
+            if self.getHandValue(self.dealerHand) < 17:
+                await interaction.response.send_message('Dealer Hits...', ephemeral=True)
+                self.dealerHand.append(self.deck.pop())
+                self.displayHands(self.playerHand, self.dealerHand, False)
+                if self.getHandValue(self.dealerHand) > 21:
+                    await self.main(interaction)
+    
+    async def start(self, ctx: Context):
+        data = self.displayHands(self.playerHand, self.dealerHand, True)
+
+        await ctx.send(f"""
+DEALER: {data['DEALER']['HAND_VALUE']}
+{data['DEALER']['CARDS']}
+PLAYER: {data['PLAYER']['HAND_VALUE']}
+{data['PLAYER']['CARDS']}
+""")
+        
+
 class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member)}):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
 
@@ -2004,12 +2132,26 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         msg = await ctx.send(f"""{ctx.author.mention} your slots results:
 > <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
         await asyncio.sleep(1.5)
+        _ = random.choice(CHOICE)
         await msg.edit(content=f"""{ctx.author.mention} your slots results:
-> {random.choice(CHOICE)} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
+> {_} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
         await asyncio.sleep(1.5)
+        __ = random.choice(CHOICE)
         await msg.edit(content=f"""{ctx.author.mention} your slots results:
-> {random.choice(CHOICE)} {random.choice(CHOICE)} <a:SlotsEmoji:923478531873325076>""")
+> {_} {__} <a:SlotsEmoji:923478531873325076>""")
         await asyncio.sleep(1.5)
+        ___ = random.choice(CHOICE)
         await msg.edit(content=f"""{ctx.author.mention} your slots results:
-> {random.choice(CHOICE)} {random.choice(CHOICE)} {random.choice(CHOICE)}""")
+> {_} {__} {___}""")
 
+    @commands.command()
+    async def blackjack(self, ctx: Context):
+        """Classic BlackJack Game. Here's how to play
+        
+        Try to get as close to 21 without going over.
+        Kings, Queens, and Jacks are worth 10 points.
+        Aces are worth 1 or 11 points.
+        Cards 2 through 10 are worth their face value.
+        (H)it to take another card.
+        (S)tand to stop taking cards.
+        The dealer stops hitting at 17."""

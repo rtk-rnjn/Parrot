@@ -208,8 +208,7 @@ class Parrot(commands.AutoShardedBot):
         if retry_after:
             self._auto_spam_count[author_id] += 1
             if self._auto_spam_count[author_id] >= 3:
-                return await message.channel.send(f"{message.author.mention} **STOP!**, you are using the commands too fast!", delete_after=5.0)
-
+                return
         else:
             self._auto_spam_count.pop(author_id, None)
 

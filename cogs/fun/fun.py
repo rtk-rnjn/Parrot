@@ -413,6 +413,7 @@ class BlackJackView(discord.ui.View):
             data['DEALER'] = {'HAND_VALUE': "???", 'CARDS': self.displayCards([self.BACKSIDE] + dealerHand[1:])}
 
         data['PLAYER'] = {'HAND_VALUE': self.getHandValue(playerHand), 'CARDS': self.displayCards(playerHand)}
+        return data
     
     def getHandValue(self, cards) -> int:
         value = 0

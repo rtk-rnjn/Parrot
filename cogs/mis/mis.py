@@ -191,7 +191,7 @@ class Misc(Cog):
             title = item['title']
             link = item['link']
             displaylink = item['displayLink']
-            snippet = item['snippet']
+            snippet = item.get('snippet')
             try:
                 img = item['pagemap']['cse_thumbnail'][0]['src']
             except KeyError:

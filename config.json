@@ -29,7 +29,6 @@
     "cogs.rtfm",
     "cogs.ticket",
     "cogs.config",
-    "cogs.economy",
     "cogs.nasa",
     "cogs.owner",
     "cogs.actions",

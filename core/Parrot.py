@@ -57,7 +57,7 @@ class Parrot(commands.AutoShardedBot):
                                        autopost=True,
                                        post_shard_count=True)
         self.persistent_views_added = False
-        self.spam_control = commands.CooldownMapping.from_cooldown(10, 12.0, commands.BucketType.user)
+        self.spam_control = commands.CooldownMapping.from_cooldown(5, 6.0, commands.BucketType.user)
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)
         self.identifies = defaultdict(list)
@@ -176,6 +176,7 @@ class Parrot(commands.AutoShardedBot):
             self.uptime = discord.utils.utcnow()
 
         print(f'Ready: {self.user} (ID: {self.user.id})')
+        print(f'Using discord.py of version: {discord.__version__ }')
 
     async def on_connect(self) -> None:
         print(
@@ -199,17 +200,29 @@ class Parrot(commands.AutoShardedBot):
         if ctx.command is None:
             # ignore if no command found
             return
+        
+        bucket = self.spam_control.get_bucket(message)
+        current = message.created_at.timestamp()
+        retry_after = bucket.update_rate_limit(current)
+        author_id = message.author.id
+        if retry_after:
+            self._auto_spam_count[author_id] += 1
+            if self._auto_spam_count[author_id] >= 3:
+                return await message.channel.send(f"{message.author.mention} **STOP!**, you are using the commands too fast!", delete_after=5.0)
+
+        else:
+            self._auto_spam_count.pop(author_id, None)
 
         if ctx.command is not None:
             _true = await _can_run(ctx)
             if await collection_ban.find_one({'_id': message.author.id}):
-                # if user is banned
                 return
             if not _true: 
-                await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.name}** by the staff!', delete_after=10.0)
+                await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!', delete_after=10.0)
                 return
-    
+        
         await self.invoke(ctx)
+        await asyncio.sleep(0)
 
     async def on_message(self, message: discord.Message):
         self._seen_messages += 1

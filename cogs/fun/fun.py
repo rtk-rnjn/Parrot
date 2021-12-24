@@ -1,21 +1,40 @@
 from __future__ import annotations
-import functools
 
-import discord, random, io, base64, datetime, aiohttp, urllib, asyncio, time, json, re, string
-from discord.ext import commands, tasks
-from pathlib import Path
+import functools
+import random
+import io
+import datetime
+import urllib
+import time
+import re
+import json
+import base64
+import string
+import operator
+
+import discord
+import aiohttp, asyncio
+from aiohttp import request
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
-from random import choice
+from discord.ext import commands, tasks
 from discord import Embed 
+
+from pathlib import Path
+from random import choice, randint
+from typing import Callable, Optional, Union
+from rapidfuzz import fuzz
+
 from dataclasses import dataclass
 from collections import defaultdict
+
 from utilities.database import parrot_db
-from aiohttp import request
-import operator
-from rapidfuzz import fuzz
 from utilities.paginator import Paginator, PaginationView
+
 from core import Parrot, Context, Cog
-from typing import Callable, Optional, Union
+
+COMIC_FORMAT = re.compile(r"latest|[0-9]+")
+BASE_URL = "https://xkcd.com"
+
 
 with open("extra/truth.txt") as f:
   _truth = f.read()
@@ -379,136 +398,7 @@ def replace_many(
             return replacement.lower()
 
     return regex.sub(_repl, sentence)
-
-
-class BlackJackView(discord.ui.View):
-    def __init__(self, *, timeout: float=60):
-        super().__init__(timeout=timeout)
-        self.HEARTS   = "\u9829b" 
-        self.DIAMONDS = "\u9830b" 
-        self.SPADES   = "\u9824b" 
-        self.CLUBS    = "\u9827b" 
-        
-        self.BACKSIDE = 'backside'
-        self.deck = self.getDeck()
-        self.dealerHand = [self.deck.pop(), self.deck.pop()]
-        self.playerHand = [self.deck.pop(), self.deck.pop()]
-    
-    def getDeck(self) -> list:
-        deck = []
-        for suit in (self.HEARTS, self.DIAMONDS, self.SPADES, self.CLUBS):
-            for rank in range(2, 11):
-                deck.append((str(rank), suit))  # Add the numbered cards.
-            for rank in ('J', 'Q', 'K', 'A'):
-                deck.append((rank, suit))  # Add the face and ace cards.
-        random.shuffle(deck)
-        return deck
-
-    def displayHands(self, playerHand, dealerHand, showDealerHand) -> dict:
-        data = dict()
-        if showDealerHand:
-            data['DEALER'] = {'HAND_VALUE': self.getHandValue(dealerHand), 'CARDS': self.displayCards(dealerHand)}
-        else:
-            print('DEALER: ???')
-            data['DEALER'] = {'HAND_VALUE': "???", 'CARDS': self.displayCards([self.BACKSIDE] + dealerHand[1:])}
-
-        data['PLAYER'] = {'HAND_VALUE': self.getHandValue(playerHand), 'CARDS': self.displayCards(playerHand)}
-        return data
-    
-    def getHandValue(self, cards) -> int:
-        value = 0
-        numberOfAces = 0
-
-        for card in cards:
-            rank = card[0]
-            if rank == 'A':
-                numberOfAces += 1
-            elif rank in ('K', 'Q', 'J'):
-                value += 10
-            else:
-                value += int(rank)
-        value += numberOfAces  # Add 1 per ace.
-        for i in range(numberOfAces):
-            if value + 10 <= 21:
-                value += 10
-
-        return value
-    
-    def displayCards(self, cards):
-        """Display all the cards in the cards list."""
-        rows = ['', '', '', '', '']  # The text to display on each row.
-
-        for i, card in enumerate(cards):
-            rows[0] += ' ___  '
-            if card == self.BACKSIDE:
-                rows[1] += '`|## |` '
-                rows[2] += '`|###|` '
-                rows[3] += '`|_##|` '
-            else:
-                rank, suit = card
-                rows[1] += '`|{} |` '.format(rank.ljust(2))
-                rows[2] += '`| {} |` '.format(suit)
-                rows[3] += '`|_{}|` '.format(rank.rjust(2, '_'))
-        st = ""
-        for row in rows:
-            st += f"{str(row)}\n"
-        return st
-
-    async def main(self, interaction):
-        data = self.displayHands(self.playerHand, self.dealerHand, True)
-        playerValue = self.getHandValue(self.playerHand)
-        dealerValue = self.getHandValue(self.dealerHand)
-
-        await interaction.response.edit_message(f"""
-DEALER: {data['DEALER']['HAND_VALUE']}
-{data['DEALER']['CARDS']}
-PLAYER: {data['PLAYER']['HAND_VALUE']}
-{data['PLAYER']['CARDS']}
-""")
-
-        if dealerValue > 21:
-            await interaction.reponse.send_message('Dealer busts! You win', ephemeral=True)
-
-        elif (playerValue > 21) or (playerValue < dealerValue):
-            await interaction.reponse.send_message('You lost!', ephemeral=True)
-
-        elif playerValue > dealerValue:
-            await interaction.reponse.send_message('You won ${}!', ephemeral=True)
-
-        elif playerValue == dealerValue:
-            await interaction.reponse.send_message('It\'s a tie, the bet is returned to you.', ephemeral=True)
-    
-    @discord.ui.button(label='HIT', style=discord.ButtonStyle.danger)
-    async def hit(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.main(interaction)
-        newCard = self.deck.pop()
-        rank, suit = newCard
-        await interaction.response.send_message('You drew a {} of {}.'.format(rank, suit), ephemeral=True)
-        self.playerHand.append(newCard)
-        if self.getHandValue(self.playerHand) > 21:
-            await self.main(interaction)
-
-    @discord.ui.button(label='STAND', style=discord.ButtonStyle.danger)
-    async def stand(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.main(interaction)
-        if self.getHandValue(self.playerHand) <= 21:
-            if self.getHandValue(self.dealerHand) < 17:
-                await interaction.response.send_message('Dealer Hits...', ephemeral=True)
-                self.dealerHand.append(self.deck.pop())
-                self.displayHands(self.playerHand, self.dealerHand, False)
-                if self.getHandValue(self.dealerHand) > 21:
-                    await self.main(interaction)
-    
-    async def start(self, ctx: Context):
-        data = self.displayHands(self.playerHand, self.dealerHand, True)
-
-        await ctx.send(f"""
-DEALER: {data['DEALER']['HAND_VALUE']}
-{data['DEALER']['CARDS']}
-PLAYER: {data['PLAYER']['HAND_VALUE']}
-{data['PLAYER']['CARDS']}
-""", view=self)
-        
+ 
 
 class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member)}):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
@@ -526,6 +416,9 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
         self.game_player_scores = {}  # A variable to store temporary game player's scores.
 
+        self.latest_comic_info: dict[str, Union[int, str]] = {}
+        self.get_latest_comic_info.start()
+
         self.categories = {
             "general": "Test your general knowledge.",
             "retro": "Questions related to retro gaming.",
@@ -541,6 +434,7 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
     def cog_unload(self) -> None:
         """Cancel `get_wiki_questions` task when Cog will unload."""
         self.get_wiki_questions.cancel()
+        self.get_latest_comic_info.cancel()
     
     @staticmethod
     def create_embed(tries: int, user_guess: str) -> Embed:
@@ -610,7 +504,14 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
                 field["value"] = func(field.get("value", ""))
 
         return Embed.from_dict(embed_dict)
-    
+
+    @tasks.loop(minutes=30)
+    async def get_latest_comic_info(self) -> None:
+        """Refreshes latest comic's information ever 30 minutes. Also used for finding a random comic."""
+        async with self.bot.http_session.get(f"{BASE_URL}/info.0.json") as resp:
+            if resp.status == 200:
+                self.latest_comic_info = await resp.json()
+
     @tasks.loop(hours=24.0)
     async def get_wiki_questions(self) -> None:
         """Get yesterday's most read articles from wikipedia and format them like trivia questions."""
@@ -673,6 +574,52 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
         with open(r"extra/trivia_questions.json") as f:
             return json.load(f)
     
+    @commands.command(name="xkcd")
+    async def fetch_xkcd_comics(self, ctx: Context, comic: Optional[str]) -> None:
+        """
+        Getting an xkcd comic's information along with the image.
+        To get a random comic, don't type any number as an argument. To get the latest, type 'latest'.
+        """
+        embed = Embed(title=f"XKCD comic '{comic}'")
+
+        embed.colour = Colours.soft_red
+
+        if comic and (comic := re.match(COMIC_FORMAT, comic)) is None:
+            embed.description = "Comic parameter should either be an integer or 'latest'."
+            await ctx.send(embed=embed)
+            return
+
+        comic = randint(1, self.latest_comic_info["num"]) if comic is None else comic.group(0)
+
+        if comic == "latest":
+            info = self.latest_comic_info
+        else:
+            async with self.bot.http_session.get(f"{BASE_URL}/{comic}/info.0.json") as resp:
+                if resp.status == 200:
+                    info = await resp.json()
+                else:
+                    embed.title = f"XKCD comic #{comic}"
+                    embed.description = f"{resp.status}: Could not retrieve xkcd comic #{comic}."
+                    await ctx.send(embed=embed)
+                    return
+
+        embed.title = f"XKCD comic #{info['num']}"
+        embed.description = info["alt"]
+        embed.url = f"{BASE_URL}/{info['num']}"
+
+        if info["img"][-3:] in ("jpg", "png", "gif"):
+            embed.set_image(url=info["img"])
+            date = f"{info['year']}/{info['month']}/{info['day']}"
+            embed.set_footer(text=f"{date} - #{info['num']}, \'{info['safe_title']}\'")
+            embed.colour = Colours.soft_green
+        else:
+            embed.description = (
+                "The selected comic is interactive, and cannot be displayed within an embed.\n"
+                f"Comic can be viewed [here](https://xkcd.com/{info['num']})."
+            )
+
+        await ctx.send(embed=embed)
+
     @commands.command(name="anagram", aliases=("anag", "gram", "ag"))
     @commands.guild_only()
     async def anagram_command(self, ctx: commands.Context) -> None:
@@ -2086,6 +2033,28 @@ class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown
     @Context.with_type
     async def sob(self, ctx: Context, *,  member: discord.Member=None):
         """Sob sob sob sob image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def sensitive(self, ctx: Context, *,  member: discord.Member=None):
+        """Sensitive image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @Context.with_type
+    async def matrix(self, ctx: Context, *,  member: discord.Member=None):
+        """Matrix image generation"""
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)

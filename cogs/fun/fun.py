@@ -477,7 +477,7 @@ PLAYER: {data['PLAYER']['HAND_VALUE']}
         elif playerValue == dealerValue:
             await interaction.reponse.send_message('It\'s a tie, the bet is returned to you.', ephemeral=True)
     
-    @discord.ui.button(lable='HIT', style=discord.ButtonStyle.danger)
+    @discord.ui.button(label='HIT', style=discord.ButtonStyle.danger)
     async def hit(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.main(interaction)
         newCard = self.deck.pop()
@@ -487,7 +487,7 @@ PLAYER: {data['PLAYER']['HAND_VALUE']}
         if self.getHandValue(self.playerHand) > 21:
             await self.main(interaction)
 
-    @discord.ui.button(lable='STAND', style=discord.ButtonStyle.danger)
+    @discord.ui.button(label='STAND', style=discord.ButtonStyle.danger)
     async def stand(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.main(interaction)
         if self.getHandValue(self.playerHand) <= 21:
@@ -506,7 +506,7 @@ DEALER: {data['DEALER']['HAND_VALUE']}
 {data['DEALER']['CARDS']}
 PLAYER: {data['PLAYER']['HAND_VALUE']}
 {data['PLAYER']['CARDS']}
-""")
+""", view=self)
         
 
 class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member)}):

@@ -4,7 +4,7 @@ import os
 with open('config.json') as f:
     data = json.load(f)
 
-VERSION = "v4.0.2-stable"
+VERSION = "v4.0.6-stable"
 
 OWNER_IDS = data['owner_ids']
 DEFAULT_PREFIX = data['prefix']
@@ -19,6 +19,7 @@ DEV_LOGO = data['dev_logo']
 
 TOKEN = os.environ['TOKEN']
 DATABASE_KEY = os.environ['DATABASE_KEY']
+OPEN_ROBOT_API = os.environ['OPEN_ROBOT_API']
 my_secret = DATABASE_KEY
 
 AUTHOR_NAME = data['author_name']

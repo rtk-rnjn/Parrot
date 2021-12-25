@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """ Munch is a subclass of dict with attribute-style access.
     >>> b = Munch()
     >>> b.hello = 'world'
@@ -16,6 +18,12 @@
     un/munchify provide dictionary conversion; Munches can also be
     converted via Munch.to/fromDict().
 """
+
+__version__ = '2.0.2'
+VERSION = tuple(map(int, __version__.split('.')))
+
+__all__ = ('Munch', 'munchify','unmunchify',)
+
 import sys
 
 _PY2 = (sys.version_info < (3,0))
@@ -38,10 +46,6 @@ else:
     iteritems = dict.items
     iterkeys  = dict.keys
 
-__all__ = ('Munch', 'munchify','unmunchify',)
-__version__ = '2.0.2'
-VERSION = tuple(map(int, __version__.split('.')))
- 
 class Munch(dict):
     """ A dictionary that provides attribute-style access.
         >>> b = Munch()
@@ -272,27 +276,21 @@ def unmunchify(x):
 ### Serialization
 
 try:
-    try:
-        import json
-    except ImportError:
-        import simplejson as json
-
-    def toJSON(self, **options):
-        """ Serializes this Munch to JSON. Accepts the same keyword options as `json.dumps()`.
-            >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
-            >>> json.dumps(b)
-            '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
-            >>> b.toJSON()
-            '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
-        """
-        return json.dumps(self, **options)
-
-    Munch.toJSON = toJSON
-
+    import orjson as json
 except ImportError:
-    pass
+    import json
 
+def toJSON(self, **options):
+    """ Serializes this Munch to JSON. Accepts the same keyword options as `json.dumps()`.
+        >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+        >>> json.dumps(b)
+        '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
+        >>> b.toJSON()
+        '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
+    """
+    return (json.dumps(self, **options)).decode()
 
+Munch.toJSON = toJSON
 
 
 try:
@@ -382,3 +380,8 @@ try:
 
 except ImportError:
     pass
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

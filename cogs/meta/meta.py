@@ -24,7 +24,7 @@ import datetime
 import inspect
 import itertools
 from typing import Any, Dict, List, Optional, Union
-
+# commands.Cog
 
 def format_dt(dt, style=None):
     if dt.tzinfo is None:
@@ -62,7 +62,7 @@ class Prefix(commands.Converter):
 
 
 class GroupHelpPageSource(menus.ListPageSource):
-    def __init__(self, group: Union[commands.Group, commands.Cog],
+    def __init__(self, group: Union[commands.Group, Cog],
                  commands: List[commands.Command], *, prefix: str):
         super().__init__(entries=commands, per_page=6)
         self.group = group
@@ -89,7 +89,7 @@ class GroupHelpPageSource(menus.ListPageSource):
 
 
 class HelpSelectMenu(discord.ui.Select['HelpMenu']):
-    def __init__(self, commands: Dict[commands.Cog, List[commands.Command]],
+    def __init__(self, commands: Dict[Cog, List[commands.Command]],
                  bot: Parrot):
         super().__init__(
             placeholder='Select a category...',
@@ -223,7 +223,7 @@ class HelpMenu(RoboPages):
         super().__init__(source, ctx=ctx, compact=True)
 
     def add_categories(
-            self, commands: Dict[commands.Cog,
+            self, commands: Dict[Cog,
                                  List[commands.Command]]) -> None:
         self.clear_items()
         self.add_item(HelpSelectMenu(commands, self.ctx.bot))
@@ -285,7 +285,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         entries: List[commands.Command] = await self.filter_commands(
             bot.commands, sort=True, key=key)
 
-        all_commands: Dict[commands.Cog, List[commands.Command]] = {}
+        all_commands: Dict[Cog, List[commands.Command]] = {}
         for name, children in itertools.groupby(entries, key=key):
             if name == '\U0010ffff':
                 continue

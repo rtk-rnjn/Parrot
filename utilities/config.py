@@ -1,4 +1,5 @@
-import json, os
+import orjson as json
+import os
 
 with open('config.json') as f:
     data = json.load(f)

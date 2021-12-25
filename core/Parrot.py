@@ -3,7 +3,8 @@ from __future__ import annotations
 import jishaku, os, typing
 from async_property import async_property
 
-import datetime, re, json, asyncio, copy, logging, traceback, aiohttp, sys, discord, asyncio, topgg
+import datetime, re, asyncio, copy, logging, traceback, aiohttp, sys, discord, asyncio, topgg
+import orjson as json
 from collections import Counter, deque, defaultdict
 from discord.ext import commands
 from aiohttp import AsyncResolver, ClientSession, TCPConnector

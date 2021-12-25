@@ -3,7 +3,8 @@ from __future__ import annotations
 from core import Cog, Parrot
 from utilities.database import parrot_db
 
-import discord, time, io, json
+import discord, time, io
+import orjson as json
 
 log = parrot_db['logging']
 server_config = parrot_db['server_config']
@@ -220,14 +221,6 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_webhooks_update(self, channel):
-        pass
-
-    @Cog.listener()
-    async def on_reaction_clear_emoji(self, reaction):
-        pass
-
-    @Cog.listener()
-    async def on_raw_reaction_clear_emoji(self, payload):
         pass
 
 

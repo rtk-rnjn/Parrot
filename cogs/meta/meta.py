@@ -24,7 +24,7 @@ import datetime
 import inspect
 import itertools
 from typing import Any, Dict, List, Optional, Union
-# commands.Cog
+
 
 def format_dt(dt, style=None):
     if dt.tzinfo is None:

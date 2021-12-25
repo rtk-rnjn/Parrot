@@ -5,7 +5,8 @@ from cogs.meta.robopage import SimplePages
 from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
 
-import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, json, ttg, datetime, typing, os, inspect
+import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, ttg, datetime, typing, os, inspect
+import orjson as json
 
 from utilities.paginator import Paginator, PaginationView
 from utilities.converters import convert_bool

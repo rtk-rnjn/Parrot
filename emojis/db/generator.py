@@ -3,7 +3,7 @@ import os
 
 from datetime import datetime
 
-import aiothhp
+import aiohttp
 
 GEMOJI_RELEASE_URL = 'https://api.github.com/repos/github/gemoji/releases'
 GEMOJI_JSON_DB_URL = 'https://raw.githubusercontent.com/github/gemoji/{tag}/db/emoji.json'

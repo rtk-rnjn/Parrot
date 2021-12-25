@@ -4,7 +4,8 @@ from core import Parrot, Cog
 
 from discord.ext import commands
 
-import aiohttp, re, asyncio, json, discord, io
+import aiohttp, re, asyncio, discord, io
+import orjson as json
 from discord import Webhook
 from utilities.database import parrot_db, msg_increment
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE

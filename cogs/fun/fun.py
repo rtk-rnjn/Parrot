@@ -7,7 +7,7 @@ import datetime
 import urllib
 import time
 import re
-import json
+import orjson as json
 import base64
 import string
 import operator

@@ -1,6 +1,6 @@
-'''
+"""
 Emoji database.
-'''
+"""
 
 __all__ = [
     'Emoji',

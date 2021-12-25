@@ -16,14 +16,32 @@
     un/munchify provide dictionary conversion; Munches can also be
     converted via Munch.to/fromDict().
 """
+import sys
 
-__version__ = '2.0.2'
-VERSION = tuple(map(int, __version__.split('.')))
+_PY2 = (sys.version_info < (3,0))
+
+identity = lambda x : x
+
+# u('string') replaces the forwards-incompatible u'string'
+if _PY2:
+    import codecs
+    def u(string):
+        return codecs.unicode_escape_decode(string)[0]
+else:
+    u = identity
+
+# dict.iteritems(), dict.iterkeys() is also incompatible
+if _PY2:
+    iteritems = dict.iteritems
+    iterkeys = dict.iterkeys
+else:
+    iteritems = dict.items
+    iterkeys  = dict.keys
 
 __all__ = ('Munch', 'munchify','unmunchify',)
-
-from .python3_compat import *
-
+__version__ = '2.0.2'
+VERSION = tuple(map(int, __version__.split('.')))
+ 
 class Munch(dict):
     """ A dictionary that provides attribute-style access.
         >>> b = Munch()

@@ -6,7 +6,7 @@ from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
 
 import urllib.parse, aiohttp, discord, re, editdistance, wikipedia, ttg, datetime, typing, os, inspect
-import orjson as json
+import json
 
 from utilities.paginator import Paginator, PaginationView
 from utilities.converters import convert_bool

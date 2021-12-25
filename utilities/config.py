@@ -1,4 +1,4 @@
-import orjson as json
+import json
 import os
 
 with open('config.json') as f:

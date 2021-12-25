@@ -4,7 +4,7 @@ from core import Cog, Parrot
 from utilities.database import parrot_db
 
 import discord, time, io
-import orjson as json
+import json
 
 log = parrot_db['logging']
 server_config = parrot_db['server_config']

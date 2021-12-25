@@ -3,7 +3,7 @@ from __future__ import annotations
 from core import Cog, Parrot
 from utilities.database import parrot_db
 import discord, io
-import orjson as json
+import json
 
 
 class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):

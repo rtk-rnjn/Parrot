@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import orjson as json
+import json
 import zlib
 from functools import partial
 

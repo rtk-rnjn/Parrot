@@ -3,7 +3,7 @@ from __future__ import annotations
 from discord.ext import commands
 import discord, typing, re
 
-import orjson as json
+import json
 
 from core import Parrot, Context, Cog
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update

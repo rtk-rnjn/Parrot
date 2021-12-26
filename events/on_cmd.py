@@ -279,7 +279,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif isinstance(error, commands.MaxConcurrencyReached):
             return await ctx.reply(
-                f"**{random.choice(quote)}**\nMax Concurrenry Reached. This command is already running in this server. You have wait for it to finish"
+                f"**{random.choice(quote)}**\nMax Concurrenry Reached. This command is already running in this server/channel by you. You have wait for it to finish"
             )
 
         elif isinstance(error, ParrotCheckFaliure):

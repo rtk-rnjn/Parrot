@@ -279,15 +279,13 @@ async def _delete_todo(bot: Parrot, ctx: Context, name):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-    
+        
 async def create_gw(bot: Parrot, ctx: Context):
     questions = [
         (1, "Enter the prize of Giveaway"),
         (2, "Enter the channel in which the giveaway will be hosted"),
         (3, "Enter amount of winners"),
         (4, "Enter duration of giveaway"),
-        (5, "Enter Message requirements (if any)"),
-        (6, "Enter the server link incase requirement (if any)")
     ]
     def check(m):
         return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
@@ -320,17 +318,6 @@ async def create_gw(bot: Parrot, ctx: Context):
         if i == 4:
             seconds = ShortTime(f'{msg.content}').dt.timestamp()
             answers['endtime'] = seconds
-        if i == 5:
-            if msg.content.lower() in ('none', 'no', 'na'):
-                answers['message'] = None
-            else:
-                try:
-                    message_requirement = int(msg.content)
-                    answers['message'] = message_requirement
-                except Exception:
-                    return await ctx.send(f"{ctx.author.mention} Invalid Message Requirement count")
-        if i == 6:
-            answers['link'] = None if msg.content.lower() in ('none', 'no', 'na') else msg.content
         
     _id = await channel.send(
             embed=discord.Embed(
@@ -346,119 +333,52 @@ async def create_gw(bot: Parrot, ctx: Context):
     answers['_id'] = _id.id
     answers['guild'] = ctx.guild.id
     await giveaway.insert_one(answers)
-    # {
-    #     '_id': int,
-    #     'link': str,
-    #     'guild': int,
-    #     'endtime': float,
-    #     'winners': int,
-    #     'message': int,
-    #     'prize': str,
-    #     'channel': int
-    # }
     await _id.add_reaction("\N{PARTY POPPER}")
     
     await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**")
 
-async def end_giveaway(bot: Parrot, _id: int, *, ctx: Context=None, auto: bool=False):
+async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
     if data := await giveaway.find_one({'_id': _id}):
-        if not auto:
-            if not (data['guild'] == ctx.guild.id):
-                return await ctx.send(f"{ctx.author.mention} invalid message ID") if ctx else None
+        if not (data['guild'] == ctx.guild.id):
+            return await ctx.send(f"{ctx.author.mention} invalid message ID")
             
-            channel = ctx.guild.get_channel(data['channel'])
-        else:
-            channel = bot.get_guild(data['guild']).get_channel(data['channel'])
-
+        channel = ctx.guild.get_channel(data['channel'])
+        
         if not channel:
             await giveaway.delete_one({'_id': _id})
-            if not auto:
-                return await ctx.send(
-                    f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
-                ) if ctx else None
+            return await ctx.send(
+                f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
+            )
             
         async for msg in channel.history(limit=1, before=discord.Object(_id+1), after=discord.Object(_id-1)): # this is good. UwU
             if msg is None:
-                if not auto:
-                    return await ctx.send(f"{ctx.author.mention} no message found! Proably deleted") if ctx else None
+                return await ctx.send(f"{ctx.author.mention} no message found! Proably deleted")
             await msg.remove_reaction("\N{PARTY POPPER}", channel.guild.me)
 
         for reaction in msg.reactions:
             if str(reaction) == "\N{PARTY POPPER}":
                 if reaction.count < (data['winners'] - 1):
-                    if not auto:
-                        return await ctx.send(
-                            f"{ctx.author.mention} winner can not be decided due to insufficient reaction count."
-                        ) if ctx else None
-                users = await reaction.users().flatten()
-                ls = await get_winners(
-                    bot, 
-                    ctx=ctx, 
-                    msg=msg,
-                    guild=data['guild'],
-                    channel=channel, 
-                    users=users, 
-                    winners=data['winners'], 
-                    msg_required=data['message'], 
-                    server_link=data['link']
-                )
-                if ls[0] == 0:
                     return await ctx.send(
-                        f"{ctx.author.mention} can not determine the winner, bot isn't in the server as it is the requiremnt"
-                    ) if ctx and (not auto) else None
-                
+                        f"{ctx.author.mention} winner can not be decided due to insufficient reaction count."
+                    ) 
+                users = await reaction.users().flatten()
+                ls = await get_winners(    
+                    users=users,
+                    winners=data['winners'],
+                    msg=msg
+                )
                 return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
         else:
-            if not auto:
-                return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.") if ctx else None
+            return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.")
     else:
-        if not auto:
-            await ctx.send(f"{ctx.author.mention} invalid message ID") if ctx else None
+        await ctx.send(f"{ctx.author.mention} invalid message ID")
 
 async def get_winners(
-                bot: Parrot, 
-                *,
-                msg: discord.Message, 
-                guild: int, 
-                ctx: Context=None, 
-                channel: discord.TextChannel, 
                 users: list, 
                 winners: int,
-                msg_required: int=None, 
-                server_link: str=None
+                msg: discord.Message
             ) -> list:
-    collection = msg_db[f"{guild}"]
     wins = random.sample(users, winners)
-    req_reroll = True
-    while req_reroll:
-        if msg_required:
-            for m in wins:
-                if data := await collection.find_one({'_id': m.id}):
-                    if data['count'] < msg_required:
-                        winners.remove(m)
-                        req_reroll = True
-                else:
-                    winners.remove(m)
-                    req_reroll = True
-            else:
-                req_reroll = False
-
-        elif server_link:
-            invite = bot.fetch_invite(server_link)
-            ignore_obj = (discord.PartialInviteGuild, discord.PartialInviteChannel) # bot isnt in guild
-            if isinstance(invite, ignore_obj):
-                return [0]
-            guild = invite.guild
-            for m in wins:
-                m_obj = guild.get_member(m.id) # to check whether member is in required guild
-                if not m_obj:
-                    winners.remove(m)
-                    req_reroll = True
-            else:
-                req_reroll = False
-
-        else:
-            req_reroll = False
     for m in wins:
         await msg.remove_reaction("\N{PARTY POPPER}", m)
     return wins

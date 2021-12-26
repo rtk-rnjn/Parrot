@@ -24,6 +24,10 @@ class Utils(Cog):
         self.reminder_task.start()
         self.collection = parrot_db['timers']
     
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='sparkles_', id=892435276264259665)
+
     async def create_timer(self, 
                            channel: typing.Union[discord.TextChannel, discord.Thread], 
                            message: discord.Message, 
@@ -105,34 +109,6 @@ class Utils(Cog):
             await ctx.reply(text)
         await self.create_timer(ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=True)
     
-    @tasks.loop(seconds=1.0)
-    async def reminder_task(self):
-        async for data in self.collection.find({'age': {'$lte': datetime.utcnow().timestamp()}}):
-            channel = self.bot.get_channel(data['channel'])
-            if not channel:
-                await self.collection.delete_one({'_id': data['_id']})
-            else:
-                if not data['dm']:
-                    try:
-                        await channel.send(f"<@{data['author']}> reminder for: {data['remark']}")
-                    except Exception:
-                        pass # this is done as bot may have being denied to send message
-                    await self.collection.delete_one({'_id': data['_id']})
-                else:
-                    member = channel.guild.get_member(data['author'])
-                    if not member:
-                        await self.collection.delete_one({'_id': data['_id']})
-                    else:
-                        try:
-                            await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
-                        except Exception:
-                            pass # what if member DM are blocked?
-                        await self.collection.delete_one({'_id': data['_id']})
-    
-    @property
-    def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='sparkles_', id=892435276264259665)
-
     @commands.group(invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)
     async def tag(self, ctx: Context, *, tag: str=None):
@@ -289,103 +265,69 @@ class Utils(Cog):
     @giveaway.command()
     async def end(self, ctx: Context, message: int):
         """To end the giveaway"""
-        await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
+        await mt.end_giveaway_with_id(self.bot, message, ctx=ctx)
         await giveaway.delete_one({'_id': message})
     
-    # @giveaway.command()
-    # async def reroll(self, ctx: Context, message: int):
-    #     """To reroll the giveaway winners"""
-    #     await mt.end_giveaway(self.bot, message, ctx=ctx, auto=False)
+    @giveaway.command()
+    async def reroll(self, ctx: Context, message: int):
+        """To reroll the giveaway winners"""
+        await mt.end_giveaway_with_id(self.bot, message, ctx=ctx)
     
 
     @tasks.loop(seconds=1)
     async def gw_tasks(self):
         await self.bot.wait_until_ready()
         async for data in giveaway.find({'endtime': {'$lte': datetime.datetime.utcnow().timestamp()}}):
-            channel = self.bot.get_channel(data['channel'])
+            guild = self.bot.get_guild(data['guild'])
+            if not guild:
+                return # bot is being removed from the guild, or the guild is deleted
+            messageID = data['_id']
+            channelID = data['channel']
+            channel = guild.get_channel(channelID)
+        
             if not channel:
-                return await giveaway.delete_one({'_id': data['_id']})
-            msg = await self.bot.fetch_message_by_channel(channel, data['_id'])
-            if not msg:
-                return await giveaway.delete_one({'_id': data['_id']})
+                return
+            async for msg in channel.history(limit=1, before=discord.Object(messageID+1), after=discord.Object(messageID-1)): # this is good. UwU
+                if msg is None:
+                    return await channel.send(f"Giveaway can not be proceeded! No message found! Proably deleted")
+                await msg.remove_reaction("\N{PARTY POPPER}", channel.guild.me)
+            
             for reaction in msg.reactions:
                 if str(reaction) == "\N{PARTY POPPER}":
                     if reaction.count < (data['winners'] - 1):
-                        print('reaction count', reaction.count)
                         return await channel.send(
-                            f"Winners of giveaway at **{msg.jump_url}** can not be decided due to insufficient reaction count."
-                        )
+                            "Winner can not be decided due to insufficient reaction count."
+                        ) 
                     users = await reaction.users().flatten()
-                    await self.write_db(users, data['_id'])
-                    w = await self.get_winners(data['winners'], data['_id'])
-                    winners = await self.check_gw_requirements(
-                        w, data['_id'], data['link'], data['guild']
+                    ls = await mt.get_winners(    
+                        users=users,
+                        winners=data['winners'],
+                        msg=msg
                     )
-                    if winners:
-                        await channel.send(f"Contrats **{', '.join(['<@'+str(w)+'>' for w in winners])}**. You won {data['prize']}")
-                    else:
-                        await channel.send(f"Well. No one winner can not be determined")
-                    print(winners)
-            await giveaway.delete_one({'_id': data['_id']})
-            await self.react_collection.delete_one({'_id': data['_id']})
-
-    async def write_db(self, users: list[typing.Union[discord.Users, discord.Members, int]], messageID: int):
-        post = {
-            '_id': messageID,
-            'ids': [user.id if type(user) is not int else user for user in users]
-        }
-        try:
-            await self.react_collection.insert_one(post)
-        except Exception:
-            pass
+                    return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
+            else:
+                return await channel.send(f"Winner can not be decided as reactions on the messages had being cleared.")
     
-    async def get_winners(self, winners: int, messageID: int) -> typing.Optional[list[int]]:
-        if data := await self.react_collection.find_one({'_id': messageID}):
-            winners = random.sample(data['ids'], winners)
-            li2 = data['ids']
-            li1 = winners
-            ids = [i for i in li1 + li2 if i not in li1 or i not in li2]
-            await self.react_collection.update_one({'_id': data['_id']}, {'$set': {'ids': ids}})    
-            return winners if winners else None
-    
-    async def check_gw_requirements(
-                self, 
-                winners: list[
-                        typing.Union[
-                            discord.Users, 
-                            discord.Members,
-                            int
-                        ]
-                    ], 
-                message: typing.Optional[int],
-                link: typing.Optional[str],
-                guild_: int
-            ) -> typing.Optional[list[int]]:
-        guild = await self.bot.fetch_invite(link) if link else None
-        if not isinstance(guild, discord.Guild):
-            print(1)
-            return None # bot isnt in the guild...
-            
-        g = self.bot.get_guild(guild_)
-        if not g:
-            return None # bot is kicked or banned...
-        new_winners = []
-        collection = msg_db[f"{g.id}"]
-        for winner in winners:
-            print(2)
-            msg_req = await collection.find_one({'_id': winner.id if type(winner) is not int else winner})
-            print(3)
-            if ((msg_req['count'] >= message)) or (message is None):
-                print(4)
-                if not guild:
-                    new_winners.append(winner)
-                    print(5)
+    @tasks.loop(seconds=1.0)
+    async def reminder_task(self):
+        async for data in self.collection.find({'age': {'$lte': datetime.datetime.utcnow().timestamp()}}):
+            channel = self.bot.get_channel(data['channel'])
+            if not channel:
+                await self.collection.delete_one({'_id': data['_id']})
+            else:
+                if not data['dm']:
+                    try:
+                        await channel.send(f"<@{data['author']}> reminder for: {data['remark']}")
+                    except Exception:
+                        pass # this is done as bot may have being denied to send message
+                    await self.collection.delete_one({'_id': data['_id']})
                 else:
-                    print(6)
-                    m = guild.get_member(winner)
-                    if m:
-                        new_winners.append(m.id)
+                    member = channel.guild.get_member(data['author'])
+                    if not member:
+                        await self.collection.delete_one({'_id': data['_id']})
                     else:
-                        pass
-        
-        return new_winners if new_winners else None
+                        try:
+                            await member.send(f"<@{data['author']}> reminder for: {data['remark']}")
+                        except Exception:
+                            pass # what if member DM are blocked?
+                        await self.collection.delete_one({'_id': data['_id']})

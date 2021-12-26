@@ -20,6 +20,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def thefact(self, ctx: Context, *, text: str = None):
         """
@@ -45,6 +46,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def stickbug(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -70,6 +72,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def trash(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -95,6 +98,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def magik(self,
                     ctx: Context,
@@ -125,6 +129,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def blurpify(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -147,6 +152,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def phcomment(self, ctx: Context, *, text: str = None):
         """
@@ -173,6 +179,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def deepfry(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -195,6 +202,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def tweet(self, ctx: Context, *, text: str = None):
         """
@@ -221,6 +229,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def trumptweet(self, ctx: Context, *, text: str = None):
         """
@@ -243,6 +252,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def trap(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -270,6 +280,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def awooify(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -292,6 +303,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def animeface(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -314,6 +326,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def iphonex(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -336,6 +349,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def threats(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -358,6 +372,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def clyde(self, ctx: Context, *, text: str):
         """
@@ -379,6 +394,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def captcha(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -405,6 +421,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def whowouldwin(self, ctx: Context, *, member: discord.Member):
         """
@@ -430,6 +447,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def baguette(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -453,6 +471,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def awkwardseal(self,
                           ctx: Context,
@@ -490,6 +509,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def changemymind(self,
                            ctx: Context,
@@ -531,6 +551,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def distractedbf(self,
                            ctx: Context,
@@ -572,6 +593,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def doge(self,
                    ctx: Context,
@@ -612,6 +634,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def drakeyesno(self,
                          ctx: Context,
@@ -651,6 +674,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def isthispigeon(self,
                            ctx: Context,
@@ -690,6 +714,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def twobuttons(self,
                          ctx: Context,
@@ -730,6 +755,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def unodraw25(self,
                         ctx: Context,
@@ -769,6 +795,7 @@ class Memegen(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def mastermeme(self,
                          ctx: Context,

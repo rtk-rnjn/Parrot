@@ -21,6 +21,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def waifu(self, ctx: Context, *, member: discord.Member = None):
         """Waifu pics?"""
@@ -38,6 +39,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def shinobu(self, ctx: Context, *, member: discord.Member = None):
         """Shinobu pics?"""
@@ -55,6 +57,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def megumin(self, ctx: Context, *, member: discord.Member = None):
         """Megumin pics?"""
@@ -72,6 +75,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bully(self, ctx: Context, *, member: discord.Member = None):
         """Bully pics?"""
@@ -89,6 +93,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def cuddle(self, ctx: Context, *, member: discord.Member = None):
         """Cuddle pics?"""
@@ -106,6 +111,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def weep(self, ctx: Context, *, member: discord.Member = None):
         """Cry pics?"""
@@ -123,6 +129,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def hug(self, ctx: Context, *, member: discord.Member = None):
         """Hug pics?"""
@@ -140,6 +147,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def awoo(self, ctx: Context, *, member: discord.Member = None):
         """Awoo pics?"""
@@ -157,6 +165,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def kiss(self, ctx: Context, *, member: discord.Member = None):
         """Kiss pics?"""
@@ -174,6 +183,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def lick(self, ctx: Context, *, member: discord.Member = None):
         """Lick pics?"""
@@ -191,6 +201,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def pat(self, ctx: Context, *, member: discord.Member = None):
         """Pat pics?"""
@@ -208,6 +219,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def smug(self, ctx: Context, *, member: discord.Member = None):
         """Smug pics?"""
@@ -225,6 +237,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bonk(self, ctx: Context, *, member: discord.Member = None):
         """Bonk pics?"""
@@ -242,6 +255,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def yeet(self, ctx: Context, *, member: discord.Member = None):
         """Yeet pics?"""
@@ -259,6 +273,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def blush(self, ctx: Context, *, member: discord.Member = None):
         """Blush pics?"""
@@ -276,6 +291,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def smile(self, ctx: Context, *, member: discord.Member = None):
         """Smile pics?"""
@@ -293,6 +309,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def wave(self, ctx: Context, *, member: discord.Member = None):
         """Wave pics?"""
@@ -310,6 +327,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def highfive(self, ctx: Context, *, member: discord.Member = None):
         """Highfive pics?"""
@@ -327,6 +345,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def handhold(self, ctx: Context, *, member: discord.Member = None):
         """Handhold pics?"""
@@ -344,6 +363,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def nom(self, ctx: Context, *, member: discord.Member = None):
         """Nom pics?"""
@@ -361,6 +381,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bite(self, ctx: Context, *, member: discord.Member = None):
         """Bite pics?"""
@@ -378,6 +399,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def glomp(self, ctx: Context, *, member: discord.Member = None):
         """Glomp pics?"""
@@ -395,6 +417,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def slap(self,
                    ctx: Context,
@@ -419,6 +442,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def kill(self, ctx: Context, *, member: discord.Member = None):
         """Kill pics?"""
@@ -436,6 +460,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def hit(self, ctx: Context, *, member: discord.Member = None):
         """Kick pics?"""
@@ -453,6 +478,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def happy(self, ctx: Context, *, member: discord.Member = None):
         """Happy pics?"""
@@ -470,6 +496,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def wink(self, ctx: Context, *, member: discord.Member = None):
         """Wink pics?"""
@@ -487,6 +514,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def poke(self, ctx: Context, *, member: discord.Member = None):
         """Poke pics?"""
@@ -504,6 +532,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def dance(self, ctx: Context, *, member: discord.Member = None):
         """Dance pics?"""
@@ -521,6 +550,7 @@ class Actions(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def cringe(self, ctx: Context, *, member: discord.Member = None):
         """Cringe pics?"""

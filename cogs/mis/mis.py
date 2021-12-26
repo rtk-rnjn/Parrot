@@ -54,6 +54,7 @@ class Misc(Cog):
     @commands.command(aliases=['bigemote'])
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
         """To view the emoji in bigger form"""
@@ -61,6 +62,7 @@ class Misc(Cog):
 
     @commands.command(aliases=['calc', 'cal'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def calculator(self, ctx: Context, *, text: str):
         """This is basic calculator with all the expression supported. Syntax is similar to python math module"""
@@ -82,6 +84,7 @@ class Misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def firstmessage(self,
                            ctx: Context,
@@ -99,6 +102,7 @@ class Misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def maths(self, ctx: Context, operation: str, *, expression: str):
         """Another calculator but quite advance one
@@ -125,6 +129,7 @@ class Misc(Cog):
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def news(self, ctx: Context, nat: str):
         """This command will fetch the latest news from all over the world."""
@@ -171,6 +176,7 @@ class Misc(Cog):
     @commands.command(name="search", aliases=['googlesearch', 'google'])
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def search(self, ctx: Context, *, search: str):
         """Simple google search Engine"""
@@ -212,6 +218,7 @@ class Misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snipe(self, ctx: Context):
         """"Snipes someone's message that's deleted"""
@@ -248,6 +255,7 @@ class Misc(Cog):
         self.snipes[ctx.channel.id] = None
 
     @commands.command(aliases=['trutht', 'tt', 'ttable'])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truthtable(self, ctx: Context, *, data: commands.clean_content):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
@@ -270,6 +278,7 @@ class Misc(Cog):
 
     @commands.command(aliases=['w'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def weather(self, ctx: Context, *, location: str):
         """Weather API, for current weather forecast, supports almost every city."""
@@ -335,6 +344,7 @@ class Misc(Cog):
 
     @commands.command(aliases=['wiki'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def wikipedia(self, ctx: Context, *, text: str):
         """Web articles from Wikipedia."""
@@ -361,6 +371,7 @@ class Misc(Cog):
     @commands.command(aliases=['yt'])
     @commands.bot_has_permissions(embed_links=True)
     @commands.is_nsfw()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def youtube(self,
                       ctx: Context,
@@ -406,6 +417,7 @@ class Misc(Cog):
     @commands.command()
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def embed(self,
                     ctx: Context,
@@ -430,6 +442,7 @@ class Misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snowflakeid(
         self, ctx: Context, *,
@@ -456,6 +469,7 @@ class Misc(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snowflaketime(self, ctx: Context, snowflake1: int,
                             snowflake2: int):
@@ -473,6 +487,7 @@ class Misc(Cog):
         )
 
     @commands.command(aliases=['src'])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def source(self, ctx: Context, *, command: str = None):
         """Displays my full source code or for a specific command."""
@@ -502,6 +517,7 @@ class Misc(Cog):
 
     @commands.group()
     @commands.has_permissions(embed_links=True, add_reactions=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def poll(
         self,
@@ -511,6 +527,7 @@ class Misc(Cog):
         pass
 
     @poll.command(name='create')
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def create_poll(self, ctx: Context, question: str, *, options: str):
         """To create a poll, options should be seperated by commas"""
@@ -554,6 +571,7 @@ class Misc(Cog):
         )
 
     @poll.command(name='get')
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def get_poll(self, ctx: Context, content_id: str):
         """To get the poll data"""
@@ -580,6 +598,7 @@ class Misc(Cog):
         await ctx.reply(embed=embed)
 
     @poll.command(name='delete')
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def delete_poll(self, ctx: Context, content_id: str):
         """To delete the poll. Only if it's yours"""
@@ -596,6 +615,7 @@ class Misc(Cog):
 
     @commands.command(name='orc')
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def ocr(self, ctx: Context, *, link: str = None):
         """To convert image to text"""
@@ -622,6 +642,7 @@ class Misc(Cog):
 
     @commands.command(name='qr', aliases=['createqr', 'cqr'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def qrcode(self, ctx: Context, text: str):
         """To generate the QR"""
@@ -634,6 +655,7 @@ class Misc(Cog):
 
     @commands.command(name='minecraftstatus', aliases=['mcs', 'mcstatus'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def mine_server_status(
             self,

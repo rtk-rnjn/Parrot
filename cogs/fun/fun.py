@@ -403,7 +403,6 @@ def replace_many(
 class Fun(Cog, command_attrs={
             'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member),
             'hidden': False,
-            'max_concurrency': commands.max_concurrency(1, per=discord.ext.commands.BucketType.user)
         }
     ):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
@@ -626,7 +625,7 @@ class Fun(Cog, command_attrs={
         await ctx.send(embed=embed)
 
     @commands.command(name="anagram", aliases=("anag", "gram", "ag"))
-    @commands.guild_only()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     async def anagram_command(self, ctx: commands.Context) -> None:
         """
         Given shuffled letters, rearrange them into anagrams.
@@ -1171,6 +1170,7 @@ class Fun(Cog, command_attrs={
         await channel.send(embed=embed)
 
     @command(name='8ball')
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question:commands.clean_content):
         """
@@ -1179,6 +1179,7 @@ class Fun(Cog, command_attrs={
         await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
 
     @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def choose(self, ctx: Context, *, options:commands.clean_content):
         """
@@ -1191,6 +1192,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['colours', 'colour'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def color(self, ctx: Context, colour):
         """
@@ -1249,6 +1251,7 @@ class Fun(Cog, command_attrs={
   
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def decode(self, ctx: Context, *, string:str):
         """
@@ -1271,6 +1274,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def encode(self, ctx: Context, *, string:str):
         """
@@ -1294,6 +1298,7 @@ class Fun(Cog, command_attrs={
       
     @commands.command(name="fact")
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def animal_fact(self, ctx: Context, *, animal: str):
         """
@@ -1331,6 +1336,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def gay(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1348,6 +1354,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def glass(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1365,6 +1372,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def horny(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1381,6 +1389,7 @@ class Fun(Cog, command_attrs={
 
 
     @commands.command(aliases=['insult'])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def roast(self, ctx: Context, *, member: discord.Member = None):
         """
@@ -1396,6 +1405,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['its-so-stupid'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def itssostupid(self, ctx, *, comment:str):
       """
@@ -1415,6 +1425,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def jail(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1432,6 +1443,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def lolice(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1449,6 +1461,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(name='meme')
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def meme(self, ctx: Context):
         """
@@ -1475,6 +1488,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['fakeprofile'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def fakepeople(self, ctx: Context):
         """
@@ -1512,6 +1526,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def simpcard(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1528,6 +1543,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['trans'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def translate(self, ctx: Context, to: str, *, message: commands.clean_content=None):
         """
@@ -1575,6 +1591,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['triggered'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def trigger(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1591,6 +1608,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['def', 'urban'])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def urbandictionary(self, ctx: Context, *, text: commands.clean_content):
       """
@@ -1629,6 +1647,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def wasted(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1646,6 +1665,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['youtube-comment', 'youtube_comment'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def ytcomment(self, ctx: Context, *, comment:str):
         """
@@ -1666,6 +1686,7 @@ class Fun(Cog, command_attrs={
   
     @commands.command() 
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def dare(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1683,6 +1704,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command() 
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truth(self, ctx: Context, *, member:discord.Member=None):
         """
@@ -1699,6 +1721,7 @@ class Fun(Cog, command_attrs={
 
     @commands.group(aliases=['https'], invoke_without_command=True) 
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def http(self, ctx: Context, *, status_code: int):
         """To understand HTTP Errors, try: `http 404`"""
@@ -1714,6 +1737,7 @@ class Fun(Cog, command_attrs={
 
     @http.command(name='dog')
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def http_dog(self, ctx: Context, *, status_code: int):
         """To understand HTTP Errors, in dog format"""
@@ -1728,6 +1752,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def patpat(self, ctx: Context, *, member: discord.Member=None):
         """Pat pat image generation"""
@@ -1739,6 +1764,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def burn(self, ctx: Context, *, member: discord.Member=None):
         """Burn image generation"""
@@ -1750,6 +1776,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def glitch(self, ctx: Context, *, member: discord.Member=None):
         """Glitch image generation"""
@@ -1761,6 +1788,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bomb(self, ctx: Context, *, member: discord.Member=None):
         """Bomb image generation"""
@@ -1772,6 +1800,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def explicit(self, ctx: Context, *, member: discord.Member=None):
         """Explicit image generation"""
@@ -1783,6 +1812,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def lamp(self, ctx: Context, *, member: discord.Member=None):
         """Lamp image generation"""
@@ -1794,6 +1824,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def rain(self, ctx: Context, *, member: discord.Member=None):
         """Rain image generation"""
@@ -1805,6 +1836,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def layers(self, ctx: Context, *, member: discord.Member=None):
         """Layers image generation"""
@@ -1816,6 +1848,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def radiate(self, ctx: Context, *, member: discord.Member=None):
         """Radiate image generation"""
@@ -1827,6 +1860,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def shoot(self, ctx: Context, *, member: discord.Member=None):
         """Shoot image generation"""
@@ -1838,6 +1872,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def tv(self, ctx: Context, *, member: discord.Member=None):
         """TV image generation"""
@@ -1849,6 +1884,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def gallery(self, ctx: Context, *, member: discord.Member=None):
         """Gallery image generation"""
@@ -1860,6 +1896,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def paparazzi(self, ctx: Context, *, member: discord.Member=None):
         """Paparazzi image generation"""
@@ -1871,6 +1908,7 @@ class Fun(Cog, command_attrs={
         
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def abstract(self, ctx: Context, *, member: discord.Member=None):
         """Abstract image generation"""
@@ -1882,6 +1920,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def balls(self, ctx: Context, *, member: discord.Member=None):
         """Balls image generation"""
@@ -1893,6 +1932,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def shock(self, ctx: Context, *, member: discord.Member=None):
         """Shock image generation"""
@@ -1904,6 +1944,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def equations(self, ctx: Context, *, member: discord.Member=None):
         """Equation image generation"""
@@ -1915,6 +1956,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def boil(self, ctx: Context, *, member: discord.Member=None):
         """Boil image generation"""
@@ -1926,6 +1968,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def shear(self, ctx: Context, member: discord.Member=None, axis: str=None):
         """Shear image generation"""
@@ -1937,6 +1980,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def canny(self, ctx: Context, member: discord.Member=None):
         """Canny image generation"""
@@ -1948,6 +1992,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def emojify(self, ctx: Context, *, member: discord.Member=None):
         """Emojify the image"""
@@ -1960,6 +2005,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['halfinvert'])
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def half_invert(self, ctx: Context, *, member: discord.Member=None):
         """Half Invert image generation"""
@@ -1971,6 +2017,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def roll(self, ctx: Context, *, member: discord.Member=None):
         """Roll image generation"""
@@ -1982,6 +2029,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def optics(self, ctx: Context, *, member: discord.Member=None):
         """Optics image generation"""
@@ -1993,6 +2041,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
         """ScrapBook Text image generation"""
@@ -2003,6 +2052,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command(aliases=['earthquack'])
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def earth_quack(self, ctx: Context, *,  member: discord.Member=None):
         """Earth Quack image generation"""
@@ -2014,6 +2064,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bonks(self, ctx: Context, *,  member: discord.Member=None):
         """Bonks image generation"""
@@ -2025,6 +2076,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def infinity(self, ctx: Context, *,  member: discord.Member=None):
         """Infinity image generation"""
@@ -2035,6 +2087,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def sob(self, ctx: Context, *,  member: discord.Member=None):
         """Sob sob sob sob image generation"""
@@ -2046,6 +2099,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def sensitive(self, ctx: Context, *,  member: discord.Member=None):
         """Sensitive image generation"""
@@ -2057,6 +2111,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def matrix(self, ctx: Context, *,  member: discord.Member=None):
         """Matrix image generation"""
@@ -2068,6 +2123,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def uwuify(self, ctx: Context, *, text: commands.clean_content):
         """Converts a given `text` into it's uwu equivalent."""
@@ -2088,6 +2144,7 @@ class Fun(Cog, command_attrs={
     
     @commands.command(aliases=['cointoss', 'cf', 'ct'])
     @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def coinflip(self, ctx: Context, *, choose: str = None):
         """
@@ -2100,6 +2157,7 @@ class Fun(Cog, command_attrs={
 
     @commands.command(aliases=['slot'])
     @commands.cooldown(1, 10, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def slots(self, ctx: Context):
         """Basic Slots game"""

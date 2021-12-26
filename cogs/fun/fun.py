@@ -400,7 +400,12 @@ def replace_many(
     return regex.sub(_repl, sentence)
  
 
-class Fun(Cog, command_attrs={'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member)}):
+class Fun(Cog, command_attrs={
+            'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member),
+            'hidden': False,
+            'max_concurrency': commands.max_concurrency(1, per=discord.ext.commands.BucketType.user)
+        }
+    ):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
 
     def __init__(self, bot: Parrot):

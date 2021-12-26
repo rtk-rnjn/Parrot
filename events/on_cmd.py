@@ -69,7 +69,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     """This category is of no use for you, ignore it."""
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.log_collection = parrot_db['logging']
+        self.collection = parrot_db['logging']
 
     async def paste(self, text):
         """Return an online bin of given text"""

@@ -160,7 +160,7 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg):
         self._prev_events.append(msg)
 
-    async def on_error(self, event: str, **kwargs):
+    async def on_error(self, event: str, *args):
         traceback_string = traceback.format_exc()
         await self.wait_until_ready()
         url = f"https://discord.com/api/webhooks/{ERROR_CHANNEL_ID}/{self._error_log_token}"

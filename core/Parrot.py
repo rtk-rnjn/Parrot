@@ -172,7 +172,6 @@ class Parrot(commands.AutoShardedBot):
             else:
                 return await webhook.send('\u200b', avatar_url=self.bot.user.avatar.url, username=self.bot.user.name, file=discord.File(file_obj, filename='error.py'))
 
-
     async def before_identify_hook(self, shard_id, *, initial):
         self._clear_gateway_data()
         self.identifies[shard_id].append(discord.utils.utcnow())

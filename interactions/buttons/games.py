@@ -336,7 +336,7 @@ class Chess:
                 return
             else:
                 if msg.content.lower() in ('exit', 'quit', 'resign'):
-                    return await self.ctx.send(f"**{self.turn}** resigned the game. Game Over!")
+                    return await self.ctx.send(f"**{msg.author}** resigned the game. Game Over!")
                 else:
                     await self.place_move(msg.content)
                     self.switch()

@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+import io
+
 import jishaku, os, typing
 from async_property import async_property
 
-import datetime, re, asyncio, copy, logging, traceback, aiohttp, sys, discord, asyncio, topgg
+import datetime, re, asyncio, copy, logging, traceback, aiohttp, sys, asyncio, topgg
 import json
+import socket
 from collections import Counter, deque, defaultdict
 from discord.ext import commands
+import discord
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
+
 from utilities.config import EXTENSIONS, OWNER_IDS, CASE_INSENSITIVE, STRIP_AFTER_PREFIX, TOKEN, AUTHOR_NAME, AUTHOR_DISCRIMINATOR, MASTER_OWNER, GITHUB, SUPPORT_SERVER
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
-import socket
+
 from time import time
 
 from .Context import Context
@@ -30,6 +35,8 @@ dbl_token = os.environ['TOPGG']
 
 CHANGE_LOG_ID = 796932292458315776
 SUPPORT_SERVER_ID = 741614680652644382
+ERROR_CHANNEL_ID = 924356857508790282
+
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -49,16 +56,17 @@ class Parrot(commands.AutoShardedBot):
                 discord.Intents.all()),
             shard_count=3,
             **kwargs)
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages = 0
         self._change_log = None
-        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
+        self._error_log_token = os.environ['CHANNEL_TOKEN2']
         self.color = 0x87CEEB
         self.topggpy = topgg.DBLClient(self,
                                        dbl_token,
                                        autopost=True,
                                        post_shard_count=True)
         self.persistent_views_added = False
-        self.spam_control = commands.CooldownMapping.from_cooldown(5, 6.0, commands.BucketType.user)
+        self.spam_control = commands.CooldownMapping.from_cooldown(10, 12.0, commands.BucketType.user)
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)
         self.identifies = defaultdict(list)
@@ -90,6 +98,7 @@ class Parrot(commands.AutoShardedBot):
         perms = discord.Permissions.none()
         perms.read_messages = True
         perms.external_emojis = True
+        perms.moderate_members = True
         perms.send_messages = True
         perms.manage_roles = True
         perms.manage_channels = True
@@ -150,6 +159,19 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_socket_raw_receive(self, msg):
         self._prev_events.append(msg)
+
+    async def on_error(self, event: str, **kwargs):
+        traceback_string = traceback.format_exc()
+        await self.wait_until_ready()
+        url = f"https://discord.com/api/webhooks/{ERROR_CHANNEL_ID}/{self._error_log_token}"
+        file_obj = io.BytesIO("Ignoring Exception at the {event}: {traceback_string}".encode())
+        webhook = discord.Webhook.from_url(url)
+        if webhook:
+            if len(traceback_string) < 1900:
+                return await webhook.send(f"```\npyIgnoring Exception at the {event}: {traceback_string}```", avatar_url=self.bot.user.avatar.url, username=self.bot.user.name,)
+            else:
+                return await webhook.send('\u200b', avatar_url=self.bot.user.avatar.url, username=self.bot.user.name, file=discord.File(file_obj, filename='error.py'))
+
 
     async def before_identify_hook(self, shard_id, *, initial):
         self._clear_gateway_data()

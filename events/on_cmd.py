@@ -139,9 +139,11 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         # get the original exception
         error = getattr(error, 'original', error)
 
-        ignore = ()
+        ignore = (commands.CommandNotFound, discord.NotFound, discord.Forbidden)
 
-        if isinstance(error, ignore): return
+        if isinstance(error, ignore): 
+            print(error)
+            return
 
         elif isinstance(error, commands.BotMissingPermissions):
             missing = [

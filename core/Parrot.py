@@ -65,6 +65,7 @@ class Parrot(commands.AutoShardedBot):
                                        dbl_token,
                                        autopost=True,
                                        post_shard_count=True)
+        self.topgg_webhook = topgg.WebhookManager(self).dbl_webhook("/dblwebhook", f"{os.environ['TOPGG_AUTH']}")
         self.persistent_views_added = False
         self.spam_control = commands.CooldownMapping.from_cooldown(10, 12.0, commands.BucketType.user)
         self._auto_spam_count = Counter()
@@ -165,7 +166,7 @@ class Parrot(commands.AutoShardedBot):
         await self.wait_until_ready()
         url = f"https://discord.com/api/webhooks/{ERROR_CHANNEL_ID}/{self._error_log_token}"
         file_obj = io.BytesIO("Ignoring Exception at the {event}: {traceback_string}".encode())
-        webhook = discord.Webhook.from_url(url)
+        webhook = discord.Webhook.from_url(url, session=self.session)
         if webhook:
             if len(traceback_string) < 1900:
                 return await webhook.send(f"```\npyIgnoring Exception at the {event}: {traceback_string}```", avatar_url=self.bot.user.avatar.url, username=self.bot.user.name,)
@@ -188,6 +189,15 @@ class Parrot(commands.AutoShardedBot):
             return self.dispatch("dbl_test", data)
 
         print(f"Received a vote:\n{data}")
+    
+    async def on_dbl_test(self, data):
+        """An event that is called whenever someone tests the webhook system for your bot on Top.gg."""
+        print(f"Received a test vote:\n{data}")
+    
+    async def on_autopost_success(self):
+        print(
+            f"Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
+        )
 
     def run(self):
         """"To run connect and login into discord"""

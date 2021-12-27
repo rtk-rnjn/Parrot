@@ -30,11 +30,13 @@ async def gchat_update(guild_id: int, post: dict):
 
 async def msg_increment(guild_id: int, user_id: int):
     collection = msg_db[f'{guild_id}']
-    data = await collection.find_one({'_id': user_id})
-    if not data: 
+    if data := await collection.find_one({'_id': user_id}):
+        await collection.update_one({'_id': user_id}, {'$inc': {'count': 1}})
+    try:
         await collection.insert_one({'_id': user_id, 'count': 1})
+    except Exception:
+        pass
         
-    await collection.update_one({'_id': user_id}, {'$inc': {'count': 1}})
 
 
 async def telephone_update(guild_id: int, event: str, value):

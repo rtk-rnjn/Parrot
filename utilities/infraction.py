@@ -80,7 +80,7 @@ class Infraction:
                 }})
             return 1
 
-    async def make_warn(self, *, at: int, reason: str, mod: int, expires_at: Optional[int]) -> dict:
+    async def make_warn(self, *, at: int, reason: str, mod: int, expires_at: Optional[int], auto: Optional[bool]=True) -> dict:
         case_id = self.get_case_id()
         warn = {
             'case_id': case_id,
@@ -93,10 +93,12 @@ class Infraction:
                                                  {'$inc': {
                                                      'warn_count': 1
                                                  }})
+        if auto:
+            await self.add_warn()
         return warn
 
     async def add_warn(self) -> dict:
-        warn = self._make_warn()
+        warn = self.make_warn()
         collection = self._warn_db[f"{self.guild_id}"]
         user_exists = await collection.find_one({'_id': self.user_id})
         if user_exists:

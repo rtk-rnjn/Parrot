@@ -68,7 +68,7 @@ class Context(commands.Context):
     
     def __repr__(self):
         # we need this for our cache key strategy
-        return f'<{self.bot.user.name} Context>'
+        return f'<core.{self.bot.user.name} Context>'
     
     @property
     def session(self):

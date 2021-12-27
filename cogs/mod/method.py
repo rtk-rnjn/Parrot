@@ -9,7 +9,7 @@ from utilities.infraction import Infraction
 
 collection = parrot_db['server_config']
 mute_collection = parrot_db['mute']
-
+ban_collection = parrot_db['banned_members']
 
 async def create_mute_task(guild_id: int, author_id: int, role_id: int, timestamp: float):
     post = {
@@ -265,6 +265,29 @@ async def _softban(guild, command_name, ctx_author, destination, member,
                 await destination.send(
                     f'{ctx_author.mention} **{member}** is soft banned!'
                 )
+        except Exception as e:
+            await destination.send(
+                f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
+            )
+
+async def _temp_ban(guild, command_name, ctx_author, destination, member, duration, reason):
+    for member in member:
+        try:
+            if member.id == ctx_author.id or member.id == guild.me.id:
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
+                return
+            else:
+                await member.ban(
+                    reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
+                )
+            data = {
+                'member_id': member.id,
+                'guild': guild.id,
+                'duration': duration.timestamp()
+            }
+            await ban_collection.insert_one(data)
         except Exception as e:
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"

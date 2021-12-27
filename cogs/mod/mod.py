@@ -19,6 +19,8 @@ from utilities.infraction import Infraction
 
 collection = parrot_db['server_config']
 mute_collection = parrot_db['mute']
+ban_collection = parrot_db['banned_members']
+
 
 class Mod(Cog):
     """A simple moderator's tool for managing the server."""
@@ -133,6 +135,15 @@ class Mod(Cog):
     async def softban(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """To Ban a member from a guild then immediately unban"""
         await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
+        await self.log(ctx, ctx.command.qualified_name, f'{", ".join([str(member) for member in member])}', f'{reason}')
+    
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
+    @commands.bot_has_permissions(ban_members=True)
+    @Context.with_type
+    async def tempban(self, ctx: Context, member: commands.Greedy[discord.Member], duration: ShortTime, *, reason: reason_convert = None):
+        """To Ban a member from a guild then immediately unban"""
+        await mt._tempban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, duration, reason)
         await self.log(ctx, ctx.command.qualified_name, f'{", ".join([str(member) for member in member])}', f'{reason}')
 
     @commands.command()
@@ -784,6 +795,13 @@ class Mod(Cog):
         mod = ctx.author.id
         user = member.id
         at = datetime.utcnow().timestamp()
+        await ctx.send(f"**{member}**! You are being warned!")
+        try:
+            await member.send(f"You are being warned from the server **{ctx.guild.name}**\nReason: **{reason}*\nResponsible Moderator: **{ctx.author}** ({ctx.author.id})")
+        except Exception:
+            pass
+        finally:
+            await infrac.make_warn(at=at, reason=reason, mod=ctx.author.id, expires_at=None)
         
         
     @tasks.loop(seconds=1)
@@ -793,11 +811,21 @@ class Mod(Cog):
             if not guild:
                 return await mute_collection.delete_one({'_id': data['_id']})
             try:
-                await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']), reason=f"Mute Expires")
-            except AttributeError:
+                await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']), reason=f"Mute duration expires")
+            except Exception:
                 pass
-            except discord.errors.Forbidden:
+            finally:
+                await mute_collection.delete_one({'_id': data['_id']})
+
+    @tasks.loop(seconds=1)
+    async def unban_task(self):
+        async for data in ban_collection.find({'duration': {'$lte': datetime.utcnow().timestamp()}}):
+            guild = self.bot.get_guild(data['guild_id'])
+            if not guild:
+                return await ban_collection.delete_one({'_id': data['_id']})
+            try:
+                await guild.unban(discord.Object(id=data['member_id']), reason=f"Ban duration expires!")
+            except discord.NotFound:
                 pass
-            except discord.errors.NotFound:
-                pass
-            await mute_collection.delete_one({'_id': data['_id']})
+            finally:
+                await ban_collection.delete_one({'_id': data['_id']})

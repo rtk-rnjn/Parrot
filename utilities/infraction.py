@@ -8,40 +8,26 @@ from core import Parrot
 from utilities.database import parrot_db
 import datetime
 
+from typing import Optional
+
 
 class Infraction:
-    def __init__(self,
-                 bot: Parrot, 
-                 *,
-                 guild_id: int,
-                 user_id: int,
-                 reason: str = None,
-                 at: int,
-                 mod: int,
-                 expires_at: int = None):
+    def __init__(self, bot: Parrot):
         self.bot = bot
-        self.guild_id = guild_id
-        self.user_id = user_id
-        self.reason = reason
-        self.at = at
-        self.mod = mod
-        self.expires_at = expires_at
         self._parrot_collection = parrot_db['server_config']
         self._warn_db = None
 
-    @async_property
     async def total_warns(self) -> int:
         if self._warn_db is None:
             self._warn_db = await self.bot.db('warn_db')
 
         collection = self._warn_db[str(self.guild.id)]
-        data = collection.find_one({'_id': self.user.id})
+        data = await collection.find_one({'_id': self.user.id})
         if not data:
             return 0
         else:
             return len(data['warns'])
 
-    @async_property
     async def total_warns_server(self) -> int:
         if self._parrot_collection is None:
             parrot_db = await self.bot.db('parrot_db')
@@ -57,7 +43,6 @@ class Infraction:
                 }})
             return 0
 
-    @async_property
     async def to_table(self) -> str:
         my_table = PrettyTable(
             ['Case ID', 'AT', 'Reason', 'Moderator', 'Expires At'])
@@ -95,14 +80,14 @@ class Infraction:
                 }})
             return 1
 
-    async def make_warn(self) -> dict:
+    async def make_warn(self, *, at: int, reason: str, mod: int, expires_at: Optional[int]) -> dict:
         case_id = self.get_case_id()
         warn = {
             'case_id': case_id,
-            'at': self.at,
-            'reason': self.reason,
-            'mod': self.mod,
-            'expires_at': self.expires_at
+            'at': at,
+            'reason': reason,
+            'mod': mod,
+            'expires_at': expires_at
         }
         await self._parrot_collection.update_one({'_id': self.guild_id},
                                                  {'$inc': {

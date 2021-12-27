@@ -41,7 +41,6 @@ class Profanity(Cog):
                 return
             try:
                 ignore = data['automod']['profanity']['channel']
-            
             except KeyError:
                 ignore = []
             

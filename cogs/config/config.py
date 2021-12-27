@@ -59,14 +59,14 @@ class BotConfig(Cog):
             data = await csc.find_one({'_id': ctx.guild.id})
             if data:
                 role = ctx.guild.get_role(
-                    data['mod_role']).name if data['mod_role'] else None
+                    data.get('mod_role')).name 
                 mod_log = ctx.guild.get_channel(
-                    data['action_log']).name if data['action_log'] else None
+                    data.get('action_log')).name
                 await ctx.reply(
                     f"Configuration of this server [server_config]\n\n"
-                    f"`Prefix :` **{data['prefix']}**\n"
-                    f"`ModRole:` **{role} ({data['mod_role'] if data['mod_role'] else None})**\n"
-                    f"`MogLog :` **{mod_log} ({data['action_log'] if data['action_log'] else None})**\n"
+                    f"`Prefix :` **{data.get('prefix')}**\n"
+                    f"`ModRole:` **{role} ({data.get('mod_role')})**\n"
+                    f"`MogLog :` **{mod_log} ({data.get('action_log')})**\n"
                 )
 
     @config.command(aliases=['log'])
@@ -233,7 +233,7 @@ class BotConfig(Cog):
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def spam(self, ctx: Context, to_enable: convert_bool):
+    async def antispam(self, ctx: Context, to_enable: convert_bool):
         """To toggle the spam protection in the server"""
         await csc.update_one(
             {'_id': ctx.guild.id},
@@ -244,50 +244,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**. Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. Bot will be issuing warning if someone exceeds the limit.")
-    
-    @automod.command()
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def nudedetection(self, ctx: Context, to_enable: convert_bool):
-        """To toggle the spam protection in the server"""
-        await csc.update_one(
-            {'_id': ctx.guild.id},
-            {
-                '$set': {
-                    'automod.nudedetection.enable': to_enable 
-                }
-            }
-        )
-        await ctx.reply(f"{ctx.author.mention} nudes detection is set to **{to_enable}**")
-    @automod.command()
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def nudeignore(self, ctx: Context, *, channel: discord.TextChannel):
-        """To whitelist the spam channel. Pass None to delete the setting"""
-        await csc.update_one(
-            {'_id': ctx.guild.id},
-            {
-                '$addToSet': {
-                    'automod.nudedetection.channel': channel.id 
-                }
-            }
-        )
-        await ctx.reply(f"{ctx.author.mention} NSFW protection won't be working in **{channel.name}**")
-    
-    @automod.command()
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def nuderemove(self, ctx: Context, *, channel: discord.TextChannel):
-        """To whitelist the spam channel. Pass None to delete the setting"""
-        await csc.update_one(
-            {'_id': ctx.guild.id},
-            {
-                '$pull': {
-                    'automod.nudedetection.channel': channel.id 
-                }
-            }
-        )
-        await ctx.reply(f"{ctx.author.mention} NSFW protection will be working in **{channel.name}**")
+
     
     @automod.command()
     @commands.has_permissions(administrator=True)
@@ -717,19 +674,19 @@ class BotConfig(Cog):
             ticket_counter = data['ticket_counter']
             valid_roles = ', '.join(
                 ctx.guild.get_role(n).name
-                for n in data['valid_roles']) if data['valid_roles'] else None
+                for n in data['valid_roles']) if data.get('valid_roles') else None
             pinged_roles = ', '.join(
                 ctx.guild.get_role(n).name for n in
-                data['pinged_roles']) if data['pinged_roles'] else None
+                data['pinged_roles']) if data.get('pinged_roles') else None
             current_active_channel = ', '.join(
                 ctx.guild.get_channel(n).name
                 for n in data['ticket_channel_ids']
-            ) if data['ticket_channel_ids'] else None
+            ) if data.get('ticket_channel_ids') else None
             verified_roles = ', '.join(
                 ctx.guild.get_role(n).name for n in
-                data['verified_roles']) if data['verified_roles'] else None
+                data['verified_roles']) if data.get('verified_roles') else None
             category = ctx.guild.get_channel(
-                data['category']) if data['category'] else None
+                data['category']) if data.get('category') else None
             await ctx.reply(
                 f"Configuration of this server [ticket]\n\n"
                 f"`Total Ticket made  :` **{ticket_counter}**\n"
@@ -882,7 +839,12 @@ class BotConfig(Cog):
         collection = enable_disable[f"{ctx.guild.id}"]
         async for data in collection.find({}):
             em = discord.Embed(title=f"Cmd/Cog: {data['_id']}", timestamp=datetime.utcnow(), color=ctx.author.color).set_footer(text=f'{ctx.author}')
-            em.description = f"`Channel In :` {(str(data['channel_in']))}\n`Channel Out:` {(str(data['channel_out']))}\n`Role In   :` {(str(data['role_in']))}\n`Role Out  :` {(str(data['role_out']))}\n\nServer Wide?:{data['server']}\n"
+            em.description = f"""`Channel In :` {(str(data['channel_in']))}
+`Channel Out:` {(str(data['channel_out']))}
+`Role In    :` {(str(data['role_in']))}
+`Role Out   :` {(str(data['role_out']))}
+
+Server Wide?:{data['server']}"""
             em_lis.append(em)
         paginator = Paginator(pages=em_lis, timeout=60.0)
         await paginator.start(ctx)
@@ -896,3 +858,11 @@ class BotConfig(Cog):
         collection = enable_disable[f"{ctx.guild.id}"]
         await collection.drop()
         await ctx.send(f"{ctx.author.mention} reseted everything!")
+
+    @commands.group(name='autowarn', invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def autowarn(self, ctx: Context, *, to_enable: convert_bool):
+        """Autowarn management of the server"""
+        if not ctx.invoked_subcommand:
+            pass

@@ -13,6 +13,8 @@ from utilities.time import ShortTime
 from cogs.mod import method as mt
 from datetime import datetime
 
+from utilities.infraction import Infraction
+
 collection = parrot_db['server_config']
 mute_collection = parrot_db['mute']
 
@@ -803,6 +805,17 @@ class Mod(Cog):
 
         return await msg.delete()
     
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @Context.with_type
+    async def warn(self, ctx: Context, member: discord.Member, *, reason: str):
+        """A warning command"""
+        infrac = Infraction(self.bot)
+        mod = ctx.author.id
+        user = member.id
+        at = datetime.utcnow().timestamp()
+        
+        
     @tasks.loop(seconds=1)
     async def unmute_task(self):
         async for data in mute_collection.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):

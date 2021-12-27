@@ -280,24 +280,31 @@ class Utils(Cog):
         async for data in giveaway.find({'endtime': {'$lte': datetime.datetime.utcnow().timestamp()}}):
             guild = self.bot.get_guild(data['guild'])
             if not guild:
-                return # bot is being removed from the guild, or the guild is deleted
+                await giveaway.delete_one({'_id': message})
+                return
+                # bot is being removed from the guild, or the guild is deleted
             messageID = data['_id']
             channelID = data['channel']
             channel = guild.get_channel(channelID)
         
             if not channel:
+                await giveaway.delete_one({'_id': message})
                 return
             async for msg in channel.history(limit=1, before=discord.Object(messageID+1), after=discord.Object(messageID-1)): # this is good. UwU
                 if msg is None:
-                    return await channel.send(f"Giveaway can not be proceeded! No message found! Proably deleted")
+                    await channel.send(f"Giveaway can not be proceeded! No message found! Proably deleted")
+                    await giveaway.delete_one({'_id': message})
+                    return
                 await msg.remove_reaction("\N{PARTY POPPER}", channel.guild.me)
             
             for reaction in msg.reactions:
                 if str(reaction) == "\N{PARTY POPPER}":
                     if reaction.count < (data['winners'] - 1):
-                        return await channel.send(
+                        await channel.send(
                             "Winner can not be decided due to insufficient reaction count."
                         ) 
+                        await giveaway.delete_one({'_id': message})
+                        return
                     users = await reaction.users().flatten()
                     ls = await mt.get_winners(    
                         users=users,
@@ -305,9 +312,10 @@ class Utils(Cog):
                         msg=msg
                     )
                     await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
+                    await giveaway.delete_one({'_id': message})
             else:
                 await channel.send(f"Winner can not be decided as reactions on the messages had being cleared.")
-        await giveaway.delete_one({'_id': message})
+                await giveaway.delete_one({'_id': message})
     
     @tasks.loop(seconds=1.0)
     async def reminder_task(self):

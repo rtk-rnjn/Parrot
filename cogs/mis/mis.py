@@ -21,6 +21,13 @@ google_key = os.environ['GOOGLE_KEY']
 cx = os.environ['GOOGLE_CX']
 
 
+class TTFlag(commands.FlagConverter,
+                case_insensitive=True,
+                prefix="--",
+                delimiter=' '):
+    var: commands.Greedy[str]
+    con: commands.Greedy[str]
+
 class Misc(Cog):
     """Those commands which can't be listed"""
     def __init__(self, bot: Parrot):
@@ -257,23 +264,13 @@ class Misc(Cog):
     @commands.command(aliases=['trutht', 'tt', 'ttable'])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def truthtable(self, ctx: Context, *, data: commands.clean_content):
+    async def truthtable(self, ctx: Context, *, flags: TTFlag):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
            Syntax:
-		   Truthtable -var *variable1*, *variable2*, *variable3* ... -con *condition1*, *condition2*, *condition3* ...`
-           (Example: `tt -var a, b -con a and b, a or b`)
+		   Truthtable --var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
+           (Example: `tt --var a, b --con a and b, a or b`)
 		"""
-        data = data.split("-")
-        if data[-2][:3:] == "var":
-            var = data[-2][4::].replace(" ", "").split(",")
-        if data[-1][:3:] == "var":
-            var = data[-1][4::].replace(" ", "").split(",")
-
-        if data[-1][:3:] == "con": con = data[-1][4::].split(",")
-        if data[-2][:3:] == "con": con = data[-2][4::].split(",")
-
-        table = ttg.Truths(var, con, ints=False).as_prettytable()
-
+        table = ttg.Truths(flags.var, flags.con, ints=False).as_prettytable()
         await ctx.reply(f"```\n{table}\n```")
 
     @commands.command(aliases=['w'])
@@ -449,7 +446,7 @@ class Misc(Cog):
         target: typing.Union[discord.User, discord.Member, discord.Role,
                              discord.Thread, discord.TextChannel,
                              discord.VoiceChannel, discord.StageChannel,
-                             discord.Guild, discord.Emoji, discord.Message,
+                             discord.Guild, discord.Emoji,
                              discord.Invite, discord.Template,
                              discord.CategoryChannel, discord.DMChannel,
                              discord.GroupChannel]):

@@ -1,19 +1,20 @@
 from discord.ext import commands
 import typing
-
+import discord
+from utilities.converters import convert_bool
 
 class purgeFlag(commands.FlagConverter,
                 case_insensitive=True,
-                prefix="-",
+                prefix="--",
                 delimiter=' '):
+    member: typing.Optional[discord.Member]
     regex: typing.Optional[str]
-    attachment: typing.Optional[bool]
-    links: typing.Optional[bool]
-    iregex: typing.Optional[str]
+    attachment: typing.Optional[convert_bool] = False
+    links: typing.Optional[convert_bool] = False
 
 
 class reasonFlag(commands.FlagConverter,
                  case_insensitive=True,
-                 prefix='-',
+                 prefix='--',
                  delimiter=' '):
     reason: typing.Optional[str]

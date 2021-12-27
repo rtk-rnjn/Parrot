@@ -6,12 +6,14 @@ import discord, typing, re
 import json
 
 from core import Parrot, Context, Cog
-from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
 from datetime import datetime
-from utilities.paginator import Paginator
 
+from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
+from utilities.paginator import Paginator
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
+
+from .flags import AutoWarn
 
 from cogs.ticket import method as mt
 from cogs.config import method as mt_
@@ -859,10 +861,40 @@ Server Wide?:{data['server']}"""
         await collection.drop()
         await ctx.send(f"{ctx.author.mention} reseted everything!")
 
-    @commands.group(name='autowarn', invoke_without_command=True)
+    @commands.command(name='autowarn')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def autowarn(self, ctx: Context, *, to_enable: convert_bool):
+    async def autowarn(self, ctx: Context, action: str, *, flags: AutoWarn):
         """Autowarn management of the server"""
-        if not ctx.invoked_subcommand:
-            pass
+        PUNISH = ['timeout', 'tempmute', 'mute', 'softban', 'ban', 'kick', 'removerole', 'addrole']
+        ACTIONS = ["antilinks", "profanity", "spam", "emoji", "caps"]
+
+        if action.lower() not in ACTIONS:
+            await ctx.send(
+                f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**"
+            )
+            return
+        data = {
+            'enabled': flags.enable,
+            'warn_count': flags.count,
+            'to_delete': flags.delete,
+            'punish': {
+                'type': flags.punish if flags.punish in PUNISH else None,
+                'duration': flags.duration.timestamp() if flags.duration else None
+            }
+        }
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$set': {
+                    'automod.{actions}.autowarn': data
+                }
+            }
+        )
+        await ctx.send(f"""{ctx.author.mention} configuration you set:
+`Warn Enabed`: {data.get('enabled')}
+`Warn Count `: {data.get('warn_count')}
+`To delete  `: {data.get('to_delete')}
+`Punish Type`: {data['punish']['type']}
+`Duration   `: {data['punish']['duration']}
+""")

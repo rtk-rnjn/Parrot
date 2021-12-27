@@ -1,4 +1,5 @@
 from __future__ import annotations
+from cogs.mod.flags import purgeFlag
 
 from discord.ext import commands, tasks
 import discord, typing, re, asyncio
@@ -9,6 +10,7 @@ from utilities.checks import is_mod
 from utilities.converters import reason_convert
 from utilities.database import parrot_db
 from utilities.time import ShortTime
+from utilities.regex import LINKS_NO_PROTOCOLS
 
 from cogs.mod import method as mt
 from datetime import datetime
@@ -181,15 +183,12 @@ class Mod(Cog):
         for chn in channel:
             if type(chn) is discord.TextChannel:
                 await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
-                return
             elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
-                return
             else:
                 pass
         else:
             await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
-            return
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
     @commands.command()
@@ -242,54 +241,25 @@ class Mod(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     @Context.with_type
-    async def clear(self, ctx, num: int, *, target: discord.Member=None):
+    async def clear(self, ctx, num: int, *, flags: purgeFlag):
         """To delete bulk message"""
         await ctx.message.delete()
         if num > 100 or num < 0:
             return await ctx.send("Invalid amount. Maximum is 100.")
-        def msgcheck(amsg):
-            if target:
-                return amsg.author.id == target.id
-            return True
-        deleted = await ctx.channel.purge(limit=num, check=msgcheck)
-        await ctx.send(f'{ctx.author.mention} deleted **{len(deleted)}/{num}** possible messages for you.', delete_after=10)
-
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    @commands.bot_has_permissions(manage_messages=True, read_message_history=True)
-    @Context.with_type
-    async def purgebots(self, ctx: Context, amount: int):
-        """To delete bulk message, of bots"""
-        await ctx.message.delete()
-        if amount > 100 or amount < 0:
-            return await ctx.send("Invalid amount. Maximum is 100.")
         
-        def check(m):
-            return m.author.bot
+        def check(m: discord.Message):
+            if flags.member:
+                return m.author.id == flags.member.id
+            if flags.regex:
+                return re.seach(rf"{flags.regex}", m.content)
+            if flags.links:
+                return LINKS_NO_PROTOCOLS.search(m.content)
+            if flags.attachment:
+                return m.attachments != []
+            return True
 
-        deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
-        await ctx.send(f"{ctx.author.mention} deleted **{len(deleted)}/{amount}** possible messages for you.", delete_after=10)
-        await self.log(
-            ctx, 'Clean Bots', ctx.channel,
-            f'Action Requested by {ctx.author} ({ctx.author.id}) | Total message deleted {len(deleted)}'
-        )
-
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    @commands.bot_has_permissions(manage_messages=True, read_message_history=True)
-    @Context.with_type
-    async def purgeregex(self, ctx: Context, amount: int, *, regex: str):
-        """To delete bulk message, matching the regex"""
-        await ctx.message.delete()
-        def check(m):
-            return re.search(regex, m.content)
-
-        deleted = await ctx.channel.purge(limit=amount, bulk=True, check=check)
-        await ctx.send(f"{ctx.author.mention} deleted **{len(deleted)}/{amount}** possible messages for you.", delete_after=10)
-        await self.log(
-            ctx, 'Clean Regex', ctx.channel,
-            f'Action Requested by {ctx.author} ({ctx.author.id}) | Total message deleted {len(deleted)}'
-        )
+        deleted = await ctx.channel.purge(limit=num, check=check)
+        await ctx.send(f'{ctx.author.mention} deleted **{len(deleted)}/{num}** possible messages for you.', delete_after=10)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))

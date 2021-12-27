@@ -278,6 +278,7 @@ class Utils(Cog):
     async def gw_tasks(self):
         await self.bot.wait_until_ready()
         async for data in giveaway.find({'endtime': {'$lte': datetime.datetime.utcnow().timestamp()}}):
+            message = data['_id']
             guild = self.bot.get_guild(data['guild'])
             if not guild:
                 await giveaway.delete_one({'_id': message})

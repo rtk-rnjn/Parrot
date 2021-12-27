@@ -3,7 +3,6 @@ from __future__ import annotations
 from .mod import Mod
 from .profanity import Profanity
 from .anti_links import LinkProt
-from .nudes_detection import NudeDetection
 from .spam_prot import SpamProt
 from .emoji_caps_prot import EmojiCapsProt
 from .mention_prot import MentionProt
@@ -15,7 +14,6 @@ def setup(bot: Parrot):
     bot.add_cog(Mod(bot))
     bot.add_cog(Profanity(bot))
     bot.add_cog(LinkProt(bot))
-    bot.add_cog(NudeDetection(bot))
     bot.add_cog(SpamProt(bot))
     bot.add_cog(EmojiCapsProt(bot))
     bot.add_cog(MentionProt(bot))

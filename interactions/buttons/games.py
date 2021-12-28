@@ -269,7 +269,8 @@ class Chess:
         self, 
         white: discord.Member, 
         black: discord.Member, *, 
-        bot: Parrot, ctx: Context, 
+        bot: Parrot, 
+        ctx: Context, 
         timeout: float=300, 
         react_on_success: bool=True, 
         custom: str=None
@@ -333,7 +334,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
         embed.set_footer(text=f"Turn: {self.alternate_turn} | Having 5m to make move")
         await self.ctx.send(
             content=content,
-            embed = embed, view=ChessView(game=self))
+            embed = embed, view=ChessView(game=self, ctx=self.ctx))
         await self.game_over()
         
     async def game_over(self,) -> Optional[bool]:
@@ -366,7 +367,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
         embed.set_footer(text=f"Turn: {self.turn} | Having 5m to make move")
         await self.ctx.send(
             content=content,
-            embed=embed, view=ChessView(game=self))
+            embed=embed, view=ChessView(game=self, ctx=self.ctx))
         while not self.game_stop:
             msg = await self.wait_for_move()
             if msg is None:

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import urllib
 from core import Parrot, Context, Cog
 from aiofile import async_open
 
 from discord.ext import commands
-import discord, aiohttp, datetime, os, traceback, typing
+import discord
+
+import aiohttp, datetime, os, traceback, typing
 
 from utilities.database import ban
-import re, io, zlib
+import re, io, zlib, os
 
 from . import fuzzy
 from utilities.paginator import Paginator, PaginationView
@@ -34,9 +37,9 @@ class nitro(discord.ui.View):
         ni = discord.Embed(title=f"You received a gift, but...", description=f"The gift link has either expired or has been\nrevoked.")
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
-          await interaction.message.edit(embed=ni,view=self)
+            await interaction.message.edit(embed=ni,view=self)
         except:
-          pass
+            pass
 
 
 class Owner(Cog, command_attrs=dict(hidden=True)):
@@ -110,6 +113,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                                               discord.TextChannel, 
                                               discord.Thread]=None):
         """Fun command"""
+        target = target or ctx.channel
         await target.send(embed=discord.Embed(
                             title="You've been gifted a subscription!", 
                             description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
@@ -152,22 +156,18 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
         """Image Search. Anything"""
-        try:
-            async with aiohttp.ClientSession() as session:
-                res = await session.get(
-                    f"https://normal-api.ml/image-search?query={text}",
-                    timeout=aiohttp.ClientTimeout(total=60))
-        except Exception as e:
-            return await ctx.reply(
-                f"{ctx.author.mention} something not right. Error raised {e}")
-        json = await res.json()
-        if str(json['status']) != str(200):
-            return await ctx.reply(f"{ctx.author.mention} something not right."
-                                   )
-        img = json['image']
-        await ctx.reply(embed=discord.Embed(
-            color=ctx.author.color, timestamp=datetime.datetime.utcnow()).
-                        set_image(url=img).set_footer(text=f"{ctx.author}"))
+        text = urllib.parse.quote(text)
+        url = f"https://www.googleapis.com/customsearch/v1?key={os.environ['GOOGLE_KEY']}&cx={os.environ['GOOGLE_CS']}&q={text}&searchType=image"
+        res = await self.bot.session.get(url)
+        data = await res.json()
+        ls = list()
+        for i in data['items']:
+            embed = discord.Embed(title=i['title'], link=i['displayLink'], description=f"```\n{i['snippet']}```", timestamp=datetime.datetime.utcnow())
+            embed.set_footer(text=f"Requester: {ctx.author}")
+            embed.set_image(url=i['link'])
+            ls.append(embed)
+        page = Paginator(ls)
+        await page.start(ctx)
 
     @commands.command(name='ss', hidden=True)
     @commands.is_owner()

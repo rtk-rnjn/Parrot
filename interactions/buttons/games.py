@@ -334,6 +334,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
         await self.ctx.send(
             content=content,
             embed = embed, view=ChessView(game=self))
+        await self.game_over()
         
     async def game_over(self,) -> Optional[bool]:
         if self.board.is_checkmate():
@@ -2502,7 +2503,7 @@ class Games(Cog):
     
     @commands.group(name='chess', invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def chess(self, ctx: Context):
         """Chess game. In testing"""
         if not ctx.invoked_subcommand:

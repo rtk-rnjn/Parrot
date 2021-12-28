@@ -259,7 +259,7 @@ class ChessView(discord.ui.View):
         else:
             await interaction.send_message(f"{self.game.alternate_turn} did not responded to your draw offer. Game continues", empheral=True)
 
-    @discord.ui.buttons(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
+    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
     async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", empheral=False)
 

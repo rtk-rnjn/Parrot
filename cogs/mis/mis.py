@@ -25,8 +25,8 @@ class TTFlag(commands.FlagConverter,
                 case_insensitive=True,
                 prefix="--",
                 delimiter=' '):
-    var: commands.Greedy[str]
-    con: commands.Greedy[str]
+    var: str
+    con: str
 
 class Misc(Cog):
     """Those commands which can't be listed"""
@@ -270,7 +270,7 @@ class Misc(Cog):
 		   Truthtable --var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
            (Example: `tt --var a, b --con a and b, a or b`)
 		"""
-        table = ttg.Truths(flags.var, flags.con, ints=False).as_prettytable()
+        table = ttg.Truths(flags.var.split(','), flags.con.split(','), ints=False).as_prettytable()
         await ctx.reply(f"```\n{table}\n```")
 
     @commands.command(aliases=['w'])

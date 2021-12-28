@@ -134,7 +134,82 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_emojis_update(self, guild, before, after):
-        pass
+        if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_create': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_emoji_create'], session=self.bot.session)
+            if webhook:
+                async for entry in guild.audit_logs(action=discord.AuditLogAction.emoji_create, limit=1):
+                    emoji_name = entry.name
+                    if isinstance(entry.target, discord.Emoji):
+                        animated = entry.target.animated
+                        _id = entry.target.id
+                        url = entry.target.url
+                    else:
+                        animated = None
+                        _id = entry.target.id
+                        url = None
+                content = f"""**On Emoji Create**
+
+`Raw     `: **`{entry.target if isinstance(entry.target, discord.Emoji) else None}`**
+`ID      `: **{_id}**
+`URL     `: **<{url}>**
+"""
+            await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name
+                )
+        
+        if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_delete': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_emoji_delete'], session=self.bot.session)
+            if webhook:
+                async for entry in guild.audit_logs(action=discord.AuditLogAction.emoji_delete, limit=1):
+                    emoji_name = entry.name
+                    if isinstance(entry.target, discord.Emoji):
+                        animated = entry.target.animated
+                        _id = entry.target.id
+                        url = entry.target.url
+                    else:
+                        animated = None
+                        _id = entry.target.id
+                        url = None
+                content = f"""**On Emoji Create**
+
+`Raw     `: **`{entry.target if isinstance(entry.target, discord.Emoji) else None}`**
+`ID      `: **{_id}**
+`URL     `: **<{url}>**
+"""
+            await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name
+                )
+        
+        if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_update': {'$exists': True}}):
+            webhook = discord.Webhook.from_url(data['on_emoji_update'], session=self.bot.session)
+            if webhook:
+                async for entry in guild.audit_logs(action=discord.AuditLogAction.emoji_update, limit=1):
+                    emoji_name = entry.name
+                    if isinstance(entry.target, discord.Emoji):
+                        animated = entry.target.animated
+                        _id = entry.target.id
+                        url = entry.target.url
+                    else:
+                        animated = None
+                        _id = entry.target.id
+                        url = None
+                content = f"""**On Emoji Create**
+
+`Raw     `: **`{entry.target if isinstance(entry.target, discord.Emoji) else None}`**
+`ID      `: **{_id}**
+`URL     `: **<{url}>**
+"""
+            await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url, 
+                    username=self.bot.user.name
+                )
+                    
+
 
 
 def setup(bot):

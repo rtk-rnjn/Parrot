@@ -155,10 +155,12 @@ class PaginatorView(discord.ui.View):
 
     def update_embed(self, page: Page):
         if self.show_page_count:
-            self.embed.set_footer(
-                text=f"Page {page.index} of {self.pages.total}")
-
-        self.embed.description = page.content
+            try:
+                self.embed.set_footer(text=f"Page {page.index} of {self.pages.total}")
+            except Exception:
+                pass
+        if page:
+            self.embed.description = page.content
 
     async def interaction_check(self,
                                 interaction: discord.Interaction) -> bool:

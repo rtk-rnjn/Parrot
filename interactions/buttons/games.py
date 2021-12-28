@@ -250,9 +250,9 @@ class ChessView(discord.ui.View):
     
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Offer Draw", style=discord.ButtonStyle.danger, disabled=False)
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
-        value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`")
+        value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`", author_id=self.game.alternate_turn.id)
         if value:
-            await self.ctx.send(f"{self.game.alternate_turn} accepted the draw", ephemeral=True)
+            await self.ctx.send(f"{self.game.alternate_turn} accepted the draw")
             self.game.game_stop = True
 
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
@@ -334,22 +334,24 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
         await self.game_over()
         
     async def game_over(self,) -> Optional[bool]:
-        if self.board.is_checkmate():
-            await self.ctx.send(f"Game over! {self.turn} wins by check-mate")
-            self.game_stop = True
-        elif self.board.is_stalemate():
-            await self.ctx.send(f"Game over! Ended with draw!")
-            self.game_stop = True
-        elif self.board.is_insufficient_material():
-            await self.ctx.send(f"Game over! Insfficient material left to continue the game! Draw!")
-            self.game_stop = True
-        elif self.board.is_seventyfive_moves():
-            await self.ctx.send(f"Game over! 75-moves rule | Game Draw!")
-            self.game_stop = True
-        elif self.board.is_fivefold_repetition():
-            await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
-            self.game_stop = True
-        self.game_stop = False
+        if not self.game_stop:
+            if self.board.is_checkmate():
+                await self.ctx.send(f"Game over! {self.turn} wins by check-mate")
+                self.game_stop = True
+            elif self.board.is_stalemate():
+                await self.ctx.send(f"Game over! Ended with draw!")
+                self.game_stop = True
+            elif self.board.is_insufficient_material():
+                await self.ctx.send(f"Game over! Insfficient material left to continue the game! Draw!")
+                self.game_stop = True
+            elif self.board.is_seventyfive_moves():
+                await self.ctx.send(f"Game over! 75-moves rule | Game Draw!")
+                self.game_stop = True
+            elif self.board.is_fivefold_repetition():
+                await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
+                self.game_stop = True
+            self.game_stop = False
+        return self.game_stop
 
     async def start(self):
         content = f"{self.white.mention} VS {self.black.mention}"

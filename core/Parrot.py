@@ -146,6 +146,9 @@ class Parrot(commands.AutoShardedBot):
         fin = time()
         return fin - ini
 
+    def clear_cache(self):
+        pass
+
     def _clear_gateway_data(self):
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
         for shard_id, dates in self.identifies.items():

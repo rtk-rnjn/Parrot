@@ -2177,14 +2177,3 @@ class Fun(Cog, command_attrs={
         await msg.edit(content=f"""{ctx.author.mention} your slots results:
 > {_} {__} {___}""")
 
-    @commands.command()
-    async def blackjack(self, ctx: Context):
-        """Classic BlackJack Game. Here's how to play
-        
-        Try to get as close to 21 without going over.
-        Kings, Queens, and Jacks are worth 10 points.
-        Aces are worth 1 or 11 points.
-        Cards 2 through 10 are worth their face value.
-        (H)it to take another card.
-        (S)tand to stop taking cards.
-        The dealer stops hitting at 17."""

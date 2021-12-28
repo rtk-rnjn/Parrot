@@ -13,7 +13,6 @@ with open('extra/duke_nekum.txt') as f:
 
 class SpamProt(Cog):
     def __init__(self, bot: Parrot):
-        print('loaded')
         self.bot = bot
         self.collection = parrot_db['server_config']
         self.cd_mapping = commands.CooldownMapping.from_cooldown(

@@ -226,9 +226,10 @@ class SlidingPuzzleView(discord.ui.View):
 
 
 class ChessView(discord.ui.View):
-    def __init__(self, *, game: Chess, timeout: float=300.0, **kwargs):
+    def __init__(self, *, game: Chess, ctx: Context=None, timeout: float=300.0, **kwargs):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
+        self.ctx = ctx
 
     async def interaction_check(self,
                                 interaction: discord.Interaction):
@@ -244,10 +245,23 @@ class ChessView(discord.ui.View):
         for i in self.game.legal_moves():
             menu.add_line(i)
         await menu.start()
+        await interaction.send_message(embed=menu.embed, view=menu.view,)
     
-    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Resign The Game", style=discord.ButtonStyle.danger, disabled=False)
+    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Offer Draw", style=discord.ButtonStyle.danger, disabled=False)
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**{interaction.user}** to resign the game. Type: `RESIGN`", ephemeral=True)
+        value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`")
+        if value is False:
+            await interaction.send_message(f"{self.game.alternate_turn} rejected the draw offer", empheral=True)
+            self.game.stop()
+        elif value is True:
+            await interaction.send_message(f"{self.game.alternate_turn} accpted the draw", empheral=True)
+            self.game.game_stop = True
+        else:
+            await interaction.send_message(f"{self.game.alternate_turn} did not responded to your draw offer. Game continues", empheral=True)
+
+    @discord.ui.buttons(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
+    async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", empheral=False)
 
 
 class Chess:
@@ -275,6 +289,8 @@ class Chess:
             self.board = chess.Board()
 
         self.turn = white
+        self.alternate_turn = black
+
         self.game_stop = False
     
     def legal_moves(self) -> Optional[list]:
@@ -285,28 +301,39 @@ class Chess:
         def check(m):
             if m.content.lower() in ('exit', 'quit', 'resign'):
                 return True
-            
             return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
         try:
             msg = await self.bot.wait_for('message', check=check, timeout=self.timeout)
             return msg
         except Exception:
-            await self.ctx.send(f"**{self.turn}** did not responded on time! Game Over!")
-            return None
+            if not self.game_stop:
+                await self.ctx.send(f"**{self.turn}** did not responded on time! Game Over!")
+                return None
     
     def switch(self) -> None:
         if self.turn == self.white: 
             self.turn = self.black
+            self.alternate_turn == self.white
             return
         if self.turn == self.black: 
             self.turn = self.white
+            self.alternate_turn == self.black
             return
     
     async def place_move(self, move: str) -> None:
         self.board.push_san(move)
+        content = f"{self.white.mention} VS {self.black.mention}"
+        embed = discord.Embed(timestamp=discord.utils.utcnow(),)
+        embed.set_image(url=f"{self.base_url}{self.board.board_fen()}")
+        embed.description = f"""```
+On Check?      : {self.board.is_check()}
+Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
+```
+"""
+        embed.set_footer(text=f"Turn: {self.alternate_turn} | Having 5m to make move")
         await self.ctx.send(
-            content=f"{self.white.mention} VS {self.black.mention}",
-            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"), view=ChessView(game=self))
+            content=content,
+            embed = embed, view=ChessView(game=self))
         
     async def game_over(self,) -> Optional[bool]:
         if self.board.is_checkmate():
@@ -327,9 +354,18 @@ class Chess:
         self.game_stop = False
 
     async def start(self):
+        content = f"{self.white.mention} VS {self.black.mention}"
+        embed = discord.Embed(timestamp=discord.utils.utcnow(),)
+        embed.set_image(url=f"{self.base_url}{self.board.board_fen()}")
+        embed.description = f"""```
+On Check?      : {self.board.is_check()}
+Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
+```
+"""
+        embed.set_footer(text=f"Turn: {self.turn} | Having 5m to make move")
         await self.ctx.send(
-            content=f"{self.white.mention} VS {self.black.mention}",
-            embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=f"{self.base_url}{self.board.board_fen()}"), view=ChessView(game=self))
+            content=content,
+            embed=embed, view=ChessView(game=self))
         while not self.game_stop:
             msg = await self.wait_for_move()
             if msg is None:
@@ -338,6 +374,11 @@ class Chess:
                 if msg.content.lower() in ('exit', 'quit', 'resign'):
                     return await self.ctx.send(f"**{msg.author}** resigned the game. Game Over!")
                 else:
+                    if self.react_on_success:
+                        try:
+                            await msg.add_reaction("\N{BLACK CHESS PAWN}")
+                        except Exception:
+                            pass
                     await self.place_move(msg.content)
                     self.switch()
 

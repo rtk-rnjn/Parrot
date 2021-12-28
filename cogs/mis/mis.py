@@ -28,6 +28,8 @@ class TTFlag(commands.FlagConverter,
     var: str
     con: str
 
+
+
 class Misc(Cog):
     """Those commands which can't be listed"""
     def __init__(self, bot: Parrot):

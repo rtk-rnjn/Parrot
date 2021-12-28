@@ -245,7 +245,7 @@ class ChessView(discord.ui.View):
         menu = ParrotPaginator(self.game.ctx, title="Legal Moves", embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png")
         for i in self.game.legal_moves():
             menu.add_line(i)
-        await menu.start()
+        await menu.start(start=False)
         await interaction.response.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
     
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Offer Draw", style=discord.ButtonStyle.danger, disabled=False)
@@ -257,7 +257,7 @@ class ChessView(discord.ui.View):
 
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
     async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", ephemeral=True)
+        await interaction.response.send_message(f"**{interaction.user}** board FEN: `{self.game.board.board_fen()}`", ephemeral=True)
 
 
 class Chess:

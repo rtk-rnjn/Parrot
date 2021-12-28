@@ -172,7 +172,7 @@ class Parrot(commands.AutoShardedBot):
         webhook = discord.Webhook.from_url(url, session=self.session)
         if webhook:
             if len(traceback_string) < 1900:
-                return await webhook.send(f"```\npyIgnoring Exception at the {event}: {traceback_string}```", avatar_url=self.user.avatar.url, username=self.bot.user.name,)
+                return await webhook.send(f"```\npyIgnoring Exception at the {event}: {traceback_string}```", avatar_url=self.user.avatar.url, username=self.user.name,)
             else:
                 return await webhook.send('\u200b', avatar_url=self.user.avatar.url, username=self.user.name, file=discord.File(file_obj, filename='error.py'))
 

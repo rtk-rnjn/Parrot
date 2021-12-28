@@ -24,6 +24,7 @@ import emojis, chess, tabulate
 from aiofile import async_open
 from utilities.paginator import ParrotPaginator
 
+
 def fenPass(fen: str) -> bool:
     regexMatch = re.match('\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', fen)
     if  regexMatch:
@@ -245,23 +246,18 @@ class ChessView(discord.ui.View):
         for i in self.game.legal_moves():
             menu.add_line(i)
         await menu.start()
-        await interaction.send_message(embed=menu.embed, view=menu.view,)
+        await interaction.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
     
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Offer Draw", style=discord.ButtonStyle.danger, disabled=False)
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
         value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`")
-        if value is False:
-            await interaction.send_message(f"{self.game.alternate_turn} rejected the draw offer", empheral=True)
-            self.game.stop()
-        elif value is True:
-            await interaction.send_message(f"{self.game.alternate_turn} accpted the draw", empheral=True)
+        if value:
+            await interaction.send_message(f"{self.game.alternate_turn} accepted the draw", ephemeral=True)
             self.game.game_stop = True
-        else:
-            await interaction.send_message(f"{self.game.alternate_turn} did not responded to your draw offer. Game continues", empheral=True)
 
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
     async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", empheral=False)
+        await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", ephemeral=False)
 
 
 class Chess:

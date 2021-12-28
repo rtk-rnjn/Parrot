@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 
 from utilities.database import parrot_db
-from utilities.paginator import Paginator, PaginationView
+from utilities.paginator import PaginationView
 
 from core import Parrot, Context, Cog
 

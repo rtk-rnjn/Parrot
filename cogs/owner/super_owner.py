@@ -13,7 +13,7 @@ from utilities.database import ban
 import re, io, zlib, os
 
 from . import fuzzy
-from utilities.paginator import Paginator, PaginationView
+from utilities.paginator import PaginationView
 
 
 class nitro(discord.ui.View):

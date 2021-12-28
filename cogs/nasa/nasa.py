@@ -6,7 +6,7 @@ from datetime import datetime
 import discord, aiohttp
 from discord.ext import commands
 
-from utilities.paginator import Paginator, PaginationView
+from utilities.paginator import PaginationView
 from core import Cog, Parrot, Context
 
 NASA_KEY = os.environ['NASA_KEY']

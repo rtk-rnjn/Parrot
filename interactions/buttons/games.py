@@ -246,18 +246,18 @@ class ChessView(discord.ui.View):
         for i in self.game.legal_moves():
             menu.add_line(i)
         await menu.start()
-        await interaction.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
+        await interaction.response.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
     
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Offer Draw", style=discord.ButtonStyle.danger, disabled=False)
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
         value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`")
         if value:
-            await interaction.send_message(f"{self.game.alternate_turn} accepted the draw", ephemeral=True)
+            await interaction.response.send_message(f"{self.game.alternate_turn} accepted the draw", ephemeral=True)
             self.game.game_stop = True
 
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
     async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", ephemeral=False)
+        await interaction.response.send_message(f"**{interaction.user} board FEN: `{self.game.board.board_fen()}`**", ephemeral=True)
 
 
 class Chess:

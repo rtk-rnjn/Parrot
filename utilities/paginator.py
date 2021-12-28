@@ -169,13 +169,6 @@ class PaginatorView(discord.ui.View):
             return False
         return True
 
-    async def on_timeout(self) -> None:
-
-        for b in self.children:
-            b.style, b.disabled = discord.ButtonStyle.grey, True
-
-        await self.message.edit(view=self)
-
     @discord.ui.button(style=discord.ButtonStyle.green,
                        custom_id="first",
                        emoji=discord.PartialEmoji(
@@ -186,7 +179,7 @@ class PaginatorView(discord.ui.View):
 
         self.update_embed(page)
         self.lock_bro()
-        await interaction.message.edit(embed=self.embed, view=self)
+        await interaction.response.edit_message(embed=self.embed, view=self,)
 
     @discord.ui.button(
         style=discord.ButtonStyle.green,
@@ -197,7 +190,7 @@ class PaginatorView(discord.ui.View):
         page = self.pages.previous_page
         self.update_embed(page)
         self.lock_bro()
-        await interaction.message.edit(embed=self.embed, view=self)
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
     @discord.ui.button(
         style=discord.ButtonStyle.green,
@@ -205,7 +198,6 @@ class PaginatorView(discord.ui.View):
         emoji=discord.PartialEmoji(name="\N{BLACK SQUARE FOR STOP}"))
     async def stop(self, button: discord.ui.Button,
                    interaction: discord.Interaction):
-        await interaction.message.delete()
         self.stop()
 
     @discord.ui.button(
@@ -218,7 +210,7 @@ class PaginatorView(discord.ui.View):
         self.update_embed(page)
 
         self.lock_bro()
-        await interaction.message.edit(embed=self.embed, view=self)
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.green,
                        custom_id="last",
@@ -230,7 +222,7 @@ class PaginatorView(discord.ui.View):
 
         self.update_embed(page)
         self.lock_bro()
-        await interaction.message.edit(embed=self.embed, view=self)
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
 
 

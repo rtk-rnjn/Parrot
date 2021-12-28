@@ -252,7 +252,7 @@ class ChessView(discord.ui.View):
     async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
         value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`")
         if value:
-            await interaction.response.send_message(f"{self.game.alternate_turn} accepted the draw", ephemeral=True)
+            await self.ctx.send(f"{self.game.alternate_turn} accepted the draw", ephemeral=True)
             self.game.game_stop = True
 
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)

@@ -162,7 +162,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         data = await res.json()
         ls = list()
         for i in data['items']:
-            embed = discord.Embed(title=i['title'], link=i['displayLink'], description=f"```\n{i['snippet']}```", timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(title=i['title'], url=i['displayLink'], description=f"```\n{i['snippet']}```", timestamp=datetime.datetime.utcnow())
             embed.set_footer(text=f"Requester: {ctx.author}")
             embed.set_image(url=i['link'])
             ls.append(embed)

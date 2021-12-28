@@ -157,7 +157,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def imgsearch(self, ctx: Context, *, text: str):
         """Image Search. Anything"""
         text = urllib.parse.quote(text)
-        url = f"https://www.googleapis.com/customsearch/v1?key={os.environ['GOOGLE_KEY']}&cx={os.environ['GOOGLE_CS']}&q={text}&searchType=image"
+        url = f"https://www.googleapis.com/customsearch/v1?key={os.environ['GOOGLE_KEY']}&cx={os.environ['GOOGLE_CX']}&q={text}&searchType=image"
         res = await self.bot.session.get(url)
         data = await res.json()
         ls = list()

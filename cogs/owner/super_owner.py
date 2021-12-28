@@ -166,7 +166,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             embed.set_footer(text=f"Requester: {ctx.author}")
             embed.set_image(url=i['link'])
             ls.append(embed)
-        page = Paginator(pages=ls)
+        page = PaginationView(embed_list=ls)
         await page.start(ctx)
 
     @commands.command(name='ss', hidden=True)

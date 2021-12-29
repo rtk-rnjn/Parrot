@@ -290,7 +290,7 @@ class Chess:
     async def wait_for_move(self) -> Optional[discord.Message]:
         LEGAL_MOVES = self.legal_moves()
         def check(m):
-            if m.content.lower() in ('exit', 'quit', 'resign', 'abort'):
+            if m.content.lower() in ('exit', 'quit', 'resign', 'abort', 'draw'):
                 return True
             return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
         try:

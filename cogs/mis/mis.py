@@ -787,8 +787,8 @@ class Misc(Cog):
         ):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
-Responsible Moderator: {entry.user.mention}
-Action performed on  : {entry.target.mention}
+`Responsible Moderator`: <@{entry.user.id}>
+`Action performed on  `: <@{entry.target.id}>
 """
             ls.append(st)
         

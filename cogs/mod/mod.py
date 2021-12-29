@@ -801,31 +801,54 @@ class Mod(Cog):
         except Exception:
             pass
         finally:
-            await infrac.make_warn(at=at, reason=reason, mod=ctx.author.id, expires_at=None)
+            await infrac.make_warn(at=at, reason=reason, mod=ctx.author.id, expires_at=None, guild_id=ctx.guild.id)
         
-        
-    @tasks.loop(seconds=1)
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @Context.with_type
+    async def delwarn(self, ctx: Context, member: discord.Member, *, caseID: int=None):
+        """To delete the warning"""
+        infrac = Infraction(self.bot)
+        mod = ctx.author.id
+        user = member.id
+        if caseID:
+            await infrac.del_warn_by_id(guild_id=ctx.guild.id, user_id=member.id, case_id=caseID)
+            await ctx.send(f"{ctx.author.mention} deleted infraction ID: **{caseID}** of **{member}**")
+        else:
+            await infrac.del_warn_all(guild_id=ctx.guild.id, user_id=member.id)
+            await ctx.send(f"{ctx.author.mention} deleted all the infraction of **{member}**")
+    
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
+    @Context.with_type
+    async def warnings(self, ctx: Context, *, member: discord.Member):
+        """To display warning log"""
+        infrac = Infraction(self.bot)
+        table = infrac.to_table(guild_id=ctx.guild.id, user_id=member.id)
+        await ctx.send(table)
+
+    @tasks.loop(seconds=2)
     async def unmute_task(self):
+        await self.bot.wait_until_ready()
         async for data in mute_collection.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):
             guild = self.bot.get_guild(data['guild_id'])
             if not guild:
-                return await mute_collection.delete_one({'_id': data['_id']})
-            try:
-                await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']), reason=f"Mute duration expires")
-            except Exception:
-                pass
-            finally:
                 await mute_collection.delete_one({'_id': data['_id']})
-
-    @tasks.loop(seconds=1)
-    async def unban_task(self):
+            else:
+                try:
+                    await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']), reason=f"Mute duration expires")
+                except Exception:
+                    pass
+                finally:
+                    await mute_collection.delete_one({'_id': data['_id']})
         async for data in ban_collection.find({'duration': {'$lte': datetime.utcnow().timestamp()}}):
             guild = self.bot.get_guild(data['guild_id'])
             if not guild:
-                return await ban_collection.delete_one({'_id': data['_id']})
-            try:
-                await guild.unban(discord.Object(id=data['member_id']), reason=f"Ban duration expires!")
-            except discord.NotFound:
-                pass
-            finally:
                 await ban_collection.delete_one({'_id': data['_id']})
+            else:
+                try:
+                    await guild.unban(discord.Object(id=data['member_id']), reason=f"Ban duration expires!")
+                except discord.NotFound:
+                    pass
+                finally:
+                    await ban_collection.delete_one({'_id': data['_id']})

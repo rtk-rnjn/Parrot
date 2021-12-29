@@ -247,13 +247,7 @@ class ChessView(discord.ui.View):
             menu.add_line(i)
         await menu.start(start=False)
         await interaction.response.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
-    
-    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Offer Draw", style=discord.ButtonStyle.danger, disabled=False)
-    async def resign(self, button: discord.ui.Button, interaction: discord.Interaction):
-        value = await self.ctx.prompt(f"**{interaction.user}** is offering Draw. **{self.game.alternate_turn}** to accept click `Confirm`", author_id=self.game.alternate_turn.id)
-        if value:
-            await self.ctx.send(f"{self.game.alternate_turn} accepted the draw")
-            self.game.game_stop = True
+
 
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
     async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -296,7 +290,7 @@ class Chess:
     async def wait_for_move(self) -> Optional[discord.Message]:
         LEGAL_MOVES = self.legal_moves()
         def check(m):
-            if m.content.lower() in ('exit', 'quit', 'resign'):
+            if m.content.lower() in ('exit', 'quit', 'resign', 'abort'):
                 return True
             return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
         try:
@@ -310,11 +304,11 @@ class Chess:
     def switch(self) -> None:
         if self.turn == self.white: 
             self.turn = self.black
-            self.alternate_turn == self.white
+            self.alternate_turn = self.white
             return
         if self.turn == self.black: 
             self.turn = self.white
-            self.alternate_turn == self.black
+            self.alternate_turn = self.black
             return
     
     async def place_move(self, move: str) -> None:
@@ -371,8 +365,12 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             if msg is None:
                 return
             else:
-                if msg.content.lower() in ('exit', 'quit', 'resign'):
-                    return await self.ctx.send(f"**{msg.author}** resigned the game. Game Over!")
+                if msg.content.lower() in ('exit', 'quit', 'resign', 'abort',):
+                    return await self.ctx.send(f"**{msg.author}** resigned/aborted the game. Game Over!")
+                if msg.content.lower() == 'draw':
+                    value = await self.ctx.prompt(f"**{msg.author}** offered draw! **{self.alternate_turn}** to accept the draw click `Confirm`")
+                    if value:
+                        return await self.ctx.send(f"Game over! Ended in draw by agreement!**")
                 else:
                     if self.react_on_success:
                         try:

@@ -36,3 +36,4 @@ cchardet
 rapidfuzz
 chess
 Pillow
+typing_extensions

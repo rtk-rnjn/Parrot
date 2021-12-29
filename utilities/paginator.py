@@ -197,10 +197,11 @@ class PaginatorView(discord.ui.View):
     @discord.ui.button(
         style=discord.ButtonStyle.green,
         custom_id="stop",
-        emoji=discord.PartialEmoji(name="\N{BLACK SQUARE FOR STOP}"))
-    async def stop(self, button: discord.ui.Button,
+        emoji=discord.PartialEmoji(name="\N{BLACK SQUARE FOR STOP}"), disabled=True)
+    async def _stop(self, button: discord.ui.Button,
                    interaction: discord.Interaction):
-        self.stop()
+        pass
+        
 
     @discord.ui.button(
         style=discord.ButtonStyle.green,

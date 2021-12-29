@@ -777,7 +777,7 @@ class Misc(Cog):
     async def auditlog(self, ctx: Context, *, args: auditFlag):
         """To get the audit log of the server, in nice format"""
         ls = list()
-        async for entry in ctx.guild.audit_log(
+        async for entry in ctx.guild.audit_logs(
             limit=args.limit if args.limit else 100,
             user=discord.Object(id=args.user) if args.user else None,
             action=act.get(args.action.lower().replace(' ', '_')),

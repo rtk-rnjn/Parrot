@@ -771,7 +771,7 @@ class Misc(Cog):
         p = SimplePages(entries, ctx=ctx)
         await p.start()
     
-    @commands.command()
+    @commands.command(aliases=['auditlogs'])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
     @commands.has_permissions(view_audit_log=True)
     async def auditlog(self, ctx: Context, *, args: auditFlag):
@@ -780,12 +780,12 @@ class Misc(Cog):
         async for entry in ctx.guild.audit_logs(
             limit=args.limit if args.limit else 100,
             user=discord.Object(id=args.user) if args.user else None,
-            action=act.get(args.action.lower().replace(' ', '_')),
+            action=act.get(args.action.lower().replace(' ', '_')) if args.action else None,
             before=discord.Object(id=int(args.before.dt.timestamp())) if args.before else None,
             after=discord.Object(id=int(args.after.dt.timestamp())) if args.after else None,
             oldest_first=args.oldest_first
         ):
-            st = f"""**{entry.action.replace('_', ' ').title()}** (`{entry.id}`)
+            st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
 Responsible Moderator: {entry.user.mention}
 Action performed on  : {entry.target.mention}

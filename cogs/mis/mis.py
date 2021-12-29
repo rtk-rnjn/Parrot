@@ -10,6 +10,8 @@ import json
 
 from utilities.paginator import PaginationView
 from utilities.converters import convert_bool
+from utilities.time import ShortTime
+
 from discord import Embed
 
 from core import Parrot, Context, Cog
@@ -28,6 +30,54 @@ class TTFlag(commands.FlagConverter,
     var: str
     con: str
 
+
+class auditFlag(commands.FlagConverter,
+                case_insensitive=True,
+                prefix='--',
+                delimiter=' '):
+    limit: typing.Optional[int] = 100
+    action: typing.Optional[str]
+    before: typing.Optional[ShortTime]
+    after: typing.Optional[ShortTime]
+    oldest_first: typing.Optional[convert_bool] = False
+    user: typing.Optional[int]
+    action: typing.Optional[str]
+
+act = {
+    'channel_create': discord.AuditLogAction.channel_create,
+    'channel_delete': discord.AuditLogAction.channel_delete,
+    'channel_update': discord.AuditLogAction.channel_update,
+    'overwrite_create': discord.AuditLogAction.overwrite_create,
+    'overwrite_update': discord.AuditLogAction.overwrite_update,
+    'overwrite_delete': discord.AuditLogAction.overwrite_delete,
+    'kick': discord.AuditLogAction.kick,
+    'member_prune': discord.AuditLogAction.member_prune,
+    'ban': discord.AuditLogAction.ban,
+    'unban': discord.AuditLogAction.unban,
+    'member_update': discord.AuditLogAction.member_update,
+    'member_role_update': discord.AuditLogAction.member_role_update,
+    'member_disconnect': discord.AuditLogAction.member_disconnect,
+    'bot_add': discord.AuditLogAction.bot_add,
+    'role_create': discord.AuditLogAction.role_create,
+    'role_update': discord.AuditLogAction.role_update,
+    'role_delete': discord.AuditLogAction.role_delete,
+    'invite_create': discord.AuditLogAction.invite_create,
+    'invite_delete': discord.AuditLogAction.invite_delete,
+    'invite_update': discord.AuditLogAction.invite_update,
+    'webhook_create': discord.AuditLogAction.webhook_create,
+    'webhook_delete': discord.AuditLogAction.webhook_delete,
+    'webhook_update': discord.AuditLogAction.webhook_update,
+    'emoji_create': discord.AuditLogAction.emoji_create,
+    'emoji_delete': discord.AuditLogAction.emoji_delete,
+    'emoji_update': discord.AuditLogAction.emoji_update,
+    'message_delete': discord.AuditLogAction.message_delete,
+    'message_bulk_delete': discord.AuditLogAction.message_bulk_delete,
+    'message_pin': discord.AuditLogAction.message_pin,
+    'message_unpin': discord.AuditLogAction.message_unpin,
+    'integration_create': discord.AuditLogAction.integration_create,
+    'integration_delete': discord.AuditLogAction.integration_delete,
+    'integration_update': discord.AuditLogAction.integration_update,
+}
 
 
 class Misc(Cog):
@@ -721,3 +771,27 @@ class Misc(Cog):
         p = SimplePages(entries, ctx=ctx)
         await p.start()
     
+    @commands.command()
+    @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
+    @commands.has_permisisons(view_audit_log=True)
+    async def auditlog(self, ctx: Context, *, args: auditFlag):
+        """To get the audit log of the server, in nice format"""
+        ls = list()
+        async for entry in ctx.guild.audit_log(
+            limit=args.limit if args.limit else 100,
+            user=discord.Object(id=args.user) if args.user else None,
+            action=act.get(args.action.lower().replace(' ', '_')),
+            before=discord.Object(id=int(args.before.dt.timestamp())) if args.before else None,
+            after=discord.Object(id=int(args.after.dt.timestamp())) if args.after else None,
+            oldest_first=args.oldest_first
+        ):
+            st = f"""**{entry.action.replace('_', ' ').title()}** (`{entry.id}`)
+> Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
+Responsible Moderator: {entry.user.mention}
+Action performed on  : {entry.target.mention}
+"""
+            ls.append(st)
+        
+        p = SimplePages(ls, ctx=ctx, per_page=5)
+        await p.start()
+        

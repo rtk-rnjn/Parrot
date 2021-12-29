@@ -368,9 +368,9 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 if msg.content.lower() in ('exit', 'quit', 'resign', 'abort',):
                     return await self.ctx.send(f"**{msg.author}** resigned/aborted the game. Game Over!")
                 if msg.content.lower() == 'draw':
-                    value = await self.ctx.prompt(f"**{msg.author}** offered draw! **{self.alternate_turn}** to accept the draw click `Confirm`")
+                    value = await self.ctx.prompt(f"**{msg.author}** offered draw! **{self.turn}** to accept the draw click `Confirm`")
                     if value:
-                        return await self.ctx.send(f"Game over! Ended in draw by agreement!**")
+                        return await self.ctx.send(f"**Game over! Ended in draw by agreement!**")
                 else:
                     if self.react_on_success:
                         try:
@@ -680,10 +680,12 @@ class SokobanGame:
 
  
 class SokobanGameView(discord.ui.View):
-    def __init__(self, game: SokobanGame, user: discord.Member, *, timeout: float=60.0):
+    def __init__(self, game: SokobanGame, user: discord.Member, level: int, ctx: Context, *, timeout: float=60.0):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
+        self.level = level
+        self.ctx = ctx
 
     async def interaction_check(self,
                                 interaction: discord.Interaction) -> bool:
@@ -694,7 +696,7 @@ class SokobanGameView(discord.ui.View):
 
     def make_win_embed(self) -> discord.Embed:
         embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
-        embed.description = "Thanks for playing!"
+        embed.description = f"Thanks for playing!\nFor next level type `{self.ctx.prefix}sokoban {self.level+1}`"
         return embed
 
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
@@ -732,7 +734,7 @@ class SokobanGameView(discord.ui.View):
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(embed=self.make_win_embed())
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
             self.stop()
             return
 
@@ -748,7 +750,7 @@ class SokobanGameView(discord.ui.View):
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(embed=self.make_win_embed())
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
             self.stop()
             return
 
@@ -764,7 +766,7 @@ class SokobanGameView(discord.ui.View):
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
 
         if self.game.is_game_over():            
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=self)
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
             self.stop()
             return
 
@@ -2457,7 +2459,7 @@ class Games(Cog):
                 ls.append([j for j in list(i)])
             game = SokobanGame(ls)
             game._get_cords()
-            main_game = SokobanGameView(game, ctx.author)
+            main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
             await main_game.start(ctx)
             
     

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
@@ -68,7 +70,7 @@ class FutureTime(Time):
         super().__init__(argument, now=now)
 
         if self._past:
-            raise commands.BadArgument('this time is in the past')
+            raise commands.BadArgument('This time is in the past')
 
 class UserFriendlyTime(commands.Converter):
     """That way quotes aren't absolutely necessary."""
@@ -104,7 +106,7 @@ class UserFriendlyTime(commands.Converter):
         obj.default = self.default
         return obj
 
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx, argument: str):
         # Create a copy of ourselves to prevent race conditions from two
         # events modifying the same instance of a converter
         result = self.copy()
@@ -123,10 +125,10 @@ class UserFriendlyTime(commands.Converter):
 
             # apparently nlp does not like "from now"
             # it likes "from x" in other cases though so let me handle the 'now' case
-            if argument.endswith('from now'):
+            if argument.lower().endswith('from now'):
                 argument = argument[:-8].strip()
 
-            if argument[0:2] == 'me':
+            if argument[0:2].lower() == 'me':
                 # starts with "me to", "me in", or "me at "
                 if argument[0:6] in ('me to ', 'me in ', 'me at '):
                     argument = argument[6:]

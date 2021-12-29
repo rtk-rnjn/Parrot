@@ -773,7 +773,7 @@ class Misc(Cog):
     
     @commands.command()
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
-    @commands.has_permisisons(view_audit_log=True)
+    @commands.has_permissions(view_audit_log=True)
     async def auditlog(self, ctx: Context, *, args: auditFlag):
         """To get the audit log of the server, in nice format"""
         ls = list()

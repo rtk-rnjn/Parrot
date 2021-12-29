@@ -1781,7 +1781,7 @@ class Fun(Cog, command_attrs={
     async def glitch(self, ctx: Context, *, member: discord.Member=None):
         """Glitch image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
+        params = {'image_url': member.display_avatar.url, 'level': 2}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
@@ -1850,6 +1850,18 @@ class Fun(Cog, command_attrs={
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
+    async def blur(self, ctx: Context, *, member: discord.Member=None):
+        """Blur image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
     async def radiate(self, ctx: Context, *, member: discord.Member=None):
         """Radiate image generation"""
         member = member or ctx.author
@@ -1876,6 +1888,54 @@ class Fun(Cog, command_attrs={
     @Context.with_type
     async def tv(self, ctx: Context, *, member: discord.Member=None):
         """TV image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def print(self, ctx: Context, *, member: discord.Member=None):
+        """TV image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def clock(self, ctx: Context, *, member: discord.Member=None):
+        """TV image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def magnify(self, ctx: Context, *, member: discord.Member=None):
+        """Magnify image generation"""
+        member = member or ctx.author
+        params = {'image_url': member.display_avatar.url}
+        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def wrap(self, ctx: Context, *, member: discord.Member=None):
+        """Wrap image generation"""
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)

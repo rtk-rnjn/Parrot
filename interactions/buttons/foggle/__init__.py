@@ -10,7 +10,8 @@ from collections.abc import Iterable
 from typing import Literal, NamedTuple, Optional
 
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
+from discord.ext import old_menus as menus
 
 from core import Parrot, Cog, Context
 

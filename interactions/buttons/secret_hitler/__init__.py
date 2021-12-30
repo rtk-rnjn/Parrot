@@ -11,7 +11,7 @@ from .ui import *
 
 class SecretHitler(Cog):
     def __init__(self, bot: Parrot) -> None:
-        super().__init__(bot)
+        self.bot = bot
         self.games: dict[int, discord.ui.View] = {}
 
     @commands.guild_only()

@@ -14,7 +14,7 @@ from discord import File, Member, Reaction, User
 
 from core import Cog, Context
 
-SNAKE_RESOURCES = Path("bot/resources/fun/snakes").absolute()
+SNAKE_RESOURCES = Path("extra/snakes").absolute()
 
 h1 = r"""```
    ----

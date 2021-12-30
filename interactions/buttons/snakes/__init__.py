@@ -1,11 +1,9 @@
 import logging
 
-from bot.bot import Bot
-from bot.exts.fun.snakes._snakes_cog import Snakes
-
-log = logging.getLogger(__name__)
+from core import Parrot
+from ._snakes_cog import Snakes
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: Parrot) -> None:
     """Load the Snakes Cog."""
     bot.add_cog(Snakes(bot))

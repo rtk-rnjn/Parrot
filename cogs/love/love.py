@@ -197,7 +197,7 @@ class Love(Cog):
             if zodiac_data["start_at"].date() <= query_date.date() <= zodiac_data["end_at"].date():
                 return zodiac_name
 
-    @commands.command(aliases=['whoisvalentine', 'saintvalentine'])
+    @commands.command(aliases=['saintvalentine'])
     async def whoisvalentine(self, ctx: Context,):
         """Displays info about Saint Valentine."""
         embed = discord.Embed(

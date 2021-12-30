@@ -13,3 +13,5 @@ class Example(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Example(bot))
+
+    # https://image.thum.io/get/width/1920/crop/675/noanimate/https://google.com

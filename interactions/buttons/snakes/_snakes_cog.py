@@ -22,7 +22,7 @@ from core import Parrot, Context, Cog
 from functools import wraps
 from weakref import WeakValueDictionary
 
-import _utils as utils
+from ._utils import PerlinNoiseFactory, get_resource, frame_to_png_bytes, create_snek_frame, snakes, stages, SnakeAndLaddersGame
 from ._converter import Snake
 
 
@@ -198,10 +198,10 @@ class Snakes(Cog):
     def __init__(self, bot: Parrot):
         self.active_sal = {}
         self.bot = bot
-        self.snake_names = utils.get_resource("snake_names")
-        self.snake_idioms = utils.get_resource("snake_idioms")
-        self.snake_quizzes = utils.get_resource("snake_quiz")
-        self.snake_facts = utils.get_resource("snake_facts")
+        self.snake_names = get_resource("snake_names")
+        self.snake_idioms = get_resource("snake_idioms")
+        self.snake_quizzes = get_resource("snake_quiz")
+        self.snake_facts = get_resource("snake_facts")
         self.num_movie_pages = None
 
     # region: Helper methods
@@ -654,8 +654,8 @@ class Snakes(Cog):
 
             # Build and send the snek
             text = random.choice(self.snake_idioms)["idiom"]
-            factory = utils.PerlinNoiseFactory(dimension=1, octaves=2)
-            image_frame = utils.create_snek_frame(
+            factory = PerlinNoiseFactory(dimension=1, octaves=2)
+            image_frame = create_snek_frame(
                 factory,
                 snake_width=width,
                 snake_length=length,
@@ -664,7 +664,7 @@ class Snakes(Cog):
                 text_color=text_color,
                 bg_color=bg_color
             )
-            png_bytes = utils.frame_to_png_bytes(image_frame)
+            png_bytes = frame_to_png_bytes(image_frame)
             file = File(png_bytes, filename="snek.png")
             await ctx.send(file=file)
 
@@ -768,14 +768,14 @@ class Snakes(Cog):
         Written by Momo and kel.
         """
         # Pick a random snake to hatch.
-        snake_name = random.choice(list(utils.snakes.keys()))
-        snake_image = utils.snakes[snake_name]
+        snake_name = random.choice(list(snakes.keys()))
+        snake_image = snakes[snake_name]
 
         # Hatch the snake
         message = await ctx.send(embed=Embed(description="Hatching your snake :snake:..."))
         await asyncio.sleep(1)
 
-        for stage in utils.stages:
+        for stage in stages:
             hatch_embed = Embed(description=stage)
             await message.edit(embed=hatch_embed)
             await asyncio.sleep(1)
@@ -898,7 +898,7 @@ class Snakes(Cog):
             await ctx.send(f"{ctx.author.mention} A game is already in progress in this channel.")
             return
 
-        game = utils.SnakeAndLaddersGame(snakes=self, context=ctx)
+        game = SnakeAndLaddersGame(snakes=self, context=ctx)
         self.active_sal[ctx.channel] = game
 
         await game.open_game()

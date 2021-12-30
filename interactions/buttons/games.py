@@ -3166,7 +3166,7 @@ class Games(Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         # Check if channel has a game going
-        if message.channel not in self.games:
+        if message.channel not in self.games_boogle:
             return
 
-        await self.games[message.channel].check_message(message)
+        await self.games_boogle[message.channel].check_message(message)

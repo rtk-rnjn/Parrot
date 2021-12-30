@@ -36,6 +36,9 @@
     "cogs.telephone",
     "cogs.utils",
     "interactions.buttons",
+    "interactions.buttons.snakes",
+    "interactions.buttons.secret_hitler",
+    "interactions.buttons.foggle",
     "jishaku"
   ],
   "invite": "https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot",

@@ -355,7 +355,7 @@ class Love(Cog):
     @commands.command(aliases=("love_calculator", "love_calc"))
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
     async def love(self, ctx: Context, who: Member, whom: Optional[Member] = None) -> None:
-        f"""
+        """
         Tells you how much the two love each other.
         This command requires at least one member as input, if two are given love will be calculated between
         those two users, if only one is given, the second member is asusmed to be the invoker.
@@ -366,8 +366,8 @@ class Love(Cog):
           - name
           - nickname
         Any two arguments will always yield the same result, regardless of the order of arguments:
-          Running {ctx.prefix}love @joe#6000 @chrisjl#2655 will always yield the same result.
-          Running {ctx.prefix}love @chrisjl#2655 @joe#6000 will yield the same result as before.
+          Running $love @joe#6000 @chrisjl#2655 will always yield the same result.
+          Running $love @chrisjl#2655 @joe#6000 will yield the same result as before.
         """
         
         if whom is None:

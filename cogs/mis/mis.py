@@ -64,7 +64,7 @@ class Misc(Cog):
 
     @commands.command(aliases=['bigemote'])
     @commands.has_permissions(embed_links=True)
-    @commands.bot_has_permissions(embed_links=True, manage_messages=True)
+    @commands.bot_has_permissions(embed_links=True,)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):

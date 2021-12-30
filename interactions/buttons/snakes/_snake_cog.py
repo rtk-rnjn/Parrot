@@ -22,7 +22,7 @@ from core import Parrot, Context, Cog
 from functools import wraps
 from weakref import WeakValueDictionary
 
-from bot.exts.fun.snakes import _utils as utils
+import _utils as utils
 from ._converter import Snake
 
 
@@ -136,14 +136,14 @@ ERROR_REPLIES = [
 
 # snake card consts
 CARD = {
-    "top": Image.open("bot/resources/fun/snakes/snake_cards/card_top.png"),
-    "frame": Image.open("bot/resources/fun/snakes/snake_cards/card_frame.png"),
-    "bottom": Image.open("bot/resources/fun/snakes/snake_cards/card_bottom.png"),
+    "top": Image.open("extra/snakes/snake_cards/card_top.png"),
+    "frame": Image.open("extra/snakes/snake_cards/card_frame.png"),
+    "bottom": Image.open("extra/snakes/snake_cards/card_bottom.png"),
     "backs": [
-        Image.open(f"bot/resources/fun/snakes/snake_cards/backs/{file}")
-        for file in os.listdir("bot/resources/fun/snakes/snake_cards/backs")
+        Image.open(f"extra/snakes/snake_cards/backs/{file}")
+        for file in os.listdir("extra/snakes/snake_cards/backs")
     ],
-    "font": ImageFont.truetype("bot/resources/fun/snakes/snake_cards/expressway.ttf", 20)
+    "font": ImageFont.truetype("extra/snakes/snake_cards/expressway.ttf", 20)
 }
 # endregion
 
@@ -171,7 +171,6 @@ def locked() -> Optional[Callable]:
                 embed = Embed()
                 embed.colour = Colour.red()
 
-                log.debug("User tried to invoke a locked command.")
                 embed.description = (
                     "You're already using this command. Please wait until "
                     "it is done before you use it again."
@@ -559,7 +558,6 @@ class Snakes(Cog):
                 reaction, user = await ctx.bot.wait_for(
                     "reaction_add", timeout=300, check=predicate)
             except asyncio.TimeoutError:
-                log.debug("Antidote timed out waiting for a reaction")
                 break  # We're done, no reactions for the last 5 minutes
 
             if antidote_tries < 10:
@@ -631,7 +629,6 @@ class Snakes(Cog):
             )
             await board_id.edit(embed=antidote_embed)
 
-        log.debug("Ending pagination and removing all reactions...")
         await board_id.clear_reactions()
 
     @snakes_group.command(name="draw")
@@ -1047,7 +1044,6 @@ class Snakes(Cog):
             error.handled = True
             embed = Embed()
             embed.colour = Colour.red()
-            log.error(f"snake_card encountered an OSError: {error} ({original_error})")
             embed.description = "Could not generate the snake card! Please try again."
             embed.title = random.choice(ERROR_REPLIES)
             await ctx.send(embed=embed)

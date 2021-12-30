@@ -37,7 +37,6 @@
     "cogs.utils",
     "interactions.buttons",
     "interactions.buttons.snakes",
-    "interactions.buttons.secret_hitler",
     "interactions.buttons.foggle",
     "jishaku"
   ],

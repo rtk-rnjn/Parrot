@@ -14,7 +14,7 @@ from typing import Any, Optional, Callable
 from asyncio import Lock
 import async_timeout
 from PIL import Image, ImageDraw, ImageFont
-from discord import Colour, Embed, File, Member, Message, Reaction
+from discord import Colour, Embed, File, Member, Message, Reaction, PartialEmoji
 from discord.errors import HTTPException
 from discord.ext.commands import CommandError, bot_has_permissions, group
 
@@ -196,13 +196,17 @@ class Snakes(Cog):
     valid_image_extensions = ("gif", "png", "jpeg", "jpg", "webp")
 
     def __init__(self, bot: Parrot):
-        self.active_sal = {}
         self.bot = bot
+        self.active_sal = {}
         self.snake_names = get_resource("snake_names")
         self.snake_idioms = get_resource("snake_idioms")
         self.snake_quizzes = get_resource("snake_quiz")
         self.snake_facts = get_resource("snake_facts")
         self.num_movie_pages = None
+
+    @property
+    def display_emoji(self) -> PartialEmoji:
+        return PartialEmoji(name='\N{SNAKE}')
 
     # region: Helper methods
     @staticmethod

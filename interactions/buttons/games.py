@@ -27,6 +27,7 @@ import emojis as emoji
 import emojis, chess, tabulate
 
 from aiofile import async_open
+from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.paginator import ParrotPaginator
 
 SMALL = 3
@@ -2418,7 +2419,7 @@ class Games(Cog):
         self.waiting_c4: list[discord.Member] = []
         self.games_boogle: dict[discord.TextChannel, Game] = {}
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
-
+        self.games_hitler: dict[int, discord.ui.View] = {}
         self.chess_games = list()
 
         self.max_board_size = 9
@@ -3170,3 +3171,12 @@ class Games(Cog):
             return
 
         await self.games_boogle[message.channel].check_message(message)
+    
+    @commands.command(aliases=["umbrogus", "secret_hitler", "secret-hitler"])
+    @commands.bot_has_permisisons(embed_links=True)
+    async def secrethitler(self, ctx: Context) -> None:
+        if ctx.channel.id in self.games_hitler:
+            raise commands.BadArgument("There is already a game running in this channel.")
+
+        self.games_hitler[ctx.channel.id] = MISSING
+        await JoinUI.start(ctx, self.games_hitler)

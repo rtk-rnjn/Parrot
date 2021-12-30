@@ -493,9 +493,14 @@ def foggle_game(game_type: type[Game]):
 
 
 class Foggle(Cog):
+    """A mathematical game..."""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.games: dict[str, Game] = {}
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='\N{HEAVY PLUS SIGN}')
 
     @commands.group(invoke_without_command=True)
     @foggle_game(DiscordGame)

@@ -123,9 +123,14 @@ def in_month(*allowed_months: Month) -> Callable:
 
 
 class Love(Cog):
+    """Love, Love, Love, what is Love? I love you?"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.zodiacs, self.zodiac_fact = self.load_comp_json()
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name='\N{HEAVY BLACK HEART}')
 
     def levenshtein(self, source: str, goal: str) -> int:
         """Calculates the Levenshtein Distance between source and goal."""

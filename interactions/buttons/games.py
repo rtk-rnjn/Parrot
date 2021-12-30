@@ -3173,7 +3173,7 @@ class Games(Cog):
         await self.games_boogle[message.channel].check_message(message)
     
     @commands.command(aliases=["umbrogus", "secret_hitler", "secret-hitler"])
-    @commands.bot_has_permisisons(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def secrethitler(self, ctx: Context) -> None:
         if ctx.channel.id in self.games_hitler:
             raise commands.BadArgument("There is already a game running in this channel.")

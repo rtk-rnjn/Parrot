@@ -94,7 +94,7 @@ async def _fetch_inventory(bot, url: str) -> InventoryDict:
 
         raise InvalidHeaderError("Incompatible inventory version.")
 
-async def fetch_inventory(url: str) -> Optional[InventoryDict]:
+async def fetch_inventory(url: str, bot) -> Optional[InventoryDict]:
     """
     Get an inventory dict from `url`, retrying `FAILED_REQUEST_ATTEMPTS` times on errors.
     `url` should point at a valid sphinx objects.inv inventory file, which will be parsed into the
@@ -102,7 +102,7 @@ async def fetch_inventory(url: str) -> Optional[InventoryDict]:
     """
     for attempt in range(1, 4):
         try:
-            inventory = await _fetch_inventory(url)
+            inventory = await _fetch_inventory(bot, url)
         except aiohttp.ClientConnectorError:
            pass
         except aiohttp.ClientError:

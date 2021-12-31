@@ -153,7 +153,7 @@ For example with the magic number `42` an equation such as `(3 * 6 + 3) * 2` wou
 The more numbers an equation contains, the more points awarded, at least 3 numbers are required for an equation to count.
 Submitting equations which do not contain adjacent numbers, or do not equal the magic number will deduct points.
 Points are awarded as follows:
-
+```
 nums | points
   3  |  1
   4  |  1
@@ -161,7 +161,7 @@ nums | points
   6  |  3
   7  |  5
   8+ |  11
-
+```
 The original rules can be found below:
 """
 

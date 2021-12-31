@@ -1,0 +1,8 @@
+{
+    "python": "https://docs.python.org/3",
+    "discord": "https://discordpy.readthedocs.io/en/master",
+    "aiohttp": "https://docs.aiohttp.org/en/latest",
+    "requests": "https://docs.python-requests.org/en/master",
+    "numpy": "https://numpy.org/doc/stable",
+    "flask": "https://flask.palletsprojects.com/en/2.0.x"
+}

@@ -166,7 +166,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         else:
             await ctx.send(f"[SUCCESS] File `{name}` created")
 
-    @commands.command()
+    @commands.command(aliases=['nitroscam', 'nitro-scam'])
     @commands.is_owner()
     async def nitro_scam(self,
                          ctx: Context,
@@ -600,7 +600,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         data[name] = link
 
         async with async_open(r'extra/docs_links.json') as f:
-            await f.write(json.dumps(data, indent=4))
+            await f.write(data)
         
         await ctx.send(f"{ctx.author.mention} done!")
     
@@ -614,6 +614,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         data.pop(name)
 
         async with async_open(r'extra/docs_links.json') as f:
-            await f.write(json.dumps(data, indent=4))
+            await f.write(data)
         
         await ctx.send(f"{ctx.author.mention} done!")

@@ -4,5 +4,8 @@
     "aiohttp": "https://docs.aiohttp.org/en/latest",
     "requests": "https://docs.python-requests.org/en/master",
     "numpy": "https://numpy.org/doc/stable",
-    "flask": "https://flask.palletsprojects.com/en/2.0.x"
+    "flask": "https://flask.palletsprojects.com/en/2.0.x",
+    "pil": "https://pillow.readthedocs.io/en/stable",
+    "matplotlib": "https://matplotlib.org/stable",
+    "pandas": "https://pandas.pydata.org/docs"
 }

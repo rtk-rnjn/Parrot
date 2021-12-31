@@ -8,6 +8,7 @@ import aiohttp
 
 to_bytes = partial(bytes, encoding='utf-8')
 
+
 def _to_tio_string(couple):
     name, obj = couple[0], couple[1]
     if not obj:
@@ -20,8 +21,13 @@ def _to_tio_string(couple):
 
 
 class Tio:
-
-    def __init__(self, language: str, code: str, inputs='', compilerFlags=[], commandLineOptions=[], args=[]):
+    def __init__(self,
+                 language: str,
+                 code: str,
+                 inputs='',
+                 compilerFlags=[],
+                 commandLineOptions=[],
+                 args=[]):
         self.backend = "https://tio.run/cgi-bin/run/api/"
         self.json = "https://tio.run/languages.json"
 
@@ -34,17 +40,19 @@ class Tio:
             'args': args
         }
 
-        bytes_ = b''.join(map(_to_tio_string, zip(strings.keys(), strings.values()))) + b'R'
+        bytes_ = b''.join(
+            map(_to_tio_string, zip(strings.keys(), strings.values()))) + b'R'
 
         # This returns a DEFLATE-compressed bytestring, which is what the API requires
         self.request = zlib.compress(bytes_, 9)[2:-4]
 
     async def send(self):
         async with aiohttp.ClientSession() as client_session:
-            async with client_session.post(self.backend, data=self.request) as res:
+            async with client_session.post(self.backend,
+                                           data=self.request) as res:
                 if res.status != 200:
                     raise aiohttp.HttpProcessingError(res.status)
 
                 data = await res.read()
                 data = data.decode('utf-8')
-                return data.replace(data[:16], '') # remove token
+                return data.replace(data[:16], '')  # remove token

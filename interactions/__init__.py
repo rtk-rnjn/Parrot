@@ -6,7 +6,8 @@ class Example(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(guild_ids=[741614680652644382])  # Create a slash command for the supplied guilds.
+    @slash_command(guild_ids=[741614680652644382]
+                   )  # Create a slash command for the supplied guilds.
     async def hello(self, ctx):
         await ctx.respond("Hi, this is a slash command from a cog!")
 

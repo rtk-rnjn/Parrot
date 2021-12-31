@@ -1,9 +1,8 @@
 import re
 
 INVITE_RE = re.compile(
-    r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", 
-    flags=re.IGNORECASE
-)
+    r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?",
+    flags=re.IGNORECASE)
 
 TIME_REGEX = re.compile(r"(?:\d{1,5}[h|s|m|d])+?", flags=re.IGNORECASE)
 

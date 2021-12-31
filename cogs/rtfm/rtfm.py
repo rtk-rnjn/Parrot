@@ -85,7 +85,7 @@ class RTFM(Cog):
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='rtfm', id=893097656375722024)
-    
+
     @property
     def session(self):
         return self.bot.session
@@ -103,12 +103,10 @@ class RTFM(Cog):
         try:
             res_json = await res_raw.json()
         except aiohttp.ContentTypeError:
-            return await ctx.send(
-                embed=discord.Embed(
-                    description="No such package found in the search query.",
-                    color=self.bot.color,
-                )
-            )
+            return await ctx.send(embed=discord.Embed(
+                description="No such package found in the search query.",
+                color=self.bot.color,
+            ))
 
         res = res_json["info"]
 
@@ -126,9 +124,9 @@ class RTFM(Cog):
         version = getval("version")
         _license = getval("license")
 
-        embed = discord.Embed(
-            title=f"{name} PyPi Stats", description=description, color=discord.Color.teal()
-        )
+        embed = discord.Embed(title=f"{name} PyPi Stats",
+                              description=description,
+                              color=discord.Color.teal())
 
         embed.add_field(name="Author", value=author, inline=True)
         embed.add_field(name="Author Email", value=author_email, inline=True)
@@ -152,12 +150,10 @@ class RTFM(Cog):
         res_json = await res_raw.json()
 
         if res_json.get("error"):
-            return await ctx.send(
-                embed=discord.Embed(
-                    description="No such package found in the search query.",
-                    color=0xCC3534,
-                )
-            )
+            return await ctx.send(embed=discord.Embed(
+                description="No such package found in the search query.",
+                color=0xCC3534,
+            ))
 
         latest_version = res_json["dist-tags"]["latest"]
         latest_info = res_json["versions"][latest_version]
@@ -181,16 +177,15 @@ class RTFM(Cog):
         author = getval("author", "name")
         author_email = getval("author", "email")
 
-        repository = (
-            getval("repository", "url").removeprefix("git+").removesuffix(".git")
-        )
+        repository = (getval("repository",
+                             "url").removeprefix("git+").removesuffix(".git"))
 
         homepage = getval("homepage")
         _license = getval("license")
 
-        em = discord.Embed(
-            title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534
-        )
+        em = discord.Embed(title=f"{pkg_name} NPM Stats",
+                           description=description,
+                           color=0xCC3534)
 
         em.add_field(name="Author", value=author, inline=True)
         em.add_field(name="Author Email", value=author_email, inline=True)
@@ -202,7 +197,8 @@ class RTFM(Cog):
         em.add_field(name="Homepage", value=homepage, inline=True)
 
         em.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
+            url=
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
         )
 
         await ctx.send(embed=em)
@@ -211,17 +207,16 @@ class RTFM(Cog):
     async def crate(self, ctx: Context, arg: str):
         """Get info about a Rust package directly from the Crates.IO Registry"""
 
-        res_raw = await self.get_package(f"https://crates.io/api/v1/crates/{arg}")
+        res_raw = await self.get_package(
+            f"https://crates.io/api/v1/crates/{arg}")
 
         res_json = await res_raw.json()
 
         if res_json.get("errors"):
-            return await ctx.send(
-                embed=discord.Embed(
-                    description="No such package found in the search query.",
-                    color=0xE03D29,
-                )
-            )
+            return await ctx.send(embed=discord.Embed(
+                description="No such package found in the search query.",
+                color=0xE03D29,
+            ))
         main_info = res_json["crate"]
         latest_info = res_json["versions"][0]
 
@@ -252,12 +247,14 @@ class RTFM(Cog):
         homepage = getmainval("homepage")
         _license = getversionvals("license")
 
-        em = discord.Embed(
-            title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29
-        )
+        em = discord.Embed(title=f"{pkg_name} crates.io Stats",
+                           description=description,
+                           color=0xE03D29)
 
         em.add_field(name="Published By", value=publisher, inline=True)
-        em.add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
+        em.add_field(name="Downloads",
+                     value="{:,}".format(downloads),
+                     inline=True)
 
         em.add_field(name="Latest Version", value=latest_version, inline=False)
         em.add_field(name="License", value=_license, inline=True)
@@ -266,13 +263,13 @@ class RTFM(Cog):
         em.add_field(name="Homepage", value=homepage, inline=True)
 
         em.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
+            url=
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
         )
 
         await ctx.send(embed=em)
 
-    @commands.command(
-help='''run <language> [--wrapped] [--stats] <code>
+    @commands.command(help='''run <language> [--wrapped] [--stats] <code>
 for command-line-options, compiler-flags and arguments you may
 add a line starting with this argument, and after a space add
 your options, flags or args.
@@ -287,18 +284,21 @@ If the output exceeds 40 lines or Discord max message length, it will be put
 in a new hastebin and the link will be returned.
 When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
 Useful to hide your syntax fails or when you forgot to print the result.''',
-brief='Execute code in a given programming language'
-        )
+                      brief='Execute code in a given programming language')
     async def run(self, ctx, *, payload=''):
         """Execute code in a given programming language"""
 
         if not payload:
-            emb = discord.Embed(title='SyntaxError',description=f"Command `run` missing a required argument: `language`",colour=0xff0000)
+            emb = discord.Embed(
+                title='SyntaxError',
+                description=
+                f"Command `run` missing a required argument: `language`",
+                colour=0xff0000)
             return await ctx.send(embed=emb)
 
         no_rerun = True
         language = payload
-        lang = None # to override in 2 first cases
+        lang = None  # to override in 2 first cases
 
         if ctx.message.attachments:
             # Code in file
@@ -311,7 +311,8 @@ brief='Execute code in a given programming language'
             lang = re.split(r'\s+', payload, maxsplit=1)[0]
         elif payload.split(' ')[-1].startswith('link='):
             # Code in a webpage
-            base_url = urllib.parse.quote_plus(payload.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
+            base_url = urllib.parse.quote_plus(
+                payload.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
 
             url = get_raw(base_url)
 
@@ -319,15 +320,20 @@ brief='Execute code in a given programming language'
                 if response.status == 404:
                     return await ctx.send('Nothing found. Check your link')
                 elif response.status != 200:
-                    return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+                    return await ctx.send(
+                        f'An error occurred (status code: {response.status}). Retry later.'
+                    )
                 text = await response.text()
                 if len(text) > 20000:
-                    return await ctx.send('Code must be shorter than 20,000 characters.')
+                    return await ctx.send(
+                        'Code must be shorter than 20,000 characters.')
                 lang = re.split(r'\s+', payload, maxsplit=1)[0]
         else:
             no_rerun = False
 
-            language,text,errored = prepare_payload(payload) # we call it text but it's an embed if it errored #JustDynamicTypingThings
+            language, text, errored = prepare_payload(
+                payload
+            )  # we call it text but it's an embed if it errored #JustDynamicTypingThings
 
             if errored:
                 return await ctx.send(embed=text)
@@ -336,7 +342,6 @@ brief='Execute code in a given programming language'
             if lang:
                 language = lang
 
-
             output = await execute_run(self.bot, language, text)
 
             view = Refresh(self.bot, no_rerun)
@@ -344,7 +349,7 @@ brief='Execute code in a given programming language'
             try:
                 returned = await ctx.reply(output, view=view)
                 buttons = True
-            except discord.HTTPException: # message deleted
+            except discord.HTTPException:  # message deleted
                 returned = await ctx.send(output, view=view)
                 buttons = False
 
@@ -358,7 +363,6 @@ brief='Execute code in a given programming language'
             except:
                 # We deleted the message
                 pass
-
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(aliases=['ref'])

@@ -11,9 +11,11 @@ from discord.enums import Enum
 from discord.utils import MISSING
 
 
-def format_list(
-    string: str, *list: Any, singular: str = "has", plural: str = "have", oxford_comma: bool = True
-) -> str:
+def format_list(string: str,
+                *list: Any,
+                singular: str = "has",
+                plural: str = "have",
+                oxford_comma: bool = True) -> str:
     if len(list) == 0:
         return string.format("no-one", singular)
     elif len(list) == 1:
@@ -21,13 +23,12 @@ def format_list(
 
     *rest, last = list
     rest_str = ", ".join(str(item) for item in rest)
-    return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
-
+    return string.format(rest_str + "," * oxford_comma + " and " + str(last),
+                         plural)
 
 
 T = TypeVar("T")
 U = TypeVar("U")
-
 
 PlayerCount = Literal[5, 6, 7, 8, 9, 10]
 
@@ -47,8 +48,8 @@ class _Skip:
 
 Skip: Any = _Skip()
 
-
 # fmt: off
+
 
 class Party(Enum):
     Liberal = 0
@@ -58,28 +59,30 @@ class Party(Enum):
 class Role(Enum):
     Liberal = 0
     Fascist = 1
-    Hitler  = 2
+    Hitler = 2
 
 
 class Power(Enum):
-    Peek        = 0
+    Peek = 0
     Investigate = 1
-    Election    = 2
-    Execution   = 3
+    Election = 2
+    Execution = 3
 
 
 ROLES: dict[PlayerCount, list[Role]] = {
-    5:  [Role.Liberal] * 3 + [Role.Fascist] * 1,
-    6:  [Role.Liberal] * 4 + [Role.Fascist] * 1,
-    7:  [Role.Liberal] * 4 + [Role.Fascist] * 2,
-    8:  [Role.Liberal] * 5 + [Role.Fascist] * 2,
-    9:  [Role.Liberal] * 5 + [Role.Fascist] * 3,
+    5: [Role.Liberal] * 3 + [Role.Fascist] * 1,
+    6: [Role.Liberal] * 4 + [Role.Fascist] * 1,
+    7: [Role.Liberal] * 4 + [Role.Fascist] * 2,
+    8: [Role.Liberal] * 5 + [Role.Fascist] * 2,
+    9: [Role.Liberal] * 5 + [Role.Fascist] * 3,
     10: [Role.Liberal] * 6 + [Role.Fascist] * 3,
 }
+
 
 def _r():  # Pyright breaks if this doesn't exist. T.T (1/06/2021)
     for player_count in PLAYER_COUNTS:
         ROLES[player_count].append(Role.Hitler)
+
 
 _r()
 
@@ -93,20 +96,20 @@ SECRET_MESSAGES: dict[PlayerCount, dict[Role, str]] = {
     },
     6: {},
     7: {
-        Role.Fascist: "You are a Fascist, {1} is also a Fascist, {0} is Hitler.",
+        Role.Fascist:
+        "You are a Fascist, {1} is also a Fascist, {0} is Hitler.",
     },
     8: {},
     9: {
-        Role.Fascist: "You are a Fascist, {1} and {2} are also Fascists, {0} is Hitler.",
+        Role.Fascist:
+        "You are a Fascist, {1} and {2} are also Fascists, {0} is Hitler.",
     },
     10: {},
 }
 
-
 SECRET_MESSAGES[6][Role.Fascist] = SECRET_MESSAGES[5][Role.Fascist]
 SECRET_MESSAGES[8][Role.Fascist] = SECRET_MESSAGES[7][Role.Fascist]
 SECRET_MESSAGES[10][Role.Fascist] = SECRET_MESSAGES[9][Role.Fascist]
-
 
 BOARD = """
 Liberal policies: {0.liberal_policies}/5
@@ -116,8 +119,10 @@ Fascist policies: {0.fascist_policies}/6
 
 def _s():  # See above
     for player_count in PLAYER_COUNTS:
-        SECRET_MESSAGES[player_count][Role.Liberal] = SECRET_MESSAGES[5][Role.Liberal]
-        SECRET_MESSAGES[player_count][Role.Hitler] = SECRET_MESSAGES[5][Role.Hitler]
+        SECRET_MESSAGES[player_count][Role.Liberal] = SECRET_MESSAGES[5][
+            Role.Liberal]
+        SECRET_MESSAGES[player_count][Role.Hitler] = SECRET_MESSAGES[5][
+            Role.Hitler]
 
 
 _s()
@@ -206,9 +211,16 @@ class AfterVoteGameState(GameState[T], metaclass=ABCMeta):
 
     @cached_property
     def vote_summary(self) -> str:
-        ja = [player.identifier for player, vote in self.votes.items() if vote == True]
-        nein = [player.identifier for player, vote in self.votes.items() if vote == False]
-        return format_list("Ja: {0}", *ja) + "\n" + format_list("Nein: {0}", *nein)
+        ja = [
+            player.identifier for player, vote in self.votes.items()
+            if vote == True
+        ]
+        nein = [
+            player.identifier for player, vote in self.votes.items()
+            if vote == False
+        ]
+        return format_list("Ja: {0}", *ja) + "\n" + format_list(
+            "Nein: {0}", *nein)
 
 
 class SelectGameState(UserInputGameState[T], Generic[T, U], metaclass=ABCMeta):
@@ -275,7 +287,8 @@ class VoteOnGovernment(VoteGameState[T]):
     message = "{0.president} has chosen {0.chancellor} as their chancellor, vote ja! or nein!"
     tooltip = "Vote ja! or nein!"
 
-    def __init__(self, game: Game[T], president: Player[T], chancellor: Player[T]) -> None:
+    def __init__(self, game: Game[T], president: Player[T],
+                 chancellor: Player[T]) -> None:
         self.president: Player[T] = president
         self.chancellor: Player[T] = chancellor
         super().__init__(game)
@@ -302,7 +315,8 @@ class VoteOnGovernment(VoteGameState[T]):
 
     def next_state(self) -> GameState[T]:
         if self.vote_passed:
-            return VotePassed[T](self.game, self.votes, self.president, self.chancellor)
+            return VotePassed[T](self.game, self.votes, self.president,
+                                 self.chancellor)
         else:
             return VoteFailed[T](self.game, self.votes)
 
@@ -310,15 +324,16 @@ class VoteOnGovernment(VoteGameState[T]):
 class VotePassed(AfterVoteGameState[T]):
     _message = "The vote passed, {0.game.president} is the President and {0.game.chancellor} is the Chancellor!"
 
-    def __init__(
-        self, game: Game[T], votes: dict[Player[T], bool], president: Player[T], chancellor: Player[T]
-    ) -> None:
+    def __init__(self, game: Game[T], votes: dict[Player[T], bool],
+                 president: Player[T], chancellor: Player[T]) -> None:
         self.president: Player[T] = president
         self.chancellor: Player[T] = chancellor
         super().__init__(game, votes)
 
         self.game.election_tracker = 0
-        self.game.previously_elected = [self.game.president, self.game.chancellor]
+        self.game.previously_elected = [
+            self.game.president, self.game.chancellor
+        ]
         self.game.president = self.president
         self.game.chancellor = self.chancellor
 
@@ -376,7 +391,11 @@ class ChancellorDiscardsPolicy(SelectGameState[T, Party]):
 class PolicyEnacted(GameState[T]):
     message = "A {0.policy.name} policy has been enacted."
 
-    def __init__(self, game: Game[T], policy: Party, *, top_deck: bool = False) -> None:
+    def __init__(self,
+                 game: Game[T],
+                 policy: Party,
+                 *,
+                 top_deck: bool = False) -> None:
         self.policy: Party = policy
         self.top_deck: bool = top_deck
         super().__init__(game)
@@ -682,7 +701,10 @@ class Game(Generic[T]):
         self._summary: list[str] = []
 
         # Players
-        self.players: list[Player[T]] = [Player[T](identifier, role) for identifier, role in zip(identifiers, ROLES[len(identifiers)])]  # type: ignore
+        self.players: list[Player[T]] = [
+            Player[T](identifier, role)
+            for identifier, role in zip(identifiers, ROLES[len(identifiers)])
+        ]  # type: ignore
         self.player_count: PlayerCount = len(self.players)  # type: ignore
         random.shuffle(self.players)
         self.cycle = itertools.cycle(self.players)
@@ -690,7 +712,9 @@ class Game(Generic[T]):
         # Policies
         liberal_policies = POLICIES[Party.Liberal]
         fascsit_policies = POLICIES[Party.Fascist]
-        self.draw_pile: list[Party] = [Party.Liberal] * liberal_policies + [Party.Fascist] * fascsit_policies
+        self.draw_pile: list[Party] = [Party.Liberal] * liberal_policies + [
+            Party.Fascist
+        ] * fascsit_policies
         self.discard_pile: list[Party] = []
         random.shuffle(self.draw_pile)
 
@@ -737,9 +761,13 @@ class Game(Generic[T]):
 
     def get_players(self, identifier: Union[Party, Role]) -> list[Player[T]]:
         if isinstance(identifier, Role):
-            return [player for player in self.players if player.role is identifier]
+            return [
+                player for player in self.players if player.role is identifier
+            ]
         else:
-            return [player for player in self.players if player.party is identifier]
+            return [
+                player for player in self.players if player.party is identifier
+            ]
 
     def draw_policy(self) -> Party:
         return self.draw_pile.pop(0)

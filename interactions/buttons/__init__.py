@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core import Parrot, Cog, Context
+from core import Parrot
 
 from .games import Games
 

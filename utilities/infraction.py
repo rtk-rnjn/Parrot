@@ -5,7 +5,7 @@ from async_property import async_property
 from tabulate import tabulate
 from prettytable import PrettyTable
 from core import Parrot
-from utilities.database import parrot_db
+from utilities.database import parrot_db, warn_db
 import datetime
 
 from typing import Optional
@@ -15,7 +15,7 @@ class Infraction:
     def __init__(self, bot: Parrot):
         self.bot = bot
         self._parrot_collection = parrot_db['server_config']
-        self._warn_db = None
+        self._warn_db = warn_db
 
     async def total_warns(self) -> int:
         if self._warn_db is None:
@@ -80,7 +80,14 @@ class Infraction:
                 }})
             return 1
 
-    async def make_warn(self, *, at: int, reason: str, mod: int, expires_at: Optional[int], guild_id: int, auto: Optional[bool]=True) -> dict:
+    async def make_warn(self,
+                        *,
+                        at: int,
+                        reason: str,
+                        mod: int,
+                        expires_at: Optional[int],
+                        guild_id: int,
+                        auto: Optional[bool] = True) -> dict:
         case_id = self.get_case_id()
         warn = {
             'case_id': case_id,
@@ -115,23 +122,18 @@ class Infraction:
         user_exists = await collection.find_one({'_id': user_id})
         if not user_exists:
             return
-        await collection.update_one({'_id': user_id},
-                                    {'$set': {
-                                        'warns': []
-                                    }})
+        await collection.update_one({'_id': user_id}, {'$set': {'warns': []}})
 
     async def del_warn_by_id(self, guild_id, user_id, case_id: int) -> None:
         collection = self._warn_db[f"{guild_id}"]
         await collection.update_one({'_id': user_id},
                                     {'$pull': {
                                         'warns.case_id': case_id
-                                        }
-                                    })
+                                    }})
 
     async def del_warn_by_mod(self, guild_id, user_id, mod: int) -> None:
         collection = self._warn_db[f"{guild_id}"]
         await collection.update_one({'_id': user_id},
                                     {'$pull': {
                                         'warns.mod': mod
-                                        }
-                                    }, {'multi': True})
+                                    }}, {'multi': True})

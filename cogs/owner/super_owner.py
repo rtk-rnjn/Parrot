@@ -18,6 +18,7 @@ from utilities.time import ShortTime
 from utilities.converters import convert_bool
 from cogs.meta.robopage import SimplePages
 
+
 class auditFlag(commands.FlagConverter,
                 case_insensitive=True,
                 prefix='--',
@@ -30,6 +31,7 @@ class auditFlag(commands.FlagConverter,
     oldest_first: typing.Optional[convert_bool] = False
     user: typing.Optional[int]
     action: typing.Optional[str]
+
 
 act = {
     'channel_create': discord.AuditLogAction.channel_create,
@@ -67,28 +69,36 @@ act = {
     'integration_update': discord.AuditLogAction.integration_update,
 }
 
+
 class nitro(discord.ui.View):
     def __init__(self, ctx):
         super().__init__(timeout=None)
         self.ctx = ctx
         self.bot = ctx.bot
 
-    @discord.ui.button(custom_id="fun (nitro)", label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀", style=discord.ButtonStyle.green)
-    async def func(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(custom_id="fun (nitro)",
+                       label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+                       style=discord.ButtonStyle.green)
+    async def func(self, button: discord.ui.Button,
+                   interaction: discord.Interaction):
 
         i = discord.Embed()
-        i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
-        await interaction.response.send_message(f"https://imgur.com/NQinKJB", ephemeral=True)
+        i.set_image(
+            url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
+        await interaction.response.send_message(f"https://imgur.com/NQinKJB",
+                                                ephemeral=True)
 
-        
         button.disabled = True
         button.style = discord.ButtonStyle.grey
         button.label = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claimed⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 
-        ni = discord.Embed(title=f"You received a gift, but...", description=f"The gift link has either expired or has been\nrevoked.")
+        ni = discord.Embed(
+            title=f"You received a gift, but...",
+            description=
+            f"The gift link has either expired or has been\nrevoked.")
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
-            await interaction.message.edit(embed=ni,view=self)
+            await interaction.message.edit(embed=ni, view=self)
         except:
             pass
 
@@ -102,7 +112,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='early_verified_bot_developer', id=892433993537032262)
+        return discord.PartialEmoji(name='early_verified_bot_developer',
+                                    id=892433993537032262)
 
     @commands.command()
     @commands.is_owner()
@@ -154,22 +165,24 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 f"[ERROR] Could not create file `{name}`: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] File `{name}` created")
-    
+
     @commands.command()
     @commands.is_owner()
-    async def nitro_scam(self, 
-                         ctx: Context, 
-                         *, 
-                         target: typing.Union[discord.User, 
-                                              discord.TextChannel, 
-                                              discord.Thread]=None):
+    async def nitro_scam(self,
+                         ctx: Context,
+                         *,
+                         target: typing.Union[discord.User,
+                                              discord.TextChannel,
+                                              discord.Thread] = None):
         """Fun command"""
         target = target or ctx.channel
         await target.send(embed=discord.Embed(
-                            title="You've been gifted a subscription!", 
-                            description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
-                            timestamp=datetime.datetime.utcnow()).set_thumbnail(url="https://i.imgur.com/w9aiD6F.png"), 
-                       view=nitro(ctx))
+            title="You've been gifted a subscription!",
+            description=
+            "You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
+            timestamp=datetime.datetime.utcnow()).set_thumbnail(
+                url="https://i.imgur.com/w9aiD6F.png"),
+                          view=nitro(ctx))
 
     @commands.command()
     @commands.is_owner()
@@ -213,7 +226,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         data = await res.json()
         ls = list()
         for i in data['items']:
-            embed = discord.Embed(title=i['title'], description=f"```\n{i['snippet']}```", timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(title=i['title'],
+                                  description=f"```\n{i['snippet']}```",
+                                  timestamp=datetime.datetime.utcnow())
             embed.set_footer(text=f"Requester: {ctx.author}")
             embed.set_image(url=i['link'])
             ls.append(embed)
@@ -230,7 +245,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             color=ctx.author.color,
             timestamp=datetime.datetime.utcnow()).set_image(url=link))
 
-
     @commands.command()
     @commands.is_owner()
     # @Context.with_type
@@ -241,48 +255,50 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception:
             pass
         await ctx.message.reference.resolved.delete()
-    
+
     @commands.command()
     @commands.is_owner()
     # @Context.with_type
-    async def spy_server(self, ctx: Context, guild: discord.Guild=None, channel_member: str=None):
+    async def spy_server(self,
+                         ctx: Context,
+                         guild: discord.Guild = None,
+                         channel_member: str = None):
         """This is not really a spy command"""
         guild = guild or ctx.guild
         URL = f"https://discord.com/api/guilds/{guild.id}/widget.json"
         data = await self.bot.session.get(URL)
         json = await data.json()
         if 'message' in json:
-            return await ctx.reply(f"{ctx.author.mention} can not spy that server")
+            return await ctx.reply(
+                f"{ctx.author.mention} can not spy that server")
         name = json['name']
         id_ = json['id']
         instant_invite = json['instant_invite']
         presence_count = json['presence_count']
-        
+
         embed_first = discord.Embed(
-                    title=name, 
-                    # url=instant_invite, 
-                    color=ctx.author.color, 
-                    timestamp=datetime.datetime.utcnow()
-                )
+            title=name,
+            # url=instant_invite,
+            color=ctx.author.color,
+            timestamp=datetime.datetime.utcnow())
         if instant_invite:
             embed_first.url = instant_invite
         embed_first.set_footer(text=f"{id_}")
         embed_first.description = f"**Presence Count:** {presence_count}"
         em_list = [embed_first]
-        
+
         for channel in json['channels']:
             em_chan = discord.Embed(
-                title=channel['name'], 
-                description=f"**Position:** {channel['position']}", 
-                color=ctx.author.color, 
-                timestamp=datetime.datetime.utcnow()
-            ).set_footer(text=channel['id'])
-            
-            
+                title=channel['name'],
+                description=f"**Position:** {channel['position']}",
+                color=ctx.author.color,
+                timestamp=datetime.datetime.utcnow()).set_footer(
+                    text=channel['id'])
+
             em_list.append(em_chan)
-        
+
         em_list_member = [embed_first]
-        
+
         for member in json['members']:
             if 'game' in member:
                 game = member['game']['name']
@@ -299,16 +315,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             self_deaf = member['self_deaf'] if 'self_deaf' in member else None
             deaf = member['deaf'] if 'deaf' in member else None
             mute = member['mute'] if 'mute' in member else None
-            
+
             em = discord.Embed(
-                title=f"Username: {username}#{discriminator}", 
-                color=ctx.author.color, 
-                timestamp=datetime.datetime.utcnow()
-            ).set_footer(
-                text=f"{id_}"
-            ).set_thumbnail(
-                url=avatar_url
-            )
+                title=f"Username: {username}#{discriminator}",
+                color=ctx.author.color,
+                timestamp=datetime.datetime.utcnow()).set_footer(
+                    text=f"{id_}").set_thumbnail(url=avatar_url)
             em.description = f"**Status:** {status.upper()}\n**In VC?** {True if vc else False} ({'<#'+str(vc)+'>' if vc else None})"
             if vc:
                 em.add_field(name='VC Channel ID', value=str(vc), inline=True)
@@ -319,11 +331,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 em.add_field(name='Mute?', value=mute, inline=True)
             em_list_member.append(em)
 
-        if channel_member.lower() in ('channels',):
+        if channel_member.lower() in ('channels', ):
             await PaginationView(em_list).start(ctx=ctx)
-        elif channel_member.lower() in ('members',):
+        elif channel_member.lower() in ('members', ):
             await PaginationView(em_list_member).start(ctx=ctx)
-
 
     @commands.command()
     @commands.is_owner()
@@ -331,17 +342,14 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To remove the background from image"""
         async with self.bot.session.get(url) as img:
             imgdata = io.BytesIO(await img.read())
-        
+
         response = await self.bot.session.post(
-            "https://api.remove.bg/v1.0/removebg", 
+            "https://api.remove.bg/v1.0/removebg",
             data={
                 'size': 'auto',
                 'image_file': imgdata
             },
-            headers={
-                'X-Api-Key': f'{os.environ["REMOVE_BG"]}'
-            }
-        )
+            headers={'X-Api-Key': f'{os.environ["REMOVE_BG"]}'})
         async with async_open('no-bg.png', 'wb') as out:
             await out.write(await response.read())
         await ctx.send(file=discord.File('no-bg.png'))
@@ -355,22 +363,25 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ls = list()
         guild = args.guild or ctx.guild
         async for entry in guild.audit_logs(
-            limit=args.limit if args.limit else 100,
-            user=discord.Object(id=args.user) if args.user else None,
-            action=act.get(args.action.lower().replace(' ', '_')) if args.action else None,
-            before=discord.Object(id=int(args.before.dt.timestamp())) if args.before else None,
-            after=discord.Object(id=int(args.after.dt.timestamp())) if args.after else None,
-            oldest_first=args.oldest_first
-        ):
+                limit=args.limit if args.limit else 100,
+                user=discord.Object(id=args.user) if args.user else None,
+                action=act.get(args.action.lower().replace(' ', '_'))
+                if args.action else None,
+                before=discord.Object(id=int(args.before.dt.timestamp()))
+                if args.before else None,
+                after=discord.Object(
+                    id=int(args.after.dt.timestamp())) if args.after else None,
+                oldest_first=args.oldest_first):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
 `Responsible Moderator`: <@{entry.user.id if entry.user else 'Can not determine the Moderator'}>
 `Action performed on  `: {entry.target or 'Can not determine the Target'}
 """
             ls.append(st)
-        
+
         p = SimplePages(ls, ctx=ctx, per_page=5)
         await p.start()
+
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader
@@ -408,11 +419,11 @@ class SphinxObjectFileReader:
 class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='dpy', id=596577034537402378)
-    
+
     def parse_object_inv(self, stream, url):
         # key: URL
         # n.b.: key doesn't have `discord` or `discord.ext.commands` namespaces
@@ -528,7 +539,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             return await ctx.send("Could not find anything. Sorry.")
 
         e.set_thumbnail(
-            url='https://cdn.discordapp.com/attachments/894938379697913916/894938401294401576/3aa641b21acded468308a37eef43d7b3.png'
+            url=
+            'https://cdn.discordapp.com/attachments/894938379697913916/894938401294401576/3aa641b21acded468308a37eef43d7b3.png'
         )
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
@@ -559,4 +571,3 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     async def rtfm_stable(self, ctx, *, obj: str = None):
         """Gives you a documentation link for a discord.py entity (stable branch)"""
         await self.do_rtfm(ctx, "stable", obj)
-

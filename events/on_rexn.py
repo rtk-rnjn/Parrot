@@ -1,6 +1,7 @@
 from __future__ import annotations
 from core import Parrot, Cog
 
+
 class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -8,11 +9,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
         pass
-                    
+
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
         pass
-    
+
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
         pass

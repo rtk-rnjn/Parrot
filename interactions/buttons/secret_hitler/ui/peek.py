@@ -10,12 +10,10 @@ from .select import *
 if TYPE_CHECKING:
     from .game import GameUI
 
-
 __all__ = (
     "PeekButton",
     "PeekUI",
 )
-
 
 POLICY_STYLE: dict[Party, discord.ButtonStyle] = {
     Party.Liberal: discord.ButtonStyle.primary,
@@ -27,7 +25,10 @@ class PeekButton(SelectButton[Party, "PeekUI"]):
     disabled: ClassVar[bool] = True
 
     def __init__(self, item: Party):
-        super().__init__(item, style=POLICY_STYLE[item], label=item.name, disabled=self.disabled)
+        super().__init__(item,
+                         style=POLICY_STYLE[item],
+                         label=item.name,
+                         disabled=self.disabled)
 
 
 class PeekUI(SelectUI):
@@ -38,4 +39,3 @@ class PeekUI(SelectUI):
 
         for option in options:
             self.add_item(self.button_type(option))
-

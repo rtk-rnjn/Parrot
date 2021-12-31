@@ -22,17 +22,22 @@
 __version__ = '2.0.2'
 VERSION = tuple(map(int, __version__.split('.')))
 
-__all__ = ('Munch', 'munchify','unmunchify',)
+__all__ = (
+    'Munch',
+    'munchify',
+    'unmunchify',
+)
 
 import sys
 
-_PY2 = (sys.version_info < (3,0))
+_PY2 = (sys.version_info < (3, 0))
 
-identity = lambda x : x
+identity = lambda x: x
 
 # u('string') replaces the forwards-incompatible u'string'
 if _PY2:
     import codecs
+
     def u(string):
         return codecs.unicode_escape_decode(string)[0]
 else:
@@ -44,7 +49,8 @@ if _PY2:
     iterkeys = dict.iterkeys
 else:
     iteritems = dict.items
-    iterkeys  = dict.keys
+    iterkeys = dict.keys
+
 
 class Munch(dict):
     """ A dictionary that provides attribute-style access.
@@ -75,7 +81,6 @@ class Munch(dict):
         'The lolcats who say can haz!'
         See unmunchify/Munch.toDict, munchify/Munch.fromDict for notes about conversion.
     """
-
     def __contains__(self, k):
         """ >>> b = Munch(ponies='are pretty!')
             >>> 'ponies' in b
@@ -204,11 +209,10 @@ class Munch(dict):
         args = ', '.join(['%s=%r' % (key, self[key]) for key in keys])
         return '%s(%s)' % (self.__class__.__name__, args)
 
-
     def __dir__(self):
         return list(iterkeys(self))
 
-    __members__ = __dir__ # for python2.x compatibility
+    __members__ = __dir__  # for python2.x compatibility
 
     @staticmethod
     def fromDict(d):
@@ -221,13 +225,13 @@ class Munch(dict):
         return munchify(d)
 
 
-
 # While we could convert abstract types like Mapping or Iterable, I think
 # munchify is more likely to "do what you mean" if it is conservative about
 # casting (ex: isinstance(str,Iterable) == True ).
 #
 # Should you disagree, it is not difficult to duplicate this function with
 # more aggressive coercion to suit your own purposes.
+
 
 def munchify(x):
     """ Recursively transforms a dictionary into a Munch via copy.
@@ -245,11 +249,12 @@ def munchify(x):
         nb. As dicts are not hashable, they cannot be nested in sets/frozensets.
     """
     if isinstance(x, dict):
-        return Munch( (k, munchify(v)) for k,v in iteritems(x) )
+        return Munch((k, munchify(v)) for k, v in iteritems(x))
     elif isinstance(x, (list, tuple)):
-        return type(x)( munchify(v) for v in x )
+        return type(x)(munchify(v) for v in x)
     else:
         return x
+
 
 def unmunchify(x):
     """ Recursively converts a Munch into a dictionary.
@@ -266,9 +271,9 @@ def unmunchify(x):
         nb. As dicts are not hashable, they cannot be nested in sets/frozensets.
     """
     if isinstance(x, dict):
-        return dict( (k, unmunchify(v)) for k,v in iteritems(x) )
+        return dict((k, unmunchify(v)) for k, v in iteritems(x))
     elif isinstance(x, (list, tuple)):
-        return type(x)( unmunchify(v) for v in x )
+        return type(x)(unmunchify(v) for v in x)
     else:
         return x
 
@@ -280,6 +285,7 @@ try:
 except ImportError:
     import json
 
+
 def toJSON(self, **options):
     """ Serializes this Munch to JSON. Accepts the same keyword options as `json.dumps()`.
         >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
@@ -290,8 +296,8 @@ def toJSON(self, **options):
     """
     return (json.dumps(self, **options)).decode()
 
-Munch.toJSON = toJSON
 
+Munch.toJSON = toJSON
 
 try:
     # Attempt to register ourself with PyYAML as a representer
@@ -319,7 +325,6 @@ try:
         value = loader.construct_mapping(node)
         data.update(value)
 
-
     def to_yaml_safe(dumper, data):
         """ Converts Munch to a normal mapping node, making it appear as a
             dict in the YAML output.
@@ -339,7 +344,6 @@ try:
         """
         return dumper.represent_mapping(u('!munch.Munch'), data)
 
-
     yaml.add_constructor(u('!munch'), from_yaml)
     yaml.add_constructor(u('!munch.Munch'), from_yaml)
 
@@ -348,7 +352,6 @@ try:
 
     Representer.add_representer(Munch, to_yaml)
     Representer.add_multi_representer(Munch, to_yaml)
-
 
     # Instance methods for YAML conversion
     def toYAML(self, **options):
@@ -373,14 +376,13 @@ try:
             return yaml.dump(self, **opts)
 
     def fromYAML(*args, **kwargs):
-        return munchify( yaml.load(*args, **kwargs) )
+        return munchify(yaml.load(*args, **kwargs))
 
     Munch.toYAML = toYAML
     Munch.fromYAML = staticmethod(fromYAML)
 
 except ImportError:
     pass
-
 
 if __name__ == "__main__":
     import doctest

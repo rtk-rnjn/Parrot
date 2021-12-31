@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from discord.ext import commands
 import discord, typing, asyncio, io, functools
 from utilities.emotes import emojis
@@ -65,11 +64,11 @@ class Context(commands.Context):
     """A custom implementation of commands.Context class."""
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-    
+
     def __repr__(self):
         # we need this for our cache key strategy
         return f'<core.{self.bot.user.name} Context>'
-    
+
     @property
     def session(self):
         return self.bot.session
@@ -168,10 +167,15 @@ class Context(commands.Context):
         else:
             return await self.send(content)
 
-    async def bulk_add_reactions(self, message: discord.Message, *reactions: typing.Union[discord.Emoji, str]) -> None:
-        coros = [asyncio.ensure_future(message.add_reaction(reaction)) for reaction in reactions]
+    async def bulk_add_reactions(
+            self, message: discord.Message,
+            *reactions: typing.Union[discord.Emoji, str]) -> None:
+        coros = [
+            asyncio.ensure_future(message.add_reaction(reaction))
+            for reaction in reactions
+        ]
         await asyncio.wait(coros)
-    
+
     async def confirm(
         self,
         bot: Any,
@@ -186,12 +190,14 @@ class Context(commands.Context):
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
         def check(payload: discord.RawReactionActionEvent) -> bool:
-            return (
-                payload.message_id == message.id and payload.user_id == user.id and str(payload.emoji) in CONFIRM_REACTIONS
-            )
+            return (payload.message_id == message.id
+                    and payload.user_id == user.id
+                    and str(payload.emoji) in CONFIRM_REACTIONS)
 
         try:
-            payload = await bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
+            payload = await bot.wait_for("raw_reaction_add",
+                                         check=check,
+                                         timeout=timeout)
             return str(payload.emoji) == THUMBS_UP
         except asyncio.TimeoutError:
             return None

@@ -24,12 +24,11 @@ cx = os.environ['GOOGLE_CX']
 
 
 class TTFlag(commands.FlagConverter,
-                case_insensitive=True,
-                prefix="--",
-                delimiter=' '):
+             case_insensitive=True,
+             prefix="--",
+             delimiter=' '):
     var: str
     con: str
-
 
 
 class Misc(Cog):
@@ -64,7 +63,8 @@ class Misc(Cog):
 
     @commands.command(aliases=['bigemote'])
     @commands.has_permissions(embed_links=True)
-    @commands.bot_has_permissions(embed_links=True,)
+    @commands.bot_has_permissions(
+        embed_links=True, )
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
@@ -274,7 +274,9 @@ class Misc(Cog):
 		   Truthtable --var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
            (Example: `tt --var a, b --con a and b, a or b`)
 		"""
-        table = ttg.Truths(flags.var.split(','), flags.con.split(','), ints=False).as_prettytable()
+        table = ttg.Truths(flags.var.split(','),
+                           flags.con.split(','),
+                           ints=False).as_prettytable()
         await ctx.reply(f"```\n{table}\n```")
 
     @commands.command(aliases=['w'])
@@ -450,10 +452,9 @@ class Misc(Cog):
         target: typing.Union[discord.User, discord.Member, discord.Role,
                              discord.Thread, discord.TextChannel,
                              discord.VoiceChannel, discord.StageChannel,
-                             discord.Guild, discord.Emoji,
-                             discord.Invite, discord.Template,
-                             discord.CategoryChannel, discord.DMChannel,
-                             discord.GroupChannel]):
+                             discord.Guild, discord.Emoji, discord.Invite,
+                             discord.Template, discord.CategoryChannel,
+                             discord.DMChannel, discord.GroupChannel]):
         """To get the ID of discord models"""
         embed = discord.Embed(title="Snowflake lookup",
                               color=ctx.author.color,
@@ -699,29 +700,29 @@ class Misc(Cog):
         embed.set_footer(text=f"{ctx.author}")
 
         await ctx.send(embed=embed)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def currencies(self, ctx: Context):
         """To see the currencies notations with names"""
-        obj = await self.bot.session.get("https://api.coinbase.com/v2/currencies")
+        obj = await self.bot.session.get(
+            "https://api.coinbase.com/v2/currencies")
         data = await obj.json()
         entries = [f"`{temp['id']}` `{temp['name']}`" for temp in data['data']]
         p = SimplePages(entries, ctx=ctx)
         await p.start()
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def exchangerate(self, ctx: Context, currency: str):
         """To see the currencies notations with names"""
         if len(currency) != 3:
-            return await ctx.send(f"{ctx.author.mention} please provide a **valid currency!**")
-        obj = await self.bot.session.get(f"https://api.coinbase.com/v2/exchange-rates?currency={currency}")
+            return await ctx.send(
+                f"{ctx.author.mention} please provide a **valid currency!**")
+        obj = await self.bot.session.get(
+            f"https://api.coinbase.com/v2/exchange-rates?currency={currency}")
         data: dict = await obj.json()
 
         entries = [f"`{i}` `{j}`" for i, j in data['data']['rates'].items()]
         p = SimplePages(entries, ctx=ctx)
         await p.start()
-    
-    
-        

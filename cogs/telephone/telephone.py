@@ -14,11 +14,11 @@ class Telephone(Cog):
         self.bot = bot
         self.redial = {}
         self.las_call_detail = {}
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='\N{BLACK TELEPHONE}')
-    
+
     @commands.command(aliases=['call'])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)

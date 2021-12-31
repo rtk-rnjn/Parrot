@@ -23,15 +23,24 @@ from discord import Member
 
 from typing import Union, Coroutine, Optional, Callable
 
-FACTS = json.loads(Path(r"extra/valentines/valentine_facts.json").read_text("utf8"))
+FACTS = json.loads(
+    Path(r"extra/valentines/valentine_facts.json").read_text("utf8"))
 
 LETTER_EMOJI = ":love_letter:"
-HEART_EMOJIS = [":heart:", ":gift_heart:", ":revolving_hearts:", ":sparkling_heart:", ":two_hearts:"]
-VALENTINES_DATES = json.loads(Path("extra/valentines/date_ideas.json").read_text("utf8"))
-PICKUP_LINES = json.loads(Path("extra/valentines/pickup_lines.json").read_text("utf8"))
-STATES = json.loads(Path("extra/valentines/valenstates.json").read_text("utf8"))
-LOVE_DATA = json.loads(Path("extra/valentines/love_matches.json").read_text("utf8"))
+HEART_EMOJIS = [
+    ":heart:", ":gift_heart:", ":revolving_hearts:", ":sparkling_heart:",
+    ":two_hearts:"
+]
+VALENTINES_DATES = json.loads(
+    Path("extra/valentines/date_ideas.json").read_text("utf8"))
+PICKUP_LINES = json.loads(
+    Path("extra/valentines/pickup_lines.json").read_text("utf8"))
+STATES = json.loads(
+    Path("extra/valentines/valenstates.json").read_text("utf8"))
+LOVE_DATA = json.loads(
+    Path("extra/valentines/love_matches.json").read_text("utf8"))
 LOVE_DATA = sorted((int(key), value) for key, value in LOVE_DATA.items())
+
 
 class Month(enum.IntEnum):
     JANUARY = 1
@@ -81,6 +90,7 @@ def in_month_listener(*allowed_months: Month) -> Callable:
                 return await listener(*args, **kwargs)
 
         return guarded_listener
+
     return decorator
 
 
@@ -96,7 +106,8 @@ def in_month_command(*allowed_months: Month) -> Callable:
         if can_run:
             return True
         else:
-            raise commands.BadArgument(f"Command can only be used in {human_months(allowed_months)}")
+            raise commands.BadArgument(
+                f"Command can only be used in {human_months(allowed_months)}")
 
     return commands.check(predicate)
 
@@ -105,20 +116,23 @@ def in_month(*allowed_months: Month) -> Callable:
     def decorator(callable_: Callable) -> Callable:
         # Functions decorated as commands are turned into instances of `Command`
         if isinstance(callable_, commands.Command):
-            
+
             actual_deco = in_month_command(*allowed_months)
 
         # D.py will assign this attribute when `callable_` is registered as a listener
         elif hasattr(callable_, "__cog_listener__"):
-            
+
             actual_deco = in_month_listener(*allowed_months)
 
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
+            raise TypeError(
+                f"Decorated object {callable_} is neither a command nor a listener"
+            )
 
         return actual_deco(callable_)
+
     return decorator
 
 
@@ -146,7 +160,8 @@ class Love(Cog):
             cur_row = [i + 1]
             for j, goal_c in enumerate(goal):
                 if source_c != goal_c:
-                    cur_row.append(min(pre_row[j], pre_row[j + 1], cur_row[j]) + 1)
+                    cur_row.append(
+                        min(pre_row[j], pre_row[j + 1], cur_row[j]) + 1)
                 else:
                     cur_row.append(min(pre_row[j], pre_row[j + 1], cur_row[j]))
             pre_row = cur_row
@@ -161,8 +176,10 @@ class Love(Cog):
         zodiac_fact = json.loads(explanation_file.read_text("utf8"))
 
         for zodiac_data in zodiac_fact.values():
-            zodiac_data["start_at"] = datetime.fromisoformat(zodiac_data["start_at"])
-            zodiac_data["end_at"] = datetime.fromisoformat(zodiac_data["end_at"])
+            zodiac_data["start_at"] = datetime.fromisoformat(
+                zodiac_data["start_at"])
+            zodiac_data["end_at"] = datetime.fromisoformat(
+                zodiac_data["end_at"])
 
         zodiacs = json.loads(compatibility_file.read_text("utf8"))
 
@@ -187,10 +204,18 @@ class Love(Cog):
         if zodiac in self.zodiac_fact:
             embed.title = f"__{zodiac}__"
             embed.description = self.zodiac_fact[zodiac]["About"]
-            embed.add_field(name="__Motto__", value=self.zodiac_fact[zodiac]["Motto"], inline=False)
-            embed.add_field(name="__Strengths__", value=self.zodiac_fact[zodiac]["Strengths"], inline=False)
-            embed.add_field(name="__Weaknesses__", value=self.zodiac_fact[zodiac]["Weaknesses"], inline=False)
-            embed.add_field(name="__Full form__", value=self.zodiac_fact[zodiac]["full_form"], inline=False)
+            embed.add_field(name="__Motto__",
+                            value=self.zodiac_fact[zodiac]["Motto"],
+                            inline=False)
+            embed.add_field(name="__Strengths__",
+                            value=self.zodiac_fact[zodiac]["Strengths"],
+                            inline=False)
+            embed.add_field(name="__Weaknesses__",
+                            value=self.zodiac_fact[zodiac]["Weaknesses"],
+                            inline=False)
+            embed.add_field(name="__Full form__",
+                            value=self.zodiac_fact[zodiac]["full_form"],
+                            inline=False)
             embed.set_thumbnail(url=self.zodiac_fact[zodiac]["url"])
         else:
             embed = self.generate_invalidname_embed(zodiac)
@@ -199,19 +224,22 @@ class Love(Cog):
     def zodiac_date_verifier(self, query_date: datetime) -> str:
         """Returns zodiac sign by checking date."""
         for zodiac_name, zodiac_data in self.zodiac_fact.items():
-            if zodiac_data["start_at"].date() <= query_date.date() <= zodiac_data["end_at"].date():
+            if zodiac_data["start_at"].date() <= query_date.date(
+            ) <= zodiac_data["end_at"].date():
                 return zodiac_name
 
     @commands.command(aliases=['saintvalentine'])
-    async def whoisvalentine(self, ctx: Context,):
+    async def whoisvalentine(
+        self,
+        ctx: Context,
+    ):
         """Displays info about Saint Valentine."""
-        embed = discord.Embed(
-            title="Who is Saint Valentine?",
-            description=FACTS["whois"],
-            color=ctx.author.color
-        )
+        embed = discord.Embed(title="Who is Saint Valentine?",
+                              description=FACTS["whois"],
+                              color=ctx.author.color)
         embed.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg"
+            url=
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg"
         )
 
         await ctx.send(embed=embed)
@@ -219,14 +247,12 @@ class Love(Cog):
     @commands.command(aliases=['valentine-fact'])
     async def valentinefact(self, ctx: Context) -> None:
         """Shows a random fact about Valentine's Day."""
-        embed = discord.Embed(
-            title=choice(FACTS["titles"]),
-            description=choice(FACTS["text"]),
-            color=ctx.author.color
-        )
+        embed = discord.Embed(title=choice(FACTS["titles"]),
+                              description=choice(FACTS["text"]),
+                              color=ctx.author.color)
 
         await ctx.send(embed=embed)
-    
+
     @commands.group(name="zodiac", invoke_without_command=True)
     async def zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides information about zodiac sign by taking zodiac sign name as input."""
@@ -234,41 +260,46 @@ class Love(Cog):
         await ctx.send(embed=final_embed)
 
     @zodiac.command(name="date")
-    async def date_and_month(self, ctx: Context, date: int, month: Union[int, str]) -> None:
+    async def date_and_month(self, ctx: Context, date: int,
+                             month: Union[int, str]) -> None:
         """Provides information about zodiac sign by taking month and date as input."""
         if isinstance(month, str):
             month = month.capitalize()
             try:
                 month = list(calendar.month_abbr).index(month[:3])
             except ValueError:
-                await ctx.send(f"Sorry, but `{month}` is not a valid month name.")
+                await ctx.send(
+                    f"Sorry, but `{month}` is not a valid month name.")
                 return
-        if (month == 1 and 1 <= date <= 19) or (month == 12 and 22 <= date <= 31):
+        if (month == 1 and 1 <= date <= 19) or (month == 12
+                                                and 22 <= date <= 31):
             zodiac = "capricorn"
             final_embed = self.zodiac_build_embed(zodiac)
         else:
             try:
-                zodiac_sign_based_on_date = self.zodiac_date_verifier(datetime(2020, month, date))
-                
+                zodiac_sign_based_on_date = self.zodiac_date_verifier(
+                    datetime(2020, month, date))
+
             except ValueError as e:
                 final_embed = discord.Embed()
                 final_embed.color = discord.Color.dark_purple()
                 final_embed.description = f"Zodiac sign could not be found because.\n```\n{e}\n```"
-                
+
             else:
-                final_embed = self.zodiac_build_embed(zodiac_sign_based_on_date)
+                final_embed = self.zodiac_build_embed(
+                    zodiac_sign_based_on_date)
 
         await ctx.send(embed=final_embed)
-        
 
-    @zodiac.command(name="partnerzodiac", aliases=("partner",))
+    @zodiac.command(name="partnerzodiac", aliases=("partner", ))
     async def partner_zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides a random counter compatible zodiac sign to the given user's zodiac sign."""
         embed = discord.Embed()
         embed.color = discord.Color.dark_purple()
         zodiac_check = self.zodiacs.get(zodiac_sign.capitalize())
         if zodiac_check:
-            compatible_zodiac = random.choice(self.zodiacs[zodiac_sign.capitalize()])
+            compatible_zodiac = random.choice(
+                self.zodiacs[zodiac_sign.capitalize()])
             emoji1 = random.choice(HEART_EMOJIS)
             emoji2 = random.choice(HEART_EMOJIS)
             embed.title = "Zodiac Compatibility"
@@ -276,27 +307,23 @@ class Love(Cog):
                 f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n"
                 f"{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
             )
-            embed.add_field(
-                name=f"A letter from Dr.Zodiac {LETTER_EMOJI}",
-                value=compatible_zodiac["description"]
-            )
+            embed.add_field(name=f"A letter from Dr.Zodiac {LETTER_EMOJI}",
+                            value=compatible_zodiac["description"])
         else:
             embed = self.generate_invalidname_embed(zodiac_sign)
         await ctx.send(embed=embed)
-    
+
     @commands.command()
     async def savethedate(self, ctx: Context) -> None:
         """Gives you ideas for what to do on a date with your valentine."""
         random_date = random.choice(VALENTINES_DATES["ideas"])
         emoji_1 = random.choice(HEART_EMOJIS)
         emoji_2 = random.choice(HEART_EMOJIS)
-        embed = discord.Embed(
-            title=f"{emoji_1}{random_date['name']}{emoji_2}",
-            description=f"{random_date['description']}",
-            colour=discord.Color.dark_purple()
-        )
+        embed = discord.Embed(title=f"{emoji_1}{random_date['name']}{emoji_2}",
+                              description=f"{random_date['description']}",
+                              colour=discord.Color.dark_purple())
         await ctx.send(embed=embed)
-    
+
     @commands.command()
     async def pickupline(self, ctx: Context) -> None:
         """
@@ -304,16 +331,12 @@ class Love(Cog):
         Note that most of them are very cheesy.
         """
         random_line = random.choice(PICKUP_LINES["lines"])
-        embed = discord.Embed(
-            title=":cheese: Your pickup line :cheese:",
-            description=random_line["line"],
-            color=ctx.author.color
-        )
+        embed = discord.Embed(title=":cheese: Your pickup line :cheese:",
+                              description=random_line["line"],
+                              color=ctx.author.color)
         embed.set_thumbnail(
-            url=random_line.get("image", PICKUP_LINES["placeholder"])
-        )
+            url=random_line.get("image", PICKUP_LINES["placeholder"]))
         await ctx.send(embed=embed)
-
 
     @commands.command()
     async def myvalenstate(self, ctx: Context, *, name: str = None) -> None:
@@ -328,7 +351,9 @@ class Love(Cog):
             lower_state = state.lower().replace(" ", "")
             eq_chars[state] = self.levenshtein(author, lower_state)
 
-        matches = [x for x, y in eq_chars.items() if y == min(eq_chars.values())]
+        matches = [
+            x for x, y in eq_chars.items() if y == min(eq_chars.values())
+        ]
         valenstate = choice(matches)
         matches.remove(valenstate)
 
@@ -344,22 +369,22 @@ class Love(Cog):
             embed_text = "This state is your true Valenstate! There are no states that would suit" \
                          " you better"
 
-        embed = discord.Embed(
-            title=f"Your Valenstate is {valenstate} \u2764",
-            description=STATES[valenstate]["text"],
-            colour=ctx.author.color
-        )
+        embed = discord.Embed(title=f"Your Valenstate is {valenstate} \u2764",
+                              description=STATES[valenstate]["text"],
+                              colour=ctx.author.color)
         embed.add_field(name=embed_title, value=embed_text)
         embed.set_image(url=STATES[valenstate]["flag"])
         await ctx.send(embed=embed)
 
-    
     """A cog for calculating the love between two people."""
 
     # @in_month(Month.FEBRUARY)
     @commands.command(aliases=("love_calculator", "love_calc"))
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
-    async def love(self, ctx: Context, who: Member, whom: Optional[Member] = None) -> None:
+    async def love(self,
+                   ctx: Context,
+                   who: Member,
+                   whom: Optional[Member] = None) -> None:
         """
         Tells you how much the two love each other.
         This command requires at least one member as input, if two are given love will be calculated between
@@ -374,7 +399,7 @@ class Love(Cog):
           Running $love @joe#6000 @chrisjl#2655 will always yield the same result.
           Running $love @chrisjl#2655 @joe#6000 will yield the same result as before.
         """
-        
+
         if whom is None:
             whom = ctx.author
 
@@ -404,12 +429,9 @@ class Love(Cog):
         status = random.choice(data["titles"])
         embed = discord.Embed(
             title=status,
-            description=f"{who} \N{HEAVY BLACK HEART} {whom} scored {love_percent}%!\n\u200b",
-            color=discord.Color.dark_magenta()
-        )
-        embed.add_field(
-            name="A letter from Dr. Love:",
-            value=data["text"]
-        )
+            description=
+            f"{who} \N{HEAVY BLACK HEART} {whom} scored {love_percent}%!\n\u200b",
+            color=discord.Color.dark_magenta())
+        embed.add_field(name="A letter from Dr. Love:", value=data["text"])
 
         await ctx.send(embed=embed)

@@ -22,6 +22,7 @@ def convert_bool(text: str) -> Optional[bool]:
 def reason_convert(text: commands.clean_content) -> str:
     return text[:450:]
 
+
 class to_async:
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None):
 
@@ -41,6 +42,7 @@ class to_async:
 
         return wrapper
 
+
 class BannedMember(commands.Converter):
     async def convert(self, ctx, argument):
         if argument.isdigit():
@@ -48,12 +50,15 @@ class BannedMember(commands.Converter):
             try:
                 return await ctx.guild.fetch_ban(discord.Object(id=member_id))
             except discord.NotFound:
-                raise commands.BadArgument("This member has not been banned before.") from None
+                raise commands.BadArgument(
+                    "This member has not been banned before.") from None
 
         ban_list = await ctx.guild.bans()
-        entity = discord.utils.find(lambda u: str(u.user) == argument, ban_list)
+        entity = discord.utils.find(lambda u: str(u.user) == argument,
+                                    ban_list)
 
         if entity is None:
-            raise commands.BadArgument("This member has not been banned before.")
-        
+            raise commands.BadArgument(
+                "This member has not been banned before.")
+
         return entity

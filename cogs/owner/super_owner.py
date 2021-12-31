@@ -551,7 +551,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         a cruddy fuzzy algorithm.
         """
         if not ctx.invoked_subcommand:
-            return await self.do_rtfm(ctx, "master", obj)
+            return await self.do_rtfm(ctx, "discord", obj)
         
         obj = obj.split(' ', 1)
         return await self.do_rtfm(ctx, str(obj[0]), obj[1])

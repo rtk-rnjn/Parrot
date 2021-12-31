@@ -10,7 +10,7 @@ import discord
 import aiohttp, datetime, os, traceback, typing
 
 from utilities.database import ban
-import re, io, zlib, os
+import re, io, zlib, os, json
 
 from . import fuzzy
 from utilities.paginator import PaginationView
@@ -419,6 +419,8 @@ class SphinxObjectFileReader:
 class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
+        with open('extra/docs_links.json') as f:
+            self.page_types = json.load(f)
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -498,20 +500,13 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         self._rtfm_cache = cache
 
     async def do_rtfm(self, ctx, key, obj):
-        page_types = {
-            "latest": "https://discordpy.readthedocs.io/en/latest",
-            "python": "https://docs.python.org/3",
-            "master": "https://discordpy.readthedocs.io/en/master",
-            "stable": "https://discordpy.readthedocs.io/en/stable"
-        }
-
         if obj is None:
-            await ctx.send(page_types[key])
+            await ctx.send(self.page_types[key])
             return
 
         if not hasattr(self, "_rtfm_cache"):
             await ctx.trigger_typing()
-            await self.build_rtfm_lookup_table(page_types)
+            await self.build_rtfm_lookup_table(self.page_types)
 
         obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1",
                      obj)
@@ -555,19 +550,70 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         Events, objects, and functions are all supported through
         a cruddy fuzzy algorithm.
         """
-        await self.do_rtfm(ctx, "latest", obj)
+        if not ctx.invoked_subcommands:
+            return await self.do_rtfm(ctx, "master", obj)
+        
+        obj = obj.split(' ', 1)
+        return await self.do_rtfm(ctx, str(obj[0]), obj[1])
 
     @rtfd.command(name="python", aliases=["py"])
-    async def rtfm_python(self, ctx, *, obj: str = None):
+    async def rtfm_python(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a Python entity."""
         await self.do_rtfm(ctx, "python", obj)
+    
+    @rtfd.command(name='aiohttp')
+    async def rtfd_aiohttp(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a aiohttp entity"""
+        await self.do_rtfm(ctx, 'aiohttp', obj)
+    
+    @rtfd.command(name='requests', aliases=['request'])
+    async def rtfd_request(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a request entity"""
+        await self.do_rtfm(ctx, 'request', obj)
+    
+    @rtfd.command(name='flask')
+    async def rtfd_flask(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a flask entity"""
+        await self.do_rtfm(ctx, 'flask', obj)
+    
+    @rtfd.command(name='numpy')
+    async def rtfd_numpy(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a numpy entity"""
+        await self.do_rtfm(ctx, 'numpy', obj)
+    
+    @rtfd.command(name='showall')
+    @commands.is_owner()
+    async def rtfd_showall(self, ctx: Context,):
+        """Show all the docs links"""
+        async with async_open(r'extra/docs_links.json') as f:
+            data = json.loads(await f.read())
+        
+        await ctx.send(json.dumps(data, indent=4))
+    
+    @rtfd.command(name='add')
+    @commands.is_owner()
+    async def rtfd_add(self, ctx: Context, name: str, *, link: str):
+        """To add the links in docs"""
+        async with async_open(r'extra/docs_links.json') as f:
+            data = json.loads(await f.read())
+        
+        data[name] = link
 
-    @rtfd.command(name="master", aliases=["2.0"])
-    async def rtfm_master(self, ctx, *, obj: str = None):
-        """Gives you a documentation link for a discord.py entity (master branch)"""
-        await self.do_rtfm(ctx, "master", obj)
+        async with async_open(r'extra/docs_links.json') as f:
+            await f.write(json.dumps(data, indent=4))
+        
+        await ctx.send(f"{ctx.author.mention} done!")
+    
+    @rtfd.command(name='del')
+    @commands.is_owner()
+    async def rtfd_del(self, ctx: Context, name: str,):
+        """To add the links in docs"""
+        async with async_open(r'extra/docs_links.json') as f:
+            data: dict = json.loads(await f.read())
+        
+        data.pop(name)
 
-    @rtfd.command(name="stable")
-    async def rtfm_stable(self, ctx, *, obj: str = None):
-        """Gives you a documentation link for a discord.py entity (stable branch)"""
-        await self.do_rtfm(ctx, "stable", obj)
+        async with async_open(r'extra/docs_links.json') as f:
+            await f.write(json.dumps(data, indent=4))
+        
+        await ctx.send(f"{ctx.author.mention} done!")

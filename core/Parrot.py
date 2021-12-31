@@ -52,9 +52,8 @@ class Parrot(commands.AutoShardedBot):
             owner_ids=OWNER_IDS,
             allowed_mentions=discord.AllowedMentions(everyone=False,
                                                      replied_user=False),
-            member_cache_flags=discord.MemberCacheFlags.from_intents(
-                discord.Intents.all()),
-            shard_count=3,
+            member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
+            shard_count=1,
             **kwargs)
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages = 0
@@ -146,9 +145,6 @@ class Parrot(commands.AutoShardedBot):
         fin = time()
         return fin - ini
 
-    def clear_cache(self):
-        pass
-
     def _clear_gateway_data(self):
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
         for shard_id, dates in self.identifies.items():
@@ -186,16 +182,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_dbl_vote(self, data):
         """An event that is called whenever someone votes for the bot on Top.gg."""
-        if data["type"] == "test":
-            # this is roughly equivalent to
-            # `return await on_dbl_test(data)` in this case
-            return self.dispatch("dbl_test", data)
-
         print(f"Received a vote:\n{data}")
-    
-    async def on_dbl_test(self, data):
-        """An event that is called whenever someone tests the webhook system for your bot on Top.gg."""
-        print(f"Received a test vote:\n{data}")
     
     async def on_autopost_success(self):
         print(
@@ -339,7 +326,6 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_prefix(self, message: discord.Message) -> str:
         """Dynamic prefixing"""
-        data = await collection.find_one({"_id": message.guild.id})
         if data := await collection.find_one({"_id": message.guild.id}):
             prefix = data['prefix']
         else:

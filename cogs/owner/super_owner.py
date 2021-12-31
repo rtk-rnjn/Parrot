@@ -546,11 +546,11 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
     @commands.group(invoke_without_command=True)
     async def rtfd(self, ctx, *, obj: str = None):
-        """Gives you a documentation link for a discord.py entity.
+        """Gives you a documentation link for a specified entity.
         Events, objects, and functions are all supported through
         a cruddy fuzzy algorithm.
         """
-        if not ctx.invoked_subcommands:
+        if not ctx.invoked_subcommand:
             return await self.do_rtfm(ctx, "master", obj)
         
         obj = obj.split(' ', 1)
@@ -569,7 +569,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     @rtfd.command(name='requests', aliases=['request'])
     async def rtfd_request(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a request entity"""
-        await self.do_rtfm(ctx, 'request', obj)
+        await self.do_rtfm(ctx, 'requests', obj)
     
     @rtfd.command(name='flask')
     async def rtfd_flask(self, ctx: Context, *, obj: str = None):

@@ -1,24 +1,28 @@
 from utilities.config import my_secret
 import motor.motor_asyncio
 
-cluster = motor.motor_asyncio.AsyncIOMotorClient(f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+cluster = motor.motor_asyncio.AsyncIOMotorClient(
+    f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+)
 
 parrot_db = cluster['parrot_db']
 msg_db = cluster['msg_db']
 tags = cluster['tags']
 todo = cluster['todo']
 enable_disable = cluster['enable_disable']
+warn_db = cluster['warn_db']
 
 
-async def cmd_increment(cmd: str):
+async def cmd_increment(cmd: str) -> None:
     collection = parrot_db['cmd_count']
-    data = await collection.find_one({'_id': cmd})
-    if not data:
-        return await collection.insert_one({'_id': cmd, 'count': 1})
-    collection.update_one({'_id': cmd}, {'$inc': {'count': 1}})
+    
+    if data := await collection.find_one({'_id': cmd}):
+        await collection.update_one({'_id': cmd}, {'$inc': {'count': 1}})
+    else:
+        await collection.insert_one({'_id': cmd, 'count': 1})
 
 
-async def gchat_update(guild_id: int, post: dict):
+async def gchat_update(guild_id: int, post: dict) -> None:
     collection = parrot_db['global_chat']
     
     if data := await collection.find_one({'_id': guild_id}):
@@ -28,7 +32,7 @@ async def gchat_update(guild_id: int, post: dict):
         await collection.update_one({'_id': guild_id}, {'$set': post})
 
 
-async def msg_increment(guild_id: int, user_id: int):
+async def msg_increment(guild_id: int, user_id: int) -> None:
     collection = msg_db[f'{guild_id}']
     if data := await collection.find_one({'_id': user_id}):
         await collection.update_one({'_id': user_id}, {'$inc': {'count': 1}})
@@ -36,16 +40,14 @@ async def msg_increment(guild_id: int, user_id: int):
         await collection.insert_one({'_id': user_id, 'count': 1})
     except Exception:
         pass
-        
 
 
-async def telephone_update(guild_id: int, event: str, value):
+async def telephone_update(guild_id: int, event: str, value) -> None:
     collection = parrot_db["telephone"]
-    data = await collection.find_one({'_id': guild_id})
-    if not data:
-        await collection.insert_one({'_id': guild_id, "channel": None, "pingrole": None, "is_line_busy": False, "memberping": None, "blocked": []})
+    if data := await collection.find_one({'_id': guild_id}):
+        return await collection.update_one({'_id': guild_id}, {"$set": {event: value}})
 
-    await collection.update_one({'_id': guild_id}, {"$set": {event: value}})
+    await collection.insert_one({'_id': guild_id, "channel": None, "pingrole": None, "is_line_busy": False, "memberping": None, "blocked": []})
 
 
 async def ticket_update(guild_id: int, post):

@@ -77,10 +77,10 @@ class nitro(discord.ui.View):
         self.bot = ctx.bot
 
     @discord.ui.button(custom_id="fun (nitro)",
-                       label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-                       style=discord.ButtonStyle.green)
+                    label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+                    style=discord.ButtonStyle.green)
     async def func(self, button: discord.ui.Button,
-                   interaction: discord.Interaction):
+                interaction: discord.Interaction):
 
         i = discord.Embed()
         i.set_image(
@@ -169,11 +169,11 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command(aliases=['nitroscam', 'nitro-scam'])
     @commands.is_owner()
     async def nitro_scam(self,
-                         ctx: Context,
-                         *,
-                         target: typing.Union[discord.User,
-                                              discord.TextChannel,
-                                              discord.Thread] = None):
+                        ctx: Context,
+                        *,
+                        target: typing.Union[discord.User,
+                                            discord.TextChannel,
+                                            discord.Thread] = None):
         """Fun command"""
         target = target or ctx.channel
         await target.send(embed=discord.Embed(
@@ -182,7 +182,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             "You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
             timestamp=datetime.datetime.utcnow()).set_thumbnail(
                 url="https://i.imgur.com/w9aiD6F.png"),
-                          view=nitro(ctx))
+                        view=nitro(ctx))
 
     @commands.command()
     @commands.is_owner()
@@ -196,13 +196,13 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.is_owner()
     @Context.with_type
     async def ban_user(self,
-                       ctx: Context,
-                       user: discord.User,
-                       cmd: bool = True,
-                       chat: bool = True,
-                       global_: bool = True,
-                       *,
-                       reason: str = None):
+                    ctx: Context,
+                    user: discord.User,
+                    cmd: bool = True,
+                    chat: bool = True,
+                    global_: bool = True,
+                    *,
+                    reason: str = None):
         """To ban the user"""
         reason = reason or "No reason provided"
         await ban(user.id, cmd, chat, global_, reason)
@@ -214,8 +214,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             pass
 
     @commands.command(name='image-search',
-                      aliases=['imagesearch', 'imgs'],
-                      hidden=True)
+                    aliases=['imagesearch', 'imgs'],
+                    hidden=True)
     @commands.is_owner()
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
@@ -227,8 +227,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ls = list()
         for i in data['items']:
             embed = discord.Embed(title=i['title'],
-                                  description=f"```\n{i['snippet']}```",
-                                  timestamp=datetime.datetime.utcnow())
+                                description=f"```\n{i['snippet']}```",
+                                timestamp=datetime.datetime.utcnow())
             embed.set_footer(text=f"Requester: {ctx.author}")
             embed.set_image(url=i['link'])
             ls.append(embed)
@@ -260,9 +260,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.is_owner()
     # @Context.with_type
     async def spy_server(self,
-                         ctx: Context,
-                         guild: discord.Guild = None,
-                         channel_member: str = None):
+                        ctx: Context,
+                        guild: discord.Guild = None,
+                        channel_member: str = None):
         """This is not really a spy command"""
         guild = guild or ctx.guild
         URL = f"https://discord.com/api/guilds/{guild.id}/widget.json"
@@ -478,7 +478,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
             if projname == "discord.py":
                 key = key.replace("discord.ext.commands.",
-                                  "").replace("discord.", "")
+                                "").replace("discord.", "")
 
             result[f"{prefix}{key}"] = os.path.join(url, location)
 
@@ -509,7 +509,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             await self.build_rtfm_lookup_table(self.page_types)
 
         obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1",
-                     obj)
+                    obj)
 
         if key.startswith("latest"):
             # point the abc.Messageable types properly:
@@ -529,7 +529,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
         e = discord.Embed(title="Read the Fine Manual",
-                          timestamp=datetime.datetime.utcnow())
+                        timestamp=datetime.datetime.utcnow())
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
@@ -552,7 +552,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """
         if not ctx.invoked_subcommand:
             return await self.do_rtfm(ctx, "discord", obj)
-        
+
         obj = obj.split(' ', 1)
         return await self.do_rtfm(ctx, str(obj[0]), obj[1])
 
@@ -560,27 +560,42 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     async def rtfm_python(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a Python entity."""
         await self.do_rtfm(ctx, "python", obj)
-    
+
     @rtfd.command(name='aiohttp')
     async def rtfd_aiohttp(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a aiohttp entity"""
         await self.do_rtfm(ctx, 'aiohttp', obj)
-    
+
     @rtfd.command(name='requests', aliases=['request'])
     async def rtfd_request(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a request entity"""
         await self.do_rtfm(ctx, 'requests', obj)
-    
+
     @rtfd.command(name='flask')
     async def rtfd_flask(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a flask entity"""
         await self.do_rtfm(ctx, 'flask', obj)
-    
+
     @rtfd.command(name='numpy')
     async def rtfd_numpy(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a numpy entity"""
         await self.do_rtfm(ctx, 'numpy', obj)
-    
+
+    @rtfd.command(name='pil')
+    async def rtfd_pil(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a PIL entity"""
+        await self.do_rtfm(ctx, 'pil', obj)
+
+    @rtfd.command(name='matplotlib')
+    async def rtfd_matplotlib(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a matplotlib entity"""
+        await self.do_rtfm(ctx, 'matplotlib', obj)
+
+    @rtfd.command(name='pandas')
+    async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a pandas entity"""
+        await self.do_rtfm(ctx, 'pandas', obj)
+
     @rtfd.command(name='showall')
     @commands.is_owner()
     async def rtfd_showall(self, ctx: Context,):

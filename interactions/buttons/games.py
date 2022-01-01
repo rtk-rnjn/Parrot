@@ -772,7 +772,7 @@ class Chess:
         self.timeout = timeout
         self.react_on_success = react_on_success
 
-        self.base_url = "http://www.fen-to-image.com/image/64/double/coords/"
+        self.base_url = "https://backscattering.de/web-boardimage/board.png?fen={fen}&lastMove={last_move}"
         if custom:
             self.board = chess.Board(custom)
         else:
@@ -811,10 +811,10 @@ class Chess:
             return
     
     async def place_move(self, move: str) -> None:
-        self.board.push_san(move)
+        move = self.board.push_san(move)
         content = f"{self.white.mention} VS {self.black.mention}"
         embed = discord.Embed(timestamp=discord.utils.utcnow(),)
-        embed.set_image(url=f"{self.base_url}{self.board.board_fen()}")
+        embed.set_image(url=f"{self.base_url.format(fen=self.board.board_fen(), last_move=move.uci)}")
         embed.description = f"""```
 On Check?      : {self.board.is_check()}
 Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
@@ -849,7 +849,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
     async def start(self):
         content = f"{self.white.mention} VS {self.black.mention}"
         embed = discord.Embed(timestamp=discord.utils.utcnow(),)
-        embed.set_image(url=f"{self.base_url}{self.board.board_fen()}")
+        embed.set_image(url=f"{self.base_url.format(fen=self.board.board_fen(), last_move='')}")
         embed.description = f"""```
 On Check?      : {self.board.is_check()}
 Can Claim Draw?: {self.board.can_claim_threefold_repetition()}

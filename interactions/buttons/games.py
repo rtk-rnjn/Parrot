@@ -772,7 +772,7 @@ class Chess:
         self.timeout = timeout
         self.react_on_success = react_on_success
 
-        self.base_url = "https://backscattering.de/web-boardimage/board.png?fen={fen}&lastMove={last_move}"
+        self.base_url = "https://backscattering.de/web-boardimage/board.png?fen={fen}&lastMove={last_move}&coordinates=true"
         if custom:
             self.board = chess.Board(custom)
         else:

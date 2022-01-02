@@ -26,7 +26,7 @@ class Mod(Cog):
     """A simple moderator's tool for managing the server."""
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.unmute_task.start()
+        self.unban_task.start()
     
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -221,23 +221,19 @@ class Mod(Cog):
             await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
-    @commands.command()
+    @commands.command(aliases=['mute'])
     @commands.bot_has_permissions(moderate_members=True)
     @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True))
+    @Context.with_type
     async def timeout(self, ctx: Context, member: discord.Member, duration: typing.Optional[ShortTime]=None, *, reason: reason_convert = None):
         """To Timeout the member, from chat."""
         seconds = duration
-        await mt._timeout(ctx.guild, ctx.command.qualified_name, ctx.author, ctx.channel, member, duration.dt, reason)
+        if seconds:
+            await mt._timeout(ctx.guild, ctx.command.qualified_name, ctx.author, ctx.channel, member, duration.dt, reason)
+        else:
+            await mt._mute(ctx.guild, ctx.command.qualified_name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason} | Till {"<t:" + str(int(seconds.dt.timestamp())) + ">" if seconds else "end"}')
 
-    @commands.command()
-    @commands.bot_has_permissions(manage_roles=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
-    #@Context.with_type
-    async def mute(self, ctx: Context, member: discord.Member, seconds: typing.Optional[ShortTime]=None, *, reason: reason_convert = None):
-        """To restrict a member to sending message in the Server"""
-        await mt._mute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, seconds.dt.timestamp() if seconds else None, reason)
-        await self.log(ctx, ctx.command.qualified_name, member, f'{reason} | Till {"<t:" + str(int(seconds.dt.timestamp())) + ">" if seconds else "end"}')
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -828,19 +824,8 @@ class Mod(Cog):
         await ctx.send(table)
 
     @tasks.loop(seconds=2)
-    async def unmute_task(self):
+    async def unban_task(self):
         await self.bot.wait_until_ready()
-        async for data in mute_collection.find({'timestamp': {'$lte': datetime.utcnow().timestamp()}}):
-            guild = self.bot.get_guild(data['guild_id'])
-            if not guild:
-                await mute_collection.delete_one({'_id': data['_id']})
-            else:
-                try:
-                    await guild.get_member(data['author_id']).remove_roles(guild.get_role(data['role_id']), reason=f"Mute duration expires")
-                except Exception:
-                    pass
-                finally:
-                    await mute_collection.delete_one({'_id': data['_id']})
         async for data in ban_collection.find({'duration': {'$lte': datetime.utcnow().timestamp()}}):
             guild = self.bot.get_guild(data['guild_id'])
             if not guild:

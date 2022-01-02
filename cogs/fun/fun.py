@@ -1637,7 +1637,7 @@ class Fun(Cog, command_attrs={
           embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}", timestamp=datetime.datetime.utcnow())
           embed.add_field(name="Example", value=f"{example}")
           embed.set_author(name=f"Author: {author}")
-          embed.set_footer(text=f"👍 {thumbs_up} • 👎 {thumbs_down}")
+          embed.set_footer(text=f"\N{THUMBS UP SIGN} {thumbs_up} • \N{THUMBS DOWN SIGN} {thumbs_down}")
           em_list.append(embed)
 
       # paginator = Paginator(pages=em_list, timeout=60.0)

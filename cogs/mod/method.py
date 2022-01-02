@@ -331,23 +331,12 @@ async def _timeout(guild, command_name, ctx_author, destination, member, _dateti
         )
 
 
-async def _mute(guild, command_name, ctx_author, destination, member, seconds,
-                reason):
+async def _mute(guild, command_name, ctx_author, destination, member, reason):
     if member.id == ctx_author.id or member.id == guild.me.id:
         await destination.send(
             f"{ctx_author.mention} don't do that, Bot is only trying to help"
         )
         return
-    data = await collection.find_one({'_id': guild.id})
-    if not data:
-        post = {
-            '_id': guild.id,
-            'prefix': '$',
-            'mod_role': None,
-            'action_log': None,
-            'mute_role': None,
-        }
-        await collection.insert_one(post)
 
     data = await collection.find_one({'_id': guild.id})
 
@@ -364,36 +353,19 @@ async def _mute(guild, command_name, ctx_author, destination, member, seconds,
             try:
                 await channel.set_permissions(muted,
                                               send_messages=False,
-                                              read_message_history=False)
+                                              add_reactions=False)
             except Exception:
                 pass
-        await collection.update_one({'_id': guild.id},
-                                    {'$set': {
-                                        'mute_role': muted.id
-                                    }})
-    if seconds is None:
-        try:
-            await member.add_roles(
-                muted,
-                reason=
-                f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
-            )
-            await destination.send(f"{ctx_author.mention} **{member}** is muted till death")
-            return
-        except Exception as e:
-            await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
-    else:
-        try:
-            await member.add_roles(
-                muted,
-                reason=
-                f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
-            )
-            await create_mute_task(guild.id, member.id, muted.id, seconds)
-            await destination.send(f"{ctx_author.mention} **{member}** is muted till **<t:{int(seconds)}>**")
-            return
-        except Exception as e:
-            await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
+    try:
+        await member.add_roles(
+            muted,
+            reason=
+            f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
+        )
+        await destination.send(f"{ctx_author.mention} **{member}** is muted!")
+        return
+    except Exception as e:
+        await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
         
 
 async def _unmute(guild, command_name, ctx_author, destination, member,
@@ -903,10 +875,34 @@ async def _emoji_rename(guild, command_name, ctx_author, destination, emoji,
         )
 
 
-MEMBER_REACTION = ['🔨', '👢', '🤐', '😁', '❌', '⭕', '⬆️', '⬇️', '🖋️']
-TEXT_REACTION = ['🔒', '🔓', '📝', '🖋️']
-VC_REACTION = ['🔒', '🔓', '🖋️']
-ROLE_REACTION = ['🔒', '🔓', '🌈', '🖋️']
+MEMBER_REACTION = [
+    '\N{HAMMER}',
+    '\N{WOMANS BOOTS}',
+    '\N{ZIPPER-MOUTH FACE}',
+    '\N{GRINNING FACE WITH SMILING EYES}',
+    '\N{CROSS MARK}',
+    '\N{HEAVY LARGE CIRCLE}',
+    '\N{UPWARDS BLACK ARROW}',
+    '\N{DOWNWARDS BLACK ARROW}',
+    '\N{LOWER LEFT FOUNTAIN PEN}'
+]
+TEXT_REACTION = [
+    '\N{LOCK}',
+    '\N{OPEN LOCK}',
+    '\N{MEMO}',
+    '\N{LOWER LEFT FOUNTAIN PEN}'
+]
+VC_REACTION = [
+    '\N{LOCK}',
+    '\N{OPEN LOCK}',
+    '\N{LOWER LEFT FOUNTAIN PEN}'
+]
+ROLE_REACTION = [
+    '\N{LOCK}',
+    '\N{OPEN LOCK}',
+    '\N{RAINBOW}',
+    '\N{LOWER LEFT FOUNTAIN PEN}'
+]
 
 
 async def _warn(bot, guild, command_name, ctx_author, destination, target, reason):

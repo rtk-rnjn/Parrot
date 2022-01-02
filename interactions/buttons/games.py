@@ -814,7 +814,7 @@ class Chess:
         content = f"{self.white.mention} VS {self.black.mention}"
         embed = discord.Embed(timestamp=discord.utils.utcnow(),)
         embed.set_image(
-            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci}&coordinates=true"
+            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true"
         )
         embed.description = f"""```
 On Check?      : {self.board.is_check()}

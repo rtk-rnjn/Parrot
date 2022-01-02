@@ -8,17 +8,7 @@ from datetime import datetime
 from utilities.infraction import Infraction
 
 collection = parrot_db['server_config']
-mute_collection = parrot_db['mute']
 ban_collection = parrot_db['banned_members']
-
-async def create_mute_task(guild_id: int, author_id: int, role_id: int, timestamp: float):
-    post = {
-        'guild_id': guild_id,
-        'author_id': author_id,
-        'role_id': role_id,
-        'timestamp': timestamp
-    }
-    await mute_collection.insert_one(post)
 
 async def is_role_mod(guild, role) -> bool:
     data = await collection.find_one({'_id': guild.id})
@@ -381,33 +371,22 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
         return
 
     data = await collection.find_one({'_id': guild.id})
-    if not data:
-        post = {
-            '_id': guild.id,
-            'prefix': '$',
-            'mod_role': None,
-            'action_log': None,
-            'mute_role': None,
-        }
-        await collection.insert_one(post)
-    data = await collection.find_one({'_id': guild.id})
 
     muted = guild.get_role(data['mute_role']) or discord.utils.get(
         guild.roles, name="Muted")
     try:
         if muted in member.roles:
-            await destination.send(
-                f'{ctx_author.mention} **{member}** has been unmuted now!'
-            )
             await member.remove_roles(
                 muted,
                 reason=
                 f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
             )
+            await destination.send(
+                f'{ctx_author.mention} **{member}** has been unmuted now!'
+            )
         else:
             await destination.send(
                 f"{ctx_author.mention} **{member.name}** already unmuted")
-        await mute_collection.delete_one({'author_id': member.id, 'guild_id': guild.id})
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"

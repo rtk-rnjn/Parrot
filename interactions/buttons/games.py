@@ -830,7 +830,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
     async def game_over(self,) -> Optional[bool]:
         if not self.game_stop:
             if self.board.is_checkmate():
-                await self.ctx.send(f"Game over! {self.turn} wins by check-mate")
+                await self.ctx.send(f"Game over! **{self.turn}** wins by check-mate")
                 self.game_stop = True
             elif self.board.is_stalemate():
                 await self.ctx.send(f"Game over! Ended with draw!")
@@ -844,7 +844,8 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             elif self.board.is_fivefold_repetition():
                 await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
                 self.game_stop = True
-            self.game_stop = False
+            else:
+                self.game_stop = False
         return self.game_stop
 
     async def start(self):

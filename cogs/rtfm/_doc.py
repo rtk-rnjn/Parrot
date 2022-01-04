@@ -73,7 +73,7 @@ async def _cppreference(language, ctx, text: str):
 
             uls = soup.find_all('ul', class_='mw-search-results')
 
-            if not len(uls):
+            if not uls:
                 return await ctx.send('No results')
 
             if language == 'C':

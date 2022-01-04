@@ -328,7 +328,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 color=ctx.author.color,
                 timestamp=datetime.datetime.utcnow()).set_footer(
                     text=f"{id_}").set_thumbnail(url=avatar_url)
-            em.description = f"**Status:** {status.upper()}\n**In VC?** {True if vc else False} ({'<#'+str(vc)+'>' if vc else None})"
+            em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({'<#'+str(vc)+'>' if vc else None})"
             if vc:
                 em.add_field(name='VC Channel ID', value=str(vc), inline=True)
                 em.add_field(name='Suppress?', value=suppress, inline=True)

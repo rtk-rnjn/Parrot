@@ -202,7 +202,7 @@ async def _view_tag(bot: Parrot, ctx: Context, tag):
         nsfw = data["nsfw"]
         count = data["count"]
         created_at = f"<t:{data['created_at']}>"
-        claimable = True if owner is None else False
+        claimable = owner is None
         em.add_field(name="Owner", value=f"**{owner.mention if owner else None}** ")
         em.add_field(name="Created At?", value=created_at)
         em.add_field(name="Text Length", value=str(text_len))

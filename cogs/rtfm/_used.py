@@ -305,12 +305,11 @@ def get_raw(link):
         if '.' in token:
             token = token[:token.rfind('.')]  # removes extension
         return f'https://hastebin.com/raw/{token}'
-    else:
-        # Github uses redirection so raw -> usercontent and no raw -> normal
-        # We still need to ensure we get a raw version after this potential redirection
-        if '/raw' in link:
-            return link
-        return link + '/raw'
+    # Github uses redirection so raw -> usercontent and no raw -> normal
+    # We still need to ensure we get a raw version after this potential redirection
+    if '/raw' in link:
+        return link
+    return link + '/raw'
 
 
 async def paste(text):

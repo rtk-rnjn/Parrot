@@ -48,7 +48,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if not muted:
                 return
 
-            if (member.guild.id in self.muted) and (member.id in self.muted[member.guild.id]):
+            if (member.guild.id in self.muted) and (
+                member.id in self.muted[member.guild.id]
+            ):
                 self.muted[member.guild.id].remove(member.id)
                 try:
                     await member.add_roles(

@@ -54,9 +54,7 @@ class Counting(Cog):
 
         if msg and (message.author.id == msg.author.id):
             try:
-                return await message.delete(
-                    reason="Can't post more than once in a row"
-                )
+                return await message.delete(reason="Can't post more than once in a row")
             except Exception:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"

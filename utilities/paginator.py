@@ -1,8 +1,6 @@
 # AUTHOR: https://github.com/davidetacchini/
 
-import asyncio
 from typing import List, Union, Optional, NamedTuple
-from contextlib import suppress
 from itertools import islice
 
 import discord

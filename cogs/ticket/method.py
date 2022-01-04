@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import discord
-import asyncio
 import os
 from datetime import datetime
 
 from utilities.database import ticket_update, parrot_db
-from core import Context, Parrot
+from core import Context
 
 collection = parrot_db["ticket"]
 

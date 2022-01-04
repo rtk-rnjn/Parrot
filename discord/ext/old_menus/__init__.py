@@ -4,7 +4,6 @@ import discord
 
 import itertools
 import inspect
-import bisect
 import logging
 import re
 from collections import OrderedDict, namedtuple

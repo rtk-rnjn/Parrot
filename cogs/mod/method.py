@@ -6,8 +6,6 @@ import asyncio
 import aiohttp
 import time
 
-from datetime import datetime
-
 from utilities.infraction import Infraction
 
 collection = parrot_db["server_config"]

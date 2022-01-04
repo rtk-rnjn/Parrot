@@ -20,7 +20,6 @@ import json
 
 from utilities.paginator import PaginationView
 from utilities.converters import convert_bool
-from utilities.time import ShortTime
 
 from discord import Embed
 

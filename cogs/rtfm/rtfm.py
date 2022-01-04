@@ -37,12 +37,10 @@ import _doc
 from _used import (
     typing,
     get_raw,
-    paste,
     Refresh,
     wrapping,
     prepare_payload,
-    execute_run,
-)
+    execute_run)
 
 # from _tio import Tio
 

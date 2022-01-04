@@ -18,7 +18,7 @@ from collections.abc import Iterable
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import BadArgument, clean_content
+from discord.ext.commands import clean_content
 from discord import Member
 
 from typing import Union, Coroutine, Optional, Callable

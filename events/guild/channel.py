@@ -4,7 +4,6 @@ from core import Cog, Parrot
 from utilities.database import parrot_db
 
 import discord
-import time
 import io
 import json
 

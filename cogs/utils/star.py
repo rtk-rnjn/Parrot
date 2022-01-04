@@ -8,16 +8,13 @@ import time
 
 from utilities.checks import is_mod
 from utilities.database import parrot_db, cluster
-from utilities.formats import plural, human_join
+from utilities.formats import plural
 from utilities import time
-from utilities import cache
-
-import asyncio
 import typing
 import weakref
 import re
 
-from core import Parrot, Cog, Context
+from core import Parrot, Cog
 
 starboard_entry = cluster["starboard_entry"]
 starrer = cluster["starrer"]

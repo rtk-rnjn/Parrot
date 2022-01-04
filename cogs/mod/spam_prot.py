@@ -8,20 +8,22 @@ import random
 
 from utilities.database import parrot_db
 
-with open('extra/duke_nekum.txt') as f:
-    quotes = f.read().split('\n')
+with open("extra/duke_nekum.txt") as f:
+    quotes = f.read().split("\n")
 
 
 class SpamProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db['server_config']
+        self.collection = parrot_db["server_config"]
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            10, 12.0, commands.BucketType.member)
+            10, 12.0, commands.BucketType.member
+        )
 
     async def delete(self, message: discord.Message) -> None:
         def check(m: discord.Message):
             return m.author.id == message.author.id
+
         try:
             await message.channel.purge(5, check=check)
         except Exception:
@@ -36,15 +38,20 @@ class SpamProt(Cog):
         bucket = self.cd_mapping.get_bucket(message)
         retry_after = bucket.update_rate_limit()
         if retry_after:
-            if data := await self.collection.find_one({'_id': message.guild.id, 'automod.spam.enable': {'$exists': True}}):
-                if not data['automod']['spam']['enable']:
+            if data := await self.collection.find_one(
+                {"_id": message.guild.id, "automod.spam.enable": {"$exists": True}}
+            ):
+                if not data["automod"]["spam"]["enable"]:
                     return
                 try:
-                    ignore = data['automod']['spam']['channel']
+                    ignore = data["automod"]["spam"]["channel"]
                 except KeyError:
                     ignore = []
 
                 if message.channel.id in ignore:
                     return
                 await self.delete(message)
-                await message.channel.send(f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] [Warning]**", delete_after=10)
+                await message.channel.send(
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] [Warning]**",
+                    delete_after=10,
+                )

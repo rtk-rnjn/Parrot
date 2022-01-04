@@ -56,7 +56,9 @@ class Board(Generic[T]):
 
         self.size_x = size_x
         self.size_y = size_y
-        self._state: list[list[T]] = [[fill_with for _ in range(size_x)] for _ in range(size_y)]
+        self._state: list[list[T]] = [
+            [fill_with for _ in range(size_x)] for _ in range(size_y)
+        ]
         self._draw_row_guide = draw_row_guide
         self._draw_column_guide = draw_column_guide
 
@@ -83,7 +85,9 @@ class Board(Generic[T]):
 
             for i, _ in enumerate(self._state[0]):
                 out += "​" + regional_indicator(chr(i + ord("A")))
-            out += "\n" + self.spacer * (len(self._state[0]) + (2 if self._draw_row_guide else 0))
+            out += "\n" + self.spacer * (
+                len(self._state[0]) + (2 if self._draw_row_guide else 0)
+            )
 
         for y, row in enumerate(self._state):
             out += "\n"

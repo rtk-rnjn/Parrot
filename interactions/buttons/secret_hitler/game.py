@@ -11,11 +11,13 @@ from discord.enums import Enum
 from discord.utils import MISSING
 
 
-def format_list(string: str,
-                *list: Any,
-                singular: str = "has",
-                plural: str = "have",
-                oxford_comma: bool = True) -> str:
+def format_list(
+    string: str,
+    *list: Any,
+    singular: str = "has",
+    plural: str = "have",
+    oxford_comma: bool = True
+) -> str:
     if len(list) == 0:
         return string.format("no-one", singular)
     if len(list) == 1:
@@ -23,8 +25,7 @@ def format_list(string: str,
 
     *rest, last = list
     rest_str = ", ".join(str(item) for item in rest)
-    return string.format(rest_str + "," * oxford_comma + " and " + str(last),
-                         plural)
+    return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
 
 
 T = TypeVar("T")
@@ -96,13 +97,11 @@ SECRET_MESSAGES: dict[PlayerCount, dict[Role, str]] = {
     },
     6: {},
     7: {
-        Role.Fascist:
-        "You are a Fascist, {1} is also a Fascist, {0} is Hitler.",
+        Role.Fascist: "You are a Fascist, {1} is also a Fascist, {0} is Hitler.",
     },
     8: {},
     9: {
-        Role.Fascist:
-        "You are a Fascist, {1} and {2} are also Fascists, {0} is Hitler.",
+        Role.Fascist: "You are a Fascist, {1} and {2} are also Fascists, {0} is Hitler.",
     },
     10: {},
 }
@@ -119,10 +118,8 @@ Fascist policies: {0.fascist_policies}/6
 
 def _s():  # See above
     for player_count in PLAYER_COUNTS:
-        SECRET_MESSAGES[player_count][Role.Liberal] = SECRET_MESSAGES[5][
-            Role.Liberal]
-        SECRET_MESSAGES[player_count][Role.Hitler] = SECRET_MESSAGES[5][
-            Role.Hitler]
+        SECRET_MESSAGES[player_count][Role.Liberal] = SECRET_MESSAGES[5][Role.Liberal]
+        SECRET_MESSAGES[player_count][Role.Hitler] = SECRET_MESSAGES[5][Role.Hitler]
 
 
 _s()
@@ -211,16 +208,11 @@ class AfterVoteGameState(GameState[T], metaclass=ABCMeta):
 
     @cached_property
     def vote_summary(self) -> str:
-        ja = [
-            player.identifier for player, vote in self.votes.items()
-            if vote is True
-        ]
+        ja = [player.identifier for player, vote in self.votes.items() if vote is True]
         nein = [
-            player.identifier for player, vote in self.votes.items()
-            if vote is False
+            player.identifier for player, vote in self.votes.items() if vote is False
         ]
-        return format_list("Ja: {0}", *ja) + "\n" + format_list(
-            "Nein: {0}", *nein)
+        return format_list("Ja: {0}", *ja) + "\n" + format_list("Nein: {0}", *nein)
 
 
 class SelectGameState(UserInputGameState[T], Generic[T, U], metaclass=ABCMeta):
@@ -284,11 +276,14 @@ class PlayerToBeChancellor(SelectGameState[T, Player[T]]):
 
 
 class VoteOnGovernment(VoteGameState[T]):
-    message = "{0.president} has chosen {0.chancellor} as their chancellor, vote ja! or nein!"
+    message = (
+        "{0.president} has chosen {0.chancellor} as their chancellor, vote ja! or nein!"
+    )
     tooltip = "Vote ja! or nein!"
 
-    def __init__(self, game: Game[T], president: Player[T],
-                 chancellor: Player[T]) -> None:
+    def __init__(
+        self, game: Game[T], president: Player[T], chancellor: Player[T]
+    ) -> None:
         self.president: Player[T] = president
         self.chancellor: Player[T] = chancellor
         super().__init__(game)
@@ -315,24 +310,26 @@ class VoteOnGovernment(VoteGameState[T]):
 
     def next_state(self) -> GameState[T]:
         if self.vote_passed:
-            return VotePassed[T](self.game, self.votes, self.president,
-                                 self.chancellor)
+            return VotePassed[T](self.game, self.votes, self.president, self.chancellor)
         return VoteFailed[T](self.game, self.votes)
 
 
 class VotePassed(AfterVoteGameState[T]):
     _message = "The vote passed, {0.game.president} is the President and {0.game.chancellor} is the Chancellor!"
 
-    def __init__(self, game: Game[T], votes: dict[Player[T], bool],
-                 president: Player[T], chancellor: Player[T]) -> None:
+    def __init__(
+        self,
+        game: Game[T],
+        votes: dict[Player[T], bool],
+        president: Player[T],
+        chancellor: Player[T],
+    ) -> None:
         self.president: Player[T] = president
         self.chancellor: Player[T] = chancellor
         super().__init__(game, votes)
 
         self.game.election_tracker = 0
-        self.game.previously_elected = [
-            self.game.president, self.game.chancellor
-        ]
+        self.game.previously_elected = [self.game.president, self.game.chancellor]
         self.game.president = self.president
         self.game.chancellor = self.chancellor
 
@@ -388,11 +385,7 @@ class ChancellorDiscardsPolicy(SelectGameState[T, Party]):
 class PolicyEnacted(GameState[T]):
     message = "A {0.policy.name} policy has been enacted."
 
-    def __init__(self,
-                 game: Game[T],
-                 policy: Party,
-                 *,
-                 top_deck: bool = False) -> None:
+    def __init__(self, game: Game[T], policy: Party, *, top_deck: bool = False) -> None:
         self.policy: Party = policy
         self.top_deck: bool = top_deck
         super().__init__(game)
@@ -752,12 +745,8 @@ class Game(Generic[T]):
 
     def get_players(self, identifier: Union[Party, Role]) -> list[Player[T]]:
         if isinstance(identifier, Role):
-            return [
-                player for player in self.players if player.role is identifier
-            ]
-        return [
-            player for player in self.players if player.party is identifier
-        ]
+            return [player for player in self.players if player.role is identifier]
+        return [player for player in self.players if player.party is identifier]
 
     def draw_policy(self) -> Party:
         return self.draw_pile.pop(0)

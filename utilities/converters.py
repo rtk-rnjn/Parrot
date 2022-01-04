@@ -11,9 +11,9 @@ from typing import Optional
 
 
 def convert_bool(text: str) -> Optional[bool]:
-    if text.lower() in ('yes', 'y', 'true', 't', '1', 'enable', 'on', 'o'):
+    if text.lower() in ("yes", "y", "true", "t", "1", "enable", "on", "o"):
         return True
-    if text.lower() in ('no', 'n', 'false', 'f', '0', 'disable', 'off', 'x'):
+    if text.lower() in ("no", "n", "false", "f", "0", "disable", "off", "x"):
         return False
     return None
 
@@ -50,14 +50,13 @@ class BannedMember(commands.Converter):
                 return await ctx.guild.fetch_ban(discord.Object(id=member_id))
             except discord.NotFound:
                 raise commands.BadArgument(
-                    "This member has not been banned before.") from None
+                    "This member has not been banned before."
+                ) from None
 
         ban_list = await ctx.guild.bans()
-        entity = discord.utils.find(lambda u: str(u.user) == argument,
-                                    ban_list)
+        entity = discord.utils.find(lambda u: str(u.user) == argument, ban_list)
 
         if entity is None:
-            raise commands.BadArgument(
-                "This member has not been banned before.")
+            raise commands.BadArgument("This member has not been banned before.")
 
         return entity

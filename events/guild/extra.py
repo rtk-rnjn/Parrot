@@ -4,13 +4,14 @@ from utilities.database import parrot_db
 import discord
 
 from core import Cog, Parrot
-log = parrot_db['logging']
+
+log = parrot_db["logging"]
 
 
 class Extra(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db['logging']
+        self.collection = parrot_db["logging"]
 
     @Cog.listener()
     async def on_relationship_add(self, relationship):
@@ -36,11 +37,17 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
     async def on_invite_create(self, invite):
         if not invite.guild:
             return
-        if data := await self.collection.find_one({'_id': invite.guild.id, 'on_invite_create': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_invite_create'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_invite_create"], session=self.bot.session
+            )
             if webhook:
                 try:
-                    async for entry in invite.guild.audit_logs(action=discord.AuditLogAction.invite_delete, limit=5):
+                    async for entry in invite.guild.audit_logs(
+                        action=discord.AuditLogAction.invite_delete, limit=5
+                    ):
                         if entry.extra.id == invite.id:
                             reason = entry.reason or None
                             break
@@ -60,8 +67,8 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Reason?     :` **{reason}**
 """
                 await webhook.send(
-                    content=content, 
-                    avatar_url=self.bot.user.avatar.url, 
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
                 )
 
@@ -69,11 +76,17 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
     async def on_invite_delete(self, invite):
         if not invite.guild:
             return
-        if data := await self.collection.find_one({'_id': invite.guild.id, 'on_invite_create': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_invite_create'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_invite_create"], session=self.bot.session
+            )
             if webhook:
                 try:
-                    async for entry in invite.guild.audit_logs(action=discord.AuditLogAction.invite_delete, limit=5):
+                    async for entry in invite.guild.audit_logs(
+                        action=discord.AuditLogAction.invite_delete, limit=5
+                    ):
                         if entry.extra.id == invite.id:
                             reason = entry.reason or None
                             user = entry.user or "UNKNOWN#0000"
@@ -96,11 +109,10 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Deleted By? :` **{user}**
 """
                 await webhook.send(
-                    content=content, 
-                    avatar_url=self.bot.user.avatar.url, 
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
                 )
-
 
 
 def setup(bot):

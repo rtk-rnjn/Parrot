@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from os import system
 
-system('pip install lxml')
+system("pip install lxml")
 
 # from datetime import datetime
 import unicodedata
@@ -12,8 +12,10 @@ import sys
 import discord
 import aiohttp
 import hashlib
+
 # import asyncio
 from hashlib import algorithms_available as algorithms
+
 # from yaml import safe_load as yaml_load
 
 import urllib.parse
@@ -25,13 +27,23 @@ from bs4.element import NavigableString
 from core import Parrot, Context, Cog
 
 from discord.ext import commands
+
 # from discord.utils import escape_mentions
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import _ref
 import _doc
-from _used import typing, get_raw, paste, Refresh, wrapping, prepare_payload, execute_run
+from _used import (
+    typing,
+    get_raw,
+    paste,
+    Refresh,
+    wrapping,
+    prepare_payload,
+    execute_run,
+)
+
 # from _tio import Tio
 
 with open("extra/lang.txt") as f:
@@ -40,10 +52,10 @@ with open("extra/lang.txt") as f:
 
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
+
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.algos = sorted(
-            [h for h in hashlib.algorithms_available if h.islower()])
+        self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
         self.bot.languages = ()
 
@@ -58,12 +70,12 @@ class RTFM(Cog):
             if type(elem) == NavigableString:
                 continue
             # It's a tag
-            if elem.name == 'h2':
+            if elem.name == "h2":
                 break
             siblings.append(elem.text)
-        content = '\n'.join(siblings)
+        content = "\n".join(siblings)
         if len(content) >= 1024:
-            content = content[:1021] + '...'
+            content = content[:1021] + "..."
 
         return content
 
@@ -76,20 +88,20 @@ class RTFM(Cog):
         "http-headers": _ref.http_headers,
         "http-methods": _ref.http_methods,
         "http-status-codes": _ref.http_status,
-        "sql": _ref.sql_ref
+        "sql": _ref.sql_ref,
     }
 
     # TODO: lua, java, javascript, asm
     documented = {
-        'c': _doc.c_doc,
-        'cpp': _doc.cpp_doc,
-        'haskell': _doc.haskell_doc,
-        'python': _doc.python_doc
+        "c": _doc.c_doc,
+        "cpp": _doc.cpp_doc,
+        "haskell": _doc.haskell_doc,
+        "python": _doc.python_doc,
     }
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='rtfm', id=893097656375722024)
+        return discord.PartialEmoji(name="rtfm", id=893097656375722024)
 
     @property
     def session(self):
@@ -109,10 +121,12 @@ class RTFM(Cog):
         try:
             res_json = await res_raw.json()
         except aiohttp.ContentTypeError:
-            return await ctx.send(embed=discord.Embed(
-                description="No such package found in the search query.",
-                color=self.bot.color,
-            ))
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="No such package found in the search query.",
+                    color=self.bot.color,
+                )
+            )
 
         res = res_json["info"]
 
@@ -130,9 +144,11 @@ class RTFM(Cog):
         version = getval("version")
         _license = getval("license")
 
-        embed = discord.Embed(title=f"{name} PyPi Stats",
-                              description=description,
-                              color=discord.Color.teal())
+        embed = discord.Embed(
+            title=f"{name} PyPi Stats",
+            description=description,
+            color=discord.Color.teal(),
+        )
 
         embed.add_field(name="Author", value=author, inline=True)
         embed.add_field(name="Author Email", value=author_email, inline=True)
@@ -158,10 +174,12 @@ class RTFM(Cog):
         res_json = await res_raw.json()
 
         if res_json.get("error"):
-            return await ctx.send(embed=discord.Embed(
-                description="No such package found in the search query.",
-                color=0xCC3534,
-            ))
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="No such package found in the search query.",
+                    color=0xCC3534,
+                )
+            )
 
         latest_version = res_json["dist-tags"]["latest"]
         latest_info = res_json["versions"][latest_version]
@@ -185,15 +203,16 @@ class RTFM(Cog):
         author = getval("author", "name")
         author_email = getval("author", "email")
 
-        repository = (getval("repository",
-                             "url").removeprefix("git+").removesuffix(".git"))
+        repository = (
+            getval("repository", "url").removeprefix("git+").removesuffix(".git")
+        )
 
         homepage = getval("homepage")
         _license = getval("license")
 
-        em = discord.Embed(title=f"{pkg_name} NPM Stats",
-                           description=description,
-                           color=0xCC3534)
+        em = discord.Embed(
+            title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534
+        )
 
         em.add_field(name="Author", value=author, inline=True)
         em.add_field(name="Author Email", value=author_email, inline=True)
@@ -205,8 +224,7 @@ class RTFM(Cog):
         em.add_field(name="Homepage", value=homepage, inline=True)
 
         em.set_thumbnail(
-            url=
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
+            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
         )
 
         await ctx.send(embed=em)
@@ -217,16 +235,17 @@ class RTFM(Cog):
     async def crate(self, ctx: Context, arg: str):
         """Get info about a Rust package directly from the Crates.IO Registry"""
 
-        res_raw = await self.get_package(
-            f"https://crates.io/api/v1/crates/{arg}")
+        res_raw = await self.get_package(f"https://crates.io/api/v1/crates/{arg}")
 
         res_json = await res_raw.json()
 
         if res_json.get("errors"):
-            return await ctx.send(embed=discord.Embed(
-                description="No such package found in the search query.",
-                color=0xE03D29,
-            ))
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="No such package found in the search query.",
+                    color=0xE03D29,
+                )
+            )
         main_info = res_json["crate"]
         latest_info = res_json["versions"][0]
 
@@ -257,14 +276,12 @@ class RTFM(Cog):
         homepage = getmainval("homepage")
         _license = getversionvals("license")
 
-        em = discord.Embed(title=f"{pkg_name} crates.io Stats",
-                           description=description,
-                           color=0xE03D29)
+        em = discord.Embed(
+            title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29
+        )
 
         em.add_field(name="Published By", value=publisher, inline=True)
-        em.add_field(name="Downloads",
-                     value="{:,}".format(downloads),
-                     inline=True)
+        em.add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
 
         em.add_field(name="Latest Version", value=latest_version, inline=False)
         em.add_field(name="License", value=_license, inline=True)
@@ -273,13 +290,13 @@ class RTFM(Cog):
         em.add_field(name="Homepage", value=homepage, inline=True)
 
         em.set_thumbnail(
-            url=
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
+            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
         )
 
         await ctx.send(embed=em)
 
-    @commands.command(help="""$run <language> [--wrapped] [--stats] <code>
+    @commands.command(
+        help="""$run <language> [--wrapped] [--stats] <code>
 for command-line-options, compiler-flags and arguments you may add a line starting with this argument, and after a space add your options, flags or args.
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
@@ -292,16 +309,17 @@ If the output exceeds 40 lines or Discord max message length, it will be put
 in a new hastebin and the link will be returned.
 When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
 Useful to hide your syntax fails or when you forgot to print the result.""",
-                      brief='Execute code in a given programming language')
-    async def run(self, ctx, *, payload=''):
+        brief="Execute code in a given programming language",
+    )
+    async def run(self, ctx, *, payload=""):
         """Execute code in a given programming language"""
 
         if not payload:
             emb = discord.Embed(
-                title='SyntaxError',
-                description=
-                "Command `run` missing a required argument: `language`",
-                colour=0xff0000)
+                title="SyntaxError",
+                description="Command `run` missing a required argument: `language`",
+                colour=0xFF0000,
+            )
             return await ctx.send(embed=emb)
 
         no_rerun = True
@@ -315,27 +333,29 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 return await ctx.send("File must be smaller than 20 kio.")
             buffer = BytesIO()
             await ctx.message.attachments[0].save(buffer)
-            text = buffer.read().decode('utf-8')
-            lang = re.split(r'\s+', payload, maxsplit=1)[0]
-        elif payload.split(' ')[-1].startswith('link='):
+            text = buffer.read().decode("utf-8")
+            lang = re.split(r"\s+", payload, maxsplit=1)[0]
+        elif payload.split(" ")[-1].startswith("link="):
             # Code in a webpage
             base_url = urllib.parse.quote_plus(
-                payload.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
+                payload.split(" ")[-1][5:].strip("/"), safe=";/?:@&=$,><-[]"
+            )
 
             url = get_raw(base_url)
 
             async with self.bot.session.get(url) as response:
                 if response.status == 404:
-                    return await ctx.send('Nothing found. Check your link')
+                    return await ctx.send("Nothing found. Check your link")
                 if response.status != 200:
                     return await ctx.send(
-                        f'An error occurred (status code: {response.status}). Retry later.'
+                        f"An error occurred (status code: {response.status}). Retry later."
                     )
                 text = await response.text()
                 if len(text) > 20000:
                     return await ctx.send(
-                        'Code must be shorter than 20,000 characters.')
-                lang = re.split(r'\s+', payload, maxsplit=1)[0]
+                        "Code must be shorter than 20,000 characters."
+                    )
+                lang = re.split(r"\s+", payload, maxsplit=1)[0]
         else:
             no_rerun = False
 
@@ -372,33 +392,33 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 # We deleted the message
                 pass
 
-    @commands.command(aliases=['ref'])
+    @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)
     @typing
     async def reference(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
 
-        lang = language.strip('`')
+        lang = language.strip("`")
 
         if not lang.lower() in self.referred:
             return await ctx.reply(
                 f"{lang} not available. See `[p]list references` for available ones."
             )
-        await self.referred[lang.lower()](ctx, query.strip('`'))
+        await self.referred[lang.lower()](ctx, query.strip("`"))
 
-    @commands.command(aliases=['doc'])
+    @commands.command(aliases=["doc"])
     @commands.bot_has_permissions(embed_links=True)
     @typing
     async def documentation(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
 
-        lang = language.strip('`')
+        lang = language.strip("`")
 
         if not lang.lower() in self.documented:
             return await ctx.reply(
                 f"{lang} not available. See `[p]list documentations` for available ones."
             )
-        await self.documented[lang.lower()](ctx, query.strip('`'))
+        await self.documented[lang.lower()](ctx, query.strip("`"))
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -406,47 +426,45 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     async def man(self, ctx: Context, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command"""
 
-        base_url = f'https://man.cx/{page}'
-        url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+        base_url = f"https://man.cx/{page}"
+        url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
         async with aiohttp.ClientSession() as client_session:
             async with client_session.get(url) as response:
                 if response.status != 200:
                     return await ctx.reply(
-                        'An error occurred (status code: {response.status}). Retry later.'
+                        "An error occurred (status code: {response.status}). Retry later."
                     )
 
-                soup = BeautifulSoup(await response.text(), 'lxml')
+                soup = BeautifulSoup(await response.text(), "lxml")
 
-                nameTag = soup.find('h2', string='NAME\n')
+                nameTag = soup.find("h2", string="NAME\n")
 
                 if not nameTag:
                     # No NAME, no page
-                    return await ctx.reply(
-                        f'No manual entry for `{page}`. (Debian)')
+                    return await ctx.reply(f"No manual entry for `{page}`. (Debian)")
 
                 # Get the two (or less) first parts from the nav aside
                 # The first one is NAME, we already have it in nameTag
-                contents = soup.find_all('nav',
-                                         limit=2)[1].find_all('li',
-                                                              limit=3)[1:]
+                contents = soup.find_all("nav", limit=2)[1].find_all("li", limit=3)[1:]
 
-                if contents[-1].string == 'COMMENTS':
+                if contents[-1].string == "COMMENTS":
                     contents.remove(-1)
 
                 title = self.get_content(nameTag)
 
-                emb = discord.Embed(title=title, url=f'https://man.cx/{page}')
-                emb.set_author(name='Debian Linux man pages')
+                emb = discord.Embed(title=title, url=f"https://man.cx/{page}")
+                emb.set_author(name="Debian Linux man pages")
                 emb.set_thumbnail(
-                    url='https://www.debian.org/logos/openlogo-nd-100.png')
+                    url="https://www.debian.org/logos/openlogo-nd-100.png"
+                )
 
                 for tag in contents:
                     h2 = tuple(
                         soup.find(
-                            attrs={
-                                'name': tuple(tag.children)[0].get('href')[1:]
-                            }).parents)[0]
+                            attrs={"name": tuple(tag.children)[0].get("href")[1:]}
+                        ).parents
+                    )[0]
                     emb.add_field(name=tag.string, value=self.get_content(h2))
 
                 await ctx.reply(embed=emb)
@@ -463,24 +481,25 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             "wrapped argument": wrapping,
         }
 
-        if group == 'languages':
+        if group == "languages":
             emb = discord.Embed(
                 title=f"Available for {group}:",
-                description=
-                'View them on [tio.run](https://tio.run/#), or in [JSON format](https://tio.run/languages.json)'
+                description="View them on [tio.run](https://tio.run/#), or in [JSON format](https://tio.run/languages.json)",
             )
             return await ctx.reply(embed=emb)
 
         if not group in choices:
             emb = discord.Embed(
                 title="Available listed commands",
-                description=f"`languages`, `{'`, `'.join(choices)}`")
+                description=f"`languages`, `{'`, `'.join(choices)}`",
+            )
             return await ctx.reply(embed=emb)
 
         availables = choices[group]
         description = f"`{'`, `'.join([*availables])}`"
-        emb = discord.Embed(title=f"Available for {group}: {len(availables)}",
-                            description=description)
+        emb = discord.Embed(
+            title=f"Available for {group}: {len(availables)}", description=description
+        )
         await ctx.reply(embed=emb)
 
     @commands.command()
@@ -488,10 +507,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     async def ascii(self, ctx: Context, *, text: str):
         """Returns number representation of characters in text"""
 
-        emb = discord.Embed(title="Unicode convert",
-                            description=' '.join(
-                                [str(ord(letter)) for letter in text]))
-        emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
+        emb = discord.Embed(
+            title="Unicode convert",
+            description=" ".join([str(ord(letter)) for letter in text]),
+        )
+        emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
         await ctx.reply(embed=emb)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -500,50 +520,50 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """Reforms string from char codes"""
 
         try:
-            codes = [chr(int(i)) for i in text.split(' ')]
-            emb = discord.Embed(title="Unicode convert",
-                                description=''.join(codes))
-            emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
+            codes = [chr(int(i)) for i in text.split(" ")]
+            emb = discord.Embed(title="Unicode convert", description="".join(codes))
+            emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
             await ctx.reply(embed=emb)
         except ValueError:
             await ctx.reply(
-                "Invalid sequence. Example usage : `[p]unascii 104 101 121`")
+                "Invalid sequence. Example usage : `[p]unascii 104 101 121`"
+            )
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def byteconvert(self, ctx: Context, value: int, unit=None):
         """Shows byte conversions of given value"""
-        if not unit: unit = 'Mio'
-        units = ('o', 'Kio', 'Mio', 'Gio', 'Tio', 'Pio', 'Eio', 'Zio', 'Yio')
+        if not unit:
+            unit = "Mio"
+        units = ("o", "Kio", "Mio", "Gio", "Tio", "Pio", "Eio", "Zio", "Yio")
         unit = unit.capitalize()
 
-        if not unit in units and unit != 'O':
-            return await ctx.reply(
-                f"Available units are `{'`, `'.join(units)}`.")
+        if not unit in units and unit != "O":
+            return await ctx.reply(f"Available units are `{'`, `'.join(units)}`.")
 
         emb = discord.Embed(title="Binary conversions")
         index = units.index(unit)
 
         for i, u in enumerate(units):
-            result = round(value / 2**((i - index) * 10), 14)
+            result = round(value / 2 ** ((i - index) * 10), 14)
             emb.add_field(name=u, value=result)
 
         await ctx.reply(embed=emb)
 
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(name='hash')
+    @commands.command(name="hash")
     async def _hash(self, ctx: Context, algorithm, *, text: str):
         """
-				Hashes text with a given algorithm
-				UTF-8, returns under hexadecimal form
-				"""
+        Hashes text with a given algorithm
+        UTF-8, returns under hexadecimal form
+        """
 
         algo = algorithm.lower()
 
         if not algo in self.algos:
-            matches = '\n'.join([
-                supported for supported in self.algos if algo in supported
-            ][:10])
+            matches = "\n".join(
+                [supported for supported in self.algos if algo in supported][:10]
+            )
             message = f"`{algorithm}` not available."
             if matches:
                 message += f" Did you mean:\n{matches}"
@@ -551,14 +571,15 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         try:
             # Guaranteed one
-            hash_object = getattr(hashlib, algo)(text.encode('utf-8'))
+            hash_object = getattr(hashlib, algo)(text.encode("utf-8"))
         except AttributeError:
             # Available
-            hash_object = hashlib.new(algo, text.encode('utf-8'))
+            hash_object = hashlib.new(algo, text.encode("utf-8"))
 
-        emb = discord.Embed(title=f"{algorithm} hash",
-                            description=hash_object.hexdigest())
-        emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
+        emb = discord.Embed(
+            title=f"{algorithm} hash", description=hash_object.hexdigest()
+        )
+        emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
 
         await ctx.reply(embed=emb)
 
@@ -568,6 +589,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Shows you information about a number of characters.
         Only up to 25 characters at a time.
         """
+
         def to_string(c):
             digit = f"{ord(c):x}"
             name = unicodedata.name(c, "Name not found.")

@@ -14,20 +14,20 @@ from .player import PlayerUI
 from .select import SelectUI
 from .vote import VoteUI
 
-__all__ = ("GameUI", )
+__all__ = ("GameUI",)
 
 SLEEP_FOR = 5
 
 
 class ResendMessageButton(discord.ui.Button["GameUI"]):
     def __init__(self) -> None:
-        super().__init__(style=discord.ButtonStyle.secondary,
-                         label="Re-send Game")
+        super().__init__(style=discord.ButtonStyle.secondary, label="Re-send Game")
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.view.host:
             await interaction.response.send_message(
-                "Only the host can re-send the game message.", ephemeral=True)
+                "Only the host can re-send the game message.", ephemeral=True
+            )
             return
 
         await self.view.resend()
@@ -36,25 +36,25 @@ class ResendMessageButton(discord.ui.Button["GameUI"]):
 
 class ResendViewButton(discord.ui.Button["GameUI"]):
     def __init__(self) -> None:
-        super().__init__(style=discord.ButtonStyle.secondary,
-                         label="Re-send Menu")
+        super().__init__(style=discord.ButtonStyle.secondary, label="Re-send Menu")
 
     async def callback(self, interaction: discord.Interaction):
         if not isinstance(self.view.view, PeekUI):
             await interaction.response.send_message(
-                "There is currently not a hidden menu.", ephemeral=True)
+                "There is currently not a hidden menu.", ephemeral=True
+            )
             return
 
         player = self.view.game.get_player(interaction.user)
         if player is not self.view.view.target:
             await interaction.response.send_message(
-                "Only the hidden menu target can refresh the menu.",
-                ephemeral=True)
+                "Only the hidden menu target can refresh the menu.", ephemeral=True
+            )
             return
 
-        await interaction.response.send_message(self.view.view.tooltip,
-                                                view=self.view.view,
-                                                ephemeral=True)
+        await interaction.response.send_message(
+            self.view.view.tooltip, view=self.view.view, ephemeral=True
+        )
 
 
 class StopGameButton(discord.ui.Button["GameUI"]):
@@ -64,7 +64,8 @@ class StopGameButton(discord.ui.Button["GameUI"]):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.view.host:
             await interaction.response.send_message(
-                "Only the host can stop the game.", ephemeral=True)
+                "Only the host can stop the game.", ephemeral=True
+            )
             return
 
         self.view.cancel()
@@ -73,16 +74,21 @@ class StopGameButton(discord.ui.Button["GameUI"]):
 
 class BlankButton(discord.ui.Button["GameUI"]):
     def __init__(self) -> None:
-        super().__init__(style=discord.ButtonStyle.secondary,
-                         label="\u200b",
-                         disabled=True)
+        super().__init__(
+            style=discord.ButtonStyle.secondary, label="\u200b", disabled=True
+        )
 
 
 class GameUI(discord.ui.View):
     children: list[discord.ui.Button]
 
-    def __init__(self, message: discord.Message, host: User,
-                 users: Collection[User], games: dict[int, discord.ui.View]):
+    def __init__(
+        self,
+        message: discord.Message,
+        host: User,
+        users: Collection[User],
+        games: dict[int, discord.ui.View],
+    ):
         self.host: User = host
         self.game: Game[User] = Game[User](users)
         self.interactions: dict[User, discord.Interaction] = {}
@@ -101,8 +107,7 @@ class GameUI(discord.ui.View):
         self.add_item(BlankButton())
         self.add_item(StopGameButton())
 
-    async def store_interaction(self,
-                                interaction: discord.Interaction) -> None:
+    async def store_interaction(self, interaction: discord.Interaction) -> None:
         player = self.game.get_player(interaction.user)
         if player is not None:
             self.interactions[player.identifier] = interaction
@@ -127,28 +132,25 @@ class GameUI(discord.ui.View):
     async def send_view(self) -> None:
         if isinstance(self.view, SelectUI):
             if isinstance(self.view, PeekUI):
-                interaction = self.interactions.pop(
-                    self.view.target.identifier)
-                await interaction.followup.send(self.view.tooltip,
-                                                view=self.view,
-                                                ephemeral=True)
+                interaction = self.interactions.pop(self.view.target.identifier)
+                await interaction.followup.send(
+                    self.view.tooltip, view=self.view, ephemeral=True
+                )
             else:
-                await self.channel.send(self.view.tooltip,
-                                        reference=self.message,
-                                        view=self.view)
+                await self.channel.send(
+                    self.view.tooltip, reference=self.message, view=self.view
+                )
 
         elif isinstance(self.view, VoteUI):
-            await self.channel.send(self.view.tooltip,
-                                    reference=self.message,
-                                    view=self.view)
+            await self.channel.send(
+                self.view.tooltip, reference=self.message, view=self.view
+            )
 
     async def update(self) -> None:
         state = self.game.state
 
         # determine view type.
-        if isinstance(
-                state,
-            (SelectGameState, PolicyListPeek, PlayerWasInvestigated)):
+        if isinstance(state, (SelectGameState, PolicyListPeek, PlayerWasInvestigated)):
             # Determine target
             if isinstance(self.game.state, ChancellorDiscardsPolicy):
                 target = self.game.chancellor
@@ -206,18 +208,15 @@ class GameUI(discord.ui.View):
         users: dict[User, discord.Interaction],
         games: dict[int, discord.ui.View],
     ) -> None:
-        games[message.channel.id] = self = cls(message, host, users.keys(),
-                                               games)
+        games[message.channel.id] = self = cls(message, host, users.keys(), games)
 
         for player in self.game.players:
             content = SECRET_MESSAGES[self.game.player_count][player.role]
             if player.role is Role.Fascist:
                 content = content.format(
-                    self.game.hitler, *[
-                        user for user in self.game.fascists
-                        if user != player.identifier
-                    ])
-            await users[player.identifier].followup.send(content,
-                                                         ephemeral=True)
+                    self.game.hitler,
+                    *[user for user in self.game.fascists if user != player.identifier]
+                )
+            await users[player.identifier].followup.send(content, ephemeral=True)
 
         await self.play()

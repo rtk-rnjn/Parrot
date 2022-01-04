@@ -8,14 +8,14 @@ from discord.ext import commands, tasks
 import discord
 import random
 
-with open('extra/duke_nekum.txt') as f:
-    quotes = f.read().split('\n')
+with open("extra/duke_nekum.txt") as f:
+    quotes = f.read().split("\n")
 
 
 class MentionProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db['server_config']
+        self.collection = parrot_db["server_config"]
         self.data = {}
         self.clear_data.start()
 
@@ -37,19 +37,15 @@ class MentionProt(Cog):
             data = self.data[message.guild.id]
         except KeyError:
             if data := await self.collection.find_one(
-                {
-                    '_id': message.guild.id, 
-                    'automod.mention.enable': 
-                        {'$exists': True}
-                }
+                {"_id": message.guild.id, "automod.mention.enable": {"$exists": True}}
             ):
                 self.data[message.guild.id] = data
             else:
                 return
 
-        if self.data[message.guild.id]['automod']['mention']['enable']:
+        if self.data[message.guild.id]["automod"]["mention"]["enable"]:
             try:
-                ignore = self.data[message.guild.id]['automod']['mention']['channel']
+                ignore = self.data[message.guild.id]["automod"]["mention"]["channel"]
             except KeyError:
                 ignore = []
 
@@ -57,17 +53,18 @@ class MentionProt(Cog):
                 return
 
             try:
-                count = self.data[message.guild.id]['automod']['mention']['count']
+                count = self.data[message.guild.id]["automod"]["mention"]["count"]
             except KeyError:
                 count = None
 
-            if not count: return
+            if not count:
+                return
 
             if len(message.mentions) >= count:
                 await self.delete(message)
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] [Warning]**", 
-                    delete_after=10
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] [Warning]**",
+                    delete_after=10,
                 )
 
     @tasks.loop(seconds=900)

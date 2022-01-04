@@ -16,13 +16,14 @@ from discord.ext import commands
 
 from core import Parrot, Context
 
-giveaway = parrot_db['giveaway']
-reacter = cluster['reacter']
+giveaway = parrot_db["giveaway"]
+reacter = cluster["reacter"]
+
 
 async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
-        if not data['nsfw']:
+        if not data["nsfw"]:
             if msg_ref is not None:
                 await msg_ref.reply(data["text"])
             else:
@@ -34,7 +35,9 @@ async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
                 else:
                     await ctx.send(data["text"])
             else:
-                await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
+                await ctx.reply(
+                    f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
+                )
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
     await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
@@ -45,19 +48,29 @@ async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     if data := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
     view = Prompt(ctx.author.id)
-    msg = await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)
+    msg = await ctx.send(
+        f"{ctx.author.mention} do you want to make the tag as NSFW marked channels",
+        view=view,
+    )
     await view.wait()
     if view.value is None:
-        await msg.reply(f"{ctx.author.mention} you did not responds on time. Considering as non NSFW")
+        await msg.reply(
+            f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
+        )
         nsfw = False
     elif view.value:
         nsfw = True
     else:
         view = Prompt(ctx.author.id)
-        msg = await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)
+        msg = await ctx.send(
+            f"{ctx.author.mention} do you want to make the tag as NSFW marked channels",
+            view=view,
+        )
         await view.wait()
         if view.value is None:
-            await msg.reply(f"{ctx.author.mention} you did not responds on time. Considering as non NSFW")
+            await msg.reply(
+                f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
+            )
             nsfw = False
         elif view.value:
             nsfw = True
@@ -156,28 +169,32 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag, member):
 
 async def _toggle_nsfw(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({'id': tag}):
+    if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
-        nsfw = not data['nsfw']
-        await collection.update_one({'id': tag}, {'$set': {'nsfw': nsfw}})
+        nsfw = not data["nsfw"]
+        await collection.update_one({"id": tag}, {"$set": {"nsfw": nsfw}})
         await ctx.reply(
             f"{ctx.author.mention} NSFW status of tag named `{tag}` is set to **{nsfw}**"
-          )
+        )
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
+
 async def _show_tag_mine(bot: Parrot, ctx: Context):
-    collection = tags[f'{ctx.guild.id}']
+    collection = tags[f"{ctx.guild.id}"]
     i = 1
     paginator = ParrotPaginator(ctx, title="Tags")
-    async for data in collection.find({'owner': ctx.author.id}):
+    async for data in collection.find({"owner": ctx.author.id}):
         paginator.add_line(f"`{i}` {data['_id']}")
         i += 1
     try:
         await paginator.start()
     except Exception:
-        await ctx.reply(f"{ctx.author.mention} you don't have any tags registered with your name")
+        await ctx.reply(
+            f"{ctx.author.mention} you don't have any tags registered with your name"
+        )
+
 
 async def _show_all_tags(bot: Parrot, ctx: Context):
     collection = tags[f"{ctx.guild.id}"]
@@ -190,6 +207,7 @@ async def _show_all_tags(bot: Parrot, ctx: Context):
         await paginator.start()
     except Exception:
         await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
+
 
 async def _view_tag(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
@@ -216,51 +234,80 @@ async def _view_tag(bot: Parrot, ctx: Context, tag):
 async def _create_todo(bot: Parrot, ctx: Context, name, text):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
-        await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
+        await ctx.reply(
+            f"{ctx.author.mention} `{name}` already exists as your TODO list"
+        )
     else:
         await collection.insert_one(
-          {
-            'id': name, 
-            'text': text, 
-            'time': int(time()),
-            'deadline': None,
-            'msglink': ctx.message.jump_url
-          }
+            {
+                "id": name,
+                "text": text,
+                "time": int(time()),
+                "deadline": None,
+                "msglink": ctx.message.jump_url,
+            }
         )
         await ctx.reply(f"{ctx.author.mention} created as your TODO list")
 
+
 async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({'id': name}):
-        post = {'deadline': timestamp}
+    if data := await collection.find_one({"id": name}):
+        post = {"deadline": timestamp}
         try:
             await ctx.author.send(f"{ctx.author.mention} check your DM")
         except Exception:
-            return await ctx.reply(f"{ctx.author.mention} can not complete the action as your DM(s) are locked for the bot")
-        await collection.update_one({'_id': name}, {'$set': post})
-        await bot.get_cog('Utils').create_timer(ctx.channel, ctx.message, ctx.author, timestamp, reamark=f'you had set TODO reminder for your task named **{name}**', dm=True)
-        await ctx.author.send(f"You will be reminded for your task named **{name}** here at <t:{int(timestamp)}>. To delete your reminder consider typing.\n```\n$delremind {ctx.message.id}```")
+            return await ctx.reply(
+                f"{ctx.author.mention} can not complete the action as your DM(s) are locked for the bot"
+            )
+        await collection.update_one({"_id": name}, {"$set": post})
+        await bot.get_cog("Utils").create_timer(
+            ctx.channel,
+            ctx.message,
+            ctx.author,
+            timestamp,
+            reamark=f"you had set TODO reminder for your task named **{name}**",
+            dm=True,
+        )
+        await ctx.author.send(
+            f"You will be reminded for your task named **{name}** here at <t:{int(timestamp)}>. To delete your reminder consider typing.\n```\n$delremind {ctx.message.id}```"
+        )
     else:
-        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+        await ctx.reply(
+            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
+        )
+
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
         if new_data := await collection.find_one({"id": new_name}):
-            await ctx.reply(f"{ctx.author.mention} `{new_name}` already exists as your TODO list")
+            await ctx.reply(
+                f"{ctx.author.mention} `{new_name}` already exists as your TODO list"
+            )
         else:
-            await collection.update_one({'id': name}, {'$set': {'id': new_name}})
-            await ctx.reply(f"{ctx.author.mention} name changed from `{name}` to `{new_name}`")
+            await collection.update_one({"id": name}, {"$set": {"id": new_name}})
+            await ctx.reply(
+                f"{ctx.author.mention} name changed from `{name}` to `{new_name}`"
+            )
     else:
-        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+        await ctx.reply(
+            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
+        )
+
 
 async def _update_todo_text(bot: Parrot, ctx: Context, name, text):
     collection = todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
-        await collection.update_one({'id': name}, {'$set': {'text': text}})
-        await ctx.reply(f"{ctx.author.mention} TODO list of name `{name}` has been updated")
+        await collection.update_one({"id": name}, {"$set": {"text": text}})
+        await ctx.reply(
+            f"{ctx.author.mention} TODO list of name `{name}` has been updated"
+        )
     else:
-        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+        await ctx.reply(
+            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
+        )
+
 
 async def _list_todo(bot: Parrot, ctx: Context):
     collection = todo[f"{ctx.author.id}"]
@@ -274,20 +321,28 @@ async def _list_todo(bot: Parrot, ctx: Context):
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} you do not have task to do")
 
+
 async def _show_todo(bot: Parrot, ctx: Context, name):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({'id': name}):
-        await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
+    if data := await collection.find_one({"id": name}):
+        await ctx.reply(
+            f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>"
+        )
     else:
-        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+        await ctx.reply(
+            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
+        )
+
 
 async def _delete_todo(bot: Parrot, ctx: Context, name):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({'id': name}):
-        await collection.delete_one({'id': name})
+    if data := await collection.find_one({"id": name}):
+        await collection.delete_one({"id": name})
         await ctx.reply(f"{ctx.author.mention} delete `{name}` task")
     else:
-        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
+        await ctx.reply(
+            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
+        )
 
 
 async def create_gw(bot: Parrot, ctx: Context):
@@ -297,6 +352,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         (3, "Enter amount of winners"),
         (4, "Enter duration of giveaway"),
     ]
+
     def check(m):
         return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
 
@@ -305,90 +361,98 @@ async def create_gw(bot: Parrot, ctx: Context):
 
     for i, q in questions:
         await ctx.send(f"{ctx.author.mention} **{q}**")
-        msg = await bot.wait_for('message', check=check, timeout=30)
+        msg = await bot.wait_for("message", check=check, timeout=30)
 
-        if msg.content.lower() in ('end', 'cancel'):
-            return await ctx.send(f"{ctx.author.mention} alright, reverting all process")
+        if msg.content.lower() in ("end", "cancel"):
+            return await ctx.send(
+                f"{ctx.author.mention} alright, reverting all process"
+            )
         if i == 1:
-            answers['prize'] = msg.content
+            answers["prize"] = msg.content
         if i == 2:
             channel = await commands.TextChannelConverter().convert(ctx, msg.content)
             if not channel:
                 return await ctx.send(f"{ctx.author.mention} Invalid Channel")
-            if not (channel.permissions_for(ctx.guild.me).add_reactions and channel.permissions_for(ctx.guild.me).embed_links):
-                return await ctx.send(f"{ctx.author.mention} bot don't have Add Reaction and Embed Links permission in {channel.mention}")  
-            answers['channel'] = channel.id
+            if not (
+                channel.permissions_for(ctx.guild.me).add_reactions
+                and channel.permissions_for(ctx.guild.me).embed_links
+            ):
+                return await ctx.send(
+                    f"{ctx.author.mention} bot don't have Add Reaction and Embed Links permission in {channel.mention}"
+                )
+            answers["channel"] = channel.id
 
         if i == 3:
             try:
                 winner = int(msg.content)
             except Exception:
                 return await ctx.send(f"{ctx.author.mention} Invalid Winner count")
-            answers['winners'] = winner
+            answers["winners"] = winner
         if i == 4:
-            seconds = ShortTime(f'{msg.content}').dt.timestamp()
-            answers['endtime'] = seconds
+            seconds = ShortTime(f"{msg.content}").dt.timestamp()
+            answers["endtime"] = seconds
 
     _id = await channel.send(
-            embed=discord.Embed(
-                description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{int(answers['endtime'])}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
-                timestamp=datetime.utcnow(),
-                color=ctx.guild.owner.color
-            ).set_author(
-                name="GIVEAWAY!"
-            ).set_footer(
-                text=f"ID: {ctx.message.id}"
-            )
+        embed=discord.Embed(
+            description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{int(answers['endtime'])}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
+            timestamp=datetime.utcnow(),
+            color=ctx.guild.owner.color,
         )
-    answers['_id'] = _id.id
-    answers['guild'] = ctx.guild.id
+        .set_author(name="GIVEAWAY!")
+        .set_footer(text=f"ID: {ctx.message.id}")
+    )
+    answers["_id"] = _id.id
+    answers["guild"] = ctx.guild.id
     await giveaway.insert_one(answers)
     await _id.add_reaction("\N{PARTY POPPER}")
 
-    await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**")
+    await ctx.send(
+        f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**"
+    )
+
 
 async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
-    if data := await giveaway.find_one({'_id': _id}):
-        if not (data['guild'] == ctx.guild.id):
+    if data := await giveaway.find_one({"_id": _id}):
+        if not (data["guild"] == ctx.guild.id):
             return await ctx.send(f"{ctx.author.mention} invalid message ID")
 
-        channel = ctx.guild.get_channel(data['channel'])
+        channel = ctx.guild.get_channel(data["channel"])
 
         if not channel:
-            await giveaway.delete_one({'_id': _id})
+            await giveaway.delete_one({"_id": _id})
             return await ctx.send(
                 f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
             )
 
-        async for msg in channel.history(limit=1, before=discord.Object(_id+1), after=discord.Object(_id-1)): # this is good. UwU
+        async for msg in channel.history(
+            limit=1, before=discord.Object(_id + 1), after=discord.Object(_id - 1)
+        ):  # this is good. UwU
             if msg is None:
-                return await ctx.send(f"{ctx.author.mention} no message found! Proably deleted")
+                return await ctx.send(
+                    f"{ctx.author.mention} no message found! Proably deleted"
+                )
             await msg.remove_reaction("\N{PARTY POPPER}", channel.guild.me)
 
         for reaction in msg.reactions:
             if str(reaction) == "\N{PARTY POPPER}":
-                if reaction.count < (data['winners'] - 1):
+                if reaction.count < (data["winners"] - 1):
                     return await ctx.send(
                         f"{ctx.author.mention} winner can not be decided due to insufficient reaction count."
-                    ) 
+                    )
                 users = await reaction.users().flatten()
-                ls = await get_winners(    
-                    users=users,
-                    winners=data['winners'],
-                    msg=msg
+                ls = await get_winners(users=users, winners=data["winners"], msg=msg)
+                return await channel.send(
+                    f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**"
                 )
-                return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
 
-        return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.")
+        return await ctx.send(
+            f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared."
+        )
     await ctx.send(f"{ctx.author.mention} invalid message ID")
 
-async def get_winners(
-                users: list, 
-                winners: int,
-                msg: discord.Message
-            ) -> list:
+
+async def get_winners(users: list, winners: int, msg: discord.Message) -> list:
     wins = random.sample(users, winners)
     for m in wins:
         await msg.remove_reaction("\N{PARTY POPPER}", m)
     return wins
-

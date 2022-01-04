@@ -4,7 +4,7 @@ import random
 with open("extra/quote.txt") as f:
     quote = f.read()
 
-quote = quote.split('\n')
+quote = quote.split("\n")
 
 
 class ParrotCheckFaliure(cmd.CheckFailure):

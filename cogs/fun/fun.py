@@ -16,9 +16,15 @@ import discord
 import aiohttp
 import asyncio
 from aiohttp import request
-from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
+from discord.ext.commands import (
+    command,
+    guild_only,
+    bot_has_permissions,
+    cooldown,
+    BucketType,
+)
 from discord.ext import commands, tasks
-from discord import Embed 
+from discord import Embed
 
 from pathlib import Path
 from random import choice, randint
@@ -38,10 +44,10 @@ BASE_URL = "https://xkcd.com"
 
 
 with open("extra/truth.txt") as f:
-  _truth = f.read()
+    _truth = f.read()
 
 with open("extra/dare.txt") as g:
-  _dare = g.read()
+    _dare = g.read()
 
 with open("extra/lang.json") as lang:
     lg = json.load(lang)
@@ -51,11 +57,13 @@ from typing import List, Optional
 with open(Path("extra/anagram.json"), "r") as f:
     ANAGRAMS_ALL = json.load(f)
 
+
 def suppress_links(message: str) -> str:
     """Accepts a message that may contain links, suppresses them, and returns them."""
     for link in set(re.findall(r"https?://[^\s]+", message, re.IGNORECASE)):
         message = message.replace(link, f"<{link}>")
     return message
+
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
 
@@ -70,26 +78,27 @@ IMAGES = {
 }
 
 
-response = ["All signs point to yes...",
-            "Yes!", 
-            "My sources say nope.", 
-            "You may rely on it.", 
-            "Concentrate and ask again...", 
-            "Outlook not so good...", 
-            "It is decidedly so!", 
-            "Better not tell you.", 
-            "Very doubtful.", 
-            "Yes - Definitely!", 
-            "It is certain!", 
-            "Most likely.", 
-            "Ask again later.", 
-            "No!", 
-            "Outlook good.", 
-            "Don't count on it.", 
-            "Why not", 
-            "Probably", 
-            "Can't say", 
-            "Well well..."
+response = [
+    "All signs point to yes...",
+    "Yes!",
+    "My sources say nope.",
+    "You may rely on it.",
+    "Concentrate and ask again...",
+    "Outlook not so good...",
+    "It is decidedly so!",
+    "Better not tell you.",
+    "Very doubtful.",
+    "Yes - Definitely!",
+    "It is certain!",
+    "Most likely.",
+    "Ask again later.",
+    "No!",
+    "Outlook good.",
+    "Don't count on it.",
+    "Why not",
+    "Probably",
+    "Can't say",
+    "Well well...",
 ]
 
 NEGATIVE_REPLIES = [
@@ -113,17 +122,17 @@ NEGATIVE_REPLIES = [
 ]
 
 UWU_WORDS = {
-        "fi": "fwi",
-        "l": "w",
-        "r": "w",
-        "some": "sum",
-        "th": "d",
-        "thing": "fing",
-        "tho": "fo",
-        "you're": "yuw'we",
-        "your": "yur",
-        "you": "yuw",
-    }
+    "fi": "fwi",
+    "l": "w",
+    "r": "w",
+    "some": "sum",
+    "th": "d",
+    "thing": "fing",
+    "tho": "fo",
+    "you're": "yuw'we",
+    "your": "yur",
+    "you": "yuw",
+}
 
 DEFAULT_QUESTION_LIMIT = 7
 STANDARD_VARIATION_TOLERANCE = 88
@@ -138,13 +147,12 @@ WRONG_ANS_RESPONSE = [
 
 RULES = (
     "No cheating and have fun!",
-    "Points for each question reduces by 25 after 10s or after a hint. Total time is 30s per question"
+    "Points for each question reduces by 25 after 10s or after a hint. Total time is 30s per question",
 )
 
 WIKI_FEED_API_URL = "https://en.wikipedia.org/api/rest_v1/feed/featured/{date}"
-TRIVIA_QUIZ_ICON = (
-    "https://raw.githubusercontent.com/python-discord/branding/main/icons/trivia_quiz/trivia-quiz-dist.png"
-)
+TRIVIA_QUIZ_ICON = "https://raw.githubusercontent.com/python-discord/branding/main/icons/trivia_quiz/trivia-quiz-dist.png"
+
 
 @dataclass(frozen=True)
 class QuizEntry:
@@ -153,6 +161,7 @@ class QuizEntry:
     question: str
     answers: list[str]
     var_tol: int
+
 
 class AnagramGame:
     """
@@ -179,8 +188,16 @@ class DynamicQuestionGen:
 
     N_PREFIX_STARTS_AT = 5
     N_PREFIXES = [
-        "penta", "hexa", "hepta", "octa", "nona",
-        "deca", "hendeca", "dodeca", "trideca", "tetradeca",
+        "penta",
+        "hexa",
+        "hepta",
+        "octa",
+        "nona",
+        "deca",
+        "hendeca",
+        "dodeca",
+        "trideca",
+        "tetradeca",
     ]
 
     PLANETS = [
@@ -195,8 +212,14 @@ class DynamicQuestionGen:
     ]
 
     TAXONOMIC_HIERARCHY = [
-        "species", "genus", "family", "order",
-        "class", "phylum", "kingdom", "domain",
+        "species",
+        "genus",
+        "family",
+        "order",
+        "class",
+        "phylum",
+        "kingdom",
+        "domain",
     ]
 
     UNITS_TO_BASE_UNITS = {
@@ -235,8 +258,14 @@ class DynamicQuestionGen:
     @classmethod
     def mod_arith(cls, q_format: str, a_format: str) -> QuizEntry:
         """Generate a basic modular arithmetic question."""
-        quotient, m, b = random.randint(30, 40), random.randint(10, 20), random.randint(200, 350)
-        ans = random.randint(0, 9)  # max remainder is 9, since the minimum modulus is 10
+        quotient, m, b = (
+            random.randint(30, 40),
+            random.randint(10, 20),
+            random.randint(200, 350),
+        )
+        ans = random.randint(
+            0, 9
+        )  # max remainder is 9, since the minimum modulus is 10
         a = quotient * m + ans - b
 
         question = q_format.format(a, b, m)
@@ -312,12 +341,8 @@ class DynamicQuestionGen:
         """Generate a SI base units conversion question."""
         unit = random.choice(list(cls.UNITS_TO_BASE_UNITS))
 
-        question = q_format.format(
-            unit + " " + cls.UNITS_TO_BASE_UNITS[unit][0]
-        )
-        answer = a_format.format(
-            cls.UNITS_TO_BASE_UNITS[unit][1]
-        )
+        question = q_format.format(unit + " " + cls.UNITS_TO_BASE_UNITS[unit][0])
+        answer = a_format.format(cls.UNITS_TO_BASE_UNITS[unit][1])
 
         return QuizEntry(question, [answer], DYNAMICALLY_GEN_VARIATION_TOLERANCE)
 
@@ -366,12 +391,19 @@ class Colours:
         (64, 224, 208),
     ]
 
+
 def replace_many(
-    sentence: str, replacements: dict, *, ignore_case: bool = False, match_case: bool = False
+    sentence: str,
+    replacements: dict,
+    *,
+    ignore_case: bool = False,
+    match_case: bool = False,
 ) -> str:
 
     if ignore_case:
-        replacements = {word.lower(): replacement for word, replacement in replacements.items()}
+        replacements = {
+            word.lower(): replacement for word, replacement in replacements.items()
+        }
 
     words_to_replace = sorted(replacements, key=lambda s: (-len(s), s))
 
@@ -399,25 +431,37 @@ def replace_many(
     return regex.sub(_repl, sentence)
 
 
-class Fun(Cog, command_attrs={
-            'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member),
-            'hidden': False,
-        }
-    ):
+class Fun(
+    Cog,
+    command_attrs={
+        "cooldown": commands.CooldownMapping.from_cooldown(
+            1, 5.0, commands.BucketType.member
+        ),
+        "hidden": False,
+    },
+):
     """Parrot gives you huge amount of fun commands, so that you won't get bored"""
 
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-        self.game_status = {}  # A variable to store the game status: either running or not running.
-        self.game_owners = {}  # A variable to store the person's ID who started the quiz game in a channel.
+        self.game_status = (
+            {}
+        )  # A variable to store the game status: either running or not running.
+        self.game_owners = (
+            {}
+        )  # A variable to store the person's ID who started the quiz game in a channel.
 
         self.questions = self.load_questions()
         self.question_limit = 0
         self.games: dict[int, AnagramGame] = {}
 
-        self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
-        self.game_player_scores = {}  # A variable to store temporary game player's scores.
+        self.player_scores = defaultdict(
+            int
+        )  # A variable to store all player's scores for a bot session.
+        self.game_player_scores = (
+            {}
+        )  # A variable to store temporary game player's scores.
 
         self.latest_comic_info: dict[str, Union[int, str]] = {}
         self.get_latest_comic_info.start()
@@ -452,16 +496,20 @@ class Fun(Cog, command_attrs={
         hangman_embed.set_image(url=IMAGES[tries])
         hangman_embed.add_field(
             name=f"You've guessed `{user_guess}` so far.",
-            value="Guess the word by sending a message with a letter!"
+            value="Guess the word by sending a message with a letter!",
         )
-        hangman_embed.set_footer(text=f"Tries remaining: {tries} | You have 60s to guess.")
+        hangman_embed.set_footer(
+            text=f"Tries remaining: {tries} | You have 60s to guess."
+        )
         return hangman_embed
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='fun', id=892432619374014544)
+        return discord.PartialEmoji(name="fun", id=892432619374014544)
 
-    async def _get_discord_message(self, ctx: Context, text: str) -> Union[discord.Message, str]:
+    async def _get_discord_message(
+        self, ctx: Context, text: str
+    ) -> Union[discord.Message, str]:
         """
         Attempts to convert a given `text` to a discord Message object and return it.
         Conversion will succeed if given a discord Message ID or link.
@@ -473,7 +521,9 @@ class Fun(Cog, command_attrs={
             return
         return text
 
-    async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, Optional[Embed]]:
+    async def _get_text_and_embed(
+        self, ctx: Context, text: str
+    ) -> tuple[str, Optional[Embed]]:
         embed = None
 
         msg = await self._get_discord_message(ctx, text)
@@ -488,7 +538,16 @@ class Fun(Cog, command_attrs={
 
         return (text, embed)
 
-    def _convert_embed(self, func: Callable[[str, ], str], embed: Embed) -> Embed:
+    def _convert_embed(
+        self,
+        func: Callable[
+            [
+                str,
+            ],
+            str,
+        ],
+        embed: Embed,
+    ) -> Embed:
         """
         Converts the text in an embed using a given conversion function, then return the embed.
         Only modifies the following fields: title, description, footer, fields
@@ -522,10 +581,14 @@ class Fun(Cog, command_attrs={
         wiki_questions = []
         # trivia_quiz.json follows a pattern, every new category starts with the next century.
         start_id = 501
-        yesterday = datetime.datetime.strftime(datetime.datetime.now() - datetime.timedelta(1), '%Y/%m/%d')
+        yesterday = datetime.datetime.strftime(
+            datetime.datetime.now() - datetime.timedelta(1), "%Y/%m/%d"
+        )
 
         while error_fetches < MAX_ERROR_FETCH_TRIES:
-            async with self.bot.http_session.get(url=WIKI_FEED_API_URL.format(date=yesterday)) as r:
+            async with self.bot.http_session.get(
+                url=WIKI_FEED_API_URL.format(date=yesterday)
+            ) as r:
                 if r.status != 200:
                     error_fetches += 1
                     continue
@@ -540,7 +603,10 @@ class Fun(Cog, command_attrs={
                     # Normalize the wikipedia article title to remove all punctuations from it
                     for word in re.split(r"[\s-]", title := article["normalizedtitle"]):
                         cleaned_title = re.sub(
-                            rf'\b{word.strip(string.punctuation)}\b', word, title, flags=re.IGNORECASE
+                            rf"\b{word.strip(string.punctuation)}\b",
+                            word,
+                            title,
+                            flags=re.IGNORECASE,
                         )
 
                     # Since the extract contains the article name sometimes this would replace all the matching words
@@ -552,13 +618,18 @@ class Fun(Cog, command_attrs={
                     for word in re.split(r"[\s-]", cleaned_title):
                         word = word.strip(string.punctuation)
                         secret_word = r"\*" * len(word)
-                        question = re.sub(rf'\b{word}\b', f"**{secret_word}**", question, flags=re.IGNORECASE)
+                        question = re.sub(
+                            rf"\b{word}\b",
+                            f"**{secret_word}**",
+                            question,
+                            flags=re.IGNORECASE,
+                        )
 
                     formatted_article_question = {
                         "id": start_id,
                         "question": f"Guess the title of the Wikipedia article.\n\n{question}",
                         "answer": cleaned_title,
-                        "info": article["extract"]
+                        "info": article["extract"],
                     }
                     start_id += 1
                     wiki_questions.append(formatted_article_question)
@@ -588,21 +659,31 @@ class Fun(Cog, command_attrs={
         embed.colour = Colours.soft_red
 
         if comic and (comic := re.match(COMIC_FORMAT, comic)) is None:
-            embed.description = "Comic parameter should either be an integer or 'latest'."
+            embed.description = (
+                "Comic parameter should either be an integer or 'latest'."
+            )
             await ctx.send(embed=embed)
             return
 
-        comic = randint(1, self.latest_comic_info["num"]) if comic is None else comic.group(0)
+        comic = (
+            randint(1, self.latest_comic_info["num"])
+            if comic is None
+            else comic.group(0)
+        )
 
         if comic == "latest":
             info = self.latest_comic_info
         else:
-            async with self.bot.http_session.get(f"{BASE_URL}/{comic}/info.0.json") as resp:
+            async with self.bot.http_session.get(
+                f"{BASE_URL}/{comic}/info.0.json"
+            ) as resp:
                 if resp.status == 200:
                     info = await resp.json()
                 else:
                     embed.title = f"XKCD comic #{comic}"
-                    embed.description = f"{resp.status}: Could not retrieve xkcd comic #{comic}."
+                    embed.description = (
+                        f"{resp.status}: Could not retrieve xkcd comic #{comic}."
+                    )
                     await ctx.send(embed=embed)
                     return
 
@@ -613,7 +694,7 @@ class Fun(Cog, command_attrs={
         if info["img"][-3:] in ("jpg", "png", "gif"):
             embed.set_image(url=info["img"])
             date = f"{info['year']}/{info['month']}/{info['day']}"
-            embed.set_footer(text=f"{date} - #{info['num']}, \'{info['safe_title']}\'")
+            embed.set_footer(text=f"{date} - #{info['num']}, '{info['safe_title']}'")
             embed.colour = Colours.soft_green
         else:
             embed.description = (
@@ -678,8 +759,12 @@ class Fun(Cog, command_attrs={
 
         await game.message_creation(message)
 
-    @commands.group(name="quiz", aliases=("trivia", "triviaquiz"), invoke_without_command=True)
-    async def quiz_game(self, ctx: Context, category: Optional[str], questions: Optional[int]) -> None:
+    @commands.group(
+        name="quiz", aliases=("trivia", "triviaquiz"), invoke_without_command=True
+    )
+    async def quiz_game(
+        self, ctx: Context, category: Optional[str], questions: Optional[int]
+    ) -> None:
         """
         Start a quiz!
         Questions for the quiz can be selected from the following categories:
@@ -700,10 +785,7 @@ class Fun(Cog, command_attrs={
 
         # Stop game if running.
         if self.game_status[ctx.channel.id]:
-            await ctx.send(
-                "Game is already running... "
-                f"do `{ctx.prefix}quiz stop`"
-            )
+            await ctx.send("Game is already running... " f"do `{ctx.prefix}quiz stop`")
             return
 
         # Send embed showing available categories if inputted category is invalid.
@@ -760,7 +842,9 @@ class Fun(Cog, command_attrs={
             # Exit quiz if number of questions for a round are already sent.
             if len(done_questions) == self.question_limit and hint_no == 0:
                 await ctx.send("The round has ended.")
-                await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
+                await self.declare_winner(
+                    ctx.channel, self.game_player_scores[ctx.channel.id]
+                )
 
                 self.game_status[ctx.channel.id] = False
                 del self.game_owners[ctx.channel.id]
@@ -780,11 +864,15 @@ class Fun(Cog, command_attrs={
                 if "dynamic_id" not in question_dict:
                     quiz_entry = QuizEntry(
                         question_dict["question"],
-                        quiz_answers if isinstance(quiz_answers := question_dict["answer"], list) else [quiz_answers],
-                        STANDARD_VARIATION_TOLERANCE
+                        quiz_answers
+                        if isinstance(quiz_answers := question_dict["answer"], list)
+                        else [quiz_answers],
+                        STANDARD_VARIATION_TOLERANCE,
                     )
                 else:
-                    format_func = DYNAMIC_QUESTIONS_FORMAT_FUNCS[question_dict["dynamic_id"]]
+                    format_func = DYNAMIC_QUESTIONS_FORMAT_FUNCS[
+                        question_dict["dynamic_id"]
+                    ]
                     quiz_entry = format_func(
                         question_dict["question"],
                         question_dict["answer"],
@@ -812,7 +900,9 @@ class Fun(Cog, command_attrs={
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
-                    fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol for answer in quiz_entry.answers)
+                    fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
+                    for answer in quiz_entry.answers
+                )
 
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=10)
@@ -852,7 +942,9 @@ class Fun(Cog, command_attrs={
 
                     hint_no = 0  # Reset the hint counter so that on the next round, it's in the initial state
 
-                    await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
+                    await self.send_score(
+                        ctx.channel, self.game_player_scores[ctx.channel.id]
+                    )
                     await asyncio.sleep(2)
             else:
                 if self.game_status[ctx.channel.id] is False:
@@ -872,7 +964,9 @@ class Fun(Cog, command_attrs={
 
                 hint_no = 0
 
-                await ctx.send(f"{msg.author.mention} got the correct answer :tada: {points} points!")
+                await ctx.send(
+                    f"{msg.author.mention} got the correct answer :tada: {points} points!"
+                )
 
                 await self.send_answer(
                     ctx.channel,
@@ -881,13 +975,17 @@ class Fun(Cog, command_attrs={
                     question_dict,
                     self.question_limit - len(done_questions),
                 )
-                await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
+                await self.send_score(
+                    ctx.channel, self.game_player_scores[ctx.channel.id]
+                )
 
                 await asyncio.sleep(2)
 
     def make_start_embed(self, category: str) -> discord.Embed:
         """Generate a starting/introduction embed for the quiz."""
-        rules = "\n".join([f"{index}: {rule}" for index, rule in enumerate(RULES, start=1)])
+        rules = "\n".join(
+            [f"{index}: {rule}" for index, rule in enumerate(RULES, start=1)]
+        )
 
         start_embed = discord.Embed(
             title="Quiz game Starting!!",
@@ -896,7 +994,7 @@ class Fun(Cog, command_attrs={
                 f"**Rules :**\n{rules}"
                 f"\n **Category** : {category}"
             ),
-            colour=Colours.blue
+            colour=Colours.blue,
         )
         start_embed.set_thumbnail(url=TRIVIA_QUIZ_ICON)
 
@@ -916,12 +1014,12 @@ class Fun(Cog, command_attrs={
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def hangman(
-            self,
-            ctx: commands.Context,
-            min_length: int = 0,
-            max_length: int = 25,
-            min_unique_letters: int = 0,
-            max_unique_letters: int = 25,
+        self,
+        ctx: commands.Context,
+        min_length: int = 0,
+        max_length: int = 25,
+        min_unique_letters: int = 0,
+        max_unique_letters: int = 25,
     ) -> None:
         """
         Play hangman against the bot, where you have to guess the word it has provided!
@@ -933,7 +1031,8 @@ class Fun(Cog, command_attrs={
         """
         # Filtering the list of all words depending on the configuration
         filtered_words = [
-            word for word in ALL_WORDS
+            word
+            for word in ALL_WORDS
             if min_length < len(word) < max_length
             and min_unique_letters < len(set(word)) < max_unique_letters
         ]
@@ -944,13 +1043,15 @@ class Fun(Cog, command_attrs={
                 description="No words could be found that fit all filters specified.",
                 color=Colours.soft_red,
             )
-            await ctx.send(content=f"{ctx.author.mention}", embed=filter_not_found_embed)
+            await ctx.send(
+                content=f"{ctx.author.mention}", embed=filter_not_found_embed
+            )
             return
 
         word = choice(filtered_words)
         # `pretty_word` is used for comparing the indices where the guess of the user is similar to the word
         # The `user_guess` variable is prettified by adding spaces between every dash, and so is the `pretty_word`
-        pretty_word = ''.join([f"{letter} " for letter in word])[:-1]
+        pretty_word = "".join([f"{letter} " for letter in word])[:-1]
         user_guess = ("_ " * len(word))[:-1]
         tries = 6
         guessed_letters = set()
@@ -961,21 +1062,21 @@ class Fun(Cog, command_attrs={
         original_message = await ctx.send(
             content=f"{ctx.author.mention}",
             embed=Embed(
-            title="Hangman",
-            description="Loading game...",
-            color=Colours.soft_green
-        ))
+                title="Hangman", description="Loading game...", color=Colours.soft_green
+            ),
+        )
 
         # Game loop
-        while user_guess.replace(' ', '') != word:
+        while user_guess.replace(" ", "") != word:
             # Edit the message to the current state of the game
-            await original_message.edit(content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess))
+            await original_message.edit(
+                content=f"{ctx.author.mention}",
+                embed=self.create_embed(tries, user_guess),
+            )
 
             try:
                 message = await self.bot.wait_for(
-                    event="message",
-                    timeout=60.0,
-                    check=check
+                    event="message", timeout=60.0, check=check
                 )
             except Exception:
                 timeout_embed = Embed(
@@ -983,7 +1084,9 @@ class Fun(Cog, command_attrs={
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",
                     color=Colours.soft_red,
                 )
-                await original_message.edit(content=f"{ctx.author.mention}", embed=timeout_embed)
+                await original_message.edit(
+                    content=f"{ctx.author.mention}", embed=timeout_embed
+                )
                 return
 
             # If the user enters a capital letter as their guess, it is automatically converted to a lowercase letter
@@ -995,7 +1098,9 @@ class Fun(Cog, command_attrs={
                     description="You can only send one letter at a time, try again!",
                     color=Colours.dark_green,
                 )
-                await ctx.send(content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4)
+                await ctx.send(
+                    content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4
+                )
                 continue
 
             # Checks for repeated guesses
@@ -1005,14 +1110,25 @@ class Fun(Cog, command_attrs={
                     description=f"You have already guessed `{normalized_content}`, try again!",
                     color=Colours.dark_green,
                 )
-                await ctx.send(content=f"{ctx.author.mention}", embed=already_guessed_embed, delete_after=4)
+                await ctx.send(
+                    content=f"{ctx.author.mention}",
+                    embed=already_guessed_embed,
+                    delete_after=4,
+                )
                 continue
 
             # Checks for correct guesses from the user
             elif normalized_content in word:
-                positions = {idx for idx, letter in enumerate(pretty_word) if letter == normalized_content}
+                positions = {
+                    idx
+                    for idx, letter in enumerate(pretty_word)
+                    if letter == normalized_content
+                }
                 user_guess = "".join(
-                    [normalized_content if index in positions else dash for index, dash in enumerate(user_guess)]
+                    [
+                        normalized_content if index in positions else dash
+                        for index, dash in enumerate(user_guess)
+                    ]
                 )
 
             else:
@@ -1026,18 +1142,21 @@ class Fun(Cog, command_attrs={
                     )
                     await original_message.edit(
                         content=f"{ctx.author.mention}",
-                        embed=self.create_embed(tries, user_guess))
+                        embed=self.create_embed(tries, user_guess),
+                    )
                     await ctx.send(content=f"{ctx.author.mention}", embed=losing_embed)
                     return
 
             guessed_letters.add(normalized_content)
 
         # The loop exited meaning that the user has guessed the word
-        await original_message.edit(content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess))
+        await original_message.edit(
+            content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess)
+        )
         win_embed = Embed(
             title="You won!",
             description=f"The word was `{word}`.",
-            color=Colours.grass_green
+            color=Colours.grass_green,
         )
         return await ctx.send(content=f"{ctx.author.mention}", embed=win_embed)
 
@@ -1056,10 +1175,14 @@ class Fun(Cog, command_attrs={
                     self.game_player_scores[ctx.channel.id] = {}
 
                     await ctx.send("Quiz stopped.")
-                    await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
+                    await self.declare_winner(
+                        ctx.channel, self.game_player_scores[ctx.channel.id]
+                    )
 
                 else:
-                    await ctx.send(f"{ctx.author.mention}, you are not authorised to stop this game :ghost:!")
+                    await ctx.send(
+                        f"{ctx.author.mention}, you are not authorised to stop this game :ghost:!"
+                    )
             else:
                 await ctx.send("No quiz running.")
         except KeyError:
@@ -1084,7 +1207,9 @@ class Fun(Cog, command_attrs={
         )
         embed.set_thumbnail(url=TRIVIA_QUIZ_ICON)
 
-        sorted_dict = sorted(player_data.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_dict = sorted(
+            player_data.items(), key=operator.itemgetter(1), reverse=True
+        )
         for item in sorted_dict:
             embed.description += f"{item[0]}: {item[1]}\n"
 
@@ -1126,12 +1251,13 @@ class Fun(Cog, command_attrs={
             description="",
         )
 
-        embed.set_footer(text="If a category is not chosen, a random one will be selected.")
+        embed.set_footer(
+            text="If a category is not chosen, a random one will be selected."
+        )
 
         for cat, description in self.categories.items():
             embed.description += (
-                f"**- {cat.capitalize()}**\n"
-                f"{description.capitalize()}\n"
+                f"**- {cat.capitalize()}**\n" f"{description.capitalize()}\n"
             )
 
         return embed
@@ -1163,33 +1289,33 @@ class Fun(Cog, command_attrs={
             embed.description += f"**Information**\n{info}\n\n"
 
         embed.description += (
-            ("Let's move to the next question." if q_left > 0 else "")
-            + f"\nRemaining questions: {q_left}"
-        )
+            "Let's move to the next question." if q_left > 0 else ""
+        ) + f"\nRemaining questions: {q_left}"
         await channel.send(embed=embed)
 
-    @command(name='8ball')
+    @command(name="8ball")
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def _8ball(self, ctx: Context, *, question:commands.clean_content):
+    async def _8ball(self, ctx: Context, *, question: commands.clean_content):
         """
         8ball Magic, nothing to say much
         """
-        await ctx.reply(f'Question: **{question}**\nAnswer: **{random.choice(response)}**')
+        await ctx.reply(
+            f"Question: **{question}**\nAnswer: **{random.choice(response)}**"
+        )
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def choose(self, ctx: Context, *, options:commands.clean_content):
+    async def choose(self, ctx: Context, *, options: commands.clean_content):
         """
         Confuse something with your decision? Let Parrot choose from your choice.
         NOTE: The `Options` should be seperated by commas `,`.
         """
-        options = options.split(',')
-        await ctx.reply(f'{ctx.author.mention} I choose {choice(options)}')
+        options = options.split(",")
+        await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 
-
-    @commands.command(aliases=['colours', 'colour'])
+    @commands.command(aliases=["colours", "colour"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -1205,94 +1331,136 @@ class Fun(Cog, command_attrs={
                 else:
                     return
 
-        green = round(res['rgb']['fraction']['g'], 2)
-        red = round(res['rgb']['fraction']['r'], 2)
-        blue = round(res['rgb']['fraction']['b'], 2)
-        _green = res['rgb']['g']
-        _red = res['rgb']['r']
-        _blue = res['rgb']['b']
+        green = round(res["rgb"]["fraction"]["g"], 2)
+        red = round(res["rgb"]["fraction"]["r"], 2)
+        blue = round(res["rgb"]["fraction"]["b"], 2)
+        _green = res["rgb"]["g"]
+        _red = res["rgb"]["r"]
+        _blue = res["rgb"]["b"]
 
-#HSL VALUE
-        hue = round(res['hsl']['fraction']['h'], 2)
-        saturation = round(res['hsl']['fraction']['s'], 2)
-        lightness = round(res['hsl']['fraction']['l'], 2)
-        _hue = res['hsl']['h']
-        _saturation = res['hsl']['s']
-        _lightness = res['hsl']['l']
+        # HSL VALUE
+        hue = round(res["hsl"]["fraction"]["h"], 2)
+        saturation = round(res["hsl"]["fraction"]["s"], 2)
+        lightness = round(res["hsl"]["fraction"]["l"], 2)
+        _hue = res["hsl"]["h"]
+        _saturation = res["hsl"]["s"]
+        _lightness = res["hsl"]["l"]
 
-#HSV VALUE
-        hue_ = round(res['hsv']['fraction']['h'], 2)
-        saturation_ = round(res['hsv']['fraction']['s'], 2)
-        value_ = round(res['hsv']['fraction']['v'], 2)
-        _hue_ = res['hsv']['h']
-        _saturation_ = res['hsv']['s']
-        _value_ = res['hsv']['v']
+        # HSV VALUE
+        hue_ = round(res["hsv"]["fraction"]["h"], 2)
+        saturation_ = round(res["hsv"]["fraction"]["s"], 2)
+        value_ = round(res["hsv"]["fraction"]["v"], 2)
+        _hue_ = res["hsv"]["h"]
+        _saturation_ = res["hsv"]["s"]
+        _value_ = res["hsv"]["v"]
 
-#GENERAL
-        name = res['name']['value']
-        close_name_hex = res['name']['closest_named_hex']
-        exact_name = res['name']['exact_match_name']
-        distance = res['name']['distance']
+        # GENERAL
+        name = res["name"]["value"]
+        close_name_hex = res["name"]["closest_named_hex"]
+        exact_name = res["name"]["exact_match_name"]
+        distance = res["name"]["distance"]
 
-        embed = discord.Embed(title="Parrot colour prompt", timestamp=datetime.datetime.utcnow(), colour = discord.Color.from_rgb(_red, _green, _blue), description=f"Colour name: `{name}` | Close Hex code: `{close_name_hex}` | Having exact name? `{exact_name}` | Distance: `{distance}`")
-        embed.set_thumbnail(url=f"https://some-random-api.ml/canvas/colorviewer?hex={colour}")
+        embed = discord.Embed(
+            title="Parrot colour prompt",
+            timestamp=datetime.datetime.utcnow(),
+            colour=discord.Color.from_rgb(_red, _green, _blue),
+            description=f"Colour name: `{name}` | Close Hex code: `{close_name_hex}` | Having exact name? `{exact_name}` | Distance: `{distance}`",
+        )
+        embed.set_thumbnail(
+            url=f"https://some-random-api.ml/canvas/colorviewer?hex={colour}"
+        )
         embed.set_footer(text=f"{ctx.author.name}")
         fields = [
-            ("RGB value (fraction)", f"Red: `{_red}` (`{red}`)\nGreen: `{_green}` (`{green}`)\nBlue: `{_blue}` (`{blue}`)", True),
-            ("HSL value (fraction)", f"Hue: `{_hue}` (`{hue}`)\nSaturation: `{_saturation}` (`{saturation}`)\nLightness: `{_lightness}` (`{lightness}`)", True),
-            ("HSV value (fraction)", f"Hue: `{_hue_}` (`{hue_}`)\nSaturation: `{_saturation_}` (`{saturation_}`)\nValue: `{_value_}` (`{value_}`)", True)		
-          ]
+            (
+                "RGB value (fraction)",
+                f"Red: `{_red}` (`{red}`)\nGreen: `{_green}` (`{green}`)\nBlue: `{_blue}` (`{blue}`)",
+                True,
+            ),
+            (
+                "HSL value (fraction)",
+                f"Hue: `{_hue}` (`{hue}`)\nSaturation: `{_saturation}` (`{saturation}`)\nLightness: `{_lightness}` (`{lightness}`)",
+                True,
+            ),
+            (
+                "HSV value (fraction)",
+                f"Hue: `{_hue_}` (`{hue_}`)\nSaturation: `{_saturation_}` (`{saturation_}`)\nValue: `{_value_}` (`{value_}`)",
+                True,
+            ),
+        ]
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
         await ctx.reply(embed=embed)
 
-
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def decode(self, ctx: Context, *, string:str):
+    async def decode(self, ctx: Context, *, string: str):
         """
         Decode the code to text from Base64 encryption
         """
         base64_string = string
-        base64_bytes = base64_string.encode("ascii") 
+        base64_bytes = base64_string.encode("ascii")
 
-        sample_string_bytes = base64.b64decode(base64_bytes) 
-        sample_string = sample_string_bytes.decode("ascii") 
+        sample_string_bytes = base64.b64decode(base64_bytes)
+        sample_string = sample_string_bytes.decode("ascii")
 
-        embed = discord.Embed(title="Decoding...", colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
-        embed.add_field(name="Encoded text:", value=f'```\n{base64_string}\n```', inline=False)
-        embed.add_field(name="Decoded text:", value=f'```\n{sample_string}\n```', inline=False)
-        embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
-        embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
+        embed = discord.Embed(
+            title="Decoding...",
+            colour=discord.Colour.red(),
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.add_field(
+            name="Encoded text:", value=f"```\n{base64_string}\n```", inline=False
+        )
+        embed.add_field(
+            name="Decoded text:", value=f"```\n{sample_string}\n```", inline=False
+        )
+        embed.set_thumbnail(
+            url="https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png"
+        )
+        embed.set_footer(
+            text=f"{ctx.author.name}", icon_url=f"{ctx.author.display_avatar.url}"
+        )
         await ctx.reply(embed=embed)
-
-
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def encode(self, ctx: Context, *, string:str):
+    async def encode(self, ctx: Context, *, string: str):
         """
         Encode the text to Base64 Encryption and in Binary
         """
         sample_string = string
-        sample_string_bytes = sample_string.encode("ascii") 
-        res = ''.join(format(ord(i), 'b') for i in string)
-        base64_bytes = base64.b64encode(sample_string_bytes) 
-        base64_string = base64_bytes.decode("ascii") 
+        sample_string_bytes = sample_string.encode("ascii")
+        res = "".join(format(ord(i), "b") for i in string)
+        base64_bytes = base64.b64encode(sample_string_bytes)
+        base64_string = base64_bytes.decode("ascii")
 
-        embed = discord.Embed(title="Encoding...", colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
-        embed.add_field(name="Normal [string] text:", value=f'```\n{sample_string}\n```', inline=False)
-        embed.add_field(name="Encoded [base64]:", value=f'```\n{base64_string}\n```', inline=False)
-        embed.add_field(name="Encoded [binary]:", value=f'```\n{str(res)}\n```', inline=False)
-        embed.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png')
-        embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
+        embed = discord.Embed(
+            title="Encoding...",
+            colour=discord.Colour.red(),
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.add_field(
+            name="Normal [string] text:",
+            value=f"```\n{sample_string}\n```",
+            inline=False,
+        )
+        embed.add_field(
+            name="Encoded [base64]:", value=f"```\n{base64_string}\n```", inline=False
+        )
+        embed.add_field(
+            name="Encoded [binary]:", value=f"```\n{str(res)}\n```", inline=False
+        )
+        embed.set_thumbnail(
+            url="https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png"
+        )
+        embed.set_footer(
+            text=f"{ctx.author.name}", icon_url=f"{ctx.author.display_avatar.url}"
+        )
         await ctx.reply(embed=embed)
-
-
 
     @commands.command(name="fact")
     @commands.bot_has_permissions(embed_links=True)
@@ -1304,7 +1472,14 @@ class Fun(Cog, command_attrs={
 
         NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala
         """
-        if (animal := animal.lower()) in ("dog", "cat", "panda", "fox", "bird", "koala"):
+        if (animal := animal.lower()) in (
+            "dog",
+            "cat",
+            "panda",
+            "fox",
+            "bird",
+            "koala",
+        ):
             fact_url = f"https://some-random-api.ml/facts/{animal}"
             image_url = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
 
@@ -1320,144 +1495,175 @@ class Fun(Cog, command_attrs={
                 if response.status == 200:
                     data = await response.json()
 
-                    embed = Embed(title=f"{animal.title()} fact", description=data["fact"], colour=ctx.author.colour)
+                    embed = Embed(
+                        title=f"{animal.title()} fact",
+                        description=data["fact"],
+                        colour=ctx.author.colour,
+                    )
                     if image_link is not None:
                         embed.set_image(url=image_link)
                         return await ctx.reply(embed=embed)
 
                     else:
-                        return await ctx.reply(f"{ctx.author.mention} API returned a {response.status} status.")
+                        return await ctx.reply(
+                            f"{ctx.author.mention} API returned a {response.status} status."
+                        )
 
                 else:
-                    return await ctx.reply(f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`")
-
+                    return await ctx.reply(
+                        f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
+                    )
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def gay(self, ctx: Context, *, member:discord.Member=None):
+    async def gay(self, ctx: Context, *, member: discord.Member = None):
         """
         Image Generator. Gay Pride.
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get('https://some-random-api.ml/canvas/gay?avatar={}'.format(member.display_avatar.url)) as wastedImage: 
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                "https://some-random-api.ml/canvas/gay?avatar={}".format(
+                    member.display_avatar.url
+                )
+            ) as wastedImage:
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'gay.png')) # replying the file
-
+                await ctx.reply(
+                    file=discord.File(imageData, "gay.png")
+                )  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def glass(self, ctx: Context, *, member:discord.Member=None):
+    async def glass(self, ctx: Context, *, member: discord.Member = None):
         """
         Provide a glass filter on your profile picture, try it!
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/glass?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/glass?avatar={member.display_avatar.url}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'glass.png')) # replying the file
-
+                await ctx.reply(
+                    file=discord.File(imageData, "glass.png")
+                )  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def horny(self, ctx: Context, *, member:discord.Member=None):
+    async def horny(self, ctx: Context, *, member: discord.Member = None):
         """
         Image generator, Horny card generator.
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/horny?avatar={member.display_avatar.url}.') as wastedImage: 
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/horny?avatar={member.display_avatar.url}."
+            ) as wastedImage:
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'horny.png')) # replying the file
+                await ctx.reply(
+                    file=discord.File(imageData, "horny.png")
+                )  # replying the file
 
-
-    @commands.command(aliases=['insult'])
+    @commands.command(aliases=["insult"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def roast(self, ctx: Context, *, member: discord.Member = None):
         """
         Insult your enemy, Ugh!
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as session:
             async with session.get("https://insult.mattbas.org/api/insult") as response:
                 insult = await response.text()
                 await ctx.reply(f"**{member.name}** {insult}")
 
-
-
-    @commands.command(aliases=['its-so-stupid'])
+    @commands.command(aliases=["its-so-stupid"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def itssostupid(self, ctx, *, comment:str):
-      """
-      :\ I don't know what is this, I think a meme generator.
-      """
-      member = ctx.author
-      if len(comment) > 20: comment = comment[:19:]
-      async with aiohttp.ClientSession() as wastedSession:
-          async with wastedSession.get(f'https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}') as wastedImage: # get users avatar as png with 1024 size
-              imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+    async def itssostupid(self, ctx, *, comment: str):
+        r"""
+        :\ I don't know what is this, I think a meme generator.
+        """
+        member = ctx.author
+        if len(comment) > 20:
+            comment = comment[:19:]
+        async with aiohttp.ClientSession() as wastedSession:
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-              await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-              await ctx.reply(file=discord.File(imageData, 'itssostupid.png')) # replying the file
-
-
+                await ctx.reply(
+                    file=discord.File(imageData, "itssostupid.png")
+                )  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def jail(self, ctx: Context, *, member:discord.Member=None):
+    async def jail(self, ctx: Context, *, member: discord.Member = None):
         """
         Image generator. Makes you behind the bars. Haha
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/jail?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/jail?avatar={member.display_avatar.url}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'jail.png')) # replying the file
-
+                await ctx.reply(
+                    file=discord.File(imageData, "jail.png")
+                )  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def lolice(self, ctx: Context, *, member:discord.Member=None):
+    async def lolice(self, ctx: Context, *, member: discord.Member = None):
         """
         This command is not made by me. :\
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/lolice?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/lolice?avatar={member.display_avatar.url}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'lolice.png')) # replying the file
+                await ctx.reply(
+                    file=discord.File(imageData, "lolice.png")
+                )  # replying the file
 
-
-    @commands.command(name='meme')
+    @commands.command(name="meme")
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -1467,24 +1673,25 @@ class Fun(Cog, command_attrs={
         """
         link = "https://memes.blademaker.tv/api?lang=en"
         async with aiohttp.ClientSession() as session:
-          async with session.get(link) as response:
-              if response.status == 200:
-                  res = await response.json()
-              else:
-                  return
-        title = res['title']
+            async with session.get(link) as response:
+                if response.status == 200:
+                    res = await response.json()
+                else:
+                    return
+        title = res["title"]
         ups = res["ups"]
         downs = res["downs"]
         sub = res["subreddit"]
 
-        embed = discord.Embed(title=f'{title}', description=f"{sub}", timestamp=datetime.datetime.utcnow())
-        embed.set_image(url = res["image"])
-        embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}") 
+        embed = discord.Embed(
+            title=f"{title}", description=f"{sub}", timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_image(url=res["image"])
+        embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}")
 
         await ctx.reply(embed=embed)
 
-
-    @commands.command(aliases=['fakeprofile'])
+    @commands.command(aliases=["fakeprofile"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -1499,21 +1706,29 @@ class Fun(Cog, command_attrs={
                     res = await response.json()
                 else:
                     return
-        res = res['results'][0]
+        res = res["results"][0]
         name = f"{res['name']['title']} {res['name']['first']} {res['name']['last']}"
         address = f"{res['location']['street']['number']}, {res['location']['street']['name']}, {res['location']['city']}, {res['location']['state']}, {res['location']['country']}, {res['location']['postcode']}"
         cords = f"{res['location']['coordinates']['latitude']}, {res['location']['coordinates']['longitude']}"
         tz = f"{res['location']['timezone']['offset']}, {res['location']['timezone']['description']}"
-        email = res['email']
-        usrname = res['login']['username']
-        pswd = res['login']['password']
-        age = res['dob']['age']
+        email = res["email"]
+        usrname = res["login"]["username"]
+        pswd = res["login"]["password"]
+        age = res["dob"]["age"]
         phone = f"{res['phone']}, {res['cell']}"
-        pic = res['picture']['large']
+        pic = res["picture"]["large"]
 
-        em = discord.Embed(title=f"{name}", description=f"```\n{address} {cords}```", timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(
+            title=f"{name}",
+            description=f"```\n{address} {cords}```",
+            timestamp=datetime.datetime.utcnow(),
+        )
         em.add_field(name="Timezone", value=f"{tz}", inline=False)
-        em.add_field(name="Email & Password", value=f"**Username:** {usrname}\n**Email:** {email}\n**Password:** {pswd}", inline=False)
+        em.add_field(
+            name="Email & Password",
+            value=f"**Username:** {usrname}\n**Email:** {email}\n**Password:** {pswd}",
+            inline=False,
+        )
         em.add_field(name="Age", value=f"{age}", inline=False)
         em.set_thumbnail(url=pic)
         em.add_field(name="Phone", value=f"{phone}", inline=False)
@@ -1521,29 +1736,35 @@ class Fun(Cog, command_attrs={
 
         await ctx.reply(embed=em)
 
-
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def simpcard(self, ctx: Context, *, member:discord.Member=None):
+    async def simpcard(self, ctx: Context, *, member: discord.Member = None):
         """
         Good for those, who are hell simp! LOL
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/simpcard?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/simpcard?avatar={member.display_avatar.url}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'simpcard.png')) # replying the file
+                await ctx.reply(
+                    file=discord.File(imageData, "simpcard.png")
+                )  # replying the file
 
-    @commands.command(aliases=['trans'])
+    @commands.command(aliases=["trans"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def translate(self, ctx: Context, to: str, *, message: commands.clean_content=None):
+    async def translate(
+        self, ctx: Context, to: str, *, message: commands.clean_content = None
+    ):
         """
         Translates a message to English (default) using Google translate
         """
@@ -1552,9 +1773,13 @@ class Fun(Cog, command_attrs={
             if ref and isinstance(ref.resolved, discord.Message):
                 message = ref.resolved.content
             else:
-                return await ctx.reply(f"{ctx.author.mention} you must provide the message reference or message for translation")
+                return await ctx.reply(
+                    f"{ctx.author.mention} you must provide the message reference or message for translation"
+                )
 
-        link = "https://translate-api.ml/translate?text={}&lang={}".format(message.lower(), to.lower() if to else 'en')
+        link = "https://translate-api.ml/translate?text={}&lang={}".format(
+            message.lower(), to.lower() if to else "en"
+        )
 
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
@@ -1563,161 +1788,209 @@ class Fun(Cog, command_attrs={
                 else:
                     return await ctx.reply(f"{ctx.author.mention} Something not right!")
 
-        success = data['status']
+        success = data["status"]
         if success == 200:
-            text = data['given']['text']
-            lang = data['given']['lang']
-            translated_text = data['translated']['text']
-            translated_lang = data['translated']['lang']
-            translated_pronunciation = data['translated']['pronunciation']
-        else: 
-            return await ctx.reply(f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{to}**")
+            text = data["given"]["text"]
+            lang = data["given"]["lang"]
+            translated_text = data["translated"]["text"]
+            translated_lang = data["translated"]["lang"]
+            translated_pronunciation = data["translated"]["pronunciation"]
+        else:
+            return await ctx.reply(
+                f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{to}**"
+            )
 
-        if ctx.author.id == 741614468546560092: # its kinda spammy for me. lol
+        if ctx.author.id == 741614468546560092:  # its kinda spammy for me. lol
             return await ctx.send(f"{translated_text}")
 
         embed = discord.Embed(
-            title="Translated", 
+            title="Translated",
             description=f"```\n{translated_text}\n```",
-            color=ctx.author.color, 
-            timestamp=datetime.datetime.utcnow())
+            color=ctx.author.color,
+            timestamp=datetime.datetime.utcnow(),
+        )
         embed.set_footer(text=f"{ctx.author.name}")
-        embed.add_field(name="Info", value=f"Tranlated from **{lg[lang]['name']}** to **{lg[translated_lang]['name']}**", inline=False)
+        embed.add_field(
+            name="Info",
+            value=f"Tranlated from **{lg[lang]['name']}** to **{lg[translated_lang]['name']}**",
+            inline=False,
+        )
         # embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
-        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png")
+        embed.set_thumbnail(
+            url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png"
+        )
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=['triggered'])
+    @commands.command(aliases=["triggered"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def trigger(self, ctx: Context, *, member:discord.Member=None):
+    async def trigger(self, ctx: Context, *, member: discord.Member = None):
         """
         User Triggered!
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/triggered?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/triggered?avatar={member.display_avatar.url}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'triggered.gif')) # replying the file
+                await ctx.reply(
+                    file=discord.File(imageData, "triggered.gif")
+                )  # replying the file
 
-    @commands.command(aliases=['def', 'urban'])
+    @commands.command(aliases=["def", "urban"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def urbandictionary(self, ctx: Context, *, text: commands.clean_content):
-      """
-      LOL. This command is insane.
-      """
-      t = text
-      text = urllib.parse.quote(text)
-      link = 'http://api.urbandictionary.com/v0/define?term=' + text 
+        """
+        LOL. This command is insane.
+        """
+        t = text
+        text = urllib.parse.quote(text)
+        link = "http://api.urbandictionary.com/v0/define?term=" + text
 
-      async with aiohttp.ClientSession() as session:
-          async with session.get(link) as response:
-              if response.status == 200:
-                  res = await response.json()
-              else:
-                  return
-      if not res['list']: return await ctx.reply(f"{ctx.author.mention} :\ **{t}** means nothings. Try something else")
-      em_list = []
-      for i in range(0, len(res['list'])):
-          _def = res['list'][i]['definition']
-          _link = res['list'][i]['permalink']
-          thumbs_up = res['list'][i]['thumbs_up']
-          thumbs_down = res['list'][i]['thumbs_down']
-          author = res['list'][i]['author']
-          example = res['list'][i]['example']
-          word = res['list'][i]['word'].capitalize()	
-          embed = discord.Embed(title=f"{word}", description=f"{_def}", url=f"{_link}", timestamp=datetime.datetime.utcnow())
-          embed.add_field(name="Example", value=f"{example}")
-          embed.set_author(name=f"Author: {author}")
-          embed.set_footer(text=f"\N{THUMBS UP SIGN} {thumbs_up} • \N{THUMBS DOWN SIGN} {thumbs_down}")
-          em_list.append(embed)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link) as response:
+                if response.status == 200:
+                    res = await response.json()
+                else:
+                    return
+        if not res["list"]:
+            return await ctx.reply(
+                f"{ctx.author.mention} :\ **{t}** means nothings. Try something else"
+            )
+        em_list = []
+        for i in range(0, len(res["list"])):
+            _def = res["list"][i]["definition"]
+            _link = res["list"][i]["permalink"]
+            thumbs_up = res["list"][i]["thumbs_up"]
+            thumbs_down = res["list"][i]["thumbs_down"]
+            author = res["list"][i]["author"]
+            example = res["list"][i]["example"]
+            word = res["list"][i]["word"].capitalize()
+            embed = discord.Embed(
+                title=f"{word}",
+                description=f"{_def}",
+                url=f"{_link}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+            embed.add_field(name="Example", value=f"{example}")
+            embed.set_author(name=f"Author: {author}")
+            embed.set_footer(
+                text=f"\N{THUMBS UP SIGN} {thumbs_up} • \N{THUMBS DOWN SIGN} {thumbs_down}"
+            )
+            em_list.append(embed)
 
-      # paginator = Paginator(pages=em_list, timeout=60.0)
-      # await paginator.start(ctx)
-      await PaginationView(em_list).start(ctx=ctx)
-
+        # paginator = Paginator(pages=em_list, timeout=60.0)
+        # await paginator.start(ctx)
+        await PaginationView(em_list).start(ctx=ctx)
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def wasted(self, ctx: Context, *, member:discord.Member=None):
+    async def wasted(self, ctx: Context, *, member: discord.Member = None):
         """
         Overlay 'WASTED' on your profile picture, just like GTA:SA
         """
-        if member is None: member = ctx.author
+        if member is None:
+            member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/wasted?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/wasted?avatar={member.display_avatar.url}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'wasted.png')) # replying the file
+                await ctx.reply(
+                    file=discord.File(imageData, "wasted.png")
+                )  # replying the file
 
-
-    @commands.command(aliases=['youtube-comment', 'youtube_comment'])
+    @commands.command(aliases=["youtube-comment", "youtube_comment"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def ytcomment(self, ctx: Context, *, comment:str):
+    async def ytcomment(self, ctx: Context, *, comment: str):
         """
         Makes a comment in YT. Best ways to fool your fool friends. :')
         """
         member = ctx.author
-        if len(comment) > 1000: comment = comment[:999:]
-        if len(member.name) > 20: name = member.name[:20:]
-        else: name = member.name
+        if len(comment) > 1000:
+            comment = comment[:999:]
+        if len(member.name) > 20:
+            name = member.name[:20:]
+        else:
+            name = member.name
         async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(f'https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}') as wastedImage: # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
+            async with wastedSession.get(
+                f"https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}"
+            ) as wastedImage:  # get users avatar as png with 1024 size
+                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close() # closing the session and;
+                await wastedSession.close()  # closing the session and;
 
-                await ctx.reply(file=discord.File(imageData, 'ytcomment.png')) # replying the file
+                await ctx.reply(
+                    file=discord.File(imageData, "ytcomment.png")
+                )  # replying the file
 
-
-    @commands.command() 
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def dare(self, ctx: Context, *, member:discord.Member=None):
+    async def dare(self, ctx: Context, *, member: discord.Member = None):
         """
         I dared you to use this command.
         """
         dare = _dare.split("\n")
         if member is None:
-            em = discord.Embed(title="Dare", description=f"{random.choice(dare)}", timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(
+                title="Dare",
+                description=f"{random.choice(dare)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
         else:
-            em = discord.Embed(title=f"{member.name} Dared", description=f"{random.choice(dare)}", timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(
+                title=f"{member.name} Dared",
+                description=f"{random.choice(dare)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
 
-        em.set_footer(text=f'{ctx.author.name}')
+        em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-
-    @commands.command() 
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def truth(self, ctx: Context, *, member:discord.Member=None):
+    async def truth(self, ctx: Context, *, member: discord.Member = None):
         """
         Truth: Who is your crush?
         """
         t = _truth.split("\n")
         if member is None:
-            em = discord.Embed(title="Truth", description=f"{random.choice(t)}", timestamp=datetime.datetime.utcnow())
-            em.set_footer(text=f'{ctx.author.name}')
+            em = discord.Embed(
+                title="Truth",
+                description=f"{random.choice(t)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+            em.set_footer(text=f"{ctx.author.name}")
         else:
-            em = discord.Embed(title=f"{member.name} reply!", description=f"{random.choice(t)}", timestamp=datetime.datetime.utcnow())
-            em.set_footer(text=f'{ctx.author.name}')
+            em = discord.Embed(
+                title=f"{member.name} reply!",
+                description=f"{random.choice(t)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+            em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @commands.group(aliases=['https'], invoke_without_command=True) 
+    @commands.group(aliases=["https"], invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -1726,14 +1999,13 @@ class Fun(Cog, command_attrs={
         if not ctx.invoked_subcommand:
             await ctx.reply(
                 embed=discord.Embed(
-                    timestamp=datetime.datetime.utcnow(), 
-                    color=ctx.author.color
-                ).set_image(
-                    url=f"https://http.cat/{status_code}"
-                ).set_footer(text=f"{ctx.author}")
+                    timestamp=datetime.datetime.utcnow(), color=ctx.author.color
+                )
+                .set_image(url=f"https://http.cat/{status_code}")
+                .set_footer(text=f"{ctx.author}")
             )
 
-    @http.command(name='dog')
+    @http.command(name="dog")
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -1741,360 +2013,478 @@ class Fun(Cog, command_attrs={
         """To understand HTTP Errors, in dog format"""
         await ctx.reply(
             embed=discord.Embed(
-                timestamp=datetime.datetime.utcnow(), 
-                color=ctx.author.color
-            ).set_image(
-                url=f"https://httpstatusdogs.com/img/{status_code}.jpg"
-            ).set_footer(text=f"{ctx.author}")
+                timestamp=datetime.datetime.utcnow(), color=ctx.author.color
+            )
+            .set_image(url=f"https://httpstatusdogs.com/img/{status_code}.jpg")
+            .set_footer(text=f"{ctx.author}")
         )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def patpat(self, ctx: Context, *, member: discord.Member=None):
+    async def patpat(self, ctx: Context, *, member: discord.Member = None):
         """Pat pat image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def burn(self, ctx: Context, *, member: discord.Member=None):
+    async def burn(self, ctx: Context, *, member: discord.Member = None):
         """Burn image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def glitch(self, ctx: Context, *, member: discord.Member=None):
+    async def glitch(self, ctx: Context, *, member: discord.Member = None):
         """Glitch image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url, 'level': 2}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url, "level": 2}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def bomb(self, ctx: Context, *, member: discord.Member=None):
+    async def bomb(self, ctx: Context, *, member: discord.Member = None):
         """Bomb image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def explicit(self, ctx: Context, *, member: discord.Member=None):
+    async def explicit(self, ctx: Context, *, member: discord.Member = None):
         """Explicit image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def lamp(self, ctx: Context, *, member: discord.Member=None):
+    async def lamp(self, ctx: Context, *, member: discord.Member = None):
         """Lamp image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def rain(self, ctx: Context, *, member: discord.Member=None):
+    async def rain(self, ctx: Context, *, member: discord.Member = None):
         """Rain image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def layers(self, ctx: Context, *, member: discord.Member=None):
+    async def layers(self, ctx: Context, *, member: discord.Member = None):
         """Layers image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def blur(self, ctx: Context, *, member: discord.Member=None):
+    async def blur(self, ctx: Context, *, member: discord.Member = None):
         """Blur image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def radiate(self, ctx: Context, *, member: discord.Member=None):
+    async def radiate(self, ctx: Context, *, member: discord.Member = None):
         """Radiate image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def shoot(self, ctx: Context, *, member: discord.Member=None):
+    async def shoot(self, ctx: Context, *, member: discord.Member = None):
         """Shoot image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def tv(self, ctx: Context, *, member: discord.Member=None):
+    async def tv(self, ctx: Context, *, member: discord.Member = None):
         """TV image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def print(self, ctx: Context, *, member: discord.Member=None):
+    async def print(self, ctx: Context, *, member: discord.Member = None):
         """TV image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def clock(self, ctx: Context, *, member: discord.Member=None):
+    async def clock(self, ctx: Context, *, member: discord.Member = None):
         """TV image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def magnify(self, ctx: Context, *, member: discord.Member=None):
+    async def magnify(self, ctx: Context, *, member: discord.Member = None):
         """Magnify image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def wrap(self, ctx: Context, *, member: discord.Member=None):
+    async def wrap(self, ctx: Context, *, member: discord.Member = None):
         """Wrap image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def gallery(self, ctx: Context, *, member: discord.Member=None):
+    async def gallery(self, ctx: Context, *, member: discord.Member = None):
         """Gallery image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def paparazzi(self, ctx: Context, *, member: discord.Member=None):
+    async def paparazzi(self, ctx: Context, *, member: discord.Member = None):
         """Paparazzi image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def abstract(self, ctx: Context, *, member: discord.Member=None):
+    async def abstract(self, ctx: Context, *, member: discord.Member = None):
         """Abstract image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def balls(self, ctx: Context, *, member: discord.Member=None):
+    async def balls(self, ctx: Context, *, member: discord.Member = None):
         """Balls image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def shock(self, ctx: Context, *, member: discord.Member=None):
+    async def shock(self, ctx: Context, *, member: discord.Member = None):
         """Shock image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def equations(self, ctx: Context, *, member: discord.Member=None):
+    async def equations(self, ctx: Context, *, member: discord.Member = None):
         """Equation image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def boil(self, ctx: Context, *, member: discord.Member=None):
+    async def boil(self, ctx: Context, *, member: discord.Member = None):
         """Boil image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def shear(self, ctx: Context, member: discord.Member=None, axis: str=None):
+    async def shear(
+        self, ctx: Context, member: discord.Member = None, axis: str = None
+    ):
         """Shear image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url, 'axis': axis if axis else 'X'}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url, "axis": axis if axis else "X"}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def canny(self, ctx: Context, member: discord.Member=None):
+    async def canny(self, ctx: Context, member: discord.Member = None):
         """Canny image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def emojify(self, ctx: Context, *, member: discord.Member=None):
+    async def emojify(self, ctx: Context, *, member: discord.Member = None):
         """Emojify the image"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/text/{ctx.command.name}', params=params)
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/text/{ctx.command.name}", params=params
+        )
 
-        embed=discord.Embed(description=f"{(await r.json())['text']}", timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}")
+        embed = discord.Embed(
+            description=f"{(await r.json())['text']}",
+            timestamp=datetime.datetime.utcnow(),
+        ).set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=['halfinvert'])
+    @commands.command(aliases=["halfinvert"])
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def half_invert(self, ctx: Context, *, member: discord.Member=None):
+    async def half_invert(self, ctx: Context, *, member: discord.Member = None):
         """Half Invert image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def roll(self, ctx: Context, *, member: discord.Member=None):
+    async def roll(self, ctx: Context, *, member: discord.Member = None):
         """Roll image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def optics(self, ctx: Context, *, member: discord.Member=None):
+    async def optics(self, ctx: Context, *, member: discord.Member = None):
         """Optics image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
@@ -2103,80 +2493,108 @@ class Fun(Cog, command_attrs={
     @Context.with_type
     async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
         """ScrapBook Text image generation"""
-        params = {'text': text[:20:]}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"text": text[:20:]}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
-    @commands.command(aliases=['earthquack'])
+    @commands.command(aliases=["earthquack"])
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def earth_quack(self, ctx: Context, *,  member: discord.Member=None):
+    async def earth_quack(self, ctx: Context, *, member: discord.Member = None):
         """Earth Quack image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def bonks(self, ctx: Context, *,  member: discord.Member=None):
+    async def bonks(self, ctx: Context, *, member: discord.Member = None):
         """Bonks image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def infinity(self, ctx: Context, *,  member: discord.Member=None):
+    async def infinity(self, ctx: Context, *, member: discord.Member = None):
         """Infinity image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def sob(self, ctx: Context, *,  member: discord.Member=None):
+    async def sob(self, ctx: Context, *, member: discord.Member = None):
         """Sob sob sob sob image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def sensitive(self, ctx: Context, *,  member: discord.Member=None):
+    async def sensitive(self, ctx: Context, *, member: discord.Member = None):
         """Sensitive image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def matrix(self, ctx: Context, *,  member: discord.Member=None):
+    async def matrix(self, ctx: Context, *, member: discord.Member = None):
         """Matrix image generation"""
         member = member or ctx.author
-        params = {'image_url': member.display_avatar.url}
-        r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
-        file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
         await ctx.reply(file=file_obj)
 
     @commands.command()
@@ -2199,7 +2617,7 @@ class Fun(Cog, command_attrs={
             converted_text = f">>> {converted_text.lstrip('> ')}"
         await ctx.send(content=converted_text, embed=embed)
 
-    @commands.command(aliases=['cointoss', 'cf', 'ct'])
+    @commands.command(aliases=["cointoss", "cf", "ct"])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -2207,30 +2625,46 @@ class Fun(Cog, command_attrs={
         """
         Coin Flip, It comes either HEADS or TAILS
         """
-        choose = 'tails' if choose in ('tails', 'tail', 't') else 'heads'
-        msg = await ctx.send(f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ...")
+        choose = "tails" if choose in ("tails", "tail", "t") else "heads"
+        msg = await ctx.send(
+            f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
+        )
         await asyncio.sleep(1.5)
-        await msg.edit(content=f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on **{random.choice(['HEADS', 'TAILS'])}**")
+        await msg.edit(
+            content=f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on **{random.choice(['HEADS', 'TAILS'])}**"
+        )
 
-    @commands.command(aliases=['slot'])
+    @commands.command(aliases=["slot"])
     @commands.cooldown(1, 10, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def slots(self, ctx: Context):
         """Basic Slots game"""
-        CHOICE = ["\N{BANKNOTE WITH DOLLAR SIGN}", "\N{FIRST PLACE MEDAL}", "\N{HUNDRED POINTS SYMBOL}", "\N{GEM STONE}"]
-        msg = await ctx.send(f"""{ctx.author.mention} your slots results:
-> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
+        CHOICE = [
+            "\N{BANKNOTE WITH DOLLAR SIGN}",
+            "\N{FIRST PLACE MEDAL}",
+            "\N{HUNDRED POINTS SYMBOL}",
+            "\N{GEM STONE}",
+        ]
+        msg = await ctx.send(
+            f"""{ctx.author.mention} your slots results:
+> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>"""
+        )
         await asyncio.sleep(1.5)
         _ = random.choice(CHOICE)
-        await msg.edit(content=f"""{ctx.author.mention} your slots results:
-> {_} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>""")
+        await msg.edit(
+            content=f"""{ctx.author.mention} your slots results:
+> {_} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>"""
+        )
         await asyncio.sleep(1.5)
         __ = random.choice(CHOICE)
-        await msg.edit(content=f"""{ctx.author.mention} your slots results:
-> {_} {__} <a:SlotsEmoji:923478531873325076>""")
+        await msg.edit(
+            content=f"""{ctx.author.mention} your slots results:
+> {_} {__} <a:SlotsEmoji:923478531873325076>"""
+        )
         await asyncio.sleep(1.5)
         ___ = random.choice(CHOICE)
-        await msg.edit(content=f"""{ctx.author.mention} your slots results:
-> {_} {__} {___}""")
-
+        await msg.edit(
+            content=f"""{ctx.author.mention} your slots results:
+> {_} {__} {___}"""
+        )

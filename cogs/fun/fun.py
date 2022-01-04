@@ -398,7 +398,7 @@ def replace_many(
             return replacement.lower()
 
     return regex.sub(_repl, sentence)
- 
+
 
 class Fun(Cog, command_attrs={
             'cooldown': commands.CooldownMapping.from_cooldown(1, 5.0, commands.BucketType.member),
@@ -416,7 +416,7 @@ class Fun(Cog, command_attrs={
         self.questions = self.load_questions()
         self.question_limit = 0
         self.games: dict[int, AnagramGame] = {}
-        
+
         self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
         self.game_player_scores = {}  # A variable to store temporary game player's scores.
 
@@ -439,7 +439,7 @@ class Fun(Cog, command_attrs={
         """Cancel `get_wiki_questions` task when Cog will unload."""
         self.get_wiki_questions.cancel()
         self.get_latest_comic_info.cancel()
-    
+
     @staticmethod
     def create_embed(tries: int, user_guess: str) -> Embed:
         """
@@ -488,7 +488,7 @@ class Fun(Cog, command_attrs={
                     embed = msg.embeds[0]
 
         return (text, embed)
-    
+
     def _convert_embed(self, func: Callable[[str, ], str], embed: Embed) -> Embed:
         """
         Converts the text in an embed using a given conversion function, then return the embed.
@@ -571,13 +571,13 @@ class Fun(Cog, command_attrs={
             self.questions["wikipedia"] = wiki_questions.copy()
         else:
             del self.categories["wikipedia"]
-            
+
     @staticmethod
     def load_questions() -> dict:
         """Load the questions from the JSON file."""
         with open(r"extra/trivia_questions.json") as f:
             return json.load(f)
-    
+
     @commands.command(name="xkcd")
     async def fetch_xkcd_comics(self, ctx: Context, comic: Optional[str]) -> None:
         """
@@ -810,11 +810,11 @@ class Fun(Cog, command_attrs={
             #         )
 
             #     return contains_correct_answer
-            
+
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
                     fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol for answer in quiz_entry.answers)
-            
+
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=10)
             except asyncio.TimeoutError:
@@ -1188,7 +1188,7 @@ class Fun(Cog, command_attrs={
         """
         options = options.split(',')
         await ctx.reply(f'{ctx.author.mention} I choose {choice(options)}')
-  
+
 
     @commands.command(aliases=['colours', 'colour'])
     @commands.bot_has_permissions(embed_links=True)
@@ -1213,7 +1213,7 @@ class Fun(Cog, command_attrs={
         _red = res['rgb']['r']
         _blue = res['rgb']['b']
         
-        #HSL VALUE
+#HSL VALUE
         hue = round(res['hsl']['fraction']['h'], 2)
         saturation = round(res['hsl']['fraction']['s'], 2)
         lightness = round(res['hsl']['fraction']['l'], 2)
@@ -1221,7 +1221,7 @@ class Fun(Cog, command_attrs={
         _saturation = res['hsl']['s']
         _lightness = res['hsl']['l']
         
-        #HSV VALUE
+#HSV VALUE
         hue_ = round(res['hsv']['fraction']['h'], 2)
         saturation_ = round(res['hsv']['fraction']['s'], 2)
         value_ = round(res['hsv']['fraction']['v'], 2)
@@ -1229,7 +1229,7 @@ class Fun(Cog, command_attrs={
         _saturation_ = res['hsv']['s']
         _value_ = res['hsv']['v']
         
-        #GENERAL
+#GENERAL
         name = res['name']['value']
         close_name_hex = res['name']['closest_named_hex']
         exact_name = res['name']['exact_match_name']
@@ -1247,7 +1247,7 @@ class Fun(Cog, command_attrs={
             embed.add_field(name=name, value=value, inline=inline)
         await ctx.reply(embed=embed)
       
-  
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1294,7 +1294,7 @@ class Fun(Cog, command_attrs={
         await ctx.reply(embed=embed)
 
   
-      
+
     @commands.command(name="fact")
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1682,7 +1682,7 @@ class Fun(Cog, command_attrs={
                 
                 await ctx.reply(file=discord.File(imageData, 'ytcomment.png')) # replying the file
   
-  
+
     @commands.command() 
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)

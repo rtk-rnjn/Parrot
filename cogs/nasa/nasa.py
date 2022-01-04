@@ -287,7 +287,7 @@ class NASA(Cog):
                 'https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png'
             )
             em_list.append(embed)
-        
+
         await PaginationView(em_list).start(ctx=ctx)
         # paginator = Paginator(pages=em_list, timeout=60.0)
 

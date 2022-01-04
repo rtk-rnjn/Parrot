@@ -17,7 +17,7 @@ class EmojiCapsProt(Cog):
         self.bot = bot
         self.data = {} # TODO: Make cache system
         self.collection = parrot_db['server_config']
-    
+
     async def delete(self, message: discord.Message) -> None:
         try:
             await message.delete()
@@ -28,11 +28,11 @@ class EmojiCapsProt(Cog):
         str_count = len(re.findall(r'[\U0001f600-\U0001f650]', message_content))
         dis_count = len(re.findall(r'<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>', message_content))
         return int(str_count + dis_count)
-    
+
     async def get_caps_count(self, message_content: str) -> int:
         caps_count = len(re.findall(r'[A-Z]', message_content))
         return int(caps_count)
-    
+
     async def is_caps_infilterated(self, message: discord.Message) -> typing.Optional[bool]:
         if data_c := await self.collection.find_one({'_id': message.guild.id, 'automod.caps.enable': {'$exists': True}}):
             if not data_c['automod']['caps']['enable']:
@@ -75,7 +75,7 @@ class EmojiCapsProt(Cog):
             return
         caps_ = await self.is_caps_infilterated(message)
         emoj_ = await self.is_emoji_infilterated(message)
-        
+
         if emoj_ or caps_:
             await self.delete(message, reason='Excess Caps' if caps_ else 'Excess Emoji')
             await message.channel.send(

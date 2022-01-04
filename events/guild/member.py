@@ -29,7 +29,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Premium Since:` **{discord.utils.format_dt(member.premium_since) if member.premium_since else None}**
 """             
                 await webhook.send(content=content, avatar_url=self.bot.user.avatar.url, username=self.bot.user.name)
-            
+
         data = await collection.find_one({'_id': member.guild.id})
         if data:
 
@@ -49,7 +49,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         )
                     except discord.errors.Forbidden:
                         pass
-        
+
 
     @Cog.listener()
     async def on_member_remove(self, member):
@@ -68,7 +68,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Premium Since:` **{discord.utils.format_dt(member.premium_since) if member.premium_since else None}**
 """             
                 await webhook.send(content=content, avatar_url=self.bot.user.avatar.url, username=self.bot.user.name)
-        
+
         if data := await collection.find_one({'_id': member.guild.id}):
             muted = member.guild.get_role(data['mute_role']) or discord.utils.get(
                 member.guild.roles, name="Muted")

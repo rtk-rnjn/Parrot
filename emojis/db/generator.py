@@ -12,7 +12,7 @@ session = aiohttp.ClientSession()
 
 async def get_lastest_release():
     req = await session.get(GEMOJI_RELEASE_URL)
-    
+
     data = await req.json()
 
     latest = data[0]

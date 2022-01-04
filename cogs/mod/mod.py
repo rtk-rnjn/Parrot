@@ -27,7 +27,7 @@ class Mod(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.unban_task.start()
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='moderator', id=892424227007918121)
@@ -136,7 +136,7 @@ class Mod(Cog):
         """To Ban a member from a guild then immediately unban"""
         await mt._softban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, f'{", ".join([str(member) for member in member])}', f'{reason}')
-    
+
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)

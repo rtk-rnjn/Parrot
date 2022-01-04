@@ -587,7 +587,7 @@ class SlidingPuzzle:
         self.temp = []
 
         self.x = []
-        
+
         self._make_grid()
         self._get_blank()
 
@@ -596,10 +596,10 @@ class SlidingPuzzle:
         for i in self.grid:
             _ += str(i) + '\n'
         return _
-    
+
     def board_str(self) -> str:
         return str(tabulate.tabulate(self.grid, tablefmt='grid', numalign='center'))
-    
+
     def _make_grid(self):
         nums = list(range(self.size * self.size))
         nums[-1] = "\u200b"
@@ -617,7 +617,7 @@ class SlidingPuzzle:
 
     def _is_game_over(self):
         return self.grid == self.temp
-            
+
     def move_up(self):
         if self.x[0] == self.size - 1:
             return
@@ -933,7 +933,7 @@ class Twenty48:
         stage = self.compress(stage)
         stage = self.reverse(stage)
         self.board = stage
-        
+
     def MoveUp(self):
         stage = self.transp(self.board)
         stage = self.compress(stage)
@@ -941,7 +941,7 @@ class Twenty48:
         stage = self.compress(stage)
         stage = self.transp(stage)
         self.board = stage
-        
+
     def MoveDown(self):
         stage = self.transp(self.board)
         stage = self.reverse(stage)
@@ -1017,7 +1017,7 @@ class Twenty48_Button(discord.ui.View):
     @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveLeft()
-        
+
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(

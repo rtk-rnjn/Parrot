@@ -17,7 +17,7 @@ class MentionProt(Cog):
         self.collection = parrot_db['server_config']
         self.data = {}
         self.clear_data.start()
-    
+
     async def delete(self, message: discord.Message):
         try:
             await message.delete()
@@ -28,10 +28,10 @@ class MentionProt(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        
+
         if message.author.guild_permissions.administrator:
             return
-        
+
         try:
             data = self.data[message.guild.id]
         except KeyError:
@@ -51,25 +51,24 @@ class MentionProt(Cog):
                 ignore = self.data[message.guild.id]['automod']['mention']['channel']
             except KeyError:
                 ignore = []
-            
+
             if message.channel.id in ignore:
                 return
-            
+
             try:
                 count = self.data[message.guild.id]['automod']['mention']['count']
             except KeyError:
                 count = None
-            
+
             if not count: return
-            
+
             if len(message.mentions) >= count:
                 await self.delete(message)
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] [Warning]**", 
                     delete_after=10
                 )
-    
+
     @tasks.loop(seconds=900)
     async def clear_data(self):
         self.data = {}
-        

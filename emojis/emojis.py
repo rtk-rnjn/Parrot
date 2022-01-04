@@ -3,7 +3,7 @@ import re
 from . import db
 
 ALIAS_TO_EMOJI = db.get_emoji_aliases()
-EMOJI_TO_ALIAS = dict((v, k) for k, v in ALIAS_TO_EMOJI.items())
+EMOJI_TO_ALIAS = {v: k for k, v in ALIAS_TO_EMOJI.items()}
 EMOJI_TO_ALIAS_SORTED = sorted(ALIAS_TO_EMOJI.values(), key=len, reverse=True)
 
 RE_TEXT_TO_EMOJI_GROUP = '({0})'.format('|'.join([re.escape(emoji) for emoji in ALIAS_TO_EMOJI]))

@@ -17,7 +17,7 @@ from utilities.config import VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
-from collections import OrderedDict, deque, Counter
+from collections import Counter
 from .robopage import RoboPages
 
 import datetime

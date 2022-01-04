@@ -1395,7 +1395,7 @@ class Fun(Cog, command_attrs={
         """
         Insult your enemy, Ugh!
         """
-        if member == None: member = ctx.author
+        if member is None: member = ctx.author
         async with aiohttp.ClientSession() as session:
             async with session.get("https://insult.mattbas.org/api/insult") as response:
                 insult = await response.text()

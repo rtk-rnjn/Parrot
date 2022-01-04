@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import discord, aiohttp
+import discord
+import aiohttp
 from discord.ext import commands
 
 from datetime import datetime

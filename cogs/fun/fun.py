@@ -13,7 +13,8 @@ import string
 import operator
 
 import discord
-import aiohttp, asyncio
+import aiohttp
+import asyncio
 from aiohttp import request
 from discord.ext.commands import command, guild_only, bot_has_permissions, cooldown, BucketType
 from discord.ext import commands, tasks

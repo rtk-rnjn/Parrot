@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from discord.ext import commands
-import discord, typing, re
+import discord
+import typing
+import re
 
 import json
 

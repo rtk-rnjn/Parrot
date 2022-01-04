@@ -5,7 +5,8 @@ import urllib.parse
 from functools import partial
 # import sys
 
-import aiohttp, discord
+import aiohttp
+import discord
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from markdownify import MarkdownConverter

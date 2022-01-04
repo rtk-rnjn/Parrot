@@ -5,7 +5,9 @@ import discord
 
 from utilities.database import parrot_db
 
-import re, random, typing
+import re
+import random
+import typing
 from core import Parrot, Cog
 
 with open('extra/duke_nekum.txt') as f:

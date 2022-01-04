@@ -3,7 +3,8 @@ from __future__ import annotations
 from core import Parrot, Cog
 
 from discord.ext import commands
-import discord, random
+import discord
+import random
 
 from utilities.database import parrot_db
 

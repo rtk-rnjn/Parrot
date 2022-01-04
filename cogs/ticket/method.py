@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-import discord, asyncio, os
+import discord
+import asyncio
+import os
 from datetime import datetime
 
 from utilities.database import ticket_update, parrot_db

@@ -4,7 +4,8 @@ from typing import Collection
 
 from core import Parrot, Cog
 from discord.ext import commands, tasks
-import discord, typing
+import discord
+import typing
 
 from utilities.database import parrot_db
 

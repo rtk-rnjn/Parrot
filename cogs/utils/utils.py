@@ -4,7 +4,9 @@ from core import Parrot, Cog, Context
 from discord.ext import commands, tasks
 import discord
 
-import typing, datetime, random
+import typing
+import datetime
+import random
 
 from utilities.converters import reason_convert
 from utilities.database import parrot_db, msg_db

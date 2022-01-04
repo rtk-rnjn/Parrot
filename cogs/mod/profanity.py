@@ -4,7 +4,8 @@ from typing import Collection
 import typing
 
 from discord.ext import commands, tasks
-import discord, random
+import discord
+import random
 
 from utilities.database import parrot_db
 

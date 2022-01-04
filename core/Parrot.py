@@ -2,10 +2,21 @@ from __future__ import annotations
 
 import io
 
-import jishaku, os, typing
+import jishaku
+import os
+import typing
 from async_property import async_property
 
-import datetime, re, asyncio, copy, logging, traceback, aiohttp, sys, asyncio, topgg
+import datetime
+import re
+import asyncio
+import copy
+import logging
+import traceback
+import aiohttp
+import sys
+import asyncio
+import topgg
 import json
 import socket
 from collections import Counter, deque, defaultdict

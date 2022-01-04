@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from discord import __version__ as discord_version
-import discord, typing, asyncio
+import discord
+import typing
+import asyncio
 from discord.ext import commands
 
 from time import time

@@ -178,8 +178,7 @@ class Context(commands.Context):
             return await self.send(file=discord.File(
                 fp, filename='message_too_long.txt'),
                                    **kwargs)
-        else:
-            return await self.send(content)
+        return await self.send(content)
 
     async def bulk_add_reactions(
             self, message: discord.Message,

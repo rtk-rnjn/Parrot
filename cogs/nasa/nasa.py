@@ -307,13 +307,12 @@ class NASA(Cog):
                     return await ctx.reply(
                         f'{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.'
                     )
-                else:
-                    try:
-                        res = await r.json()
-                    except Exception as e:
-                        return await ctx.reply(
-                            f"For some reason, can not search any image or video at this time: Error raised {e}"
-                        )
+                try:
+                    res = await r.json()
+                except Exception as e:
+                    return await ctx.reply(
+                        f"For some reason, can not search any image or video at this time: Error raised {e}"
+                    )
 
         if not res['collection']['items']:
             await ctx.reply(

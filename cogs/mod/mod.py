@@ -214,11 +214,10 @@ class Mod(Cog):
             if type(chn) is discord.TextChannel:
                 await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
                 return
-            elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
+            if type(chn) in (discord.VoiceChannel, discord.StageChannel):
                 await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
                 return
-            else:
-                pass
+            pass
             
         await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)

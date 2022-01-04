@@ -28,8 +28,7 @@ class LinkProt(Cog):
         url = url1 or url2
         if url:
             return True
-        else:
-            return False
+        return False
         
     @Cog.listener()
     async def on_message(self, message: discord.Message):

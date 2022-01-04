@@ -93,7 +93,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             ls.append(('`Name Changed      :`', after.name))
         if before.position != after.position:
             ls.append(('`Position Changed  :`', after.position))
-        if not (before.hoist is after.hoist):
+        if not before.hoist is after.hoist:
             ls.append(('`Hoist Toggled     :`', after.hoist))
         if before.color != after.color:
             ls.append(('`Color Changed     :`', after.color.to_rgb()))

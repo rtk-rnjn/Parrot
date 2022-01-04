@@ -146,11 +146,11 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         if before.category.id != after.category.id:
             ls.append(('`Category Changed :`' if after.category else '`Category Removed :`', 
                        f"{after.category.name} ({after.category.id})"))
-        if not (before.permissions_synced is after.permissions_synced):
+        if not before.permissions_synced is after.permissions_synced:
             ls.append(('`Toggled Permissions Sync:`', after.permissions_synced))
 
         if 'text' in TYPE.lower():
-            if not (before.nsfw is after.nsfw):
+            if not before.nsfw is after.nsfw:
                 ls.append(('`NSFW Toggled     :`', after.nsfw))
             if before.topic != after.topic:
                 ls.append(('`Topic Changed    :`', after.topic))

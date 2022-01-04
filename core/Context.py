@@ -119,7 +119,7 @@ class Context(commands.Context):
         if not (self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
-                    f"Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
+                    "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
                 )
             except Exception:
                 pass

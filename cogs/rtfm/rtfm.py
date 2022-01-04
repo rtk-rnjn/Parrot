@@ -300,7 +300,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             emb = discord.Embed(
                 title='SyntaxError',
                 description=
-                f"Command `run` missing a required argument: `language`",
+                "Command `run` missing a required argument: `language`",
                 colour=0xff0000)
             return await ctx.send(embed=emb)
 

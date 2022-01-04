@@ -92,7 +92,7 @@ class nitro(discord.ui.View):
         i = discord.Embed()
         i.set_image(
             url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
-        await interaction.response.send_message(f"https://imgur.com/NQinKJB",
+        await interaction.response.send_message("https://imgur.com/NQinKJB",
                                                 ephemeral=True)
 
         button.disabled = True
@@ -100,9 +100,9 @@ class nitro(discord.ui.View):
         button.label = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claimed⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 
         ni = discord.Embed(
-            title=f"You received a gift, but...",
+            title="You received a gift, but...",
             description=
-            f"The gift link has either expired or has been\nrevoked.")
+            "The gift link has either expired or has been\nrevoked.")
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
             await interaction.message.edit(embed=ni, view=self)
@@ -196,7 +196,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @Context.with_type
     async def leave_guild(self, ctx: Context, *, guild: discord.Guild):
         """To leave the guild"""
-        await ctx.send(f"Leaving Guild in a second!")
+        await ctx.send("Leaving Guild in a second!")
         await guild.leave()
 
     @commands.command()

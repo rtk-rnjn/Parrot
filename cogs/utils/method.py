@@ -182,7 +182,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
 async def _show_all_tags(bot: Parrot, ctx: Context):
     collection = tags[f"{ctx.guild.id}"]
     i = 1
-    paginator = ParrotPaginator(ctx, title=f"Tags", per_page=12)
+    paginator = ParrotPaginator(ctx, title="Tags", per_page=12)
     async for data in collection.find({}):
         paginator.add_line(f"`{i}` {data['id']}")
         i += 1
@@ -265,7 +265,7 @@ async def _update_todo_text(bot: Parrot, ctx: Context, name, text):
 async def _list_todo(bot: Parrot, ctx: Context):
     collection = todo[f"{ctx.author.id}"]
     i = 1
-    paginator = ParrotPaginator(ctx, title=f"Your Pending Tasks", per_page=12)
+    paginator = ParrotPaginator(ctx, title="Your Pending Tasks", per_page=12)
     async for data in collection.find({}):
         paginator.add_line(f"[`{i}`]({data['msglink']}) {data['id']}")
         i += 1
@@ -335,7 +335,7 @@ async def create_gw(bot: Parrot, ctx: Context):
                 timestamp=datetime.utcnow(),
                 color=ctx.guild.owner.color
             ).set_author(
-                name=f"GIVEAWAY!"
+                name="GIVEAWAY!"
             ).set_footer(
                 text=f"ID: {ctx.message.id}"
             )

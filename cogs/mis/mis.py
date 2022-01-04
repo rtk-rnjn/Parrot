@@ -543,7 +543,7 @@ class Misc(Cog):
         """To create a poll, options should be seperated by commas"""
         parrot_db = await self.bot.db('parrot_db')
         collection = parrot_db['poll']
-        BASE_URL = f"https://strawpoll.com/api/poll/"
+        BASE_URL = "https://strawpoll.com/api/poll/"
         options = options.split(',')
         data = {
             "poll": {
@@ -616,7 +616,7 @@ class Misc(Cog):
         collection = parrot_db['poll']
         _exists = await collection.find_one({'_id': ctx.author.id})
         if not _exists: return
-        URL = f"https://strawpoll.com/api/content/delete"
+        URL = "https://strawpoll.com/api/content/delete"
         async with aiohttp.ClientSession() as session:
             await session.delete(URL,
                                  data={'content_id': content_id},
@@ -694,7 +694,7 @@ class Misc(Cog):
         except KeyError:
             return await ctx.reply(f"{ctx.author.mention} no server exists")
 
-        embed = discord.Embed(title=f"SERVER STATUS",
+        embed = discord.Embed(title="SERVER STATUS",
                               description=f"IP: {ip}\n```\n{motd}\n```",
                               timestamp=datetime.datetime.utcnow(),
                               color=ctx.author.color)

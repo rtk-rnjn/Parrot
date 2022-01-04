@@ -368,8 +368,8 @@ async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
                     msg=msg
                 )
                 return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
-        else:
-            return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.")
+            
+        return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.")
     else:
         await ctx.send(f"{ctx.author.mention} invalid message ID")
 

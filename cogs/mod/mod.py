@@ -198,8 +198,8 @@ class Mod(Cog):
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
             else:
                 pass
-        else:
-            await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
+            
+        await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
     @commands.command()
@@ -217,8 +217,8 @@ class Mod(Cog):
                 return
             else:
                 pass
-        else:
-            await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
+            
+        await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
     @commands.command(aliases=['mute'])

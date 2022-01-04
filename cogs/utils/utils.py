@@ -340,11 +340,11 @@ class Utils(Cog):
                         f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**"
                     )
                     await giveaway.delete_one({'_id': message})
-            else:
-                await channel.send(
-                    f"Winner can not be decided as reactions on the messages had being cleared."
-                )
-                await giveaway.delete_one({'_id': message})
+                
+            await channel.send(
+                f"Winner can not be decided as reactions on the messages had being cleared."
+            )
+            await giveaway.delete_one({'_id': message})
 
     @tasks.loop(seconds=1.0)
     async def reminder_task(self):

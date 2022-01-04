@@ -432,8 +432,7 @@ class SnakeAndLaddersGame:
                         # Allow game author or non-playing moderation staff to cancel a waiting game
                         await self.cancel_game()
                         return
-                    else:
-                        await self.player_leave(user)
+                    await self.player_leave(user)
                 elif reaction.emoji == START_EMOJI:
                     if self.ctx.author == user:
                         self.started = True
@@ -609,8 +608,7 @@ class SnakeAndLaddersGame:
                         # Only allow non-playing moderation staff to cancel a running game
                         await self.cancel_game()
                         return
-                    else:
-                        is_surrendered = await self.player_leave(user)
+                    is_surrendered = await self.player_leave(user)
 
                 await self.positions.remove_reaction(reaction.emoji, user)
 

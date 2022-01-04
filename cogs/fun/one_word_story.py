@@ -25,8 +25,7 @@ class OneWordStory(Cog):
         async for msg in channel.history(limit=1, oldest_first=False):
             if not msg:
                 return None
-            else:
-                return msg
+            return msg
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

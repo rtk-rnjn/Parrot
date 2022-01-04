@@ -239,7 +239,7 @@ class Board:
         result = view.parse_full()
         if result is None:  # If equation is invalid discard
             return False
-        elif result != self.number:
+        if result != self.number:
             return False
 
         # Check chain is valid
@@ -405,7 +405,7 @@ class DiscordGame(Game):
             is_valid = self.check_equation(equation)
             if is_valid is None:
                 return
-            elif is_valid:
+            if is_valid:
                 await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
             # Add to user equations
@@ -456,9 +456,9 @@ def check_size(ctx: Context) -> int:
     prefix = ctx.prefix.upper()
     if prefix.endswith("SUPER BIG "):
         return SUPER_BIG
-    elif prefix.endswith("BIG "):
+    if prefix.endswith("BIG "):
         return BIG
-    elif prefix.endswith("SMALL ") or prefix.endswith("SMOL "):
+    if prefix.endswith("SMALL ") or prefix.endswith("SMOL "):
         return SMALL
     return ORIGINAL
 

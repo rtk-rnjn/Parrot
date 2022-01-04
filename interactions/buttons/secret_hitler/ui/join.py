@@ -21,7 +21,7 @@ def format_list(string: str,
                 oxford_comma: bool = True) -> str:
     if len(list) == 0:
         return string.format("no-one", singular)
-    elif len(list) == 1:
+    if len(list) == 1:
         return string.format(list[0], singular)
 
     *rest, last = list

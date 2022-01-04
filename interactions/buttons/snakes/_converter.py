@@ -175,23 +175,22 @@ class LinePaginator(Paginator):
             )
             await ctx.send(embed=embed)
             return
+        if footer_text:
+            embed.set_footer(
+                text=
+                f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
+            )
         else:
-            if footer_text:
-                embed.set_footer(
-                    text=
-                    f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
-                )
-            else:
-                embed.set_footer(
-                    text=f"Page {current_page + 1}/{len(paginator.pages)}")
-            log.trace(f"Setting embed footer to '{embed.footer.text}'")
+            embed.set_footer(
+                text=f"Page {current_page + 1}/{len(paginator.pages)}")
+        log.trace(f"Setting embed footer to '{embed.footer.text}'")
 
-            if url:
-                embed.url = url
-                log.trace(f"Setting embed url to '{url}'")
+        if url:
+            embed.url = url
+            log.trace(f"Setting embed url to '{url}'")
 
-            log.debug("Sending first page to channel...")
-            message = await ctx.send(embed=embed)
+        log.debug("Sending first page to channel...")
+        message = await ctx.send(embed=embed)
 
         log.debug("Adding emoji reactions to message...")
 

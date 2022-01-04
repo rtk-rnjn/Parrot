@@ -250,10 +250,9 @@ def munchify(x):
     """
     if isinstance(x, dict):
         return Munch((k, munchify(v)) for k, v in iteritems(x))
-    elif isinstance(x, (list, tuple)):
+    if isinstance(x, (list, tuple)):
         return type(x)(munchify(v) for v in x)
-    else:
-        return x
+    return x
 
 
 def unmunchify(x):
@@ -272,10 +271,9 @@ def unmunchify(x):
     """
     if isinstance(x, dict):
         return dict((k, unmunchify(v)) for k, v in iteritems(x))
-    elif isinstance(x, (list, tuple)):
+    if isinstance(x, (list, tuple)):
         return type(x)(unmunchify(v) for v in x)
-    else:
-        return x
+    return x
 
 
 ### Serialization
@@ -372,8 +370,7 @@ try:
         opts.update(options)
         if 'Dumper' not in opts:
             return yaml.safe_dump(self, **opts)
-        else:
-            return yaml.dump(self, **opts)
+        return yaml.dump(self, **opts)
 
     def fromYAML(*args, **kwargs):
         return munchify(yaml.load(*args, **kwargs))

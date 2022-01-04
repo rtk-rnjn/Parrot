@@ -12,8 +12,7 @@ def is_guild_owner():
     async def predicate(ctx):
         if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
             return True
-        else:
-            raise ex.NotGuildOwner()
+        raise ex.NotGuildOwner()
 
     return commands.check(predicate)
 
@@ -22,8 +21,7 @@ def is_me():
     async def predicate(ctx):
         if ctx.message.author.id == SUPER_USER:  # !! Ritik Ranjan [*.*]#9230
             return True
-        else:
-            raise ex.NotMe()
+        raise ex.NotMe()
 
     return commands.check(predicate)
 
@@ -54,8 +52,7 @@ def is_mod():
             return False
         if role in ctx.author.roles:
             return True
-        else:
-            raise ex.NoModRole()
+        raise ex.NoModRole()
 
     return commands.check(predicate)
 

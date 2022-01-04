@@ -208,7 +208,7 @@ class Utils(Cog):
 
         if len(questions_and_choices) < 3:
             return await ctx.send('Need at least 1 question with 2 choices.')
-        elif len(questions_and_choices) > 21:
+        if len(questions_and_choices) > 21:
             return await ctx.send('You can only have up to 20 choices.')
 
         question = questions_and_choices[0]

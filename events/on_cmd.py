@@ -96,7 +96,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         """This event will be triggered when the command is being completed; triggered by [discord.User]!"""
         if ctx.author.bot: return
         await cmd_increment(ctx.command.qualified_name)
-    
+
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):
         """Only for logging"""
@@ -116,7 +116,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                         avatar_url=self.bot.user.avatar.url, 
                         username=self.bot.user.name,
                     )
-        
+
         if ctx.cog.qualified_name.lower() == 'botconfig':
             if data := await self.collection.find_one({'_id': ctx.guild.id, 'on_config_command': {'$exists': True}}):
                 webhook = discord.Webhook.from_url(data['on_config_command'], session=self.bot.session)
@@ -132,7 +132,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                         avatar_url=self.bot.user.avatar.url, 
                         username=self.bot.user.name,
                     )
-                
+
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error):
         # if command has local error handler, return

@@ -284,10 +284,10 @@ class Stars(Cog):
 
         starboard = await self.get_starboard(channel.guild.id, collection=collection)
         if not starboard.channel: return
-        
+
         data = await collection.find_one({'bot_message_id': payload.message_id})
         await collection.delete_one({'bot_message_id': payload.message_id})
-        
+
         if data[payload.message_id] is None:
             return
 
@@ -302,7 +302,7 @@ class Stars(Cog):
                            message_id: int, 
                            starrer_id: int
                         ) -> None:
-        
+
         await self._star_message(channel, message_id, starrer_id, db=starboard_entry)
 
     async def _star_message(self, 
@@ -313,10 +313,10 @@ class Stars(Cog):
                             db
                         ) -> None:
         guild_id = channel.guild.id
-        
+
         collection = db[f'{guild_id}']
         collection_starrer = starrer['starrer']
-        
+
         starboard = await self.get_starboard(guild_id)
         if not starboard.channel: 
             raise StarError('\N{WARNING SIGN} Starboard channel not found.')
@@ -328,7 +328,7 @@ class Stars(Cog):
             raise StarError('\N{NO ENTRY SIGN} Cannot star NSFW in non-NSFW starboard channel.')
 
         if channel.id == starboard_channel.id:
-           
+
             if data := await collection.find_one({'bot_message_id': message_id}):
                 ch = channel.guild.get_channel_or_thread(data['channel_id'])
             else:
@@ -371,23 +371,23 @@ class Stars(Cog):
             await collection_starrer.insert_one({'author_id': starrer_id, 'entry_id': message_id})
         except Exception:
             pass
-        
+
         counter = 0
         async for i in collection_starrer.find({'entry_id': message_id}):
             counter += 1
-        
+
         if counter < starboard.threshold:
             return
 
         content, embed = self.get_emoji_message(msg, counter)
 
-        
+
         data = await collection.find_one({'message_id': message_id})
         try:
             bot_message_id = data['bot_messag_id']
         except KeyError:
             bot_message_id = None
-        
+
         if bot_message_id is None:
             new_msg = await starboard_channel.send(content, embed=embed)
             await collection.update_one({'message_id': message_id}, {'$set': {'bot_message_id': new_msg.id}})
@@ -444,7 +444,7 @@ class Stars(Cog):
         counter = 0
         async for i in collection_starrer.find({'entry_id': message_id}):
             counter += 1
-        
+
         if counter == 0:
             await collection.delete_one({'message_id': message_id})
         try:
@@ -463,7 +463,7 @@ class Stars(Cog):
             self._about_to_be_deleted.add(bot_message_id)
             if counter:
                 await collection.update_one({'message_id': message_id}, {'$set': {'bot_message_id': None}})
-                
+
             await bot_message.delete()
         else:
             msg = await self.get_message(channel, message_id)
@@ -619,9 +619,9 @@ class Stars(Cog):
             pass
         if not data:
             data = await collection.find_one({'bot_message_id': message})
-        
+
         records = [data]
-        
+
         if records is None:
             return await ctx.reply(f'{ctx.author.mention} no one starred this message or this is an invalid message ID.')
 

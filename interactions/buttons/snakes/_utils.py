@@ -505,7 +505,7 @@ class SnakeAndLaddersGame:
                     self._destruct()
 
                 return is_surrendered
-            
+
         await self.channel.send(user.mention + " You are not in the match.", delete_after=10)
         return is_surrendered
 
@@ -701,4 +701,4 @@ class SnakeAndLaddersGame:
     def _is_moderator(user: Member) -> bool:
         """Return True if the user is a Moderator."""
         return user.guild_permissions.administrator
-        
+

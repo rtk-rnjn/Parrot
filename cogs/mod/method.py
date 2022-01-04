@@ -355,7 +355,7 @@ async def _mute(guild, command_name, ctx_author, destination, member, reason):
         return
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
-        
+
 
 async def _unmute(guild, command_name, ctx_author, destination, member,
                   reason):
@@ -899,7 +899,7 @@ async def _warn(bot, guild, command_name, ctx_author, destination, target, reaso
         await target.send(f"{target.mention} you are being warned from **{guild.name}** for: **{reason}**")
     except Exception:
         pass
-    
+
 
 async def _del_all_warn(bot, guild, command_name, ctx_author, destination, target, reason):
     infrn = Infraction(
@@ -920,7 +920,7 @@ async def _del_all_warn(bot, guild, command_name, ctx_author, destination, targe
         await target.send(f"{target.mention} you are being warned from **{guild.name}** for: **{reason}**")
     except Exception:
         pass
-    
+
     await infrn.del_warn_all()
 
 async def _del_warn(bot, guild, command_name, ctx_author, destination, target, reason):

@@ -193,7 +193,7 @@ class Parrot(commands.AutoShardedBot):
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
         print(f"Received a vote:\n{data}")
-    
+
     async def on_autopost_success(self) -> None:
         print(
             f"Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
@@ -221,7 +221,7 @@ class Parrot(commands.AutoShardedBot):
             f"[{self.user.name.title()}] disconnect from discord"
         )
         return
-    
+
     async def on_shard_resumed(self, shard_id) -> None:
         print(f'Shard ID {shard_id} has resumed...')
         self.resumes[shard_id].append(discord.utils.utcnow())
@@ -232,7 +232,7 @@ class Parrot(commands.AutoShardedBot):
         if ctx.command is None:
             # ignore if no command found
             return
-        
+
         bucket = self.spam_control.get_bucket(message)
         current = message.created_at.timestamp()
         retry_after = bucket.update_rate_limit(current)
@@ -251,7 +251,7 @@ class Parrot(commands.AutoShardedBot):
             if not _true: 
                 await ctx.reply(f'{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!', delete_after=10.0)
                 return
-        
+
         await self.invoke(ctx)
         await asyncio.sleep(0)
 
@@ -348,6 +348,6 @@ class Parrot(commands.AutoShardedBot):
                 'mute_role': None
             })
         return commands.when_mentioned_or(prefix)(self, message)
-    
+
     async def send_raw(self, channel_id: int, content: str, **kwargs) -> typing.Optional[discord.Message]:
         await self.http.send_message(channel_id, content, **kwargs)

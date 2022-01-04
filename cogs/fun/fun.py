@@ -1213,7 +1213,7 @@ class Fun(Cog, command_attrs={
         _green = res['rgb']['g']
         _red = res['rgb']['r']
         _blue = res['rgb']['b']
-        
+
 #HSL VALUE
         hue = round(res['hsl']['fraction']['h'], 2)
         saturation = round(res['hsl']['fraction']['s'], 2)
@@ -1221,7 +1221,7 @@ class Fun(Cog, command_attrs={
         _hue = res['hsl']['h']
         _saturation = res['hsl']['s']
         _lightness = res['hsl']['l']
-        
+
 #HSV VALUE
         hue_ = round(res['hsv']['fraction']['h'], 2)
         saturation_ = round(res['hsv']['fraction']['s'], 2)
@@ -1229,7 +1229,7 @@ class Fun(Cog, command_attrs={
         _hue_ = res['hsv']['h']
         _saturation_ = res['hsv']['s']
         _value_ = res['hsv']['v']
-        
+
 #GENERAL
         name = res['name']['value']
         close_name_hex = res['name']['closest_named_hex']
@@ -1247,7 +1247,7 @@ class Fun(Cog, command_attrs={
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
         await ctx.reply(embed=embed)
-      
+
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1259,10 +1259,10 @@ class Fun(Cog, command_attrs={
         """
         base64_string = string
         base64_bytes = base64_string.encode("ascii") 
-        
+
         sample_string_bytes = base64.b64decode(base64_bytes) 
         sample_string = sample_string_bytes.decode("ascii") 
-        
+
         embed = discord.Embed(title="Decoding...", colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Encoded text:", value=f'```\n{base64_string}\n```', inline=False)
         embed.add_field(name="Decoded text:", value=f'```\n{sample_string}\n```', inline=False)
@@ -1285,7 +1285,7 @@ class Fun(Cog, command_attrs={
         res = ''.join(format(ord(i), 'b') for i in string)
         base64_bytes = base64.b64encode(sample_string_bytes) 
         base64_string = base64_bytes.decode("ascii") 
-        
+
         embed = discord.Embed(title="Encoding...", colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Normal [string] text:", value=f'```\n{sample_string}\n```', inline=False)
         embed.add_field(name="Encoded [base64]:", value=f'```\n{base64_string}\n```', inline=False)
@@ -1294,7 +1294,7 @@ class Fun(Cog, command_attrs={
         embed.set_footer(text=f"{ctx.author.name}", icon_url=f'{ctx.author.display_avatar.url}')
         await ctx.reply(embed=embed)
 
-  
+
 
     @commands.command(name="fact")
     @commands.bot_has_permissions(embed_links=True)
@@ -1346,9 +1346,9 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get('https://some-random-api.ml/canvas/gay?avatar={}'.format(member.display_avatar.url)) as wastedImage: 
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'gay.png')) # replying the file
 
 
@@ -1364,9 +1364,9 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/glass?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'glass.png')) # replying the file
 
 
@@ -1382,9 +1382,9 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/horny?avatar={member.display_avatar.url}.') as wastedImage: 
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'horny.png')) # replying the file
 
 
@@ -1416,12 +1416,12 @@ class Fun(Cog, command_attrs={
       async with aiohttp.ClientSession() as wastedSession:
           async with wastedSession.get(f'https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}') as wastedImage: # get users avatar as png with 1024 size
               imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-              
+
               await wastedSession.close() # closing the session and;
-              
+
               await ctx.reply(file=discord.File(imageData, 'itssostupid.png')) # replying the file
 
-      
+
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -1435,11 +1435,11 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/jail?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'jail.png')) # replying the file
-  
+
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -1453,11 +1453,11 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/lolice?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'lolice.png')) # replying the file
-  
+
 
     @commands.command(name='meme')
     @commands.bot_has_permissions(embed_links=True)
@@ -1484,7 +1484,7 @@ class Fun(Cog, command_attrs={
         embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}") 
 
         await ctx.reply(embed=embed)
-      
+
 
     @commands.command(aliases=['fakeprofile'])
     @commands.bot_has_permissions(embed_links=True)
@@ -1536,9 +1536,9 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/simpcard?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'simpcard.png')) # replying the file
 
     @commands.command(aliases=['trans'])
@@ -1555,7 +1555,7 @@ class Fun(Cog, command_attrs={
                 message = ref.resolved.content
             else:
                 return await ctx.reply(f"{ctx.author.mention} you must provide the message reference or message for translation")
-        
+
         link = "https://translate-api.ml/translate?text={}&lang={}".format(message.lower(), to.lower() if to else 'en')
 
         async with aiohttp.ClientSession() as session:
@@ -1564,7 +1564,7 @@ class Fun(Cog, command_attrs={
                     data = await response.json()
                 else:
                     return await ctx.reply(f"{ctx.author.mention} Something not right!")
-                
+
         success = data['status']
         if success == 200:
             text = data['given']['text']
@@ -1574,7 +1574,7 @@ class Fun(Cog, command_attrs={
             translated_pronunciation = data['translated']['pronunciation']
         else: 
             return await ctx.reply(f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{to}**")
-        
+
         if ctx.author.id == 741614468546560092: # its kinda spammy for me. lol
             return await ctx.send(f"{translated_text}")
 
@@ -1601,9 +1601,9 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/triggered?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'triggered.gif')) # replying the file
 
     @commands.command(aliases=['def', 'urban'])
@@ -1657,11 +1657,11 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/wasted?avatar={member.display_avatar.url}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'wasted.png')) # replying the file
-  
+
 
     @commands.command(aliases=['youtube-comment', 'youtube_comment'])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -1678,11 +1678,11 @@ class Fun(Cog, command_attrs={
         async with aiohttp.ClientSession() as wastedSession:
             async with wastedSession.get(f'https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}') as wastedImage: # get users avatar as png with 1024 size
                 imageData = io.BytesIO(await wastedImage.read()) # read the image/bytes
-                
+
                 await wastedSession.close() # closing the session and;
-                
+
                 await ctx.reply(file=discord.File(imageData, 'ytcomment.png')) # replying the file
-  
+
 
     @commands.command() 
     @commands.bot_has_permissions(embed_links=True)
@@ -1697,7 +1697,7 @@ class Fun(Cog, command_attrs={
             em = discord.Embed(title="Dare", description=f"{random.choice(dare)}", timestamp=datetime.datetime.utcnow())
         else:
             em = discord.Embed(title=f"{member.name} Dared", description=f"{random.choice(dare)}", timestamp=datetime.datetime.utcnow())
-        
+
         em.set_footer(text=f'{ctx.author.name}')
         await ctx.reply(embed=em)
 
@@ -1761,7 +1761,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1773,7 +1773,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1785,7 +1785,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1797,7 +1797,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1809,7 +1809,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1821,7 +1821,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1833,7 +1833,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1845,7 +1845,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1857,7 +1857,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1869,7 +1869,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1881,7 +1881,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1893,7 +1893,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1917,7 +1917,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1929,7 +1929,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1941,7 +1941,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1953,7 +1953,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1965,7 +1965,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-        
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1977,7 +1977,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1989,7 +1989,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2001,7 +2001,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2013,7 +2013,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2025,7 +2025,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2037,7 +2037,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2059,7 +2059,7 @@ class Fun(Cog, command_attrs={
         member = member or ctx.author
         params = {'image_url': member.display_avatar.url}
         r = await self.bot.session.get(f'https://api.jeyy.xyz/text/{ctx.command.name}', params=params)
-        
+
         embed=discord.Embed(description=f"{(await r.json())['text']}", timestamp=datetime.datetime.utcnow()).set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 
@@ -2074,7 +2074,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2086,7 +2086,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2098,7 +2098,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2109,7 +2109,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command(aliases=['earthquack'])
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2121,7 +2121,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2133,7 +2133,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2156,7 +2156,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2168,7 +2168,7 @@ class Fun(Cog, command_attrs={
         r = await self.bot.session.get(f'https://api.jeyy.xyz/image/{ctx.command.name}', params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f'{ctx.command.qualified_name}.gif')
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2200,7 +2200,7 @@ class Fun(Cog, command_attrs={
         if converted_text:
             converted_text = f">>> {converted_text.lstrip('> ')}"
         await ctx.send(content=converted_text, embed=embed)
-    
+
     @commands.command(aliases=['cointoss', 'cf', 'ct'])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)

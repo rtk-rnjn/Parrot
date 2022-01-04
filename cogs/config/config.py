@@ -120,7 +120,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
         )
 
-    
+
     @config.command(aliases=['mute-role'])
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -204,7 +204,7 @@ class BotConfig(Cog):
             await ctx.reply(f"{ctx.author.mention} counting channel for the server is set to **{channel.name}**")
         else:
             await ctx.reply(f"{ctx.author.mention} counting channel for the server is not removed")
-    
+
     @config.command()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -222,15 +222,15 @@ class BotConfig(Cog):
             await ctx.reply(f"{ctx.author.mention} one word channel for the server is set to **{channel.name}**")
         else:
             await ctx.reply(f"{ctx.author.mention} one word channel for the server is not removed")
-    
-    
+
+
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def automod(self, ctx: Context):
         """To configure the automoderation"""
         pass
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -246,7 +246,7 @@ class BotConfig(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**. Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. Bot will be issuing warning if someone exceeds the limit.")
 
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -261,7 +261,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} spam protection won't be working in **{channel.name}**")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -276,7 +276,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} spam protection will be working in **{channel.name}**")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -291,7 +291,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -306,7 +306,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -321,7 +321,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -340,7 +340,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} **<{link}>** added for the whitelist link")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -370,7 +370,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} **||{word}||** added in the list")
-        
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -460,7 +460,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} caps protection limit for this server is set to **{limit}**")
-    
+
     @automod.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -550,7 +550,7 @@ class BotConfig(Cog):
             }
         )
         await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for emoji protection")
-    
+
     @commands.group(aliases=['telconfig'], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -736,7 +736,7 @@ class BotConfig(Cog):
     async def addaccess(self, ctx: Context, *, role: discord.Role):
         """
         This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
-          
+
         Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
         await mt._addaccess(ctx, role)
@@ -749,7 +749,7 @@ class BotConfig(Cog):
     async def delaccess(self, ctx: Context, *, role: discord.Role):
         """
         This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
-			
+
         Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
         await mt._delaccess(ctx, role)
@@ -794,7 +794,7 @@ class BotConfig(Cog):
     async def cmdconfig(self, ctx: Context):
         """Command Management of the server"""
         pass
-    
+
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -810,7 +810,7 @@ class BotConfig(Cog):
             await mt_._enable(self.bot, ctx, 'all', target, force)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
-        
+
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -826,7 +826,7 @@ class BotConfig(Cog):
             await mt_._disable(self.bot, ctx, 'all', target, force)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
-        
+
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -846,7 +846,7 @@ Server Wide?:{data['server']}"""
             em_lis.append(em)
         paginator = PaginationView(em_lis)
         await paginator.start(ctx)
-    
+
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type

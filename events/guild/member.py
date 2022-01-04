@@ -48,16 +48,15 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if not muted:
                 return
 
-            if member.guild.id in self.muted:
-                if member.id in self.muted[member.guild.id]:
-                    self.muted[member.guild.id].remove(member.id)
-                    try:
-                        await member.add_roles(
-                            muted,
-                            reason=f"Action auto performed | Reason: {member} attempted to mute bypass, by rejoining the server",
-                        )
-                    except discord.errors.Forbidden:
-                        pass
+            if (member.guild.id in self.muted) and (member.id in self.muted[member.guild.id]):
+                self.muted[member.guild.id].remove(member.id)
+                try:
+                    await member.add_roles(
+                        muted,
+                        reason=f"Action auto performed | Reason: {member} attempted to mute bypass, by rejoining the server",
+                    )
+                except discord.errors.Forbidden:
+                    pass
 
     @Cog.listener()
     async def on_member_remove(self, member):
@@ -89,12 +88,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
                 member.guild.roles, name="Muted"
             )
-            if muted:
-                if muted in member.roles:
-                    if member.guild.id in self.muted:
-                        self.muted[member.guild.id].add(member.id)
-                    elif member.guild.id not in self.muted:
-                        self.muted[member.guild.id] = {member.id}
+            if muted and (muted in member.roles):
+                if member.guild.id in self.muted:
+                    self.muted[member.guild.id].add(member.id)
+                elif member.guild.id not in self.muted:
+                    self.muted[member.guild.id] = {member.id}
 
     @Cog.listener()
     async def on_member_update(self, before, after):

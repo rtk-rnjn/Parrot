@@ -414,10 +414,9 @@ def replace_many(
         cleaned_word = word.translate(str.maketrans("", "", string.punctuation))
         if cleaned_word.isupper():
             return replacement.upper()
-        elif cleaned_word[0].isupper():
+        if cleaned_word[0].isupper():
             return replacement.capitalize()
-        else:
-            return replacement.lower()
+        return replacement.lower()
 
     return regex.sub(_repl, sentence)
 
@@ -804,7 +803,7 @@ class Fun(
                 )
                 return
 
-            elif questions < 1:
+            if questions < 1:
                 await ctx.send(
                     embed=self.make_error_embed(
                         "You must choose to complete at least one question. "
@@ -813,8 +812,7 @@ class Fun(
                 )
                 return
 
-            else:
-                self.question_limit = questions
+            self.question_limit = questions
 
         # Start game if not running.
         if not self.game_status[ctx.channel.id]:
@@ -1095,7 +1093,7 @@ class Fun(
                 continue
 
             # Checks for repeated guesses
-            elif normalized_content in guessed_letters:
+            if normalized_content in guessed_letters:
                 already_guessed_embed = Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description=f"You have already guessed `{normalized_content}`, try again!",
@@ -1109,7 +1107,7 @@ class Fun(
                 continue
 
             # Checks for correct guesses from the user
-            elif normalized_content in word:
+            if normalized_content in word:
                 positions = {
                     idx
                     for idx, letter in enumerate(pretty_word)
@@ -1477,10 +1475,7 @@ class Fun(
             async with request("GET", image_url, headers={}) as response:
                 if response.status == 200:
                     data = await response.json()
-                    image_link = data["link"]
-
-                else:
-                    image_link = None
+                    image_link = data.get("link")
 
             async with request("GET", fact_url, headers={}) as response:
                 if response.status == 200:
@@ -1495,15 +1490,13 @@ class Fun(
                         embed.set_image(url=image_link)
                         return await ctx.reply(embed=embed)
 
-                    else:
-                        return await ctx.reply(
-                            f"{ctx.author.mention} API returned a {response.status} status."
-                        )
-
-                else:
                     return await ctx.reply(
-                        f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
+                        f"{ctx.author.mention} API returned a {response.status} status."
                     )
+
+                return await ctx.reply(
+                    f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
+                )
 
     @commands.command()
     @commands.bot_has_permissions(attach_files=True, embed_links=True)

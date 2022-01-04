@@ -24,8 +24,6 @@ class OneWordStory(Cog):
         if channel.last_message:
             return channel.last_message
         async for msg in channel.history(limit=1, oldest_first=False):
-            if not msg:
-                return None
             return msg
 
     @Cog.listener()
@@ -52,16 +50,15 @@ class OneWordStory(Cog):
 
         msg = self.get_last_message(message.channel)
 
-        if msg:
-            if message.author.id == msg.author.id:
-                try:
-                    return await message.delete(
-                        reason="Can't post more than once in a row"
-                    )
-                except Exception:
-                    return await message.channel.send(
-                        "Bot need manage message permission to work properly"
-                    )
+        if msg and (message.author.id == msg.author.id):
+            try:
+                return await message.delete(
+                    reason="Can't post more than once in a row"
+                )
+            except Exception:
+                return await message.channel.send(
+                    "Bot need manage message permission to work properly"
+                )
 
         if message.content.split(" ") > 2:
             try:

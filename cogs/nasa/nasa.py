@@ -28,11 +28,11 @@ class NASA(Cog):
     @Context.with_type
     async def earth(self, ctx: Context, longitute: float, latitude: float, date: str):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
-        if not (-90 <= latitude and latitude <= 90):
+        if not (-90 <= latitude <= 90):
             return await ctx.reply(
                 f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90"
             )
-        if not (-180 <= latitude and latitude <= 180):
+        if not (-180 <= latitude <= 180):
             return await ctx.reply(
                 f"{ctx.author.mention} Invalid longitude range, must be between -180 to 180"
             )

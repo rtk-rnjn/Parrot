@@ -642,28 +642,27 @@ async def _slowmode(
 ):
     if seconds:
         try:
-            if (seconds <= 21600) and (seconds > 0):  # discord limit
+            if 21600 >= seconds > 0:  # discord limit
                 await channel.edit(
                     slowmode_delay=seconds,
                     reason=f"Action Requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}",
                 )
-                await destination.send(
+                return await destination.send(
                     f"{ctx_author.mention} {channel} is now in slowmode of **{seconds}**, to reverse type [p]slowmode 0"
                 )
-            elif seconds == 0 or (seconds.lower() in ("off", "disable")):
+            if seconds == 0 or (seconds.lower() in ("off", "disable")):
                 await channel.edit(
                     slowmode_delay=seconds,
                     reason=f"Action Requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}",
                 )
-                await destination.send(
+                return await destination.send(
                     f"{ctx_author.mention} **{channel}** is now not in slowmode."
                 )
-            elif (seconds >= 21600) or (seconds < 0):
-                await destination.send(
+            if (seconds >= 21600) or (seconds < 0):
+                return await destination.send(
                     f"{ctx_author.mention} you can't set slowmode in negative numbers or more than 21600 seconds"
                 )
-            else:
-                return
+
         except Exception as e:
             await destination.send(
                 f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"

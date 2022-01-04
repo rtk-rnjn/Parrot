@@ -204,8 +204,7 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
         "sh": "bash",
     }
 
-    if lang in quickmap:
-        lang = quickmap[lang]
+    lang = quickmap.get(lang)
 
     if lang in default_langs:
         lang = default_langs[lang]

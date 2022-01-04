@@ -272,7 +272,7 @@ def unmunchify(x):
     nb. As dicts are not hashable, they cannot be nested in sets/frozensets.
     """
     if isinstance(x, dict):
-        return dict((k, unmunchify(v)) for k, v in iteritems(x))
+        return {(k, unmunchify(v)) for k, v in iteritems(x)}
     if isinstance(x, (list, tuple)):
         return type(x)(unmunchify(v) for v in x)
     return x

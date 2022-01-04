@@ -5,7 +5,6 @@ from typing import ClassVar
 import discord
 
 from .peek import *
-from .select import *
 
 __all__ = (
     "DiscardButton",

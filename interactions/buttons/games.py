@@ -84,7 +84,7 @@ LETTERS_EMOJI = {
     "4": IN_EMOJI,
     "5": QU_EMOJI,
     "6": TH_EMOJI,
-} | {letter: emoji for letter, emoji in zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI)}
+} | dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI))
 
 # fmt: off
 
@@ -2947,7 +2947,7 @@ class Games(Cog):
             async with async_open(fr'extra/sokoban/level{level if level else 1}.txt', 'r') as fp:
                 level = await fp.read()
             for i in level.split('\n'):
-                ls.append([j for j in list(i)])
+                ls.append(list(list(i)))
             game = SokobanGame(ls)
             game._get_cords()
             main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
@@ -2965,7 +2965,7 @@ class Games(Cog):
         ls = []
         level = text.strip("```")
         for i in level.split('\n'):
-            ls.append([j for j in list(i)])
+            ls.append(list(list(i)))
         game = SokobanGame(ls)
         game._get_cords()
         main_game = SokobanGameView(game, ctx.author)

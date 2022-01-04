@@ -25,8 +25,12 @@ class Tio:
                  code: str,
                  inputs='',
                  compilerFlags=[],
-                 commandLineOptions=[],
-                 args=[]):
+                 commandLineOptions=None,
+                 args=None):
+        if commandLineOptions is None:
+            commandLineOptions = []
+        if args is None:
+            args = []
         self.backend = "https://tio.run/cgi-bin/run/api/"
         self.json = "https://tio.run/languages.json"
 

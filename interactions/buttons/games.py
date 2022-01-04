@@ -152,7 +152,9 @@ class BoardBoogle:
 
         self.columns = board
 
-    def board_contains(self, word: str, pos: Position = None, passed: list[Position] = []) -> bool:
+    def board_contains(self, word: str, pos: Position = None, passed: list[Position] = None) -> bool:
+        if passed is None:
+            passed = []
         # Empty words
         if len(word) == 0:
             return True

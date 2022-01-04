@@ -15,8 +15,7 @@ import discord
 import aiohttp
 import asyncio
 from aiohttp import request
-from discord.ext.commands import (
-    command)
+from discord.ext.commands import command
 from discord.ext import commands, tasks
 from discord import Embed
 

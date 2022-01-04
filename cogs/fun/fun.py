@@ -1406,7 +1406,7 @@ class Fun(Cog, command_attrs={
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def itssostupid(self, ctx, *, comment:str):
-      """
+      r"""
       :\ I don't know what is this, I think a meme generator.
       """
       member = ctx.author

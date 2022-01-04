@@ -188,7 +188,7 @@ class FrontPageSource(menus.PageSource):
             embed.add_field(
                 name='Who are you?',
                 value=
-                ("The bot made by !! Ritik Ranjan [\*.*]#9230. Built with love and `discord.py`! Bot been running since "
+                (r"The bot made by !! Ritik Ranjan [\*.*]#9230. Built with love and `discord.py`! Bot been running since "
                  f'{created_at}. Bot have features such as moderation, global-chat, and more. You can get more '
                  'information on my commands by using the dropdown below.\n\n'
                  f"Bot is also open source. You can see the code on [GitHub]({self.bot.github})!"
@@ -398,7 +398,7 @@ class Meta(Cog):
         await ctx.reply(
             embed=discord.Embed(
                 title="Owner Info", 
-                description='This bot is being hosted and created by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', 
+                description=r'This bot is being hosted and created by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool', 
                 timestamp=datetime.datetime.utcnow(),
                 color=ctx.author.color,
                 url="https://discord.com/users/741614468546560092")

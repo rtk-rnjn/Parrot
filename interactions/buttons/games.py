@@ -529,7 +529,7 @@ def boggle_game(game_type: type[Game]):
     return wrapper
 
 def fenPass(fen: str) -> bool:
-    regexMatch = re.match('\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', fen)
+    regexMatch = re.match(r'\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', fen)
     if  regexMatch:
         regexList = regexMatch.groups()
         fen = regexList[0].split("/")

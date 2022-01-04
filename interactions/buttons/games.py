@@ -441,7 +441,7 @@ class ClassicGame(Game):
     def setup(self):
         self.over = False
         self.used_words: set[str] = set()
-        self.word_lists: dict[User, str] = dict()
+        self.word_lists: dict[User, str] = {}
         self.words: dict[User, set[str]] = defaultdict(set)
         self.unique_words: dict[User, set[str]] = defaultdict(set)
 
@@ -583,8 +583,8 @@ class SlidingPuzzle:
     def __init__(self, size):
         self.size = size
 
-        self.grid = list()
-        self.temp = list()
+        self.grid = []
+        self.temp = []
 
         self.x = []
         
@@ -2422,7 +2422,7 @@ class Games(Cog):
         self.games_boogle: dict[discord.TextChannel, Game] = {}
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
         self.games_hitler: dict[int, discord.ui.View] = {}
-        self.chess_games = list()
+        self.chess_games = []
 
         self.max_board_size = 9
         self.min_board_size = 5
@@ -2956,7 +2956,7 @@ class Games(Cog):
     async def sokoban(self, ctx: Context, level: int=None,):
         """A classic sokoban game"""
         if not ctx.invoked_subcommand:
-            ls = list()
+            ls = []
             async with async_open(fr'extra/sokoban/level{level if level else 1}.txt', 'r') as fp:
                 level = await fp.read()
             for i in level.split('\n'):
@@ -2975,7 +2975,7 @@ class Games(Cog):
         - Your level must have only and only 1 character (`@`)
         - There should be equal number of `.` (target) and `$` (box)
         """
-        ls = list()
+        ls = []
         level = text.strip("```")
         for i in level.split('\n'):
             ls.append([j for j in list(i)])

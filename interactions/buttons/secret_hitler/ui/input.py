@@ -17,5 +17,6 @@ class InputUI(discord.ui.View):
 
     @property
     def tooltip(self) -> str:
-        assert isinstance(self.game.game.state, UserInputGameState)
+        if not isinstance(self.game.game.state, UserInputGameState):
+            raise AssertionError
         return self.game.game.state.tooltip

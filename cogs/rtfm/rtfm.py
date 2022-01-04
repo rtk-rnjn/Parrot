@@ -94,6 +94,7 @@ class RTFM(Cog):
         return await self.session.get(url=url)
 
     @commands.command(aliases=["pypi"])
+    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def pypisearch(self, ctx: Context, arg: str):
         """Get info about a Python package directly from PyPi"""
@@ -142,6 +143,8 @@ class RTFM(Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["npm"])
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def npmsearch(self, ctx: Context, arg: str):
         """Get info about a NPM package directly from the NPM Registry"""
 
@@ -204,6 +207,8 @@ class RTFM(Cog):
         await ctx.send(embed=em)
 
     @commands.command(aliases=["crates"])
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def crate(self, ctx: Context, arg: str):
         """Get info about a Rust package directly from the Crates.IO Registry"""
 
@@ -269,10 +274,8 @@ class RTFM(Cog):
 
         await ctx.send(embed=em)
 
-    @commands.command(help='''run <language> [--wrapped] [--stats] <code>
-for command-line-options, compiler-flags and arguments you may
-add a line starting with this argument, and after a space add
-your options, flags or args.
+    @commands.command(help="""$run <language> [--wrapped] [--stats] <code>
+for command-line-options, compiler-flags and arguments you may add a line starting with this argument, and after a space add your options, flags or args.
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
 <code> may be normal code, but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com)
@@ -283,7 +286,7 @@ The link may be the raw version, and with/without the file extension
 If the output exceeds 40 lines or Discord max message length, it will be put
 in a new hastebin and the link will be returned.
 When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
-Useful to hide your syntax fails or when you forgot to print the result.''',
+Useful to hide your syntax fails or when you forgot to print the result.""",
                       brief='Execute code in a given programming language')
     async def run(self, ctx, *, payload=''):
         """Execute code in a given programming language"""
@@ -364,8 +367,8 @@ Useful to hide your syntax fails or when you forgot to print the result.''',
                 # We deleted the message
                 pass
 
-    @commands.bot_has_permissions(embed_links=True)
     @commands.command(aliases=['ref'])
+    @commands.bot_has_permissions(embed_links=True)
     @typing
     async def reference(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""

@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 import discord, random
 
 from utilities.database import parrot_db
-from utilities.regex import LINKS_NO_PROTOCOLS
+from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE
 
 from core import Parrot, Cog
 
@@ -22,7 +22,9 @@ class LinkProt(Cog):
         self.update_data.start()
 
     async def has_links(self, message_content: str) -> bool:
-        url = LINKS_NO_PROTOCOLS.search(message_content)
+        url1 = LINKS_NO_PROTOCOLS.search(message_content)
+        url2 = LINKS_RE.search(message_content)
+        url = url1 or url2
         if url:
             return True
         else:

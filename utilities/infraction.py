@@ -12,7 +12,7 @@ from typing import Optional
 
 
 class Infraction:
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self._parrot_collection = parrot_db['server_config']
         self._warn_db = warn_db
@@ -29,10 +29,6 @@ class Infraction:
             return len(data['warns'])
 
     async def total_warns_server(self) -> int:
-        if self._parrot_collection is None:
-            parrot_db = await self.bot.db('parrot_db')
-            self._parrot_collection = parrot_db['server_config']
-
         data = await self._parrot_collection.find_one({'_id': self.guild.id})
         try:
             return data['warn_count']
@@ -43,7 +39,7 @@ class Infraction:
                 }})
             return 0
 
-    async def to_table(self, *, guild_id, user_id) -> str:
+    async def to_table(self, *, guild_id: int, user_id: int) -> str:
         my_table = PrettyTable(
             ['Case ID', 'AT', 'Reason', 'Moderator', 'Expires At'])
         if self._warn_db is None:
@@ -87,6 +83,7 @@ class Infraction:
                         mod: int,
                         expires_at: Optional[int],
                         guild_id: int,
+                        user_id: int,
                         auto: Optional[bool] = True) -> dict:
         case_id = self.get_case_id()
         warn = {
@@ -101,11 +98,10 @@ class Infraction:
                                                      'warn_count': 1
                                                  }})
         if auto:
-            await self.add_warn()
+            await self.add_warn(guild_id=guild_id, user_id=user_id, warn=warn)
         return warn
 
-    async def add_warn(self, guild_id, user_id) -> dict:
-        warn = self.make_warn()
+    async def add_warn(self, guild_id: int, user_id: int, warn: dict) -> dict:
         collection = self._warn_db[f"{guild_id}"]
         user_exists = await collection.find_one({'_id': user_id})
         if user_exists:
@@ -117,21 +113,19 @@ class Infraction:
                                         }})
         return warn
 
-    async def del_warn_all(self, guild_id, user_id) -> None:
+    async def del_warn_all(self, guild_id: int, user_id: int) -> None:
         collection = self._warn_db[f"{guild_id}"]
-        user_exists = await collection.find_one({'_id': user_id})
-        if not user_exists:
-            return
-        await collection.update_one({'_id': user_id}, {'$set': {'warns': []}})
+        if user_exists := await collection.find_one({'_id': user_id}):
+            await collection.update_one({'_id': user_id}, {'$set': {'warns': []}})
 
-    async def del_warn_by_id(self, guild_id, user_id, case_id: int) -> None:
+    async def del_warn_by_id(self, guild_id: int, user_id: int, case_id: int) -> None:
         collection = self._warn_db[f"{guild_id}"]
         await collection.update_one({'_id': user_id},
                                     {'$pull': {
                                         'warns.case_id': case_id
                                     }})
 
-    async def del_warn_by_mod(self, guild_id, user_id, mod: int) -> None:
+    async def del_warn_by_mod(self, guild_id: int, user_id: int, mod: int) -> None:
         collection = self._warn_db[f"{guild_id}"]
         await collection.update_one({'_id': user_id},
                                     {'$pull': {

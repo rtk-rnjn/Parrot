@@ -13,7 +13,7 @@ NASA_KEY = os.environ['NASA_KEY']
 
 
 class NASA(Cog):
-    '''Incridible NASA API Integration'''
+    """Incridible NASA API Integration"""
     def __init__(self, bot: Parrot):
         self.bot = bot
 
@@ -52,7 +52,7 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def apod(self, ctx: Context):
-        '''Asteroid Picture of the Day'''
+        """Asteroid Picture of the Day"""
         link = f'https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}'
 
         async with aiohttp.ClientSession() as session:
@@ -87,7 +87,7 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def epic(self, ctx: Context, date: str):
-        '''Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format'''
+        """Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format"""
         s_link = f'https://epic.gsfc.nasa.gov/api/images.php?date={date}'
 
         async with aiohttp.ClientSession() as session:
@@ -124,7 +124,7 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def findasteroid(self, ctx: Context, start: str, end: str):
-        '''You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format'''
+        """You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format"""
         link = f'https://api.nasa.gov/neo/rest/v1/feed?start_date={start}&end_date={end}&api_key={NASA_KEY}'
 
         async with aiohttp.ClientSession() as session:
@@ -207,7 +207,7 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def findasteroididid(self, ctx: Context, id: int):
-        '''Find any asteroid in the space by ID. "$help findaid" for syntax'''
+        """Find any asteroid in the space by ID. "$help findaid" for syntax"""
         link = f'https://api.nasa.gov/neo/rest/v1/neo/{id}?api_key={NASA_KEY}'
 
         async with aiohttp.ClientSession() as session:
@@ -298,7 +298,7 @@ class NASA(Cog):
     @Context.with_type
     async def nasasearch(self, ctx: Context, *,
                          string: commands.clean_content):
-        '''NASA Image and Video Library'''
+        """NASA Image and Video Library"""
 
         link = f'https://images-api.nasa.gov/search?q={string}'
         async with aiohttp.ClientSession() as session:
@@ -309,7 +309,7 @@ class NASA(Cog):
                     )
                 else:
                     try:
-                        res = await r.json(content_type='text/html')
+                        res = await r.json()
                     except Exception as e:
                         return await ctx.reply(
                             f"For some reason, can not search any image or video at this time: Error raised {e}"

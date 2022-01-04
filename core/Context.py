@@ -62,19 +62,19 @@ class ConfirmationView(discord.ui.View):
 
 class Context(commands.Context):
     """A custom implementation of commands.Context class."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # we need this for our cache key strategy
         return f'<core.{self.bot.user.name} Context>'
 
     @property
-    def session(self):
+    def session(self) -> Any:
         return self.bot.session
 
     @discord.utils.cached_property
-    def replied_reference(self):
+    def replied_reference(self) -> typing.Optional[discord.Message]:
         ref = self.message.reference
         if ref and isinstance(ref.resolved, discord.Message):
             return ref.resolved.to_reference()
@@ -111,17 +111,28 @@ class Context(commands.Context):
             return
 
         return await super().send(content, **kwargs)
+    
+    async def reply(self, content: typing.Optional[str]=None, **kwargs):
+        if not (self.channel.permissions_for(self.me)).send_messages:
+            try:
+                await self.author.send(
+                    f"Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
+                )
+            except Exception:
+                pass
+            return
+        return await super().reply(content, **kwargs)
 
-    async def entry_to_code(self, entries):
-        width = max(len(a) for a, b in entries)
+    async def entry_to_code(self, entries) -> typing.Optional[discord.Message]:
+        width = max(len(str(a)) for a, b in entries)
         output = ['```']
         for name, entry in entries:
             output.append(f'{name:<{width}}: {entry}')
         output.append('```')
         await self.send('\n'.join(output))
 
-    async def indented_entry_to_code(self, entries):
-        width = max(len(a) for a, b in entries)
+    async def indented_entry_to_code(self, entries) -> typing.Optional[discord.Message]:
+        width = max(len(str(a)) for a, b in entries)
         output = ['```']
         for name, entry in entries:
             output.append(f'\u200b{name:>{width}}: {entry}')
@@ -151,10 +162,10 @@ class Context(commands.Context):
         await view.wait()
         return view.value
 
-    async def release(self):
+    async def release(self) -> None:
         await asyncio.sleep(0)
 
-    async def safe_send(self, content, *, escape_mentions=True, **kwargs):
+    async def safe_send(self, content, *, escape_mentions=True, **kwargs) -> typing.Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
 

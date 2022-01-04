@@ -797,7 +797,7 @@ class Mod(Cog):
         except Exception:
             pass
         finally:
-            await infrac.make_warn(at=at, reason=reason, mod=ctx.author.id, expires_at=None, guild_id=ctx.guild.id)
+            await infrac.make_warn(at=at, reason=reason, mod=mod, expires_at=None, guild_id=ctx.guild.id, user=user)
         
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))

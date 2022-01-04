@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from utilities.database import parrot_db, telephone_update
 
-collection = parrot_db['telephone']
 
 import asyncio, discord, random, time
 from discord.ext import commands
 
+collection = parrot_db['telephone']
 cd_mapping = commands.CooldownMapping.from_cooldown(
     5, 5, commands.BucketType.channel)
 

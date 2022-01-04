@@ -40,7 +40,7 @@ ERROR_CHANNEL_ID = 924356857508790282
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
@@ -145,7 +145,7 @@ class Parrot(commands.AutoShardedBot):
         fin = time()
         return fin - ini
 
-    def _clear_gateway_data(self):
+    def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
         for shard_id, dates in self.identifies.items():
             to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
@@ -157,10 +157,10 @@ class Parrot(commands.AutoShardedBot):
             for index in reversed(to_remove):
                 del dates[index]
 
-    async def on_socket_raw_receive(self, msg):
+    async def on_socket_raw_receive(self, msg) -> None:
         self._prev_events.append(msg)
 
-    async def on_error(self, event: str, *args, **kwargs):
+    async def on_error(self, event: str, *args, **kwargs) -> None:
         traceback_string = traceback.format_exc()
         await self.wait_until_ready()
         url = f"https://discord.com/api/webhooks/{ERROR_CHANNEL_ID}/{self._error_log_token}"
@@ -180,20 +180,20 @@ class Parrot(commands.AutoShardedBot):
     async def db(self, db_name: str):
         return cluster[db_name]
 
-    async def on_dbl_vote(self, data):
+    async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
         print(f"Received a vote:\n{data}")
     
-    async def on_autopost_success(self):
+    async def on_autopost_success(self) -> None:
         print(
             f"Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
         )
 
-    def run(self):
+    def run(self) -> None:
         """"To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         if not hasattr(self, 'uptime'):
             self.uptime = discord.utils.utcnow()
 
@@ -212,11 +212,11 @@ class Parrot(commands.AutoShardedBot):
         )
         return
     
-    async def on_shard_resumed(self, shard_id):
+    async def on_shard_resumed(self, shard_id) -> None:
         print(f'Shard ID {shard_id} has resumed...')
         self.resumes[shard_id].append(discord.utils.utcnow())
 
-    async def process_commands(self, message: discord.Message):
+    async def process_commands(self, message: discord.Message) -> None:
         ctx = await self.get_context(message, cls=Context)
 
         if ctx.command is None:
@@ -245,7 +245,7 @@ class Parrot(commands.AutoShardedBot):
         await self.invoke(ctx)
         await asyncio.sleep(0)
 
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
 
         if not message.guild:
@@ -290,7 +290,7 @@ class Parrot(commands.AutoShardedBot):
                 for member in members:
                     yield member
 
-    async def get_or_fetch_member(self, guild, member_id):
+    async def get_or_fetch_member(self, guild: discord.Guild, member_id: int) -> typing.Optional[discord.Member]:
         member = guild.get_member(member_id)
         if member is not None:
             return member
@@ -339,5 +339,5 @@ class Parrot(commands.AutoShardedBot):
             })
         return commands.when_mentioned_or(prefix)(self, message)
     
-    async def send_raw(self, channel_id: int, content: str, **kwargs):
+    async def send_raw(self, channel_id: int, content: str, **kwargs) -> typing.Optional[discord.Message]:
         await self.http.send_message(channel_id, content, **kwargs)

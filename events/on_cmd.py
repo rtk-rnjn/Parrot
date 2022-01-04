@@ -99,6 +99,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):
         """Only for logging"""
+        if ctx.cog is None: return
         if ctx.cog.qualified_name.lower() == 'mod':
             if data := await self.collection.find_one({'_id': ctx.guild.id, 'on_mod_command': {'$exists': True}}):
                 webhook = discord.Webhook.from_url(data['on_mod_command'], session=self.bot.session)
@@ -280,6 +281,11 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.MaxConcurrencyReached):
             return await ctx.reply(
                 f"**{random.choice(quote)}**\nMax Concurrenry Reached. This command is already running in this server/channel by you. You have wait for it to finish"
+            )
+
+        elif isinstance(error, (commands.BadUnionArgument, commands.BadLiteralArgument)):
+            return await ctx.reply(
+                f"**{random.choice(quote)}**\nBad Argument! `@Parrot {ctx.command}` for help"
             )
 
         elif isinstance(error, ParrotCheckFaliure):

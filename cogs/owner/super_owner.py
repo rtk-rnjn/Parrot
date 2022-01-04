@@ -10,7 +10,7 @@ import discord
 import aiohttp, datetime, os, traceback, typing
 
 from utilities.database import ban
-import re, io, zlib, os, json
+import re, io, zlib, json
 
 from . import fuzzy
 from utilities.paginator import PaginationView

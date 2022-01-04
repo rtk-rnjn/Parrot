@@ -1,10 +1,7 @@
 markdownify
-chat_exporter
-youtube_search
 wikipedia
 psutil
 editdistance
-pygicord
 truth_table_generator
 aiohttp
 utils

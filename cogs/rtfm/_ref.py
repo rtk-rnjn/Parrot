@@ -43,7 +43,7 @@ async def _process_mozilla_doc(ctx, url):
     async with aiohttp.ClientSession() as client_session:
         async with client_session.get(url) as response:
             if response.status == 404:
-                return await ctx.send(f'No results')
+                return await ctx.send('No results')
             if response.status != 200:
                 return await ctx.send(
                     f'An error occurred (status code: {response.status}). Retry later.'
@@ -131,7 +131,7 @@ async def _git_main_ref(part, ctx, text):
                 )
             if str(response.url) == 'https://git-scm.com/docs':
                 # Website redirects to home page
-                return await ctx.send(f'No results')
+                return await ctx.send('No results')
 
             soup = BeautifulSoup(await response.text(), 'lxml')
             sectors = soup.find_all('div', {'class': 'sect1'}, limit=3)

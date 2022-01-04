@@ -13,7 +13,7 @@ cd_mapping = commands.CooldownMapping.from_cooldown(
 
 async def dial(bot, ctx, server, reverse=False):
     if server.id == ctx.guild.id:
-        return await ctx.send(f"Can't make a self call")
+        return await ctx.send("Can't make a self call")
     number = server.id
     channel = ctx.channel
     self_guild = await collection.find_one({'_id': ctx.guild.id})
@@ -42,7 +42,7 @@ async def dial(bot, ctx, server, reverse=False):
             in self_guild['blocked']) or (self_guild['_id']
                                           in target_guild['blocked']):
         return await ctx.send(
-            f'Calling failed! Possible reasons: They blocked You, You blocked Them.'
+            'Calling failed! Possible reasons: They blocked You, You blocked Them.'
         )
 
     await ctx.send(
@@ -133,8 +133,8 @@ async def dial(bot, ctx, server, reverse=False):
             if talk_message.content.lower() == 'hangup':
                 await telephone_update(ctx.guild.id, 'is_line_busy', False)
                 await telephone_update(number, 'is_line_busy', False)
-                await ctx.send(f'Disconnected')
-                await target_channel.send(f'Disconnected')
+                await ctx.send('Disconnected')
+                await target_channel.send('Disconnected')
                 return
             TALK = discord.utils.escape_mentions(talk_message.content[:1000:])
             if reverse:
@@ -153,9 +153,9 @@ async def dial(bot, ctx, server, reverse=False):
                 )
             if ini - time.time() <= 60:
                 await channel.send(
-                    f'Disconnected. Call duration reached its maximum limit')
+                    'Disconnected. Call duration reached its maximum limit')
                 await target_channel.send(
-                    f'Disconnected. Call duration reached its maximum limit')
+                    'Disconnected. Call duration reached its maximum limit')
                 await telephone_update(ctx.guild.id, 'is_line_busy', False)
                 await telephone_update(number, 'is_line_busy', False)
                 return

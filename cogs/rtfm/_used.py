@@ -37,7 +37,7 @@ def prepare_payload(payload):
         # single word : no code yet no file attached
         emb = discord.Embed(
             title='SyntaxError',
-            description=f"Command `run` missing a required argument: `code`",
+            description="Command `run` missing a required argument: `code`",
             colour=0xff0000)
         return ('', emb, True)
 

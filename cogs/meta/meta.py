@@ -366,7 +366,7 @@ class Meta(Cog):
         Get the latency of bot.
         """
         start = time()
-        message = await ctx.reply(f"Pinging...")
+        message = await ctx.reply("Pinging...")
         db = await self.bot.db_latency
         end = time()
         await message.edit(content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f} ms.")

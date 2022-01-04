@@ -57,15 +57,15 @@ class Counting(Cog):
             if message.author.id == msg.author.id:
                 try:
                     return await message.delete(
-                        reason=f"Can't post more than once in a row")
+                        reason="Can't post more than once in a row")
                 except Exception:
                     return await message.channel.send(
-                        f"Bot need manage message permission to work properly")
+                        "Bot need manage message permission to work properly")
         try:
             number = int(msg.content)
         except ValueError:
             return await message.channel.send(
-                f"One of the recent message was either edited or the message was sent want a number. Requesting the Admin to set the counter as to work properly"
+                "One of the recent message was either edited or the message was sent want a number. Requesting the Admin to set the counter as to work properly"
             )
 
         try:
@@ -77,15 +77,15 @@ class Counting(Cog):
                 )
             except Exception:
                 return await message.channel.send(
-                    f"Bot need manage message permission to work properly")
+                    "Bot need manage message permission to work properly")
 
         if new_number - 1 != number:
             try:
                 return await message.delete(
-                    reason=f"Invalid count in Counting channel")
+                    reason="Invalid count in Counting channel")
             except Exception:
                 return await message.channel.send(
-                    f"Bot need manage message permission to work properly")
+                    "Bot need manage message permission to work properly")
 
     @tasks.loop(hours=1)
     async def clear_cache(self):

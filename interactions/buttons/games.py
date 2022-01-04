@@ -673,7 +673,7 @@ class SlidingPuzzleView(discord.ui.View):
         self.game.move_up()
 
         embed=discord.Embed(
-            title=f"Sliding Puzzle",
+            title="Sliding Puzzle",
             description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
@@ -690,7 +690,7 @@ class SlidingPuzzleView(discord.ui.View):
         self.game.move_left()
 
         embed=discord.Embed(
-            title=f"Sliding Puzzle",
+            title="Sliding Puzzle",
             description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
@@ -702,7 +702,7 @@ class SlidingPuzzleView(discord.ui.View):
         self.game.move_down()
 
         embed=discord.Embed(
-            title=f"Sliding Puzzle",
+            title="Sliding Puzzle",
             description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
@@ -714,7 +714,7 @@ class SlidingPuzzleView(discord.ui.View):
         self.game.move_right()
 
         embed=discord.Embed(
-            title=f"Sliding Puzzle",
+            title="Sliding Puzzle",
             description=f"```diff\n{self.game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
@@ -828,16 +828,16 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 await self.ctx.send(f"Game over! **{self.turn}** wins by check-mate")
                 self.game_stop = True
             elif self.board.is_stalemate():
-                await self.ctx.send(f"Game over! Ended with draw!")
+                await self.ctx.send("Game over! Ended with draw!")
                 self.game_stop = True
             elif self.board.is_insufficient_material():
-                await self.ctx.send(f"Game over! Insfficient material left to continue the game! Draw!")
+                await self.ctx.send("Game over! Insfficient material left to continue the game! Draw!")
                 self.game_stop = True
             elif self.board.is_seventyfive_moves():
-                await self.ctx.send(f"Game over! 75-moves rule | Game Draw!")
+                await self.ctx.send("Game over! 75-moves rule | Game Draw!")
                 self.game_stop = True
             elif self.board.is_fivefold_repetition():
-                await self.ctx.send(f"Game over! Five-fold repitition. | Game Draw!")
+                await self.ctx.send("Game over! Five-fold repitition. | Game Draw!")
                 self.game_stop = True
             else:
                 self.game_stop = False
@@ -1004,7 +1004,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
-            title=f"2048 Game",
+            title="2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
@@ -1023,7 +1023,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
-            title=f"2048 Game",
+            title="2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
@@ -1037,7 +1037,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
-            title=f"2048 Game",
+            title="2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
@@ -1051,7 +1051,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
-            title=f"2048 Game",
+            title="2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
@@ -1192,7 +1192,7 @@ class SokobanGameView(discord.ui.View):
         return False
 
     def make_win_embed(self) -> discord.Embed:
-        embed = discord.Embed(title=f"You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+        embed = discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
         embed.description = f"Thanks for playing!\nFor next level type `{self.ctx.prefix}sokoban {self.level+1}`"
         return embed
 
@@ -1204,7 +1204,7 @@ class SokobanGameView(discord.ui.View):
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_up()
         embed=discord.Embed(
-            title=f"Sokoban Game",
+            title="Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
@@ -1225,7 +1225,7 @@ class SokobanGameView(discord.ui.View):
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_left()
         embed=discord.Embed(
-            title=f"Sokoban Game",
+            title="Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
@@ -1241,7 +1241,7 @@ class SokobanGameView(discord.ui.View):
     async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_down()
         embed=discord.Embed(
-            title=f"Sokoban Game",
+            title="Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
@@ -1257,7 +1257,7 @@ class SokobanGameView(discord.ui.View):
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_right()
         embed=discord.Embed(
-            title=f"Sokoban Game",
+            title="Sokoban Game",
             description=f"{self.game.display_board()}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
@@ -1271,7 +1271,7 @@ class SokobanGameView(discord.ui.View):
     
     async def start(self, ctx: Context):
         await ctx.send(embed=discord.Embed(
-                        title=f"Sokoban Game",
+                        title="Sokoban Game",
                         description=f"{self.game.display_board()}",
                         timestamp=discord.utils.utcnow()
                     ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png'), view=self)
@@ -2985,7 +2985,7 @@ class Games(Cog):
         game.start()
         BoardString = game.number_to_emoji()
         embed=discord.Embed(
-            title=f"2048 Game",
+            title="2048 Game",
             description=f"{BoardString}",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
@@ -3087,7 +3087,7 @@ class Games(Cog):
         
         game = SlidingPuzzle(boardsize if boardsize else 4)
         embed=discord.Embed(
-            title=f"2048 Game",
+            title="2048 Game",
             description=f"```diff\n{game.board_str()}\n```",
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')

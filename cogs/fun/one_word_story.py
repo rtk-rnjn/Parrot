@@ -57,19 +57,19 @@ class OneWordStory(Cog):
             if message.author.id == msg.author.id:
                 try:
                     return await message.delete(
-                        reason=f"Can't post more than once in a row")
+                        reason="Can't post more than once in a row")
                 except Exception:
                     return await message.channel.send(
-                        f"Bot need manage message permission to work properly")
+                        "Bot need manage message permission to work properly")
 
         if message.content.split(' ') > 2:
             try:
                 return await message.delete(
                     reason=
-                    f"Can't post more than one word in One Word Story channel")
+                    "Can't post more than one word in One Word Story channel")
             except Exception:
                 return await message.channel.send(
-                    f"Bot need manage message permission to work properly")
+                    "Bot need manage message permission to work properly")
 
     @tasks.loop(hours=1)
     async def clear_cache(self):

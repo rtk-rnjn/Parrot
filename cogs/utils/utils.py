@@ -320,7 +320,7 @@ class Utils(Cog):
                     after=discord.Object(messageID - 1)):  # this is good. UwU
                 if msg is None:
                     await channel.send(
-                        f"Giveaway can not be proceeded! No message found! Proably deleted"
+                        "Giveaway can not be proceeded! No message found! Proably deleted"
                     )
                     await giveaway.delete_one({'_id': message})
                     return
@@ -344,7 +344,7 @@ class Utils(Cog):
                     await giveaway.delete_one({'_id': message})
                 
             await channel.send(
-                f"Winner can not be decided as reactions on the messages had being cleared."
+                "Winner can not be decided as reactions on the messages had being cleared."
             )
             await giveaway.delete_one({'_id': message})
 

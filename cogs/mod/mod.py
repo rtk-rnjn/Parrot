@@ -833,7 +833,7 @@ class Mod(Cog):
                 await ban_collection.delete_one({'_id': data['_id']})
             else:
                 try:
-                    await guild.unban(discord.Object(id=data['member_id']), reason=f"Ban duration expires!")
+                    await guild.unban(discord.Object(id=data['member_id']), reason="Ban duration expires!")
                 except discord.NotFound:
                     pass
                 finally:

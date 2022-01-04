@@ -187,7 +187,7 @@ async def _change_role_color(guild, command_name, ctx_author, destination,
 async def _ban(guild, command_name, ctx_author, destination, member, days,
                reason):
     try:
-        if member.id == ctx_author.id or member.id == guild.me.id:
+        if member.id in (ctx_author.id, guild.me.id):
             await destination.send(
                 f"{ctx_author.mention} don't do that, Bot is only trying to help"
             )
@@ -211,7 +211,7 @@ async def _mass_ban(guild, command_name, ctx_author, destination, members,
     _list = members
     for member in members:
         try:
-            if member.id == ctx_author.id or member.id == guild.me.id:
+            if member.id in (ctx_author.id, guild.me.id):
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
@@ -235,7 +235,7 @@ async def _softban(guild, command_name, ctx_author, destination, member,
                    reason):
     for member in member:
         try:
-            if member.id == ctx_author.id or member.id == guild.me.id:
+            if member.id in (ctx_author.id, guild.me.id):
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
@@ -263,7 +263,7 @@ async def _softban(guild, command_name, ctx_author, destination, member,
 async def _temp_ban(guild, command_name, ctx_author, destination, member, duration, reason):
     for member in member:
         try:
-            if member.id == ctx_author.id or member.id == guild.me.id:
+            if member.id in (ctx_author.id, guild.me.id):
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
@@ -302,7 +302,7 @@ async def _unban(guild, command_name, ctx_author, destination, member, reason):
 # MUTE
 async def _timeout(guild, command_name, ctx_author, destination, member, _datetime,
                    reason):
-    if member.id == ctx_author.id or member.id == guild.me.id:
+    if member.id in (ctx_author.id, guild.me.id):
         await destination.send(
             f"{ctx_author.mention} don't do that, Bot is only trying to help"
         )
@@ -321,7 +321,7 @@ async def _timeout(guild, command_name, ctx_author, destination, member, _dateti
 
 
 async def _mute(guild, command_name, ctx_author, destination, member, reason):
-    if member.id == ctx_author.id or member.id == guild.me.id:
+    if member.id in (ctx_author.id, guild.me.id):
         await destination.send(
             f"{ctx_author.mention} don't do that, Bot is only trying to help"
         )
@@ -380,12 +380,11 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
                 reason=
                 f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
             )
-            await destination.send(
+            return await destination.send(
                 f'{ctx_author.mention} **{member}** has been unmuted now!'
             )
-        else:
-            await destination.send(
-                f"{ctx_author.mention} **{member.name}** already unmuted")
+        await destination.send(
+            f"{ctx_author.mention} **{member.name}** already unmuted")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
@@ -394,7 +393,7 @@ async def _unmute(guild, command_name, ctx_author, destination, member,
 
 async def _kick(guild, command_name, ctx_author, destination, member, reason):
     try:
-        if member.id == ctx_author.id or member.id == guild.me.id:
+        if member.id in (ctx_author.id, guild.me.id):
             await destination.send(
                 f"{ctx_author.mention} don't do that, Bot is only trying to help"
             )
@@ -417,7 +416,7 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members,
     _list = members
     for member in members:
         try:
-            if member.id == ctx_author.id or member.id == guild.me.id:
+            if member.id in (ctx_author.id, guild.me.id):
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
@@ -444,7 +443,7 @@ async def _block(guild, command_name, ctx_author, destination, channel, member,
                  reason):
     for member in member:
         try:
-            if member.id == ctx_author.id or member.id == guild.me.id:
+            if member.id in (ctx_author.id, guild.me.id):
                 await destination.send(
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )

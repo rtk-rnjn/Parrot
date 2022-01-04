@@ -1171,7 +1171,7 @@ class SokobanGame:
             for _index, j in enumerate(i):
                 if j == '@':
                     self.player = [index, _index]
-                if (j == '$') or (j == 'x'):
+                if j in ('$', 'x'):
                     self.blocks.append([index, _index])
         return self.target == self.blocks
 
@@ -2719,7 +2719,7 @@ class Games(Cog):
             correct = await self.bot.wait_for("message", check=check, timeout=30)
         except Exception: 
             return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
-        if correct.content.lower() == "yes" or correct.content.lower() == "y":
+        if correct.content.lower() in ("yes", "y"):
             embed = discord.Embed(title="Yay! I guessed it right", color=0xFF0000)
             await ctx.send(embed=embed)
         else:

@@ -807,7 +807,7 @@ class Snakes(Cog):
         # Prepare a question.
         question = random.choice(self.snake_quizzes)
         answer = question["answerkey"]
-        options = {key: question["options"][key] for key in ANSWERS_EMOJI.keys()}
+        options = {key: question["options"][key] for key in ANSWERS_EMOJI}
 
         # Build and send the embed.
         embed = Embed(

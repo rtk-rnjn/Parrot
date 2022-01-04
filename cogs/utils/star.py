@@ -426,10 +426,9 @@ class Stars(Cog):
         if channel.id == starboard_channel.id:
             if not (data := await collection.find_one({'bot_message_id': message_id})):
                 raise StarError('Could not find message in the starboard.')
-            else:
-                ch = channel.guild.get_channel_or_thread(data['channel_id'])
-                if ch is None:
-                    raise StarError('Could not find original channel.')
+            ch = channel.guild.get_channel_or_thread(data['channel_id'])
+            if ch is None:
+                raise StarError('Could not find original channel.')
 
             return await self._unstar_message(ch, data['message_id'], starrer_id, collection=collection)
 

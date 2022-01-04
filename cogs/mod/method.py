@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from utilities.database import parrot_db
-import discord, asyncio, aiohttp, time
+import discord
+import asyncio
+import aiohttp
+import time
 
 from datetime import datetime
 

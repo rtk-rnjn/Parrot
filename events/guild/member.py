@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from core import Cog, Parrot
 from utilities.database import parrot_db
-import discord, time
+import discord
+import time
 
 collection = parrot_db['server_config']
 log = parrot_db['logging']

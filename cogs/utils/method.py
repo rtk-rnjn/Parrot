@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-import discord, typing, random
+import discord
+import typing
+import random
 
 from datetime import datetime
 from time import time

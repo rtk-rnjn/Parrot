@@ -9,7 +9,7 @@ import functools
 from utilities.emotes import emojis
 from typing import Any
 
-__all__ = ("Context", )
+__all__ = ("Context",)
 
 THUMBS_UP = "\N{THUMBS UP SIGN}"
 
@@ -20,8 +20,15 @@ CONFIRM_REACTIONS = (
 
 
 class ConfirmationView(discord.ui.View):
-    def __init__(self, *, timeout: float, author_id: int, reacquire: bool,
-                 ctx: Context, delete_after: bool) -> None:
+    def __init__(
+        self,
+        *,
+        timeout: float,
+        author_id: int,
+        reacquire: bool,
+        ctx: Context,
+        delete_after: bool,
+    ) -> None:
         super().__init__(timeout=timeout)
         self.value: typing.Optional[bool] = None
         self.delete_after: bool = delete_after
@@ -30,12 +37,12 @@ class ConfirmationView(discord.ui.View):
         self.reacquire: bool = reacquire
         self.message: typing.Optional[discord.Message] = None
 
-    async def interaction_check(self,
-                                interaction: discord.Interaction) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
         await interaction.response.send_message(
-            'This confirmation dialog is not for you.', ephemeral=True)
+            "This confirmation dialog is not for you.", ephemeral=True
+        )
         return False
 
     async def on_timeout(self) -> None:
@@ -44,18 +51,18 @@ class ConfirmationView(discord.ui.View):
         if self.delete_after and self.message:
             await self.message.delete()
 
-    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
-    async def confirm(self, button: discord.ui.Button,
-                      interaction: discord.Interaction):
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
+    async def confirm(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         self.value = True
         await interaction.response.defer()
         if self.delete_after:
             await interaction.delete_original_message()
         self.stop()
 
-    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.red)
-    async def cancel(self, button: discord.ui.Button,
-                     interaction: discord.Interaction):
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.value = False
         await interaction.response.defer()
         if self.delete_after:
@@ -65,12 +72,13 @@ class ConfirmationView(discord.ui.View):
 
 class Context(commands.Context):
     """A custom implementation of commands.Context class."""
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(**kwargs)
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy
-        return f'<core.{self.bot.user.name} Context>'
+        return f"<core.{self.bot.user.name} Context>"
 
     @property
     def session(self) -> Any:
@@ -86,8 +94,7 @@ class Context(commands.Context):
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
-            context = args[0] if isinstance(args[0],
-                                            commands.Context) else args[1]
+            context = args[0] if isinstance(args[0], commands.Context) else args[1]
             try:
                 async with context.typing():
                     await func(*args, **kwargs)
@@ -97,13 +104,13 @@ class Context(commands.Context):
         return wrapped
 
     async def show_help(self, command=None):
-        cmd = self.bot.get_command('help')
+        cmd = self.bot.get_command("help")
         command = command or self.command.qualified_name
         await self.invoke(cmd, command=command)
 
-    async def send(self,
-                   content: typing.Optional[str] = None,
-                   **kwargs) -> typing.Optional[discord.Message]:
+    async def send(
+        self, content: typing.Optional[str] = None, **kwargs
+    ) -> typing.Optional[discord.Message]:
         if not (self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
@@ -115,7 +122,7 @@ class Context(commands.Context):
 
         return await super().send(content, **kwargs)
 
-    async def reply(self, content: typing.Optional[str]=None, **kwargs):
+    async def reply(self, content: typing.Optional[str] = None, **kwargs):
         if not (self.channel.permissions_for(self.me)).send_messages:
             try:
                 await self.author.send(
@@ -128,31 +135,33 @@ class Context(commands.Context):
 
     async def entry_to_code(self, entries) -> typing.Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
-        output = ['```']
+        output = ["```"]
         for name, entry in entries:
-            output.append(f'{name:<{width}}: {entry}')
-        output.append('```')
-        await self.send('\n'.join(output))
+            output.append(f"{name:<{width}}: {entry}")
+        output.append("```")
+        await self.send("\n".join(output))
 
     async def indented_entry_to_code(self, entries) -> typing.Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
-        output = ['```']
+        output = ["```"]
         for name, entry in entries:
-            output.append(f'\u200b{name:>{width}}: {entry}')
-        output.append('```')
-        await self.send('\n'.join(output))
+            output.append(f"\u200b{name:>{width}}: {entry}")
+        output.append("```")
+        await self.send("\n".join(output))
 
     async def emoji(self, emoji: str) -> str:
         return emojis[emoji]
 
-    async def prompt(self,
-                     message: str,
-                     *,
-                     timeout: float = 60.0,
-                     delete_after: bool = True,
-                     reacquire: bool = True,
-                     author_id: typing.Optional[int] = None,
-                     **kwargs) -> typing.Optional[bool]:
+    async def prompt(
+        self,
+        message: str,
+        *,
+        timeout: float = 60.0,
+        delete_after: bool = True,
+        reacquire: bool = True,
+        author_id: typing.Optional[int] = None,
+        **kwargs,
+    ) -> typing.Optional[bool]:
         author_id = author_id or self.author.id
         view = ConfirmationView(
             timeout=timeout,
@@ -168,21 +177,23 @@ class Context(commands.Context):
     async def release(self) -> None:
         await asyncio.sleep(0)
 
-    async def safe_send(self, content, *, escape_mentions=True, **kwargs) -> typing.Optional[discord.Message]:
+    async def safe_send(
+        self, content, *, escape_mentions=True, **kwargs
+    ) -> typing.Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
 
         if len(content) > 2000:
             fp = io.BytesIO(content.encode())
-            kwargs.pop('file', None)
-            return await self.send(file=discord.File(
-                fp, filename='message_too_long.txt'),
-                                   **kwargs)
+            kwargs.pop("file", None)
+            return await self.send(
+                file=discord.File(fp, filename="message_too_long.txt"), **kwargs
+            )
         return await self.send(content)
 
     async def bulk_add_reactions(
-            self, message: discord.Message,
-            *reactions: typing.Union[discord.Emoji, str]) -> None:
+        self, message: discord.Message, *reactions: typing.Union[discord.Emoji, str]
+    ) -> None:
         coros = [
             asyncio.ensure_future(message.add_reaction(reaction))
             for reaction in reactions
@@ -203,14 +214,16 @@ class Context(commands.Context):
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
         def check(payload: discord.RawReactionActionEvent) -> bool:
-            return (payload.message_id == message.id
-                    and payload.user_id == user.id
-                    and str(payload.emoji) in CONFIRM_REACTIONS)
+            return (
+                payload.message_id == message.id
+                and payload.user_id == user.id
+                and str(payload.emoji) in CONFIRM_REACTIONS
+            )
 
         try:
-            payload = await bot.wait_for("raw_reaction_add",
-                                         check=check,
-                                         timeout=timeout)
+            payload = await bot.wait_for(
+                "raw_reaction_add", check=check, timeout=timeout
+            )
             return str(payload.emoji) == THUMBS_UP
         except asyncio.TimeoutError:
             return None

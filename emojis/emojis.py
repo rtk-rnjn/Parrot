@@ -6,10 +6,14 @@ ALIAS_TO_EMOJI = db.get_emoji_aliases()
 EMOJI_TO_ALIAS = {v: k for k, v in ALIAS_TO_EMOJI.items()}
 EMOJI_TO_ALIAS_SORTED = sorted(ALIAS_TO_EMOJI.values(), key=len, reverse=True)
 
-RE_TEXT_TO_EMOJI_GROUP = '({0})'.format('|'.join([re.escape(emoji) for emoji in ALIAS_TO_EMOJI]))
+RE_TEXT_TO_EMOJI_GROUP = "({0})".format(
+    "|".join([re.escape(emoji) for emoji in ALIAS_TO_EMOJI])
+)
 RE_TEXT_TO_EMOJI = re.compile(RE_TEXT_TO_EMOJI_GROUP)
 
-RE_EMOJI_TO_TEXT_GROUP = '({0})'.format('|'.join([re.escape(emoji) for emoji in EMOJI_TO_ALIAS_SORTED]))
+RE_EMOJI_TO_TEXT_GROUP = "({0})".format(
+    "|".join([re.escape(emoji) for emoji in EMOJI_TO_ALIAS_SORTED])
+)
 RE_EMOJI_TO_TEXT = re.compile(RE_EMOJI_TO_TEXT_GROUP)
 
 
@@ -67,5 +71,5 @@ def count(msg, unique=False):
     :rtype: int
     """
     if unique:
-        return len({match.group() for match in  RE_EMOJI_TO_TEXT.finditer(msg)})
-    return len([match.group() for match in  RE_EMOJI_TO_TEXT.finditer(msg)])
+        return len({match.group() for match in RE_EMOJI_TO_TEXT.finditer(msg)})
+    return len([match.group() for match in RE_EMOJI_TO_TEXT.finditer(msg)])

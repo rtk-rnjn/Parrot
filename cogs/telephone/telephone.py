@@ -10,6 +10,7 @@ from .method import dial
 
 class Telephone(Cog):
     """To Make calls"""
+
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.redial = {}
@@ -17,9 +18,9 @@ class Telephone(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='\N{BLACK TELEPHONE}')
+        return discord.PartialEmoji(name="\N{BLACK TELEPHONE}")
 
-    @commands.command(aliases=['call'])
+    @commands.command(aliases=["call"])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @commands.bot_has_permissions(add_reactions=True)
@@ -43,9 +44,10 @@ class Telephone(Cog):
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
             f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
             f"`Can Redial?     :` **True**\n"
-            f"`Call log saved? :` **False**\n")
+            f"`Call log saved? :` **False**\n"
+        )
 
-    @commands.command(aliases=['recall'])
+    @commands.command(aliases=["recall"])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @Context.with_type
@@ -67,12 +69,13 @@ class Telephone(Cog):
                     f"`Tried to call   :` **{server.name} ({server.id})**\n"
                     f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
                     f"`Can Redial?     :` **True**\n"
-                    f"`Call log saved? :` **False**\n")
+                    f"`Call log saved? :` **False**\n"
+                )
             await ctx.send(
                 "That server no longer exists or bot is being removed from that server"
             )
 
-    @commands.command(aliases=['reversecall'])
+    @commands.command(aliases=["reversecall"])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @Context.with_type
@@ -93,4 +96,5 @@ class Telephone(Cog):
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
             f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
             f"`Can Redial?     :` **True**\n"
-            f"`Call log saved? :` **False**\n")
+            f"`Call log saved? :` **False**\n"
+        )

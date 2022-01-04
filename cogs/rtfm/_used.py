@@ -9,22 +9,20 @@ from yaml import safe_load as yaml_load
 
 from _tio import Tio
 
-with open('extra/lang.txt') as f:
-    languages = f.read().split('\n')
+with open("extra/lang.txt") as f:
+    languages = f.read().split("\n")
 
 wrapping = {
-    'c': '#include <stdio.h>\nint main() {code}',
-    'cpp': '#include <iostream>\nint main() {code}',
-    'cs':
-    'using System;class Program {static void Main(string[] args) {code}}',
-    'java':
-    'public class Main {public static void main(String[] args) {code}}',
-    'rust': 'fn main() {code}',
-    'd': 'import std.stdio; void main(){code}',
-    'kotlin': 'fun main(args: Array<String>) {code}'
+    "c": "#include <stdio.h>\nint main() {code}",
+    "cpp": "#include <iostream>\nint main() {code}",
+    "cs": "using System;class Program {static void Main(string[] args) {code}}",
+    "java": "public class Main {public static void main(String[] args) {code}}",
+    "rust": "fn main() {code}",
+    "d": "import std.stdio; void main(){code}",
+    "kotlin": "fun main(args: Array<String>) {code}",
 }
 
-with open('extra/default_langs.yml', 'r') as file:
+with open("extra/default_langs.yml", "r") as file:
     default_langs = yaml_load(file)
 
 
@@ -32,20 +30,20 @@ def prepare_payload(payload):
     no_code = False
 
     try:
-        language, text = re.split(r'\s+', payload, maxsplit=1)
+        language, text = re.split(r"\s+", payload, maxsplit=1)
     except ValueError:
         # single word : no code yet no file attached
         emb = discord.Embed(
-            title='SyntaxError',
+            title="SyntaxError",
             description="Command `run` missing a required argument: `code`",
-            colour=0xff0000)
-        return ('', emb, True)
+            colour=0xFF0000,
+        )
+        return ("", emb, True)
 
     return (language, text, False)
 
 
-async def get_message(interaction: discord.Interaction,
-                      fetch=False) -> discord.Message:
+async def get_message(interaction: discord.Interaction, fetch=False) -> discord.Message:
     """Retrieve referenced message, trying cache first and handle deletion"""
     ref = interaction.message.reference
 
@@ -78,24 +76,25 @@ class RerunBtn(discord.ui.Button):
 
         if message is None:
             await interaction.response.send_message(
-                'No code to run since original message was deleted.',
-                ephemeral=True)
+                "No code to run since original message was deleted.", ephemeral=True
+            )
             return self.view.stop()  # message won't come back
 
         if interaction.user.id != message.author.id:
             await interaction.response.send_message(
-                'Only the one who used the run command can use these buttons.',
-                ephemeral=True)
+                "Only the one who used the run command can use these buttons.",
+                ephemeral=True,
+            )
 
         payload = message.content
 
         # we need to strip the prefix and command name ('do run '), the prefix
         # having multiple and even custom possible values
-        parrot_db = await self.bot.db('parrot_db')
-        collection = parrot_db['server_config']
-        data = await collection.find_one({'_id': interaction.guild_id})
-        if payload.startswith(data['prefix']):
-            payload = payload[len(data['prefix']) + 4:]
+        parrot_db = await self.bot.db("parrot_db")
+        collection = parrot_db["server_config"]
+        data = await collection.find_one({"_id": interaction.guild_id})
+        if payload.startswith(data["prefix"]):
+            payload = payload[len(data["prefix"]) + 4 :]
 
         language, text, errored = prepare_payload(payload)
 
@@ -111,33 +110,34 @@ class Refresh(discord.ui.View):
     def __init__(self, bot, no_rerun, timeout=300):
         super().__init__()
 
-        item = RerunBtn(bot=bot,
-                        label='Run again',
-                        style=discord.ButtonStyle.grey,
-                        emoji='🔄',
-                        disabled=no_rerun)
+        item = RerunBtn(
+            bot=bot,
+            label="Run again",
+            style=discord.ButtonStyle.grey,
+            emoji="🔄",
+            disabled=no_rerun,
+        )
 
         self.add_item(item)
 
         self.children.reverse()  # Run again first
 
-    @discord.ui.button(label='Delete',
-                       style=discord.ButtonStyle.grey,
-                       emoji='🗑')
-    async def delete(self, button: discord.ui.Button,
-                     interaction: discord.Interaction):
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.grey, emoji="🗑")
+    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         message = await get_message(interaction)
 
         if message is None:
             await interaction.response.send_message(
-                'Cannot confirm right to deletion since original message was deleted.',
-                ephemeral=True)
+                "Cannot confirm right to deletion since original message was deleted.",
+                ephemeral=True,
+            )
             return self.stop()
 
         if interaction.user.id != message.author.id:
             return await interaction.response.send_message(
-                'Only the one who used the run command can use these buttons.',
-                ephemeral=True)
+                "Only the one who used the run command can use these buttons.",
+                ephemeral=True,
+            )
 
         await interaction.message.delete()
         self.stop()
@@ -146,62 +146,62 @@ class Refresh(discord.ui.View):
 async def execute_run(bot, language, code, rerun=False) -> tuple:
     # Powered by tio.run
 
-    options = {'--stats': False, '--wrapped': False}
+    options = {"--stats": False, "--wrapped": False}
 
-    lang = language.strip('`').lower()
+    lang = language.strip("`").lower()
 
     optionsAmount = len(options)
 
     # Setting options and removing them from the beginning of the command
     # options may be separated by any single whitespace, which we keep in the list
-    code = re.split(r'(\s)', code, maxsplit=optionsAmount)
+    code = re.split(r"(\s)", code, maxsplit=optionsAmount)
 
     for option in options:
-        if option in code[:optionsAmount * 2]:
+        if option in code[: optionsAmount * 2]:
             options[option] = True
             i = code.index(option)
             code.pop(i)
             code.pop(i)  # remove following whitespace character
 
-    code = ''.join(code)
+    code = "".join(code)
 
     compilerFlags = []
     commandLineOptions = []
     args = []
     inputs = []
 
-    lines = code.split('\n')
+    lines = code.split("\n")
     code = []
     for line in lines:
-        if line.startswith('input '):
-            inputs.append(' '.join(line.split(' ')[1:]).strip('`'))
-        elif line.startswith('compiler-flags '):
-            compilerFlags.extend(line[15:].strip('`').split(' '))
-        elif line.startswith('command-line-options '):
-            commandLineOptions.extend(line[21:].strip('`').split(' '))
-        elif line.startswith('arguments '):
-            args.extend(line[10:].strip('`').split(' '))
+        if line.startswith("input "):
+            inputs.append(" ".join(line.split(" ")[1:]).strip("`"))
+        elif line.startswith("compiler-flags "):
+            compilerFlags.extend(line[15:].strip("`").split(" "))
+        elif line.startswith("command-line-options "):
+            commandLineOptions.extend(line[21:].strip("`").split(" "))
+        elif line.startswith("arguments "):
+            args.extend(line[10:].strip("`").split(" "))
         else:
             code.append(line)
 
-    inputs = '\n'.join(inputs)
+    inputs = "\n".join(inputs)
 
-    code = '\n'.join(code)
+    code = "\n".join(code)
 
     # common identifiers, also used in highlight.js and thus discord codeblocks
     quickmap = {
-        'asm': 'assembly',
-        'c#': 'cs',
-        'c++': 'cpp',
-        'csharp': 'cs',
-        'f#': 'fs',
-        'fsharp': 'fs',
-        'js': 'javascript',
-        'nimrod': 'nim',
-        'py': 'python',
-        'q#': 'qs',
-        'rs': 'rust',
-        'sh': 'bash',
+        "asm": "assembly",
+        "c#": "cs",
+        "c++": "cpp",
+        "csharp": "cs",
+        "f#": "fs",
+        "fsharp": "fs",
+        "js": "javascript",
+        "nimrod": "nim",
+        "py": "python",
+        "q#": "qs",
+        "rs": "rust",
+        "sh": "bash",
     }
 
     if lang in quickmap:
@@ -218,7 +218,7 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
                 i += 1
                 if i == 10:
                     break
-        matches = '\n'.join(matches)
+        matches = "\n".join(matches)
 
         output = f"`{lang}` not available."
         if matches:
@@ -226,107 +226,112 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
 
         return output
 
-    code = code.strip('`')
+    code = code.strip("`")
 
-    if '\n' in code:
+    if "\n" in code:
         firstLine = code.splitlines()[0]
-        if re.fullmatch(r'([0-9A-z]*)\b', firstLine):
-            code = code[len(firstLine) + 1:]
+        if re.fullmatch(r"([0-9A-z]*)\b", firstLine):
+            code = code[len(firstLine) + 1 :]
 
-    if options['--wrapped']:
-        if not (any(map(lambda x: lang.split('-')[0] == x,
-                        wrapping))) or lang in ('cs-mono-shell', 'cs-csi'):
-            return f'`{lang}` cannot be wrapped.'
+    if options["--wrapped"]:
+        if not (any(map(lambda x: lang.split("-")[0] == x, wrapping))) or lang in (
+            "cs-mono-shell",
+            "cs-csi",
+        ):
+            return f"`{lang}` cannot be wrapped."
 
         for beginning in wrapping:
-            if lang.split('-')[0] == beginning:
-                code = wrapping[beginning].replace('code', code)
+            if lang.split("-")[0] == beginning:
+                code = wrapping[beginning].replace("code", code)
                 break
 
-    tio = Tio(lang,
-              code,
-              compilerFlags=compilerFlags,
-              inputs=inputs,
-              commandLineOptions=commandLineOptions,
-              args=args)
+    tio = Tio(
+        lang,
+        code,
+        compilerFlags=compilerFlags,
+        inputs=inputs,
+        commandLineOptions=commandLineOptions,
+        args=args,
+    )
 
     result = await tio.send()
 
-    if not options['--stats']:
+    if not options["--stats"]:
         try:
             start = result.rindex("Real time: ")
             end = result.rindex("%\nExit code: ")
-            result = result[:start] + result[end + 2:]
+            result = result[:start] + result[end + 2 :]
         except ValueError:
             # Too much output removes this markers
             pass
 
-    if len(result) > 1992 or result.count('\n') > 40:
+    if len(result) > 1992 or result.count("\n") > 40:
         # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
         # Or if it floods with more than 40 lines
         # Create a hastebin and send it back
         link = await paste(result)
 
         if link is None:
-            output = "Your output was too long, but I couldn't make an online bin out of it."
+            output = (
+                "Your output was too long, but I couldn't make an online bin out of it."
+            )
         else:
-            output = f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}'
+            output = f"Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}"
 
         return output
 
-    zero = '\N{zero width space}'
-    output = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', result)
+    zero = "\N{zero width space}"
+    output = re.sub("```", f"{zero}`{zero}`{zero}`{zero}", result)
 
     # p, as placeholder, prevents Discord from taking the first line
     # as a language identifier for markdown and remove it
 
-    return f'```p\n{output}```'
+    return f"```p\n{output}```"
 
 
 def get_raw(link):
     """Returns the url for raw version on a hastebin-like"""
-    link = link.strip('<>/')  # Allow for no-embed links
+    link = link.strip("<>/")  # Allow for no-embed links
 
-    authorized = ('https://hastebin.com', 'https://gist.github.com',
-                  'https://gist.githubusercontent.com')
+    authorized = (
+        "https://hastebin.com",
+        "https://gist.github.com",
+        "https://gist.githubusercontent.com",
+    )
 
     if not any(link.startswith(url) for url in authorized):
         raise commands.BadArgument(
-            message=
-            f"I only accept links from {', '.join(authorized)}. (Starting with 'http')."
+            message=f"I only accept links from {', '.join(authorized)}. (Starting with 'http')."
         )
 
-    domain = link.split('/')[2]
+    domain = link.split("/")[2]
 
-    if domain == 'hastebin.com':
-        if '/raw/' in link:
+    if domain == "hastebin.com":
+        if "/raw/" in link:
             return link
-        token = link.split('/')[-1]
-        if '.' in token:
-            token = token[:token.rfind('.')]  # removes extension
-        return f'https://hastebin.com/raw/{token}'
+        token = link.split("/")[-1]
+        if "." in token:
+            token = token[: token.rfind(".")]  # removes extension
+        return f"https://hastebin.com/raw/{token}"
     # Github uses redirection so raw -> usercontent and no raw -> normal
     # We still need to ensure we get a raw version after this potential redirection
-    if '/raw' in link:
+    if "/raw" in link:
         return link
-    return link + '/raw'
+    return link + "/raw"
 
 
 async def paste(text):
     """Return an online bin of given text"""
     async with aiohttp.ClientSession() as aioclient:
-        post = await aioclient.post('https://hastebin.com/documents',
-                                    data=text)
+        post = await aioclient.post("https://hastebin.com/documents", data=text)
         if post.status == 200:
             response = await post.text()
-            return f'https://hastebin.com/{response[8:-2]}'
+            return f"https://hastebin.com/{response[8:-2]}"
 
         # Rollback bin
-        post = await aioclient.post("https://bin.readthedocs.fr/new",
-                                    data={
-                                        'code': text,
-                                        'lang': 'txt'
-                                    })
+        post = await aioclient.post(
+            "https://bin.readthedocs.fr/new", data={"code": text, "lang": "txt"}
+        )
         if post.status == 200:
             return post.url
 

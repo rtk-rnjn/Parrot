@@ -5,8 +5,9 @@ from utilities.config import SUPER_USER
 
 from utilities.database import parrot_db, enable_disable
 
-collection = parrot_db['server_config']
-c = parrot_db['ticket']
+collection = parrot_db["server_config"]
+c = parrot_db["ticket"]
+
 
 def is_guild_owner():
     async def predicate(ctx):
@@ -28,15 +29,17 @@ def is_me():
 
 def has_verified_role_ticket():
     async def predicate(ctx):
-        data = await c.find_one({'_id': ctx.guild.id})
+        data = await c.find_one({"_id": ctx.guild.id})
         if not data:
             return False
-        data = await c.find_one({'_id': ctx.guild.id})
-        roles = data['verified_roles']
-        if not roles: return False
+        data = await c.find_one({"_id": ctx.guild.id})
+        roles = data["verified_roles"]
+        if not roles:
+            return False
         for role in roles:
-            if ctx.guild.get_role(role) in ctx.author.roles: return True
-            
+            if ctx.guild.get_role(role) in ctx.author.roles:
+                return True
+
         raise ex.NoVerifiedRoleTicket()
 
     return commands.check(predicate)
@@ -44,11 +47,11 @@ def has_verified_role_ticket():
 
 def is_mod():
     async def predicate(ctx):
-        data = await collection.find_one({'_id': ctx.guild.id})
+        data = await collection.find_one({"_id": ctx.guild.id})
         if not data:
             return False
-        role = ctx.guild.get_role(data['mod_role'])
-        if not role: 
+        role = ctx.guild.get_role(data["mod_role"])
+        if not role:
             return False
         if role in ctx.author.roles:
             return True
@@ -56,67 +59,72 @@ def is_mod():
 
     return commands.check(predicate)
 
+
 def can_run():
     async def predicate(ctx):
-        data = await collection.find_one({'_id': ctx.author.id})
+        data = await collection.find_one({"_id": ctx.author.id})
         if not data:
             return True
-        if data['cmd']:
+        if data["cmd"]:
             return False
-        if data['global']:
+        if data["global"]:
             return False
+
     return commands.check(predicate)
+
 
 async def _can_run(ctx):
     if ctx.guild is not None:
         roles = set(ctx.author.roles)
-        collection = enable_disable[f'{ctx.guild.id}']
+        collection = enable_disable[f"{ctx.guild.id}"]
         if ctx.command:
-            if data := await collection.find_one({'_id': ctx.command.qualified_name}):
-                if ctx.channel.id in data['channel_in']: 
+            if data := await collection.find_one({"_id": ctx.command.qualified_name}):
+                if ctx.channel.id in data["channel_in"]:
                     return True
                 for role in roles:
-                    if role.id in data['role_in']: 
+                    if role.id in data["role_in"]:
                         return True
                 for role in roles:
-                    if role.id in data['role_out']: 
+                    if role.id in data["role_out"]:
                         return False
-                if ctx.channel.id in data['channel_out']: 
+                if ctx.channel.id in data["channel_out"]:
                     return False
-                if data['server']: 
+                if data["server"]:
                     return False
-                if not data['server']: 
+                if not data["server"]:
                     return True
         if ctx.command.cog:
-            if data := await collection.find_one({'_id': ctx.command.cog.qualified_name}):
-                if ctx.channel.id in data['channel_in']: 
+            if data := await collection.find_one(
+                {"_id": ctx.command.cog.qualified_name}
+            ):
+                if ctx.channel.id in data["channel_in"]:
                     return True
                 for role in roles:
-                    if role.id in data['role_in']: 
+                    if role.id in data["role_in"]:
                         return True
                 for role in roles:
-                    if role.id in data['role_out']: 
+                    if role.id in data["role_out"]:
                         return False
-                if ctx.channel.id in data['channel_out']: 
+                if ctx.channel.id in data["channel_out"]:
                     return False
-                if data['server']: 
+                if data["server"]:
                     return False
-                if not data['server']: 
+                if not data["server"]:
                     return True
-        if data := await collection.find_one({'_id': 'all'}):
-            if ctx.channel.id in data['channel_in']: 
+        if data := await collection.find_one({"_id": "all"}):
+            if ctx.channel.id in data["channel_in"]:
                 return True
             for role in roles:
-                if role.id in data['role_in']: 
+                if role.id in data["role_in"]:
                     return True
             for role in roles:
-                if role.id in data['role_out']: 
+                if role.id in data["role_out"]:
                     return False
-            if ctx.channel.id in data['channel_out']: 
+            if ctx.channel.id in data["channel_out"]:
                 return False
-            if data['server']: 
+            if data["server"]:
                 return False
-            if not data['server']: 
+            if not data["server"]:
                 return True
         return True
     return False

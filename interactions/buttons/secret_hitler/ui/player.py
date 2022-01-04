@@ -19,17 +19,18 @@ __all__ = (
 
 class PlayerButton(SelectButton[Player[User], "PlayerUI"]):
     def __init__(self, item: Player[User], disabled: bool):
-        super().__init__(item,
-                         style=discord.ButtonStyle.secondary,
-                         label=item.identifier.display_name,
-                         disabled=disabled)
+        super().__init__(
+            item,
+            style=discord.ButtonStyle.secondary,
+            label=item.identifier.display_name,
+            disabled=disabled,
+        )
 
 
 class PlayerUI(SelectUI):
     button_type: ClassVar[type[PlayerButton]] = PlayerButton
 
-    def __init__(self, game: GameUI, target: Player,
-                 options: list[Player[User]]):
+    def __init__(self, game: GameUI, target: Player, options: list[Player[User]]):
         super().__init__(game, target, options)
 
         for player in self.game.game.players:

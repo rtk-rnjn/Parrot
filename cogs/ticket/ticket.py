@@ -10,18 +10,19 @@ from cogs.ticket import method as mt
 
 class Ticket(Cog):
     """A simple ticket service, trust me it's better than YAG. LOL!"""
+
     def __init__(self, bot: Parrot):
         self.bot = bot
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='ticket_', id=892425759287824415)
+        return discord.PartialEmoji(name="ticket_", id=892425759287824415)
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(manage_channels=True,
-                                  embed_links=True,
-                                  manage_roles=True)
+    @commands.bot_has_permissions(
+        manage_channels=True, embed_links=True, manage_roles=True
+    )
     @Context.with_type
     async def new(self, ctx: Context, *, args=None):
         """This creates a new ticket. Add any words after the command if you'd like to send a message when we initially create your ticket."""

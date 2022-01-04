@@ -26,10 +26,9 @@ from utilities.converters import convert_bool
 from cogs.meta.robopage import SimplePages
 
 
-class auditFlag(commands.FlagConverter,
-                case_insensitive=True,
-                prefix='--',
-                delimiter=' '):
+class auditFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
     guild: typing.Optional[discord.Guild]
     limit: typing.Optional[int] = 100
     action: typing.Optional[str]
@@ -41,39 +40,39 @@ class auditFlag(commands.FlagConverter,
 
 
 act = {
-    'channel_create': discord.AuditLogAction.channel_create,
-    'channel_delete': discord.AuditLogAction.channel_delete,
-    'channel_update': discord.AuditLogAction.channel_update,
-    'overwrite_create': discord.AuditLogAction.overwrite_create,
-    'overwrite_update': discord.AuditLogAction.overwrite_update,
-    'overwrite_delete': discord.AuditLogAction.overwrite_delete,
-    'kick': discord.AuditLogAction.kick,
-    'member_prune': discord.AuditLogAction.member_prune,
-    'ban': discord.AuditLogAction.ban,
-    'unban': discord.AuditLogAction.unban,
-    'member_update': discord.AuditLogAction.member_update,
-    'member_role_update': discord.AuditLogAction.member_role_update,
-    'member_disconnect': discord.AuditLogAction.member_disconnect,
-    'bot_add': discord.AuditLogAction.bot_add,
-    'role_create': discord.AuditLogAction.role_create,
-    'role_update': discord.AuditLogAction.role_update,
-    'role_delete': discord.AuditLogAction.role_delete,
-    'invite_create': discord.AuditLogAction.invite_create,
-    'invite_delete': discord.AuditLogAction.invite_delete,
-    'invite_update': discord.AuditLogAction.invite_update,
-    'webhook_create': discord.AuditLogAction.webhook_create,
-    'webhook_delete': discord.AuditLogAction.webhook_delete,
-    'webhook_update': discord.AuditLogAction.webhook_update,
-    'emoji_create': discord.AuditLogAction.emoji_create,
-    'emoji_delete': discord.AuditLogAction.emoji_delete,
-    'emoji_update': discord.AuditLogAction.emoji_update,
-    'message_delete': discord.AuditLogAction.message_delete,
-    'message_bulk_delete': discord.AuditLogAction.message_bulk_delete,
-    'message_pin': discord.AuditLogAction.message_pin,
-    'message_unpin': discord.AuditLogAction.message_unpin,
-    'integration_create': discord.AuditLogAction.integration_create,
-    'integration_delete': discord.AuditLogAction.integration_delete,
-    'integration_update': discord.AuditLogAction.integration_update,
+    "channel_create": discord.AuditLogAction.channel_create,
+    "channel_delete": discord.AuditLogAction.channel_delete,
+    "channel_update": discord.AuditLogAction.channel_update,
+    "overwrite_create": discord.AuditLogAction.overwrite_create,
+    "overwrite_update": discord.AuditLogAction.overwrite_update,
+    "overwrite_delete": discord.AuditLogAction.overwrite_delete,
+    "kick": discord.AuditLogAction.kick,
+    "member_prune": discord.AuditLogAction.member_prune,
+    "ban": discord.AuditLogAction.ban,
+    "unban": discord.AuditLogAction.unban,
+    "member_update": discord.AuditLogAction.member_update,
+    "member_role_update": discord.AuditLogAction.member_role_update,
+    "member_disconnect": discord.AuditLogAction.member_disconnect,
+    "bot_add": discord.AuditLogAction.bot_add,
+    "role_create": discord.AuditLogAction.role_create,
+    "role_update": discord.AuditLogAction.role_update,
+    "role_delete": discord.AuditLogAction.role_delete,
+    "invite_create": discord.AuditLogAction.invite_create,
+    "invite_delete": discord.AuditLogAction.invite_delete,
+    "invite_update": discord.AuditLogAction.invite_update,
+    "webhook_create": discord.AuditLogAction.webhook_create,
+    "webhook_delete": discord.AuditLogAction.webhook_delete,
+    "webhook_update": discord.AuditLogAction.webhook_update,
+    "emoji_create": discord.AuditLogAction.emoji_create,
+    "emoji_delete": discord.AuditLogAction.emoji_delete,
+    "emoji_update": discord.AuditLogAction.emoji_update,
+    "message_delete": discord.AuditLogAction.message_delete,
+    "message_bulk_delete": discord.AuditLogAction.message_bulk_delete,
+    "message_pin": discord.AuditLogAction.message_pin,
+    "message_unpin": discord.AuditLogAction.message_unpin,
+    "integration_create": discord.AuditLogAction.integration_create,
+    "integration_delete": discord.AuditLogAction.integration_delete,
+    "integration_update": discord.AuditLogAction.integration_update,
 }
 
 
@@ -83,17 +82,18 @@ class nitro(discord.ui.View):
         self.ctx = ctx
         self.bot = ctx.bot
 
-    @discord.ui.button(custom_id="fun (nitro)",
-                    label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-                    style=discord.ButtonStyle.green)
-    async def func(self, button: discord.ui.Button,
-                interaction: discord.Interaction):
+    @discord.ui.button(
+        custom_id="fun (nitro)",
+        label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+        style=discord.ButtonStyle.green,
+    )
+    async def func(self, button: discord.ui.Button, interaction: discord.Interaction):
 
         i = discord.Embed()
-        i.set_image(
-            url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
-        await interaction.response.send_message("https://imgur.com/NQinKJB",
-                                                ephemeral=True)
+        i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
+        await interaction.response.send_message(
+            "https://imgur.com/NQinKJB", ephemeral=True
+        )
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
@@ -101,8 +101,8 @@ class nitro(discord.ui.View):
 
         ni = discord.Embed(
             title="You received a gift, but...",
-            description=
-            "The gift link has either expired or has been\nrevoked.")
+            description="The gift link has either expired or has been\nrevoked.",
+        )
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
             await interaction.message.edit(embed=ni, view=self)
@@ -112,6 +112,7 @@ class nitro(discord.ui.View):
 
 class Owner(Cog, command_attrs=dict(hidden=True)):
     """You can not use these commands"""
+
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.count = 0
@@ -119,8 +120,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='early_verified_bot_developer',
-                                    id=892433993537032262)
+        return discord.PartialEmoji(
+            name="early_verified_bot_developer", id=892433993537032262
+        )
 
     @commands.command()
     @commands.is_owner()
@@ -133,7 +135,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         name = f"temp/temp{self.count}"
         name_cog = f"temp.temp{self.count}"
         try:
-            async with async_open(f'{name}.py', 'wb') as f:
+            async with async_open(f"{name}.py", "wb") as f:
                 await f.write(data)
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
@@ -145,7 +147,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
 
         try:
-            self.bot.load_extension(f'{name_cog}')
+            self.bot.load_extension(f"{name_cog}")
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
@@ -163,33 +165,33 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def makefile(self, ctx: Context, name: str, *, text: str):
         """To make a file in ./temp/ directly"""
         try:
-            async with async_open(f'{name}', 'w+') as f:
+            async with async_open(f"{name}", "w+") as f:
                 await f.write(text)
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(
-                f"[ERROR] Could not create file `{name}`: ```py\n{tbe}\n```")
+            await ctx.send(f"[ERROR] Could not create file `{name}`: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] File `{name}` created")
 
-    @commands.command(aliases=['nitroscam', 'nitro-scam'])
+    @commands.command(aliases=["nitroscam", "nitro-scam"])
     @commands.is_owner()
-    async def nitro_scam(self,
-                        ctx: Context,
-                        *,
-                        target: typing.Union[discord.User,
-                                            discord.TextChannel,
-                                            discord.Thread] = None):
+    async def nitro_scam(
+        self,
+        ctx: Context,
+        *,
+        target: typing.Union[discord.User, discord.TextChannel, discord.Thread] = None,
+    ):
         """Fun command"""
         target = target or ctx.channel
-        await target.send(embed=discord.Embed(
-            title="You've been gifted a subscription!",
-            description=
-            "You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
-            timestamp=datetime.datetime.utcnow()).set_thumbnail(
-                url="https://i.imgur.com/w9aiD6F.png"),
-                        view=nitro(ctx))
+        await target.send(
+            embed=discord.Embed(
+                title="You've been gifted a subscription!",
+                description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
+                timestamp=datetime.datetime.utcnow(),
+            ).set_thumbnail(url="https://i.imgur.com/w9aiD6F.png"),
+            view=nitro(ctx),
+        )
 
     @commands.command()
     @commands.is_owner()
@@ -202,14 +204,16 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     @Context.with_type
-    async def ban_user(self,
-                    ctx: Context,
-                    user: discord.User,
-                    cmd: bool = True,
-                    chat: bool = True,
-                    global_: bool = True,
-                    *,
-                    reason: str = None):
+    async def ban_user(
+        self,
+        ctx: Context,
+        user: discord.User,
+        cmd: bool = True,
+        chat: bool = True,
+        global_: bool = True,
+        *,
+        reason: str = None,
+    ):
         """To ban the user"""
         reason = reason or "No reason provided"
         await ban(user.id, cmd, chat, global_, reason)
@@ -220,9 +224,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception:
             pass
 
-    @commands.command(name='image-search',
-                    aliases=['imagesearch', 'imgs'],
-                    hidden=True)
+    @commands.command(name="image-search", aliases=["imagesearch", "imgs"], hidden=True)
     @commands.is_owner()
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
@@ -232,25 +234,29 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         res = await self.bot.session.get(url)
         data = await res.json()
         ls = []
-        for i in data['items']:
-            embed = discord.Embed(title=i['title'],
-                                description=f"```\n{i['snippet']}```",
-                                timestamp=datetime.datetime.utcnow())
+        for i in data["items"]:
+            embed = discord.Embed(
+                title=i["title"],
+                description=f"```\n{i['snippet']}```",
+                timestamp=datetime.datetime.utcnow(),
+            )
             embed.set_footer(text=f"Requester: {ctx.author}")
-            embed.set_image(url=i['link'])
+            embed.set_image(url=i["link"])
             ls.append(embed)
         page = PaginationView(embed_list=ls)
         await page.start(ctx)
 
-    @commands.command(name='ss', hidden=True)
+    @commands.command(name="ss", hidden=True)
     @commands.is_owner()
     @Context.with_type
     async def ss(self, ctx: Context, *, site: str):
         """To take the ss"""
         link = f"https://api.apiflash.com/v1/urltoimage?access_key={os.environ['SCREEN_SHOT']}&delay=1&format=png&no_ads=true&no_cookie_banners=true&no_tracking=true&response_type=image&transparent=true&url={site}&wait_until=page_loaded"
-        return await ctx.reply(embed=discord.Embed(
-            color=ctx.author.color,
-            timestamp=datetime.datetime.utcnow()).set_image(url=link))
+        return await ctx.reply(
+            embed=discord.Embed(
+                color=ctx.author.color, timestamp=datetime.datetime.utcnow()
+            ).set_image(url=link)
+        )
 
     @commands.command()
     @commands.is_owner()
@@ -266,81 +272,84 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     # @Context.with_type
-    async def spy_server(self,
-                        ctx: Context,
-                        guild: discord.Guild = None,
-                        channel_member: str = None):
+    async def spy_server(
+        self, ctx: Context, guild: discord.Guild = None, channel_member: str = None
+    ):
         """This is not really a spy command"""
         guild = guild or ctx.guild
         URL = f"https://discord.com/api/guilds/{guild.id}/widget.json"
         data = await self.bot.session.get(URL)
         json = await data.json()
-        if 'message' in json:
-            return await ctx.reply(
-                f"{ctx.author.mention} can not spy that server")
-        name = json['name']
-        id_ = json['id']
-        instant_invite = json['instant_invite']
-        presence_count = json['presence_count']
+        if "message" in json:
+            return await ctx.reply(f"{ctx.author.mention} can not spy that server")
+        name = json["name"]
+        id_ = json["id"]
+        instant_invite = json["instant_invite"]
+        presence_count = json["presence_count"]
 
         embed_first = discord.Embed(
             title=name,
             # url=instant_invite,
             color=ctx.author.color,
-            timestamp=datetime.datetime.utcnow())
+            timestamp=datetime.datetime.utcnow(),
+        )
         if instant_invite:
             embed_first.url = instant_invite
         embed_first.set_footer(text=f"{id_}")
         embed_first.description = f"**Presence Count:** {presence_count}"
         em_list = [embed_first]
 
-        for channel in json['channels']:
+        for channel in json["channels"]:
             em_chan = discord.Embed(
-                title=channel['name'],
+                title=channel["name"],
                 description=f"**Position:** {channel['position']}",
                 color=ctx.author.color,
-                timestamp=datetime.datetime.utcnow()).set_footer(
-                    text=channel['id'])
+                timestamp=datetime.datetime.utcnow(),
+            ).set_footer(text=channel["id"])
 
             em_list.append(em_chan)
 
         em_list_member = [embed_first]
 
-        for member in json['members']:
-            if 'game' in member:
-                game = member['game']['name']
+        for member in json["members"]:
+            if "game" in member:
+                game = member["game"]["name"]
             else:
                 game = None
-            id_ = member['id']
-            username = member['username']
-            discriminator = member['discriminator']
-            avatar_url = member['avatar_url']
-            status = member['status']
-            vc = member['channel_id'] if 'channel_id' in member else None
-            suppress = member['suppress'] if 'suppress' in member else None
-            self_mute = member['self_mute'] if 'self_mute' in member else None
-            self_deaf = member['self_deaf'] if 'self_deaf' in member else None
-            deaf = member['deaf'] if 'deaf' in member else None
-            mute = member['mute'] if 'mute' in member else None
+            id_ = member["id"]
+            username = member["username"]
+            discriminator = member["discriminator"]
+            avatar_url = member["avatar_url"]
+            status = member["status"]
+            vc = member["channel_id"] if "channel_id" in member else None
+            suppress = member["suppress"] if "suppress" in member else None
+            self_mute = member["self_mute"] if "self_mute" in member else None
+            self_deaf = member["self_deaf"] if "self_deaf" in member else None
+            deaf = member["deaf"] if "deaf" in member else None
+            mute = member["mute"] if "mute" in member else None
 
-            em = discord.Embed(
-                title=f"Username: {username}#{discriminator}",
-                color=ctx.author.color,
-                timestamp=datetime.datetime.utcnow()).set_footer(
-                    text=f"{id_}").set_thumbnail(url=avatar_url)
+            em = (
+                discord.Embed(
+                    title=f"Username: {username}#{discriminator}",
+                    color=ctx.author.color,
+                    timestamp=datetime.datetime.utcnow(),
+                )
+                .set_footer(text=f"{id_}")
+                .set_thumbnail(url=avatar_url)
+            )
             em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({'<#'+str(vc)+'>' if vc else None})"
             if vc:
-                em.add_field(name='VC Channel ID', value=str(vc), inline=True)
-                em.add_field(name='Suppress?', value=suppress, inline=True)
-                em.add_field(name='Self Mute?', value=self_mute, inline=True)
-                em.add_field(name='Self Deaf?', value=self_deaf, inline=True)
-                em.add_field(name='Deaf?', value=deaf, inline=True)
-                em.add_field(name='Mute?', value=mute, inline=True)
+                em.add_field(name="VC Channel ID", value=str(vc), inline=True)
+                em.add_field(name="Suppress?", value=suppress, inline=True)
+                em.add_field(name="Self Mute?", value=self_mute, inline=True)
+                em.add_field(name="Self Deaf?", value=self_deaf, inline=True)
+                em.add_field(name="Deaf?", value=deaf, inline=True)
+                em.add_field(name="Mute?", value=mute, inline=True)
             em_list_member.append(em)
 
-        if channel_member.lower() in ('channels', ):
+        if channel_member.lower() in ("channels",):
             await PaginationView(em_list).start(ctx=ctx)
-        elif channel_member.lower() in ('members', ):
+        elif channel_member.lower() in ("members",):
             await PaginationView(em_list_member).start(ctx=ctx)
 
     @commands.command()
@@ -352,17 +361,15 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         response = await self.bot.session.post(
             "https://api.remove.bg/v1.0/removebg",
-            data={
-                'size': 'auto',
-                'image_file': imgdata
-            },
-            headers={'X-Api-Key': f'{os.environ["REMOVE_BG"]}'})
-        async with async_open('no-bg.png', 'wb') as out:
+            data={"size": "auto", "image_file": imgdata},
+            headers={"X-Api-Key": f'{os.environ["REMOVE_BG"]}'},
+        )
+        async with async_open("no-bg.png", "wb") as out:
             await out.write(await response.read())
-        await ctx.send(file=discord.File('no-bg.png'))
-        os.system('rm no-bg.png')
+        await ctx.send(file=discord.File("no-bg.png"))
+        os.system("rm no-bg.png")
 
-    @commands.command(aliases=['auditlogs'])
+    @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
     @commands.is_owner()
     async def auditlog(self, ctx: Context, *, args: auditFlag):
@@ -370,15 +377,19 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ls = []
         guild = args.guild or ctx.guild
         async for entry in guild.audit_logs(
-                limit=args.limit if args.limit else 100,
-                user=discord.Object(id=args.user) if args.user else None,
-                action=act.get(args.action.lower().replace(' ', '_'))
-                if args.action else None,
-                before=discord.Object(id=int(args.before.dt.timestamp()))
-                if args.before else None,
-                after=discord.Object(
-                    id=int(args.after.dt.timestamp())) if args.after else None,
-                oldest_first=args.oldest_first):
+            limit=args.limit if args.limit else 100,
+            user=discord.Object(id=args.user) if args.user else None,
+            action=act.get(args.action.lower().replace(" ", "_"))
+            if args.action
+            else None,
+            before=discord.Object(id=int(args.before.dt.timestamp()))
+            if args.before
+            else None,
+            after=discord.Object(id=int(args.after.dt.timestamp()))
+            if args.after
+            else None,
+            oldest_first=args.oldest_first,
+        ):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
 `Responsible Moderator`: <@{entry.user.id if entry.user else 'Can not determine the Moderator'}>
@@ -419,19 +430,19 @@ class SphinxObjectFileReader:
             pos = buf.find(b"\n")
             while pos != -1:
                 yield buf[:pos].decode("utf-8")
-                buf = buf[pos + 1:]
+                buf = buf[pos + 1 :]
                 pos = buf.find(b"\n")
 
 
 class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        with open('extra/docs_links.json') as f:
+        with open("extra/docs_links.json") as f:
             self.page_types = json.load(f)
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='dpy', id=596577034537402378)
+        return discord.PartialEmoji(name="dpy", id=596577034537402378)
 
     def parse_object_inv(self, stream, url):
         # key: URL
@@ -452,12 +463,10 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         # next line says if it's a zlib header
         line = stream.readline()
         if "zlib" not in line:
-            raise RuntimeError(
-                "Invalid objects.inv file, not z-lib compatible.")
+            raise RuntimeError("Invalid objects.inv file, not z-lib compatible.")
 
         # This code mostly comes from the Sphinx repository.
-        entry_regex = re.compile(
-            r"(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
+        entry_regex = re.compile(r"(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
         for line in stream.read_compressed_lines():
             match = entry_regex.match(line.rstrip())
             if not match:
@@ -484,8 +493,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             prefix = f"{subdirective}:" if domain == "std" else ""
 
             if projname == "discord.py":
-                key = key.replace("discord.ext.commands.",
-                                "").replace("discord.", "")
+                key = key.replace("discord.ext.commands.", "").replace("discord.", "")
 
             result[f"{prefix}{key}"] = os.path.join(url, location)
 
@@ -499,7 +507,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
                 async with session.get(page + "/objects.inv") as resp:
                     if resp.status != 200:
                         raise RuntimeError(
-                            "Cannot build rtfm lookup table, try again later.")
+                            "Cannot build rtfm lookup table, try again later."
+                        )
 
                     stream = SphinxObjectFileReader(await resp.read())
                     cache[key] = self.parse_object_inv(stream, page)
@@ -515,8 +524,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             await ctx.trigger_typing()
             await self.build_rtfm_lookup_table(self.page_types)
 
-        obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1",
-                    obj)
+        obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1", obj)
 
         if key.startswith("latest"):
             # point the abc.Messageable types properly:
@@ -535,20 +543,21 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
-        e = discord.Embed(title="Read the Fine Manual",
-                        timestamp=datetime.datetime.utcnow())
+        e = discord.Embed(
+            title="Read the Fine Manual", timestamp=datetime.datetime.utcnow()
+        )
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
         e.set_thumbnail(
-            url=
-            'https://cdn.discordapp.com/attachments/894938379697913916/894938401294401576/3aa641b21acded468308a37eef43d7b3.png'
+            url="https://cdn.discordapp.com/attachments/894938379697913916/894938401294401576/3aa641b21acded468308a37eef43d7b3.png"
         )
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
         e.set_footer(
             text=f"Request by {ctx.author.name}#{ctx.author.discriminator}",
-            icon_url=ctx.author.display_avatar.url)
+            icon_url=ctx.author.display_avatar.url,
+        )
         await ctx.send(embed=e)
 
     @commands.group(invoke_without_command=True)
@@ -560,7 +569,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         if not ctx.invoked_subcommand:
             return await self.do_rtfm(ctx, "discord", obj)
 
-        obj = obj.split(' ', 1)
+        obj = obj.split(" ", 1)
         return await self.do_rtfm(ctx, str(obj[0]), obj[1])
 
     @rtfd.command(name="python", aliases=["py"])
@@ -568,74 +577,81 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """Gives you a documentation link for a Python entity."""
         await self.do_rtfm(ctx, "python", obj)
 
-    @rtfd.command(name='aiohttp')
+    @rtfd.command(name="aiohttp")
     async def rtfd_aiohttp(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a aiohttp entity"""
-        await self.do_rtfm(ctx, 'aiohttp', obj)
+        await self.do_rtfm(ctx, "aiohttp", obj)
 
-    @rtfd.command(name='requests', aliases=['request'])
+    @rtfd.command(name="requests", aliases=["request"])
     async def rtfd_request(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a request entity"""
-        await self.do_rtfm(ctx, 'requests', obj)
+        await self.do_rtfm(ctx, "requests", obj)
 
-    @rtfd.command(name='flask')
+    @rtfd.command(name="flask")
     async def rtfd_flask(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a flask entity"""
-        await self.do_rtfm(ctx, 'flask', obj)
+        await self.do_rtfm(ctx, "flask", obj)
 
-    @rtfd.command(name='numpy')
+    @rtfd.command(name="numpy")
     async def rtfd_numpy(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a numpy entity"""
-        await self.do_rtfm(ctx, 'numpy', obj)
+        await self.do_rtfm(ctx, "numpy", obj)
 
-    @rtfd.command(name='pil')
+    @rtfd.command(name="pil")
     async def rtfd_pil(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a PIL entity"""
-        await self.do_rtfm(ctx, 'pil', obj)
+        await self.do_rtfm(ctx, "pil", obj)
 
-    @rtfd.command(name='matplotlib')
+    @rtfd.command(name="matplotlib")
     async def rtfd_matplotlib(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a matplotlib entity"""
-        await self.do_rtfm(ctx, 'matplotlib', obj)
+        await self.do_rtfm(ctx, "matplotlib", obj)
 
-    @rtfd.command(name='pandas')
+    @rtfd.command(name="pandas")
     async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a pandas entity"""
-        await self.do_rtfm(ctx, 'pandas', obj)
+        await self.do_rtfm(ctx, "pandas", obj)
 
-    @rtfd.command(name='showall')
+    @rtfd.command(name="showall")
     @commands.is_owner()
-    async def rtfd_showall(self, ctx: Context,):
+    async def rtfd_showall(
+        self,
+        ctx: Context,
+    ):
         """Show all the docs links"""
-        async with async_open(r'extra/docs_links.json') as f:
+        async with async_open(r"extra/docs_links.json") as f:
             data = json.loads(await f.read())
 
         await ctx.send(json.dumps(data, indent=4))
 
-    @rtfd.command(name='add')
+    @rtfd.command(name="add")
     @commands.is_owner()
     async def rtfd_add(self, ctx: Context, name: str, *, link: str):
         """To add the links in docs"""
-        async with async_open(r'extra/docs_links.json') as f:
+        async with async_open(r"extra/docs_links.json") as f:
             data = json.loads(await f.read())
 
         data[name] = link
 
-        async with async_open(r'extra/docs_links.json') as f:
+        async with async_open(r"extra/docs_links.json") as f:
             await f.write(data)
 
         await ctx.send(f"{ctx.author.mention} done!")
 
-    @rtfd.command(name='del')
+    @rtfd.command(name="del")
     @commands.is_owner()
-    async def rtfd_del(self, ctx: Context, name: str,):
+    async def rtfd_del(
+        self,
+        ctx: Context,
+        name: str,
+    ):
         """To add the links in docs"""
-        async with async_open(r'extra/docs_links.json') as f:
+        async with async_open(r"extra/docs_links.json") as f:
             data: dict = json.loads(await f.read())
 
         data.pop(name)
 
-        async with async_open(r'extra/docs_links.json') as f:
+        async with async_open(r"extra/docs_links.json") as f:
             await f.write(data)
 
         await ctx.send(f"{ctx.author.mention} done!")

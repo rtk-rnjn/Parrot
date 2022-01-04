@@ -8,9 +8,9 @@ from discord.ext import commands
 import re
 
 # Monkey patch mins and secs into the units
-units = pdt.pdtLocales['en_US'].units
-units['minutes'].append('mins')
-units['seconds'].append('secs')
+units = pdt.pdtLocales["en_US"].units
+units["minutes"].append("mins")
+units["seconds"].append("secs")
 
 
 class ShortTime:
@@ -22,13 +22,15 @@ class ShortTime:
                              (?:(?P<hours>[0-9]{1,5})(?:hours?|h))?        # e.g. 12h
                              (?:(?P<minutes>[0-9]{1,5})(?:minutes?|m))?    # e.g. 10m
                              (?:(?P<seconds>[0-9]{1,5})(?:seconds?|s))?    # e.g. 15s
-                          """, re.VERBOSE)
+                          """,
+        re.VERBOSE,
+    )
 
     def __init__(self, argument, *, now=None):
         match = self.compiled.fullmatch(argument.lower())
         if match is None or not match.group(0):
             raise commands.BadArgument(
-                'Invalid time provided. Try something like this: `5m`, `2h` or `60s`'
+                "Invalid time provided. Try something like this: `5m`, `2h` or `60s`"
             )
 
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
@@ -48,14 +50,17 @@ class HumanTime:
         dt, status = self.calendar.parseDT(argument, sourceTime=now)
         if not status.hasDateOrTime:
             raise commands.BadArgument(
-                'Invalid time provided, try e.g. "tomorrow" or "3 days"')
+                'Invalid time provided, try e.g. "tomorrow" or "3 days"'
+            )
 
         if not status.hasTime:
             # replace it with the current time
-            dt = dt.replace(hour=now.hour,
-                            minute=now.minute,
-                            second=now.second,
-                            microsecond=now.microsecond)
+            dt = dt.replace(
+                hour=now.hour,
+                minute=now.minute,
+                second=now.second,
+                microsecond=now.microsecond,
+            )
 
         self.dt = dt
         self._past = dt < now
@@ -81,30 +86,29 @@ class FutureTime(Time):
         super().__init__(argument, now=now)
 
         if self._past:
-            raise commands.BadArgument('This time is in the past')
+            raise commands.BadArgument("This time is in the past")
 
 
 class UserFriendlyTime(commands.Converter):
     """That way quotes aren't absolutely necessary."""
+
     def __init__(self, converter=None, *, default=None):
-        if isinstance(converter, type) and issubclass(converter,
-                                                      commands.Converter):
+        if isinstance(converter, type) and issubclass(converter, commands.Converter):
             converter = converter()
 
-        if converter is not None and not isinstance(converter,
-                                                    commands.Converter):
-            raise TypeError('commands.Converter subclass necessary.')
+        if converter is not None and not isinstance(converter, commands.Converter):
+            raise TypeError("commands.Converter subclass necessary.")
 
         self.converter = converter
         self.default = default
 
     async def check_constraints(self, ctx, now, remaining):
         if self.dt < now:
-            raise commands.BadArgument('This time is in the past.')
+            raise commands.BadArgument("This time is in the past.")
 
         if not remaining:
             if self.default is None:
-                raise commands.BadArgument('Missing argument after the time.')
+                raise commands.BadArgument("Missing argument after the time.")
             remaining = self.default
 
         if self.converter is not None:
@@ -131,28 +135,26 @@ class UserFriendlyTime(commands.Converter):
 
             match = regex.match(argument)
             if match is not None and match.group(0):
-                data = {
-                    k: int(v)
-                    for k, v in match.groupdict(default=0).items()
-                }
-                remaining = argument[match.end():].strip()
+                data = {k: int(v) for k, v in match.groupdict(default=0).items()}
+                remaining = argument[match.end() :].strip()
                 result.dt = now + relativedelta(**data)
                 return await result.check_constraints(ctx, now, remaining)
 
             # apparently nlp does not like "from now"
             # it likes "from x" in other cases though so let me handle the 'now' case
-            if argument.lower().endswith('from now'):
+            if argument.lower().endswith("from now"):
                 argument = argument[:-8].strip()
 
-            if argument[0:2].lower() == 'me':
+            if argument[0:2].lower() == "me":
                 # starts with "me to", "me in", or "me at "
-                if argument[0:6] in ('me to ', 'me in ', 'me at '):
+                if argument[0:6] in ("me to ", "me in ", "me at "):
                     argument = argument[6:]
 
             elements = calendar.nlp(argument, sourceTime=now)
             if elements is None or len(elements) == 0:
                 raise commands.BadArgument(
-                    'Invalid time provided, try e.g. "tomorrow" or "3 days".')
+                    'Invalid time provided, try e.g. "tomorrow" or "3 days".'
+                )
 
             # handle the following cases:
             # "date time" foo
@@ -164,19 +166,24 @@ class UserFriendlyTime(commands.Converter):
 
             if not status.hasDateOrTime:
                 raise commands.BadArgument(
-                    'Invalid time provided, try e.g. "tomorrow" or "3 days".')
+                    'Invalid time provided, try e.g. "tomorrow" or "3 days".'
+                )
 
             if begin not in (0, 1) and end != len(argument):
-                raise commands.BadArgument('Time is either in an inappropriate location, which ' \
-                                           'must be either at the end or beginning of your input, ' \
-                                           'or I just flat out did not understand what you meant. Sorry.')
+                raise commands.BadArgument(
+                    "Time is either in an inappropriate location, which "
+                    "must be either at the end or beginning of your input, "
+                    "or I just flat out did not understand what you meant. Sorry."
+                )
 
             if not status.hasTime:
                 # replace it with the current time
-                dt = dt.replace(hour=now.hour,
-                                minute=now.minute,
-                                second=now.second,
-                                microsecond=now.microsecond)
+                dt = dt.replace(
+                    hour=now.hour,
+                    minute=now.minute,
+                    second=now.second,
+                    microsecond=now.microsecond,
+                )
 
             # if midnight is provided, just default to next day
             if status.accuracy == pdt.pdtContext.ACU_HALFDAY:
@@ -189,21 +196,24 @@ class UserFriendlyTime(commands.Converter):
                     # check if it's quoted:
                     if argument[0] != '"':
                         raise commands.BadArgument(
-                            'Expected quote before time input...')
+                            "Expected quote before time input..."
+                        )
 
                     if not (end < len(argument) and argument[end] == '"'):
                         raise commands.BadArgument(
-                            'If the time is quoted, you must unquote it.')
+                            "If the time is quoted, you must unquote it."
+                        )
 
-                    remaining = argument[end + 1:].lstrip(' ,.!')
+                    remaining = argument[end + 1 :].lstrip(" ,.!")
                 else:
-                    remaining = argument[end:].lstrip(' ,.!')
+                    remaining = argument[end:].lstrip(" ,.!")
             elif len(argument) == end:
                 remaining = argument[:begin].strip()
 
             return await result.check_constraints(ctx, now, remaining)
         except:
             import traceback
+
             traceback.print_exc()
             raise
 
@@ -227,40 +237,40 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
     # A query like "11 months" can be interpreted as "!1 months and 6 days"
     if dt > now:
         delta = relativedelta(dt, now)
-        suffix = ''
+        suffix = ""
     else:
         delta = relativedelta(now, dt)
-        suffix = ' ago' if suffix else ''
+        suffix = " ago" if suffix else ""
 
     attrs = [
-        ('year', 'y'),
-        ('month', 'mo'),
-        ('day', 'd'),
-        ('hour', 'h'),
-        ('minute', 'm'),
-        ('second', 's'),
+        ("year", "y"),
+        ("month", "mo"),
+        ("day", "d"),
+        ("hour", "h"),
+        ("minute", "m"),
+        ("second", "s"),
     ]
 
     output = []
     for attr, brief_attr in attrs:
-        elem = getattr(delta, attr + 's')
+        elem = getattr(delta, attr + "s")
         if not elem:
             continue
 
-        if attr == 'day':
+        if attr == "day":
             weeks = delta.weeks
             if weeks:
                 elem -= weeks * 7
                 if not brief:
-                    output.append(format(plural(weeks), 'week'))
+                    output.append(format(plural(weeks), "week"))
                 else:
-                    output.append(f'{weeks}w')
+                    output.append(f"{weeks}w")
 
         if elem <= 0:
             continue
 
         if brief:
-            output.append(f'{elem}{brief_attr}')
+            output.append(f"{elem}{brief_attr}")
         else:
             output.append(format(plural(elem), attr))
 
@@ -268,11 +278,11 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
         output = output[:accuracy]
 
     if len(output) == 0:
-        return 'now'
+        return "now"
     if not brief:
-        return human_join(output, final='and') + suffix
-    return ' '.join(output) + suffix
+        return human_join(output, final="and") + suffix
+    return " ".join(output) + suffix
 
 
 def format_relative(dt):
-    return format_dt(dt, 'R')
+    return format_dt(dt, "R")

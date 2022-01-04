@@ -1,5 +1,6 @@
 from . import db
 
+
 def get_emoji_aliases():
     """
     Returns all Emojis as a dict (key = alias, value = unicode).
@@ -9,7 +10,7 @@ def get_emoji_aliases():
 
     for emoji in db.EMOJI_DB:
         for alias in emoji.aliases:
-            alias = ':{0}:'.format(alias)
+            alias = ":{0}:".format(alias)
             emoji_aliases[alias] = emoji.emoji
 
     return emoji_aliases
@@ -63,6 +64,7 @@ def get_tags():
     :rtype: set
     """
     return {tag for emoji in db.EMOJI_DB for tag in emoji.tags}
+
 
 def get_categories():
     """

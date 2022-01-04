@@ -9,14 +9,20 @@ import discord
 class User(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db['logging']
+        self.collection = parrot_db["logging"]
 
     @Cog.listener()
     async def on_member_ban(self, guild, user):
-        if data := await self.collection.find_one({'_id': guild.id, 'on_member_ban': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_member_ban'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": guild.id, "on_member_ban": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_member_ban"], session=self.bot.session
+            )
             if webhook:
-                async for entry in guild.audit_logs(action=discord.AuditLogAction.ban, limit=5):
+                async for entry in guild.audit_logs(
+                    action=discord.AuditLogAction.ban, limit=5
+                ):
                     if entry.target.id == user.id:
                         content = f"""**Member Banned**
 
@@ -25,14 +31,25 @@ class User(Cog, command_attrs=dict(hidden=True)):
 `Reason     :` **{entry.reason if entry.reason else None}**
 `Banned by  :` **{entry.user}**
 """
-                        await webhook.send(content=content, avatar_url=self.bot.user.avatar.url, username=self.bot.user.name,)
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                        )
                         break
+
     @Cog.listener()
     async def on_member_unban(self, guild, user):
-        if data := await self.collection.find_one({'_id': guild.id, 'on_member_unban': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_member_unban'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": guild.id, "on_member_unban": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_member_unban"], session=self.bot.session
+            )
             if webhook:
-                async for entry in guild.audit_logs(action=discord.AuditLogAction.ban, limit=5):
+                async for entry in guild.audit_logs(
+                    action=discord.AuditLogAction.ban, limit=5
+                ):
                     if entry.target.id == user.id:
                         content = f"""**Member Unbanned**
 
@@ -41,7 +58,11 @@ class User(Cog, command_attrs=dict(hidden=True)):
 `Reason     :` **{entry.reason if entry.reason else None}**
 `Unbanned by:` **{entry.user}**
 """
-                        await webhook.send(content=content, avatar_url=self.bot.user.avatar.url, username=self.bot.user.name)
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                        )
                         break
 
     @Cog.listener()

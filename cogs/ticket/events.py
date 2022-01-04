@@ -35,7 +35,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         member = guild.get_member(user_id)
         if not member:
             return
-        if (member.bot):
+        if member.bot:
             return
 
         channel_id = payload.channel_id

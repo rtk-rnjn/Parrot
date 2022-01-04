@@ -68,10 +68,9 @@ class Telephone(Cog):
                     f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
                     f"`Can Redial?     :` **True**\n"
                     f"`Call log saved? :` **False**\n")
-            else:
-                await ctx.send(
-                    "That server no longer exists or bot is being removed from that server"
-                )
+            await ctx.send(
+                "That server no longer exists or bot is being removed from that server"
+            )
 
     @commands.command(aliases=['reversecall'])
     @commands.max_concurrency(1, commands.BucketType.guild)

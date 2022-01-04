@@ -189,15 +189,14 @@ async def _ban(guild, command_name, ctx_author, destination, member, days,
                 f"{ctx_author.mention} don't do that, Bot is only trying to help"
             )
             return
-        else:
-            await guild.ban(
-                member,
-                reason=
-                f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}',
-                delete_message_days=days)
-            await destination.send(
-                f"{ctx_author.mention} **`{member}`** is banned!"
-            )
+        await guild.ban(
+            member,
+            reason=
+            f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}',
+            delete_message_days=days)
+        await destination.send(
+            f"{ctx_author.mention} **`{member}`** is banned!"
+        )
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
@@ -214,12 +213,11 @@ async def _mass_ban(guild, command_name, ctx_author, destination, members,
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            else:
-                await guild.ban(
-                    member,
-                    reason=
-                    f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}',
-                    delete_message_days=days)
+            await guild.ban(
+                member,
+                reason=
+                f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}',
+                delete_message_days=days)
         except Exception as e:
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
@@ -239,22 +237,21 @@ async def _softban(guild, command_name, ctx_author, destination, member,
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            else:
-                await member.ban(
-                    reason=
-                    f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
-                )
+            await member.ban(
+                reason=
+                f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
+            )
 
-                banned_users = await guild.bans()
-                member_n, member_d = member.name, member.discriminator
-                for ban_entry in banned_users:
-                    user = ban_entry.user
-                    if (user.name, user.discriminator) == (member_n, member_d):
-                        await guild.unban(user)
+            banned_users = await guild.bans()
+            member_n, member_d = member.name, member.discriminator
+            for ban_entry in banned_users:
+                user = ban_entry.user
+                if (user.name, user.discriminator) == (member_n, member_d):
+                    await guild.unban(user)
 
-                await destination.send(
-                    f'{ctx_author.mention} **{member}** is soft banned!'
-                )
+            await destination.send(
+                f'{ctx_author.mention} **{member}** is soft banned!'
+            )
         except Exception as e:
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
@@ -268,10 +265,9 @@ async def _temp_ban(guild, command_name, ctx_author, destination, member, durati
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            else:
-                await member.ban(
-                    reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
-                )
+            await member.ban(
+                reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
+            )
             data = {
                 'member_id': member.id,
                 'guild': guild.id,
@@ -400,14 +396,13 @@ async def _kick(guild, command_name, ctx_author, destination, member, reason):
                 f"{ctx_author.mention} don't do that, Bot is only trying to help"
             )
             return
-        else:
-            await member.kick(
-                reason=
-                f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
-            )
-            await destination.send(
-                f'{ctx_author.mention} **`{member}`** is kicked from the server!'
-            )
+        await member.kick(
+            reason=
+            f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
+        )
+        await destination.send(
+            f'{ctx_author.mention} **`{member}`** is kicked from the server!'
+        )
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
@@ -424,11 +419,10 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members,
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            else:
-                await member.kick(
-                    reason=
-                    f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
-                )
+            await member.kick(
+                reason=
+                f'Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}'
+            )
         except Exception as e:
             _list.remove(member)
             await destination.send(
@@ -452,17 +446,16 @@ async def _block(guild, command_name, ctx_author, destination, channel, member,
                     f"{ctx_author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            else:
-                await channel.set_permissions(
-                    member,
-                    send_messages=False,
-                    view_channel=False,
-                    reason=
-                    f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
-                )
-                await destination.send(
-                    f'{ctx_author.mention} overwrite permission(s) for **{member}** has been created! **View Channel, and Send Messages** is denied!'
-                )
+            await channel.set_permissions(
+                member,
+                send_messages=False,
+                view_channel=False,
+                reason=
+                f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
+            )
+            await destination.send(
+                f'{ctx_author.mention} overwrite permission(s) for **{member}** has been created! **View Channel, and Send Messages** is denied!'
+            )
         except Exception as e:
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"

@@ -89,7 +89,7 @@ async def dial(bot, ctx, server, reverse=False):
         await telephone_update(number, 'is_line_busy', False)
         return
 
-    elif _talk.content.lower() == 'pickup':
+    if _talk.content.lower() == 'pickup':
         await ctx.send(
             f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
         await target_channel.send(

@@ -25,8 +25,7 @@ class Infraction:
         data = await collection.find_one({'_id': self.user.id})
         if not data:
             return 0
-        else:
-            return len(data['warns'])
+        return len(data['warns'])
 
     async def total_warns_server(self) -> int:
         data = await self._parrot_collection.find_one({'_id': self.guild.id})

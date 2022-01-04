@@ -489,9 +489,9 @@ def check_size(ctx: Context) -> int:
     prefix = ctx.prefix.upper()
     if prefix.endswith("SUPER BIG "):
         return SUPER_BIG
-    elif prefix.endswith("BIG "):
+    if prefix.endswith("BIG "):
         return BIG
-    elif prefix.endswith("SMALL ") or prefix.endswith("SMOL "):
+    if prefix.endswith("SMALL ") or prefix.endswith("SMOL "):
         return SMALL
     return ORIGINAL
 
@@ -621,34 +621,30 @@ class SlidingPuzzle:
     def move_up(self):
         if self.x[0] == self.size - 1:
             return
-        else:
-            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] + 1][self.x[1]]
-            self.x = [self.x[0] + 1, self.x[1]]
-            self.grid[self.x[0]][self.x[1]] = "\u200b"
+        self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] + 1][self.x[1]]
+        self.x = [self.x[0] + 1, self.x[1]]
+        self.grid[self.x[0]][self.x[1]] = "\u200b"
 
     def move_down(self):
         if self.x[0] == 0:
             return
-        else:
-            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] - 1][self.x[1]]
-            self.x = [self.x[0] - 1, self.x[1]]
-            self.grid[self.x[0]][self.x[1]] = "\u200b"
+        self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] - 1][self.x[1]]
+        self.x = [self.x[0] - 1, self.x[1]]
+        self.grid[self.x[0]][self.x[1]] = "\u200b"
 
     def move_left(self):
         if self.x[1] == self.size - 1:
             return
-        else:
-            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] + 1]
-            self.x = [self.x[0], self.x[1] + 1]
-            self.grid[self.x[0]][self.x[1]] = "\u200b"
+        self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] + 1]
+        self.x = [self.x[0], self.x[1] + 1]
+        self.grid[self.x[0]][self.x[1]] = "\u200b"
 
     def move_right(self):
         if self.x[1] == 0:
             return
-        else:
-            self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] - 1]
-            self.x = [self.x[0], self.x[1] - 1]
-            self.grid[self.x[0]][self.x[1]] = "\u200b"
+        self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] - 1]
+        self.x = [self.x[0], self.x[1] - 1]
+        self.grid[self.x[0]][self.x[1]] = "\u200b"
 
 
 class SlidingPuzzleView(discord.ui.View):
@@ -663,9 +659,8 @@ class SlidingPuzzleView(discord.ui.View):
 
         if interaction.user == self.user:
             return True
-        else:
-            await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
-            return False
+        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        return False
 
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=True)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -735,10 +730,8 @@ class ChessView(discord.ui.View):
                                 interaction: discord.Interaction):
         if interaction.user in (self.game.white, self.game.black):
             return True
-        else:
-            await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
-            return False
-            
+        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        return False
     @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show Legal Moves", style=discord.ButtonStyle.gray, disabled=False)
     async def show_moves(self, button: discord.ui.Button, interaction: discord.Interaction):
         menu = ParrotPaginator(self.game.ctx, title="Legal Moves", embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png")
@@ -865,24 +858,23 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             msg = await self.wait_for_move()
             if msg is None:
                 return
+            if msg.content.lower() in ('exit', 'quit', 'resign', 'abort',):
+                return await self.ctx.send(f"**{msg.author}** resigned/aborted the game. Game Over!")
+            if msg.content.lower() == 'draw':
+                value = await self.ctx.prompt(
+                    f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`", 
+                    author_id=self.turn.id if self.turn.id != msg.author.id else self.alternate_turn.id)
+                if value:
+                    msg_ = await self.ctx.send(f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**")
+                    await msg_.add_reaction("\N{HANDSHAKE}")
             else:
-                if msg.content.lower() in ('exit', 'quit', 'resign', 'abort',):
-                    return await self.ctx.send(f"**{msg.author}** resigned/aborted the game. Game Over!")
-                if msg.content.lower() == 'draw':
-                    value = await self.ctx.prompt(
-                        f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`", 
-                        author_id=self.turn.id if self.turn.id != msg.author.id else self.alternate_turn.id)
-                    if value:
-                        msg_ = await self.ctx.send(f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**")
-                        await msg_.add_reaction("\N{HANDSHAKE}")
-                else:
-                    if self.react_on_success:
-                        try:
-                            await msg.add_reaction("\N{BLACK CHESS PAWN}")
-                        except Exception:
-                            pass
-                    await self.place_move(msg.content)
-                    self.switch()
+                if self.react_on_success:
+                    try:
+                        await msg.add_reaction("\N{BLACK CHESS PAWN}")
+                    except Exception:
+                        pass
+                await self.place_move(msg.content)
+                self.switch()
 
 
 class Twenty48:
@@ -996,9 +988,8 @@ class Twenty48_Button(discord.ui.View):
 
         if interaction.user == self.user:
             return True
-        else:
-            await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
-            return False
+        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        return False
 
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=True)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -1713,8 +1704,7 @@ class NegamaxAI(AI):
 
         if depth == 0:
             return move
-        else:
-            return score
+        return score
 
     def move(self, game: Board) -> Board:
         return game.move(*self.negamax(game))
@@ -1801,11 +1791,10 @@ class GameTicTacToe(discord.ui.View):
         if interaction.user not in self.players:
             await interaction.response.send_message("Sorry, you are not playing", ephemeral=True)
             return False
-        elif interaction.user != self.current_player:
+        if interaction.user != self.current_player:
             await interaction.response.send_message("Sorry, it is not your turn!", ephemeral=True)
             return False
-        else:
-            return True
+        return True
 
     def make_ai_move(self):
         ai = NegamaxAI(self.board.current_player)
@@ -2202,8 +2191,7 @@ class Cell:
                 number = boardgames.keycap_digit(self.number)
 
             return "💥" if self.mine else number
-        else:
-            return "🚩" if self.flagged else "⬜"
+        return "🚩" if self.flagged else "⬜"
 
 
 class Game(boardgames.Board[Cell]):

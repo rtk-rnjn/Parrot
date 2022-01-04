@@ -42,6 +42,14 @@ async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
+    view = Prompt(ctx.author.id)
+    msg = await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)
+    await view.wait()
+    if view.value is None:
+        await msg.reply(f"{ctx.author.mention} you did not responds on time. Considering as non NSFW")
+        nsfw = False
+    elif view.value:
+        nsfw = True
     else:
         view = Prompt(ctx.author.id)
         msg = await ctx.send(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels", view=view)

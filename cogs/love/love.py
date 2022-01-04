@@ -105,9 +105,8 @@ def in_month_command(*allowed_months: Month) -> Callable:
 
         if can_run:
             return True
-        else:
-            raise commands.BadArgument(
-                f"Command can only be used in {human_months(allowed_months)}")
+        raise commands.BadArgument(
+            f"Command can only be used in {human_months(allowed_months)}")
 
     return commands.check(predicate)
 

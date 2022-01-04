@@ -98,30 +98,28 @@ class Stars(Cog):
         collection = collection or parrot_db['server_config']
         if data := await collection.find_one({'_id': guild_id, 'starboard': {'$exists': True}}):
             return StarboardConfig(guild_id=guild_id, bot=self.bot, record=data)
-        else:
-            post = {
-                    'channel_id': None,
-                    'threshold': None,
-                    'locked': True,
-                    'max_age': None
-                }
-            await collection.update_one(
-                {'_id': guild_id}, 
-                {'$set': 
-                    {'starboard': post}
-                }
-            )
-            return StarboardConfig(guild_id=guild_id, bot=self.bot, record=post)
+        post = {
+                'channel_id': None,
+                'threshold': None,
+                'locked': True,
+                'max_age': None
+            }
+        await collection.update_one(
+            {'_id': guild_id}, 
+            {'$set': 
+                {'starboard': post}
+            }
+        )
+        return StarboardConfig(guild_id=guild_id, bot=self.bot, record=post)
 
     def star_emoji(self, stars):
         if 5 > stars >= 0:
             return '\N{WHITE MEDIUM STAR}'
-        elif 10 > stars >= 5:
+        if 10 > stars >= 5:
             return '\N{GLOWING STAR}'
-        elif 25 > stars >= 10:
+        if 25 > stars >= 10:
             return '\N{DIZZY SYMBOL}'
-        else:
-            return '\N{SPARKLES}'
+        return '\N{SPARKLES}'
 
     def star_gradient_colour(self, stars):
         p = stars / 13

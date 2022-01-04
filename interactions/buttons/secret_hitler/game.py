@@ -18,7 +18,7 @@ def format_list(string: str,
                 oxford_comma: bool = True) -> str:
     if len(list) == 0:
         return string.format("no-one", singular)
-    elif len(list) == 1:
+    if len(list) == 1:
         return string.format(list[0], singular)
 
     *rest, last = list
@@ -317,8 +317,7 @@ class VoteOnGovernment(VoteGameState[T]):
         if self.vote_passed:
             return VotePassed[T](self.game, self.votes, self.president,
                                  self.chancellor)
-        else:
-            return VoteFailed[T](self.game, self.votes)
+        return VoteFailed[T](self.game, self.votes)
 
 
 class VotePassed(AfterVoteGameState[T]):
@@ -340,8 +339,7 @@ class VotePassed(AfterVoteGameState[T]):
     def next_state(self) -> GameState[T]:
         if self.chancellor.role is Role.Hitler and self.game.fascist_policies >= 3:
             return HitlerIsChancellor(self.game, self.chancellor)
-        else:
-            return PresidentDiscardsPolicy[T](self.game)
+        return PresidentDiscardsPolicy[T](self.game)
 
 
 class PresidentDiscardsPolicy(SelectGameState[T, Party]):
@@ -384,8 +382,7 @@ class ChancellorDiscardsPolicy(SelectGameState[T, Party]):
 
         if self.game.veto_enabled:  # and policy is Party.Fascist:  # ???
             return GovernmentCanVeto[T](self.game, policy)
-        else:
-            return PolicyEnacted[T](self.game, policy)
+        return PolicyEnacted[T](self.game, policy)
 
 
 class PolicyEnacted(GameState[T]):
@@ -413,8 +410,7 @@ class PolicyEnacted(GameState[T]):
     def sufficient_policies(self) -> bool:
         if self.policy is Party.Liberal:
             return self.game.liberal_policies == 5
-        else:
-            return self.game.fascist_policies == 6
+        return self.game.fascist_policies == 6
 
     @cached_property
     def vote_power(self) -> Optional[Power]:
@@ -427,16 +423,15 @@ class PolicyEnacted(GameState[T]):
     def next_state(self) -> GameState[T]:
         if self.sufficient_policies:
             return SufficientPoliciesPlayed[T](self.game, self.policy)
-        elif self.vote_power is Power.Peek:
+        if self.vote_power is Power.Peek:
             return PolicyListPeek[T](self.game)
-        elif self.vote_power is Power.Investigate:
+        if self.vote_power is Power.Investigate:
             return PlayerToBeInvesitgated[T](self.game)
-        elif self.vote_power is Power.Election:
+        if self.vote_power is Power.Election:
             return PlayerToBePresident[T](self.game)
-        elif self.vote_power is Power.Execution:
+        if self.vote_power is Power.Execution:
             return PlayerToBeExecuted[T](self.game)
-        else:
-            return PresidencyRotates[T](self.game)
+        return PresidencyRotates[T](self.game)
 
 
 class VoteFailed(AfterVoteGameState[T]):
@@ -451,8 +446,7 @@ class VoteFailed(AfterVoteGameState[T]):
         if self.game.election_tracker == 3:
             self.game.election_tracker = 0
             return ElectionTrackerMax[T](self.game)
-        else:
-            return PresidencyRotates[T](self.game)
+        return PresidencyRotates[T](self.game)
 
 
 class ElectionTrackerMax(GameState[T]):
@@ -478,8 +472,7 @@ class PresidencyRotates(GameState[T]):
     def message(self) -> str:
         if self.start:
             return "Secret Hitler game starting."
-        else:
-            return "The Presidency will rotate to the next player."
+        return "The Presidency will rotate to the next player."
 
     def next_state(self) -> GameState[T]:
         return PlayerToBeChancellor[T](self.game, self.president)
@@ -580,8 +573,7 @@ class PlayerWasExecuted(GameState[T]):
     def next_state(self) -> GameState[T]:
         if self.player.role is Role.Hitler:
             return HitlerWasExecuted[T](self.game, self.player)
-        else:
-            return PresidencyRotates[T](self.game)
+        return PresidencyRotates[T](self.game)
 
 
 class GovernmentCanVeto(VoteGameState[T]):
@@ -608,8 +600,7 @@ class GovernmentCanVeto(VoteGameState[T]):
         if self.vote_passed:
             self.game.discard_pile.append(self.policy)
             return VetoPassed[T](self.game)
-        else:
-            return VetoFailed[T](self.game, self.policy)
+        return VetoFailed[T](self.game, self.policy)
 
 
 class VetoPassed(GameState[T]):
@@ -764,10 +755,9 @@ class Game(Generic[T]):
             return [
                 player for player in self.players if player.role is identifier
             ]
-        else:
-            return [
-                player for player in self.players if player.party is identifier
-            ]
+        return [
+            player for player in self.players if player.party is identifier
+        ]
 
     def draw_policy(self) -> Party:
         return self.draw_pile.pop(0)

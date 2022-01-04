@@ -185,7 +185,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         if isinstance(error, commands.MissingRole):
-            missing = [role for role in error.missing_role]
+            missing = list(error.missing_role)
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
                                           missing[-1])
@@ -197,7 +197,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         if isinstance(error, commands.MissingAnyRole):
-            missing = [role for role in error.missing_roles]
+            missing = list(error.missing_roles)
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
                                           missing[-1])

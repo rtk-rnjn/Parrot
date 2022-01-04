@@ -557,7 +557,7 @@ class Meta(Cog):
         Get the basic stats about the user
         """
         target = member or ctx.author
-        roles = [role for role in target.roles]
+        roles = list(target.roles)
         embed = discord.Embed(title="User information",
                 colour=target.colour,
                 timestamp=datetime.datetime.utcnow())

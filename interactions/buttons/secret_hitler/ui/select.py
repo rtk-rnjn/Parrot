@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import discord
 
-from ..game import Player, SelectGameState, UserInputGameState
+from ..game import Player, SelectGameState
 from .input import InputUI
 
 if TYPE_CHECKING:

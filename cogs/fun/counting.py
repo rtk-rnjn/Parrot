@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Collection
 
 from core import Parrot, Cog
-from discord.ext import commands, tasks
+from discord.ext import tasks
 import discord
 import typing
 

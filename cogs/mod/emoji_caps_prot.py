@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from discord.ext import commands, tasks
 import discord
 
 from utilities.database import parrot_db

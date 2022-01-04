@@ -6,10 +6,7 @@ import discord
 
 import typing
 import datetime
-import random
-
-from utilities.converters import reason_convert
-from utilities.database import parrot_db, msg_db
+from utilities.database import parrot_db
 from utilities.time import ShortTime
 from utilities.paginator import PaginationView
 

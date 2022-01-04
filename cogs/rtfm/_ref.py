@@ -8,11 +8,7 @@ from functools import partial
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from bs4.element import NavigableString
 from markdownify import MarkdownConverter
-
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import _used
 
 
 class DocMarkdownConverter(MarkdownConverter):

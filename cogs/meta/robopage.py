@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Dict, Optional
 import discord
-from discord.ext import commands
 from discord.ext.commands import Paginator as CommandPaginator
 from discord.ext import old_menus
 

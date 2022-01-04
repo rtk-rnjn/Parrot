@@ -1,12 +1,7 @@
 from __future__ import annotations
-
-from async_property import async_property
-
-from tabulate import tabulate
 from prettytable import PrettyTable
 from core import Parrot
 from utilities.database import parrot_db, warn_db
-import datetime
 
 from typing import Optional
 

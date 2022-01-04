@@ -7,7 +7,6 @@ import random
 import re
 import string
 import textwrap
-import urllib
 from functools import partial
 from io import BytesIO
 from typing import Any, Optional, Callable
@@ -15,7 +14,6 @@ from asyncio import Lock
 import async_timeout
 from PIL import Image, ImageDraw, ImageFont
 from discord import Colour, Embed, File, Member, Message, Reaction, PartialEmoji
-from discord.errors import HTTPException
 from discord.ext.commands import CommandError, bot_has_permissions, group
 
 from core import Parrot, Context, Cog

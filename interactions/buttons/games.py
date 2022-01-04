@@ -1724,10 +1724,10 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
         if cell is not None or self.view.board.over:
             self.disabled = True
 
-        if cell == True:
+        if cell is True:
             self.style = discord.ButtonStyle.success
             self.label = "O"
-        if cell == False:
+        if cell is False:
             self.style = discord.ButtonStyle.danger
             self.label = "X"
 

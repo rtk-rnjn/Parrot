@@ -213,11 +213,11 @@ class AfterVoteGameState(GameState[T], metaclass=ABCMeta):
     def vote_summary(self) -> str:
         ja = [
             player.identifier for player, vote in self.votes.items()
-            if vote == True
+            if vote is True
         ]
         nein = [
             player.identifier for player, vote in self.votes.items()
-            if vote == False
+            if vote is False
         ]
         return format_list("Ja: {0}", *ja) + "\n" + format_list(
             "Nein: {0}", *nein)

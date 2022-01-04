@@ -135,8 +135,10 @@ class Position(NamedTuple):
     col: int
     row: int
 
+
 def ordinal(number: int, /) -> str:
     return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
+
 
 class BoardBoogle:
     def __init__(self, *, size=ORIGINAL, board=None):
@@ -146,13 +148,18 @@ class BoardBoogle:
             board = DIE[self.size].copy()
             random.shuffle(board)
             board = [
-                [random.choice(board[row * self.size + column]) for column in range(self.size)]
+                [
+                    random.choice(board[row * self.size + column])
+                    for column in range(self.size)
+                ]
                 for row in range(self.size)
             ]
 
         self.columns = board
 
-    def board_contains(self, word: str, pos: Position = None, passed: list[Position] = None) -> bool:
+    def board_contains(
+        self, word: str, pos: Position = None, passed: list[Position] = None
+    ) -> bool:
         if passed is None:
             passed = []
         # Empty words
@@ -188,10 +195,17 @@ class BoardBoogle:
                         new_pos = Position(pos.col + x, pos.row + y)
 
                         # don't check out of bounds
-                        if new_pos.col < 0 or new_pos.col >= self.size or new_pos.row < 0 or new_pos.row >= self.size:
+                        if (
+                            new_pos.col < 0
+                            or new_pos.col >= self.size
+                            or new_pos.row < 0
+                            or new_pos.row >= self.size
+                        ):
                             continue
 
-                        if self.board_contains(word[len(letter) :], new_pos, [*passed, pos]):
+                        if self.board_contains(
+                            word[len(letter) :], new_pos, [*passed, pos]
+                        ):
                             return True
 
         # Otherwise cannot find word
@@ -236,13 +250,17 @@ class Game(menus.Menu):
 
             state = " ".join(emoji) + "\n" + state
 
-        return discord.Embed(title=self.name, description=state).set_footer(text=self.footer)
+        return discord.Embed(title=self.name, description=state).set_footer(
+            text=self.footer
+        )
 
     def setup(self):
         raise NotImplementedError
 
     async def send_initial_message(self, ctx, channel):
-        return await channel.send(content="Boggle game started, you have 3 minutes!", embed=self.state)
+        return await channel.send(
+            content="Boggle game started, you have 3 minutes!", embed=self.state
+        )
 
     async def start(self, *args, **kwargs):
         await super().start(*args, **kwargs)
@@ -295,7 +313,9 @@ class ShuffflingGame(Game):
                 "1 minute",
                 "30 seconds",
             ][i]
-            await self.message.edit(content=f"Board Updated! You have {time} left!", embed=self.state)
+            await self.message.edit(
+                content=f"Board Updated! You have {time} left!", embed=self.state
+            )
 
     async def start(self, *args, **kwargs):
         await super().start(*args, **kwargs)
@@ -324,7 +344,9 @@ class DiscordGame(Game):
         i = 0
         old = None
 
-        for user, words in sorted(self.words.items(), key=lambda v: self.get_points(v[1]), reverse=True):
+        for user, words in sorted(
+            self.words.items(), key=lambda v: self.get_points(v[1]), reverse=True
+        ):
             points = self.get_points(words)
 
             if points != old:
@@ -454,7 +476,9 @@ class ClassicGame(Game):
 
         if timed_out:
             await self.message.edit(content="Game Over!")
-            await self.message.reply("Game Over! you have 10 seconds to send in your words.")
+            await self.message.reply(
+                "Game Over! you have 10 seconds to send in your words."
+            )
             self.over = True
             await asyncio.sleep(10)
             self.filter_lists()
@@ -466,11 +490,17 @@ class FlipGame(ShuffflingGame, DiscordGame):
     footer = "Find words as fast as you can, rows will flip positions every 30 seconds."
 
     def shuffle(self):
-        rows = [[self.board.columns[x][y] for x in range(self.board.size)] for y in range(self.board.size)]
+        rows = [
+            [self.board.columns[x][y] for x in range(self.board.size)]
+            for y in range(self.board.size)
+        ]
         random.shuffle(rows)
         self.board = BoardBoogle(
             size=self.board.size,
-            board=[[rows[x][y] for x in range(self.board.size)] for y in range(self.board.size)],
+            board=[
+                [rows[x][y] for x in range(self.board.size)]
+                for y in range(self.board.size)
+            ],
         )
 
 
@@ -479,12 +509,17 @@ class BoggleGame(ShuffflingGame, DiscordGame):
     footer = "Find words as fast as you can, letters will shuffle positions every 30 seconds."
 
     def shuffle(self):
-        letters = [self.board.columns[y][x] for x in range(self.board.size) for y in range(self.board.size)]
+        letters = [
+            self.board.columns[y][x]
+            for x in range(self.board.size)
+            for y in range(self.board.size)
+        ]
         random.shuffle(letters)
         self.board = BoardBoogle(
             size=self.board.size,
             board=[
-                letters[x * self.board.size : x * self.board.size + self.board.size] for x in range(self.board.size)
+                letters[x * self.board.size : x * self.board.size + self.board.size]
+                for x in range(self.board.size)
             ],
         )
 
@@ -510,7 +545,9 @@ def boggle_game(game_type: type[Game]):
 
             # Raise if game already running
             if ctx.channel in self.games_boogle:
-                raise commands.CheckFailure("There is already a game running in this channel.")
+                raise commands.CheckFailure(
+                    "There is already a game running in this channel."
+                )
 
             # Start the game
             self.games_boogle[ctx.channel] = game = game_type(size=check_size(ctx))
@@ -528,57 +565,82 @@ def boggle_game(game_type: type[Game]):
 
     return wrapper
 
+
 def fenPass(fen: str) -> bool:
-    regexMatch = re.match(r'\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', fen)
-    if  regexMatch:
+    regexMatch = re.match(
+        r"\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
+        fen,
+    )
+    if regexMatch:
         regexList = regexMatch.groups()
         fen = regexList[0].split("/")
         if len(fen) != 8:
-            raise commands.BadArgument("Expected 8 rows in position part of FEN: `{0}`".format(repr(fen)))
+            raise commands.BadArgument(
+                "Expected 8 rows in position part of FEN: `{0}`".format(repr(fen))
+            )
 
         for fenPart in fen:
             field_sum = 0
-            previous_was_digit, previous_was_piece = False,False
+            previous_was_digit, previous_was_piece = False, False
 
             for c in fenPart:
                 if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                     if previous_was_digit:
-                        raise commands.BadArgument("Two subsequent digits in position part of FEN: `{0}`".format(repr(fen)))
+                        raise commands.BadArgument(
+                            "Two subsequent digits in position part of FEN: `{0}`".format(
+                                repr(fen)
+                            )
+                        )
                     field_sum += int(c)
                     previous_was_digit = True
                     previous_was_piece = False
                 elif c == "~":
                     if not previous_was_piece:
-                        raise commands.BadArgument("~ not after piece in position part of FEN: `{0}`".format(repr(fen)))
-                    previous_was_digit, previous_was_piece = False,False
+                        raise commands.BadArgument(
+                            "~ not after piece in position part of FEN: `{0}`".format(
+                                repr(fen)
+                            )
+                        )
+                    previous_was_digit, previous_was_piece = False, False
                 elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
                     field_sum += 1
                     previous_was_digit = False
                     previous_was_piece = True
                 else:
-                    raise commands.BadArgument("Invalid character in position part of FEN: `{0}`".format(repr(fen)))
+                    raise commands.BadArgument(
+                        "Invalid character in position part of FEN: `{0}`".format(
+                            repr(fen)
+                        )
+                    )
 
             if field_sum != 8:
-                 raise commands.BadArgument("Expected 8 columns per row in position part of FEN: `{0}`".format(repr(fen)))
+                raise commands.BadArgument(
+                    "Expected 8 columns per row in position part of FEN: `{0}`".format(
+                        repr(fen)
+                    )
+                )
 
-    else: 
-        raise commands.BadArgument("FEN doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ")
+    else:
+        raise commands.BadArgument(
+            "FEN doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "
+        )
+
 
 _2048_GAME = a = {
-        '0': '<:YELLO:922889092755259405>',
-        '2': '<:2_:922741083983724544>', 
-        '8': '<:8_:922741084004687913>', 
-        '2048': '<:2048:922741084612861992>', 
-        '256': '<:256:922741084671602740>', 
-        '32': '<:32:922741084700966963>', 
-        '4': '<:4_:922741084738699314>', 
-        '1024': '<:1024:922741085007130624>', 
-        '16': '<:16:922741085464297472>', 
-        '64': '<:64:922741085539827772>', 
-        '128': '<:128:922741085866958868>', 
-        '4096': '<:4096:922741086009565204>', 
-        '512': '<:512:922741086017978368>'
-    }
+    "0": "<:YELLO:922889092755259405>",
+    "2": "<:2_:922741083983724544>",
+    "8": "<:8_:922741084004687913>",
+    "2048": "<:2048:922741084612861992>",
+    "256": "<:256:922741084671602740>",
+    "32": "<:32:922741084700966963>",
+    "4": "<:4_:922741084738699314>",
+    "1024": "<:1024:922741085007130624>",
+    "16": "<:16:922741085464297472>",
+    "64": "<:64:922741085539827772>",
+    "128": "<:128:922741085866958868>",
+    "4096": "<:4096:922741086009565204>",
+    "512": "<:512:922741086017978368>",
+}
 
 BoardState = list[list[Optional[bool]]]
 
@@ -596,26 +658,26 @@ class SlidingPuzzle:
         self._get_blank()
 
     def __repr__(self):
-        _ = ''
+        _ = ""
         for i in self.grid:
-            _ += str(i) + '\n'
+            _ += str(i) + "\n"
         return _
 
     def board_str(self) -> str:
-        return str(tabulate.tabulate(self.grid, tablefmt='grid', numalign='center'))
+        return str(tabulate.tabulate(self.grid, tablefmt="grid", numalign="center"))
 
     def _make_grid(self):
         nums = list(range(self.size * self.size))
         nums[-1] = "\u200b"
         random.shuffle(nums)
         for i in range(0, len(nums), self.size):
-            self.grid.append(nums[i:i + self.size])
+            self.grid.append(nums[i : i + self.size])
         self.temp = self.grid
 
     def _get_blank(self):
         for i in self.grid:
             for j in i:
-                if j == '\u200b':
+                if j == "\u200b":
                     self.x = [self.grid.index(i), i.index(j)]
                     return
 
@@ -652,114 +714,204 @@ class SlidingPuzzle:
 
 
 class SlidingPuzzleView(discord.ui.View):
-
-    def __init__(self, game: SlidingPuzzle, user: discord.Member, timeout: float=60.0, **kwargs):
+    def __init__(
+        self, game: SlidingPuzzle, user: discord.Member, timeout: float = 60.0, **kwargs
+    ):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
         self.user = user
 
-    async def interaction_check(self,
-                                interaction: discord.Interaction):
+    async def interaction_check(self, interaction: discord.Interaction):
 
         if interaction.user == self.user:
             return True
-        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        await interaction.response.send_message(
+            content="This isn't your game!", ephemeral=True
+        )
         return False
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=True)
-    async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}",
+        label="\u200b",
+        style=discord.ButtonStyle.primary,
+        disabled=True,
+    )
+    async def null_button(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         return
 
-    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
+    @discord.ui.button(
+        emoji="\N{UPWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+    )
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_up()
 
-        embed=discord.Embed(
-            title="Sliding Puzzle",
-            description=f"```diff\n{self.game.board_str()}\n```",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+        embed = (
+            discord.Embed(
+                title="Sliding Puzzle",
+                description=f"```diff\n{self.game.board_str()}\n```",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
-    async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}",
+        label="\u200b",
+        style=discord.ButtonStyle.primary,
+        disabled=False,
+    )
+    async def null_button2(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         await interaction.message.delete()
         self.stop()
 
-    @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{LEFTWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_left()
 
-        embed=discord.Embed(
-            title="Sliding Puzzle",
-            description=f"```diff\n{self.game.board_str()}\n```",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+        embed = (
+            discord.Embed(
+                title="Sliding Puzzle",
+                description=f"```diff\n{self.game.board_str()}\n```",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{DOWNWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_down()
 
-        embed=discord.Embed(
-            title="Sliding Puzzle",
-            description=f"```diff\n{self.game.board_str()}\n```",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+        embed = (
+            discord.Embed(
+                title="Sliding Puzzle",
+                description=f"```diff\n{self.game.board_str()}\n```",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{BLACK RIGHTWARDS ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_right()
 
-        embed=discord.Embed(
-            title="Sliding Puzzle",
-            description=f"```diff\n{self.game.board_str()}\n```",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+        embed = (
+            discord.Embed(
+                title="Sliding Puzzle",
+                description=f"```diff\n{self.game.board_str()}\n```",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
 
 class ChessView(discord.ui.View):
-    def __init__(self, *, game: Chess, ctx: Context=None, timeout: float=300.0, **kwargs):
+    def __init__(
+        self, *, game: Chess, ctx: Context = None, timeout: float = 300.0, **kwargs
+    ):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
         self.ctx = ctx
 
-    async def interaction_check(self,
-                                interaction: discord.Interaction):
+    async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user in (self.game.white, self.game.black):
             return True
-        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        await interaction.response.send_message(
+            content="This isn't your game!", ephemeral=True
+        )
         return False
-    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show Legal Moves", style=discord.ButtonStyle.gray, disabled=False)
-    async def show_moves(self, button: discord.ui.Button, interaction: discord.Interaction):
-        menu = ParrotPaginator(self.game.ctx, title="Legal Moves", embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png")
+
+    @discord.ui.button(
+        emoji="\N{BLACK CHESS PAWN}",
+        label="Show Legal Moves",
+        style=discord.ButtonStyle.gray,
+        disabled=False,
+    )
+    async def show_moves(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        menu = ParrotPaginator(
+            self.game.ctx,
+            title="Legal Moves",
+            embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png",
+        )
         for i in self.game.legal_moves():
             menu.add_line(i)
         await menu.start(start=False)
-        await interaction.response.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
+        await interaction.response.send_message(
+            embed=menu.embed, view=menu.view, ephemeral=True
+        )
 
-
-    @discord.ui.button(emoji="\N{BLACK CHESS PAWN}", label="Show board FEN", style=discord.ButtonStyle.danger, disabled=False)
-    async def show_fen(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**{interaction.user}** board FEN: `{self.game.board.board_fen()}`", ephemeral=True)
+    @discord.ui.button(
+        emoji="\N{BLACK CHESS PAWN}",
+        label="Show board FEN",
+        style=discord.ButtonStyle.danger,
+        disabled=False,
+    )
+    async def show_fen(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        await interaction.response.send_message(
+            f"**{interaction.user}** board FEN: `{self.game.board.board_fen()}`",
+            ephemeral=True,
+        )
 
 
 class Chess:
     def __init__(
-        self, 
-        white: discord.Member, 
-        black: discord.Member, *, 
-        bot: Parrot, 
-        ctx: Context, 
-        timeout: float=300, 
-        react_on_success: bool=True, 
-        custom: str=None
+        self,
+        white: discord.Member,
+        black: discord.Member,
+        *,
+        bot: Parrot,
+        ctx: Context,
+        timeout: float = 300,
+        react_on_success: bool = True,
+        custom: str = None,
     ) -> None:
         self.white = white
         self.black = black
@@ -784,24 +936,32 @@ class Chess:
 
     async def wait_for_move(self) -> Optional[discord.Message]:
         LEGAL_MOVES = self.legal_moves()
+
         def check(m):
-            if m.content.lower() in ('exit', 'quit', 'resign', 'abort', 'draw'):
+            if m.content.lower() in ("exit", "quit", "resign", "abort", "draw"):
                 return True
-            return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
+            return (
+                (self.ctx.channel.id == m.channel.id)
+                and (m.author == self.turn)
+                and (m.content in LEGAL_MOVES)
+            )
+
         try:
-            msg = await self.bot.wait_for('message', check=check, timeout=self.timeout)
+            msg = await self.bot.wait_for("message", check=check, timeout=self.timeout)
             return msg
         except Exception:
             if not self.game_stop:
-                await self.ctx.send(f"**{self.turn}** did not responded on time! Game Over!")
+                await self.ctx.send(
+                    f"**{self.turn}** did not responded on time! Game Over!"
+                )
                 return None
 
     def switch(self) -> None:
-        if self.turn == self.white: 
+        if self.turn == self.white:
             self.turn = self.black
             self.alternate_turn = self.white
             return
-        if self.turn == self.black: 
+        if self.turn == self.black:
             self.turn = self.white
             self.alternate_turn = self.black
             return
@@ -809,7 +969,9 @@ class Chess:
     async def place_move(self, move: str) -> None:
         move = self.board.push_san(move)
         content = f"{self.white.mention} VS {self.black.mention}"
-        embed = discord.Embed(timestamp=discord.utils.utcnow(),)
+        embed = discord.Embed(
+            timestamp=discord.utils.utcnow(),
+        )
         embed.set_image(
             url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true"
         )
@@ -820,11 +982,13 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 """
         embed.set_footer(text=f"Turn: {self.alternate_turn} | Having 5m to make move")
         await self.ctx.send(
-            content=content,
-            embed = embed, view=ChessView(game=self, ctx=self.ctx))
+            content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx)
+        )
         await self.game_over()
 
-    async def game_over(self,) -> Optional[bool]:
+    async def game_over(
+        self,
+    ) -> Optional[bool]:
         if not self.game_stop:
             if self.board.is_checkmate():
                 await self.ctx.send(f"Game over! **{self.turn}** wins by check-mate")
@@ -833,7 +997,9 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 await self.ctx.send("Game over! Ended with draw!")
                 self.game_stop = True
             elif self.board.is_insufficient_material():
-                await self.ctx.send("Game over! Insfficient material left to continue the game! Draw!")
+                await self.ctx.send(
+                    "Game over! Insfficient material left to continue the game! Draw!"
+                )
                 self.game_stop = True
             elif self.board.is_seventyfive_moves():
                 await self.ctx.send("Game over! 75-moves rule | Game Draw!")
@@ -847,8 +1013,12 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 
     async def start(self):
         content = f"{self.white.mention} VS {self.black.mention}"
-        embed = discord.Embed(timestamp=discord.utils.utcnow(),)
-        embed.set_image(url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&coordinates=true")
+        embed = discord.Embed(
+            timestamp=discord.utils.utcnow(),
+        )
+        embed.set_image(
+            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&coordinates=true"
+        )
         embed.description = f"""```
 On Check?      : {self.board.is_check()}
 Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
@@ -856,20 +1026,32 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 """
         embed.set_footer(text=f"Turn: {self.turn} | Having 5m to make move")
         await self.ctx.send(
-            content=content,
-            embed=embed, view=ChessView(game=self, ctx=self.ctx))
+            content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx)
+        )
         while not self.game_stop:
             msg = await self.wait_for_move()
             if msg is None:
                 return
-            if msg.content.lower() in ('exit', 'quit', 'resign', 'abort',):
-                return await self.ctx.send(f"**{msg.author}** resigned/aborted the game. Game Over!")
-            if msg.content.lower() == 'draw':
+            if msg.content.lower() in (
+                "exit",
+                "quit",
+                "resign",
+                "abort",
+            ):
+                return await self.ctx.send(
+                    f"**{msg.author}** resigned/aborted the game. Game Over!"
+                )
+            if msg.content.lower() == "draw":
                 value = await self.ctx.prompt(
-                    f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`", 
-                    author_id=self.turn.id if self.turn.id != msg.author.id else self.alternate_turn.id)
+                    f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`",
+                    author_id=self.turn.id
+                    if self.turn.id != msg.author.id
+                    else self.alternate_turn.id,
+                )
                 if value:
-                    msg_ = await self.ctx.send(f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**")
+                    msg_ = await self.ctx.send(
+                        f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**"
+                    )
                     await msg_.add_reaction("\N{HANDSHAKE}")
             else:
                 if self.react_on_success:
@@ -882,13 +1064,12 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 
 
 class Twenty48:
-
-    def __init__(self, number_to_display_dict, *, size: int=4):
+    def __init__(self, number_to_display_dict, *, size: int = 4):
 
         self.board = [[0 for _ in range(size)] for _ in range(size)]
         self.size = size
         self.message = None
-        self._controls = ['w','a','s','d']
+        self._controls = ["w", "a", "s", "d"]
         self._conversion = number_to_display_dict
 
     def reverse(self, board):
@@ -896,7 +1077,7 @@ class Twenty48:
         for i in range(self.size):
             new_board.append([])
             for j in range(self.size):
-                new_board[i].append(board[i][(self.size - 1)-j])
+                new_board[i].append(board[i][(self.size - 1) - j])
         return new_board
 
     def transp(self, board):
@@ -909,7 +1090,7 @@ class Twenty48:
     def merge(self, board):
         for i in range(self.size):
             for j in range(self.size - 1):
-                if board[i][j] == board[i][j+1] and board[i][j] != 0:
+                if board[i][j] == board[i][j + 1] and board[i][j] != 0:
                     board[i][j] += board[i][j]
                     board[i][j + 1] = 0
         return board
@@ -957,8 +1138,10 @@ class Twenty48:
         self.board = stage
 
     def spawn_new(self):
-        board  = self.board
-        zeroes = [(j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0]
+        board = self.board
+        zeroes = [
+            (j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0
+        ]
         if not zeroes:
             return
         i, j = random.choice(zeroes)
@@ -981,96 +1164,159 @@ class Twenty48:
 
 
 class Twenty48_Button(discord.ui.View):
-
-    def __init__(self, game: Any, user: discord.Member, timeout: float=60.0, **kwargs):
+    def __init__(
+        self, game: Any, user: discord.Member, timeout: float = 60.0, **kwargs
+    ):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
         self.user = user
 
-    async def interaction_check(self,
-                                interaction: discord.Interaction):
+    async def interaction_check(self, interaction: discord.Interaction):
 
         if interaction.user == self.user:
             return True
-        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
+        await interaction.response.send_message(
+            content="This isn't your game!", ephemeral=True
+        )
         return False
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=True)
-    async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}",
+        label="\u200b",
+        style=discord.ButtonStyle.primary,
+        disabled=True,
+    )
+    async def null_button(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         return
 
-    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
+    @discord.ui.button(
+        emoji="\N{UPWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+    )
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveUp()
 
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
-        embed=discord.Embed(
-            title="2048 Game",
-            description=f"{BoardString}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
+        embed = (
+            discord.Embed(
+                title="2048 Game",
+                description=f"{BoardString}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
-    async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}",
+        label="\u200b",
+        style=discord.ButtonStyle.primary,
+        disabled=False,
+    )
+    async def null_button2(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         await interaction.message.delete()
         self.stop()
 
-    @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{LEFTWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveLeft()
 
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
-        embed=discord.Embed(
-            title="2048 Game",
-            description=f"{BoardString}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
+        embed = (
+            discord.Embed(
+                title="2048 Game",
+                description=f"{BoardString}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{DOWNWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveDown()
 
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
-        embed=discord.Embed(
-            title="2048 Game",
-            description=f"{BoardString}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
+        embed = (
+            discord.Embed(
+                title="2048 Game",
+                description=f"{BoardString}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{BLACK RIGHTWARDS ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveRight()
 
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
-        embed=discord.Embed(
-            title="2048 Game",
-            description=f"{BoardString}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
+        embed = (
+            discord.Embed(
+                title="2048 Game",
+                description=f"{BoardString}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {interaction.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
+            )
+        )
 
         await interaction.response.edit_message(embed=embed, view=self)
 
 
-
 class SokobanGame:
     """The real sokoban game"""
+
     legend = {
-        ' ': '<:blank:922048341964103710>',
-        '#': ':white_large_square:',
-        '@': ':flushed:',
-        '$': ':soccer:',
-        '.': ':o:',
-        'x': ':x:' # TODO: change the "x"
+        " ": "<:blank:922048341964103710>",
+        "#": ":white_large_square:",
+        "@": ":flushed:",
+        "$": ":soccer:",
+        ".": ":o:",
+        "x": ":x:",  # TODO: change the "x"
     }
     # Do not DM me or mail me how this works
     # Thing is, I myself forget
@@ -1088,18 +1334,18 @@ class SokobanGame:
         for i in self.level:
             for j in i:
                 main += self.legend[j]
-            main += '\n'
+            main += "\n"
         return main
 
     def _get_cords(self):
         self.player, self.blocks = [], []
         for index, i in enumerate(self.level):
             for _index, j in enumerate(i):
-                if j == '@':
+                if j == "@":
                     self.player = [index, _index]
-                if j in ('$', 'x'):
+                if j in ("$", "x"):
                     self.blocks.append([index, _index])
-                if j in ('.', 'x'):
+                if j in (".", "x"):
                     self.target.append([index, _index])
 
     def show(self) -> str:
@@ -1107,62 +1353,94 @@ class SokobanGame:
         for i in self.level:
             for j in i:
                 main += str(j)
-            main += '\n'
+            main += "\n"
         return main
 
     def move_up(self) -> None:
-        if self.level[self.player[0] - 1][self.player[1]] in (' ', '.'):
-            self.level[self.player[0] - 1][self.player[1]] = '@'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if self.level[self.player[0] - 1][self.player[1]] in (" ", "."):
+            self.level[self.player[0] - 1][self.player[1]] = "@"
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0] - 1, self.player[1]]
             return
 
-        if (self.level[self.player[0] - 1][self.player[1]] in ('$', 'x')) and (self.level[self.player[0] - 2][self.player[1]] in (' ', '.')):
-            self.level[self.player[0] - 1][self.player[1]] = '@'
-            self.level[self.player[0] - 2][self.player[1]] = '$' if self.level[self.player[0] - 2][self.player[1]] == ' ' else 'x'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if (self.level[self.player[0] - 1][self.player[1]] in ("$", "x")) and (
+            self.level[self.player[0] - 2][self.player[1]] in (" ", ".")
+        ):
+            self.level[self.player[0] - 1][self.player[1]] = "@"
+            self.level[self.player[0] - 2][self.player[1]] = (
+                "$" if self.level[self.player[0] - 2][self.player[1]] == " " else "x"
+            )
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0] - 1, self.player[1]]
             return
 
     def move_down(self) -> None:
-        if self.level[self.player[0] + 1][self.player[1]] in (' ', '.'):
-            self.level[self.player[0] + 1][self.player[1]] = '@'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if self.level[self.player[0] + 1][self.player[1]] in (" ", "."):
+            self.level[self.player[0] + 1][self.player[1]] = "@"
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0] + 1, self.player[1]]
             return
 
-        if (self.level[self.player[0] + 1][self.player[1]] in ('$', 'x')) and (self.level[self.player[0] + 2][self.player[1]] in (' ', '.')):
-            self.level[self.player[0] + 1][self.player[1]] = '@'
-            self.level[self.player[0] + 2][self.player[1]] = '$' if self.level[self.player[0] + 2][self.player[1]] == ' ' else 'x'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if (self.level[self.player[0] + 1][self.player[1]] in ("$", "x")) and (
+            self.level[self.player[0] + 2][self.player[1]] in (" ", ".")
+        ):
+            self.level[self.player[0] + 1][self.player[1]] = "@"
+            self.level[self.player[0] + 2][self.player[1]] = (
+                "$" if self.level[self.player[0] + 2][self.player[1]] == " " else "x"
+            )
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0] + 1, self.player[1]]
             return
 
     def move_left(self) -> None:
-        if self.level[self.player[0]][self.player[1] - 1] in (' ', '.'):
-            self.level[self.player[0]][self.player[1] - 1] = '@'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if self.level[self.player[0]][self.player[1] - 1] in (" ", "."):
+            self.level[self.player[0]][self.player[1] - 1] = "@"
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0], self.player[1] - 1]
             return
 
-        if (self.level[self.player[0]][self.player[1] - 1] in ('$', 'x')) and (self.level[self.player[0]][self.player[1] - 2] in (' ', '.')):
-            self.level[self.player[0]][self.player[1] - 1] = '@'
-            self.level[self.player[0]][self.player[1] - 2] = '$' if self.level[self.player[0]][self.player[1] - 2] == ' ' else 'x'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if (self.level[self.player[0]][self.player[1] - 1] in ("$", "x")) and (
+            self.level[self.player[0]][self.player[1] - 2] in (" ", ".")
+        ):
+            self.level[self.player[0]][self.player[1] - 1] = "@"
+            self.level[self.player[0]][self.player[1] - 2] = (
+                "$" if self.level[self.player[0]][self.player[1] - 2] == " " else "x"
+            )
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0], self.player[1] - 1]
             return
 
     def move_right(self) -> None:
-        if self.level[self.player[0]][self.player[1] + 1] in (' ', '.'):
-            self.level[self.player[0]][self.player[1] + 1] = '@'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if self.level[self.player[0]][self.player[1] + 1] in (" ", "."):
+            self.level[self.player[0]][self.player[1] + 1] = "@"
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0], self.player[1] + 1]
             return
 
-        if (self.level[self.player[0]][self.player[1] + 1] in ('$', 'x')) and (self.level[self.player[0]][self.player[1] + 2] in (' ', '.')):
-            self.level[self.player[0]][self.player[1] + 1] = '@'
-            self.level[self.player[0]][self.player[1] + 2] = '$' if self.level[self.player[0]][self.player[1] + 2] == ' ' else 'x'
-            self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
+        if (self.level[self.player[0]][self.player[1] + 1] in ("$", "x")) and (
+            self.level[self.player[0]][self.player[1] + 2] in (" ", ".")
+        ):
+            self.level[self.player[0]][self.player[1] + 1] = "@"
+            self.level[self.player[0]][self.player[1] + 2] = (
+                "$" if self.level[self.player[0]][self.player[1] + 2] == " " else "x"
+            )
+            self.level[self.player[0]][self.player[1]] = (
+                " " if self.player not in self.target else "."
+            )
             self.player = [self.player[0], self.player[1] + 1]
             return
 
@@ -1171,112 +1449,203 @@ class SokobanGame:
         self.blocks = []
         for index, i in enumerate(self.level):
             for _index, j in enumerate(i):
-                if j == '@':
+                if j == "@":
                     self.player = [index, _index]
-                if j in ('$', 'x'):
+                if j in ("$", "x"):
                     self.blocks.append([index, _index])
         return self.target == self.blocks
 
 
 class SokobanGameView(discord.ui.View):
-    def __init__(self, game: SokobanGame, user: discord.Member, level: int, ctx: Context, *, timeout: float=60.0):
+    def __init__(
+        self,
+        game: SokobanGame,
+        user: discord.Member,
+        level: int,
+        ctx: Context,
+        *,
+        timeout: float = 60.0,
+    ):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
         self.level = level
         self.ctx = ctx
 
-    async def interaction_check(self,
-                                interaction: discord.Interaction) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if self.user == interaction.user:
             return True
-        await interaction.response.send_message(f'Only **{self.user}** can interact. Run the command if you want to.', ephemeral=True)
+        await interaction.response.send_message(
+            f"Only **{self.user}** can interact. Run the command if you want to.",
+            ephemeral=True,
+        )
         return False
 
     def make_win_embed(self) -> discord.Embed:
-        embed = discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+        embed = (
+            discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow())
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            )
+        )
         embed.description = f"Thanks for playing!\nFor next level type `{self.ctx.prefix}sokoban {self.level+1}`"
         return embed
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
-    async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}",
+        label="\u200b",
+        style=discord.ButtonStyle.primary,
+        disabled=False,
+    )
+    async def null_button(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         return
 
-    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
+    @discord.ui.button(
+        emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False
+    )
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_up()
-        embed=discord.Embed(
-            title="Sokoban Game",
-            description=f"{self.game.display_board()}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+        embed = (
+            discord.Embed(
+                title="Sokoban Game",
+                description=f"{self.game.display_board()}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            )
+        )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
+            await interaction.response.edit_message(
+                embed=self.make_win_embed(), view=None
+            )
             self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
-    async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}",
+        label="\u200b",
+        style=discord.ButtonStyle.primary,
+        disabled=False,
+    )
+    async def null_button2(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         await interaction.message.delete()
         self.stop()
 
-    @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{LEFTWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_left()
-        embed=discord.Embed(
-            title="Sokoban Game",
-            description=f"{self.game.display_board()}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+        embed = (
+            discord.Embed(
+                title="Sokoban Game",
+                description=f"{self.game.display_board()}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            )
+        )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
+            await interaction.response.edit_message(
+                embed=self.make_win_embed(), view=None
+            )
             self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
-    async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(
+        emoji="\N{DOWNWARDS BLACK ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
+    async def downward(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         self.game.move_down()
-        embed=discord.Embed(
-            title="Sokoban Game",
-            description=f"{self.game.display_board()}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+        embed = (
+            discord.Embed(
+                title="Sokoban Game",
+                description=f"{self.game.display_board()}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            )
+        )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
+            await interaction.response.edit_message(
+                embed=self.make_win_embed(), view=None
+            )
             self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
+    @discord.ui.button(
+        emoji="\N{BLACK RIGHTWARDS ARROW}",
+        label="\u200b",
+        style=discord.ButtonStyle.red,
+        disabled=False,
+        row=1,
+    )
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_right()
-        embed=discord.Embed(
-            title="Sokoban Game",
-            description=f"{self.game.display_board()}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png')
+        embed = (
+            discord.Embed(
+                title="Sokoban Game",
+                description=f"{self.game.display_board()}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            )
+        )
 
-        if self.game.is_game_over():            
-            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
+        if self.game.is_game_over():
+            await interaction.response.edit_message(
+                embed=self.make_win_embed(), view=None
+            )
             self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
 
     async def start(self, ctx: Context):
-        await ctx.send(embed=discord.Embed(
-                        title="Sokoban Game",
-                        description=f"{self.game.display_board()}",
-                        timestamp=discord.utils.utcnow()
-                    ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png'), view=self)
+        await ctx.send(
+            embed=discord.Embed(
+                title="Sokoban Game",
+                description=f"{self.game.display_board()}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            ),
+            view=self,
+        )
 
 
 STATES = (
@@ -1295,7 +1664,6 @@ class Emojis:
     ok_hand = ":ok_hand:"
     hand_raised = "\U0001F64B"
 
-
     number_emojis = {
         1: "\u0031\ufe0f\u20e3",
         2: "\u0032\ufe0f\u20e3",
@@ -1305,7 +1673,7 @@ class Emojis:
         6: "\u0036\ufe0f\u20e3",
         7: "\u0037\ufe0f\u20e3",
         8: "\u0038\ufe0f\u20e3",
-        9: "\u0039\ufe0f\u20e3"
+        9: "\u0039\ufe0f\u20e3",
     }
 
     confirmation = "\u2705"
@@ -1314,7 +1682,6 @@ class Emojis:
 
     x = "\U0001f1fd"
     o = "\U0001f1f4"
-
 
 
 NUMBERS = list(Emojis.number_emojis.values())
@@ -1334,7 +1701,7 @@ class GameC4:
         player1: discord.Member,
         player2: Optional[discord.Member],
         tokens: list,
-        size: int = 7
+        size: int = 7,
     ):
         self.bot = bot
         self.channel = channel
@@ -1345,7 +1712,7 @@ class GameC4:
         self.grid = self.generate_board(size)
         self.grid_size = size
 
-        self.unicode_numbers = [emojis.encode(i) for i in NUMBERS[:self.grid_size]]
+        self.unicode_numbers = [emojis.encode(i) for i in NUMBERS[: self.grid_size]]
 
         self.message = None
 
@@ -1365,7 +1732,7 @@ class GameC4:
         )
 
         rows = [" ".join(str(self.tokens[s]) for s in row) for row in self.grid]
-        first_row = " ".join(x for x in NUMBERS[:self.grid_size])
+        first_row = " ".join(x for x in NUMBERS[: self.grid_size])
         formatted_grid = "\n".join([first_row] + rows)
         embed = discord.Embed(title=title, description=formatted_grid)
 
@@ -1378,12 +1745,18 @@ class GameC4:
             await self.message.add_reaction(CROSS_EMOJI)
             await self.message.edit(content=None, embed=embed)
 
-    async def game_over(self, action: str, player1: discord.user, player2: discord.user) -> None:
+    async def game_over(
+        self, action: str, player1: discord.user, player2: discord.user
+    ) -> None:
         """Announces to public chat."""
         if action == "win":
-            await self.channel.send(f"Game Over! {player1.mention} won against {player2.mention}")
+            await self.channel.send(
+                f"Game Over! {player1.mention} won against {player2.mention}"
+            )
         elif action == "draw":
-            await self.channel.send(f"Game Over! {player1.mention} {player2.mention} It's A Draw :tada:")
+            await self.channel.send(
+                f"Game Over! {player1.mention} {player2.mention} It's A Draw :tada:"
+            )
         elif action == "quit":
             await self.channel.send(f"{self.player1.mention} surrendered. Game over!")
         await self.print_grid()
@@ -1400,8 +1773,12 @@ class GameC4:
                 if not coords:
                     await self.game_over(
                         "draw",
-                        self.bot.user if isinstance(self.player_active, AI_C4) else self.player_active,
-                        self.bot.user if isinstance(self.player_inactive, AI_C4) else self.player_inactive,
+                        self.bot.user
+                        if isinstance(self.player_active, AI_C4)
+                        else self.player_active,
+                        self.bot.user
+                        if isinstance(self.player_inactive, AI_C4)
+                        else self.player_inactive,
                     )
             else:
                 coords = await self.player_turn()
@@ -1412,12 +1789,19 @@ class GameC4:
             if self.check_win(coords, 1 if self.player_active == self.player1 else 2):
                 await self.game_over(
                     "win",
-                    self.bot.user if isinstance(self.player_active, AI_C4) else self.player_active,
-                    self.bot.user if isinstance(self.player_inactive, AI_C4) else self.player_inactive,
+                    self.bot.user
+                    if isinstance(self.player_active, AI_C4)
+                    else self.player_active,
+                    self.bot.user
+                    if isinstance(self.player_inactive, AI_C4)
+                    else self.player_inactive,
                 )
                 return
 
-            self.player_active, self.player_inactive = self.player_inactive, self.player_active
+            self.player_active, self.player_inactive = (
+                self.player_inactive,
+                self.player_active,
+            )
 
     def predicate(self, reaction: discord.Reaction, user: discord.Member) -> bool:
         """The predicate to check for the player's reaction."""
@@ -1435,14 +1819,20 @@ class GameC4:
         player_num = 1 if self.player_active == self.player1 else 2
         while True:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=self.predicate, timeout=30.0)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", check=self.predicate, timeout=30.0
+                )
             except asyncio.TimeoutError:
-                await self.channel.send(f"{self.player_active.mention}, you took too long. Game over!")
+                await self.channel.send(
+                    f"{self.player_active.mention}, you took too long. Game over!"
+                )
                 return
             else:
                 await message.delete()
                 if str(reaction.emoji) == CROSS_EMOJI:
-                    await self.game_over("quit", self.player_active, self.player_inactive)
+                    await self.game_over(
+                        "quit", self.player_active, self.player_inactive
+                    )
                     return
 
                 await self.message.remove_reaction(reaction, user)
@@ -1454,7 +1844,9 @@ class GameC4:
                     if not square:
                         self.grid[row_num][column_num] = player_num
                         return row_num, column_num
-                message = await self.channel.send(f"Column {column_num + 1} is full. Try again")
+                message = await self.channel.send(
+                    f"Column {column_num + 1} is full. Try again"
+                )
 
     def check_win(self, coords: Coordinate, player_num: int) -> bool:
         """Check that placing a counter here would cause the player to win."""
@@ -1793,10 +2185,14 @@ class GameTicTacToe(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user not in self.players:
-            await interaction.response.send_message("Sorry, you are not playing", ephemeral=True)
+            await interaction.response.send_message(
+                "Sorry, you are not playing", ephemeral=True
+            )
             return False
         if interaction.user != self.current_player:
-            await interaction.response.send_message("Sorry, it is not your turn!", ephemeral=True)
+            await interaction.response.send_message(
+                "Sorry, it is not your turn!", ephemeral=True
+            )
             return False
         return True
 
@@ -1850,7 +2246,7 @@ WINNER_DICT = {
         "r": -1,
         "p": 1,
         "s": 0,
-    }
+    },
 }
 
 # The name of the ship and its size
@@ -1940,7 +2336,6 @@ class Colours:
     ]
 
 
-
 class GameBattleShip:
     """A Battleship Game."""
 
@@ -1949,7 +2344,7 @@ class GameBattleShip:
         bot: Parrot,
         channel: discord.TextChannel,
         player1: discord.Member,
-        player2: discord.Member
+        player2: discord.Member,
     ):
 
         self.bot = bot
@@ -1993,16 +2388,13 @@ class GameBattleShip:
         index = ord(square[0].upper()) - ord("A")
         number = int(square[1:])
 
-        return grid[number-1][index]  # -1 since lists are indexed from 0
+        return grid[number - 1][index]  # -1 since lists are indexed from 0
 
-    async def game_over(
-        self,
-        *,
-        winner: discord.Member,
-        loser: discord.Member
-    ) -> None:
+    async def game_over(self, *, winner: discord.Member, loser: discord.Member) -> None:
         """Removes games from list of current games and announces to public chat."""
-        await self.public_channel.send(f"Game Over! {winner.mention} won against {loser.mention}")
+        await self.public_channel.send(
+            f"Game Over! {winner.mention} won against {loser.mention}"
+        )
 
         for player in (self.p1, self.p2):
             grid = self.format_grid(player, SHIP_EMOJIS)
@@ -2011,7 +2403,9 @@ class GameBattleShip:
     @staticmethod
     def check_sink(grid: Grid, boat: str) -> bool:
         """Checks if all squares containing a given boat have sunk."""
-        return all(square.aimed for row in grid for square in row if square.boat == boat)
+        return all(
+            square.aimed for row in grid for square in row if square.boat == boat
+        )
 
     @staticmethod
     def check_gameover(grid: Grid) -> bool:
@@ -2039,11 +2433,15 @@ class GameBattleShip:
                     for i in range(size):
                         new_x = x + (xincr * i)
                         new_y = y + (yincr * i)
-                        if player.grid[new_x][new_y].boat:  # Check if there's already a boat
+                        if player.grid[new_x][
+                            new_y
+                        ].boat:  # Check if there's already a boat
                             ship_collision = True
                             break
                         coords.append((new_x, new_y))
-                    if not ship_collision:  # If not overwriting any other boat spaces, break loop
+                    if (
+                        not ship_collision
+                    ):  # If not overwriting any other boat spaces, break loop
                         break
 
                 for x, y in coords:
@@ -2060,8 +2458,10 @@ class GameBattleShip:
         ]
 
         locations = (
-            (self.p2, "opponent_board"), (self.p1, "opponent_board"),
-            (self.p1, "board"), (self.p2, "board")
+            (self.p2, "opponent_board"),
+            (self.p1, "opponent_board"),
+            (self.p1, "board"),
+            (self.p2, "board"),
         )
 
         for board, location in zip(boards, locations):
@@ -2073,11 +2473,16 @@ class GameBattleShip:
 
     def predicate(self, message: discord.Message) -> bool:
         """Predicate checking the message typed for each turn."""
-        if message.author == self.turn.user and message.channel == self.turn.user.dm_channel:
+        if (
+            message.author == self.turn.user
+            and message.channel == self.turn.user.dm_channel
+        ):
             if message.content.lower() == "surrender":
                 self.surrender = True
                 return True
-            self.match = re.fullmatch("([A-J]|[a-j]) ?((10)|[1-9])", message.content.strip())
+            self.match = re.fullmatch(
+                "([A-J]|[a-j]) ?((10)|[1-9])", message.content.strip()
+            )
             if not self.match:
                 self.bot.loop.create_task(message.add_reaction(CROSS_EMOJI))
             return bool(self.match)
@@ -2103,7 +2508,9 @@ class GameBattleShip:
                 break
             else:
                 if self.surrender:
-                    await self.next.user.send(f"{self.turn.user} surrendered. Game over!")
+                    await self.next.user.send(
+                        f"{self.turn.user} surrendered. Game over!"
+                    )
                     await self.public_channel.send(
                         f"Game over! {self.turn.user.mention} surrendered to {self.next.user.mention}!"
                     )
@@ -2111,7 +2518,9 @@ class GameBattleShip:
                     break
                 square = self.get_square(self.next.grid, self.match.string)
                 if square.aimed:
-                    await self.turn.user.send("You've already aimed at this square!", delete_after=3.0)
+                    await self.turn.user.send(
+                        "You've already aimed at this square!", delete_after=3.0
+                    )
                 else:
                     break
         await turn_message.delete()
@@ -2122,8 +2531,12 @@ class GameBattleShip:
         await self.turn.user.send("Hit!", delete_after=3.0)
         alert_messages.append(await self.next.user.send("Hit!"))
         if self.check_sink(self.next.grid, square.boat):
-            await self.turn.user.send(f"You've sunk their {square.boat} ship!", delete_after=3.0)
-            alert_messages.append(await self.next.user.send(f"Oh no! Your {square.boat} ship sunk!"))
+            await self.turn.user.send(
+                f"You've sunk their {square.boat} ship!", delete_after=3.0
+            )
+            alert_messages.append(
+                await self.next.user.send(f"Oh no! Your {square.boat} ship sunk!")
+            )
             if self.check_gameover(self.next.grid):
                 await self.turn.user.send("You win!")
                 await self.next.user.send("You lose!")
@@ -2155,7 +2568,11 @@ class GameBattleShip:
                 await message.delete()
 
             alert_messages = []
-            alert_messages.append(await self.next.user.send(f"{self.turn.user} aimed at {self.match.string}!"))
+            alert_messages.append(
+                await self.next.user.send(
+                    f"{self.turn.user} aimed at {self.match.string}!"
+                )
+            )
 
             if square.boat:
                 await self.hit(square, alert_messages)
@@ -2182,7 +2599,11 @@ class Cell:
         count = 0
         for y in range(self.y - 1, self.y + 2):
             for x in range(self.x - 1, self.x + 2):
-                if 0 <= y < self.board.size_y and 0 <= x < self.board.size_x and self.board[x, y].mine:
+                if (
+                    0 <= y < self.board.size_y
+                    and 0 <= x < self.board.size_x
+                    and self.board[x, y].mine
+                ):
                     count += 1
         return count
 
@@ -2204,14 +2625,24 @@ class Game(boardgames.Board[Cell]):
         self.record = None
         self.last_state = None
 
-        self._state = [[Cell(self, y, x) for x in range(self.size_x)] for y in range(self.size_y)]
+        self._state = [
+            [Cell(self, y, x) for x in range(self.size_x)] for y in range(self.size_y)
+        ]
 
     def setup(self, click_y: int, click_x: int):
         """Places mines on the board"""
-        cells = [(i // self.size_x, i % self.size_x) for i in range(self.size_x * self.size_y)]
+        cells = [
+            (i // self.size_x, i % self.size_x)
+            for i in range(self.size_x * self.size_y)
+        ]
         cells.remove((click_y, click_x))
 
-        for y, x in sample(cells, int((self.size_x * self.size_y + 1) // ((self.size_x * self.size_y) ** 0.5))):
+        for y, x in sample(
+            cells,
+            int(
+                (self.size_x * self.size_y + 1) // ((self.size_x * self.size_y) ** 0.5)
+            ),
+        ):
             self[x, y].mine = True
 
     @property
@@ -2287,7 +2718,11 @@ class Game(boardgames.Board[Cell]):
                 if cell.clicked and not cell.number:
                     for i in range(y - 1, y + 2):
                         for j in range(x - 1, x + 2):
-                            if 0 <= i < self.size_y and 0 <= j < self.size_x and not self[j, i].clicked:
+                            if (
+                                0 <= i < self.size_y
+                                and 0 <= j < self.size_x
+                                and not self[j, i].clicked
+                            ):
                                 self[j, i].flagged = False
                                 self[j, i].clicked = True
                                 self.clean()
@@ -2347,7 +2782,9 @@ class GameUI(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user != self.meta.player:
-            await interaction.response.send_message("Sorry, you are not playing", ephemeral=True)
+            await interaction.response.send_message(
+                "Sorry, you are not playing", ephemeral=True
+            )
             return False
         return True
 
@@ -2365,7 +2802,9 @@ class GameUI(discord.ui.View):
 
 
 class MetaGameUI:
-    def __init__(self, player: discord.Member, channel: discord.TextChannel, size: int = 2):
+    def __init__(
+        self, player: discord.Member, channel: discord.TextChannel, size: int = 2
+    ):
         self.player = player
         self.channel = channel
 
@@ -2384,7 +2823,9 @@ class MetaGameUI:
 
     async def start(self):
         for view in self.views:
-            view.message = await self.channel.send(content="Minesweeper" if view.offset == 0 else "\u200b", view=view)
+            view.message = await self.channel.send(
+                content="Minesweeper" if view.offset == 0 else "\u200b", view=view
+            )
 
 
 def is_no_game(ctx: Context):
@@ -2421,17 +2862,19 @@ class Games(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='\N{VIDEO GAME}')
+        return discord.PartialEmoji(name="\N{VIDEO GAME}")
 
     def predicate(
         self,
         ctx: commands.Context,
         announcement: discord.Message,
         reaction: discord.Reaction,
-        user: discord.Member
+        user: discord.Member,
     ) -> bool:
         """Predicate checking the criteria for the announcement message."""
-        if self.already_playing(ctx.author):  # If they've joined a game since requesting a player 2
+        if self.already_playing(
+            ctx.author
+        ):  # If they've joined a game since requesting a player 2
             return True  # Is dealt with later on
         if (
             user.id not in (ctx.me.id, ctx.author.id)
@@ -2439,14 +2882,18 @@ class Games(Cog):
             and reaction.message.id == announcement.id
         ):
             if self.already_playing(user):
-                self.bot.loop.create_task(ctx.send(f"{user.mention} You're already playing a game!"))
+                self.bot.loop.create_task(
+                    ctx.send(f"{user.mention} You're already playing a game!")
+                )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
             if user in self.waiting:
-                self.bot.loop.create_task(ctx.send(
-                    f"{user.mention} Please cancel your game first before joining another one."
-                ))
+                self.bot.loop.create_task(
+                    ctx.send(
+                        f"{user.mention} Please cancel your game first before joining another one."
+                    )
+                )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
@@ -2466,7 +2913,9 @@ class Games(Cog):
 
     async def _get_opponent(self, ctx: Context) -> Optional[discord.Member]:
         message = await ctx.channel.send(
-            embed=discord.Embed(description=f"{ctx.author.mention} wants to play Tic-Tac-Toe.").set_footer(
+            embed=discord.Embed(
+                description=f"{ctx.author.mention} wants to play Tic-Tac-Toe."
+            ).set_footer(
                 text="react with \N{WHITE HEAVY CHECK MARK} to accept the challenge."
             )
         )
@@ -2477,12 +2926,14 @@ class Games(Cog):
                 return False
             if user.bot:
                 return False
-            if user == ctx.author: 
+            if user == ctx.author:
                 return False
             return True
 
         try:
-            _, opponent = await self.bot.wait_for("reaction_add", check=check, timeout=60)
+            _, opponent = await self.bot.wait_for(
+                "reaction_add", check=check, timeout=60
+            )
             return opponent
         except asyncio.TimeoutError:
             pass
@@ -2514,10 +2965,12 @@ class Games(Cog):
         ctx: commands.Context,
         announcement: discord.Message,
         reaction: discord.Reaction,
-        user: discord.Member
+        user: discord.Member,
     ) -> bool:
         """Predicate checking the criteria for the announcement message."""
-        if self.already_playing_cf(ctx.author):  # If they've joined a game since requesting a player 2
+        if self.already_playing_cf(
+            ctx.author
+        ):  # If they've joined a game since requesting a player 2
             return True  # Is dealt with later on
 
         if (
@@ -2526,14 +2979,18 @@ class Games(Cog):
             and reaction.message.id == announcement.id
         ):
             if self.already_playing_cf(user):
-                self.bot.loop.create_task(ctx.send(f"{user.mention} You're already playing a game!"))
+                self.bot.loop.create_task(
+                    ctx.send(f"{user.mention} You're already playing a game!")
+                )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
             if user in self.waiting_c4:
-                self.bot.loop.create_task(ctx.send(
-                    f"{user.mention} Please cancel your game first before joining another one."
-                ))
+                self.bot.loop.create_task(
+                    ctx.send(
+                        f"{user.mention} Please cancel your game first before joining another one."
+                    )
+                )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
@@ -2552,9 +3009,7 @@ class Games(Cog):
         return any(player in (game.player1, game.player2) for game in self.games_c4)
 
     @staticmethod
-    def check_emojis(
-        e1: EMOJI_CHECK, e2: EMOJI_CHECK
-    ) -> tuple[bool, Optional[str]]:
+    def check_emojis(e1: EMOJI_CHECK, e2: EMOJI_CHECK) -> tuple[bool, Optional[str]]:
         """Validate the emojis, the user put."""
         if isinstance(e1, str) and emoji.count(e1) != 1:
             return False, e1
@@ -2568,20 +3023,24 @@ class Games(Cog):
         user: Optional[discord.Member],
         board_size: int,
         emoji1: Any,
-        emoji2: Any
+        emoji2: Any,
     ) -> None:
         """Helper for playing a game of connect four."""
         self.tokens = [":white_circle:", emoji1, emoji2]
         game = None  # if game fails to intialize in try...except
 
         try:
-            game = GameC4(self.bot, ctx.channel, ctx.author, user, self.tokens, size=board_size)
+            game = GameC4(
+                self.bot, ctx.channel, ctx.author, user, self.tokens, size=board_size
+            )
             self.games_c4.append(game)
             await game.start_game()
             self.games_c4.remove(game)
         except Exception:
             # End the game in the event of an unforeseen error so the players aren't stuck in a game
-            await ctx.send(f"{ctx.author.mention} {user.mention if user else ''} An error occurred. Game failed.")
+            await ctx.send(
+                f"{ctx.author.mention} {user.mention if user else ''} An error occurred. Game failed."
+            )
             if game in self.games_c4:
                 self.games_c4.remove(game)
             raise
@@ -2589,15 +3048,17 @@ class Games(Cog):
     @commands.group(
         invoke_without_command=True,
         aliases=("4inarow", "connect4", "connectfour", "c4"),
-        case_insensitive=True
+        case_insensitive=True,
     )
-    @commands.bot_has_permissions(manage_messages=True, embed_links=True, add_reactions=True)
+    @commands.bot_has_permissions(
+        manage_messages=True, embed_links=True, add_reactions=True
+    )
     async def connect_four(
         self,
         ctx: commands.Context,
         board_size: int = None,
         emoji1: EMOJI_CHECK = None,
-        emoji2: EMOJI_CHECK = None
+        emoji2: EMOJI_CHECK = None,
     ) -> None:
         """
         Play the classic game of Connect Four with someone!
@@ -2629,7 +3090,7 @@ class Games(Cog):
             reaction, user = await self.bot.wait_for(
                 "reaction_add",
                 check=partial(self.get_player, ctx, announcement),
-                timeout=60.0
+                timeout=60.0,
             )
         except asyncio.TimeoutError:
             self.waiting_c4.remove(ctx.author)
@@ -2659,7 +3120,7 @@ class Games(Cog):
         ctx: commands.Context,
         board_size: int = 7,
         emoji1: EMOJI_CHECK = "\N{LARGE BLUE CIRCLE}",
-        emoji2: EMOJI_CHECK = "\N{LARGE RED CIRCLE}"
+        emoji2: EMOJI_CHECK = "\N{LARGE RED CIRCLE}",
     ) -> None:
         """Play Connect Four against a computer player."""
         check, emoji = self.check_emojis(emoji1, emoji2)
@@ -2672,7 +3133,7 @@ class Games(Cog):
 
         await self._play_game(ctx, None, board_size, emoji1, emoji2)
 
-    @commands.command(aliases=['akinator'])
+    @commands.command(aliases=["akinator"])
     @commands.bot_has_permissions(embed_links=True)
     async def aki(self, ctx: Context):
         """Answer the questions and let the bot guess your character!"""
@@ -2689,12 +3150,29 @@ class Games(Cog):
             await ctx.send(embed=embed)
 
             def check(m):
-                replies = ("yes", "y", "no", "n", "i", "idk", "i don't know", "probably", "p", "probably not", "pn")
-                return (m.content.lower() in replies and m.channel == ctx.channel and m.author == ctx.author)
+                replies = (
+                    "yes",
+                    "y",
+                    "no",
+                    "n",
+                    "i",
+                    "idk",
+                    "i don't know",
+                    "probably",
+                    "p",
+                    "probably not",
+                    "pn",
+                )
+                return (
+                    m.content.lower() in replies
+                    and m.channel == ctx.channel
+                    and m.author == ctx.author
+                )
+
             try:
-              msg = await self.bot.wait_for("message", check=check, timeout=30)
+                msg = await self.bot.wait_for("message", check=check, timeout=30)
             except Exception:
-              return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
+                return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
             if msg.content.lower() in ("b", "back"):
                 try:
                     q = await aki.back()
@@ -2706,8 +3184,7 @@ class Games(Cog):
         await aki.win()
 
         embed = discord.Embed(
-            title=
-            f"It's {aki.first_guess['name']} ({aki.first_guess['description']})! Was I correct?\n\t",
+            title=f"It's {aki.first_guess['name']} ({aki.first_guess['description']})! Was I correct?\n\t",
             color=0xFF0000,
         )
         embed.set_image(url=f"{aki.first_guess['absolute_picture_path']}")
@@ -2715,11 +3192,15 @@ class Games(Cog):
         await ctx.send(embed=embed)
 
         def check(m):
-            return (m.content.lower() in ("yes", "y", "no", "n") and m.channel == ctx.channel and m.author == ctx.author)
+            return (
+                m.content.lower() in ("yes", "y", "no", "n")
+                and m.channel == ctx.channel
+                and m.author == ctx.author
+            )
 
-        try: 
+        try:
             correct = await self.bot.wait_for("message", check=check, timeout=30)
-        except Exception: 
+        except Exception:
             return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if correct.content.lower() in ("yes", "y"):
             embed = discord.Embed(title="Yay! I guessed it right", color=0xFF0000)
@@ -2729,7 +3210,9 @@ class Games(Cog):
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["tic", "tic_tac_toe"])
-    async def tictactoe(self, ctx: Context, *, opponent: Optional[discord.Member] = None):
+    async def tictactoe(
+        self, ctx: Context, *, opponent: Optional[discord.Member] = None
+    ):
         """Start a Tic-Tac-Toe game!
         `opponent`: Another member of the server to play against. If not is set an open challenge is started.
         """
@@ -2844,7 +3327,6 @@ class Games(Cog):
                 pass
         game.last_state = await ctx.send(f">>> {game}")
 
-
     @commands.group(invoke_without_command=True)
     async def battleship(self, ctx: commands.Context) -> None:
         """
@@ -2874,12 +3356,14 @@ class Games(Cog):
             reaction, user = await self.bot.wait_for(
                 "reaction_add",
                 check=partial(self.predicate, ctx, announcement),
-                timeout=60.0
+                timeout=60.0,
             )
         except asyncio.TimeoutError:
             self.waiting.remove(ctx.author)
             await announcement.delete()
-            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+            await ctx.send(
+                f"{ctx.author.mention} Seems like there's no one here to play..."
+            )
             return
 
         if str(reaction.emoji) == CROSS_EMOJI:
@@ -2905,7 +3389,9 @@ class Games(Cog):
             self.games.remove(game)
         except Exception:
             # End the game in the event of an unforseen error so the players aren't stuck in a game
-            await ctx.send(f"{ctx.author.mention} {user.mention} An error occurred. Game failed.")
+            await ctx.send(
+                f"{ctx.author.mention} {user.mention} An error occurred. Game failed."
+            )
             self.games.remove(game)
             raise
 
@@ -2914,9 +3400,10 @@ class Games(Cog):
         """Lists the ships that are found on the battleship grid."""
         embed = discord.Embed(colour=Colours.blue)
         embed.add_field(name="Name", value="\n".join(SHIPS))
-        embed.add_field(name="Size", value="\n".join(str(size) for size in SHIPS.values()))
+        embed.add_field(
+            name="Size", value="\n".join(str(size) for size in SHIPS.values())
+        )
         await ctx.send(embed=embed)
-
 
     @commands.command()
     async def rps(self, ctx: Context, move: str) -> None:
@@ -2925,7 +3412,9 @@ class Games(Cog):
         player_mention = ctx.author.mention
 
         if move not in CHOICES and move not in SHORT_CHOICES:
-            raise commands.BadArgument(f"Invalid move. Please make move from options: {', '.join(CHOICES).upper()}.")
+            raise commands.BadArgument(
+                f"Invalid move. Please make move from options: {', '.join(CHOICES).upper()}."
+            )
 
         bot_move = choice(CHOICES)
         # value of player_result will be from (-1, 0, 1) as (lost, tied, won).
@@ -2935,28 +3424,37 @@ class Games(Cog):
             message_string = f"{player_mention} You and **{self.bot.user.name}** played {bot_move}, it's a tie."
             await ctx.reply(message_string)
         elif player_result == 1:
-            await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!")
+            await ctx.reply(
+                f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!"
+            )
         else:
-            await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
+            await ctx.reply(
+                f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!"
+            )
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def sokoban(self, ctx: Context, level: int=None,):
+    async def sokoban(
+        self,
+        ctx: Context,
+        level: int = None,
+    ):
         """A classic sokoban game"""
         if not ctx.invoked_subcommand:
             ls = []
-            async with async_open(fr'extra/sokoban/level{level if level else 1}.txt', 'r') as fp:
+            async with async_open(
+                fr"extra/sokoban/level{level if level else 1}.txt", "r"
+            ) as fp:
                 level = await fp.read()
-            for i in level.split('\n'):
+            for i in level.split("\n"):
                 ls.append(list(list(i)))
             game = SokobanGame(ls)
             game._get_cords()
             main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
             await main_game.start(ctx)
 
-
-    @sokoban.command(name='custom')
+    @sokoban.command(name="custom")
     async def custom_sokoban(self, ctx: Context, *, text: str):
         """To make a custom sokoban Game. Here are some rules to make:
         - Your level must be enclosed with `#`
@@ -2966,34 +3464,42 @@ class Games(Cog):
         """
         ls = []
         level = text.strip("```")
-        for i in level.split('\n'):
+        for i in level.split("\n"):
             ls.append(list(list(i)))
         game = SokobanGame(ls)
         game._get_cords()
         main_game = SokobanGameView(game, ctx.author)
         await main_game.start(ctx)
 
-    @commands.command(name='2048')
+    @commands.command(name="2048")
     @commands.bot_has_permissions(embed_links=True)
-    async def _2048(self, ctx: Context, *, boardsize: int=None):
+    async def _2048(self, ctx: Context, *, boardsize: int = None):
         """Classis 2048 Game"""
         boardsize = boardsize or 4
         if boardsize < 4:
-            return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
+            return await ctx.send(
+                f"{ctx.author.mention} board size must not less than 4"
+            )
         if boardsize > 10:
             return await ctx.send(f"{ctx.author.mention} board size must less than 10")
 
         game = Twenty48(_2048_GAME, size=boardsize)
         game.start()
         BoardString = game.number_to_emoji()
-        embed=discord.Embed(
-            title="2048 Game",
-            description=f"{BoardString}",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
+        embed = (
+            discord.Embed(
+                title="2048 Game",
+                description=f"{BoardString}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {ctx.author}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
+            )
+        )
         await ctx.send(embed=embed, view=Twenty48_Button(game, ctx.author))
 
-    @commands.group(name='chess', invoke_without_command=True)
+    @commands.group(name="chess", invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def chess(self, ctx: Context):
@@ -3012,12 +3518,14 @@ class Games(Cog):
                 reaction, user = await self.bot.wait_for(
                     "reaction_add",
                     check=partial(self.predicate, ctx, announcement),
-                    timeout=60.0
+                    timeout=60.0,
                 )
             except asyncio.TimeoutError:
                 self.waiting.remove(ctx.author)
                 await announcement.delete()
-                await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+                await ctx.send(
+                    f"{ctx.author.mention} Seems like there's no one here to play..."
+                )
                 return
 
             if str(reaction.emoji) == CROSS_EMOJI:
@@ -3027,9 +3535,9 @@ class Games(Cog):
                 return
 
             await announcement.delete()
-            game = Chess( 
-                white = ctx.author,
-                black = user,
+            game = Chess(
+                white=ctx.author,
+                black=user,
                 bot=self.bot,
                 ctx=ctx,
             )
@@ -3051,12 +3559,14 @@ class Games(Cog):
             reaction, user = await self.bot.wait_for(
                 "reaction_add",
                 check=partial(self.predicate, ctx, announcement),
-                timeout=60.0
+                timeout=60.0,
             )
         except asyncio.TimeoutError:
             self.waiting.remove(ctx.author)
             await announcement.delete()
-            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+            await ctx.send(
+                f"{ctx.author.mention} Seems like there's no one here to play..."
+            )
             return
 
         if str(reaction.emoji) == CROSS_EMOJI:
@@ -3067,32 +3577,34 @@ class Games(Cog):
 
         await announcement.delete()
 
-        game = Chess( 
-            white = ctx.author,
-            black = user,
-            bot=self.bot,
-            ctx=ctx,
-            custom=board
-        )
+        game = Chess(white=ctx.author, black=user, bot=self.bot, ctx=ctx, custom=board)
         await game.start()
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def slidingpuzzle(self, ctx: Context, boardsize: int=None):
+    async def slidingpuzzle(self, ctx: Context, boardsize: int = None):
         """A Classic Sliding game"""
         boardsize = boardsize or 4
         if boardsize < 4:
-            return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
+            return await ctx.send(
+                f"{ctx.author.mention} board size must not less than 4"
+            )
         if boardsize > 10:
             return await ctx.send(f"{ctx.author.mention} board size must less than 10")
 
         game = SlidingPuzzle(boardsize if boardsize else 4)
-        embed=discord.Embed(
-            title="2048 Game",
-            description=f"```diff\n{game.board_str()}\n```",
-            timestamp=discord.utils.utcnow()
-        ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
+        embed = (
+            discord.Embed(
+                title="2048 Game",
+                description=f"```diff\n{game.board_str()}\n```",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {ctx.author}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif"
+            )
+        )
         await ctx.send(embed=embed, view=SlidingPuzzleView(game, ctx.author))
 
     @commands.group(invoke_without_command=True)
@@ -3167,7 +3679,9 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def secrethitler(self, ctx: Context) -> None:
         if ctx.channel.id in self.games_hitler:
-            raise commands.BadArgument("There is already a game running in this channel.")
+            raise commands.BadArgument(
+                "There is already a game running in this channel."
+            )
 
         self.games_hitler[ctx.channel.id] = MISSING
         await JoinUI.start(ctx, self.games_hitler)

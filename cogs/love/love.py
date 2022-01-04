@@ -399,7 +399,6 @@ class Love(Cog):
           Running $love @joe#6000 @chrisjl#2655 will always yield the same result.
           Running $love @chrisjl#2655 @joe#6000 will yield the same result as before.
         """
-
         if whom is None:
             whom = ctx.author
 

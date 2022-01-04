@@ -2741,7 +2741,6 @@ class Games(Cog):
         """Start a Tic-Tac-Toe game!
         `opponent`: Another member of the server to play against. If not is set an open challenge is started.
         """
-
         if opponent is None:
             opponent = await self._get_opponent(ctx)
         else:
@@ -2812,7 +2811,6 @@ class Games(Cog):
     async def ms_click(self, ctx: Context, cells: commands.Greedy[boardgames.Cell]):
         """Clicks a cell on the board.
         cells are referenced by column then row for example `A2`"""
-
         game = self._games[ctx.channel]
 
         for cell in cells:
@@ -2842,7 +2840,6 @@ class Games(Cog):
     async def ms_flag(self, ctx: Context, cells: commands.Greedy[boardgames.Cell]):
         """Flags a cell on the board.
         cells are referenced by column then row for example `A2`"""
-
         game = self._games[ctx.channel]
 
         for cell in cells:

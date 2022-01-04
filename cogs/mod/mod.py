@@ -152,7 +152,6 @@ class Mod(Cog):
     @Context.with_type
     async def block(self, ctx: Context, member: commands.Greedy[discord.Member], *, reason: reason_convert = None):
         """Blocks a user from replying message in that channel."""
-
         await mt._block(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
 

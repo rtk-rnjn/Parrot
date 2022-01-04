@@ -910,7 +910,6 @@ class Snakes(Cog):
     @snakes_group.command(name="about")
     async def about_command(self, ctx: Context) -> None:
         """Show an embed with information about the event, its participants, and its winners."""
-
         embed = Embed(
             title="About the snake cog",
             description=(

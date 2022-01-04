@@ -482,7 +482,6 @@ class Stars(Cog):
         """
         Sets up the starboard for this server. This creates a new channel with the specified name and makes it into the server's "starboard". If no name is passed in then it defaults to "starboard". You must have Manage Server permission to use this.
         """
-
         # bypass the cache just in case someone used the star
         # reaction earlier before having it set up, or they
         # decided to use the ?star command
@@ -560,7 +559,6 @@ class Stars(Cog):
         Stars a message via message ID. To star a message you should right click on the on a message and then click "Copy ID". You must have Developer Mode enabled to get that functionality. It is recommended that you react to a message with \N{WHITE MEDIUM STAR} instead.
         You can only star a message once.
         """
-
         try:
             await self.star_message(ctx.channel, message, ctx.author.id)
         except StarError as e:
@@ -620,7 +618,6 @@ class Stars(Cog):
     @requires_starboard()
     async def star_who(self, ctx, message: MessageID):
         """Show who starred a message. The ID can either be the starred message ID or the message ID in the starboard channel. """
-        
         collection = starboard_entry[f'{ctx.guild.id}']
         if data := await collection.find_one({'message_id': message}):
             pass
@@ -660,7 +657,6 @@ class Stars(Cog):
         """
         Locks the starboard from being processed. This is a moderation tool that allows you to temporarily disable the starboard to aid in dealing with star spam. When the starboard is locked, no new entries are added to the starboard as the bot will no longer listen to reactions or star/unstar commands. To unlock the starboard, use the unlock subcommand. To use this command you need Manage Server permission. 
         """
-
         if ctx.starboard.needs_migration:
             return await ctx.reply(f'{ctx.author.mention} your starboard requires migration!')
         await server_config.update_one(
@@ -690,7 +686,6 @@ class Stars(Cog):
     @requires_starboard()
     async def star_limit(self, ctx, stars: int):
         """Sets the minimum number of stars required to show up. When this limit is set, messages must have this number or more to show up in the starboard channel. You cannot have a negative number and the maximum star limit you can set is 100. Note that messages that previously did not meet the limit but now do will still not show up in the starboard until starred again. You must have Manage Server permissions to use this. """
-
         if ctx.starboard.needs_migration:
             return await ctx.reply('Your starboard requires migration!')
         stars = min(max(stars, 1), 100)

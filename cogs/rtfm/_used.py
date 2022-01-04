@@ -285,7 +285,6 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
 
 def get_raw(link):
     """Returns the url for raw version on a hastebin-like"""
-
     link = link.strip('<>/')  # Allow for no-embed links
 
     authorized = ('https://hastebin.com', 'https://gist.github.com',
@@ -316,7 +315,6 @@ def get_raw(link):
 
 async def paste(text):
     """Return an online bin of given text"""
-
     async with aiohttp.ClientSession() as aioclient:
         post = await aioclient.post('https://hastebin.com/documents',
                                     data=text)

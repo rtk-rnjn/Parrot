@@ -353,13 +353,13 @@ async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
             return await ctx.send(f"{ctx.author.mention} invalid message ID")
 
         channel = ctx.guild.get_channel(data['channel'])
-        
+    
         if not channel:
             await giveaway.delete_one({'_id': _id})
             return await ctx.send(
                 f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
             )
-            
+        
         async for msg in channel.history(limit=1, before=discord.Object(_id+1), after=discord.Object(_id-1)): # this is good. UwU
             if msg is None:
                 return await ctx.send(f"{ctx.author.mention} no message found! Proably deleted")
@@ -378,10 +378,9 @@ async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
                     msg=msg
                 )
                 return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
-            
+        
         return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.")
-    else:
-        await ctx.send(f"{ctx.author.mention} invalid message ID")
+    await ctx.send(f"{ctx.author.mention} invalid message ID")
 
 async def get_winners(
                 users: list, 

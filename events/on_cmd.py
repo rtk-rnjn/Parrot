@@ -48,10 +48,9 @@ class ErrorView(discord.ui.View):
                                 interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
-        else:
-            await interaction.response.send_message('Stay away',
-                                                    ephemeral=True)
-            return False
+        await interaction.response.send_message('Stay away',
+                                                ephemeral=True)
+        return False
 
     @discord.ui.button(label='Show full error',
                        style=discord.ButtonStyle.green)
@@ -148,7 +147,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             print(error)
             return
 
-        elif isinstance(error, commands.BotMissingPermissions):
+        if isinstance(error, commands.BotMissingPermissions):
             missing = [
                 perm.replace('_', ' ').replace('guild', 'server').title()
                 for perm in error.missing_permissions
@@ -160,17 +159,17 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             _message = f'**{random.choice(quote)}**\nBot Missing permissions. Please provide the following permission(s) to the bot.```\n{fmt}```'
             return await ctx.reply(_message)
 
-        elif isinstance(error, commands.DisabledCommand):
+        if isinstance(error, commands.DisabledCommand):
             return await ctx.reply(
                 f'{random.choice(quote)}\n\n{ctx.author.mention} this command has been disabled. Consider asking your Server Manager to fix this out'
             )
 
-        elif isinstance(error, commands.CommandOnCooldown):
+        if isinstance(error, commands.CommandOnCooldown):
             return await ctx.reply(
                 f"**{random.choice(quote)}**\nCommand On Cooldown. You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
             )
 
-        elif isinstance(error, commands.MissingPermissions):
+        if isinstance(error, commands.MissingPermissions):
             missing = [
                 perm.replace('_', ' ').replace('guild', 'server').title()
                 for perm in error.missing_permissions
@@ -185,7 +184,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             await ctx.reply(_message)
             return
 
-        elif isinstance(error, commands.MissingRole):
+        if isinstance(error, commands.MissingRole):
             missing = [role for role in error.missing_role]
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
@@ -197,7 +196,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             await ctx.reply(_message)
             return
 
-        elif isinstance(error, commands.MissingAnyRole):
+        if isinstance(error, commands.MissingAnyRole):
             missing = [role for role in error.missing_roles]
             if len(missing) > 2:
                 fmt = '{}, and {}'.format("**, **".join(missing[:-1]),
@@ -209,7 +208,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             await ctx.reply(_message)
             return
 
-        elif isinstance(error, commands.NoPrivateMessage):
+        if isinstance(error, commands.NoPrivateMessage):
             try:
                 await ctx.reply(
                     f'**{random.choice(quote)}**\nNo Private Message. This command cannot be used in direct messages. It can only be used in server'
@@ -218,7 +217,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 pass
             return
 
-        elif isinstance(error, commands.NSFWChannelRequired):
+        if isinstance(error, commands.NSFWChannelRequired):
             if ctx.channel.permissions_for(ctx.guild.me).embed_links:
                 em = discord.Embed(timestamp=datetime.utcnow())
                 em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
@@ -233,13 +232,13 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 )
             return
 
-        elif isinstance(error, commands.NotOwner):
+        if isinstance(error, commands.NotOwner):
             await ctx.reply(
                 f"**{random.choice(quote)}**\nNot Owner. You must have ownership of the bot to run {ctx.command.name}"
             )
             return
 
-        elif isinstance(error, commands.PrivateMessageOnly):
+        if isinstance(error, commands.PrivateMessageOnly):
             await ctx.reply(
                 f"**{random.choice(quote)}**\nPrivate Message Only. This comamnd will only work in DM messages"
             )
@@ -249,30 +248,29 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nMessage Not Found. Message ID/Link you provied is either invalid or deleted'
                 )
-            elif isinstance(error, commands.MemberNotFound):
+            if isinstance(error, commands.MemberNotFound):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nMember Not Found. Member ID/Mention/Name you provided is invalid or bot can not see that Member'
                 )
-            elif isinstance(error, commands.UserNotFound):
+            if isinstance(error, commands.UserNotFound):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nUser Not Found. User ID/Mention/Name you provided is invalid or bot can not see that User'
                 )
-            elif isinstance(error, commands.ChannelNotFound):
+            if isinstance(error, commands.ChannelNotFound):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nChannel Not Found. Channel ID/Mention/Name you provided is invalid or bot can not see that Channel'
                 )
-            elif isinstance(error, commands.RoleNotFound):
+            if isinstance(error, commands.RoleNotFound):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nRole Not Found. Role ID/Mention/Name you provided is invalid or bot can not see that Role'
                 )
-            elif isinstance(error, commands.EmojiNotFound):
+            if isinstance(error, commands.EmojiNotFound):
                 return await ctx.reply(
                     f'**{random.choice(quote)}**\nEmoji Not Found. Emoji ID/Name you provided is invalid or bot can not see that Emoji'
                 )
-            else:
-                return await ctx.reply(
-                    f'**{random.choice(quote)}**\n{error}'
-                )
+            return await ctx.reply(
+                f'**{random.choice(quote)}**\n{error}'
+            )
 
         elif isinstance(error, commands.MissingRequiredArgument):
             command = ctx.command

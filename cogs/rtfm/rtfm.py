@@ -327,7 +327,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             async with self.bot.session.get(url) as response:
                 if response.status == 404:
                     return await ctx.send('Nothing found. Check your link')
-                elif response.status != 200:
+                if response.status != 200:
                     return await ctx.send(
                         f'An error occurred (status code: {response.status}). Retry later.'
                     )

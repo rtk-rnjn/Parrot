@@ -597,10 +597,8 @@ class Stars(Cog):
             if msg is not None:
                 embed = msg.embeds[0] if msg.embeds else None
                 return await ctx.reply(msg.content, embed=embed)
-            else:
-                # somehow it got deleted, so just delete the entry
-                await collection.delete_one({'message_id': message})
-                
+            # somehow it got deleted, so just delete the entry
+            await collection.delete_one({'message_id': message})
         # slow path, try to fetch the content
         channel = ctx.guild.get_channel_or_thread(record['channel_id'])
         if channel is None:

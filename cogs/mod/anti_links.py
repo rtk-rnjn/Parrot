@@ -58,7 +58,7 @@ class LinkProt(Cog):
             
             if any(temp in message.content for temp in whitelist):
                 return
-            
+
             has_links = await self.has_links(message.content)
             
             if has_links:

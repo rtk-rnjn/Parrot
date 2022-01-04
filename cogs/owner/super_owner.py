@@ -609,33 +609,33 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """Show all the docs links"""
         async with async_open(r'extra/docs_links.json') as f:
             data = json.loads(await f.read())
-        
+
         await ctx.send(json.dumps(data, indent=4))
-    
+
     @rtfd.command(name='add')
     @commands.is_owner()
     async def rtfd_add(self, ctx: Context, name: str, *, link: str):
         """To add the links in docs"""
         async with async_open(r'extra/docs_links.json') as f:
             data = json.loads(await f.read())
-        
+
         data[name] = link
 
         async with async_open(r'extra/docs_links.json') as f:
             await f.write(data)
-        
+
         await ctx.send(f"{ctx.author.mention} done!")
-    
+
     @rtfd.command(name='del')
     @commands.is_owner()
     async def rtfd_del(self, ctx: Context, name: str,):
         """To add the links in docs"""
         async with async_open(r'extra/docs_links.json') as f:
             data: dict = json.loads(await f.read())
-        
+
         data.pop(name)
 
         async with async_open(r'extra/docs_links.json') as f:
             await f.write(data)
-        
+
         await ctx.send(f"{ctx.author.mention} done!")

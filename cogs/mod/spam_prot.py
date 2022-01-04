@@ -18,7 +18,7 @@ class SpamProt(Cog):
         self.collection = parrot_db['server_config']
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             10, 12.0, commands.BucketType.member)
-        
+
     async def delete(self, message: discord.Message) -> None:
         def check(m: discord.Message):
             return m.author.id == message.author.id
@@ -26,7 +26,7 @@ class SpamProt(Cog):
             await message.channel.purge(5, check=check)
         except Exception:
             pass
-    
+
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
@@ -43,7 +43,7 @@ class SpamProt(Cog):
                     ignore = data['automod']['spam']['channel']
                 except KeyError:
                     ignore = []
-                
+
                 if message.channel.id in ignore:
                     return
                 await self.delete(message)

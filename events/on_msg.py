@@ -276,7 +276,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     # guild = self.bot.get_guild(payload.guild_id)
                     message_author = None
                     content = None
-                
+
                 main_content = f"""**Message Edit Event**
 
 `ID       :` **{payload.message_id}**

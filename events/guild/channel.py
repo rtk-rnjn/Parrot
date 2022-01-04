@@ -25,7 +25,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             return json.dumps(over, indent=4)
         except Exception:
             return "{}"
-    
+
     @Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_channel_delete': {'$exists': True}}):
@@ -35,7 +35,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 TYPE = channel_type.replace('_', ' ').title() + " Channel"
                 async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=5):
                     if entry.target.id == channel.id:
-                        
+
                         reason = entry.reason or None       # Fact is this thing has to be implemented
                         user = entry.user or "UNKNOWN#0000" # If the action is too old
                         deleted_at = entry.created_at       # The logs can't be proceeded. I dont know why
@@ -128,7 +128,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 {ext}
 """
                         break
-                
+
                 fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
                 await webhook.send(
                     content=content, 
@@ -136,7 +136,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                     file=discord.File(fp, filename='overwrites.json')
                 )
-        
+
     def _channel_change(self, before, after, *, TYPE: str) -> tuple:
         ls = []
         if before.name != after.name:
@@ -166,7 +166,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 ls.append(('`Region Updated   :`', after.rtc_region if after.rtc_region is not None else 'Auto'))
             if before.bitrate != after.bitrate:
                 ls.append(('`Bitrate Updated  :`', after.bitrate))
-        
+
     @Cog.listener()
     async def on_guild_channel_pins_update(self, channel, last_pin):
         if data := await self.collection.find_one({'_id': channel.guild.id, 'on_message_pin': {'$exists': True}}):

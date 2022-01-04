@@ -159,7 +159,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                     avatar_url=self.bot.user.avatar.url, 
                     username=self.bot.user.name
                 )
-        
+
         if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_delete': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_emoji_delete'], session=self.bot.session)
             if webhook:
@@ -184,7 +184,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                     avatar_url=self.bot.user.avatar.url, 
                     username=self.bot.user.name
                 )
-        
+
         if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_update': {'$exists': True}}):
             webhook = discord.Webhook.from_url(data['on_emoji_update'], session=self.bot.session)
             if webhook:
@@ -209,7 +209,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                     avatar_url=self.bot.user.avatar.url, 
                     username=self.bot.user.name
                 )
-                    
+
 
 
 

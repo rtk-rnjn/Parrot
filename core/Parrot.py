@@ -95,10 +95,10 @@ class Parrot(commands.AutoShardedBot):
                 tb = traceback.format_exception(type(e), e, e.__traceback__)
                 tbe = "".join(tb) + ""
                 print(f"[WARNING] Could not load extension {ext}: {tbe}")
-    
+
     def __repr__(self):
         return f"<core.{self.user.name}>"
-    
+
     @property
     def server(self) -> typing.Optional[discord.Guild]:
         return self.get_guild(SUPPORT_SERVER_ID)  # Main server
@@ -140,15 +140,15 @@ class Parrot(commands.AutoShardedBot):
                 CHANGE_LOG_ID).history(limit=1).flatten()
 
         return self._change_log[0]
-    
+
     @property
     def author_obj(self) -> typing.Optional[discord.User]:
         return self.get_user(MASTER_OWNER)
-    
+
     @property
     def author_name(self) -> str:
         return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}" # cant join str and int, ofc
-    
+
     @async_property
     async def db_latency(self) -> float:
         ini = time()

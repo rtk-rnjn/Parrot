@@ -40,7 +40,7 @@ class BotConfig(Cog):
             await logs.insert_one({'_id': guild})
         except Exception:
             pass
-        
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='\N{GEAR}')

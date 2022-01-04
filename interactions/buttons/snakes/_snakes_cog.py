@@ -795,7 +795,7 @@ class Snakes(Cog):
 
         await ctx.send(embed=my_snake_embed)
 
-    
+
     @snakes_group.command(name="quiz")
     @locked()
     async def quiz_command(self, ctx: Context) -> None:

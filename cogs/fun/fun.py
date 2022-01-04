@@ -5,7 +5,6 @@ import random
 import io
 import datetime
 import urllib
-import time
 import re
 import json
 import base64
@@ -17,12 +16,7 @@ import aiohttp
 import asyncio
 from aiohttp import request
 from discord.ext.commands import (
-    command,
-    guild_only,
-    bot_has_permissions,
-    cooldown,
-    BucketType,
-)
+    command)
 from discord.ext import commands, tasks
 from discord import Embed
 
@@ -33,8 +27,6 @@ from rapidfuzz import fuzz
 
 from dataclasses import dataclass
 from collections import defaultdict
-
-from utilities.database import parrot_db
 from utilities.paginator import PaginationView
 
 from core import Parrot, Context, Cog

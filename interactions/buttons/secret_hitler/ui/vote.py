@@ -38,7 +38,8 @@ class VoteUI(InputUI):
 
     @property
     def content(self) -> str:
-        assert isinstance(self.game.game.state, VoteGameState)
+        if not isinstance(self.game.game.state, VoteGameState):
+            raise AssertionError
         return format_list(
             self.game.game.state.tooltip + "\nCurrently: {0} {1} voted.",
             *self.votes)

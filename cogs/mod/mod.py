@@ -200,7 +200,7 @@ class Mod(Cog):
                 await mt._vc_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
             else:
                 pass
-            
+
         await mt._text_lock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
@@ -218,7 +218,7 @@ class Mod(Cog):
                 await mt._vc_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn)
                 return
             pass
-            
+
         await mt._text_unlock(ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel)
         await self.log(ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason)
 
@@ -254,7 +254,7 @@ class Mod(Cog):
         await ctx.message.delete()
         if num > 100 or num < 0:
             return await ctx.send("Invalid amount. Maximum is 100.")
-        
+
         def check(m: discord.Message):
             if flags.member:
                 return m.author.id == flags.member.id
@@ -307,7 +307,7 @@ class Mod(Cog):
         """
         await mt._change_nickname(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name)
         await self.log(ctx, ctx.command.qualified_name, member, f'Action Requested by {ctx.author.name} ({ctx.author.id})')
-    
+
     @commands.group()
     @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True))
     @commands.bot_has_guild_permissions(mute_members=True, manage_channels=True, manage_permissions=True, deafen_members=True, move_members=True)
@@ -315,7 +315,7 @@ class Mod(Cog):
     async def voice(self, ctx: Context):
         """Voice Moderation"""
         pass
-    
+
     @voice.command(name='mute')
     @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
     @commands.bot_has_guild_permissions(mute_members=True)
@@ -333,7 +333,7 @@ class Mod(Cog):
         """To give the member voice unmute"""
         await mt._voice_unmute(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
-    
+
     @voice.command(name='ban')
     @commands.check_any(is_mod(), commands.has_guild_permissions(manage_channels=True, manage_permissions=True))
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
@@ -342,7 +342,7 @@ class Mod(Cog):
         """To give the member voice ban"""
         await mt._voice_ban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
-    
+
     @voice.command(name='unban')
     @commands.check_any(is_mod(), commands.has_guild_permissions(manage_channels=True, manage_permissions=True))
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
@@ -351,7 +351,7 @@ class Mod(Cog):
         """To give the member voice unban"""
         await mt._voice_unban(ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, ctx.author.voice.channel or member.voice.channel, reason)
         await self.log(ctx, ctx.command.qualified_name, member, f'{reason}')
-    
+
     @voice.command(name='deafen')
     @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
     @commands.bot_has_guild_permissions(deafen_members=True)
@@ -385,7 +385,7 @@ class Mod(Cog):
     @Context.with_type
     async def voice_move(self, ctx: Context, member: commands.Greedy[discord.Member], channel: typing.Union[discord.VoiceChannel, None], *, reason: reason_convert=None):
         """To give the member voice move"""
-        
+
         def check(m, b, a):
             return m.id == ctx.me.id and (b.channel.id != a.channel.id)
 
@@ -396,7 +396,7 @@ class Mod(Cog):
                     member = voicestate.channel.members
             else:
                 return await ctx.send(f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command")
-            
+
             try:
                 _, __, a = await self.bot.wait_for('voice_state_update', timeout=60, check=check)
             except Exception:
@@ -407,7 +407,7 @@ class Mod(Cog):
         if channel:
             if not member:
                 member = channel.members
-            
+
             for mem in member:
                 await mem.edit(voice_channel=a, reason=f"Action Requested by {ctx.author.name} ({ctx.author.id}) | Reason: {reason}")
 
@@ -419,7 +419,7 @@ class Mod(Cog):
     async def emoji(self, ctx: Context):
         """For Emoji Moderation"""
         pass
-    
+
     @emoji.command(name='delete')
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
     @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
@@ -782,7 +782,7 @@ class Mod(Cog):
                 await self.log(ctx, 'Role name changed', target, reason)
 
         return await msg.delete()
-    
+
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
     @Context.with_type
@@ -799,7 +799,7 @@ class Mod(Cog):
             pass
         finally:
             await infrac.make_warn(at=at, reason=reason, mod=mod, expires_at=None, guild_id=ctx.guild.id, user=user)
-        
+
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
     @Context.with_type
@@ -814,7 +814,7 @@ class Mod(Cog):
         else:
             await infrac.del_warn_all(guild_id=ctx.guild.id, user_id=member.id)
             await ctx.send(f"{ctx.author.mention} deleted all the infraction of **{member}**")
-    
+
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
     @Context.with_type

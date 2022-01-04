@@ -114,7 +114,7 @@ class Context(commands.Context):
             return
 
         return await super().send(content, **kwargs)
-    
+
     async def reply(self, content: typing.Optional[str]=None, **kwargs):
         if not (self.channel.permissions_for(self.me)).send_messages:
             try:

@@ -650,7 +650,7 @@ class SlidingPuzzle:
 
 
 class SlidingPuzzleView(discord.ui.View):
-    
+
     def __init__(self, game: SlidingPuzzle, user: discord.Member, timeout: float=60.0, **kwargs):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
@@ -679,7 +679,7 @@ class SlidingPuzzleView(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.message.delete()
@@ -696,7 +696,7 @@ class SlidingPuzzleView(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_down()
@@ -708,7 +708,7 @@ class SlidingPuzzleView(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/923106185584984104/d1b246ff6d7c01f4bc372319877ef0f6.gif')
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_right()
@@ -776,7 +776,7 @@ class Chess:
         self.alternate_turn = black
 
         self.game_stop = False
-    
+
     def legal_moves(self) -> Optional[list]:
         return [self.board.san(move) for move in self.board.legal_moves]
 
@@ -793,7 +793,7 @@ class Chess:
             if not self.game_stop:
                 await self.ctx.send(f"**{self.turn}** did not responded on time! Game Over!")
                 return None
-    
+
     def switch(self) -> None:
         if self.turn == self.white: 
             self.turn = self.black
@@ -803,7 +803,7 @@ class Chess:
             self.turn = self.white
             self.alternate_turn = self.black
             return
-    
+
     async def place_move(self, move: str) -> None:
         move = self.board.push_san(move)
         content = f"{self.white.mention} VS {self.black.mention}"
@@ -821,7 +821,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             content=content,
             embed = embed, view=ChessView(game=self, ctx=self.ctx))
         await self.game_over()
-        
+
     async def game_over(self,) -> Optional[bool]:
         if not self.game_stop:
             if self.board.is_checkmate():
@@ -911,7 +911,7 @@ class Twenty48:
                     board[i][j] += board[i][j]
                     board[i][j + 1] = 0
         return board
-            
+
     def compress(self, board):
         new_board = [[0 for _ in range(self.size)] for _ in range(self.size)]
         for i in range(self.size):
@@ -927,7 +927,7 @@ class Twenty48:
         stage = self.merge(stage)
         stage = self.compress(stage)
         self.board = stage
-        
+
     def MoveRight(self):
         stage = self.reverse(self.board)
         stage = self.compress(stage)
@@ -974,12 +974,12 @@ class Twenty48:
 
         self.board[random.randrange(4)][random.randrange(4)] = 2
         self.board[random.randrange(4)][random.randrange(4)] = 2
-        
+
         BoardString = self.number_to_emoji()
 
 
 class Twenty48_Button(discord.ui.View):
-    
+
     def __init__(self, game: Any, user: discord.Member, timeout: float=60.0, **kwargs):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
@@ -1000,7 +1000,7 @@ class Twenty48_Button(discord.ui.View):
     @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveUp()
-        
+
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
@@ -1010,7 +1010,7 @@ class Twenty48_Button(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.message.delete()
@@ -1029,11 +1029,11 @@ class Twenty48_Button(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveDown()
-        
+
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
@@ -1043,11 +1043,11 @@ class Twenty48_Button(discord.ui.View):
         ).set_footer(text=f"User: {interaction.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.MoveRight()
-        
+
         self.game.spawn_new()
         BoardString = self.game.number_to_emoji()
         embed=discord.Embed(
@@ -1135,7 +1135,7 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1]] = ' ' if self.player not in self.target else '.'
             self.player = [self.player[0] + 1, self.player[1]]
             return
-        
+
     def move_left(self) -> None:
         if self.level[self.player[0]][self.player[1] - 1] in (' ', '.'):
             self.level[self.player[0]][self.player[1] - 1] = '@'
@@ -1175,7 +1175,7 @@ class SokobanGame:
                     self.blocks.append([index, _index])
         return self.target == self.blocks
 
- 
+
 class SokobanGameView(discord.ui.View):
     def __init__(self, game: SokobanGame, user: discord.Member, level: int, ctx: Context, *, timeout: float=60.0):
         super().__init__(timeout=timeout)
@@ -1199,7 +1199,7 @@ class SokobanGameView(discord.ui.View):
     @discord.ui.button(emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}", label="\u200b", style=discord.ButtonStyle.primary, disabled=False)
     async def null_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         return
-        
+
     @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_up()
@@ -1220,7 +1220,7 @@ class SokobanGameView(discord.ui.View):
     async def null_button2(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.message.delete()
         self.stop()
-    
+
     @discord.ui.button(emoji="\N{LEFTWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_left()
@@ -1236,7 +1236,7 @@ class SokobanGameView(discord.ui.View):
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{DOWNWARDS BLACK ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def downward(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_down()
@@ -1252,7 +1252,7 @@ class SokobanGameView(discord.ui.View):
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     @discord.ui.button(emoji="\N{BLACK RIGHTWARDS ARROW}", label="\u200b", style=discord.ButtonStyle.red, disabled=False, row=1)
     async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.game.move_right()
@@ -1268,14 +1268,14 @@ class SokobanGameView(discord.ui.View):
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
-    
+
     async def start(self, ctx: Context):
         await ctx.send(embed=discord.Embed(
                         title="Sokoban Game",
                         description=f"{self.game.display_board()}",
                         timestamp=discord.utils.utcnow()
                     ).set_footer(text=f"User: {self.user}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png'), view=self)
-    
+
 
 STATES = (
     "\N{REGIONAL INDICATOR SYMBOL LETTER X}",
@@ -1293,7 +1293,7 @@ class Emojis:
     ok_hand = ":ok_hand:"
     hand_raised = "\U0001F64B"
 
-  
+
     number_emojis = {
         1: "\u0031\ufe0f\u20e3",
         2: "\u0032\ufe0f\u20e3",
@@ -2420,7 +2420,7 @@ class Games(Cog):
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name='\N{VIDEO GAME}')
-    
+
     def predicate(
         self,
         ctx: commands.Context,
@@ -2487,7 +2487,7 @@ class Games(Cog):
         finally:
             await message.delete()
         return None
-    
+
     async def check_author(self, ctx: commands.Context, board_size: int) -> bool:
         """Check if the requester is free and the board size is correct."""
         if self.already_playing_cf(ctx.author):
@@ -2725,7 +2725,7 @@ class Games(Cog):
         else:
             embed = discord.Embed(title="Oof! Kinda hard one", color=0xFF0000)
             await ctx.send(embed=embed)
-    
+
     @commands.command(aliases=["tic", "tic_tac_toe"])
     async def tictactoe(self, ctx: Context, *, opponent: Optional[discord.Member] = None):
         """Start a Tic-Tac-Toe game!
@@ -2936,7 +2936,7 @@ class Games(Cog):
             await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!")
         else:
             await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
-    
+
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
@@ -2952,8 +2952,8 @@ class Games(Cog):
             game._get_cords()
             main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
             await main_game.start(ctx)
-            
-    
+
+
     @sokoban.command(name='custom')
     async def custom_sokoban(self, ctx: Context, *, text: str):
         """To make a custom sokoban Game. Here are some rules to make:
@@ -2980,7 +2980,7 @@ class Games(Cog):
             return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
         if boardsize > 10:
             return await ctx.send(f"{ctx.author.mention} board size must less than 10")
-            
+
         game = Twenty48(_2048_GAME, size=boardsize)
         game.start()
         BoardString = game.number_to_emoji()
@@ -2990,7 +2990,7 @@ class Games(Cog):
             timestamp=discord.utils.utcnow()
         ).set_footer(text=f"User: {ctx.author}").set_thumbnail(url='https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png')
         await ctx.send(embed=embed, view=Twenty48_Button(game, ctx.author))
-    
+
     @commands.group(name='chess', invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
@@ -3032,7 +3032,7 @@ class Games(Cog):
                 ctx=ctx,
             )
             await game.start()
-    
+
     @chess.command()
     async def custom_chess(self, ctx: Context, board: fenPass):
         """To play chess, from a custom FEN notation"""
@@ -3064,7 +3064,7 @@ class Games(Cog):
             return
 
         await announcement.delete()
-        
+
         game = Chess( 
             white = ctx.author,
             black = user,
@@ -3084,7 +3084,7 @@ class Games(Cog):
             return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
         if boardsize > 10:
             return await ctx.send(f"{ctx.author.mention} board size must less than 10")
-        
+
         game = SlidingPuzzle(boardsize if boardsize else 4)
         embed=discord.Embed(
             title="2048 Game",
@@ -3160,7 +3160,7 @@ class Games(Cog):
             return
 
         await self.games_boogle[message.channel].check_message(message)
-    
+
     @commands.command(aliases=["umbrogus", "secret_hitler", "secret-hitler"])
     @commands.bot_has_permissions(embed_links=True)
     async def secrethitler(self, ctx: Context) -> None:

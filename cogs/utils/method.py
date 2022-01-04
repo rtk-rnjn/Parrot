@@ -289,7 +289,7 @@ async def _delete_todo(bot: Parrot, ctx: Context, name):
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
-        
+
 async def create_gw(bot: Parrot, ctx: Context):
     questions = [
         (1, "Enter the prize of Giveaway"),
@@ -299,14 +299,14 @@ async def create_gw(bot: Parrot, ctx: Context):
     ]
     def check(m):
         return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
-    
+
     answers = {}
     channel = None
-    
+
     for i, q in questions:
         await ctx.send(f"{ctx.author.mention} **{q}**")
         msg = await bot.wait_for('message', check=check, timeout=30)
-        
+
         if msg.content.lower() in ('end', 'cancel'):
             return await ctx.send(f"{ctx.author.mention} alright, reverting all process")
         if i == 1:
@@ -318,7 +318,7 @@ async def create_gw(bot: Parrot, ctx: Context):
             if not (channel.permissions_for(ctx.guild.me).add_reactions and channel.permissions_for(ctx.guild.me).embed_links):
                 return await ctx.send(f"{ctx.author.mention} bot don't have Add Reaction and Embed Links permission in {channel.mention}")  
             answers['channel'] = channel.id
-            
+
         if i == 3:
             try:
                 winner = int(msg.content)
@@ -328,7 +328,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         if i == 4:
             seconds = ShortTime(f'{msg.content}').dt.timestamp()
             answers['endtime'] = seconds
-        
+
     _id = await channel.send(
             embed=discord.Embed(
                 description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{int(answers['endtime'])}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
@@ -344,7 +344,7 @@ async def create_gw(bot: Parrot, ctx: Context):
     answers['guild'] = ctx.guild.id
     await giveaway.insert_one(answers)
     await _id.add_reaction("\N{PARTY POPPER}")
-    
+
     await ctx.send(f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**")
 
 async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
@@ -353,13 +353,13 @@ async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
             return await ctx.send(f"{ctx.author.mention} invalid message ID")
 
         channel = ctx.guild.get_channel(data['channel'])
-    
+
         if not channel:
             await giveaway.delete_one({'_id': _id})
             return await ctx.send(
                 f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
             )
-        
+
         async for msg in channel.history(limit=1, before=discord.Object(_id+1), after=discord.Object(_id-1)): # this is good. UwU
             if msg is None:
                 return await ctx.send(f"{ctx.author.mention} no message found! Proably deleted")
@@ -378,7 +378,7 @@ async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
                     msg=msg
                 )
                 return await channel.send(f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**")
-        
+
         return await ctx.send(f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared.")
     await ctx.send(f"{ctx.author.mention} invalid message ID")
 

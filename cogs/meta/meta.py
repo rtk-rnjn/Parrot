@@ -176,13 +176,13 @@ class FrontPageSource(menus.PageSource):
             f'For more help, consider joining the official server over at {self.bot.support_server}',
             inline=False,
         )
-        
+
         embed.add_field(
             name='Privacy Policy',
             value=f'For the privacy policy of the bot: visit [Privacy Policy]({PRIVACY_POLICY})',
             inline=False
         )
-        
+
         created_at = format_dt(menu.ctx.bot.user.created_at, 'F')
         if self.index == 0:
             embed.add_field(
@@ -451,7 +451,7 @@ class Meta(Cog):
 
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
-        
+
         info = []
         features = set(ctx.guild.features)
         all_features = {
@@ -474,7 +474,7 @@ class Meta(Cog):
         for feature, label in all_features.items():
             if feature in features:
                 info.append(f':ballot_box_with_check: {label}')
-        
+
         if info:
             embed.add_field(name='Features', value='\n'.join(info))
 
@@ -504,7 +504,7 @@ class Meta(Cog):
 
         fmt = f'{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}'
         embed.add_field(name='Emoji', value=fmt, inline=True)
-        
+
         if ctx.guild.me.guild_permissions.ban_members:
             embed.add_field(name="Banned Members", value=f"{len(await ctx.guild.bans())}", inline=True)
         if ctx.guild.me.guild_permissions.manage_guild:
@@ -532,7 +532,7 @@ class Meta(Cog):
             mem_total = virtual_memory().total / (1024**2)
             mem_of_total = proc.memory_percent()
             mem_usage = mem_total * (mem_of_total / 100)
-        
+
         fields = [
             ("Bot version", f"`{VERSION}`", True),
             ("Python version", f"`{str(python_version())}`", True),
@@ -602,11 +602,11 @@ class Meta(Cog):
             description=f"```ini\n[Default Prefix: `@{self.bot.user}`]\n```\n**Bot Owned and created by `{self.bot.author_name}`**", 
             url=url, 
             timestamp=datetime.datetime.utcnow())
-        
+
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -737,7 +737,7 @@ class Meta(Cog):
         change_log = await self.bot.change_log
         embed.description = f"Message at: <t:{int(change_log.created_at.timestamp())}>\n\n{change_log.content}"
         await ctx.reply(embed=embed)
-    
+
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)

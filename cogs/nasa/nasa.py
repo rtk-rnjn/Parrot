@@ -299,7 +299,6 @@ class NASA(Cog):
     async def nasasearch(self, ctx: Context, *,
                          string: commands.clean_content):
         """NASA Image and Video Library"""
-
         link = f'https://images-api.nasa.gov/search?q={string}'
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:

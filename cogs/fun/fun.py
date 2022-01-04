@@ -1198,7 +1198,6 @@ class Fun(Cog, command_attrs={
         """
         To get colour information using the hexadecimal codes.
         """
-        
         link = f"https://www.thecolorapi.com/id?format=json&hex={colour}"
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
@@ -2187,7 +2186,6 @@ class Fun(Cog, command_attrs={
     @Context.with_type
     async def uwuify(self, ctx: Context, *, text: commands.clean_content):
         """Converts a given `text` into it's uwu equivalent."""
-        
         conversion_func = functools.partial(
             replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True
         )

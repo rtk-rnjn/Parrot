@@ -107,7 +107,6 @@ class BotConfig(Cog):
     @Context.with_type
     async def botprefix(self, ctx: Context, *, arg: str):
         """To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 chars"""
-
         if len(arg) > 6:
             return await ctx.reply(
                 f"{ctx.author.mention} length of prefix can not be more than 6 characters."
@@ -125,7 +124,6 @@ class BotConfig(Cog):
     @Context.with_type
     async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """To set the mute role of the server. By default role with name `Muted` is consider as mute role."""
-
         post = {'mute_role': role.id if role else None}
         await guild_update(ctx.guild.id, post)
         if not role:
@@ -154,7 +152,6 @@ class BotConfig(Cog):
     @Context.with_type
     async def actionlog(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To set the action log, basically the mod log."""
-
         post = {'action_log': channel.id if channel else None}
         await guild_update(ctx.guild.id, post)
         if not channel:
@@ -585,7 +582,6 @@ class BotConfig(Cog):
     @Context.with_type
     async def tel_config_channel(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To setup the telephone line in the channel."""
-
         await telephone_update(ctx.guild.id, 'channel',
                                channel.id if channel else None)
         if not channel:
@@ -601,7 +597,6 @@ class BotConfig(Cog):
     @Context.with_type
     async def tel_config_pingrole(self, ctx: Context, *, role: discord.Role = None):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
-
         await telephone_update(ctx.guild.id, 'pingrole',
                                role.id if role else None)
         if not role:
@@ -616,7 +611,6 @@ class BotConfig(Cog):
     @Context.with_type
     async def tel_config_memberping(self, ctx: Context, *, member: discord.Member = None):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
-
         await telephone_update(ctx.guild.id, 'memberping',
                                member.id if member else None)
         if not member:

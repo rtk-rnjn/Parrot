@@ -25,7 +25,6 @@ class DocMarkdownConverter(MarkdownConverter):
 
     def convert_pre(self, el, text):
         """Wrap any codeblocks in `py` for syntax highlighting."""
-
         code = ''.join(el.strings)
 
         return f"```py\n{code}```"
@@ -40,7 +39,6 @@ async def _process_mozilla_doc(ctx, url):
     From a given url from developers.mozilla.org, processes format,
     returns tag formatted content
     """
-
     async with aiohttp.ClientSession() as client_session:
         async with client_session.get(url) as response:
             if response.status == 404:
@@ -67,7 +65,6 @@ async def _process_mozilla_doc(ctx, url):
 
 async def html_ref(ctx, text):
     """Displays informations on an HTML tag"""
-
     text = text.strip('<>`')
 
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/{text}"
@@ -88,7 +85,6 @@ async def html_ref(ctx, text):
 
 async def _http_ref(part, ctx, text):
     """Displays informations about HTTP protocol"""
-
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTTP/{part}/{text}"
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
@@ -115,7 +111,6 @@ csp_directives = partial(_http_ref, 'Headers/Content-Security-Policy')
 
 async def _git_main_ref(part, ctx, text):
     """Displays a git help page"""
-
     text = text.strip('`')
 
     if part and text == 'git':
@@ -162,7 +157,6 @@ git_tutorial_ref = partial(_git_main_ref, '')
 
 async def sql_ref(ctx, text):
     """Displays reference on an SQL statement"""
-
     text = text.strip('`').lower()
     if text in ('check', 'unique', 'not null'): text += ' constraint'
     text = re.sub(' ', '-', text)
@@ -200,7 +194,6 @@ async def sql_ref(ctx, text):
 
 async def haskell_ref(ctx, text):
     """Displays informations on given Haskell topic"""
-
     text = text.strip('`')
 
     snake = '_'.join(text.split(' '))

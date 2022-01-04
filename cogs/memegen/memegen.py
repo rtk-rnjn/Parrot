@@ -26,7 +26,6 @@ class Memegen(Cog):
         """
 				Meme Generator/Image Generator: The Fact
 				"""
-
         params = {
             "type": "fact",
             "text": f"{text}",
@@ -520,7 +519,6 @@ class Memegen(Cog):
         """
 		Meme Generator: Change My Mind. 
 		"""
-
         font = font or "impact"
         fontsize = fontsize or 50
 
@@ -562,7 +560,6 @@ class Memegen(Cog):
         """
 		Meme Generator: Distracted BF.
 		"""
-
         font = font or "impact"
         fontsize = fontsize or 50
 
@@ -604,7 +601,6 @@ class Memegen(Cog):
         """
 		Meme Generator: Doge.
 		"""
-
         font = font or "impact"
         fontsize = fontsize or 50
         params = {

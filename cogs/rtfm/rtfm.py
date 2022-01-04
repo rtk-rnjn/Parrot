@@ -43,7 +43,6 @@ class RTFM(Cog):
 
     def get_content(self, tag):
         """Returns content between two h2 tags"""
-
         bssiblings = tag.next_siblings
         siblings = []
         for elem in bssiblings:

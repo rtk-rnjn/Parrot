@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 
 async def python_doc(ctx, text: str):
     """Filters python.org results based on your query"""
-
     text = text.strip('`')
 
     url = "https://docs.python.org/3/genindex-all.html"
@@ -56,7 +55,6 @@ async def python_doc(ctx, text: str):
 
 async def _cppreference(language, ctx, text: str):
     """Search something on cppreference"""
-
     text = text.strip('`')
 
     base_url = 'https://cppreference.com/w/cpp/index.php?title=Special:Search&search=' + text
@@ -107,7 +105,6 @@ cpp_doc = partial(_cppreference, 'C++')
 
 async def haskell_doc(ctx, text: str):
     """Search something on wiki.haskell.org"""
-
     text = text.strip('`')
 
     snake = '_'.join(text.split(' '))

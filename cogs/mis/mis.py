@@ -144,7 +144,6 @@ class Misc(Cog):
     @Context.with_type
     async def news(self, ctx: Context, nat: str):
         """This command will fetch the latest news from all over the world."""
-
         key = os.environ['NEWSKEY']
 
         link = 'http://newsapi.org/v2/top-headlines?country=' + nat + '&apiKey=' + key
@@ -285,7 +284,6 @@ class Misc(Cog):
     @Context.with_type
     async def weather(self, ctx: Context, *, location: str):
         """Weather API, for current weather forecast, supports almost every city."""
-
         appid = os.environ['WEATHERID']
 
         loc = urllib.parse.quote(location)

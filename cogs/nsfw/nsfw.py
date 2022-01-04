@@ -21,7 +21,6 @@ class NSFW(Cog):
     @Context.with_type
     async def anal(self, ctx: Context):
         """To get Random Anal"""
-
         url = 'https://nekobot.xyz/api/image'
         params = {"type": "anal"}
 

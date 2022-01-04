@@ -224,7 +224,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         url = f"https://www.googleapis.com/customsearch/v1?key={os.environ['GOOGLE_KEY']}&cx={os.environ['GOOGLE_CX']}&q={text}&searchType=image"
         res = await self.bot.session.get(url)
         data = await res.json()
-        ls = list()
+        ls = []
         for i in data['items']:
             embed = discord.Embed(title=i['title'],
                                 description=f"```\n{i['snippet']}```",
@@ -360,7 +360,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.is_owner()
     async def auditlog(self, ctx: Context, *, args: auditFlag):
         """To get the audit log of the server, in nice format"""
-        ls = list()
+        ls = []
         guild = args.guild or ctx.guild
         async for entry in guild.audit_logs(
                 limit=args.limit if args.limit else 100,

@@ -189,7 +189,9 @@ class Board:
         self.columns = board
         self.number = magic_number
 
-    def board_contains(self, numbers: str, pos: Position = None, passed: list[Position] = []) -> bool:
+    def board_contains(self, numbers: str, pos: Position = None, passed: list[Position] = None) -> bool:
+        if passed is None:
+            passed = []
         # Empty numberss
         if len(numbers) == 0:
             return True

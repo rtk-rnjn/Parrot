@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from core import Cog, Parrot
 from utilities.database import parrot_db
-import discord, io
+import discord
+import io
 import json
 
 

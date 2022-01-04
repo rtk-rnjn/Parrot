@@ -6,7 +6,12 @@ system('pip install lxml')
 
 # from datetime import datetime
 import unicodedata
-import os, re, sys, discord, aiohttp, hashlib
+import os
+import re
+import sys
+import discord
+import aiohttp
+import hashlib
 # import asyncio
 from hashlib import algorithms_available as algorithms
 # from yaml import safe_load as yaml_load
@@ -24,7 +29,8 @@ from discord.ext import commands
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-import _ref, _doc
+import _ref
+import _doc
 from _used import typing, get_raw, paste, Refresh, wrapping, prepare_payload, execute_run
 # from _tio import Tio
 

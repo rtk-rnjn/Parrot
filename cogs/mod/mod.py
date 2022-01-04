@@ -2,7 +2,10 @@ from __future__ import annotations
 from cogs.mod.flags import purgeFlag
 
 from discord.ext import commands, tasks
-import discord, typing, re, asyncio
+import discord
+import typing
+import re
+import asyncio
 
 from core import Parrot, Context, Cog
 

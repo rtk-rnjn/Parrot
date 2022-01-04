@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from discord.ext import commands
-import discord, typing, asyncio, io, functools
+import discord
+import typing
+import asyncio
+import io
+import functools
 from utilities.emotes import emojis
 from typing import Any
 

@@ -4,7 +4,9 @@ from core import Parrot, Cog
 from utilities.database import guild_join, guild_remove, parrot_db
 from utilities.config import JOIN_LEAVE_CHANNEL_ID
 
-import aiohttp, os, discord
+import aiohttp
+import os
+import discord
 
 CHANNEL_ID = JOIN_LEAVE_CHANNEL_ID
 BASE_URL = f"https://discord.com/api/webhooks/{CHANNEL_ID}/"

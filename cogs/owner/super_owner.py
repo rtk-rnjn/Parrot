@@ -7,10 +7,17 @@ from aiofile import async_open
 from discord.ext import commands
 import discord
 
-import aiohttp, datetime, os, traceback, typing
+import aiohttp
+import datetime
+import os
+import traceback
+import typing
 
 from utilities.database import ban
-import re, io, zlib, json
+import re
+import io
+import zlib
+import json
 
 from . import fuzzy
 from utilities.paginator import PaginationView

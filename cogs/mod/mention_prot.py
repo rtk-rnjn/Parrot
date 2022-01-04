@@ -5,7 +5,8 @@ from core import Parrot, Cog
 from utilities.database import parrot_db
 
 from discord.ext import commands, tasks
-import discord, random
+import discord
+import random
 
 with open('extra/duke_nekum.txt') as f:
     quotes = f.read().split('\n')

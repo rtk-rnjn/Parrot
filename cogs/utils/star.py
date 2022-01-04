@@ -12,7 +12,8 @@ from utilities.formats import plural, human_join
 from utilities import time
 from utilities import cache
 
-import asyncio, typing
+import asyncio
+import typing
 import weakref
 import re
 

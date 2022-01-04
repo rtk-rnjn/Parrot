@@ -3,7 +3,8 @@ from __future__ import annotations
 import typing
 
 from discord.ext import commands, tasks
-import discord, random
+import discord
+import random
 
 from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE

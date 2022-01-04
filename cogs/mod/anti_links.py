@@ -11,14 +11,14 @@ from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE
 
 from core import Parrot, Cog
 
-with open('extra/duke_nekum.txt') as f:
-    quotes = f.read().split('\n')
+with open("extra/duke_nekum.txt") as f:
+    quotes = f.read().split("\n")
 
 
 class LinkProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db['server_config']
+        self.collection = parrot_db["server_config"]
         self.data = {}
         self.update_data.start()
 
@@ -36,19 +36,21 @@ class LinkProt(Cog):
             return
         if message.author.guild_permissions.administrator:
             return
-        if data := await self.collection.find_one({'_id': message.guild.id, 'automod.antilinks.enable': {'$exists': True}}):
-            prot = data['automod']['antilinks']['enable']
+        if data := await self.collection.find_one(
+            {"_id": message.guild.id, "automod.antilinks.enable": {"$exists": True}}
+        ):
+            prot = data["automod"]["antilinks"]["enable"]
 
             if not prot:
                 return
 
             try:
-                whitelist = data['automod']['antilinks']['whitelist']
+                whitelist = data["automod"]["antilinks"]["whitelist"]
             except KeyError:
                 pass
 
             try:
-                ignore = data['automod']['antilinks']['channel']
+                ignore = data["automod"]["antilinks"]["channel"]
             except KeyError:
                 pass
 
@@ -61,7 +63,10 @@ class LinkProt(Cog):
             has_links = await self.has_links(message.content)
 
             if has_links:
-                await message.channel.send(f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**", delete_after=10)
+                await message.channel.send(
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**",
+                    delete_after=10,
+                )
                 try:
                     await message.delete()
                 except Exception:

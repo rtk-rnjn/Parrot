@@ -9,7 +9,7 @@ import typing
 
 from utilities.database import parrot_db
 
-collection = parrot_db['server_config']
+collection = parrot_db["server_config"]
 
 
 class Counting(Cog):
@@ -19,8 +19,8 @@ class Counting(Cog):
         self.clear_cache.start()
 
     async def get_last_message(
-            self,
-            channel: discord.TextChannel) -> typing.Optional[discord.Message]:
+        self, channel: discord.TextChannel
+    ) -> typing.Optional[discord.Message]:
         if channel.last_message:
             return channel.last_message
         async for msg in channel.history(limit=1, oldest_first=False):
@@ -34,19 +34,18 @@ class Counting(Cog):
             return
 
         if not self.cache:
-            data = await collection.find_one({
-                '_id': message.guild.id,
-                'counting': {
-                    '$exists': True
-                }
-            })
+            data = await collection.find_one(
+                {"_id": message.guild.id, "counting": {"$exists": True}}
+            )
             if not data:
                 return
             self.cache[message.guild.id] = data
 
         channel = self.bot.get_channel(
-            self.cache[message.guild.id]['counting']['channel'])
-        if not channel: return
+            self.cache[message.guild.id]["counting"]["channel"]
+        )
+        if not channel:
+            return
 
         if message.channel.id != channel.id:
             return
@@ -57,10 +56,12 @@ class Counting(Cog):
             if message.author.id == msg.author.id:
                 try:
                     return await message.delete(
-                        reason="Can't post more than once in a row")
+                        reason="Can't post more than once in a row"
+                    )
                 except Exception:
                     return await message.channel.send(
-                        "Bot need manage message permission to work properly")
+                        "Bot need manage message permission to work properly"
+                    )
         try:
             number = int(msg.content)
         except ValueError:
@@ -77,15 +78,16 @@ class Counting(Cog):
                 )
             except Exception:
                 return await message.channel.send(
-                    "Bot need manage message permission to work properly")
+                    "Bot need manage message permission to work properly"
+                )
 
         if new_number - 1 != number:
             try:
-                return await message.delete(
-                    reason="Invalid count in Counting channel")
+                return await message.delete(reason="Invalid count in Counting channel")
             except Exception:
                 return await message.channel.send(
-                    "Bot need manage message permission to work properly")
+                    "Bot need manage message permission to work properly"
+                )
 
     @tasks.loop(hours=1)
     async def clear_cache(self):

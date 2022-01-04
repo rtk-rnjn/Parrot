@@ -15,7 +15,11 @@ class ViewMenu(old_menus.Menu):
 
         def make_callback(button):
             async def callback(interaction):
-                if interaction.user.id not in {self.bot.owner_id, self._author_id, *self.bot.owner_ids}:
+                if interaction.user.id not in {
+                    self.bot.owner_id,
+                    self._author_id,
+                    *self.bot.owner_ids,
+                }:
                     return
                 if self.auto_defer:
                     await interaction.response.defer()
@@ -33,7 +37,9 @@ class ViewMenu(old_menus.Menu):
 
         view = discord.ui.View(timeout=self.timeout)
         for i, (emoji, button) in enumerate(self.buttons.items()):
-            item = discord.ui.Button(style=discord.ButtonStyle.secondary, emoji=emoji, row=i // 5)
+            item = discord.ui.Button(
+                style=discord.ButtonStyle.secondary, emoji=emoji, row=i // 5
+            )
             item.callback = make_callback(button)
             view.add_item(item)
 
@@ -45,16 +51,19 @@ class ViewMenu(old_menus.Menu):
 
         if react:
             if self.__tasks:
+
                 async def wrapped():
                     self.buttons[button.emoji] = button
                     try:
                         await self.message.edit(view=self.build_view())
                     except discord.HTTPException:
                         raise
+
                 return wrapped()
 
             async def dummy():
                 raise old_menus.MenuError("Menu has not been started yet")
+
             return dummy()
 
     def remove_button(self, emoji, *, react=False):
@@ -62,16 +71,19 @@ class ViewMenu(old_menus.Menu):
 
         if react:
             if self.__tasks:
+
                 async def wrapped():
                     self.buttons.pop(emoji, None)
                     try:
                         await self.message.edit(view=self.build_view())
                     except discord.HTTPException:
                         raise
+
                 return wrapped()
 
             async def dummy():
                 raise old_menus.MenuError("Menu has not been started yet")
+
             return dummy()
 
     def clear_buttons(self, *, react=False):
@@ -79,15 +91,18 @@ class ViewMenu(old_menus.Menu):
 
         if react:
             if self.__tasks:
+
                 async def wrapped():
                     try:
                         await self.message.edit(view=None)
                     except discord.HTTPException:
                         raise
+
                 return wrapped()
 
             async def dummy():
                 raise old_menus.MenuError("Menu has not been started yet")
+
             return dummy()
 
     async def _internal_loop(self):
@@ -128,7 +143,7 @@ class ViewMenu(old_menus.Menu):
         self.ctx = ctx
         self._author_id = ctx.author.id
         channel = channel or ctx.channel
-        is_guild = hasattr(channel, "guild") 
+        is_guild = hasattr(channel, "guild")
         me = channel.guild.me if is_guild else ctx.bot.user
         permissions = channel.permissions_for(me)
         self._verify_permissions(ctx, channel, permissions)

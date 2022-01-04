@@ -9,14 +9,16 @@ from datetime import datetime
 
 class Actions(Cog):
     """Action commands like hug and kiss"""
+
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.url = "https://api.waifu.pics/sfw"
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name='Lights_Camera_Action__Emoticon__',
-                                    id=892434144364220497)
+        return discord.PartialEmoji(
+            name="Lights_Camera_Action__Emoticon__", id=892434144364220497
+        )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -29,7 +31,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -47,7 +49,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -65,7 +67,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -83,7 +85,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -101,7 +103,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -119,7 +121,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -137,7 +139,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -155,7 +157,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -173,7 +175,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -191,7 +193,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -209,7 +211,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -227,7 +229,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -245,7 +247,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -263,7 +265,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -281,7 +283,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -299,7 +301,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -317,7 +319,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -335,7 +337,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -353,7 +355,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -371,7 +373,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -389,7 +391,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -407,7 +409,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -419,25 +421,27 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def slap(self,
-                   ctx: Context,
-                   member: discord.Member,
-                   *,
-                   reason: commands.clean_content = None):
+    async def slap(
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        reason: commands.clean_content = None,
+    ):
         """Slap pics?"""
         async with aiohttp.ClientSession() as session:
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
         await ctx.reply(
-            content=
-            f"{ctx.author.mention} slapped {member.name} for {reason if reason else 'No reason'}",
-            embed=em)
+            content=f"{ctx.author.mention} slapped {member.name} for {reason if reason else 'No reason'}",
+            embed=em,
+        )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -450,7 +454,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -468,7 +472,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/kick")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -486,7 +490,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -504,7 +508,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -522,7 +526,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -540,7 +544,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -558,7 +562,7 @@ class Actions(Cog):
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
-        url = json['url']
+        url = json["url"]
         em = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")

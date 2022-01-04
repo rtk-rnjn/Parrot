@@ -10,17 +10,23 @@ import json
 class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db['logging']
+        self.collection = parrot_db["logging"]
 
     def permissions_to_json(self, permissions) -> str:
         return json.dumps(dict(permissions), indent=4) if permissions else "{}"
 
     @Cog.listener()
     async def on_guild_role_create(self, role):
-        if data := await self.collection.find_one({'_id': role.guild.id, 'on_role_create': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_role_create'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": role.guild.id, "on_role_create": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_role_create"], session=self.bot.session
+            )
             if webhook:
-                async for entry in role.guild.audit_logs(action=discord.AuditLogAction.role_create, limit=5):
+                async for entry in role.guild.audit_logs(
+                    action=discord.AuditLogAction.role_create, limit=5
+                ):
                     if entry.target.id == role.id:
                         content = f"""**Role Create**
 
@@ -33,21 +39,29 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `Bot Managed:` **{role.is_bot_managed()}**
 `Integrated :` **{role.is_integration()}**
 """
-                        fp = io.ByteIO(self.permissions_to_json(role.permissions).encode())
+                        fp = io.ByteIO(
+                            self.permissions_to_json(role.permissions).encode()
+                        )
                         await webhook.send(
-                            content=content, 
-                            avatar_url=self.bot.user.avatar.url, 
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
                             username=self.bot.user.name,
-                            file=discord.File(fp, filename='permissions.json')
+                            file=discord.File(fp, filename="permissions.json"),
                         )
                         break
 
     @Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):
-        if data := await self.collection.find_one({'_id': role.guild.id, 'on_role_delete': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_role_delete'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": role.guild.id, "on_role_delete": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_role_delete"], session=self.bot.session
+            )
             if webhook:
-                async for entry in role.guild.audit_logs(action=discord.AuditLogAction.role_create, limit=5):
+                async for entry in role.guild.audit_logs(
+                    action=discord.AuditLogAction.role_create, limit=5
+                ):
                     if entry.target.id == role.id:
                         content = f"""**Role Create**
 
@@ -60,51 +74,80 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `Bot Managed:` **{role.is_bot_managed()}**
 `Integrated :` **{role.is_integration()}**
 """
-                        fp = io.ByteIO(self.permissions_to_json(role.permissions).encode())
+                        fp = io.ByteIO(
+                            self.permissions_to_json(role.permissions).encode()
+                        )
                         await webhook.send(
-                            content=content, 
-                            avatar_url=self.bot.user.avatar.url, 
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
                             username=self.bot.user.name,
-                            file=discord.File(fp, filename='permissions.json')
+                            file=discord.File(fp, filename="permissions.json"),
                         )
                         break
 
-        parrot_db = await self.bot.db('parrot_db')
+        parrot_db = await self.bot.db("parrot_db")
 
-        if data := await parrot_db['server_config'].find_one({'_id': role.guild.id}):
-            if data['mod_role'] == role.id:
-                await parrot_db['server_config'].update_one({'_id': role.guild.id}, {'$set': {'mod_role': None}})
-            if data['mute_role'] == role.id:
-                await parrot_db['server_config'].update_one({'_id': role.guild.id}, {'$set': {'mute_role': None}})
+        if data := await parrot_db["server_config"].find_one({"_id": role.guild.id}):
+            if data["mod_role"] == role.id:
+                await parrot_db["server_config"].update_one(
+                    {"_id": role.guild.id}, {"$set": {"mod_role": None}}
+                )
+            if data["mute_role"] == role.id:
+                await parrot_db["server_config"].update_one(
+                    {"_id": role.guild.id}, {"$set": {"mute_role": None}}
+                )
 
-        if data := await parrot_db['global_chat'].find_one({'_id': role.guild.id}):
-            if data['ignore-role'] == role.id:
-                await parrot_db['global_chat'].update_one({'_id': role.guild.id}, {'$set': {'ignore_role': None}})
+        if data := await parrot_db["global_chat"].find_one({"_id": role.guild.id}):
+            if data["ignore-role"] == role.id:
+                await parrot_db["global_chat"].update_one(
+                    {"_id": role.guild.id}, {"$set": {"ignore_role": None}}
+                )
 
-        if data := await parrot_db['telephone'].find_one({'_id': role.guild.id}):
-            if data['pingrole'] == role.id:
-                await parrot_db['telephone'].update_one({'_id': role.guild.id}, {'$set': {'pingrole': None}})
+        if data := await parrot_db["telephone"].find_one({"_id": role.guild.id}):
+            if data["pingrole"] == role.id:
+                await parrot_db["telephone"].update_one(
+                    {"_id": role.guild.id}, {"$set": {"pingrole": None}}
+                )
 
-        if data := await parrot_db['ticket'].find_one({'_id': role.guild.id}):
-            await parrot_db['ticket'].update_one({'_id': role.guild.id}, {'$pull': {'valid_roles': role.id, 'pinged_roles': role.id, 'verified_roles': role.id}})
+        if data := await parrot_db["ticket"].find_one({"_id": role.guild.id}):
+            await parrot_db["ticket"].update_one(
+                {"_id": role.guild.id},
+                {
+                    "$pull": {
+                        "valid_roles": role.id,
+                        "pinged_roles": role.id,
+                        "verified_roles": role.id,
+                    }
+                },
+            )
 
-    async def _update_role(self, before, after,):
+    async def _update_role(
+        self,
+        before,
+        after,
+    ):
         ls = []
         if before.name != after.name:
-            ls.append(('`Name Changed      :`', after.name))
+            ls.append(("`Name Changed      :`", after.name))
         if before.position != after.position:
-            ls.append(('`Position Changed  :`', after.position))
+            ls.append(("`Position Changed  :`", after.position))
         if not before.hoist is after.hoist:
-            ls.append(('`Hoist Toggled     :`', after.hoist))
+            ls.append(("`Hoist Toggled     :`", after.hoist))
         if before.color != after.color:
-            ls.append(('`Color Changed     :`', after.color.to_rgb()))
+            ls.append(("`Color Changed     :`", after.color.to_rgb()))
 
     @Cog.listener()
     async def on_guild_role_update(self, before, after):
-        if data := await self.collection.find_one({'_id': before.guild.id, 'on_role_update': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_role_update'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": before.guild.id, "on_role_update": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_role_update"], session=self.bot.session
+            )
             if webhook:
-                async for entry in after.guild.audit_logs(action=discord.AuditLogAction.role_update, limit=5):
+                async for entry in after.guild.audit_logs(
+                    action=discord.AuditLogAction.role_update, limit=5
+                ):
                     if entry.extra.id == after.id:
                         reason = entry.reason or None
                         user = entry.user or "UNKNOWN#0000"
@@ -127,18 +170,24 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         break
                 fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
                 await webhook.send(
-                    content=content, 
-                    avatar_url=self.bot.user.avatar.url, 
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename='permissions.json')
+                    file=discord.File(fp, filename="permissions.json"),
                 )
 
     @Cog.listener()
     async def on_guild_emojis_update(self, guild, before, after):
-        if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_create': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_emoji_create'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": guild.id, "on_emoji_create": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_emoji_create"], session=self.bot.session
+            )
             if webhook:
-                async for entry in guild.audit_logs(action=discord.AuditLogAction.emoji_create, limit=1):
+                async for entry in guild.audit_logs(
+                    action=discord.AuditLogAction.emoji_create, limit=1
+                ):
                     emoji_name = entry.name
                     if isinstance(entry.target, discord.Emoji):
                         animated = entry.target.animated
@@ -155,15 +204,21 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `URL     `: **<{url}>**
 """
             await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url, 
-                    username=self.bot.user.name
-                )
+                content=content,
+                avatar_url=self.bot.user.avatar.url,
+                username=self.bot.user.name,
+            )
 
-        if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_delete': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_emoji_delete'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": guild.id, "on_emoji_delete": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_emoji_delete"], session=self.bot.session
+            )
             if webhook:
-                async for entry in guild.audit_logs(action=discord.AuditLogAction.emoji_delete, limit=1):
+                async for entry in guild.audit_logs(
+                    action=discord.AuditLogAction.emoji_delete, limit=1
+                ):
                     emoji_name = entry.name
                     if isinstance(entry.target, discord.Emoji):
                         animated = entry.target.animated
@@ -180,15 +235,21 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `URL     `: **<{url}>**
 """
             await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url, 
-                    username=self.bot.user.name
-                )
+                content=content,
+                avatar_url=self.bot.user.avatar.url,
+                username=self.bot.user.name,
+            )
 
-        if data := await self.collection.find_one({'_id': guild.id, 'on_emoji_update': {'$exists': True}}):
-            webhook = discord.Webhook.from_url(data['on_emoji_update'], session=self.bot.session)
+        if data := await self.collection.find_one(
+            {"_id": guild.id, "on_emoji_update": {"$exists": True}}
+        ):
+            webhook = discord.Webhook.from_url(
+                data["on_emoji_update"], session=self.bot.session
+            )
             if webhook:
-                async for entry in guild.audit_logs(action=discord.AuditLogAction.emoji_update, limit=1):
+                async for entry in guild.audit_logs(
+                    action=discord.AuditLogAction.emoji_update, limit=1
+                ):
                     emoji_name = entry.name
                     if isinstance(entry.target, discord.Emoji):
                         animated = entry.target.animated
@@ -205,12 +266,10 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `URL     `: **<{url}>**
 """
             await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url, 
-                    username=self.bot.user.name
-                )
-
-
+                content=content,
+                avatar_url=self.bot.user.avatar.url,
+                username=self.bot.user.name,
+            )
 
 
 def setup(bot):

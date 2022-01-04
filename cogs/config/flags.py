@@ -7,10 +7,9 @@ from utilities.time import ShortTime
 from utilities.converters import convert_bool
 
 
-class AutoWarn(commands.FlagConverter,
-               case_insensitive=True,
-               delimiter=' ',
-               prefix='--'):
+class AutoWarn(
+    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
+):
     enable: Optional[convert_bool] = True
     count: Optional[int]
     punish: Optional[str]

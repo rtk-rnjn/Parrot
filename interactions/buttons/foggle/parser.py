@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Optional
 
 OPS: dict[str, Callable[[int, int], Optional[int]]] = {
-    "^": lambda x, y: x**y,
+    "^": lambda x, y: x ** y,
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
     "*": lambda x, y: x * y,
@@ -57,8 +57,8 @@ class View:
         return e
 
     def parse_prec_lvl(
-            self, ops: tuple[str, ...],
-            below: Callable[[], Optional[int]]) -> Callable[[], Optional[int]]:
+        self, ops: tuple[str, ...], below: Callable[[], Optional[int]]
+    ) -> Callable[[], Optional[int]]:
         def parser():
             e = below()
             if e is None:
@@ -78,9 +78,9 @@ class View:
         return parser
 
     def parse_expr(self) -> Optional[int]:
-        return self.parse_prec_lvl(("+", "-"),
-                                   self.parse_prec_lvl(("*", "/"),
-                                                       self.parse_base_expr))()
+        return self.parse_prec_lvl(
+            ("+", "-"), self.parse_prec_lvl(("*", "/"), self.parse_base_expr)
+        )()
 
     def parse_full(self) -> Optional[int]:
         self.strip_ws()

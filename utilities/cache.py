@@ -35,8 +35,7 @@ class ExpiringCache(dict):
         # Have to do this in two steps...
         current_time = time.monotonic()
         to_remove = [
-            k for (k, (v, t)) in self.items()
-            if current_time > (t + self.__ttl)
+            k for (k, (v, t)) in self.items() if current_time > (t + self.__ttl)
         ]
         for k in to_remove:
             del self[k]
@@ -76,10 +75,10 @@ def cache(maxsize=128, strategy=Strategy.lru, ignore_kwargs=False):
             # we do care what 'self' parameter is when we __repr__ it
             def _true_repr(o):
                 if o.__class__.__repr__ is object.__repr__:
-                    return f'<{o.__class__.__module__}.{o.__class__.__name__}>'
+                    return f"<{o.__class__.__module__}.{o.__class__.__name__}>"
                 return repr(o)
 
-            key = [f'{func.__module__}.{func.__name__}']
+            key = [f"{func.__module__}.{func.__name__}"]
             key.extend(_true_repr(o) for o in args)
             if not ignore_kwargs:
                 for k, v in kwargs.items():
@@ -87,13 +86,13 @@ def cache(maxsize=128, strategy=Strategy.lru, ignore_kwargs=False):
                     # I want to pass asyncpg.Connection objects to the parameters
                     # however, they use default __repr__ and I do not care what
                     # connection is passed in, so I needed a bypass.
-                    if k == 'connection':
+                    if k == "connection":
                         continue
 
                     key.append(_true_repr(k))
                     key.append(_true_repr(v))
 
-            return ':'.join(key)
+            return ":".join(key)
 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -104,8 +103,7 @@ def cache(maxsize=128, strategy=Strategy.lru, ignore_kwargs=False):
                 value = func(*args, **kwargs)
 
                 if inspect.isawaitable(value):
-                    return _wrap_and_store_coroutine(_internal_cache, key,
-                                                     value)
+                    return _wrap_and_store_coroutine(_internal_cache, key, value)
 
                 _internal_cache[key] = value
                 return value

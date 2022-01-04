@@ -1,4 +1,3 @@
-
 # Author: Danny
 import asyncio
 import discord
@@ -11,32 +10,40 @@ import re
 from collections import OrderedDict, namedtuple
 
 # Needed for the setup.py script
-__version__ = '1.0.0-a'
+__version__ = "1.0.0-a"
 
 # consistency with the `discord` namespaced logging
 log = logging.getLogger(__name__)
 
+
 class MenuError(Exception):
     pass
 
+
 class CannotEmbedLinks(MenuError):
     def __init__(self):
-        super().__init__('Bot does not have embed links permission in this channel.')
+        super().__init__("Bot does not have embed links permission in this channel.")
+
 
 class CannotSendMessages(MenuError):
     def __init__(self):
-        super().__init__('Bot cannot send messages in this channel.')
+        super().__init__("Bot cannot send messages in this channel.")
+
 
 class CannotAddReactions(MenuError):
     def __init__(self):
-        super().__init__('Bot cannot add reactions in this channel.')
+        super().__init__("Bot cannot add reactions in this channel.")
+
 
 class CannotReadMessageHistory(MenuError):
     def __init__(self):
-        super().__init__('Bot does not have Read Message History permissions in this channel.')
+        super().__init__(
+            "Bot does not have Read Message History permissions in this channel."
+        )
+
 
 class Position:
-    __slots__ = ('number', 'bucket')
+    __slots__ = ("number", "bucket")
 
     def __init__(self, number, *, bucket=1):
         self.bucket = bucket
@@ -49,7 +56,11 @@ class Position:
         return (self.bucket, self.number) < (other.bucket, other.number)
 
     def __eq__(self, other):
-        return isinstance(other, Position) and other.bucket == self.bucket and other.number == self.number
+        return (
+            isinstance(other, Position)
+            and other.bucket == self.bucket
+            and other.number == self.number
+        )
 
     def __le__(self, other):
         r = Position.__lt__(other, self)
@@ -67,19 +78,27 @@ class Position:
         return not r
 
     def __repr__(self):
-        return '<{0.__class__.__name__}: {0.number}>'.format(self)
+        return "<{0.__class__.__name__}: {0.number}>".format(self)
+
 
 class Last(Position):
     __slots__ = ()
+
     def __init__(self, number=0):
         super().__init__(number, bucket=2)
 
+
 class First(Position):
     __slots__ = ()
+
     def __init__(self, number=0):
         super().__init__(number, bucket=0)
 
-_custom_emoji = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
+
+_custom_emoji = re.compile(
+    r"<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?"
+)
+
 
 def _cast_emoji(obj, *, _custom_emoji=_custom_emoji):
     if isinstance(obj, discord.PartialEmoji):
@@ -89,14 +108,15 @@ def _cast_emoji(obj, *, _custom_emoji=_custom_emoji):
     match = _custom_emoji.match(obj)
     if match is not None:
         groups = match.groupdict()
-        animated = bool(groups['animated'])
-        emoji_id = int(groups['id'])
-        name = groups['name']
+        animated = bool(groups["animated"])
+        emoji_id = int(groups["id"])
+        name = groups["name"]
         return discord.PartialEmoji(name=name, animated=animated, id=emoji_id)
     return discord.PartialEmoji(name=obj, id=None, animated=False)
 
+
 class Button:
-    __slots__ = ('emoji', '_action', '_skip_if', 'position', 'lock')
+    __slots__ = ("emoji", "_action", "_skip_if", "position", "lock")
 
     def __init__(self, emoji, action, *, skip_if=None, position=None, lock=True):
         self.emoji = _cast_emoji(emoji)
@@ -122,7 +142,9 @@ class Button:
         else:
             # Unfurl the method to not be bound
             if not isinstance(menu_self, Menu):
-                raise TypeError('skip_if bound method must be from Menu not %r' % menu_self)
+                raise TypeError(
+                    "skip_if bound method must be from Menu not %r" % menu_self
+                )
 
             self._skip_if = value.__func__
 
@@ -139,12 +161,14 @@ class Button:
         else:
             # Unfurl the method to not be bound
             if not isinstance(menu_self, Menu):
-                raise TypeError('action bound method must be from Menu not %r' % menu_self)
+                raise TypeError(
+                    "action bound method must be from Menu not %r" % menu_self
+                )
 
             value = value.__func__
 
         if not inspect.iscoroutinefunction(value):
-            raise TypeError('action must be a coroutine not %r' % value)
+            raise TypeError("action must be a coroutine not %r" % value)
 
         self._action = value
 
@@ -159,12 +183,15 @@ class Button:
     def is_valid(self, menu):
         return not self.skip_if(menu)
 
+
 def button(emoji, **kwargs):
     def decorator(func):
         func.__menu_button__ = _cast_emoji(emoji)
         func.__menu_button_kwargs__ = kwargs
         return func
+
     return decorator
+
 
 class _MenuMeta(type):
     @classmethod
@@ -176,7 +203,7 @@ class _MenuMeta(type):
         buttons = []
         new_cls = super().__new__(cls, name, bases, attrs)
 
-        inherit_buttons = kwargs.pop('inherit_buttons', True)
+        inherit_buttons = kwargs.pop("inherit_buttons", True)
         if inherit_buttons:
             # walk MRO to get all buttons even in subclasses
             for base in reversed(new_cls.__mro__):
@@ -206,9 +233,17 @@ class _MenuMeta(type):
             buttons[emoji] = Button(emoji, func, **func.__menu_button_kwargs__)
         return buttons
 
+
 class Menu(metaclass=_MenuMeta):
-    def __init__(self, *, timeout=180.0, delete_message_after=False,
-                          clear_reactions_after=False, check_embeds=False, message=None):
+    def __init__(
+        self,
+        *,
+        timeout=180.0,
+        delete_message_after=False,
+        clear_reactions_after=False,
+        check_embeds=False,
+        message=None
+    ):
 
         self.timeout = timeout
         self.delete_message_after = delete_message_after
@@ -228,17 +263,14 @@ class Menu(metaclass=_MenuMeta):
     @discord.utils.cached_property
     def buttons(self):
         buttons = sorted(self._buttons.values(), key=lambda b: b.position)
-        return {
-            button.emoji: button
-            for button in buttons
-            if button.is_valid(self)
-        }
+        return {button.emoji: button for button in buttons if button.is_valid(self)}
 
     def add_button(self, button, *, react=False):
         self._buttons[button.emoji] = button
 
         if react:
             if self.__tasks:
+
                 async def wrapped():
                     # Add the reaction
                     try:
@@ -252,7 +284,8 @@ class Menu(metaclass=_MenuMeta):
                 return wrapped()
 
             async def dummy():
-                raise MenuError('Menu has not been started yet')
+                raise MenuError("Menu has not been started yet")
+
             return dummy()
 
     def remove_button(self, emoji, *, react=False):
@@ -265,16 +298,19 @@ class Menu(metaclass=_MenuMeta):
 
         if react:
             if self.__tasks:
+
                 async def wrapped():
                     # Remove the reaction from being processable
                     # Removing it from the cache first makes it so the check
                     # doesn't get triggered.
                     self.buttons.pop(emoji, None)
                     await self.message.remove_reaction(emoji, self.__me)
+
                 return wrapped()
 
             async def dummy():
-                raise MenuError('Menu has not been started yet')
+                raise MenuError("Menu has not been started yet")
+
             return dummy()
 
     def clear_buttons(self, *, react=False):
@@ -283,6 +319,7 @@ class Menu(metaclass=_MenuMeta):
 
         if react:
             if self.__tasks:
+
                 async def wrapped():
                     # A fast path if we have permissions
                     if self._can_remove_reactions:
@@ -305,8 +342,10 @@ class Menu(metaclass=_MenuMeta):
                         await self.message.remove_reaction(reaction, self.__me)
 
                 return wrapped()
+
             async def dummy():
-                raise MenuError('Menu has not been started yet')
+                raise MenuError("Menu has not been started yet")
+
             return dummy()
 
     def should_add_reactions(self):
@@ -330,7 +369,11 @@ class Menu(metaclass=_MenuMeta):
     def reaction_check(self, payload):
         if payload.message_id != self.message.id:
             return False
-        if payload.user_id not in {self.bot.owner_id, self._author_id, *self.bot.owner_ids}:
+        if payload.user_id not in {
+            self.bot.owner_id,
+            self._author_id,
+            *self.bot.owner_ids,
+        }:
             return False
 
         return payload.emoji in self.buttons
@@ -343,10 +386,18 @@ class Menu(metaclass=_MenuMeta):
             tasks = []
             while self._running:
                 tasks = [
-                    asyncio.ensure_future(self.bot.wait_for('raw_reaction_add', check=self.reaction_check)),
-                    asyncio.ensure_future(self.bot.wait_for('raw_reaction_remove', check=self.reaction_check))
+                    asyncio.ensure_future(
+                        self.bot.wait_for("raw_reaction_add", check=self.reaction_check)
+                    ),
+                    asyncio.ensure_future(
+                        self.bot.wait_for(
+                            "raw_reaction_remove", check=self.reaction_check
+                        )
+                    ),
                 ]
-                done, pending = await asyncio.wait(tasks, timeout=self.timeout, return_when=asyncio.FIRST_COMPLETED)
+                done, pending = await asyncio.wait(
+                    tasks, timeout=self.timeout, return_when=asyncio.FIRST_COMPLETED
+                )
                 for task in pending:
                     task.cancel()
 
@@ -445,7 +496,7 @@ class Menu(metaclass=_MenuMeta):
         self.ctx = ctx
         self._author_id = ctx.author.id
         channel = channel or ctx.channel
-        me = channel.guild.me if hasattr(channel, 'guild') else ctx.bot.user
+        me = channel.guild.me if hasattr(channel, "guild") else ctx.bot.user
         permissions = channel.permissions_for(me)
         self.__me = discord.Object(id=me.id)
         self._verify_permissions(ctx, channel, permissions)
@@ -466,6 +517,7 @@ class Menu(metaclass=_MenuMeta):
             async def add_reactions_task():
                 for emoji in self.buttons:
                     await msg.add_reaction(emoji)
+
             self.__tasks.append(bot.loop.create_task(add_reactions_task()))
 
             if wait:
@@ -483,6 +535,7 @@ class Menu(metaclass=_MenuMeta):
         for task in self.__tasks:
             task.cancel()
         self.__tasks.clear()
+
 
 class PageSource:
     async def _prepare_once(self):
@@ -512,6 +565,7 @@ class PageSource:
     async def format_page(self, menu, page):
         raise NotImplementedError
 
+
 class MenuPages(Menu):
     def __init__(self, source, **kwargs):
         self._source = source
@@ -525,7 +579,9 @@ class MenuPages(Menu):
 
     async def change_source(self, source):
         if not isinstance(source, PageSource):
-            raise TypeError('Expected {0!r} not {1.__class__!r}.'.format(PageSource, source))
+            raise TypeError(
+                "Expected {0!r} not {1.__class__!r}.".format(PageSource, source)
+            )
 
         self._source = source
         self.current_page = 0
@@ -537,13 +593,15 @@ class MenuPages(Menu):
         return self._source.is_paginating()
 
     async def _get_kwargs_from_page(self, page):
-        value = await discord.utils.maybe_coroutine(self._source.format_page, self, page)
+        value = await discord.utils.maybe_coroutine(
+            self._source.format_page, self, page
+        )
         if isinstance(value, dict):
             return value
         if isinstance(value, str):
-            return { 'content': value, 'embed': None }
+            return {"content": value, "embed": None}
         if isinstance(value, discord.Embed):
-            return { 'embed': value, 'content': None }
+            return {"embed": value, "content": None}
 
     async def show_page(self, page_number):
         page = await self._source.get_page(page_number)
@@ -587,36 +645,42 @@ class MenuPages(Menu):
             return True
         return max_pages <= 2
 
-    @button('\N{BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f',
-            position=First(0), skip_if=_skip_double_triangle_buttons)
+    @button(
+        "\N{BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f",
+        position=First(0),
+        skip_if=_skip_double_triangle_buttons,
+    )
     async def go_to_first_page(self, payload):
         """go to the first page"""
         await self.show_page(0)
 
-    @button('\N{BLACK LEFT-POINTING TRIANGLE}\ufe0f', position=First(1))
+    @button("\N{BLACK LEFT-POINTING TRIANGLE}\ufe0f", position=First(1))
     async def go_to_previous_page(self, payload):
         """go to the previous page"""
         await self.show_checked_page(self.current_page - 1)
 
-    @button('\N{BLACK RIGHT-POINTING TRIANGLE}\ufe0f', position=Last(0))
+    @button("\N{BLACK RIGHT-POINTING TRIANGLE}\ufe0f", position=Last(0))
     async def go_to_next_page(self, payload):
         """go to the next page"""
         await self.show_checked_page(self.current_page + 1)
 
-    @button('\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f',
-            position=Last(1), skip_if=_skip_double_triangle_buttons)
+    @button(
+        "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f",
+        position=Last(1),
+        skip_if=_skip_double_triangle_buttons,
+    )
     async def go_to_last_page(self, payload):
         """go to the last page"""
         # The call here is safe because it's guarded by skip_if
         await self.show_page(self._source.get_max_pages() - 1)
 
-    @button('\N{BLACK SQUARE FOR STOP}\ufe0f', position=Last(2))
+    @button("\N{BLACK SQUARE FOR STOP}\ufe0f", position=Last(2))
     async def stop_pages(self, payload):
         """stops the pagination session."""
         self.stop()
 
-class ListPageSource(PageSource):
 
+class ListPageSource(PageSource):
     def __init__(self, entries, *, per_page):
         self.entries = entries
         self.per_page = per_page
@@ -637,9 +701,11 @@ class ListPageSource(PageSource):
         if self.per_page == 1:
             return self.entries[page_number]
         base = page_number * self.per_page
-        return self.entries[base:base + self.per_page]
+        return self.entries[base : base + self.per_page]
 
-_GroupByEntry = namedtuple('_GroupByEntry', 'key items')
+
+_GroupByEntry = namedtuple("_GroupByEntry", "key items")
+
 
 class GroupByPageSource(ListPageSource):
     def __init__(self, entries, *, key, per_page, sort=True):
@@ -653,7 +719,10 @@ class GroupByPageSource(ListPageSource):
             size = len(g)
 
             # Chunk the nested pages
-            nested.extend(_GroupByEntry(key=k, items=g[i:i+per_page]) for i in range(0, size, per_page))
+            nested.extend(
+                _GroupByEntry(key=k, items=g[i : i + per_page])
+                for i in range(0, size, per_page)
+            )
 
         super().__init__(nested, per_page=1)
 
@@ -663,17 +732,19 @@ class GroupByPageSource(ListPageSource):
     async def format_page(self, menu, entry):
         raise NotImplementedError
 
+
 def _aiter(obj, *, _isasync=inspect.iscoroutinefunction):
     cls = obj.__class__
     try:
         async_iter = cls.__aiter__
     except AttributeError:
-        raise TypeError('{0.__name__!r} object is not an async iterable'.format(cls))
+        raise TypeError("{0.__name__!r} object is not an async iterable".format(cls))
 
     async_iter = async_iter(obj)
     if _isasync(async_iter):
-        raise TypeError('{0.__name__!r} object is not an async iterable'.format(cls))
+        raise TypeError("{0.__name__!r} object is not an async iterable".format(cls))
     return async_iter
+
 
 class AsyncIteratorPageSource(PageSource):
     def __init__(self, iterator, *, per_page):
@@ -704,7 +775,7 @@ class AsyncIteratorPageSource(PageSource):
 
     async def _get_single_page(self, page_number):
         if page_number < 0:
-            raise IndexError('Negative page number.')
+            raise IndexError("Negative page number.")
 
         if not self._exhausted and len(self._cache) <= page_number:
             await self._iterate((page_number + 1) - len(self._cache))
@@ -712,7 +783,7 @@ class AsyncIteratorPageSource(PageSource):
 
     async def _get_page_range(self, page_number):
         if page_number < 0:
-            raise IndexError('Negative page number.')
+            raise IndexError("Negative page number.")
 
         base = page_number * self.per_page
         max_base = base + self.per_page
@@ -721,7 +792,7 @@ class AsyncIteratorPageSource(PageSource):
 
         entries = self._cache[base:max_base]
         if not entries and max_base > len(self._cache):
-            raise IndexError('Went too far')
+            raise IndexError("Went too far")
         return entries
 
     async def get_page(self, page_number):

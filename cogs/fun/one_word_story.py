@@ -9,7 +9,7 @@ import typing
 
 from utilities.database import parrot_db
 
-collection = parrot_db['server_config']
+collection = parrot_db["server_config"]
 
 
 class OneWordStory(Cog):
@@ -19,8 +19,8 @@ class OneWordStory(Cog):
         self.clear_cache.start()
 
     async def get_last_message(
-            self,
-            channel: discord.TextChannel) -> typing.Optional[discord.Message]:
+        self, channel: discord.TextChannel
+    ) -> typing.Optional[discord.Message]:
         if channel.last_message:
             return channel.last_message
         async for msg in channel.history(limit=1, oldest_first=False):
@@ -34,19 +34,18 @@ class OneWordStory(Cog):
             return
 
         if not self.cache:
-            data = await collection.find_one({
-                '_id': message.guild.id,
-                'oneword': {
-                    '$exists': True
-                }
-            })
+            data = await collection.find_one(
+                {"_id": message.guild.id, "oneword": {"$exists": True}}
+            )
             if not data:
                 return
             self.cache[message.guild.id] = data
 
         channel = self.bot.get_channel(
-            self.cache[message.guild.id]['oneword']['channel'])
-        if not channel: return
+            self.cache[message.guild.id]["oneword"]["channel"]
+        )
+        if not channel:
+            return
 
         if message.channel.id != channel.id:
             return
@@ -57,19 +56,22 @@ class OneWordStory(Cog):
             if message.author.id == msg.author.id:
                 try:
                     return await message.delete(
-                        reason="Can't post more than once in a row")
+                        reason="Can't post more than once in a row"
+                    )
                 except Exception:
                     return await message.channel.send(
-                        "Bot need manage message permission to work properly")
+                        "Bot need manage message permission to work properly"
+                    )
 
-        if message.content.split(' ') > 2:
+        if message.content.split(" ") > 2:
             try:
                 return await message.delete(
-                    reason=
-                    "Can't post more than one word in One Word Story channel")
+                    reason="Can't post more than one word in One Word Story channel"
+                )
             except Exception:
                 return await message.channel.send(
-                    "Bot need manage message permission to work properly")
+                    "Bot need manage message permission to work properly"
+                )
 
     @tasks.loop(hours=1)
     async def clear_cache(self):

@@ -506,9 +506,9 @@ class SnakeAndLaddersGame:
                     self._destruct()
 
                 return is_surrendered
-        else:
-            await self.channel.send(user.mention + " You are not in the match.", delete_after=10)
-            return is_surrendered
+            
+        await self.channel.send(user.mention + " You are not in the match.", delete_after=10)
+        return is_surrendered
 
     async def cancel_game(self) -> None:
         """Cancel the running game."""

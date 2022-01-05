@@ -140,7 +140,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} hugged {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} hugged {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -176,7 +180,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} kisses {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} kisses {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -194,7 +202,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} licks {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} licks {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -212,7 +224,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} pats {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} pats {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -320,7 +336,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} waves {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} waves {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 

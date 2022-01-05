@@ -593,7 +593,7 @@ class Stars(Cog):
                 {"_id": ctx.guild.id},
                 {"$set": {"starboard": {"channel_id": channel.id}}},
             )
-        except:
+        except Exception:
             await channel.delete(reason="Failure to commit to create the ")
             await ctx.reply(
                 "Could not create the channel due to an internal error. Join the bot support server for help."

@@ -59,7 +59,7 @@ class RTFM(Cog):
             # get only tag elements, before the next h2
             # Putting away the comments, we know there's
             # at least one after it.
-            if type(elem) == NavigableString:
+            if type(elem) is NavigableString:
                 continue
             # It's a tag
             if elem.name == "h2":
@@ -380,7 +380,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             try:
                 await returned.edit(view=None)
                 view.stop()
-            except:
+            except Exception:
                 # We deleted the message
                 pass
 

@@ -106,7 +106,7 @@ class nitro(discord.ui.View):
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
             await interaction.message.edit(embed=ni, view=self)
-        except:
+        except Exception:
             pass
 
 

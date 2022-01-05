@@ -210,10 +210,7 @@ class Utils(Cog):
         question = questions_and_choices[0]
         choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
 
-        try:
-            await ctx.message.delete()
-        except:
-            pass
+        await ctx.message.delete()
 
         body = "\n".join(f"{key}: {c}" for key, c in choices)
         poll = await ctx.send(f"**Poll: {question}**\n\n{body}")

@@ -70,9 +70,7 @@ class Counting(Cog):
             new_number = int(message.content)
         except ValueError:
             try:
-                await message.delete(
-                    reason=f"Message the {message.author} send wasn't a number"
-                )
+                await message.delete()
             except Exception:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"

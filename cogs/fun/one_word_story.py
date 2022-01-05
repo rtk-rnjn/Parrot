@@ -60,9 +60,7 @@ class OneWordStory(Cog):
 
         if message.content.split(" ") > 2:
             try:
-                return await message.delete(
-                    reason="Can't post more than one word in One Word Story channel"
-                )
+                return await message.delete()
             except Exception:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"

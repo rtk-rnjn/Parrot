@@ -130,7 +130,8 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
             )
 
     async def callback(self, interaction: discord.Interaction):
-        assert self.view is not None
+        if self.view is None:
+            raise AssertionError
         value = self.values[0]
         if value == "__index":
             await self.view.rebind(FrontPageSource(self.bot), interaction)

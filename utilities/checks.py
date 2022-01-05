@@ -80,12 +80,10 @@ async def _can_run(ctx):
             if data := await collection.find_one({"_id": ctx.command.qualified_name}):
                 if ctx.channel.id in data["channel_in"]:
                     return True
-                for role in roles:
-                    if role.id in data["role_in"]:
-                        return True
-                for role in roles:
-                    if role.id in data["role_out"]:
-                        return False
+                if any(role.id in data["role_in"] for role in roles):
+                    return True
+                if any(role.id in data["role_out"] for role in roles):
+                    return False
                 if ctx.channel.id in data["channel_out"]:
                     return False
                 if data["server"]:
@@ -98,12 +96,10 @@ async def _can_run(ctx):
             ):
                 if ctx.channel.id in data["channel_in"]:
                     return True
-                for role in roles:
-                    if role.id in data["role_in"]:
-                        return True
-                for role in roles:
-                    if role.id in data["role_out"]:
-                        return False
+                if any(role.id in data["role_in"] for role in roles):
+                    return True
+                if any(role.id in data["role_out"] for role in roles):
+                    return False
                 if ctx.channel.id in data["channel_out"]:
                     return False
                 if data["server"]:
@@ -113,12 +109,10 @@ async def _can_run(ctx):
         if data := await collection.find_one({"_id": "all"}):
             if ctx.channel.id in data["channel_in"]:
                 return True
-            for role in roles:
-                if role.id in data["role_in"]:
-                    return True
-            for role in roles:
-                if role.id in data["role_out"]:
-                    return False
+            if any(role.id in data["role_in"] for role in roles):
+                return True
+            if any(role.id in data["role_out"] for role in roles):
+                return False
             if ctx.channel.id in data["channel_out"]:
                 return False
             if data["server"]:

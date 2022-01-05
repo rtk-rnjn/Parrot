@@ -50,7 +50,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                             entry.created_at
                         )  # The logs can't be proceeded. I dont know why
                         content = f"""**Channel Delete Event**
-                
+
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
 `Created at:` **<t:{int(channel.created_at.timestamp())}>**
 `Position  :` **{channel.position}**
@@ -88,7 +88,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id
                         content = f"""**Channel Create Event**
-                
+
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
 `Created at:` **<t:{int(channel.created_at.timestamp())}>**
 `Position  :` **{channel.position}**

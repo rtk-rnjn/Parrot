@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from utilities.database import parrot_db, telephone_update
 
-
-import asyncio, discord, random, time
+import asyncio
+import discord
+import random
+import time
 from discord.ext import commands
 
 collection = parrot_db["telephone"]

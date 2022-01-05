@@ -104,7 +104,7 @@ class Munch(dict):
         """
         try:
             return dict.__contains__(self, k) or hasattr(self, k)
-        except:
+        except Exception:
             return False
 
     # only called if k not found in normal places
@@ -157,7 +157,7 @@ class Munch(dict):
         except AttributeError:
             try:
                 self[k] = v
-            except:
+            except Exception:
                 raise AttributeError(k)
         else:
             object.__setattr__(self, k, v)

@@ -88,7 +88,7 @@ def extract_one(query, choices, *, scorer=quick_ratio, score_cutoff=0):
     key = lambda t: t[1]
     try:
         return max(it, key=key)
-    except:
+    except Exception:
         # iterator could return nothing
         return None
 

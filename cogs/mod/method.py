@@ -799,7 +799,6 @@ async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, rea
 
 
 async def _emoji_add(guild, command_name, ctx_author, destination, emoji, reason):
-    ls = []
     for emoji in emoji:
         try:
             async with aiohttp.ClientSession() as session:

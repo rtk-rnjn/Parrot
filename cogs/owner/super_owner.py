@@ -312,10 +312,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         em_list_member = [embed_first]
 
         for member in json["members"]:
-            if "game" in member:
-                game = member["game"]["name"]
-            else:
-                game = None
             id_ = member["id"]
             username = member["username"]
             discriminator = member["discriminator"]
@@ -458,7 +454,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         # next line is "# Project: <name>"
         # then after that is "# Version: <version>"
         projname = stream.readline().rstrip()[11:]
-        version = stream.readline().rstrip()[11:]
 
         # next line says if it's a zlib header
         line = stream.readline()
@@ -472,7 +467,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             if not match:
                 continue
 
-            name, directive, prio, location, dispname = match.groups()
+            name, directive, _, location, dispname = match.groups()
             domain, _, subdirective = directive.partition(":")
             if directive == "py:module" and name in result:
                 # From the Sphinx Repository:

@@ -1630,7 +1630,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def lolice(self, ctx: Context, *, member: discord.Member = None):
-        """
+        r"""
         This command is not made by me. :\
         """
         if member is None:
@@ -1774,11 +1774,9 @@ class Fun(
 
         success = data["status"]
         if success == 200:
-            text = data["given"]["text"]
             lang = data["given"]["lang"]
             translated_text = data["translated"]["text"]
             translated_lang = data["translated"]["lang"]
-            translated_pronunciation = data["translated"]["pronunciation"]
         else:
             return await ctx.reply(
                 f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{to}**"
@@ -1847,7 +1845,7 @@ class Fun(
                     return
         if not res["list"]:
             return await ctx.reply(
-                f"{ctx.author.mention} :\ **{t}** means nothings. Try something else"
+                f"{ctx.author.mention} **{t}** means nothings. Try something else"
             )
         em_list = []
         for i in range(0, len(res["list"])):
@@ -2532,6 +2530,7 @@ class Fun(
         file_obj = discord.File(
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
+        await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)

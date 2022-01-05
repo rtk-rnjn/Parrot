@@ -100,8 +100,8 @@ class Infraction:
 
     async def add_warn(self, guild_id: int, user_id: int, warn: dict) -> dict:
         collection = self._warn_db[f"{guild_id}"]
-        user_exists = await collection.find_one({"_id": user_id})
-        if user_exists:
+
+        if _ := await collection.find_one({"_id": user_id}):
             await collection.insert_one({"_id": user_id, "warns": [warn]})
         else:
             await collection.update_one(
@@ -111,7 +111,7 @@ class Infraction:
 
     async def del_warn_all(self, guild_id: int, user_id: int) -> None:
         collection = self._warn_db[f"{guild_id}"]
-        if user_exists := await collection.find_one({"_id": user_id}):
+        if _ := await collection.find_one({"_id": user_id}):
             await collection.update_one({"_id": user_id}, {"$set": {"warns": []}})
 
     async def del_warn_by_id(self, guild_id: int, user_id: int, case_id: int) -> None:

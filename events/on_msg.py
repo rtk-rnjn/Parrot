@@ -224,7 +224,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if webhook:
                 if payload.cached_message:
                     msg = payload.cached_message
-                    guild = msg.guild
                     message_author = msg.author
                     if (message_author.id == self.bot.user.id) or message_author.bot:
                         return
@@ -302,7 +301,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if webhook:
                 if payload.cached_message:
                     msg = payload.cached_message
-                    # guild = msg.guild
                     message_author = msg.author
                     if message_author.bot:
                         return

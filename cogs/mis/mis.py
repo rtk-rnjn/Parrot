@@ -166,7 +166,7 @@ class Misc(Cog):
 
         if res["totalResults"] == 0:
             return await ctx.reply(
-                f"{ctx.author.mention} :\ **{nat}** is nothing, please provide a valid country code."
+                f"{ctx.author.mention} **{nat}** is nothing, please provide a valid country code."
             )
         em_list = []
         for data in range(0, len(res["articles"])):
@@ -541,14 +541,13 @@ class Misc(Cog):
         if command == "help":
             src = type(self.bot.help_command)
             module = src.__module__
-            filename = inspect.getsourcefile(src)
+
         else:
             obj = self.bot.get_command(command.replace(".", " "))
             if obj is None:
                 return await ctx.reply("Could not find command.")
             src = obj.callback.__code__
             module = obj.callback.__module__
-            filename = src.co_filename
 
         lines, firstlineno = inspect.getsourcelines(src)
 
@@ -566,7 +565,7 @@ class Misc(Cog):
         ctx: Context,
     ):
         """To make polls. Thanks to Strawpoll API"""
-        pass
+        
 
     @poll.command(name="create")
     @commands.max_concurrency(1, per=commands.BucketType.user)

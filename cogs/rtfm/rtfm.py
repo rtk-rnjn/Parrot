@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from os import system
 
-system("pip install lxml")
-
-# from datetime import datetime
 import unicodedata
 import os
 import re
@@ -13,10 +10,7 @@ import discord
 import aiohttp
 import hashlib
 
-# import asyncio
 from hashlib import algorithms_available as algorithms
-
-# from yaml import safe_load as yaml_load
 
 import urllib.parse
 from io import BytesIO
@@ -28,14 +22,12 @@ from core import Parrot, Context, Cog
 
 from discord.ext import commands
 
-# from discord.utils import escape_mentions
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 import _ref
 import _doc
 from _used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
 
+system("pip install lxml")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # from _tio import Tio
 
 with open("extra/lang.txt") as f:

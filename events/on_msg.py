@@ -185,7 +185,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             try:
                 await asyncio.sleep(0.1)
                 await message.delete()
-            except:
+            except Exception:
                 return await message.channel.send(
                     "Bot requires **Manage Messages** permission(s) to function properly."
                 )

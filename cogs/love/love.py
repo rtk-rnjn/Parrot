@@ -100,7 +100,6 @@ def in_month_command(*allowed_months: Month) -> Callable:
     Check whether the command was invoked in one of `enabled_months`.
     Uses the current UTC month at the time of running the predicate.
     """
-
     async def predicate(ctx: Context) -> bool:
         current_month = resolve_current_month()
         can_run = current_month in allowed_months

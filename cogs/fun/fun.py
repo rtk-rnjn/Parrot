@@ -28,6 +28,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 from utilities.paginator import PaginationView
 
+from typing import Optional
 from core import Parrot, Context, Cog
 
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
@@ -43,7 +44,8 @@ with open("extra/dare.txt") as g:
 with open("extra/lang.json") as lang:
     lg = json.load(lang)
 
-from typing import List, Optional
+with open("extra/wyr.txt") as h:
+    _wyr = h.read()
 
 with open(Path("extra/anagram.json"), "r") as f:
     ANAGRAMS_ALL = json.load(f)
@@ -1927,9 +1929,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def dare(self, ctx: Context, *, member: discord.Member = None):
-        """
-        I dared you to use this command.
-        """
+        """I dared you to use this command."""
         dare = _dare.split("\n")
         if member is None:
             em = discord.Embed(
@@ -1950,11 +1950,31 @@ class Fun(
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def wouldyourather(self, ctx: Context, *, member: discord.Member = None):
+        """A classic `Would you Rather...?` game"""
+        wyr = _wyr.split("\n")
+        if member is None:
+            em = discord.Embed(
+                title="Would you Rather...?",
+                description=f"{random.choice(wyr)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+        else:
+            em = discord.Embed(
+                title=f"{member.name} Would you Rather...?",
+                description=f"{random.choice(wyr)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+
+        em.set_footer(text=f"{ctx.author.name}")
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truth(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Truth: Who is your crush?
-        """
+        """Truth: Who is your crush?"""
         t = _truth.split("\n")
         if member is None:
             em = discord.Embed(

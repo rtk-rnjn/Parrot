@@ -17,7 +17,7 @@ RE_EMOJI_TO_TEXT_GROUP = "({0})".format(
 RE_EMOJI_TO_TEXT = re.compile(RE_EMOJI_TO_TEXT_GROUP)
 
 
-def encode(msg):
+def encode(msg) -> str:
     """
     Encode Emoji aliases into unicode Emoji values.
     :param msg: String to encode.
@@ -31,7 +31,7 @@ def encode(msg):
     return msg
 
 
-def decode(msg):
+def decode(msg) -> str:
     """
     Decode unicode Emoji values into Emoji aliases.
     :param msg: String to decode.
@@ -45,7 +45,7 @@ def decode(msg):
     return msg
 
 
-def get(msg):
+def get(msg) -> set:
     """
     Returns unique Emojis in the given string.
     :param msg: String to search for Emojis.

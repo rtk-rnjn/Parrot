@@ -107,7 +107,6 @@ class RTFM(Cog):
     @Context.with_type
     async def pypisearch(self, ctx: Context, arg: str):
         """Get info about a Python package directly from PyPi"""
-
         res_raw = await self.get_package(f"https://pypi.org/pypi/{arg}/json")
 
         try:
@@ -160,7 +159,6 @@ class RTFM(Cog):
     @Context.with_type
     async def npmsearch(self, ctx: Context, arg: str):
         """Get info about a NPM package directly from the NPM Registry"""
-
         res_raw = await self.get_package(f"https://registry.npmjs.org/{arg}/")
 
         res_json = await res_raw.json()
@@ -226,7 +224,6 @@ class RTFM(Cog):
     @Context.with_type
     async def crate(self, ctx: Context, arg: str):
         """Get info about a Rust package directly from the Crates.IO Registry"""
-
         res_raw = await self.get_package(f"https://crates.io/api/v1/crates/{arg}")
 
         res_json = await res_raw.json()
@@ -305,7 +302,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     )
     async def run(self, ctx, *, payload=""):
         """Execute code in a given programming language"""
-
         if not payload:
             emb = discord.Embed(
                 title="SyntaxError",
@@ -389,7 +385,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @typing
     async def reference(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
-
         lang = language.strip("`")
 
         if not lang.lower() in self.referred:
@@ -403,7 +398,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @typing
     async def documentation(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
-
         lang = language.strip("`")
 
         if not lang.lower() in self.documented:
@@ -417,7 +411,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @typing
     async def man(self, ctx: Context, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command"""
-
         base_url = f"https://man.cx/{page}"
         url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
@@ -465,7 +458,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.bot_has_permissions(embed_links=True)
     async def list(self, ctx: Context, *, group=None):
         """Lists available choices for other commands"""
-
         choices = {
             "documentations": self.documented,
             "hashing": sorted([h for h in algorithms if h.islower()]),
@@ -498,7 +490,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.bot_has_permissions(embed_links=True)
     async def ascii(self, ctx: Context, *, text: str):
         """Returns number representation of characters in text"""
-
         emb = discord.Embed(
             title="Unicode convert",
             description=" ".join([str(ord(letter)) for letter in text]),
@@ -510,7 +501,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command()
     async def unascii(self, ctx: Context, *, text: str):
         """Reforms string from char codes"""
-
         try:
             codes = [chr(int(i)) for i in text.split(" ")]
             emb = discord.Embed(title="Unicode convert", description="".join(codes))
@@ -549,7 +539,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Hashes text with a given algorithm
         UTF-8, returns under hexadecimal form
         """
-
         algo = algorithm.lower()
 
         if not algo in self.algos:

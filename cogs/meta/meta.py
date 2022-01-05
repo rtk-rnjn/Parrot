@@ -836,7 +836,6 @@ class Meta(Cog):
     @commands.command(hidden=True)
     async def cud(self, ctx: Context):
         """pls no spam"""
-
         for i in range(3):
             await ctx.send(3 - i)
             await asyncio.sleep(1)

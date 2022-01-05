@@ -565,7 +565,6 @@ class Misc(Cog):
         ctx: Context,
     ):
         """To make polls. Thanks to Strawpoll API"""
-        
 
     @poll.command(name="create")
     @commands.max_concurrency(1, per=commands.BucketType.user)

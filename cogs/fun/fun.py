@@ -1905,7 +1905,7 @@ class Fun(
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @commands.command(aliases=['wyr'])
+    @commands.command(aliases=["wyr"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def wouldyourather(self, ctx: Context, *, member: discord.Member = None):
@@ -1927,7 +1927,7 @@ class Fun(
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @commands.command(aliases=['nhie'])
+    @commands.command(aliases=["nhie"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def neverhaveiever(self, ctx: Context, *, member: discord.Member = None):

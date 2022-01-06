@@ -447,6 +447,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         # first line is version info
         inv_version = stream.readline().rstrip()
+        _ = stream.readline().rstrip()[11:]
 
         if inv_version != "# Sphinx inventory version 2":
             raise RuntimeError("Invalid objects.inv file version.")

@@ -10,7 +10,7 @@ import asyncio
 from core import Parrot, Context, Cog
 
 from utilities.checks import is_mod
-from utilities.converters import reason_convert
+from utilities.converters import BannedMember, reason_convert
 from utilities.database import parrot_db
 from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
@@ -539,7 +539,7 @@ class Mod(Cog):
     @commands.bot_has_permissions(ban_members=True)
     @Context.with_type
     async def unban(
-        self, ctx: Context, member: discord.User, *, reason: reason_convert = None
+        self, ctx: Context, member: BannedMember, *, reason: reason_convert = None
     ):
         """To Unban a member from a guild"""
         await mt._unban(

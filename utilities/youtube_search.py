@@ -74,10 +74,10 @@ class YoutubeSearch:
                 results.append(res)
         return results
 
-    async def to_dict(self, clear_cache=True):
+    async def to_dict(self):
         result = await self._search()
         return result
 
-    async def to_json(self, clear_cache=True):
+    async def to_json(self):
         result = json.dumps({"videos": await self._search()})
         return result

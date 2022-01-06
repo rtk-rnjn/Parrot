@@ -3442,9 +3442,9 @@ class Games(Cog):
     ):
         """A classic sokoban game"""
         if not ctx.invoked_subcommand:
-            if 10 > level > 1:
+            if not 10 > level > 1:
                 return await ctx.send(
-                    "{ctx.author.mention} for now existing levels are from range 1-10"
+                    f"{ctx.author.mention} for now existing levels are from range 1-10"
                 )
             ls = []
             async with async_open(

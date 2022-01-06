@@ -47,6 +47,9 @@ with open("extra/lang.json") as lang:
 with open("extra/wyr.txt") as h:
     _wyr = h.read()
 
+with open("extra/nhi.txt") as i:
+    _nhi = i.read()
+
 with open(Path("extra/anagram.json"), "r") as f:
     ANAGRAMS_ALL = json.load(f)
 
@@ -1153,10 +1156,8 @@ class Fun(
 
     @quiz_game.command(name="stop")
     async def stop_quiz(self, ctx: commands.Context) -> None:
-        """
-        Stop a quiz game if its running in the channel.
-        Note: Only mods or the owner of the quiz can stop it.
-        """
+        """Stop a quiz game if its running in the channel.
+        Note: Only mods or the owner of the quiz can stop it."""
         try:
             if self.game_status[ctx.channel.id]:
                 # Check if the author is the game starter or a moderator.
@@ -1288,9 +1289,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question: commands.clean_content):
-        """
-        8ball Magic, nothing to say much
-        """
+        """8ball Magic, nothing to say much"""
         await ctx.reply(
             f"Question: **{question}**\nAnswer: **{random.choice(response)}**"
         )
@@ -1299,10 +1298,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def choose(self, ctx: Context, *, options: commands.clean_content):
-        """
-        Confuse something with your decision? Let Parrot choose from your choice.
-        NOTE: The `Options` should be seperated by commas `,`.
-        """
+        """Confuse something with your decision? Let Parrot choose from your choice. NOTE: The `Options` should be seperated by commas `,`."""
         options = options.split(",")
         await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 
@@ -1311,9 +1307,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def color(self, ctx: Context, colour):
-        """
-        To get colour information using the hexadecimal codes.
-        """
+        """To get colour information using the hexadecimal codes."""
         link = f"https://www.thecolorapi.com/id?format=json&hex={colour}"
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
@@ -1387,9 +1381,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def decode(self, ctx: Context, *, string: str):
-        """
-        Decode the code to text from Base64 encryption
-        """
+        """Decode the code to text from Base64 encryption"""
         base64_string = string
         base64_bytes = base64_string.encode("ascii")
 
@@ -1420,9 +1412,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def encode(self, ctx: Context, *, string: str):
-        """
-        Encode the text to Base64 Encryption and in Binary
-        """
+        """Encode the text to Base64 Encryption and in Binary"""
         sample_string = string
         sample_string_bytes = sample_string.encode("ascii")
         res = "".join(format(ord(i), "b") for i in string)
@@ -1458,11 +1448,9 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def animal_fact(self, ctx: Context, *, animal: str):
-        """
-        Return a random Fact. It's useless command, I know
+        """Return a random Fact. It's useless command, I know
 
-        NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala
-        """
+        NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala"""
         if (animal := animal.lower()) in (
             "dog",
             "cat",
@@ -1505,9 +1493,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def gay(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Image Generator. Gay Pride.
-        """
+        """Image Generator. Gay Pride."""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1529,9 +1515,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def glass(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Provide a glass filter on your profile picture, try it!
-        """
+        """Provide a glass filter on your profile picture, try it!"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1551,9 +1535,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def horny(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Image generator, Horny card generator.
-        """
+        """Image generator, Horny card generator."""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1572,9 +1554,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def roast(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Insult your enemy, Ugh!
-        """
+        """Insult your enemy, Ugh!"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as session:
@@ -1587,9 +1567,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def itssostupid(self, ctx, *, comment: str):
-        r"""
-        :\ I don't know what is this, I think a meme generator.
-        """
+        """:| I don't know what is this, I think a meme generator."""
         member = ctx.author
         if len(comment) > 20:
             comment = comment[:19:]
@@ -1610,9 +1588,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def jail(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Image generator. Makes you behind the bars. Haha
-        """
+        """Image generator. Makes you behind the bars. Haha"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1632,9 +1608,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def lolice(self, ctx: Context, *, member: discord.Member = None):
-        r"""
-        This command is not made by me. :\
-        """
+        """This command is not made by me. :|"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1654,9 +1628,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def meme(self, ctx: Context):
-        """
-        Random meme generator.
-        """
+        """Random meme generator."""
         link = "https://memes.blademaker.tv/api?lang=en"
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
@@ -1682,9 +1654,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def fakepeople(self, ctx: Context):
-        """
-        Fake Identity generator.
-        """
+        """Fake Identity generator."""
         link = "https://randomuser.me/api/"
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
@@ -1727,9 +1697,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def simpcard(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Good for those, who are hell simp! LOL
-        """
+        """Good for those, who are hell simp! LOL"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1751,9 +1719,7 @@ class Fun(
     async def translate(
         self, ctx: Context, to: str, *, message: commands.clean_content = None
     ):
-        """
-        Translates a message to English (default) using Google translate
-        """
+        """Translates a message to English (default) using Google translate"""
         if message is None:
             ref = ctx.message.reference
             if ref and isinstance(ref.resolved, discord.Message):
@@ -1810,9 +1776,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def trigger(self, ctx: Context, *, member: discord.Member = None):
-        """
-        User Triggered!
-        """
+        """User Triggered!"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1832,9 +1796,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def urbandictionary(self, ctx: Context, *, text: commands.clean_content):
-        """
-        LOL. This command is insane.
-        """
+        """LOL. This command is insane."""
         t = text
         text = urllib.parse.quote(text)
         link = "http://api.urbandictionary.com/v0/define?term=" + text
@@ -1880,9 +1842,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def wasted(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Overlay 'WASTED' on your profile picture, just like GTA:SA
-        """
+        """Overlay 'WASTED' on your profile picture, just like GTA:SA"""
         if member is None:
             member = ctx.author
         async with aiohttp.ClientSession() as wastedSession:
@@ -1902,9 +1862,7 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def ytcomment(self, ctx: Context, *, comment: str):
-        """
-        Makes a comment in YT. Best ways to fool your fool friends. :')
-        """
+        """Makes a comment in YT. Best ways to fool your fool friends. :')"""
         member = ctx.author
         if len(comment) > 1000:
             comment = comment[:999:]
@@ -1947,7 +1905,7 @@ class Fun(
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
-    @commands.command()
+    @commands.command(aliases=['wyr'])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def wouldyourather(self, ctx: Context, *, member: discord.Member = None):
@@ -1963,6 +1921,28 @@ class Fun(
             em = discord.Embed(
                 title=f"{member.name} Would you Rather...?",
                 description=f"{random.choice(wyr)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+
+        em.set_footer(text=f"{ctx.author.name}")
+        await ctx.reply(embed=em)
+
+    @commands.command(aliases=['nhie'])
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def neverhaveiever(self, ctx: Context, *, member: discord.Member = None):
+        """A classic `Never Have I ever...` game"""
+        nhi = _nhi.split("\n")
+        if member is None:
+            em = discord.Embed(
+                title="Never Have I ever...",
+                description=f"{random.choice(nhi)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+        else:
+            em = discord.Embed(
+                title=f"{member.name} Never Have I ever...",
+                description=f"{random.choice(nhi)}",
                 timestamp=datetime.datetime.utcnow(),
             )
 
@@ -2625,10 +2605,8 @@ class Fun(
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def coinflip(self, ctx: Context, *, choose: str = None):
-        """
-        Coin Flip, It comes either HEADS or TAILS
-        """
-        choose = "tails" if choose in ("tails", "tail", "t") else "heads"
+        """Coin Flip, It comes either HEADS or TAILS"""
+        choose = "tails" if choose.lower() in ("tails", "tail", "t") else "heads"
         msg = await ctx.send(
             f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
         )

@@ -3056,9 +3056,9 @@ class Games(Cog):
     async def connect_four(
         self,
         ctx: commands.Context,
-        board_size: int = None,
-        emoji1: EMOJI_CHECK = None,
-        emoji2: EMOJI_CHECK = None,
+        board_size: Optional[int] = None,
+        emoji1: Optional[EMOJI_CHECK] = None,
+        emoji2: Optional[EMOJI_CHECK] = None,
     ) -> None:
         """
         Play the classic game of Connect Four with someone!
@@ -3438,10 +3438,12 @@ class Games(Cog):
     async def sokoban(
         self,
         ctx: Context,
-        level: int = None,
+        level: Optional[int] = None,
     ):
         """A classic sokoban game"""
         if not ctx.invoked_subcommand:
+            if 10 > level > 1:
+                return await ctx.send("{ctx.author.mention} for now existing levels are from range 1-10")
             ls = []
             async with async_open(
                 fr"extra/sokoban/level{level if level else 1}.txt", "r"
@@ -3583,7 +3585,7 @@ class Games(Cog):
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def slidingpuzzle(self, ctx: Context, boardsize: int = None):
+    async def slidingpuzzle(self, ctx: Context, boardsize: Optional[int] = None):
         """A Classic Sliding game"""
         boardsize = boardsize or 4
         if boardsize < 4:

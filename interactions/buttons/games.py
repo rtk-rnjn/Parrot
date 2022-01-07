@@ -230,7 +230,7 @@ class BoardBoogle:
         return sum(self.points(word) for word in words)
 
 
-class Game(menus.Menu):
+class GameBoogle(menus.Menu):
     name: Optional[str] = "Boggle"
     footer: Optional[str] = None
 
@@ -284,7 +284,7 @@ class Game(menus.Menu):
         self.stop()
 
 
-class ShuffflingGame(Game):
+class ShuffflingGame(GameBoogle):
     def __init__(self, *, size=ORIGINAL, **kwargs):
         super().__init__(size=size, **kwargs)
         self.boards = [self.board]
@@ -333,7 +333,7 @@ class ShuffflingGame(Game):
         return points
 
 
-class DiscordGame(Game):
+class DiscordGame(GameBoogle):
     name = "Discord Boggle"
     footer = "First to find a word wins points!"
 
@@ -393,7 +393,7 @@ class DiscordGame(Game):
             await self.message.reply(embed=self.scores)
 
 
-class ClassicGame(Game):
+class ClassicGame(GameBoogle):
     name = "Classic Boggle"
     footer = "Keep a list of words til the end!"
 
@@ -1525,7 +1525,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
@@ -1540,8 +1539,7 @@ class SokobanGameView(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         await interaction.message.delete()
-        self.stop()
-
+        
     @discord.ui.button(
         emoji="\N{LEFTWARDS BLACK ARROW}",
         label="\u200b",
@@ -1567,7 +1565,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
@@ -1599,7 +1596,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
@@ -1629,7 +1625,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            self.stop()
             return
 
         await interaction.response.edit_message(embed=embed, view=self)
@@ -3210,7 +3205,7 @@ class Games(Cog):
             embed = discord.Embed(title="Oof! Kinda hard one", color=0xFF0000)
             await ctx.send(embed=embed)
 
-    @commands.command(aliases=["tic", "tic_tac_toe"])
+    @commands.command(aliases=["tic", "tic_tac_toe", 'ttt'])
     async def tictactoe(
         self, ctx: Context, *, opponent: Optional[discord.Member] = None
     ):

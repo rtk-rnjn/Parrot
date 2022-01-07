@@ -22,7 +22,8 @@ from core import Parrot, Context, Cog
 
 from discord.ext import commands
 
-from . import _ref, _doc
+from . import _ref
+from . import _doc
 
 from _used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
 

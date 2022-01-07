@@ -85,6 +85,7 @@ class Parrot(commands.AutoShardedBot):
         self.topgg_webhook = topgg.WebhookManager(self).dbl_webhook(
             "/dblwebhook", f"{os.environ['TOPGG_AUTH']}"
         )
+        self.error_channel = None
         self.persistent_views_added = False
         self.spam_control = commands.CooldownMapping.from_cooldown(
             10, 12.0, commands.BucketType.user
@@ -186,24 +187,23 @@ class Parrot(commands.AutoShardedBot):
     async def on_error(self, event: str, *args, **kwargs) -> None:
         traceback_string = traceback.format_exc()
         await self.wait_until_ready()
-        url = f"https://discord.com/api/webhooks/{ERROR_CHANNEL_ID}/{self._error_log_token}"
         file_obj = io.BytesIO(
             "Ignoring Exception at the {event}: {traceback_string}".encode()
         )
-        webhook = discord.Webhook.from_url(url, session=self.session)
-        if webhook:
-            if len(traceback_string) < 1900:
-                return await webhook.send(
-                    f"```\npy\nIgnoring Exception at the {event}: {traceback_string}\n```",
-                    avatar_url=self.user.avatar.url,
-                    username=self.user.name,
-                )
-            return await webhook.send(
-                "\u200b",
+        if self.error_channel is None:
+            self.error_channel = self.get_channel(924356857508790282)
+        if len(traceback_string) < 1900:
+            return await self.error_channel.send(
+                f"```\npy\nIgnoring Exception at the {event}: {traceback_string}\n```",
                 avatar_url=self.user.avatar.url,
                 username=self.user.name,
-                file=discord.File(file_obj, filename="error.py"),
             )
+        return await self.error_channel.send(
+            "\u200b",
+            avatar_url=self.user.avatar.url,
+            username=self.user.name,
+            file=discord.File(file_obj, filename="error.py"),
+        )
 
     async def before_identify_hook(self, shard_id, *, initial):
         self._clear_gateway_data()

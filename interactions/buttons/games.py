@@ -1539,7 +1539,7 @@ class SokobanGameView(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         await interaction.message.delete()
-        
+
     @discord.ui.button(
         emoji="\N{LEFTWARDS BLACK ARROW}",
         label="\u200b",
@@ -3205,7 +3205,7 @@ class Games(Cog):
             embed = discord.Embed(title="Oof! Kinda hard one", color=0xFF0000)
             await ctx.send(embed=embed)
 
-    @commands.command(aliases=["tic", "tic_tac_toe", 'ttt'])
+    @commands.command(aliases=["tic", "tic_tac_toe", "ttt"])
     async def tictactoe(
         self, ctx: Context, *, opponent: Optional[discord.Member] = None
     ):

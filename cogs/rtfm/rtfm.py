@@ -25,7 +25,7 @@ from discord.ext import commands
 from . import _ref
 from . import _doc
 
-from _used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
+from ._used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
 
 system("pip install lxml")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

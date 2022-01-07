@@ -22,8 +22,8 @@ from core import Parrot, Context, Cog
 
 from discord.ext import commands
 
-import _ref
-import _doc
+from . import _ref, _doc
+
 from _used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
 
 system("pip install lxml")

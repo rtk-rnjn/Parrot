@@ -194,7 +194,7 @@ class Parrot(commands.AutoShardedBot):
         if webhook:
             if len(traceback_string) < 1900:
                 return await webhook.send(
-                    f"```\npyIgnoring Exception at the {event}: {traceback_string}```",
+                    f"```\npy\nIgnoring Exception at the {event}: {traceback_string}\n```",
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )

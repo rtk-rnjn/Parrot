@@ -7,7 +7,7 @@ import re
 from discord.ext import commands
 from yaml import safe_load as yaml_load
 
-from _tio import Tio
+from ._tio import Tio
 
 with open("extra/lang.txt") as f:
     languages = f.read().split("\n")

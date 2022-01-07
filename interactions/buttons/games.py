@@ -1053,6 +1053,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                         f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**"
                     )
                     await msg_.add_reaction("\N{HANDSHAKE}")
+                    self.game_stop = True # this is imp. as the game wasn't stopping
             else:
                 if self.react_on_success:
                     try:

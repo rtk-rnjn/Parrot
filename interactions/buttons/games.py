@@ -3446,8 +3446,8 @@ class Games(Cog):
             async with async_open(
                 fr"extra/sokoban/level{level if level else 1}.txt", "r"
             ) as fp:
-                level = await fp.read()
-            for i in level.split("\n"):
+                lvl_str = await fp.read()
+            for i in lvl_str.split("\n"):
                 ls.append(list(list(i)))
             game = SokobanGame(ls)
             game._get_cords()

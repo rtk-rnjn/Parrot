@@ -50,7 +50,7 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 SUPPORT_SERVER_ID = 741614680652644382
-ERROR_CHANNEL_ID = 924356857508790282
+ERROR_CHANNEL_ID = 924513442273054730
 
 
 class Parrot(commands.AutoShardedBot):
@@ -77,7 +77,7 @@ class Parrot(commands.AutoShardedBot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages = 0
         self._change_log = None
-        self._error_log_token = os.environ["CHANNEL_TOKEN2"]
+        self._error_log_token = os.environ["CHANNEL_TOKEN1"]
         self.color = 0x87CEEB
         self.topggpy = topgg.DBLClient(
             self, dbl_token, autopost=True, post_shard_count=True

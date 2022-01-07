@@ -3438,7 +3438,8 @@ class Games(Cog):
     ):
         """A classic sokoban game"""
         if not ctx.invoked_subcommand:
-            if not 10 > level > 1:
+            level = level or 1
+            if not 10 >= level >= 1:
                 return await ctx.send(
                     f"{ctx.author.mention} for now existing levels are from range 1-10"
                 )

@@ -194,7 +194,7 @@ class Parrot(commands.AutoShardedBot):
             self.error_channel = self.get_channel(924356857508790282)
         if len(traceback_string) < 1900:
             return await self.error_channel.send(
-                f"```\npy\nIgnoring Exception at the {event}: {traceback_string}\n```"
+                f"```py\nIgnoring Exception at the {event}: {traceback_string}\n```"
             )
         return await self.error_channel.send(
             "\u200b",

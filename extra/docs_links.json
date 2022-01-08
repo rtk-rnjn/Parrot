@@ -7,5 +7,6 @@
     "flask": "https://flask.palletsprojects.com/en/2.0.x",
     "pil": "https://pillow.readthedocs.io/en/stable",
     "matplotlib": "https://matplotlib.org/stable",
-    "pandas": "https://pandas.pydata.org/docs"
+    "pandas": "https://pandas.pydata.org/docs",
+    "pymongo": "https://pymongo.readthedocs.io/en/stable"
 }

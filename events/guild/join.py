@@ -23,8 +23,6 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
-        if guild is None:
-            return
         await self.bot.wait_until_ready()
         CONTENT = f"Joined {guild.name} ({guild.id}). Total member in {guild.name}: {len(guild.members)}. Server Owner: {guild.owner} ({guild.owner.id}). Server Region: {str(guild.region).replace('_', ' ').title()}. \n\nTotal server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
         await guild_join(guild.id)
@@ -40,8 +38,6 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
-        if guild is None:
-            return
         await self.bot.wait_until_ready()
         CONTENT = f"Left {guild.name} ({guild.id}). Total member in {guild.name}: {len(guild.members)}. Server Owner: {guild.owner} ({guild.owner.id}). Server Region: {str(guild.region).replace('_', ' ').title()}. \n\nTotal server on count {len(self.bot.guilds)}. Total users on count: {len(self.bot.users)}"
         await guild_remove(guild.id)

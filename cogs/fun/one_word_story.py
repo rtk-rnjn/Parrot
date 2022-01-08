@@ -31,21 +31,16 @@ class OneWordStory(Cog):
         if not message.guild or message.author.bot:
             return
 
-        if not self.cache:
-            data = await collection.find_one(
-                {"_id": message.guild.id, "oneword": {"$exists": True}}
-            )
-            if not data:
-                return
-            self.cache[message.guild.id] = data
-
-        channel = self.bot.get_channel(
-            self.cache[message.guild.id]["oneword"]["channel"]
+        data = await collection.find_one(
+            {"_id": message.guild.id, "oneword": message.channel.id}
         )
-        if not channel:
+        if not data:
             return
 
-        if message.channel.id != channel.id:
+        channel = self.bot.get_channel(
+            data["oneword"]
+        )
+        if not channel:
             return
 
         msg = self.get_last_message(message.channel)

@@ -33,28 +33,23 @@ class Counting(Cog):
         if not message.guild or message.author.bot:
             return
 
-        if not self.cache:
-            data = await collection.find_one(
-                {"_id": message.guild.id, "counting": {"$exists": True}}
-            )
-            if not data:
-                return
-            self.cache[message.guild.id] = data
-
-        channel = self.bot.get_channel(
-            self.cache[message.guild.id]["counting"]["channel"]
+        data = await collection.find_one(
+            {"_id": message.guild.id, "counting": message.channel.id}
         )
-        if not channel:
+        if not data:
             return
 
-        if message.channel.id != channel.id:
+        channel = self.bot.get_channel(
+            data["counting"]
+        )
+        if not channel:
             return
 
         msg = self.get_last_message(message.channel)
 
         if msg and (message.author.id == msg.author.id):
             try:
-                return await message.delete(reason="Can't post more than once in a row")
+                return await message.delete()
             except Exception:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"

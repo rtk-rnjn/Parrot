@@ -30,7 +30,7 @@ from aiofile import async_open
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.paginator import ParrotPaginator
 
-emoji = emojis # Idk
+emoji = emojis  # Idk
 SMALL = 3
 ORIGINAL = 4
 BIG = 5

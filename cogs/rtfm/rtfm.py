@@ -39,6 +39,7 @@ with open("extra/lang.txt") as f:
 
 GITHUB_API_URL = "https://api.github.com"
 
+
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
 
@@ -563,7 +564,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command()
     async def charinfo(self, ctx, *, characters: str):
-        """Shows you information about a number of characters. 
+        """Shows you information about a number of characters.
         Only up to 25 characters at a time."""
 
         def to_string(c):
@@ -575,7 +576,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         if len(msg) > 2000:
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
-    
+
     async def fetch_data(self, url: str) -> dict:
         """Retrieve data as a dictionary."""
         async with self.bot.http_session.get(url) as r:
@@ -593,21 +594,26 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     async def github_user_info(self, ctx: commands.Context, username: str) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
-            user_data = await self.fetch_data(f"{GITHUB_API_URL}/users/{quote_plus(username)}")
+            user_data = await self.fetch_data(
+                f"{GITHUB_API_URL}/users/{quote_plus(username)}"
+            )
 
             # User_data will not have a message key if the user exists
             if "message" in user_data:
                 embed = discord.Embed(
                     title="404!!",
                     description=f"The profile for `{username}` was not found.",
-                    colour=ctx.author.color
+                    colour=ctx.author.color,
                 )
 
                 await ctx.send(embed=embed)
                 return
 
             org_data = await self.fetch_data(user_data["organizations_url"])
-            orgs = [f"[{org['login']}](https://github.com/{org['login']})" for org in org_data]
+            orgs = [
+                f"[{org['login']}](https://github.com/{org['login']})"
+                for org in org_data
+            ]
             orgs_to_add = " | ".join(orgs)
 
             gists = user_data["public_gists"]
@@ -622,10 +628,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
             embed = discord.Embed(
                 title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else "",
+                description=f"```\n{user_data['bio']}\n```\n"
+                if user_data["bio"]
+                else "",
                 colour=discord.Colour.og_blurple(),
                 url=user_data["html_url"],
-                timestamp=datetime.strptime(user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+                timestamp=datetime.strptime(
+                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+                ),
             )
             embed.set_thumbnail(url=user_data["avatar_url"])
             embed.set_footer(text="Account created at")
@@ -634,33 +644,33 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
                 embed.add_field(
                     name="Followers",
-                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)"
+                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
                 )
                 embed.add_field(
                     name="Following",
-                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)"
+                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
                 )
 
             embed.add_field(
                 name="Public repos",
-                value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)"
+                value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
             )
 
             if user_data["type"] == "User":
                 embed.add_field(
                     name="Gists",
-                    value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})"
+                    value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})",
                 )
 
                 embed.add_field(
                     name=f"Organization{'s' if len(orgs)!=1 else ''}",
-                    value=orgs_to_add if orgs else "No organizations."
+                    value=orgs_to_add if orgs else "No organizations.",
                 )
             embed.add_field(name="Website", value=blog)
 
         await ctx.send(embed=embed)
 
-    @github_group.command(name='repository', aliases=('repo',))
+    @github_group.command(name="repository", aliases=("repo",))
     async def github_repo_info(self, ctx: commands.Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.
@@ -671,7 +681,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed = discord.Embed(
                 title="Invalid",
                 description="The repository should look like `user/reponame` or `user reponame`.",
-                colour=ctx.author.color
+                colour=ctx.author.color,
             )
 
             await ctx.send(embed=embed)
@@ -685,7 +695,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 embed = discord.Embed(
                     title="404",
                     description="The requested repository was not found.",
-                    colour=ctx.author.color
+                    colour=ctx.author.color,
                 )
 
                 await ctx.send(embed=embed)
@@ -695,13 +705,15 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             title=repo_data["name"],
             description=repo_data["description"],
             colour=discord.Colour.og_blurple(),
-            url=repo_data["html_url"]
+            url=repo_data["html_url"],
         )
 
         # If it's a fork, then it will have a parent key
         try:
             parent = repo_data["parent"]
-            embed.description += f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
+            embed.description += (
+                f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
+            )
         except KeyError:
             pass
 
@@ -710,11 +722,15 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         embed.set_author(
             name=repo_owner["login"],
             url=repo_owner["html_url"],
-            icon_url=repo_owner["avatar_url"]
+            icon_url=repo_owner["avatar_url"],
         )
 
-        repo_created_at = datetime.strptime(repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y")
-        last_pushed = datetime.strptime(repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y at %H:%M")
+        repo_created_at = datetime.strptime(
+            repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+        ).strftime("%d/%m/%Y")
+        last_pushed = datetime.strptime(
+            repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ"
+        ).strftime("%d/%m/%Y at %H:%M")
 
         embed.set_footer(
             text=(

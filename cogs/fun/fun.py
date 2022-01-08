@@ -28,7 +28,6 @@ from dataclasses import dataclass
 from collections import defaultdict
 from utilities.paginator import PaginationView
 
-from typing import Optional
 from core import Parrot, Context, Cog
 
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")

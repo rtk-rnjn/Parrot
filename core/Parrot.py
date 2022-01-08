@@ -9,7 +9,6 @@ import datetime
 import asyncio
 import traceback
 import aiohttp
-import asyncio
 import topgg
 import socket
 from collections import Counter, deque, defaultdict

@@ -165,7 +165,7 @@ class Parrot(commands.AutoShardedBot):
     @async_property
     async def db_latency(self) -> float:
         ini = time()
-        data = await collection.find_one({})
+        _ = await collection.find_one({})
         fin = time()
         return fin - ini
 
@@ -194,14 +194,10 @@ class Parrot(commands.AutoShardedBot):
             self.error_channel = self.get_channel(924356857508790282)
         if len(traceback_string) < 1900:
             return await self.error_channel.send(
-                f"```\npy\nIgnoring Exception at the {event}: {traceback_string}\n```",
-                avatar_url=self.user.avatar.url,
-                username=self.user.name,
+                f"```\npy\nIgnoring Exception at the {event}: {traceback_string}\n```"
             )
         return await self.error_channel.send(
             "\u200b",
-            avatar_url=self.user.avatar.url,
-            username=self.user.name,
             file=discord.File(file_obj, filename="error.py"),
         )
 

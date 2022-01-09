@@ -425,7 +425,7 @@ class Misc(Cog):
             embed = Embed(title="Wikipedia Search Results", colour=ctx.author.color)
             embed.set_thumbnail(url=WIKI_THUMBNAIL)
             embed.timestamp = datetime.datetime.utcnow()
-            page = SimplePageSource(entries=contents, ctx=ctx, per_page=1)
+            page = SimplePages(entries=contents, ctx=ctx, per_page=1)
         else:
             await ctx.send(
                 "Sorry, we could not find a wikipedia article using that search term."
@@ -488,7 +488,8 @@ class Misc(Cog):
         *,
         data: typing.Union[dict, str] = None,
     ):
-        """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in. You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
+        """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in.
+        You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
         channel = channel or ctx.channel
         if channel.permissions_for(ctx.author).embed_links:
             if not data:

@@ -425,7 +425,7 @@ class Misc(Cog):
             embed = Embed(title="Wikipedia Search Results", colour=ctx.author.color)
             embed.set_thumbnail(url=WIKI_THUMBNAIL)
             embed.timestamp = datetime.datetime.utcnow()
-            page = SimplePages(entries=contents, ctx=ctx, per_page=1)
+            page = SimplePages(entries=contents, ctx=ctx, per_page=3)
             await page.start()
         else:
             await ctx.send(

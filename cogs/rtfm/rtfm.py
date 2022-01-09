@@ -515,10 +515,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """Shows byte conversions of given value"""
         if not unit:
             unit = "Mio"
-        units = ("o", "Kio", "Mio", "Gio", "Tio", "Pio", "Eio", "Zio", "Yio")
+        units = ("O", "Kio", "Mio", "Gio", "Tio", "Pio", "Eio", "Zio", "Yio")
         unit = unit.capitalize()
 
-        if not unit in units and unit != "O":
+        if unit not in units:
             return await ctx.reply(f"Available units are `{'`, `'.join(units)}`.")
 
         emb = discord.Embed(title="Binary conversions")

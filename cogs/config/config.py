@@ -275,7 +275,8 @@ class BotConfig(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def automod(self, ctx: Context):
         """To configure the automoderation"""
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
 
     @automod.command()
     @commands.has_permissions(administrator=True)
@@ -818,7 +819,8 @@ class BotConfig(Cog):
     @Context.with_type
     async def cmdconfig(self, ctx: Context):
         """Command Management of the server"""
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
 
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)

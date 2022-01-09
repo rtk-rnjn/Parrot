@@ -6,7 +6,7 @@ import discord
 
 import typing
 import datetime
-from utilities.database import parrot_db
+from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
 from utilities.paginator import PaginationView
 
@@ -37,6 +37,7 @@ class Utils(Cog):
         *,
         remark: str = None,
         dm: bool = False,
+        todo: bool = False
     ):
         collection = self.collection
         post = {
@@ -46,6 +47,7 @@ class Utils(Cog):
             "author": member.id,
             "remark": remark,
             "dm": dm,
+            "todo": False
         }
         await collection.insert_one(post)
 
@@ -265,7 +267,8 @@ class Utils(Cog):
     @commands.has_permissions(manage_guild=True, add_reactions=True)
     async def giveaway(self, ctx: Context):
         """To host small giveaways in the server. Do not use this as dedicated server giveaway"""
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
 
     @giveaway.command()
     async def create(self, ctx: Context):
@@ -366,3 +369,6 @@ class Utils(Cog):
                         except Exception:
                             pass  # what if member DM are blocked?
                         await self.collection.delete_one({"_id": data["_id"]})
+                    if data.get('todo'):
+                        collection = todo[f"{data['author']}"]
+                        await collection.delete_one({"_id": data['_id']})

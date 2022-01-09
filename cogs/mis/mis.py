@@ -249,7 +249,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snipe(self, ctx: Context):
-        """ "Snipes someone's message that's deleted"""
+        """Snipes someone's message that's deleted"""
         try:
             snipe = self.snipes[ctx.channel.id]
         except KeyError:

@@ -183,6 +183,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         target: typing.Union[discord.User, discord.TextChannel, discord.Thread] = None,
     ):
         """Fun command"""
+        try:
+            await ctx.message.delete()
+        except discord.Forbidden:
+            pass
         target = target or ctx.channel
         await target.send(
             embed=discord.Embed(

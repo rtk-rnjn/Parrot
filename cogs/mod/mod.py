@@ -99,7 +99,8 @@ class Mod(Cog):
     @Context.with_type
     async def role(self, ctx: Context):
         """Role Management of the server."""
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
 
     @role.command(name="bots")
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -623,7 +624,8 @@ class Mod(Cog):
     @Context.with_type
     async def voice(self, ctx: Context):
         """Voice Moderation"""
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
 
     @voice.command(name="mute")
     @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
@@ -789,7 +791,8 @@ class Mod(Cog):
     @Context.with_type
     async def emoji(self, ctx: Context):
         """For Emoji Moderation"""
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
 
     @emoji.command(name="delete")
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))

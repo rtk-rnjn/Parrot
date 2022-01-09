@@ -255,10 +255,12 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
         post = {"deadline": timestamp}
         try:
             await ctx.author.send(
-            f"You will be reminded for your task named **{name}** here at <t:{int(timestamp)}>. To delete your reminder consider typing.\n```\n$delremind {ctx.message.id}```"
-        )
+                f"You will be reminded for your task named **{name}** here at <t:{int(timestamp)}>. To delete your reminder consider typing.\n```\n$delremind {ctx.message.id}```"
+            )
         except Exception as e:
-            return await ctx.send(f"{ctx.author.mention} seems that your DM are blocked for the bot. Error: {e}")
+            return await ctx.send(
+                f"{ctx.author.mention} seems that your DM are blocked for the bot. Error: {e}"
+            )
         finally:
             await collection.update_one({"_id": name}, {"$set": post})
             await bot.get_cog("Utils").create_timer(

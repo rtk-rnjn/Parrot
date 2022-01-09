@@ -212,7 +212,7 @@ class Utils(Cog):
         question = questions_and_choices[0]
         choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
 
-        await ctx.message.delete()
+        await ctx.message.delete(delay=0)
 
         body = "\n".join(f"{key}: {c}" for key, c in choices)
         poll = await ctx.send(f"**Poll: {question}**\n\n{body}")
@@ -369,6 +369,6 @@ class Utils(Cog):
                         except Exception:
                             pass  # what if member DM are blocked?
                         await self.collection.delete_one({"_id": data["_id"]})
-                    if data.get("todo"):
+                    if data.get('todo'):
                         collection = todo[f"{data['author']}"]
-                        await collection.delete_one({"_id": data["_id"]})
+                        await collection.delete_one({"_id": data['_id']})

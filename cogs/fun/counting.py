@@ -39,9 +39,7 @@ class Counting(Cog):
         if not data:
             return
 
-        channel = self.bot.get_channel(
-            data["counting"]
-        )
+        channel = self.bot.get_channel(data["counting"])
         if not channel:
             return
 

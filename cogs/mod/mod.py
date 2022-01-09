@@ -488,7 +488,7 @@ class Mod(Cog):
     @Context.with_type
     async def clear(self, ctx, num: int, *, flags: purgeFlag):
         """To delete bulk message"""
-        await ctx.message.delete()
+        await ctx.message.delete(delay=0)
         if num > 100 or num < 0:
             return await ctx.send("Invalid amount. Maximum is 100.")
 

@@ -442,7 +442,7 @@ class Menu(metaclass=_MenuMeta):
             # nothing leaks out during clean-up
             try:
                 if self.delete_message_after:
-                    return await self.message.delete()
+                    return await self.message.delete(delay=0)
 
                 if self.clear_reactions_after:
                     if self._can_remove_reactions:

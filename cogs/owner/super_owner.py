@@ -183,10 +183,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         target: typing.Union[discord.User, discord.TextChannel, discord.Thread] = None,
     ):
         """Fun command"""
-        try:
-            await ctx.message.delete()
-        except discord.Forbidden:
-            pass
+        await ctx.message.delete(delay=0)
         target = target or ctx.channel
         await target.send(
             embed=discord.Embed(
@@ -267,11 +264,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     # @Context.with_type
     async def dr(self, ctx: Context):
         """To delete the message reference"""
-        try:
-            await ctx.message.delete()
-        except Exception:
-            pass
-        await ctx.message.reference.resolved.delete()
+        await ctx.message.delete(delay=0)
+        await ctx.message.reference.resolved.delete(delay=0)
 
     @commands.command()
     @commands.is_owner()

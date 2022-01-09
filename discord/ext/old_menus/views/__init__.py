@@ -126,7 +126,7 @@ class ViewMenu(old_menus.Menu):
 
             try:
                 if self.delete_message_after:
-                    return await self.message.delete()
+                    return await self.message.delete(delay=0)
 
                 if self.clear_reactions_after:
                     return await self.message.edit(view=None)

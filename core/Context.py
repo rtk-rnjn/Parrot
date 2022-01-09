@@ -49,7 +49,7 @@ class ConfirmationView(discord.ui.View):
         if self.reacquire:
             await self.ctx.acquire()
         if self.delete_after and self.message:
-            await self.message.delete()
+            await self.message.delete(delay=0)
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
     async def confirm(
@@ -229,4 +229,4 @@ class Context(commands.Context):
             return None
         finally:
             if delete_after:
-                await message.delete()
+                await message.delete(delay=0)

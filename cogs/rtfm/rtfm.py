@@ -44,13 +44,8 @@ API_ROOT = "https://realpython.com/search/api/v1/"
 ARTICLE_URL = "https://realpython.com{article_url}"
 SEARCH_URL = "https://realpython.com/search?q={user_search}"
 BASE_URL = "https://api.stackexchange.com/2.2/search/advanced"
-SO_PARAMS = {
-    "order": "desc",
-    "sort": "activity",
-    "site": "stackoverflow"
-}
+SO_PARAMS = {"order": "desc", "sort": "activity", "site": "stackoverflow"}
 SEARCH_URL = "https://stackoverflow.com/search?q={query}"
-
 
 
 class RTFM(Cog):
@@ -758,7 +753,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def realpython(self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str) -> None:
+    async def realpython(
+        self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str
+    ) -> None:
         """
         Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to
@@ -775,7 +772,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     embed=discord.Embed(
                         title="Error while searching Real Python",
                         description="There was an error while trying to reach Real Python. Please try again shortly.",
-                        color=ctx.author.color,)
+                        color=ctx.author.color,
+                    )
                 )
                 return
 
@@ -811,7 +809,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         article_embed.set_footer(text="Click the links to go to the articles.")
 
         await ctx.send(embed=article_embed)
-    
+
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
     async def stackoverflow(self, ctx: commands.Context, *, search_query: str) -> None:
@@ -827,14 +825,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                         description=(
                             "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
                         ),
-                        color=ctx.author.color
+                        color=ctx.author.color,
                     )
                 )
                 return
-        if not data['items']:
+        if not data["items"]:
             no_search_result = discord.Embed(
                 title=f"No search results found for {search_query}",
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=no_search_result)
             return
@@ -845,11 +843,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             title="Search results - Stackoverflow",
             url=SEARCH_URL.format(query=encoded_search_query),
             description=f"Here are the top {len(top5)} results:",
-            color=ctx.author.color
+            color=ctx.author.color,
         )
         for item in top5:
             embed.add_field(
-                name=unescape(item['title']),
+                name=unescape(item["title"]),
                 value=(
                     f"[\N{UPWARDS BLACK ARROW} {item['score']}    "
                     f"\N{EYES} {item['view_count']}     "
@@ -857,13 +855,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]"
                     f"({item['link']})"
                 ),
-                inline=False)
+                inline=False,
+            )
         embed.set_footer(text="View the original link for more results.")
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
             search_query_too_long = discord.Embed(
                 title="Your search query is too long, please try shortening your search query",
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=search_query_too_long)

@@ -50,8 +50,7 @@ WIKI_THUMBNAIL = (
 )
 WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
 WIKI_SEARCH_RESULT = (
-    "**[{name}]({url})**\n"
-    "{description}\n"
+    "**[{name}]({url})**\n{description}\n"
 )
 
 
@@ -433,7 +432,7 @@ class Misc(Cog):
                 colour=ctx.author.color
             )
             embed.set_thumbnail(url=WIKI_THUMBNAIL)
-            embed.timestamp = datetime.utcnow()
+            embed.timestamp = datetime.datetime.utcnow()
             page = SimplePageSource(entries=contents, ctx=ctx, per_page=1)
         else:
             await ctx.send(

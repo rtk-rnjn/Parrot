@@ -426,6 +426,7 @@ class Misc(Cog):
             embed.set_thumbnail(url=WIKI_THUMBNAIL)
             embed.timestamp = datetime.datetime.utcnow()
             page = SimplePages(entries=contents, ctx=ctx, per_page=1)
+            await page.start()
         else:
             await ctx.send(
                 "Sorry, we could not find a wikipedia article using that search term."

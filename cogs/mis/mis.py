@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from cogs.meta.robopage import SimplePages
+from cogs.meta.robopage import SimplePageSource, SimplePages
 
 from discord.ext import commands
 from utilities.youtube_search import YoutubeSearch
@@ -17,7 +17,7 @@ import typing
 import os
 import inspect
 import json
-
+from html import unescape
 from utilities.paginator import PaginationView
 from utilities.converters import convert_bool
 
@@ -30,6 +30,29 @@ invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\
 
 google_key = os.environ["GOOGLE_KEY"]
 cx = os.environ["GOOGLE_CX"]
+
+SEARCH_API = (
+    "https://en.wikipedia.org/w/api.php"
+)
+WIKI_PARAMS = {
+    "action": "query",
+    "list": "search",
+    "prop": "info",
+    "inprop": "url",
+    "utf8": "",
+    "format": "json",
+    "origin": "*",
+
+}
+WIKI_THUMBNAIL = (
+    "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg"
+    "/330px-Wikipedia-logo-v2.svg.png"
+)
+WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
+WIKI_SEARCH_RESULT = (
+    "**[{name}]({url})**\n"
+    "{description}\n"
+)
 
 
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
@@ -58,6 +81,36 @@ class Misc(Cog):
                 len(before.content) > len(after.content)
             ):
                 self.snipes[before.channel.id] = [before, after]
+
+    async def wiki_request(self, channel: discord.TextChannel, search: str) -> list[str]:
+        """Search wikipedia search string and return formatted first 10 pages found."""
+        params = WIKI_PARAMS | {"srlimit": 10, "srsearch": search}
+        async with self.bot.http_session.get(url=SEARCH_API, params=params) as resp:
+            if resp.status != 200:
+                raise commands.BadArgument(f"Wikipedia API {resp.status}")
+
+            raw_data = await resp.json()
+
+            if not raw_data.get("query"):
+                if error := raw_data.get("errors"):
+                    pass
+                raise commands.BadArgument(f"Wikipedia API: {resp.status} {error}")
+
+            lines = []
+            if raw_data["query"]["searchinfo"]["totalhits"]:
+                for article in raw_data["query"]["search"]:
+                    line = WIKI_SEARCH_RESULT.format(
+                        name=article["title"],
+                        description=unescape(
+                            re.sub(
+                                WIKI_SNIPPET_REGEX, "", article["snippet"]
+                            )
+                        ),
+                        url=f"https://en.wikipedia.org/?curid={article['pageid']}"
+                    )
+                    lines.append(line)
+
+            return lines
 
     def sanitise(self, string):
         if len(string) > 1024:
@@ -370,28 +423,22 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def wikipedia(self, ctx: Context, *, text: str):
+    async def wikipedia(self, ctx: Context, *, search: str):
         """Web articles from Wikipedia."""
-        link = str(wikipedia.page(text).url)
-        try:
-            summary = str(wikipedia.summary(text, sentences=3)).replace("\n", "")
-        except wikipedia.exceptions.DisambiguationError as e:
-            return await ctx.reply(
-                f"{ctx.author.mention} please provide more arguments, like {e.options[0]}"
+        contents = await self.wiki_request(ctx.channel, search)
+
+        if contents:
+            embed = Embed(
+                title="Wikipedia Search Results",
+                colour=ctx.author.color
             )
-        title = str(wikipedia.page(text).title)
-        image = wikipedia.page(text).images[0]
-
-        embed = discord.Embed(
-            title=title,
-            description=f"Summary: {summary}",
-            url=link,
-            color=ctx.author.color,
-        )
-        embed.set_footer(text=f"{ctx.author.name}")
-        embed.set_image(url=image)
-
-        await ctx.reply(embed=embed)
+            embed.set_thumbnail(url=WIKI_THUMBNAIL)
+            embed.timestamp = datetime.utcnow()
+            page = SimplePageSource(entries=contents, ctx=ctx, per_page=1)
+        else:
+            await ctx.send(
+                "Sorry, we could not find a wikipedia article using that search term."
+            )
 
     @commands.command(aliases=["yt"])
     @commands.bot_has_permissions(embed_links=True)

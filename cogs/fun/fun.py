@@ -779,7 +779,7 @@ class Fun(
 
         # Stop game if running.
         if self.game_status[ctx.channel.id]:
-            await ctx.send("Game is already running... " f"do `{ctx.prefix}quiz stop`")
+            await ctx.send(f"Game is already running... do `{ctx.prefix}quiz stop`")
             return
 
         # Send embed showing available categories if inputted category is invalid.

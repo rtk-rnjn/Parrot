@@ -9,9 +9,11 @@ import sys
 import discord
 import aiohttp
 import hashlib
-import random
+
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
+from html import unescape
+from typing import Optional
 
 import urllib.parse
 from urllib.parse import quote, quote_plus
@@ -38,6 +40,17 @@ with open("extra/lang.txt") as f:
     languages = f.read()
 
 GITHUB_API_URL = "https://api.github.com"
+API_ROOT = "https://realpython.com/search/api/v1/"
+ARTICLE_URL = "https://realpython.com{article_url}"
+SEARCH_URL = "https://realpython.com/search?q={user_search}"
+BASE_URL = "https://api.stackexchange.com/2.2/search/advanced"
+SO_PARAMS = {
+    "order": "desc",
+    "sort": "activity",
+    "site": "stackoverflow"
+}
+SEARCH_URL = "https://stackoverflow.com/search?q={query}"
+
 
 
 class RTFM(Cog):
@@ -742,3 +755,115 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         )
 
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=["rp"])
+    @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
+    async def realpython(self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str) -> None:
+        """
+        Send some articles from RealPython that match the search terms.
+        By default the top 5 matches are sent, this can be overwritten to
+        a number between 1 and 5 by specifying an amount before the search query.
+        """
+        if not 1 <= amount <= 5:
+            await ctx.send("`amount` must be between 1 and 5 (inclusive).")
+            return
+
+        params = {"q": user_search, "limit": amount, "kind": "article"}
+        async with self.bot.http_session.get(url=API_ROOT, params=params) as response:
+            if response.status != 200:
+                await ctx.send(
+                    embed=discord.Embed(
+                        title="Error while searching Real Python",
+                        description="There was an error while trying to reach Real Python. Please try again shortly.",
+                        color=ctx.author.color,)
+                )
+                return
+
+            data = await response.json()
+
+        articles = data["results"]
+
+        if len(articles) == 0:
+            no_articles = discord.Embed(
+                title=f"No articles found for '{user_search}'", color=ctx.author.color
+            )
+            await ctx.send(embed=no_articles)
+            return
+
+        if len(articles) == 1:
+            article_description = "Here is the result:"
+        else:
+            article_description = f"Here are the top {len(articles)} results:"
+
+        article_embed = discord.Embed(
+            title="Search results - Real Python",
+            url=SEARCH_URL.format(user_search=quote_plus(user_search)),
+            description=article_description,
+            color=ctx.author.color,
+        )
+
+        for article in articles:
+            article_embed.add_field(
+                name=unescape(article["title"]),
+                value=ARTICLE_URL.format(article_url=article["url"]),
+                inline=False,
+            )
+        article_embed.set_footer(text="Click the links to go to the articles.")
+
+        await ctx.send(embed=article_embed)
+    
+    @commands.command(aliases=["so"])
+    @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
+    async def stackoverflow(self, ctx: commands.Context, *, search_query: str) -> None:
+        """Sends the top 5 results of a search query from stackoverflow."""
+        params = SO_PARAMS | {"q": search_query}
+        async with self.bot.http_session.get(url=BASE_URL, params=params) as response:
+            if response.status == 200:
+                data = await response.json()
+            else:
+                await ctx.send(
+                    embed=discord.Embed(
+                        title="Error in fetching results from Stackoverflow",
+                        description=(
+                            "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
+                        ),
+                        color=ctx.author.color
+                    )
+                )
+                return
+        if not data['items']:
+            no_search_result = discord.Embed(
+                title=f"No search results found for {search_query}",
+                color=ctx.author.color
+            )
+            await ctx.send(embed=no_search_result)
+            return
+
+        top5 = data["items"][:5]
+        encoded_search_query = quote_plus(search_query)
+        embed = discord.Embed(
+            title="Search results - Stackoverflow",
+            url=SEARCH_URL.format(query=encoded_search_query),
+            description=f"Here are the top {len(top5)} results:",
+            color=ctx.author.color
+        )
+        for item in top5:
+            embed.add_field(
+                name=unescape(item['title']),
+                value=(
+                    f"[\N{UPWARDS BLACK ARROW} {item['score']}    "
+                    f"\N{EYES} {item['view_count']}     "
+                    f"\N{PAGE FACING UP} {item['answer_count']}   "
+                    f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]"
+                    f"({item['link']})"
+                ),
+                inline=False)
+        embed.set_footer(text="View the original link for more results.")
+        try:
+            await ctx.send(embed=embed)
+        except discord.HTTPException:
+            search_query_too_long = discord.Embed(
+                title="Your search query is too long, please try shortening your search query",
+                color=ctx.author.color
+            )
+            await ctx.send(embed=search_query_too_long)

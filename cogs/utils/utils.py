@@ -369,6 +369,6 @@ class Utils(Cog):
                         except Exception:
                             pass  # what if member DM are blocked?
                         await self.collection.delete_one({"_id": data["_id"]})
-                    if data.get('todo'):
+                    if data.get("todo"):
                         collection = todo[f"{data['author']}"]
-                        await collection.delete_one({"_id": data['_id']})
+                        await collection.delete_one({"_id": data["_id"]})

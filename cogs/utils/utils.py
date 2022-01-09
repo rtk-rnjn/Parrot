@@ -37,7 +37,7 @@ class Utils(Cog):
         *,
         remark: str = None,
         dm: bool = False,
-        todo: bool = False
+        todo: bool = False,
     ):
         collection = self.collection
         post = {
@@ -47,7 +47,7 @@ class Utils(Cog):
             "author": member.id,
             "remark": remark,
             "dm": dm,
-            "todo": False
+            "todo": False,
         }
         await collection.insert_one(post)
 
@@ -369,6 +369,6 @@ class Utils(Cog):
                         except Exception:
                             pass  # what if member DM are blocked?
                         await self.collection.delete_one({"_id": data["_id"]})
-                    if data.get('todo'):
+                    if data.get("todo"):
                         collection = todo[f"{data['author']}"]
-                        await collection.delete_one({"_id": data['_id']})
+                        await collection.delete_one({"_id": data["_id"]})

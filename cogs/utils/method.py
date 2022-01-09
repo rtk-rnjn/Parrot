@@ -268,6 +268,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
                 timestamp,
                 remark=f"you had set TODO reminder for your task named **{name}**",
                 dm=True,
+                todo=True,
             )
     else:
         await ctx.reply(

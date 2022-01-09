@@ -31,9 +31,7 @@ invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\
 google_key = os.environ["GOOGLE_KEY"]
 cx = os.environ["GOOGLE_CX"]
 
-SEARCH_API = (
-    "https://en.wikipedia.org/w/api.php"
-)
+SEARCH_API = "https://en.wikipedia.org/w/api.php"
 WIKI_PARAMS = {
     "action": "query",
     "list": "search",
@@ -42,16 +40,13 @@ WIKI_PARAMS = {
     "utf8": "",
     "format": "json",
     "origin": "*",
-
 }
 WIKI_THUMBNAIL = (
     "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg"
     "/330px-Wikipedia-logo-v2.svg.png"
 )
 WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
-WIKI_SEARCH_RESULT = (
-    "**[{name}]({url})**\n{description}\n"
-)
+WIKI_SEARCH_RESULT = "**[{name}]({url})**\n{description}\n"
 
 
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
@@ -81,7 +76,9 @@ class Misc(Cog):
             ):
                 self.snipes[before.channel.id] = [before, after]
 
-    async def wiki_request(self, channel: discord.TextChannel, search: str) -> list[str]:
+    async def wiki_request(
+        self, channel: discord.TextChannel, search: str
+    ) -> list[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
         params = WIKI_PARAMS | {"srlimit": 10, "srsearch": search}
         async with self.bot.http_session.get(url=SEARCH_API, params=params) as resp:
@@ -101,11 +98,9 @@ class Misc(Cog):
                     line = WIKI_SEARCH_RESULT.format(
                         name=article["title"],
                         description=unescape(
-                            re.sub(
-                                WIKI_SNIPPET_REGEX, "", article["snippet"]
-                            )
+                            re.sub(WIKI_SNIPPET_REGEX, "", article["snippet"])
                         ),
-                        url=f"https://en.wikipedia.org/?curid={article['pageid']}"
+                        url=f"https://en.wikipedia.org/?curid={article['pageid']}",
                     )
                     lines.append(line)
 
@@ -427,10 +422,7 @@ class Misc(Cog):
         contents = await self.wiki_request(ctx.channel, search)
 
         if contents:
-            embed = Embed(
-                title="Wikipedia Search Results",
-                colour=ctx.author.color
-            )
+            embed = Embed(title="Wikipedia Search Results", colour=ctx.author.color)
             embed.set_thumbnail(url=WIKI_THUMBNAIL)
             embed.timestamp = datetime.datetime.utcnow()
             page = SimplePageSource(entries=contents, ctx=ctx, per_page=1)

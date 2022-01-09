@@ -73,7 +73,7 @@ class Counting(Cog):
 
         if new_number - 1 != number:
             try:
-                return await message.delete(reason="Invalid count in Counting channel")
+                return await message.delete()
             except Exception:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"

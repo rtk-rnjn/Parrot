@@ -45,11 +45,7 @@ API_ROOT = "https://realpython.com/search/api/v1/"
 ARTICLE_URL = "https://realpython.com{article_url}"
 SEARCH_URL_REAL = "https://realpython.com/search?q={user_search}"
 BASE_URL_SO = "https://api.stackexchange.com/2.2/search/advanced"
-SO_PARAMS = {
-    "order": "desc",
-    "sort": "activity",
-    "site": "stackoverflow"
-}
+SO_PARAMS = {"order": "desc", "sort": "activity", "site": "stackoverflow"}
 SEARCH_URL_SO = "https://stackoverflow.com/search?q={query}"
 URL = "https://cheat.sh/python/{search}"
 ESCAPE_TT = str.maketrans({"`": "\\`"})
@@ -80,7 +76,6 @@ $wtf del
 """
 
 
-
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
 
@@ -100,7 +95,6 @@ class RTFM(Cog):
                 raw = await resp.text()
                 self.parse_readme(raw)
 
-    
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
         table_of_contents = re.search(
@@ -178,7 +172,9 @@ class RTFM(Cog):
         )
         return embed
 
-    def result_fmt(self, url: str, body_text: str) -> tuple[bool, Union[str, discord.Embed]]:
+    def result_fmt(
+        self, url: str, body_text: str
+    ) -> tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -195,9 +191,7 @@ class RTFM(Cog):
             )
         else:
             description = (
-                f"**Result Of cht.sh**\n"
-                f"```python\n{body_text}\n```\n"
-                f"{url}"
+                f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
             )
         return False, description
 
@@ -850,7 +844,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def realpython(self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str) -> None:
+    async def realpython(
+        self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str
+    ) -> None:
         """
         Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to
@@ -867,7 +863,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     embed=discord.Embed(
                         title="Error while searching Real Python",
                         description="There was an error while trying to reach Real Python. Please try again shortly.",
-                        color=ctx.author.color,)
+                        color=ctx.author.color,
+                    )
                 )
                 return
 
@@ -903,14 +900,16 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         article_embed.set_footer(text="Click the links to go to the articles.")
 
         await ctx.send(embed=article_embed)
-    
+
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def stackoverflow(self, ctx: commands.Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = SO_PARAMS | {"q": search_query}
-        async with self.bot.http_session.get(url=BASE_URL_SO, params=params) as response:
+        async with self.bot.http_session.get(
+            url=BASE_URL_SO, params=params
+        ) as response:
             if response.status == 200:
                 data = await response.json()
             else:
@@ -920,14 +919,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                         description=(
                             "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
                         ),
-                        color=ctx.author.color
+                        color=ctx.author.color,
                     )
                 )
                 return
-        if not data['items']:
+        if not data["items"]:
             no_search_result = discord.Embed(
                 title=f"No search results found for {search_query}",
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=no_search_result)
             return
@@ -938,11 +937,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             title="Search results - Stackoverflow",
             url=SEARCH_URL_SO.format(query=encoded_search_query),
             description=f"Here are the top {len(top5)} results:",
-            color=ctx.author.color
+            color=ctx.author.color,
         )
         for item in top5:
             embed.add_field(
-                name=unescape(item['title']),
+                name=unescape(item["title"]),
                 value=(
                     f"[\N{UPWARDS BLACK ARROW} {item['score']}    "
                     f"\N{EYES} {item['view_count']}     "
@@ -950,14 +949,15 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]"
                     f"({item['link']})"
                 ),
-                inline=False)
+                inline=False,
+            )
         embed.set_footer(text="View the original link for more results.")
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
             search_query_too_long = discord.Embed(
                 title="Your search query is too long, please try shortening your search query",
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=search_query_too_long)
 
@@ -977,13 +977,12 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             search_string = quote_plus(" ".join(search_terms))
 
             async with self.bot.http_session.get(
-                    URL.format(search=search_string), headers=HEADERS
+                URL.format(search=search_string), headers=HEADERS
             ) as response:
                 result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
             is_embed, description = self.result_fmt(
-                URL.format(search=search_string),
-                result
+                URL.format(search=search_string), result
             )
             if is_embed:
                 await ctx.send(embed=description)
@@ -992,7 +991,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=("wtfp"))
     @commands.bot_has_permissions(embed_links=True)
-    async def wtfpython(self, ctx: commands.Context, *, query: Optional[str] = None) -> None:
+    async def wtfpython(
+        self, ctx: commands.Context, *, query: Optional[str] = None
+    ) -> None:
         """
         Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
@@ -1004,16 +1005,17 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 title="WTF Python?!",
                 colour=ctx.author.color,
                 description="A repository filled with suprising snippets that can make you say WTF?!\n\n"
-                f"[Go to the Repository]({BASE_URL})"
+                f"[Go to the Repository]({BASE_URL})",
             )
-            await ctx.send(embed=no_query_embed,)
+            await ctx.send(
+                embed=no_query_embed,
+            )
             return
 
         if len(query) > 50:
             embed = discord.Embed(
-                title="! Well !",
-                description=ERROR_MESSAGE,
-                colour=ctx.author.color)
+                title="! Well !", description=ERROR_MESSAGE, colour=ctx.author.color
+            )
             match = None
         else:
             match = self.fuzzy_match_header(query)
@@ -1022,7 +1024,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed = discord.Embed(
                 title="! You done? !",
                 description=ERROR_MESSAGE,
-                colour=ctx.author.color)
+                colour=ctx.author.color,
+            )
             await ctx.send(embed=embed)
             return
 
@@ -1032,7 +1035,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             description=f"""Search result for '{query}': {match.split("]")[0].replace("[", "")}
             [Go to Repository Section]({self.headers[match]})""",
         )
-        await ctx.send(embed=embed,)
+        await ctx.send(
+            embed=embed,
+        )
 
     def cog_unload(self) -> None:
         """Unload the cog and cancel the task."""

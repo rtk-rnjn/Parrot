@@ -47,7 +47,7 @@ SEARCH_URL_REAL = "https://realpython.com/search?q={user_search}"
 BASE_URL_SO = "https://api.stackexchange.com/2.2/search/advanced"
 SO_PARAMS = {"order": "desc", "sort": "activity", "site": "stackoverflow"}
 SEARCH_URL_SO = "https://stackoverflow.com/search?q={query}"
-URL = "https://cheat.sh/python/{search}"
+URL = "https://cheat.sh/python{ver}/{search}"
 ESCAPE_TT = str.maketrans({"`": "\\`"})
 ANSI_RE = re.compile(r"\x1b\[.*?m")
 # We need to pass headers as curl otherwise it would default to aiohttp which would return raw html.
@@ -1025,10 +1025,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed.add_field(
                 name=unescape(item["title"]),
                 value=(
-                    f"[\N{UPWARDS BLACK ARROW} {item['score']}\n"
-                    f"\N{EYES} {item['view_count']}\n"
-                    f"\N{PAGE FACING UP} {item['answer_count']}\n"
-                    f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]\n"
+                    f"[\N{UPWARDS BLACK ARROW} {item['score']}  "
+                    f"\N{EYES} {item['view_count']}  "
+                    f"\N{PAGE FACING UP} {item['answer_count']}  "
+                    f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]"
                     f"({item['link']})"
                 ),
                 inline=False,
@@ -1048,18 +1048,19 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],
     )
     @commands.bot_has_permissions(embed_links=True)
-    async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
+    async def cheat_sheet(self, ctx: Context, python_version: Optional[int] = None, *search_terms: str) -> None:
         """
         Search cheat.sh.
         Gets a post from https://cheat.sh/python/ by default.
         Usage:
         --> $cht read json
         """
+        ver = 3 if python_version == 3 else ''
         async with ctx.typing():
             search_string = quote_plus(" ".join(search_terms))
 
             async with self.bot.http_session.get(
-                URL.format(search=search_string), headers=HEADERS
+                URL.format(search=search_string, ver=ver), headers=HEADERS
             ) as response:
                 result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 

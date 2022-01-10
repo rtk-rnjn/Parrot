@@ -1055,7 +1055,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Usage:
         --> $cht read json
         """
-        ver = 3 if python_version == 3 else ''
+        ver = "" if python_version != 3 else 3
         async with ctx.typing():
             search_string = quote_plus(" ".join(search_terms))
 
@@ -1065,7 +1065,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
             is_embed, description = self.result_fmt(
-                URL.format(search=search_string), result
+                URL.format(search=search_string, ver=ver), result
             )
             if is_embed:
                 await ctx.send(embed=description)

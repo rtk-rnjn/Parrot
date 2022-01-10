@@ -1167,7 +1167,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 _, user = await self.bot.wait_for("reaction_add", timeout=TIMEOUT, check=event_check)
             except asyncio.TimeoutError:
                 break
-            await self.action_bookmark(ctx.channel, user, target_message, title)
-            bookmarked_users.append(user.id)
+            else:
+                await self.action_bookmark(ctx.channel, user, target_message, title)
+                bookmarked_users.append(user.id)
 
         await reaction_message.delete()

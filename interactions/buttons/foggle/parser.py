@@ -38,12 +38,9 @@ class View:
         n = 0
         got_digit = False
         while re.match(r"[0-9A-Fa-f]", self.peek()):
-            try:
-                n = n * 10 + int(self.peek(), self.base)
-                self.idx += 1
-                got_digit = True
-            except ValueError:
-                pass
+            n = n * 10 + int(self.peek(), self.base)
+            self.idx += 1
+            got_digit = True
         self.strip_ws()
         return n if got_digit else None
 

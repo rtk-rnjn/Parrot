@@ -1183,7 +1183,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 "reaction_add", timeout=TIMEOUT, check=event_check
             )
         except asyncio.TimeoutError:
-            return await reaction_message.delete()
+            return await reaction_message.delete(delay=0)
 
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)

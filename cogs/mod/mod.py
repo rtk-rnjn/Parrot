@@ -767,7 +767,7 @@ class Mod(Cog):
                 _, __, a = await self.bot.wait_for(
                     "voice_state_update", timeout=60, check=check
                 )
-            except Exception:
+            except asyncio.TimeoutError:
                 return await ctx.send(f"{ctx.author.mention} you ran out time")
             else:
                 for mem in member:

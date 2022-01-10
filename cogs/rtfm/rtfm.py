@@ -1025,10 +1025,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed.add_field(
                 name=unescape(item["title"]),
                 value=(
-                    f"[\N{UPWARDS BLACK ARROW} {item['score']}    "
-                    f"\N{EYES} {item['view_count']}     "
-                    f"\N{PAGE FACING UP} {item['answer_count']}   "
-                    f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]"
+                    f"[\N{UPWARDS BLACK ARROW} {item['score']}\n"
+                    f"\N{EYES} {item['view_count']}\n"
+                    f"\N{PAGE FACING UP} {item['answer_count']}\n"
+                    f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]\n"
                     f"({item['link']})"
                 ),
                 inline=False,
@@ -1053,7 +1053,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Search cheat.sh.
         Gets a post from https://cheat.sh/python/ by default.
         Usage:
-        --> .cht read json
+        --> $cht read json
         """
         async with ctx.typing():
             search_string = quote_plus(" ".join(search_terms))
@@ -1078,7 +1078,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
         Usage:
-            --> .wtf wild imports
+            --> $wtfp wild imports
         """
         if query is None:
             no_query_embed = discord.Embed(
@@ -1183,9 +1183,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 "reaction_add", timeout=TIMEOUT, check=event_check
             )
         except asyncio.TimeoutError:
-            return
+            return await reaction_message.delete()
 
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
-
-        await reaction_message.delete()

@@ -26,7 +26,7 @@ class SpamProt(Cog):
 
         try:
             await message.channel.purge(5, check=check)
-        except Exception:
+        except discord.Forbidden:
             pass
 
     @Cog.listener()

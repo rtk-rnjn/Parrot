@@ -563,9 +563,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         if not ctx.invoked_subcommand:
             return await self.do_rtfm(ctx, "discord", obj)
 
-        obj = obj.split(" ", 1)
-        return await self.do_rtfm(ctx, str(obj[0]), obj[1])
-
     @rtfd.command(name="python", aliases=["py"])
     async def rtfm_python(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a Python entity."""
@@ -605,6 +602,11 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a pandas entity"""
         await self.do_rtfm(ctx, "pandas", obj)
+    
+    @rtfd.command(name="pymongo")
+    async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
+        """Gives you a documentation link for a pymongo entity"""
+        await self.do_rtfm(ctx, "pymongo", obj)
 
     @rtfd.command(name="showall")
     @commands.is_owner()

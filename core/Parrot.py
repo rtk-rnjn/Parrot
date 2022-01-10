@@ -183,22 +183,22 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg) -> None:
         self._prev_events.append(msg)
 
-    async def on_error(self, event: str, *args, **kwargs) -> None:
-        traceback_string = traceback.format_exc()
-        await self.wait_until_ready()
-        file_obj = io.BytesIO(
-            "Ignoring Exception at the {event}: {traceback_string}".encode()
-        )
-        if self.error_channel is None:
-            self.error_channel = self.get_channel(924356857508790282)
-        if len(traceback_string) < 1900:
-            return await self.error_channel.send(
-                f"```py\nIgnoring Exception at the {event}: {traceback_string}\n```"
-            )
-        return await self.error_channel.send(
-            "\u200b",
-            file=discord.File(file_obj, filename="error.py"),
-        )
+    # async def on_error(self, event: str, *args, **kwargs) -> None:
+    #     traceback_string = traceback.format_exc()
+    #     await self.wait_until_ready()
+    #     file_obj = io.BytesIO(
+    #         "Ignoring Exception at the {event}: {traceback_string}".encode()
+    #     )
+    #     if self.error_channel is None:
+    #         self.error_channel = self.get_channel(924356857508790282)
+    #     if len(traceback_string) < 1900:
+    #         return await self.error_channel.send(
+    #             f"```py\nIgnoring Exception at the {event}: {traceback_string}\n```"
+    #         )
+    #     return await self.error_channel.send(
+    #         "\u200b",
+    #         file=discord.File(file_obj, filename="error.py"),
+    #     )
 
     async def before_identify_hook(self, shard_id, *, initial):
         self._clear_gateway_data()

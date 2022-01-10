@@ -17,6 +17,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_role_create(self, role):
+        if not role.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": role.guild.id, "on_role_create": {"$exists": True}}
         ):
@@ -52,6 +53,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):
+        if not role.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": role.guild.id, "on_role_delete": {"$exists": True}}
         ):
@@ -138,6 +140,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_role_update(self, before, after):
+        if not after.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": before.guild.id, "on_role_update": {"$exists": True}}
         ):
@@ -178,6 +181,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_emojis_update(self, guild, before, after):
+        if not guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": guild.id, "on_emoji_create": {"$exists": True}}
         ):

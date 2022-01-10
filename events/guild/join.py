@@ -18,9 +18,6 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         self.url = BASE_URL + os.environ["CHANNEL_TOKEN1"]
         self.collection = parrot_db["server_config"]
 
-    async def log_it(self, guild: discord.Guild):
-        pass
-
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         await self.bot.wait_until_ready()

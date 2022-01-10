@@ -28,6 +28,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
+        if not channel.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": channel.guild.id, "on_channel_delete": {"$exists": True}}
         ):
@@ -71,6 +72,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
+        if not channel.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": channel.guild.id, "on_channel_create": {"$exists": True}}
         ):
@@ -126,6 +128,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_guild_channel_update(self, before, after):
         channel = after
+        if not channel.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": before.guild.id, "on_channel_update": {"$exists": True}}
         ):
@@ -223,6 +226,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_pins_update(self, channel, last_pin):
+        if not channel.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": channel.guild.id, "on_message_pin": {"$exists": True}}
         ):

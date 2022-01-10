@@ -14,18 +14,6 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
         self.collection = parrot_db["logging"]
 
     @Cog.listener()
-    async def on_relationship_add(self, relationship):
-        pass
-
-    @Cog.listener()
-    async def on_relationship_remove(self, relationship):
-        pass
-
-    @Cog.listener()
-    async def on_relationship_update(self, before, after):
-        pass
-
-    @Cog.listener()
     async def on_guild_available(self, guild):
         pass
 
@@ -37,6 +25,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
     async def on_invite_create(self, invite):
         if not invite.guild:
             return
+        if not invite.guild.me.guild_permissions.view_audit_log: return
         if data := await self.collection.find_one(
             {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
         ):

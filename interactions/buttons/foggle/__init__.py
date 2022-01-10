@@ -553,8 +553,6 @@ class Foggle(Cog):
     async def foggle(self, ctx: Context, base: Bases = 10):
         """Start's a game of Foggle.
         The board size can be set by command prefix.
-        `(bb)big foggle` will result in a 5x5 board.
-        `(bb)super big foggle` will result in a 6x6 board.
         `base` can be used to a custom base, supported bases are 2, 10 and 16
         Players have 3 minutes to find as many equation as they can, the first person to find
         an equation gets the points.

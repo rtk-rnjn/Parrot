@@ -37,7 +37,7 @@ class View:
     def parse_int(self) -> Optional[int]:
         n = 0
         got_digit = False
-        while re.match(r"[0-9A-Fa-f]", self.peek()):
+        while re.match(r"[0-9]", self.peek()):  # only digits
             n = n * 10 + int(self.peek(), self.base)
             self.idx += 1
             got_digit = True

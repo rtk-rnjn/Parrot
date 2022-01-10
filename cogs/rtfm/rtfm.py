@@ -45,11 +45,7 @@ API_ROOT = "https://realpython.com/search/api/v1/"
 ARTICLE_URL = "https://realpython.com{article_url}"
 SEARCH_URL_REAL = "https://realpython.com/search?q={user_search}"
 BASE_URL_SO = "https://api.stackexchange.com/2.2/search/advanced"
-SO_PARAMS = {
-    "order": "desc",
-    "sort": "activity",
-    "site": "stackoverflow"
-}
+SO_PARAMS = {"order": "desc", "sort": "activity", "site": "stackoverflow"}
 SEARCH_URL_SO = "https://stackoverflow.com/search?q={query}"
 URL = "https://cheat.sh/python/{search}"
 ESCAPE_TT = str.maketrans({"`": "\\`"})
@@ -81,11 +77,13 @@ $wtf del
 TIMEOUT = 120
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
+
 class Icons:
     bookmark = (
         "https://images-ext-2.discordapp.net/external/zl4oDwcmxUILY7sD9ZWE2fU5R7n6QcxEmPYSE5eddbg/"
         "%3Fv%3D1/https/cdn.discordapp.com/emojis/654080405988966419.png?width=20&height=20"
     )
+
 
 class WrappedMessageConverter(commands.MessageConverter):
     """A converter that handles embed-suppressed links like <http://example.com>."""
@@ -99,6 +97,7 @@ class WrappedMessageConverter(commands.MessageConverter):
             argument = argument[1:-1]
 
         return await super().convert(ctx, argument)
+
 
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
@@ -128,9 +127,12 @@ class RTFM(Cog):
         )
         embed.add_field(
             name="Wanna give it a visit?",
-            value=f"[Visit original message]({target_message.jump_url})"
+            value=f"[Visit original message]({target_message.jump_url})",
         )
-        embed.set_author(name=target_message.author, icon_url=target_message.author.display_avatar.url)
+        embed.set_author(
+            name=target_message.author,
+            icon_url=target_message.author.display_avatar.url,
+        )
         embed.set_thumbnail(url=Icons.bookmark)
 
         return embed
@@ -148,7 +150,7 @@ class RTFM(Cog):
         channel: discord.TextChannel,
         user: discord.Member,
         target_message: discord.Message,
-        title: str
+        title: str,
     ) -> None:
         """Sends the bookmark DM, or sends an error embed when a user bookmarks a message."""
         try:
@@ -160,8 +162,7 @@ class RTFM(Cog):
 
     @staticmethod
     async def send_reaction_embed(
-        channel: discord.TextChannel,
-        target_message: discord.Message
+        channel: discord.TextChannel, target_message: discord.Message
     ) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
@@ -175,7 +176,7 @@ class RTFM(Cog):
 
         await message.add_reaction(BOOKMARK_EMOJI)
         return message
-    
+
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
         table_of_contents = re.search(
@@ -253,7 +254,9 @@ class RTFM(Cog):
         )
         return embed
 
-    def result_fmt(self, url: str, body_text: str) -> tuple[bool, Union[str, discord.Embed]]:
+    def result_fmt(
+        self, url: str, body_text: str
+    ) -> tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -270,9 +273,7 @@ class RTFM(Cog):
             )
         else:
             description = (
-                f"**Result Of cht.sh**\n"
-                f"```python\n{body_text}\n```\n"
-                f"{url}"
+                f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
             )
         return False, description
 
@@ -925,7 +926,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def realpython(self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str) -> None:
+    async def realpython(
+        self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str
+    ) -> None:
         """
         Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to
@@ -942,7 +945,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     embed=discord.Embed(
                         title="Error while searching Real Python",
                         description="There was an error while trying to reach Real Python. Please try again shortly.",
-                        color=ctx.author.color,)
+                        color=ctx.author.color,
+                    )
                 )
                 return
 
@@ -978,14 +982,16 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         article_embed.set_footer(text="Click the links to go to the articles.")
 
         await ctx.send(embed=article_embed)
-    
+
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def stackoverflow(self, ctx: commands.Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = SO_PARAMS | {"q": search_query}
-        async with self.bot.http_session.get(url=BASE_URL_SO, params=params) as response:
+        async with self.bot.http_session.get(
+            url=BASE_URL_SO, params=params
+        ) as response:
             if response.status == 200:
                 data = await response.json()
             else:
@@ -995,14 +1001,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                         description=(
                             "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
                         ),
-                        color=ctx.author.color
+                        color=ctx.author.color,
                     )
                 )
                 return
-        if not data['items']:
+        if not data["items"]:
             no_search_result = discord.Embed(
                 title=f"No search results found for {search_query}",
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=no_search_result)
             return
@@ -1013,11 +1019,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             title="Search results - Stackoverflow",
             url=SEARCH_URL_SO.format(query=encoded_search_query),
             description=f"Here are the top {len(top5)} results:",
-            color=ctx.author.color
+            color=ctx.author.color,
         )
         for item in top5:
             embed.add_field(
-                name=unescape(item['title']),
+                name=unescape(item["title"]),
                 value=(
                     f"[\N{UPWARDS BLACK ARROW} {item['score']}    "
                     f"\N{EYES} {item['view_count']}     "
@@ -1025,18 +1031,22 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     f"\N{ADMISSION TICKETS} {', '.join(item['tags'][:3])}]"
                     f"({item['link']})"
                 ),
-                inline=False)
+                inline=False,
+            )
         embed.set_footer(text="View the original link for more results.")
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
             search_query_too_long = discord.Embed(
                 title="Your search query is too long, please try shortening your search query",
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=search_query_too_long)
 
-    @commands.command(name="cheat", aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],)
+    @commands.command(
+        name="cheat",
+        aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],
+    )
     @commands.bot_has_permissions(embed_links=True)
     async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
         """
@@ -1049,13 +1059,12 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             search_string = quote_plus(" ".join(search_terms))
 
             async with self.bot.http_session.get(
-                    URL.format(search=search_string), headers=HEADERS
+                URL.format(search=search_string), headers=HEADERS
             ) as response:
                 result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
             is_embed, description = self.result_fmt(
-                URL.format(search=search_string),
-                result
+                URL.format(search=search_string), result
             )
             if is_embed:
                 await ctx.send(embed=description)
@@ -1076,16 +1085,17 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 title="WTF Python?!",
                 colour=ctx.author.color,
                 description="A repository filled with suprising snippets that can make you say WTF?!\n\n"
-                f"[Go to the Repository]({BASE_URL})"
+                f"[Go to the Repository]({BASE_URL})",
             )
-            await ctx.send(embed=no_query_embed,)
+            await ctx.send(
+                embed=no_query_embed,
+            )
             return
 
         if len(query) > 50:
             embed = discord.Embed(
-                title="! Well !",
-                description=ERROR_MESSAGE,
-                colour=ctx.author.color)
+                title="! Well !", description=ERROR_MESSAGE, colour=ctx.author.color
+            )
             match = None
         else:
             match = self.fuzzy_match_header(query)
@@ -1094,7 +1104,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed = discord.Embed(
                 title="! You done? !",
                 description=ERROR_MESSAGE,
-                colour=ctx.author.color)
+                colour=ctx.author.color,
+            )
             await ctx.send(embed=embed)
             return
 
@@ -1104,7 +1115,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             description=f"""Search result for '{query}': {match.split("]")[0].replace("[", "")}
             [Go to Repository Section]({self.headers[match]})""",
         )
-        await ctx.send(embed=embed,)
+        await ctx.send(
+            embed=embed,
+        )
 
     def cog_unload(self) -> None:
         """Unload the cog and cancel the task."""
@@ -1116,7 +1129,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         ctx: Context,
         target_message: Optional[WrappedMessageConverter],
         *,
-        title: str = "Bookmark"
+        title: str = "Bookmark",
     ) -> None:
         """Send the author a link to `target_message` via DMs."""
         if not target_message:
@@ -1136,7 +1149,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed = discord.Embed(
                 title="Permission",
                 color=ctx.author.color,
-                description="You don't have permission to view this channel."
+                description="You don't have permission to view this channel.",
             )
             await ctx.send(embed=embed)
             return
@@ -1145,17 +1158,20 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             """Make sure that this reaction is what we want to operate on."""
             return (
                 # Conditions for a successful pagination:
-                all((
-                    # Reaction is on this message
-                    reaction.message.id == reaction_message.id,
-                    # User has not already bookmarked this message
-                    user.id not in bookmarked_users,
-                    # Reaction is the `BOOKMARK_EMOJI` emoji
-                    str(reaction.emoji) == BOOKMARK_EMOJI,
-                    # Reaction was not made by the Bot
-                    user.id != self.bot.user.id
-                ))
+                all(
+                    (
+                        # Reaction is on this message
+                        reaction.message.id == reaction_message.id,
+                        # User has not already bookmarked this message
+                        user.id not in bookmarked_users,
+                        # Reaction is the `BOOKMARK_EMOJI` emoji
+                        str(reaction.emoji) == BOOKMARK_EMOJI,
+                        # Reaction was not made by the Bot
+                        user.id != self.bot.user.id,
+                    )
+                )
             )
+
         await self.action_bookmark(ctx.channel, ctx.author, target_message, title)
 
         # Keep track of who has already bookmarked, so users can't spam reactions and cause loads of DMs
@@ -1163,10 +1179,12 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         reaction_message = await self.send_reaction_embed(ctx.channel, target_message)
 
         try:
-            _, user = await self.bot.wait_for("reaction_add", timeout=TIMEOUT, check=event_check)
+            _, user = await self.bot.wait_for(
+                "reaction_add", timeout=TIMEOUT, check=event_check
+            )
         except asyncio.TimeoutError:
             return
-        
+
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 

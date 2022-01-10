@@ -9,11 +9,12 @@ import sys
 import discord
 import aiohttp
 import hashlib
-
+import random
+import rapidfuzz
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
-from typing import Optional
+from typing import Optional, Union
 
 import urllib.parse
 from urllib.parse import quote, quote_plus
@@ -25,7 +26,7 @@ from bs4.element import NavigableString
 
 from core import Parrot, Context, Cog
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from . import _ref
 from . import _doc
@@ -42,14 +43,41 @@ with open("extra/lang.txt") as f:
 GITHUB_API_URL = "https://api.github.com"
 API_ROOT = "https://realpython.com/search/api/v1/"
 ARTICLE_URL = "https://realpython.com{article_url}"
-SEARCH_URL = "https://realpython.com/search?q={user_search}"
-BASE_URL = "https://api.stackexchange.com/2.2/search/advanced"
+SEARCH_URL_REAL = "https://realpython.com/search?q={user_search}"
+BASE_URL_SO = "https://api.stackexchange.com/2.2/search/advanced"
 SO_PARAMS = {
     "order": "desc",
     "sort": "activity",
     "site": "stackoverflow"
 }
-SEARCH_URL = "https://stackoverflow.com/search?q={query}"
+SEARCH_URL_SO = "https://stackoverflow.com/search?q={query}"
+URL = "https://cheat.sh/python/{search}"
+ESCAPE_TT = str.maketrans({"`": "\\`"})
+ANSI_RE = re.compile(r"\x1b\[.*?m")
+# We need to pass headers as curl otherwise it would default to aiohttp which would return raw html.
+HEADERS = {"User-Agent": "curl/7.68.0"}
+ERROR_MESSAGE_CHEAT_SHEET = """
+Unknown cheat sheet. Please try to reformulate your query.
+**Examples**:
+```md
+$cht read json
+$cht hello world
+$cht lambda
+```
+"""
+WTF_PYTHON_RAW_URL = "http://raw.githubusercontent.com/satwikkansal/wtfpython/master/"
+BASE_URL = "https://github.com/satwikkansal/wtfpython"
+
+MINIMUM_CERTAINTY = 55
+ERROR_MESSAGE = """
+Unknown WTF Python Query. Please try to reformulate your query.
+**Examples**:
+```md
+$wtf wild imports
+$wtf subclass
+$wtf del
+```
+"""
 
 
 
@@ -61,6 +89,33 @@ class RTFM(Cog):
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
         self.bot.languages = ()
+        self.headers: dict[str, str] = {}
+        self.fetch_readme.start()
+
+    @tasks.loop(minutes=60)
+    async def fetch_readme(self) -> None:
+        """Gets the content of README.md from the WTF Python Repository."""
+        async with self.bot.http_session.get(f"{WTF_PYTHON_RAW_URL}README.md") as resp:
+            if resp.status == 200:
+                raw = await resp.text()
+                self.parse_readme(raw)
+
+    
+    def parse_readme(self, data: str) -> None:
+        # Match the start of examples, until the end of the table of contents (toc)
+        table_of_contents = re.search(
+            r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data
+        )[0].split("\n")
+
+        for header in list(map(str.strip, table_of_contents)):
+            match = re.search(r"\[▶ (.*)\]\((.*)\)", header)
+            if match:
+                hyper_link = match[0].split("(")[1].replace(")", "")
+                self.headers[match[0]] = f"{BASE_URL}/{hyper_link}"
+
+    def fuzzy_match_header(self, query: str) -> Optional[str]:
+        match, certainty, _ = rapidfuzz.process.extractOne(query, self.headers.keys())
+        return match if certainty > MINIMUM_CERTAINTY else None
 
     def get_content(self, tag):
         """Returns content between two h2 tags"""
@@ -109,6 +164,42 @@ class RTFM(Cog):
     @property
     def session(self):
         return self.bot.session
+
+    @staticmethod
+    def fmt_error_embed() -> discord.Embed:
+        """
+        Format the Error Embed.
+        If the cht.sh search returned 404, overwrite it to send a custom error embed.
+        link -> https://github.com/chubin/cheat.sh/issues/198
+        """
+        embed = discord.Embed(
+            title="! You done? !",
+            description=ERROR_MESSAGE_CHEAT_SHEET,
+        )
+        return embed
+
+    def result_fmt(self, url: str, body_text: str) -> tuple[bool, Union[str, discord.Embed]]:
+        """Format Result."""
+        if body_text.startswith("#  404 NOT FOUND"):
+            embed = self.fmt_error_embed()
+            return True, embed
+
+        body_space = min(1986 - len(url), 1000)
+
+        if len(body_text) > body_space:
+            description = (
+                f"**Result Of cht.sh**\n"
+                f"```python\n{body_text[:body_space]}\n"
+                f"... (truncated - too many lines)\n```\n"
+                f"Full results: {url} "
+            )
+        else:
+            description = (
+                f"**Result Of cht.sh**\n"
+                f"```python\n{body_text}\n```\n"
+                f"{url}"
+            )
+        return False, description
 
     async def get_package(self, url: str):
         return await self.session.get(url=url)
@@ -758,6 +849,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
+    @commands.bot_has_permissions(embed_links=True)
     async def realpython(self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str) -> None:
         """
         Send some articles from RealPython that match the search terms.
@@ -797,7 +889,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         article_embed = discord.Embed(
             title="Search results - Real Python",
-            url=SEARCH_URL.format(user_search=quote_plus(user_search)),
+            url=SEARCH_URL_REAL.format(user_search=quote_plus(user_search)),
             description=article_description,
             color=ctx.author.color,
         )
@@ -814,10 +906,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
+    @commands.bot_has_permissions(embed_links=True)
     async def stackoverflow(self, ctx: commands.Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = SO_PARAMS | {"q": search_query}
-        async with self.bot.http_session.get(url=BASE_URL, params=params) as response:
+        async with self.bot.http_session.get(url=BASE_URL_SO, params=params) as response:
             if response.status == 200:
                 data = await response.json()
             else:
@@ -843,7 +936,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         encoded_search_query = quote_plus(search_query)
         embed = discord.Embed(
             title="Search results - Stackoverflow",
-            url=SEARCH_URL.format(query=encoded_search_query),
+            url=SEARCH_URL_SO.format(query=encoded_search_query),
             description=f"Here are the top {len(top5)} results:",
             color=ctx.author.color
         )
@@ -867,3 +960,80 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 color=ctx.author.color
             )
             await ctx.send(embed=search_query_too_long)
+
+    @commands.command(
+        name="cheat",
+        aliases=("cht.sh", "cheatsheet", "cheat-sheet", "cht"),
+    )
+    @commands.bot_has_permissions(embed_links=True)
+    async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
+        """
+        Search cheat.sh.
+        Gets a post from https://cheat.sh/python/ by default.
+        Usage:
+        --> .cht read json
+        """
+        async with ctx.typing():
+            search_string = quote_plus(" ".join(search_terms))
+
+            async with self.bot.http_session.get(
+                    URL.format(search=search_string), headers=HEADERS
+            ) as response:
+                result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
+
+            is_embed, description = self.result_fmt(
+                URL.format(search=search_string),
+                result
+            )
+            if is_embed:
+                await ctx.send(embed=description)
+            else:
+                await ctx.send(content=description)
+
+    @commands.command(aliases=("wtfp"))
+    @commands.bot_has_permissions(embed_links=True)
+    async def wtfpython(self, ctx: commands.Context, *, query: Optional[str] = None) -> None:
+        """
+        Search WTF Python repository.
+        Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
+        Usage:
+            --> .wtf wild imports
+        """
+        if query is None:
+            no_query_embed = discord.Embed(
+                title="WTF Python?!",
+                colour=ctx.author.color,
+                description="A repository filled with suprising snippets that can make you say WTF?!\n\n"
+                f"[Go to the Repository]({BASE_URL})"
+            )
+            await ctx.send(embed=no_query_embed,)
+            return
+
+        if len(query) > 50:
+            embed = discord.Embed(
+                title="! Well !",
+                description=ERROR_MESSAGE,
+                colour=ctx.author.color)
+            match = None
+        else:
+            match = self.fuzzy_match_header(query)
+
+        if not match:
+            embed = discord.Embed(
+                title="! You done? !",
+                description=ERROR_MESSAGE,
+                colour=ctx.author.color)
+            await ctx.send(embed=embed)
+            return
+
+        embed = discord.Embed(
+            title="WTF Python?!",
+            colour=ctx.author.color,
+            description=f"""Search result for '{query}': {match.split("]")[0].replace("[", "")}
+            [Go to Repository Section]({self.headers[match]})""",
+        )
+        await ctx.send(embed=embed,)
+
+    def cog_unload(self) -> None:
+        """Unload the cog and cancel the task."""
+        self.fetch_readme.cancel()

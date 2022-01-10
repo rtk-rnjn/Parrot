@@ -25,7 +25,8 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
     async def on_invite_create(self, invite):
         if not invite.guild:
             return
-        if not invite.guild.me.guild_permissions.view_audit_log: return
+        if not invite.guild.me.guild_permissions.view_audit_log:
+            return
         if data := await self.collection.find_one(
             {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
         ):

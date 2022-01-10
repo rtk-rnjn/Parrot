@@ -78,7 +78,9 @@ class BotConfig(Cog):
 
     @config.command(aliases=["log"])
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(manage_channels=True, manage_webhooks=True, view_audit_log=True)
+    @commands.bot_has_permissions(
+        manage_channels=True, manage_webhooks=True, view_audit_log=True
+    )
     async def logging(
         self, ctx: Context, event: str, *, channel: discord.TextChannel = None
     ):

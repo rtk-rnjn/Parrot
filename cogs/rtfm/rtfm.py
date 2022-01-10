@@ -15,7 +15,7 @@ from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
 from typing import Optional, Union
-
+import asyncio
 import urllib.parse
 from urllib.parse import quote, quote_plus
 
@@ -78,8 +78,27 @@ $wtf subclass
 $wtf del
 ```
 """
+TIMEOUT = 120
+BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
+class Icons:
+    bookmark = (
+        "https://images-ext-2.discordapp.net/external/zl4oDwcmxUILY7sD9ZWE2fU5R7n6QcxEmPYSE5eddbg/"
+        "%3Fv%3D1/https/cdn.discordapp.com/emojis/654080405988966419.png?width=20&height=20"
+    )
 
+class WrappedMessageConverter(commands.MessageConverter):
+    """A converter that handles embed-suppressed links like <http://example.com>."""
+
+    async def convert(self, ctx: commands.Context, argument: str) -> discord.Message:
+        """Wrap the commands.MessageConverter to handle <> delimited message links."""
+        # It's possible to wrap a message in [<>] as well, and it's supported because its easy
+        if argument.startswith("[") and argument.endswith("]"):
+            argument = argument[1:-1]
+        if argument.startswith("<") and argument.endswith(">"):
+            argument = argument[1:-1]
+
+        return await super().convert(ctx, argument)
 
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
@@ -100,6 +119,62 @@ class RTFM(Cog):
                 raw = await resp.text()
                 self.parse_readme(raw)
 
+    @staticmethod
+    def build_bookmark_dm(target_message: discord.Message, title: str) -> discord.Embed:
+        """Build the embed to DM the bookmark requester."""
+        embed = discord.Embed(
+            title=title,
+            description=target_message.content,
+        )
+        embed.add_field(
+            name="Wanna give it a visit?",
+            value=f"[Visit original message]({target_message.jump_url})"
+        )
+        embed.set_author(name=target_message.author, icon_url=target_message.author.display_avatar.url)
+        embed.set_thumbnail(url=Icons.bookmark)
+
+        return embed
+
+    @staticmethod
+    def build_error_embed(user: discord.Member) -> discord.Embed:
+        """Builds an error embed for when a bookmark requester has DMs disabled."""
+        return discord.Embed(
+            title="You DM(s) are closed!",
+            description=f"{user.mention}, please enable your DMs to receive the bookmark.",
+        )
+
+    async def action_bookmark(
+        self,
+        channel: discord.TextChannel,
+        user: discord.Member,
+        target_message: discord.Message,
+        title: str
+    ) -> None:
+        """Sends the bookmark DM, or sends an error embed when a user bookmarks a message."""
+        try:
+            embed = self.build_bookmark_dm(target_message, title)
+            await user.send(embed=embed)
+        except discord.Forbidden:
+            error_embed = self.build_error_embed(user)
+            await channel.send(embed=error_embed)
+
+    @staticmethod
+    async def send_reaction_embed(
+        channel: discord.TextChannel,
+        target_message: discord.Message
+    ) -> discord.Message:
+        """Sends an embed, with a reaction, so users can react to bookmark the message too."""
+        message = await channel.send(
+            embed=discord.Embed(
+                description=(
+                    f"React with {BOOKMARK_EMOJI} to be sent your very own bookmark to "
+                    f"[this message]({target_message.jump_url})."
+                ),
+            )
+        )
+
+        await message.add_reaction(BOOKMARK_EMOJI)
+        return message
     
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
@@ -961,10 +1036,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             )
             await ctx.send(embed=search_query_too_long)
 
-    @commands.command(
-        name="cheat",
-        aliases=("cht.sh", "cheatsheet", "cheat-sheet", "cht"),
-    )
+    @commands.command(name="cheat", aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],)
     @commands.bot_has_permissions(embed_links=True)
     async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
         """
@@ -990,9 +1062,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             else:
                 await ctx.send(content=description)
 
-    @commands.command(aliases=("wtfp"))
+    @commands.command(aliases=["wtfp"])
     @commands.bot_has_permissions(embed_links=True)
-    async def wtfpython(self, ctx: commands.Context, *, query: Optional[str] = None) -> None:
+    async def wtfpython(self, ctx: Context, *, query: Optional[str] = None) -> None:
         """
         Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
@@ -1037,3 +1109,65 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     def cog_unload(self) -> None:
         """Unload the cog and cancel the task."""
         self.fetch_readme.cancel()
+
+    @commands.command(name="bookmark", aliases=("bm", "pin"))
+    async def bookmark(
+        self,
+        ctx: Context,
+        target_message: Optional[WrappedMessageConverter],
+        *,
+        title: str = "Bookmark"
+    ) -> None:
+        """Send the author a link to `target_message` via DMs."""
+        if not target_message:
+            if not ctx.message.reference:
+                raise commands.BadArgument(
+                    "You must either provide a valid message to bookmark, or reply to one."
+                    "\n\nThe lookup strategy for a message is as follows (in order):"
+                    "\n1. Lookup by '{channel ID}-{message ID}' (retrieved by shift-clicking on 'Copy ID')"
+                    "\n2. Lookup by message ID (the message **must** be in the context channel)"
+                    "\n3. Lookup by message URL"
+                )
+            target_message = ctx.message.reference.resolved
+
+        # Prevent users from bookmarking a message in a channel they don't have access to
+        permissions = target_message.channel.permissions_for(ctx.author)
+        if not permissions.read_messages:
+            embed = discord.Embed(
+                title="Permission",
+                color=ctx.author.color,
+                description="You don't have permission to view this channel."
+            )
+            await ctx.send(embed=embed)
+            return
+
+        def event_check(reaction: discord.Reaction, user: discord.Member) -> bool:
+            """Make sure that this reaction is what we want to operate on."""
+            return (
+                # Conditions for a successful pagination:
+                all((
+                    # Reaction is on this message
+                    reaction.message.id == reaction_message.id,
+                    # User has not already bookmarked this message
+                    user.id not in bookmarked_users,
+                    # Reaction is the `BOOKMARK_EMOJI` emoji
+                    str(reaction.emoji) == BOOKMARK_EMOJI,
+                    # Reaction was not made by the Bot
+                    user.id != self.bot.user.id
+                ))
+            )
+        await self.action_bookmark(ctx.channel, ctx.author, target_message, title)
+
+        # Keep track of who has already bookmarked, so users can't spam reactions and cause loads of DMs
+        bookmarked_users = [ctx.author.id]
+        reaction_message = await self.send_reaction_embed(ctx.channel, target_message)
+
+        while True:
+            try:
+                _, user = await self.bot.wait_for("reaction_add", timeout=TIMEOUT, check=event_check)
+            except asyncio.TimeoutError:
+                break
+            await self.action_bookmark(ctx.channel, user, target_message, title)
+            bookmarked_users.append(user.id)
+
+        await reaction_message.delete()

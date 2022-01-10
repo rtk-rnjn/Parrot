@@ -1048,7 +1048,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],
     )
     @commands.bot_has_permissions(embed_links=True)
-    async def cheat_sheet(self, ctx: Context, python_version: Optional[int] = None, *search_terms: str) -> None:
+    async def cheat_sheet(
+        self, ctx: Context, python_version: Optional[int] = None, *search_terms: str
+    ) -> None:
         """
         Search cheat.sh.
         Gets a post from https://cheat.sh/python/ by default.

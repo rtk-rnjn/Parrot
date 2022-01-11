@@ -908,8 +908,10 @@ class Mod(Cog):
         reason: reason_convert = None,
     ):
         """Why to learn the commands. This is all in one mod command."""
+
         def check_msg(m):
             return m.author == ctx.author and m.channel == ctx.channel
+
         if not target:
             return await ctx.send_help(ctx.command)
         guild = ctx.guild

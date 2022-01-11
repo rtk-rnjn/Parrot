@@ -3165,7 +3165,9 @@ class Games(Cog):
                 )
 
             try:
-                msg = await self.bot.wait_for("message", check=check_response, timeout=30)
+                msg = await self.bot.wait_for(
+                    "message", check=check_response, timeout=30
+                )
             except Exception:
                 return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
             if msg.content.lower() in ("b", "back"):

@@ -2562,7 +2562,11 @@ class GameBattleShip:
             for message in alert_messages:
                 await message.delete()
 
-            alert_messages = [await self.next.user.send(f"{self.turn.user} aimed at {self.match.string}!")]
+            alert_messages = [
+                await self.next.user.send(
+                    f"{self.turn.user} aimed at {self.match.string}!"
+                )
+            ]
 
             if square.boat:
                 await self.hit(square, alert_messages)

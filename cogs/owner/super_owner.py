@@ -604,7 +604,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await self.do_rtfm(ctx, "pandas", obj)
 
     @rtfd.command(name="pymongo")
-    async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
+    async def rtfd_pymongo(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a pymongo entity"""
         await self.do_rtfm(ctx, "pymongo", obj)
 

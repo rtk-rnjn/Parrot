@@ -439,9 +439,9 @@ class ClassicGame(GameBoogle):
 
                 # Remove from all sets if not unique
                 if word in self.used_words:
-                    for list in self.unique_words.values():
-                        if word in list:
-                            list.remove(word)
+                    for ls in self.unique_words.values():
+                        if word in ls:
+                            ls.remove(word)
                     continue
 
                 self.used_words.add(word)
@@ -3144,7 +3144,7 @@ class Games(Cog):
             )
             await ctx.send(embed=embed)
 
-            def check(m):
+            def check_response(m):
                 replies = (
                     "yes",
                     "y",
@@ -3165,7 +3165,7 @@ class Games(Cog):
                 )
 
             try:
-                msg = await self.bot.wait_for("message", check=check, timeout=30)
+                msg = await self.bot.wait_for("message", check=check_response, timeout=30)
             except Exception:
                 return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
             if msg.content.lower() in ("b", "back"):
@@ -3186,7 +3186,7 @@ class Games(Cog):
         embed.add_field(name="Reply with `yes/y` `no/n`", value="\u200b")
         await ctx.send(embed=embed)
 
-        def check(m):
+        def check_yes_no(m):
             return (
                 m.content.lower() in ("yes", "y", "no", "n")
                 and m.channel == ctx.channel
@@ -3194,7 +3194,7 @@ class Games(Cog):
             )
 
         try:
-            correct = await self.bot.wait_for("message", check=check, timeout=30)
+            correct = await self.bot.wait_for("message", check=check_yes_no, timeout=30)
         except Exception:
             return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if correct.content.lower() in ("yes", "y"):

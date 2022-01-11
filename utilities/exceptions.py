@@ -42,7 +42,7 @@ class NotGuildOwner(ParrotCheckFaliure):
 class NotMe(ParrotCheckFaliure):
     def __init__(self):
         super().__init__(
-            f"**{random.choice(quote)}**\nNot !! Ritik Ranjan [\*.*]#9230. I don't know how you reach this error. Thing is, you can't use this command"
+            f"**{random.choice(quote)}**\nNot `!! Ritik Ranjan [*.*]#9230`. I don't know how you reach this error. Thing is, you can't use this command"
         )
 
 

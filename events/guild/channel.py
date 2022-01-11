@@ -248,7 +248,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
 `ID       :` **{entry.extra.message_id}**
 `Channel  :` **{channel.mention} ({channel.id})**
-`Author   :` **{entry.target}** 
+`Author   :` **{entry.target}**
 `Pinned at:` **{discord.utils.format_dt(last_pin)}**
 `Pinned by:` **{user}**
 `Entry ID :` **{entryID}**
@@ -278,7 +278,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
 `ID         :` **{entry.extra.message_id}**
 `Channel    :` **{channel.mention} ({channel.id})**
-`Author     :` **{entry.target}** 
+`Author     :` **{entry.target}**
 `Unpinned at:` **{discord.utils.format_dt(last_pin)}**
 `Unpinned by:` **{user}**
 `Entry ID   :` **{entryID}**

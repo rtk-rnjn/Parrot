@@ -61,7 +61,7 @@ async def dial(bot, ctx, server, reverse=False):
     except Exception:
         pass
 
-    def check(m):
+    def check_pickup_hangup(m):
         return (
             (m.content.lower() in ("pickup", "hangup"))
             and (m.channel(channel, target_channel))
@@ -69,7 +69,7 @@ async def dial(bot, ctx, server, reverse=False):
         )
 
     try:
-        _talk = await bot.wait_for("message", check=check, timeout=60)
+        _talk = await bot.wait_for("message", check=check_pickup_hangup, timeout=60)
     except Exception:
         await asyncio.sleep(0.5)
         await target_channel.send(
@@ -105,14 +105,14 @@ async def dial(bot, ctx, server, reverse=False):
         ini = time.time() + 120
         while True:
 
-            def check(m):
+            def check_in_channel(m: discord.Message):
                 if m.author.bot:
                     return
                 if m.channel in (target_channel, channel):
                     return True
 
             try:
-                talk_message = await bot.wait_for("message", check=check, timeout=60.0)
+                talk_message = await bot.wait_for("message", check=check_in_channel, timeout=60.0)
             except Exception:
                 await asyncio.sleep(0.5)
                 await target_channel.send(

@@ -907,9 +907,9 @@ class Mod(Cog):
         *,
         reason: reason_convert = None,
     ):
-        """
-        Why to learn the commands. This is all in one mod command.
-        """
+        """Why to learn the commands. This is all in one mod command."""
+        def check_msg(m):
+            return m.author == ctx.author and m.channel == ctx.channel
         if not target:
             return await ctx.send_help(ctx.command)
         guild = ctx.guild
@@ -941,9 +941,6 @@ class Mod(Cog):
                     and user == ctx.author
                     and reaction.message.id == msg.id
                 )
-
-            def check_msg(m):
-                return m.author == ctx.author and m.channel == ctx.channel
 
             try:
                 reaction, user = await self.bot.wait_for(
@@ -1175,19 +1172,16 @@ class Mod(Cog):
             for reaction in mt.VC_REACTION:
                 await msg.add_reaction(reaction)
 
-            def check(reaction, user):
+            def check_reaction_vc(reaction, user):
                 return (
                     str(reaction.emoji) in mt.VC_REACTION
                     and user == ctx.author
                     and reaction.message.id == msg.id
                 )
 
-            def check_msg(m):
-                return m.author == ctx.author and m.channel == ctx.channel
-
             try:
                 reaction, user = await self.bot.wait_for(
-                    "reaction_add", timeout=60.0, check=check
+                    "reaction_add", timeout=60.0, check=check_reaction_vc
                 )
             except asyncio.TimeoutError:
                 return await msg.delete()
@@ -1247,19 +1241,16 @@ class Mod(Cog):
             for reaction in mt.ROLE_REACTION:
                 await msg.add_reaction(reaction)
 
-            def check(reaction, user):
+            def check_reaction_role(reaction, user):
                 return (
                     str(reaction.emoji) in mt.ROLE_REACTION
                     and user == ctx.author
                     and reaction.message.id == msg.id
                 )
 
-            def check_msg(m):
-                return m.author == ctx.author and m.channel == ctx.channel
-
             try:
                 reaction, user = await self.bot.wait_for(
-                    "reaction_add", timeout=60.0, check=check
+                    "reaction_add", timeout=60.0, check=check_reaction_role
                 )
             except asyncio.TimeoutError:
                 return await msg.delete()

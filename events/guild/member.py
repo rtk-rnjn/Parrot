@@ -25,7 +25,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if webhook:
                 content = f"""**Member Joined Event**
 
-`Name (ID)  :` **{member} (`{member.id}`)** 
+`Name (ID)  :` **{member} (`{member.id}`)**
 `Account age:` **{discord.utils.format_dt(member.created_at)}**
 `Joined at  :` **{discord.utils.format_dt(member.joined_at)}**
 `Is Bot?    :` **{member.bot}**
@@ -71,7 +71,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if webhook:
                 content = f"""**Member Joined Event**
 
-`Name (ID)  :` **{member} (`{member.id}`)** 
+`Name (ID)  :` **{member} (`{member.id}`)**
 `Account age:` **{discord.utils.format_dt(member.created_at)}**
 `Joined at  :` **{discord.utils.format_dt(member.joined_at)}**
 `Left at    :` **<t:{int(time.time())}>**

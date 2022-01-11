@@ -210,7 +210,6 @@ class BoardBoogle:
         # Otherwise cannot find word
         return False
 
-
     def is_legal(self, word: str) -> bool:
         if len(word) < 3:
             return False
@@ -3266,7 +3265,6 @@ class Games(Cog):
         game.last_state = await ctx.send(
             f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`."
         )
-
 
     @minesweeper.command(name="click")
     @commands.check(is_game)

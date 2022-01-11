@@ -107,9 +107,8 @@ async def dial(bot, ctx, server, reverse=False):
 
             def check_in_channel(m: discord.Message):
                 if m.author.bot:
-                    return
-                if m.channel in (target_channel, channel):
-                    return True
+                    return False
+                return m.channel in (target_channel, channel)
 
             try:
                 talk_message = await bot.wait_for(

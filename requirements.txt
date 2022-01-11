@@ -1,10 +1,7 @@
 markdownify
-wikipedia
 psutil
-editdistance
 truth_table_generator
 aiohttp
-utils
 async_timeout
 jishaku
 beautifulsoup4

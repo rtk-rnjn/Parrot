@@ -9,8 +9,6 @@ import urllib.parse
 import aiohttp
 import discord
 import re
-import editdistance
-import wikipedia
 import ttg
 import datetime
 import typing
@@ -71,9 +69,7 @@ class Misc(Cog):
         async def on_message_edit(before, after):
             if before.author.bot or after.author.bot:
                 return
-            if (editdistance.eval(before.content, after.content) >= 10) and (
-                len(before.content) > len(after.content)
-            ):
+            if before.content != after.content:
                 self.snipes[before.channel.id] = [before, after]
 
     async def wiki_request(
@@ -287,8 +283,6 @@ class Misc(Cog):
                 em.set_thumbnail(url=img)
             pages.append(em)
 
-        # paginator = Paginator(pages=pages, timeout=60.0)
-        # await paginator.start(ctx)
         await PaginationView(pages).start(ctx=ctx)
 
     @commands.command()
@@ -297,10 +291,7 @@ class Misc(Cog):
     @Context.with_type
     async def snipe(self, ctx: Context):
         """Snipes someone's message that's deleted"""
-        try:
-            snipe = self.snipes[ctx.channel.id]
-        except KeyError:
-            return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
+        snipe = self.snipes.get(ctx.channel.id)
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
         # there's gonna be a snipe after this point

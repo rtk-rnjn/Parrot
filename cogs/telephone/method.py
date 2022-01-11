@@ -112,7 +112,9 @@ async def dial(bot, ctx, server, reverse=False):
                     return True
 
             try:
-                talk_message = await bot.wait_for("message", check=check_in_channel, timeout=60.0)
+                talk_message = await bot.wait_for(
+                    "message", check=check_in_channel, timeout=60.0
+                )
             except Exception:
                 await asyncio.sleep(0.5)
                 await target_channel.send(

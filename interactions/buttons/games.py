@@ -210,10 +210,6 @@ class BoardBoogle:
         # Otherwise cannot find word
         return False
 
-    # @cached_property
-    # def legal_words(self) -> set[str]:
-    #     return {word for word in DICTIONARY if self.is_legal(word)}
-
     def is_legal(self, word: str) -> bool:
         if len(word) < 3:
             return False
@@ -3241,7 +3237,6 @@ class Games(Cog):
 
     @minesweeper.group(name="start")
     @commands.check(is_no_game)
-    # @commands.check(is_war_channel)
     async def ms_start(self, ctx):
         """Starts a Minesweeper game"""
         if ctx.invoked_subcommand is None:
@@ -3270,12 +3265,6 @@ class Games(Cog):
         game.last_state = await ctx.send(
             f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`."
         )
-
-    # @ms_start.command(name='hard')
-    # async def ms_start_hard(self, ctx):
-    #     """Starts a hard difficulty Minesweeper game"""
-    #     game = self._games[ctx.channel] = Game(26, 10)
-    #     game.last_state = await ctx.send(f'Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`.')
 
     @minesweeper.command(name="click")
     @commands.check(is_game)
@@ -3609,7 +3598,6 @@ class Games(Cog):
         await ctx.send(embed=embed, view=SlidingPuzzleView(game, ctx.author))
 
     @commands.group(invoke_without_command=True)
-    # @commands.max_concurrency(1, per=commands.BucketType.channel) # rip
     @boggle_game(DiscordGame)
     async def boggle(self, ctx: Context):
         """Start's a game of Boggle.

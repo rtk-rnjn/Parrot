@@ -261,7 +261,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     @commands.is_owner()
-    # @Context.with_type
     async def dr(self, ctx: Context):
         """To delete the message reference"""
         await ctx.message.delete(delay=0)
@@ -269,7 +268,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     @commands.is_owner()
-    # @Context.with_type
     async def spy_server(
         self, ctx: Context, guild: discord.Guild = None, channel_member: str = None
     ):
@@ -287,7 +285,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         embed_first = discord.Embed(
             title=name,
-            # url=instant_invite,
             color=ctx.author.color,
             timestamp=datetime.datetime.utcnow(),
         )

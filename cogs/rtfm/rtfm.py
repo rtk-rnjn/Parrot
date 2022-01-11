@@ -35,7 +35,6 @@ from ._used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_
 
 system("pip install lxml")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-# from _tio import Tio
 
 with open("extra/lang.txt") as f:
     languages = f.read()
@@ -493,7 +492,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         lang = None  # to override in 2 first cases
 
         if ctx.message.attachments:
-            # Code in file
             file = ctx.message.attachments[0]
             if file.size > 20000:
                 return await ctx.send("File must be smaller than 20 kio.")

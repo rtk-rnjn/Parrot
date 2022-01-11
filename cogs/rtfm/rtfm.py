@@ -1046,9 +1046,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],
     )
     @commands.bot_has_permissions(embed_links=True)
-    async def cheat_sheet(
-        self, ctx: Context, *search_terms: str
-    ) -> None:
+    async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
         """
         Search cheat.sh.
         Gets a post from https://cheat.sh/python/ by default.
@@ -1059,12 +1057,18 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             search_string = quote_plus(" ".join(search_terms))
 
             async with self.bot.http_session.get(
-                URL.format(search=search_string,), headers=HEADERS
+                URL.format(
+                    search=search_string,
+                ),
+                headers=HEADERS,
             ) as response:
                 result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
             is_embed, description = self.result_fmt(
-                URL.format(search=search_string,), result
+                URL.format(
+                    search=search_string,
+                ),
+                result,
             )
             if is_embed:
                 await ctx.send(embed=description)

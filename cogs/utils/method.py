@@ -44,7 +44,7 @@ async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
 
 async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({"id": tag}):
+    if _ := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
     view = Prompt(ctx.author.id)
     msg = await ctx.send(
@@ -102,7 +102,7 @@ async def _delete_tag(bot: Parrot, ctx: Context, tag):
 
 async def _name_edit(bot: Parrot, ctx: Context, tag, name):
     collection = tags[f"{ctx.guild.id}"]
-    if exists := await collection.find_one({"id": name}):
+    if _ := await collection.find_one({"id": name}):
         await ctx.reply(
             f"{ctx.author.mention} that name already exists in the database"
         )
@@ -251,7 +251,7 @@ async def _create_todo(bot: Parrot, ctx: Context, name, text):
 
 async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({"id": name}):
+    if _ := await collection.find_one({"id": name}):
         post = {"deadline": timestamp}
         try:
             await ctx.author.send(
@@ -280,8 +280,8 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({"id": name}):
-        if new_data := await collection.find_one({"id": new_name}):
+    if _ := await collection.find_one({"id": name}):
+        if _ := await collection.find_one({"id": new_name}):
             await ctx.reply(
                 f"{ctx.author.mention} `{new_name}` already exists as your TODO list"
             )
@@ -298,7 +298,7 @@ async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
 
 async def _update_todo_text(bot: Parrot, ctx: Context, name, text):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({"id": name}):
+    if _ := await collection.find_one({"id": name}):
         await collection.update_one({"id": name}, {"$set": {"text": text}})
         await ctx.reply(
             f"{ctx.author.mention} TODO list of name `{name}` has been updated"
@@ -336,7 +336,7 @@ async def _show_todo(bot: Parrot, ctx: Context, name):
 
 async def _delete_todo(bot: Parrot, ctx: Context, name):
     collection = todo[f"{ctx.author.id}"]
-    if data := await collection.find_one({"id": name}):
+    if _ := await collection.find_one({"id": name}):
         await collection.delete_one({"id": name})
         await ctx.reply(f"{ctx.author.mention} delete `{name}` task")
     else:
@@ -353,7 +353,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         (4, "Enter duration of giveaway"),
     ]
 
-    def check(m):
+    def check(m: discord.Message):
         return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
 
     answers = {}
@@ -413,7 +413,7 @@ async def create_gw(bot: Parrot, ctx: Context):
 
 async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
     if data := await giveaway.find_one({"_id": _id}):
-        if not data["guild"] == ctx.guild.id:
+        if not (data["guild"] == ctx.guild.id):
             return await ctx.send(f"{ctx.author.mention} invalid message ID")
 
         channel = ctx.guild.get_channel(data["channel"])

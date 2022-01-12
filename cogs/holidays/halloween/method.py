@@ -223,8 +223,7 @@ class Halloween(Cog):
                 # Short circuit if they're found, logging is handled in _short_circuit_check
                 if await self._short_circuit_check(message):
                     return
-                else:
-                    await message.add_reaction(trigger[1])
+                await message.add_reaction(trigger[1])
 
         # do random check for skull first as it has the lower chance
         if random.randint(1, ADD_SKULL_REACTION_CHANCE) == 1:
@@ -655,7 +654,7 @@ class Halloween(Cog):
                 )
                 return
 
-            elif data["name"] == name:
+            if data["name"] == name:
                 await ctx.send("TOO LATE. Someone has already added this name.")
                 return
 

@@ -1345,7 +1345,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 )
                 return error_embed
 
-            soup = BeautifulSoup(await response.text(), features="html.parser") # changed the parser
+            soup = BeautifulSoup(
+                await response.text(), features="html.parser"
+            )  # changed the parser
             first_kata_div = await asyncio.to_thread(
                 soup.find_all, "div", class_="item-title px-0"
             )

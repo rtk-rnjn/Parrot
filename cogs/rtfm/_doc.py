@@ -48,7 +48,7 @@ async def python_doc(ctx, text: str):
                 url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png"
             )
             emb.add_field(
-                name=f"Results for `{text}` :", value="\n".join(content), inline=False
+                name=f"Results for `{text}` :", value=('\n'.join(content))[1020:] + "...", inline=False
             )
 
             await ctx.send(embed=emb)

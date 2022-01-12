@@ -9,7 +9,8 @@ import sys
 import discord
 import aiohttp
 import hashlib
-import random
+
+from random import choice
 import rapidfuzz
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
@@ -27,6 +28,7 @@ from bs4.element import NavigableString
 from core import Parrot, Context, Cog
 
 from discord.ext import commands, tasks
+from discord import Embed, Interaction, SelectOption, ui
 
 from . import _ref
 from . import _doc
@@ -40,7 +42,7 @@ with open("extra/lang.txt") as f:
     languages = f.read()
 
 GITHUB_API_URL = "https://api.github.com"
-API_ROOT = "https://realpython.com/search/api/v1/"
+API_ROOT_RP = "https://realpython.com/search/api/v1/"
 ARTICLE_URL = "https://realpython.com{article_url}"
 SEARCH_URL_REAL = "https://realpython.com/search?q={user_search}"
 BASE_URL_SO = "https://api.stackexchange.com/2.2/search/advanced"
@@ -62,7 +64,7 @@ $cht lambda
 """
 WTF_PYTHON_RAW_URL = "http://raw.githubusercontent.com/satwikkansal/wtfpython/master/"
 BASE_URL = "https://github.com/satwikkansal/wtfpython"
-
+API_ROOT = "https://www.codewars.com/api/v1/code-challenges/{kata_id}"
 MINIMUM_CERTAINTY = 55
 ERROR_MESSAGE = """
 Unknown WTF Python Query. Please try to reformulate your query.
@@ -76,18 +78,91 @@ $wtf del
 TIMEOUT = 120
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
+MAPPING_OF_KYU = {
+    8: 0xdddbda, 7: 0xdddbda, 6: 0xecb613, 5: 0xecb613,
+    4: 0x3c7ebb, 3: 0x3c7ebb, 2: 0x866cc7, 1: 0x866cc7
+}
 
+# Supported languages for a kata on codewars.com
+SUPPORTED_LANGUAGES = {
+    "stable": [
+        "c", "c#", "c++", "clojure", "coffeescript", "coq", "crystal", "dart", "elixir",
+        "f#", "go", "groovy", "haskell", "java", "javascript", "kotlin", "lean", "lua", "nasm",
+        "php", "python", "racket", "ruby", "rust", "scala", "shell", "sql", "swift", "typescript"
+    ],
+    "beta": [
+        "agda", "bf", "cfml", "cobol", "commonlisp", "elm", "erlang", "factor",
+        "forth", "fortran", "haxe", "idris", "julia", "nim", "objective-c", "ocaml",
+        "pascal", "perl", "powershell", "prolog", "purescript", "r", "raku", "reason", "solidity", "vb.net"
+    ]
+}
+
+
+NEGATIVE_REPLIES = [
+    "! YOU DONE? !",
+    "! OK, HERE IS AN ERROR !",
+    "! F. !"
+]
 class Icons:
     bookmark = (
         "https://images-ext-2.discordapp.net/external/zl4oDwcmxUILY7sD9ZWE2fU5R7n6QcxEmPYSE5eddbg/"
         "%3Fv%3D1/https/cdn.discordapp.com/emojis/654080405988966419.png?width=20&height=20"
     )
 
+class InformationDropdown(ui.Select):
+    """A dropdown inheriting from ui.Select that allows finding out other information about the kata."""
+
+    def __init__(self, language_embed: Embed, tags_embed: Embed, other_info_embed: Embed, main_embed: Embed):
+        options = [
+            SelectOption(
+                label="Main Information",
+                description="See the kata's difficulty, description, etc.",
+                emoji="\N{EARTH GLOBE AMERICAS}"
+            ),
+            SelectOption(
+                label="Languages",
+                description="See what languages this kata supports!",
+                emoji="\N{PAGE FACING UP}"
+            ),
+            SelectOption(
+                label="Tags",
+                description="See what categories this kata falls under!",
+                emoji="\N{ROUND PUSHPIN}"
+            ),
+            SelectOption(
+                label="Other Information",
+                description="See how other people performed on this kata and more!",
+                emoji="\N{INFORMATION SOURCE}"
+            )
+        ]
+
+        # We map the option label to the embed instance so that it can be easily looked up later in O(1)
+        self.mapping_of_embeds = {
+            "Main Information": main_embed,
+            "Languages": language_embed,
+            "Tags": tags_embed,
+            "Other Information": other_info_embed,
+        }
+
+        super().__init__(
+            placeholder="See more information regarding this kata",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+    async def callback(self, interaction: Interaction) -> None:
+        """Callback for when someone clicks on a dropdown."""
+        # Edit the message to the embed selected in the option
+        # The `original_message` attribute is set just after the message is sent with the view.
+        # The attribute is not set during initialization.
+        result_embed = self.mapping_of_embeds[self.values[0]]
+        await self.original_message.edit(embed=result_embed)
 
 class WrappedMessageConverter(commands.MessageConverter):
     """A converter that handles embed-suppressed links like <http://example.com>."""
 
-    async def convert(self, ctx: commands.Context, argument: str) -> discord.Message:
+    async def convert(self, ctx: Context, argument: str) -> discord.Message:
         """Wrap the commands.MessageConverter to handle <> delimited message links."""
         # It's possible to wrap a message in [<>] as well, and it's supported because its easy
         if argument.startswith("[") and argument.endswith("]"):
@@ -763,13 +838,13 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.group(name="github", aliases=("gh", "git"))
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def github_group(self, ctx: commands.Context) -> None:
+    async def github_group(self, ctx: Context) -> None:
         """Commands for finding information related to GitHub."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
     @github_group.command(name="user", aliases=("userinfo",))
-    async def github_user_info(self, ctx: commands.Context, username: str) -> None:
+    async def github_user_info(self, ctx: Context, username: str) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
             user_data = await self.fetch_data(
@@ -849,7 +924,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         await ctx.send(embed=embed)
 
     @github_group.command(name="repository", aliases=("repo",))
-    async def github_repo_info(self, ctx: commands.Context, *repo: str) -> None:
+    async def github_repo_info(self, ctx: Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.
         The repository should look like `user/reponame` or `user reponame`.
@@ -925,7 +1000,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def realpython(
-        self, ctx: commands.Context, amount: Optional[int] = 5, *, user_search: str
+        self, ctx: Context, amount: Optional[int] = 5, *, user_search: str
     ) -> None:
         """
         Send some articles from RealPython that match the search terms.
@@ -937,7 +1012,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             return
 
         params = {"q": user_search, "limit": amount, "kind": "article"}
-        async with self.bot.http_session.get(url=API_ROOT, params=params) as response:
+        async with self.bot.http_session.get(url=API_ROOT_RP, params=params) as response:
             if response.status != 200:
                 await ctx.send(
                     embed=discord.Embed(
@@ -984,7 +1059,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def stackoverflow(self, ctx: commands.Context, *, search_query: str) -> None:
+    async def stackoverflow(self, ctx: Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = SO_PARAMS | {"q": search_query}
         async with self.bot.http_session.get(
@@ -1191,3 +1266,229 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
+    
+    async def kata_id(self, search_link: str, params: dict) -> Union[str, Embed]:
+        """
+        Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
+        This will webscrape the search page with `search_link` and then get the ID of a kata for the
+        codewars.com API to use.
+        """
+        async with self.bot.http_session.get(search_link, params=params) as response:
+            if response.status != 200:
+                error_embed = Embed(
+                    title=choice(NEGATIVE_REPLIES),
+                    description="We ran into an error when getting the kata from codewars.com, try again later.",
+                    color=0xCD6D6D
+                )
+                return error_embed
+
+            soup = BeautifulSoup(await response.text(), features="lxml")
+            first_kata_div = await asyncio.to_thread(soup.find_all, "div", class_="item-title px-0")
+
+            if not first_kata_div:
+                raise commands.BadArgument("No katas could be found with the filters provided.")
+            elif len(first_kata_div) >= 3:
+                first_kata_div = choice(first_kata_div[:3])
+            elif "q=" not in search_link:
+                first_kata_div = choice(first_kata_div)
+            else:
+                first_kata_div = first_kata_div[0]
+
+            # There are numerous divs before arriving at the id of the kata, which can be used for the link.
+            first_kata_id = first_kata_div.a["href"].split("/")[-1]
+            return first_kata_id
+
+    async def kata_information(self, kata_id: str) -> Union[dict, Embed]:
+        """
+        Returns the information about the Kata.
+        Uses the codewars.com API to get information about the kata using `kata_id`.
+        """
+        async with self.bot.http_session.get(API_ROOT.format(kata_id=kata_id)) as response:
+            if response.status != 200:
+                error_embed = Embed(
+                    title=choice(NEGATIVE_REPLIES),
+                    description="We ran into an error when getting the kata information, try again later.",
+                    color=0xCD6D6D
+                )
+                return error_embed
+
+            return await response.json()
+
+    @staticmethod
+    def main_embed(kata_information: dict) -> Embed:
+        """Creates the main embed which displays the name, difficulty and description of the kata."""
+        kata_description = kata_information["description"]
+        kata_url = f"https://codewars.com/kata/{kata_information['id']}"
+
+        # Ensuring it isn't over the length 1024
+        if len(kata_description) > 1024:
+            kata_description = "\n".join(kata_description[:1000].split("\n")[:-1]) + "..."
+            kata_description += f" [continue reading]({kata_url})"
+
+        if kata_information["rank"]["name"] is None:
+            embed_color = 8
+            kata_difficulty = "Unable to retrieve difficulty for beta languages."
+        else:
+            embed_color = int(kata_information["rank"]["name"].replace(" kyu", ""))
+            kata_difficulty = kata_information["rank"]["name"]
+
+        kata_embed = Embed(
+            title=kata_information["name"],
+            description=kata_description,
+            color=MAPPING_OF_KYU[embed_color],
+            url=kata_url
+        )
+        kata_embed.add_field(name="Difficulty", value=kata_difficulty, inline=False)
+        return kata_embed
+
+    @staticmethod
+    def language_embed(kata_information: dict) -> Embed:
+        """Creates the 'language embed' which displays all languages the kata supports."""
+        kata_url = f"https://codewars.com/kata/{kata_information['id']}"
+
+        languages = "\n".join(map(str.title, kata_information["languages"]))
+        language_embed = Embed(
+            title=kata_information["name"],
+            description=f"```yaml\nSupported Languages:\n{languages}\n```",
+            url=kata_url
+        )
+        return language_embed
+
+    @staticmethod
+    def tags_embed(kata_information: dict) -> Embed:
+        """
+        Creates the 'tags embed' which displays all the tags of the Kata.
+        Tags explain what the kata is about, this is what codewars.com calls categories.
+        """
+        kata_url = f"https://codewars.com/kata/{kata_information['id']}"
+
+        tags = "\n".join(kata_information["tags"])
+        tags_embed = Embed(
+            title=kata_information["name"],
+            description=f"```yaml\nTags:\n{tags}\n```",
+            color=0xCD6D6D,
+            url=kata_url
+        )
+        return tags_embed
+
+    @staticmethod
+    def miscellaneous_embed(kata_information: dict) -> Embed:
+        """
+        Creates the 'other information embed' which displays miscellaneous information about the kata.
+        This embed shows statistics such as the total number of people who completed the kata,
+        the total number of stars of the kata, etc.
+        """
+        kata_url = f"https://codewars.com/kata/{kata_information['id']}"
+
+        embed = Embed(
+            title=kata_information["name"],
+            description="```nim\nOther Information\n```",
+            color=0xCD6D6D,
+            url=kata_url
+        )
+        embed.add_field(
+            name="`Total Score`",
+            value=f"```css\n{kata_information['voteScore']}\n```",
+            inline=False
+        )
+        embed.add_field(
+            name="`Total Stars`",
+            value=f"```css\n{kata_information['totalStars']}\n```",
+            inline=False
+        )
+        embed.add_field(
+            name="`Total Completed`",
+            value=f"```css\n{kata_information['totalCompleted']}\n```",
+            inline=False
+        )
+        embed.add_field(
+            name="`Total Attempts`",
+            value=f"```css\n{kata_information['totalAttempts']}\n```",
+            inline=False
+        )
+        return embed
+
+    @staticmethod
+    def create_view(dropdown: InformationDropdown, link: str) -> ui.View:
+        """
+        Creates the discord.py View for the Discord message components (dropdowns and buttons).
+        The discord UI is implemented onto the embed, where the user can choose what information about the kata they
+        want, along with a link button to the kata itself.
+        """
+        view = ui.View()
+        view.add_item(dropdown)
+        view.add_item(ui.Button(label="View the Kata", url=link))
+        return view
+
+    @commands.command(aliases=["kata"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def challenge(self, ctx: Context, language: str = "python", *, query: str = None) -> None:
+        """
+        The challenge command pulls a random kata (challenge) from codewars.com.
+        The different ways to use this command are:
+        `.challenge <language>` - Pulls a random challenge within that language's scope.
+        `.challenge <language> <difficulty>` - The difficulty can be from 1-8,
+        1 being the hardest, 8 being the easiest. This pulls a random challenge within that difficulty & language.
+        `.challenge <language> <query>` - Pulls a random challenge with the query provided under the language
+        `.challenge <language> <query>, <difficulty>` - Pulls a random challenge with the query provided,
+        under that difficulty within the language's scope.
+        """
+        language = language.lower()
+        if language not in SUPPORTED_LANGUAGES["stable"] + SUPPORTED_LANGUAGES["beta"]:
+            raise commands.BadArgument("This is not a recognized language on codewars.com!")
+
+        get_kata_link = f"https://codewars.com/kata/search/{language}"
+        params = {}
+
+        if query is not None:
+            if "," in query:
+                query_splitted = query.split("," if ", " not in query else ", ")
+
+                if len(query_splitted) > 2:
+                    raise commands.BadArgument(
+                        "There can only be one comma within the query, separating the difficulty and the query itself."
+                    )
+
+                query, level = query_splitted
+                params["q"] = query
+                params["r[]"] = f"-{level}"
+            elif query.isnumeric():
+                params["r[]"] = f"-{query}"
+            else:
+                params["q"] = query
+
+        params["beta"] = str(language in SUPPORTED_LANGUAGES["beta"]).lower()
+
+        first_kata_id = await self.kata_id(get_kata_link, params)
+        if isinstance(first_kata_id, Embed):
+            # We ran into an error when retrieving the website link
+            await ctx.send(embed=first_kata_id)
+            return
+
+        kata_information = await self.kata_information(first_kata_id)
+        if isinstance(kata_information, Embed):
+            # Something went wrong when trying to fetch the kata information
+            await ctx.d(embed=kata_information)
+            return
+
+        kata_embed = self.main_embed(kata_information)
+        language_embed = self.language_embed(kata_information)
+        tags_embed = self.tags_embed(kata_information)
+        miscellaneous_embed = self.miscellaneous_embed(kata_information)
+
+        dropdown = InformationDropdown(
+            main_embed=kata_embed,
+            language_embed=language_embed,
+            tags_embed=tags_embed,
+            other_info_embed=miscellaneous_embed
+        )
+        kata_view = self.create_view(dropdown, f"https://codewars.com/kata/{first_kata_id}")
+        original_message = await ctx.send(
+            embed=kata_embed,
+            view=kata_view
+        )
+        dropdown.original_message = original_message
+
+        wait_for_kata = await kata_view.wait()
+        if wait_for_kata:
+            await original_message.edit(embed=kata_embed, view=None)

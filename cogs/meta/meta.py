@@ -663,7 +663,11 @@ class Meta(Cog):
             perms.append("Server Manager")
         if target.guild_permissions.manage_roles:
             perms.append("Role Manager")
+        if target.guild_permissions.moderate_members:
+            perms.append("Can Timeout Members")
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
+        if target.banner:
+            embed.set_image(url=target.banner.url)
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -724,6 +728,8 @@ class Meta(Cog):
             perms.append("Server Manager")
         if role.permissions.manage_roles:
             perms.append("Role Manager")
+        if role.permissions.moderate_members:
+            perms.append("Can Timeout Members")
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         embed.set_footer(text=f"ID: {role.id}")
         await ctx.reply(embed=embed)

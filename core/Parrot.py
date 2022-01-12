@@ -377,5 +377,4 @@ class Parrot(commands.AutoShardedBot):
         await self.http.send_message(channel_id, content, **kwargs)
 
     async def invoke_help_command(self, ctx: Context) -> None:
-        """Invoke the help command or default help command if help extensions is not loaded."""
         return await ctx.send_help(ctx.command)

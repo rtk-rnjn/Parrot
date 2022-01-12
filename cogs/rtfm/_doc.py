@@ -31,7 +31,7 @@ async def python_doc(ctx, text: str):
                     and tag.name == "li"
                 )
 
-            elements = await asyncio.to_thread(soup.find_all(soup_match, limit=10))
+            elements = await asyncio.to_thread(soup.find_all, soup_match, limit=10)
             links = [tag.select_one("li > a") for tag in elements]
             links = [link for link in links if link is not None]
 

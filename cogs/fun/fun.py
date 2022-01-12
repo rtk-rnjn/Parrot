@@ -2708,8 +2708,9 @@ class Fun(
 
         return user
 
-    @commands.group(aliases=("avatar_mod", "pfp_mod", "avatarmod", "pfpmod"))
-    async def avatar_modify(self, ctx: Context) -> None:
+    @commands.group(aliases=["avatar_mod", "pfp_mod", "avatarmod", "pfpmod"])
+    @commands.bot_has_permissions(embed_links=True)
+    async def avatar_modify(self, ctx: Context):
         """Groups all of the pfp modifying commands to allow a single concurrency limit."""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
@@ -2717,41 +2718,41 @@ class Fun(
     @avatar_modify.command(
         name="8bitify",
     )
-    async def eightbit_command(self, ctx: Context) -> None:
+    async def eightbit_command(self, ctx: Context):
         """Pixelates your avatar and changes the palette to an 8bit one."""
-        async with ctx.typing():
-            user = await self._fetch_user(ctx.author.id)
-            if not user:
-                await ctx.send(f"{ctx.author.mention} Could not get user info.")
-                return
+        
+        user = await self._fetch_user(ctx.author.id)
+        if not user:
+            await ctx.send(f"{ctx.author.mention} Could not get user info.")
+            return
 
-            image_bytes = await user.display_avatar.replace(size=1024).read()
-            file_name = file_safe_name("eightbit_avatar", ctx.author.display_name)
+        image_bytes = await user.display_avatar.replace(size=1024).read()
+        file_name = file_safe_name("eightbit_avatar", ctx.author.display_name)
 
-            file = await in_executor(
-                PfpEffects.apply_effect,
-                image_bytes,
-                PfpEffects.eight_bitify_effect,
-                file_name,
-            )
+        file = await in_executor(
+            PfpEffects.apply_effect,
+            image_bytes,
+            PfpEffects.eight_bitify_effect,
+            file_name,
+        )
 
-            embed = discord.Embed(
-                title="Your 8-bit avatar",
-                description="Here is your avatar. I think it looks all cool and 'retro'.",
-            )
+        embed = discord.Embed(
+            title="Your 8-bit avatar",
+            description="Here is your avatar. I think it looks all cool and 'retro'.",
+        )
 
-            embed.set_image(url=f"attachment://{file_name}")
-            embed.set_footer(
-                text=f"Made by {ctx.author.display_name}.",
-                icon_url=user.display_avatar.url,
-            )
+        embed.set_image(url=f"attachment://{file_name}")
+        embed.set_footer(
+            text=f"Made by {ctx.author.display_name}.",
+            icon_url=user.display_avatar.url,
+        )
 
         await ctx.send(embed=embed, file=file)
 
     @avatar_modify.command(
         name="reverse",
     )
-    async def reverse(self, ctx: Context, *, text: Optional[str]) -> None:
+    async def reverse(self, ctx: Context, *, text: Optional[str]):
         """
         Reverses the sent text.
         If no text is provided, the user's profile picture will be reversed.
@@ -2793,7 +2794,7 @@ class Fun(
     )
     async def avatareasterify(
         self, ctx: Context, *colours: Union[discord.Colour, str]
-    ) -> None:
+    ):
         """
         This "Easterifies" the user's avatar.
         Given colours will produce a personalised egg in the corner, similar to the egg_decorate command.
@@ -2853,7 +2854,7 @@ class Fun(
     @staticmethod
     async def send_pride_image(
         ctx: Context, image_bytes: bytes, pixels: int, flag: str, option: str
-    ) -> None:
+    ):
         """Gets and sends the image in an embed. Used by the pride commands."""
         async with ctx.typing():
             file_name = file_safe_name("pride_avatar", ctx.author.display_name)
@@ -2883,7 +2884,7 @@ class Fun(
     )
     async def prideavatar(
         self, ctx: Context, option: str = "lgbt", pixels: int = 64
-    ) -> None:
+    ):
         """
         This surrounds an avatar with a border of a specified LGBT flag.
         This defaults to the LGBT rainbow flag if none is given.
@@ -2907,7 +2908,7 @@ class Fun(
             await self.send_pride_image(ctx, image_bytes, pixels, flag, option)
 
     @prideavatar.command()
-    async def flags(self, ctx: Context) -> None:
+    async def flags(self, ctx: Context):
         """This lists the flags that can be used with the prideavatar command."""
         choices = sorted(set(GENDER_OPTIONS.values()))
         options = "• " + "\n• ".join(choices)
@@ -2921,7 +2922,7 @@ class Fun(
     @avatar_modify.command(
         aliases=("savatar", "spookify"), brief="Spookify a user's avatar."
     )
-    async def spookyavatar(self, ctx: Context) -> None:
+    async def spookyavatar(self, ctx: Context):
         """This "spookifies" the user's avatar, with a random *spooky* effect."""
         user = await self._fetch_user(ctx.author.id)
         if not user:
@@ -2955,7 +2956,7 @@ class Fun(
     @avatar_modify.command(
         name="mosaic",
     )
-    async def mosaic_command(self, ctx: Context, squares: int = 16) -> None:
+    async def mosaic_command(self, ctx: Context, squares: int = 16):
         """Splits your avatar into x squares, randomizes them and stitches them back into a new image!"""
         async with ctx.typing():
             user = await self._fetch_user(ctx.author.id)

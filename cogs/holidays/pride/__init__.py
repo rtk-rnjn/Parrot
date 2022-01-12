@@ -114,12 +114,11 @@ class Pride(Cog):
         """
         if not genre:
             return random.choice(VIDEOS)
-        else:
-            songs = [song for song in VIDEOS if genre.casefold() in song["genre"]]
-            try:
-                return random.choice(songs)
-            except IndexError:
-                pass
+        songs = [song for song in VIDEOS if genre.casefold() in song["genre"]]
+        try:
+            return random.choice(songs)
+        except IndexError:
+            pass
 
     @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
     async def prideanthem(self, ctx: Context, genre: str = None) -> None:

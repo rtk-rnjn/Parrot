@@ -283,7 +283,7 @@ class Easter(Cog):
         if len(invalid) > 1:
             await ctx.send(f"Sorry, I don't know these colours: {' '.join(invalid)}")
             return
-        elif len(invalid) == 1:
+        if len(invalid) == 1:
             await ctx.send(f"Sorry, I don't know the colour {invalid[0]}!")
             return
 

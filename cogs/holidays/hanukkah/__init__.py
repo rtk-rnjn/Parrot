@@ -65,7 +65,7 @@ class HanukkahEmbed(Cog):
                     )
                     await ctx.send(embed=embed)
                     return
-                elif hours > hanukkah_start_hour:
+                if hours > hanukkah_start_hour:
                     embed.description = (
                         "It is the starting day of Hanukkah! "
                         f"Its been {hours - hanukkah_start_hour} hours hanukkah started!"

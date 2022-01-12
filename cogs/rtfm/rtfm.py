@@ -1354,7 +1354,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 raise commands.BadArgument(
                     "No katas could be found with the filters provided."
                 )
-            elif len(first_kata_div) >= 3:
+            if len(first_kata_div) >= 3:
                 first_kata_div = choice(first_kata_div[:3])
             elif "q=" not in search_link:
                 first_kata_div = choice(first_kata_div)

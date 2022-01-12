@@ -8,7 +8,7 @@ import arrow
 import discord
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import BucketType, Cog, Context, check, group
+from discord.ext.commands import BucketType, check, group
 
 from core import Parrot, Cog, Context
 from utilities.paginator import PaginationView

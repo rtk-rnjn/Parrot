@@ -2708,14 +2708,7 @@ class Fun(
 
         return user
 
-    @commands.group(aliases=["avatar_mod", "pfp_mod", "avatarmod", "pfpmod"])
-    @commands.bot_has_permissions(embed_links=True)
-    async def avatar_modify(self, ctx: Context):
-        """Groups all of the pfp modifying commands to allow a single concurrency limit."""
-        if not ctx.invoked_subcommand:
-            await self.bot.invoke_help_command(ctx)
-
-    @avatar_modify.command(
+    @commands.command(
         name="8bitify",
     )
     async def eightbit_command(self, ctx: Context):
@@ -2749,8 +2742,8 @@ class Fun(
 
         await ctx.send(embed=embed, file=file)
 
-    @avatar_modify.command(
-        name="reverse",
+    @commands.command(
+        name="reverseimg",
     )
     async def reverse(self, ctx: Context, *, text: Optional[str]):
         """
@@ -2789,7 +2782,7 @@ class Fun(
 
             await ctx.send(embed=embed, file=file)
 
-    @avatar_modify.command(
+    @commands.command(
         aliases=("easterify",),
     )
     async def avatareasterify(
@@ -2879,8 +2872,8 @@ class Fun(
             )
             await ctx.send(file=file, embed=embed)
 
-    @avatar_modify.group(
-        aliases=("avatarpride", "pridepfp", "prideprofile"), invoke_without_command=True
+    @commands.group(
+        aliases=("avatarpride", "pridepfp", "prideprofile"),
     )
     async def prideavatar(
         self, ctx: Context, option: str = "lgbt", pixels: int = 64
@@ -2919,8 +2912,8 @@ class Fun(
         )
         await ctx.send(embed=embed)
 
-    @avatar_modify.command(
-        aliases=("savatar", "spookify"), brief="Spookify a user's avatar."
+    @commands.command(
+        aliases=["spookify"],
     )
     async def spookyavatar(self, ctx: Context):
         """This "spookifies" the user's avatar, with a random *spooky* effect."""
@@ -2953,7 +2946,7 @@ class Fun(
 
             await ctx.send(file=file, embed=embed)
 
-    @avatar_modify.command(
+    @commands.command(
         name="mosaic",
     )
     async def mosaic_command(self, ctx: Context, squares: int = 16):

@@ -111,12 +111,13 @@ class Context(commands.Context):
     async def send(
         self, content: typing.Optional[str] = None, **kwargs
     ) -> typing.Optional[discord.Message]:
-        if not (self.channel.permissions_for(self.me)).send_messages:
+        perms = self.channel.permissions_for(self.me)
+        if not (perms.send_messages and perms.embed_links):
             try:
                 await self.author.send(
-                    "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
+                    "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden:
+            except discord.Forbidden: # DMs locked
                 pass
             return
 

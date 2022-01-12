@@ -50,11 +50,7 @@ async def python_doc(ctx, text: str):
             emb.set_thumbnail(
                 url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png"
             )
-            emb.add_field(
-                name=f"Results for `{text}` :",
-                value=("\n".join(content))[1020:] + "...",
-                inline=False,
-            )
+            emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)
 
@@ -75,9 +71,9 @@ async def _cppreference(language, ctx, text: str):
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            soup = BeautifulSoup(await response.text(), "lxml")
+            soup = BeautifulSoup(await response.text(), "html.parser")
 
-            uls = soup.find_all("ul", class_="mw-search-results")
+            uls = await asyncio.to_thread(soup.find_all, "ul", class_="mw-search-results")
 
             if not uls:
                 return await ctx.send("No results")
@@ -100,9 +96,8 @@ async def _cppreference(language, ctx, text: str):
             ]
             emb = discord.Embed(title=f"{language} docs")
             emb.set_thumbnail(url=url)
-            emb.add_field(
-                name=f"Results for `{text}` :", value="\n".join(content), inline=False
-            )
+            
+            emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)
 
@@ -127,7 +122,7 @@ async def haskell_doc(ctx, text: str):
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            results = BeautifulSoup(await response.text(), "lxml").find(
+            results = BeautifulSoup(await response.text(), "html.parser").find(
                 "div", class_="searchresults"
             )
 
@@ -151,8 +146,6 @@ async def haskell_doc(ctx, text: str):
                     f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})"
                 )
 
-            emb.add_field(
-                name=f"Results for `{text}` :", value="\n".join(content), inline=False
-            )
+            emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)

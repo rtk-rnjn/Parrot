@@ -16,7 +16,7 @@ with open("extra/quote.txt") as f:
     quote = f.read()
 
 quote = quote.split("\n")
-
+QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 class ErrorView(discord.ui.View):
     def __init__(self, author_id, *, ctx: Context = None, error=None):
@@ -43,7 +43,7 @@ class ErrorView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
-        await interaction.response.send_message("Stay away", ephemeral=True)
+        await interaction.response.send_message(f"Only {interaction.user} can interact", ephemeral=True)
         return False
 
     @discord.ui.button(label="Show full error", style=discord.ButtonStyle.green)
@@ -151,6 +151,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             print(error)
             return
 
+        ERROR_EMBED = discord.Embed()
         if isinstance(error, commands.BotMissingPermissions):
             missing = [
                 perm.replace("_", " ").replace("guild", "server").title()
@@ -160,18 +161,19 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = "{}, and {}".format(", ".join(missing[:-1]), missing[-1])
             else:
                 fmt = " and ".join(missing)
-            _message = f"**{random.choice(quote)}**\nBot Missing permissions. Please provide the following permission(s) to the bot.```\n{fmt}```"
-            return await ctx.reply(_message)
+            ERROR_EMBED.description = f"Please provide the following permission(s) to the bot.```\n{fmt}```"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.DisabledCommand):
-            return await ctx.reply(
-                f"{random.choice(quote)}\n\n{ctx.author.mention} this command has been disabled. Consider asking your Server Manager to fix this out"
-            )
+        # if isinstance(error, commands.DisabledCommand):
+        #     ERROR_EMBED.description = f"This command has been disabled. Consider asking your Server Manager to fix this out"
+        #     ERROR_EMBED.title = f"{QUESTION_MARK} Command Disabled {QUESTION_MARK}"
+        #     return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.CommandOnCooldown):
-            return await ctx.reply(
-                f"**{random.choice(quote)}**\nCommand On Cooldown. You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
-            )
+            ERROR_EMBED.description = f"You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MissingPermissions):
             missing = [
@@ -182,11 +184,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
             else:
                 fmt = " and ".join(missing)
-            _message = "**{}**\nMissing Permissions. You need the the following permission(s) to use the command```\n{}```".format(
-                random.choice(quote), fmt
-            )
-            await ctx.reply(_message)
-            return
+            ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MissingRole):
             missing = list(error.missing_role)
@@ -194,11 +194,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
             else:
                 fmt = " and ".join(missing)
-            _message = "**{}**\nMissing Role. You need the the following role(s) to use the command```\n{}```".format(
-                random.choice(quote), fmt
-            )
-            await ctx.reply(_message)
-            return
+            ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MissingAnyRole):
             missing = list(error.missing_roles)
@@ -206,45 +204,34 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
             else:
                 fmt = " and ".join(missing)
-            _message = "**{}**\nMissing Role. You need the the following role(s) to use the command```\n{}```".format(
-                random.choice(quote), fmt
-            )
-            await ctx.reply(_message)
-            return
+            ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.NoPrivateMessage):
-            try:
-                await ctx.reply(
-                    f"**{random.choice(quote)}**\nNo Private Message. This command cannot be used in direct messages. It can only be used in server"
-                )
-            except discord.Forbidden:
-                pass
-            return
+        # if isinstance(error, commands.NoPrivateMessage):
+        #     ERROR_EMBED.description = f"This command cannot be used in direct messages. It can only be used in server"
+        #     ERROR_EMBED.title = f"{QUESTION_MARK} No Private Message {QUESTION_MARK}"
+        #     try:
+        #         return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+        #     except discord.Forbidden:
+        #         pass
+        #     return
 
         if isinstance(error, commands.NSFWChannelRequired):
-            if ctx.channel.permissions_for(ctx.guild.me).embed_links:
-                em = discord.Embed(timestamp=datetime.utcnow())
-                em.set_image(url="https://i.imgur.com/oe4iK5i.gif")
-                await ctx.reply(
-                    content=f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif",
-                    embed=em,
-                )
-            else:
-                await ctx.reply(
-                    content=f"**{random.choice(quote)}**\nNSFW Channel Required. This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
-                )
-            return
+            ERROR_EMBED.description = f"This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
+            ERROR_EMBED.title = f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}"
+            ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.NotOwner):
-            await ctx.reply(
-                f"**{random.choice(quote)}**\nNot Owner. You must have ownership of the bot to run {ctx.command.name}"
-            )
-            return
+            ERROR_EMBED.description = f"You must have ownership of the bot to run `{ctx.command.qualified_name}`"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Not Owner {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.PrivateMessageOnly):
-            await ctx.reply(
-                f"**{random.choice(quote)}**\nPrivate Message Only. This comamnd will only work in DM messages"
-            )
+            ERROR_EMBED.description = f"This comamnd will only work in DM messages"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Private Message Only {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         elif isinstance(error, commands.BadArgument):
             if isinstance(error, commands.MessageNotFound):

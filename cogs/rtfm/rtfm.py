@@ -1069,7 +1069,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         a number between 1 and 5 by specifying an amount before the search query.
         """
         if not 1 <= amount <= 5:
-            await ctx.send("`amount` must be between 1 and 5 (inclusive).")
+            await ctx.send(f"{ctx.author.mention} `amount` must be between 1 and 5 (inclusive).")
             return
 
         params = {"q": user_search, "limit": amount, "kind": "article"}

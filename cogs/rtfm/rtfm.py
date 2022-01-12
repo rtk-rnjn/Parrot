@@ -714,7 +714,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         if not lang.lower() in self.documented:
             return await ctx.reply(
-                f"{lang} not available. See `[p]list documentations` for available ones."
+                f"{lang} not available. See `{ctx.prefix}list documentations` for available ones."
             )
         await self.documented[lang.lower()](ctx, query.strip("`"))
 
@@ -1345,7 +1345,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 )
                 return error_embed
 
-            soup = BeautifulSoup(await response.text(), features="lxml")
+            soup = BeautifulSoup(await response.text(), features="html.parser") # changed the parser
             first_kata_div = await asyncio.to_thread(
                 soup.find_all, "div", class_="item-title px-0"
             )

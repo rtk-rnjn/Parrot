@@ -7,7 +7,7 @@ from string import ascii_uppercase
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-
+import asyncio
 
 async def python_doc(ctx, text: str):
     """Filters python.org results based on your query"""
@@ -23,7 +23,7 @@ async def python_doc(ctx, text: str):
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            soup = BeautifulSoup(str(await response.text()), "lxml")
+            soup = BeautifulSoup(str(await response.text()), "html.parser") # icantinstalllxmlinheroku
 
             def soup_match(tag):
                 return (
@@ -31,7 +31,7 @@ async def python_doc(ctx, text: str):
                     and tag.name == "li"
                 )
 
-            elements = soup.find_all(soup_match, limit=10)
+            elements = await asyncio.to_thread(soup.find_all(soup_match, limit=10))
             links = [tag.select_one("li > a") for tag in elements]
             links = [link for link in links if link is not None]
 

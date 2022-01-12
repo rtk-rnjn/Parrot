@@ -2720,7 +2720,7 @@ class Fun(
     )
     async def eightbit_command(self, ctx: Context):
         """Pixelates your avatar and changes the palette to an 8bit one."""
-        
+
         user = await self._fetch_user(ctx.author.id)
         if not user:
             await ctx.send(f"{ctx.author.mention} Could not get user info.")
@@ -2792,9 +2792,7 @@ class Fun(
     @avatar_modify.command(
         aliases=("easterify",),
     )
-    async def avatareasterify(
-        self, ctx: Context, *colours: Union[discord.Colour, str]
-    ):
+    async def avatareasterify(self, ctx: Context, *colours: Union[discord.Colour, str]):
         """
         This "Easterifies" the user's avatar.
         Given colours will produce a personalised egg in the corner, similar to the egg_decorate command.
@@ -2882,9 +2880,7 @@ class Fun(
     @avatar_modify.group(
         aliases=("avatarpride", "pridepfp", "prideprofile"), invoke_without_command=True
     )
-    async def prideavatar(
-        self, ctx: Context, option: str = "lgbt", pixels: int = 64
-    ):
+    async def prideavatar(self, ctx: Context, option: str = "lgbt", pixels: int = 64):
         """
         This surrounds an avatar with a border of a specified LGBT flag.
         This defaults to the LGBT rainbow flag if none is given.

@@ -216,10 +216,6 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
         categories = kwargs.get("categories")
 
         # Only output override channels + community_bot_commands
-        if channels:
-            default_whitelist_channels = set(WHITELISTED_CHANNELS)
-            default_whitelist_channels.discard(Channels.community_bot_commands)
-            channels.difference_update(default_whitelist_channels)
 
         # Add all whitelisted category channels, but skip if we're in DMs
         if categories and ctx.guild is not None:

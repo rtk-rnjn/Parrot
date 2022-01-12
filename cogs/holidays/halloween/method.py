@@ -378,7 +378,7 @@ class Halloween(Cog):
         await ctx.send(embed=e)
 
     @commands.command(name="spookyfact", aliases=("halloweenfact",), brief="Get the most recent Halloween fact")
-    async def get_random_fact(self, ctx: commands.Context) -> None:
+    async def get_random_fact(self, ctx: Context) -> None:
         """Reply with the most recent Halloween fact."""
         index, fact = self.random_fact()
         embed = self._build_embed(index, fact)
@@ -393,7 +393,7 @@ class Halloween(Cog):
     
     @commands.cooldown(1, 300, commands.BucketType.user)
     @commands.command()
-    async def halloweenify(self, ctx: commands.Context) -> None:
+    async def halloweenify(self, ctx: Context) -> None:
         """Change your nickname into a much spookier one!"""
         async with ctx.typing():
             # Choose a random character from our list we loaded above and set apart the nickname and image url.
@@ -437,7 +437,7 @@ class Halloween(Cog):
         return "".join(seeded_random.choice(TEXT_OPTIONS["monster_type"][i]) for i in range(n_candidate_strings))
 
     @commands.command(brief="Sends your monster bio!")
-    async def monsterbio(self, ctx: commands.Context) -> None:
+    async def monsterbio(self, ctx: Context) -> None:
         """Sends a description of a monster."""
         seeded_random = random.Random(ctx.author.id)  # Seed a local Random instance rather than the system one
 
@@ -865,7 +865,7 @@ class Halloween(Cog):
     
     @commands.command()
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
-    async def spookyrating(self, ctx: commands.Context, who: discord.Member = None) -> None:
+    async def spookyrating(self, ctx: Context, who: discord.Member = None) -> None:
         """
         Calculates the spooky rating of someone.
         Any user will always yield the same result, no matter who calls the command

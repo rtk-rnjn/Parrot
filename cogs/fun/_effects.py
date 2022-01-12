@@ -31,7 +31,9 @@ class PfpEffects:
     """
 
     @staticmethod
-    def apply_effect(image_bytes: bytes, effect: Callable, filename: str, *args) -> discord.File:
+    def apply_effect(
+        image_bytes: bytes, effect: Callable, filename: str, *args
+    ) -> discord.File:
         """Applies the given effect to the image passed to it."""
         im = Image.open(BytesIO(image_bytes))
         im = im.convert("RGBA")
@@ -80,7 +82,7 @@ class PfpEffects:
         mask = Image.new("L", ring.size, 0)
         draw = ImageDraw.Draw(mask)
         draw.ellipse((0, 0) + ring.size, fill=255)
-        draw.ellipse((px, px, 1024-px, 1024-px), fill=0)
+        draw.ellipse((px, px, 1024 - px, 1024 - px), fill=0)
         ring.putalpha(mask)
         return ring
 
@@ -89,7 +91,9 @@ class PfpEffects:
         """Applies the given pride effect to the given image."""
         image = PfpEffects.crop_avatar_circle(image)
 
-        ring = Image.open(Path(f"bot/resources/holidays/pride/flags/{flag}.png")).resize((1024, 1024))
+        ring = Image.open(
+            Path(f"bot/resources/holidays/pride/flags/{flag}.png")
+        ).resize((1024, 1024))
         ring = ring.convert("RGBA")
         ring = PfpEffects.crop_ring(ring, pixels)
 
@@ -118,7 +122,9 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def easterify_effect(image: Image.Image, overlay_image: Optional[Image.Image] = None) -> Image.Image:
+    def easterify_effect(
+        image: Image.Image, overlay_image: Optional[Image.Image] = None
+    ) -> Image.Image:
         """
         Applies the easter effect to the given image.
         This is done by getting the closest "easter" colour to each pixel and changing the colour
@@ -127,13 +133,17 @@ class PfpEffects:
         """
         if overlay_image:
             ratio = 64 / overlay_image.height
-            overlay_image = overlay_image.resize((
-                round(overlay_image.width * ratio),
-                round(overlay_image.height * ratio)
-            ))
+            overlay_image = overlay_image.resize(
+                (
+                    round(overlay_image.width * ratio),
+                    round(overlay_image.height * ratio),
+                )
+            )
             overlay_image = overlay_image.convert("RGBA")
         else:
-            overlay_image = Image.open(Path("bot/resources/holidays/easter/chocolate_bunny.png"))
+            overlay_image = Image.open(
+                Path("bot/resources/holidays/easter/chocolate_bunny.png")
+            )
 
         alpha = image.getchannel("A").getdata()
         image = image.convert("RGB")
@@ -146,8 +156,7 @@ class PfpEffects:
         for x in data_set:
             easterified_data_set[x] = PfpEffects.closest(x)
         new_pixel_data = [
-            (*easterified_data_set[x], alpha[i])
-            if x in easterified_data_set else x
+            (*easterified_data_set[x], alpha[i]) if x in easterified_data_set else x
             for i, x in enumerate(data)
         ]
 
@@ -155,7 +164,7 @@ class PfpEffects:
         im.putdata(new_pixel_data)
         im.alpha_composite(
             overlay_image,
-            (im.width - overlay_image.width, (im.height - overlay_image.height) // 2)
+            (im.width - overlay_image.width, (im.height - overlay_image.height) // 2),
         )
         return im
 
@@ -193,7 +202,12 @@ class PfpEffects:
         x_frac = width // xy
         y_frac = heigth // xy
 
-        left, top, right, bottom, = 0, 0, x_frac, y_frac
+        left, top, right, bottom, = (
+            0,
+            0,
+            x_frac,
+            y_frac,
+        )
 
         new_imgs = []
 

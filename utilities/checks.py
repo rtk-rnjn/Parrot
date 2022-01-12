@@ -8,8 +8,16 @@ from collections.abc import Container, Iterable
 import datetime
 from utilities.database import parrot_db, enable_disable
 from discord.ext.commands import (
-    BucketType, CheckFailure, Cog, Command, CommandOnCooldown, Context, Cooldown, CooldownMapping
+    BucketType,
+    CheckFailure,
+    Cog,
+    Command,
+    CommandOnCooldown,
+    Context,
+    Cooldown,
+    CooldownMapping,
 )
+
 collection = parrot_db["server_config"]
 c = parrot_db["ticket"]
 
@@ -50,7 +58,7 @@ def has_verified_role_ticket():
     return commands.check(predicate)
 
 
-def is_mod():   
+def is_mod():
     async def predicate(ctx):
         data = await collection.find_one({"_id": ctx.guild.id})
         if not data:
@@ -130,8 +138,14 @@ async def _can_run(ctx):
         return True
     return False
 
-def cooldown_with_role_bypass(rate: int, per: float, type: BucketType = BucketType.default, *,
-                              bypass_roles: Iterable[int]) -> Callable:
+
+def cooldown_with_role_bypass(
+    rate: int,
+    per: float,
+    type: BucketType = BucketType.default,
+    *,
+    bypass_roles: Iterable[int],
+) -> Callable:
     """
     Applies a cooldown to a command, but allows members with certain roles to be ignored.
     NOTE: this replaces the `Command.before_invoke` callback, which *might* introduce problems in the future.
@@ -151,7 +165,9 @@ def cooldown_with_role_bypass(rate: int, per: float, type: BucketType = BucketTy
             return
 
         # Cooldown logic, taken from discord.py internals.
-        current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+        current = ctx.message.created_at.replace(
+            tzinfo=datetime.timezone.utc
+        ).timestamp()
         bucket = buckets.get_bucket(ctx.message)
         retry_after = bucket.update_rate_limit(current)
         if retry_after:
@@ -174,6 +190,7 @@ def cooldown_with_role_bypass(rate: int, per: float, type: BucketType = BucketTy
 
     return wrapper
 
+
 def without_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user does not have any of the roles in role_ids."""
     if not ctx.guild:  # Return False in a DM
@@ -182,6 +199,7 @@ def without_role_check(ctx: Context, *role_ids: int) -> bool:
     author_roles = [role.id for role in ctx.author.roles]
     check = all(role not in author_roles for role in role_ids)
     return check
+
 
 def with_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user has any one of the roles in role_ids."""
@@ -228,7 +246,11 @@ def in_whitelist_check(
         return True
 
     # Only check the category id if we have a category whitelist and the channel has a `category_id`
-    if categories and hasattr(ctx.channel, "category_id") and ctx.channel.category_id in categories:
+    if (
+        categories
+        and hasattr(ctx.channel, "category_id")
+        and ctx.channel.category_id in categories
+    ):
         return True
 
     # category = getattr(ctx.channel, "category", None)
@@ -245,6 +267,7 @@ def in_whitelist_check(
         raise InWhitelistCheckFailure(redirect)
     return False
 
+
 class InWhitelistCheckFailure(CheckFailure):
     """Raised when the `in_whitelist` check fails."""
 
@@ -252,7 +275,9 @@ class InWhitelistCheckFailure(CheckFailure):
         self.redirect_channel = redirect_channel
 
         if redirect_channel:
-            redirect_message = f" here. Please use the <#{redirect_channel}> channel instead"
+            redirect_message = (
+                f" here. Please use the <#{redirect_channel}> channel instead"
+            )
         else:
             redirect_message = ""
 

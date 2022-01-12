@@ -37,11 +37,11 @@ def bat(im: Image) -> Image:
     im = im.convert("RGB")
     wt, ht = im.size
     bat = Image.open("bot/resources/holidays/halloween/bat-clipart.png")
-    bat_size = randint(wt//10, wt//7)
+    bat_size = randint(wt // 10, wt // 7)
     rot = randint(0, 90)
     bat = bat.resize((bat_size, bat_size))
     bat = bat.rotate(rot)
-    x = randint(wt-(bat_size * 3), wt-bat_size)
+    x = randint(wt - (bat_size * 3), wt - bat_size)
     y = randint(10, bat_size)
     im.paste(bat, (x, y), bat)
     im.paste(bat, (x + bat_size, y + (bat_size // 4)), bat)

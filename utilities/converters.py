@@ -46,6 +46,7 @@ class to_async:
 
 class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild"""
+
     async def convert(self, ctx, argument):
         if argument.isdigit():
             member_id = int(argument, base=10)
@@ -63,6 +64,7 @@ class BannedMember(commands.Converter):
             raise commands.BadArgument("This member has not been banned before.")
 
         return entity
+
 
 class WrappedMessageConverter(commands.MessageConverter):
     """A converter that handles embed-suppressed links like <http://example.com>."""

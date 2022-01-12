@@ -124,7 +124,7 @@ SPOOKY_TRIGGERS = {
     "pumpkin": (r"\bpumpkin\b", "\U0001F383"),
     "halloween": (r"\bhalloween\b", "\U0001F383"),
     "jack-o-lantern": (r"\bjack-o-lantern\b", "\U0001F383"),
-    "danger": (r"\bdanger\b", "\U00002620")
+    "danger": (r"\bdanger\b", "\U00002620"),
 }
 
 
@@ -237,7 +237,9 @@ class Halloween(Cog):
 
     @in_month(Month.OCTOBER)
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]) -> None:
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
+    ) -> None:
         """Add/remove candies from a person if the reaction satisfies criteria."""
         message = reaction.message
         # check to ensure the reactor is human
@@ -253,21 +255,26 @@ class Halloween(Cog):
                 return
 
             recent_message_ids = map(
-                lambda m: m.id,
-                await self.hacktober_channel.history(limit=10).flatten()
+                lambda m: m.id, await self.hacktober_channel.history(limit=10).flatten()
             )
             if message.id in recent_message_ids:
                 await self.reacted_msg_chance(message)
             return
 
-        if await self.candy_messages.get(message.id) == "candy" and str(reaction.emoji) == EMOJIS["CANDY"]:
+        if (
+            await self.candy_messages.get(message.id) == "candy"
+            and str(reaction.emoji) == EMOJIS["CANDY"]
+        ):
             await self.candy_messages.delete(message.id)
             if await self.candy_records.contains(user.id):
                 await self.candy_records.increment(user.id)
             else:
                 await self.candy_records.set(user.id, 1)
 
-        elif await self.skull_messages.get(message.id) == "skull" and str(reaction.emoji) == EMOJIS["SKULL"]:
+        elif (
+            await self.skull_messages.get(message.id) == "skull"
+            and str(reaction.emoji) == EMOJIS["SKULL"]
+        ):
             await self.skull_messages.delete(message.id)
 
             if prev_record := await self.candy_records.get(user.id):
@@ -302,7 +309,7 @@ class Halloween(Cog):
     @property
     def hacktober_channel(self) -> discord.TextChannel:
         """Get #parrot channel from its ID."""
-        channel = discord.utils.get(self.bot.get_all_channels(), name='parrot')
+        channel = discord.utils.get(self.bot.get_all_channels(), name="parrot")
         return channel
 
     @staticmethod
@@ -319,8 +326,7 @@ class Halloween(Cog):
 
     @staticmethod
     async def send_no_candy_spook_message(
-        author: discord.Member,
-        channel: discord.TextChannel
+        author: discord.Member, channel: discord.TextChannel
     ) -> None:
         """An alternative spooky message sent when user has no candies in the collection."""
         embed = discord.Embed(color=author.color)
@@ -342,14 +348,18 @@ class Halloween(Cog):
             top_sorted = sorted(
                 ((user_id, score) for user_id, score in records if score > 0),
                 key=lambda x: x[1],
-                reverse=True
+                reverse=True,
             )
             top_five = top_sorted[:5]
 
-            return "\n".join(
-                f"{EMOJIS['MEDALS'][index]} <@{record[0]}>: {record[1]}"
-                for index, record in enumerate(top_five)
-            ) if top_five else "No Candies"
+            return (
+                "\n".join(
+                    f"{EMOJIS['MEDALS'][index]} <@{record[0]}>: {record[1]}"
+                    for index, record in enumerate(top_five)
+                )
+                if top_five
+                else "No Candies"
+            )
 
         def get_user_candy_score() -> str:
             for user_id, score in records:
@@ -359,25 +369,23 @@ class Halloween(Cog):
 
         e = discord.Embed(colour=discord.Colour.og_blurple())
         e.add_field(
-            name="Top Candy Records",
-            value=generate_leaderboard(),
-            inline=False
+            name="Top Candy Records", value=generate_leaderboard(), inline=False
         )
-        e.add_field(
-            name="Your Candy Score",
-            value=get_user_candy_score(),
-            inline=False
-        )
+        e.add_field(name="Your Candy Score", value=get_user_candy_score(), inline=False)
         e.add_field(
             name="\u200b",
             value="Candies will randomly appear on messages sent. "
-                  "\nHit the candy when it appears as fast as possible to get the candy! "
-                  "\nBut beware the ghosts...",
-            inline=False
+            "\nHit the candy when it appears as fast as possible to get the candy! "
+            "\nBut beware the ghosts...",
+            inline=False,
         )
         await ctx.send(embed=e)
 
-    @commands.command(name="spookyfact", aliases=("halloweenfact",), brief="Get the most recent Halloween fact")
+    @commands.command(
+        name="spookyfact",
+        aliases=("halloweenfact",),
+        brief="Get the most recent Halloween fact",
+    )
     async def get_random_fact(self, ctx: Context) -> None:
         """Reply with the most recent Halloween fact."""
         index, fact = self.random_fact()
@@ -390,7 +398,7 @@ class Halloween(Cog):
         emoji = random.choice(SPOOKY_EMOJIS)
         title = f"{emoji} Halloween Fact #{index + 1}"
         return discord.Embed(title=title, description=fact, color=PUMPKIN_ORANGE)
-    
+
     @commands.cooldown(1, 300, commands.BucketType.user)
     @commands.command()
     async def halloweenify(self, ctx: Context) -> None:
@@ -417,29 +425,36 @@ class Halloween(Cog):
                     await ctx.author.edit(nick=nickname)
                     embed.description += f"Your new nickname will be: \n:ghost: **{nickname}** :jack_o_lantern:"
 
-                except discord.Forbidden:   # The bot doesn't have enough permission
+                except discord.Forbidden:  # The bot doesn't have enough permission
                     embed.description += (
                         f"Your new nickname should be: \n :ghost: **{nickname}** :jack_o_lantern: \n\n"
                         f"It looks like I cannot change your name, but feel free to change it yourself."
                     )
 
-            else:   # The command has been invoked in DM
+            else:  # The command has been invoked in DM
                 embed.description += (
                     f"Your new nickname should be: \n :ghost: **{nickname}** :jack_o_lantern: \n\n"
                     f"Feel free to change it yourself, or invoke the command again inside the server."
                 )
 
         await ctx.send(embed=embed)
-    
+
     def generate_name(self, seeded_random: random.Random) -> str:
         """Generates a name (for either monster species or monster name)."""
-        n_candidate_strings = seeded_random.randint(2, len(TEXT_OPTIONS["monster_type"]))
-        return "".join(seeded_random.choice(TEXT_OPTIONS["monster_type"][i]) for i in range(n_candidate_strings))
+        n_candidate_strings = seeded_random.randint(
+            2, len(TEXT_OPTIONS["monster_type"])
+        )
+        return "".join(
+            seeded_random.choice(TEXT_OPTIONS["monster_type"][i])
+            for i in range(n_candidate_strings)
+        )
 
     @commands.command(brief="Sends your monster bio!")
     async def monsterbio(self, ctx: Context) -> None:
         """Sends a description of a monster."""
-        seeded_random = random.Random(ctx.author.id)  # Seed a local Random instance rather than the system one
+        seeded_random = random.Random(
+            ctx.author.id
+        )  # Seed a local Random instance rather than the system one
 
         name = self.generate_name(seeded_random)
         species = self.generate_name(seeded_random)
@@ -459,11 +474,8 @@ class Halloween(Cog):
         )
 
         await ctx.send(embed=embed)
-    
-    @commands.group(
-        name="monster",
-        aliases=("mon",)
-    )
+
+    @commands.group(name="monster", aliases=("mon",))
     async def monster_group(self, ctx: Context) -> None:
         """The base voting command. If nothing is called, then it will return an embed."""
         if ctx.invoked_subcommand is None:
@@ -471,30 +483,30 @@ class Halloween(Cog):
                 default_embed = discord.Embed(
                     title="Monster Voting",
                     color=0xFF6800,
-                    description="Vote for your favorite monster!"
+                    description="Vote for your favorite monster!",
                 )
                 default_embed.add_field(
                     name=".monster show monster_name(optional)",
                     value="Show a specific monster. If none is listed, it will give you an error with valid choices.",
-                    inline=False
+                    inline=False,
                 )
                 default_embed.add_field(
                     name=".monster vote monster_name",
                     value="Vote for a specific monster. You get one vote, but can change it at any time.",
-                    inline=False
+                    inline=False,
                 )
                 default_embed.add_field(
                     name=".monster leaderboard",
                     value="Which monster has the most votes? This command will tell you.",
-                    inline=False
+                    inline=False,
                 )
-                default_embed.set_footer(text=f"Monsters choices are: {', '.join(self.voter_registry)}")
+                default_embed.set_footer(
+                    text=f"Monsters choices are: {', '.join(self.voter_registry)}"
+                )
 
             await ctx.send(embed=default_embed)
 
-    @monster_group.command(
-        name="vote"
-    )
+    @monster_group.command(name="vote")
     async def monster_vote(self, ctx: Context, name: str = None) -> None:
         """
         Cast a vote for a particular monster.
@@ -512,39 +524,38 @@ class Halloween(Cog):
             except ValueError:
                 name = name.lower()
 
-            vote_embed = discord.Embed(
-                name="Monster Voting",
-                color=0xFF6800
-            )
+            vote_embed = discord.Embed(name="Monster Voting", color=0xFF6800)
 
             m = self.voter_registry.get(name)
             if m is None:
-                vote_embed.description = f"You cannot vote for {name} because it's not in the running."
+                vote_embed.description = (
+                    f"You cannot vote for {name} because it's not in the running."
+                )
                 vote_embed.add_field(
                     name="Use `.monster show {monster_name}` for more information on a specific monster",
                     value="or use `.monster vote {monster}` to cast your vote for said monster.",
-                    inline=False
+                    inline=False,
                 )
                 vote_embed.add_field(
                     name="You may vote for or show the following monsters:",
-                    value=", ".join(self.voter_registry.keys())
+                    value=", ".join(self.voter_registry.keys()),
                 )
             else:
                 self.cast_vote(ctx.author.id, name)
                 vote_embed.add_field(
                     name="Vote successful!",
                     value=f"You have successfully voted for {m['full_name']}!",
-                    inline=False
+                    inline=False,
                 )
                 vote_embed.set_thumbnail(url=m["image"])
-                vote_embed.set_footer(text="Please note that any previous votes have been removed.")
+                vote_embed.set_footer(
+                    text="Please note that any previous votes have been removed."
+                )
                 self.json_write()
 
         await ctx.send(embed=vote_embed)
 
-    @monster_group.command(
-        name="show"
-    )
+    @monster_group.command(name="show")
     async def monster_show(self, ctx: Context, name: str = None) -> None:
         """Shows the named monster. If one is not named, it sends the default voting embed instead."""
         if name is None:
@@ -568,14 +579,13 @@ class Halloween(Cog):
             embed = discord.Embed(title=m["full_name"], color=0xFF6800)
             embed.add_field(name="Summary", value=m["summary"])
             embed.set_image(url=m["image"])
-            embed.set_footer(text=f"To vote for this monster, type .monster vote {name}")
+            embed.set_footer(
+                text=f"To vote for this monster, type .monster vote {name}"
+            )
 
         await ctx.send(embed=embed)
 
-    @monster_group.command(
-        name="leaderboard",
-        aliases=("lb",)
-    )
+    @monster_group.command(name="leaderboard", aliases=("lb",))
     async def monster_leaderboard(self, ctx: Context) -> None:
         """Shows the current standings."""
         async with ctx.typing():
@@ -596,13 +606,15 @@ class Halloween(Cog):
                         f"Get more information on this monster by typing "
                         f"'.monster show {m}'"
                     ),
-                    inline=False
+                    inline=False,
                 )
 
-            embed.set_footer(text="You can also vote by their rank number. '.monster vote {number}' ")
+            embed.set_footer(
+                text="You can also vote by their rank number. '.monster vote {number}' "
+            )
 
         await ctx.send(embed=embed)
-    
+
     @group(name="spookynamerate", invoke_without_command=True)
     async def spooky_name_rate(self, ctx: Context) -> None:
         """Get help on the Spooky Name Rate game."""
@@ -629,7 +641,9 @@ class Halloween(Cog):
     async def add_name(self, ctx: Context, *, name: str) -> None:
         """Use this command to add/register your spookified name."""
         if self.poll:
-            await ctx.send("Sorry, the poll has started! You can try and participate in the next round though!")
+            await ctx.send(
+                "Sorry, the poll has started! You can try and participate in the next round though!"
+            )
             return
 
         for data in (loads(user_data) for _, user_data in await self.messages.items()):
@@ -645,7 +659,9 @@ class Halloween(Cog):
                 await ctx.send("TOO LATE. Someone has already added this name.")
                 return
 
-        msg = await (await self.get_channel()).send(f"{ctx.author.mention} added the name {name!r}!")
+        msg = await (await self.get_channel()).send(
+            f"{ctx.author.mention} added the name {name!r}!"
+        )
 
         await self.messages.set(
             msg.id,
@@ -665,7 +681,9 @@ class Halloween(Cog):
     async def delete_name(self, ctx: Context) -> None:
         """Delete the user's name."""
         if self.poll:
-            await ctx.send("You can't delete your name since the poll has already started!")
+            await ctx.send(
+                "You can't delete your name since the poll has already started!"
+            )
             return
         for message_id, data in await self.messages.items():
             data = loads(data)
@@ -735,8 +753,12 @@ class Halloween(Cog):
                 msg = await channel.fetch_message(message_id)
                 score = 0
                 for reaction in msg.reactions:
-                    reaction_value = EMOJIS_VAL.get(reaction.emoji, 0)  # get the value of the emoji else 0
-                    score += reaction_value * (reaction.count - 1)  # multiply by the num of reactions
+                    reaction_value = EMOJIS_VAL.get(
+                        reaction.emoji, 0
+                    )  # get the value of the emoji else 0
+                    score += reaction_value * (
+                        reaction.count - 1
+                    )  # multiply by the num of reactions
                     # subtract one, since one reaction was done by the bot
 
                 data["score"] = score
@@ -744,7 +766,10 @@ class Halloween(Cog):
 
             # Sort the winner messages
             winner_messages = sorted(
-                ((msg_id, loads(usr_data)) for msg_id, usr_data in await self.messages.items()),
+                (
+                    (msg_id, loads(usr_data))
+                    for msg_id, usr_data in await self.messages.items()
+                ),
                 key=lambda x: x[1]["score"],
                 reverse=True,
             )
@@ -755,12 +780,16 @@ class Halloween(Cog):
                 if len(winner_messages) > i + 1:
                     if winner_messages[i + 1][1]["score"] != winner[1]["score"]:
                         break
-                elif len(winner_messages) == (i + 1) + 1:  # The next element is the last element
+                elif (
+                    len(winner_messages) == (i + 1) + 1
+                ):  # The next element is the last element
                     if winner_messages[i + 1][1]["score"] != winner[1]["score"]:
                         break
 
             # one iteration is complete
-            await channel.send("Today's Spooky Name Rate Game ends now, and the winner(s) is(are)...")
+            await channel.send(
+                "Today's Spooky Name Rate Game ends now, and the winner(s) is(are)..."
+            )
 
             async with channel.typing():
                 await asyncio.sleep(1)  # give the drum roll feel
@@ -770,8 +799,15 @@ class Halloween(Cog):
                     return
 
                 score = winners[0][1]["score"]
-                congratulations = "to all" if len(winners) > 1 else PING.format(id=winners[0][1]["author"])
-                names = ", ".join(f'{win[1]["name"]} ({PING.format(id=win[1]["author"])})' for win in winners)
+                congratulations = (
+                    "to all"
+                    if len(winners) > 1
+                    else PING.format(id=winners[0][1]["author"])
+                )
+                names = ", ".join(
+                    f'{win[1]["name"]} ({PING.format(id=win[1]["author"])})'
+                    for win in winners
+                )
 
                 # display winners, their names and scores
                 await channel.send(
@@ -781,7 +817,10 @@ class Halloween(Cog):
                 )
 
                 # Send random party emojis
-                party = (random.choice([":partying_face:", ":tada:"]) for _ in range(random.randint(1, 10)))
+                party = (
+                    random.choice([":partying_face:", ":tada:"])
+                    for _ in range(random.randint(1, 10))
+                )
                 await channel.send(" ".join(party))
 
             async with self.checking_messages:  # Acquire the lock to delete the messages
@@ -812,7 +851,9 @@ class Halloween(Cog):
             return
 
         tomorrow_12pm = now + timedelta(days=1)
-        tomorrow_12pm = tomorrow_12pm.replace(hour=12, minute=0, second=0, microsecond=0)
+        tomorrow_12pm = tomorrow_12pm.replace(
+            hour=12, minute=0, second=0, microsecond=0
+        )
         await asyncio.sleep((tomorrow_12pm - now).seconds)
 
     async def get_responses_list(self, final: bool = False) -> Embed:
@@ -835,7 +876,10 @@ class Halloween(Cog):
             data = loads(data)
 
             embed.add_field(
-                name=(self.bot.get_user(data["author"]) or await self.bot.fetch_user(data["author"])).name,
+                name=(
+                    self.bot.get_user(data["author"])
+                    or await self.bot.fetch_user(data["author"])
+                ).name,
                 value=f"{data['name']}",
             )
 
@@ -844,14 +888,13 @@ class Halloween(Cog):
     async def get_channel(self) -> Optional[TextChannel]:
         """Gets the parrot-channel after waiting until ready."""
         await self.bot.wait_until_ready()
-        channel = discord.utils.get(self.bot.get_all_channels(), name='parrot')
+        channel = discord.utils.get(self.bot.get_all_channels(), name="parrot")
         return channel
 
     @staticmethod
     def in_allowed_month() -> bool:
         """Returns whether running in the limited month."""
         return True
-
 
     def cog_check(self, ctx: Context) -> bool:
         """A command to check whether the command is being called in October."""
@@ -862,7 +905,7 @@ class Halloween(Cog):
     def cog_unload(self) -> None:
         """Stops the announce_name task."""
         self.announce_name.cancel()
-    
+
     @commands.command()
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
     async def spookyrating(self, ctx: Context, who: discord.Member = None) -> None:
@@ -887,14 +930,9 @@ class Halloween(Cog):
         embed = discord.Embed(
             title=data["title"],
             description=f"{who} scored {spooky_percent}%!",
-            color=Colours.orange
+            color=Colours.orange,
         )
-        embed.add_field(
-            name="A whisper from Satan",
-            value=data["text"]
-        )
-        embed.set_thumbnail(
-            url=data["image"]
-        )
+        embed.add_field(name="A whisper from Satan", value=data["text"])
+        embed.set_thumbnail(url=data["image"])
 
         await ctx.send(embed=embed)

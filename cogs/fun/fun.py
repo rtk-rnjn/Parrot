@@ -64,11 +64,13 @@ FILENAME_STRING = "{effect}_{author}.png"
 MAX_SQUARES = 10_000
 T = TypeVar("T")
 
+
 def suppress_links(message: str) -> str:
     """Accepts a message that may contain links, suppresses them, and returns them."""
     for link in set(re.findall(r"https?://[^\s]+", message, re.IGNORECASE)):
         message = message.replace(link, f"<{link}>")
     return message
+
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
 GENDER_OPTIONS = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
@@ -159,6 +161,7 @@ RULES = (
 WIKI_FEED_API_URL = "https://en.wikipedia.org/api/rest_v1/feed/featured/{date}"
 TRIVIA_QUIZ_ICON = "https://raw.githubusercontent.com/python-discord/branding/main/icons/trivia_quiz/trivia-quiz-dist.png"
 
+
 async def in_executor(func: Callable[..., T], *args) -> T:
     """
     Runs the given synchronous function `func` in an executor.
@@ -167,6 +170,7 @@ async def in_executor(func: Callable[..., T], *args) -> T:
     """
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(_EXECUTOR, func, *args)
+
 
 def file_safe_name(effect: str, display_name: str) -> str:
     """Returns a file safe filename based on the given effect and display name."""
@@ -178,11 +182,14 @@ def file_safe_name(effect: str, display_name: str) -> str:
     file_name = file_name.replace(" ", "_")
 
     # Normalize unicode characters
-    cleaned_filename = unicodedata.normalize("NFKD", file_name).encode("ASCII", "ignore").decode()
+    cleaned_filename = (
+        unicodedata.normalize("NFKD", file_name).encode("ASCII", "ignore").decode()
+    )
 
     # Remove invalid filename characters
     cleaned_filename = "".join(c for c in cleaned_filename if c in valid_filename_chars)
     return cleaned_filename
+
 
 @dataclass(frozen=True)
 class QuizEntry:
@@ -2707,7 +2714,9 @@ class Fun(
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
-    @avatar_modify.command(name="8bitify",)
+    @avatar_modify.command(
+        name="8bitify",
+    )
     async def eightbit_command(self, ctx: Context) -> None:
         """Pixelates your avatar and changes the palette to an 8bit one."""
         async with ctx.typing():
@@ -2723,27 +2732,34 @@ class Fun(
                 PfpEffects.apply_effect,
                 image_bytes,
                 PfpEffects.eight_bitify_effect,
-                file_name
+                file_name,
             )
 
             embed = discord.Embed(
                 title="Your 8-bit avatar",
-                description="Here is your avatar. I think it looks all cool and 'retro'."
+                description="Here is your avatar. I think it looks all cool and 'retro'.",
             )
 
             embed.set_image(url=f"attachment://{file_name}")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}.", icon_url=user.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}.",
+                icon_url=user.display_avatar.url,
+            )
 
         await ctx.send(embed=embed, file=file)
 
-    @avatar_modify.command(name="reverse",)
+    @avatar_modify.command(
+        name="reverse",
+    )
     async def reverse(self, ctx: Context, *, text: Optional[str]) -> None:
         """
         Reverses the sent text.
         If no text is provided, the user's profile picture will be reversed.
         """
         if text:
-            await ctx.send(f"> {text[::-1]}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"> {text[::-1]}", allowed_mentions=discord.AllowedMentions.none()
+            )
             return
 
         async with ctx.typing():
@@ -2756,24 +2772,28 @@ class Fun(
             filename = file_safe_name("reverse_avatar", ctx.author.display_name)
 
             file = await in_executor(
-                PfpEffects.apply_effect,
-                image_bytes,
-                PfpEffects.flip_effect,
-                filename
+                PfpEffects.apply_effect, image_bytes, PfpEffects.flip_effect, filename
             )
 
             embed = discord.Embed(
                 title="Your reversed avatar.",
-                description="Here is your reversed avatar. I think it is a spitting image of you."
+                description="Here is your reversed avatar. I think it is a spitting image of you.",
             )
 
             embed.set_image(url=f"attachment://{filename}")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}.", icon_url=user.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}.",
+                icon_url=user.display_avatar.url,
+            )
 
             await ctx.send(embed=embed, file=file)
 
-    @avatar_modify.command(aliases=("easterify",),)
-    async def avatareasterify(self, ctx: Context, *colours: Union[discord.Colour, str]) -> None:
+    @avatar_modify.command(
+        aliases=("easterify",),
+    )
+    async def avatareasterify(
+        self, ctx: Context, *colours: Union[discord.Colour, str]
+    ) -> None:
         """
         This "Easterifies" the user's avatar.
         Given colours will produce a personalised egg in the corner, similar to the egg_decorate command.
@@ -2781,6 +2801,7 @@ class Fun(
         Colours are split by spaces, unless you wrap the colour name in double quotes.
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
         """
+
         async def send(*args, **kwargs) -> str:
             """
             This replaces the original ctx.send.
@@ -2814,25 +2835,24 @@ class Fun(
                 image_bytes,
                 PfpEffects.easterify_effect,
                 file_name,
-                egg
+                egg,
             )
 
             embed = discord.Embed(
                 title="Your Lovely Easterified Avatar!",
-                description="Here is your lovely avatar, all bright and colourful\nwith Easter pastel colours. Enjoy :D"
+                description="Here is your lovely avatar, all bright and colourful\nwith Easter pastel colours. Enjoy :D",
             )
             embed.set_image(url=f"attachment://{file_name}")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}.", icon_url=user.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}.",
+                icon_url=user.display_avatar.url,
+            )
 
         await ctx.send(file=file, embed=embed)
 
     @staticmethod
     async def send_pride_image(
-        ctx: Context,
-        image_bytes: bytes,
-        pixels: int,
-        flag: str,
-        option: str
+        ctx: Context, image_bytes: bytes, pixels: int, flag: str, option: str
     ) -> None:
         """Gets and sends the image in an embed. Used by the pride commands."""
         async with ctx.typing():
@@ -2844,22 +2864,26 @@ class Fun(
                 PfpEffects.pridify_effect,
                 file_name,
                 pixels,
-                flag
+                flag,
             )
 
             embed = discord.Embed(
                 title="Your Lovely Pride Avatar!",
-                description=f"Here is your lovely avatar, surrounded by\n a beautiful {option} flag. Enjoy :D"
+                description=f"Here is your lovely avatar, surrounded by\n a beautiful {option} flag. Enjoy :D",
             )
             embed.set_image(url=f"attachment://{file_name}")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}.", icon_url=ctx.author.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}.",
+                icon_url=ctx.author.display_avatar.url,
+            )
             await ctx.send(file=file, embed=embed)
 
     @avatar_modify.group(
-        aliases=("avatarpride", "pridepfp", "prideprofile"),
-        invoke_without_command=True
+        aliases=("avatarpride", "pridepfp", "prideprofile"), invoke_without_command=True
     )
-    async def prideavatar(self, ctx: Context, option: str = "lgbt", pixels: int = 64) -> None:
+    async def prideavatar(
+        self, ctx: Context, option: str = "lgbt", pixels: int = 64
+    ) -> None:
         """
         This surrounds an avatar with a border of a specified LGBT flag.
         This defaults to the LGBT rainbow flag if none is given.
@@ -2890,13 +2914,12 @@ class Fun(
         embed = discord.Embed(
             title="I have the following flags:",
             description=options,
-            colour=Colours.soft_red
+            colour=Colours.soft_red,
         )
         await ctx.send(embed=embed)
 
     @avatar_modify.command(
-        aliases=("savatar", "spookify"),
-        brief="Spookify a user's avatar."
+        aliases=("savatar", "spookify"), brief="Spookify a user's avatar."
     )
     async def spookyavatar(self, ctx: Context) -> None:
         """This "spookifies" the user's avatar, with a random *spooky* effect."""
@@ -2914,19 +2937,24 @@ class Fun(
                 PfpEffects.apply_effect,
                 image_bytes,
                 spookifications.get_random_effect,
-                file_name
+                file_name,
             )
 
             embed = discord.Embed(
                 title="Is this you or am I just really paranoid?",
-                colour=Colours.soft_red
+                colour=Colours.soft_red,
             )
             embed.set_image(url=f"attachment://{file_name}")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}.", icon_url=ctx.author.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}.",
+                icon_url=ctx.author.display_avatar.url,
+            )
 
             await ctx.send(file=file, embed=embed)
 
-    @avatar_modify.command(name="mosaic",)
+    @avatar_modify.command(
+        name="mosaic",
+    )
     async def mosaic_command(self, ctx: Context, squares: int = 16) -> None:
         """Splits your avatar into x squares, randomizes them and stitches them back into a new image!"""
         async with ctx.typing():
@@ -2936,7 +2964,9 @@ class Fun(
                 return
 
             if not 1 <= squares <= MAX_SQUARES:
-                raise commands.BadArgument(f"Squares must be a positive number less than or equal to {MAX_SQUARES:,}.")
+                raise commands.BadArgument(
+                    f"Squares must be a positive number less than or equal to {MAX_SQUARES:,}."
+                )
 
             sqrt = math.sqrt(squares)
 
@@ -2966,12 +2996,13 @@ class Fun(
                 description = f"Here is your avatar. I think it looks a bit *puzzling*\nMade with {squares} squares."
 
             embed = discord.Embed(
-                title=title,
-                description=description,
-                colour=Colours.blue
+                title=title, description=description, colour=Colours.blue
             )
 
             embed.set_image(url=f"attachment://{file_name}")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}", icon_url=user.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}",
+                icon_url=user.display_avatar.url,
+            )
 
             await ctx.send(file=file, embed=embed)

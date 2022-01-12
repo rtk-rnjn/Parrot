@@ -1,6 +1,7 @@
 import datetime
 import re
 
+
 class plural:
     def __init__(self, value):
         self.value = value
@@ -90,6 +91,7 @@ def format_dt(dt, style=None) -> str:
 
 def format_dt_with_int(dt: int, style=None) -> str:
     return f"<t:{dt}:{style if style else ''}>"
+
 
 def suppress_links(message: str) -> str:
     """Accepts a message that may contain links, suppresses them, and returns them."""

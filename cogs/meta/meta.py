@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from discord import __version__ as discord_version
+from discord.ext import old_menus as menus
 import discord
 import typing
 import asyncio
@@ -11,7 +12,6 @@ from datetime import timedelta
 
 from psutil import Process, virtual_memory
 from platform import python_version
-from discord.ext import old_menus as menus
 
 from utilities.config import VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt

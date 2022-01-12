@@ -7,7 +7,7 @@ import random
 import re
 import string
 import textwrap
-from functools import partial
+from functools import partial, wraps
 from io import BytesIO
 from typing import Any, Optional, Callable
 from asyncio import Lock
@@ -17,7 +17,6 @@ from discord import Colour, Embed, File, Member, Message, Reaction, PartialEmoji
 from discord.ext.commands import CommandError, bot_has_permissions, group
 
 from core import Parrot, Context, Cog
-from functools import wraps
 from weakref import WeakValueDictionary
 
 from ._utils import (

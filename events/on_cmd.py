@@ -9,9 +9,8 @@ from discord.ext import commands
 from datetime import datetime
 
 from utilities.exceptions import ParrotCheckFaliure
-from core import Parrot, Context, Cog
-
 from utilities.database import cmd_increment, parrot_db
+from core import Parrot, Context, Cog
 
 with open("extra/quote.txt") as f:
     quote = f.read()

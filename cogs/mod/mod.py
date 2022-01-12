@@ -1,5 +1,6 @@
 from __future__ import annotations
 from cogs.mod.flags import purgeFlag
+from cogs.mod import method as mt
 
 from discord.ext import commands, tasks
 import discord
@@ -14,11 +15,8 @@ from utilities.converters import BannedMember, reason_convert
 from utilities.database import parrot_db
 from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
-
-from cogs.mod import method as mt
-from datetime import datetime
-
 from utilities.infraction import Infraction
+from datetime import datetime
 
 collection = parrot_db["server_config"]
 mute_collection = parrot_db["mute"]

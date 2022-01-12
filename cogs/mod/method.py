@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from utilities.database import parrot_db
+from utilities.infraction import Infraction
 import discord
 import asyncio
 import aiohttp
 import time
-
-from utilities.infraction import Infraction
 
 collection = parrot_db["server_config"]
 ban_collection = parrot_db["banned_members"]

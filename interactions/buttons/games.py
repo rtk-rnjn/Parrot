@@ -15,11 +15,10 @@ import discord
 from discord import Member as User
 from discord.ext import commands, boardgames
 from discord.ext import old_menus as menus
+from discord.utils import MISSING
 from random import sample, choice
 
 from core import Cog, Parrot, Context
-
-from discord.utils import MISSING
 import akinator
 from akinator.async_aki import Akinator
 import emojis

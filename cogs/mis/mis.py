@@ -3,7 +3,10 @@ from __future__ import annotations
 from cogs.meta.robopage import SimplePageSource, SimplePages
 
 from discord.ext import commands
+from discord import Embed
 from utilities.youtube_search import YoutubeSearch
+from utilities.converters import convert_bool
+from utilities.paginator import PaginationView
 
 import urllib.parse
 import aiohttp
@@ -16,10 +19,6 @@ import os
 import inspect
 import json
 from html import unescape
-from utilities.paginator import PaginationView
-from utilities.converters import convert_bool
-
-from discord import Embed
 
 from core import Parrot, Context, Cog
 

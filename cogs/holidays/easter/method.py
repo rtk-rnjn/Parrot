@@ -27,26 +27,56 @@ TIMELIMIT = 10
 HTML_COLOURS = loads(Path(r"extra/html_colours.json").read_text("utf8"))
 EGG_FACTS = loads(Path(r"extra/easter/easter_egg_facts.json").read_text("utf8"))
 XKCD_COLOURS = loads(Path(r"bot/resources/fun/xkcd_colours.json").read_text("utf8"))
-EGGHEAD_QUESTIONS = loads(Path(r"extra/easter/egghead_questions.json").read_text("utf8"))
+EGGHEAD_QUESTIONS = loads(
+    Path(r"extra/easter/egghead_questions.json").read_text("utf8")
+)
 traditions = loads(Path(r"extra/easter/traditions.json").read_text("utf8"))
 
 COLOURS = [
-    (255, 0, 0, 255), (255, 128, 0, 255), (255, 255, 0, 255), (0, 255, 0, 255),
-    (0, 255, 255, 255), (0, 0, 255, 255), (255, 0, 255, 255), (128, 0, 128, 255)
+    (255, 0, 0, 255),
+    (255, 128, 0, 255),
+    (255, 255, 0, 255),
+    (0, 255, 0, 255),
+    (0, 255, 255, 255),
+    (0, 0, 255, 255),
+    (255, 0, 255, 255),
+    (128, 0, 128, 255),
 ]  # Colours to be replaced - Red, Orange, Yellow, Green, Light Blue, Dark Blue, Pink, Purple
 
 IRREPLACEABLE = [
-    (0, 0, 0, 0), (0, 0, 0, 255)
+    (0, 0, 0, 0),
+    (0, 0, 0, 255),
 ]  # Colours that are meant to stay the same - Transparent and Black
 
 EMOJIS = [
-    "\U0001f1e6", "\U0001f1e7", "\U0001f1e8", "\U0001f1e9", "\U0001f1ea",
-    "\U0001f1eb", "\U0001f1ec", "\U0001f1ed", "\U0001f1ee", "\U0001f1ef",
-    "\U0001f1f0", "\U0001f1f1", "\U0001f1f2", "\U0001f1f3", "\U0001f1f4",
-    "\U0001f1f5", "\U0001f1f6", "\U0001f1f7", "\U0001f1f8", "\U0001f1f9",
-    "\U0001f1fa", "\U0001f1fb", "\U0001f1fc", "\U0001f1fd", "\U0001f1fe",
-    "\U0001f1ff"
+    "\U0001f1e6",
+    "\U0001f1e7",
+    "\U0001f1e8",
+    "\U0001f1e9",
+    "\U0001f1ea",
+    "\U0001f1eb",
+    "\U0001f1ec",
+    "\U0001f1ed",
+    "\U0001f1ee",
+    "\U0001f1ef",
+    "\U0001f1f0",
+    "\U0001f1f1",
+    "\U0001f1f2",
+    "\U0001f1f3",
+    "\U0001f1f4",
+    "\U0001f1f5",
+    "\U0001f1f6",
+    "\U0001f1f7",
+    "\U0001f1f8",
+    "\U0001f1f9",
+    "\U0001f1fa",
+    "\U0001f1fb",
+    "\U0001f1fc",
+    "\U0001f1fd",
+    "\U0001f1fe",
+    "\U0001f1ff",
 ]  # ITS ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
 
 def suppress_links(message: str) -> str:
     """Accepts a message that may contain links, suppresses them, and returns them."""
@@ -54,8 +84,10 @@ def suppress_links(message: str) -> str:
         message = message.replace(link, f"<{link}>")
     return message
 
+
 class Easter(Cog):
     """A cog for April"""
+
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.winners = set()
@@ -80,7 +112,7 @@ class Easter(Cog):
         channel, url = video["channel"], video["url"]
 
         await ctx.send(f"Check out this April Fools' video by {channel}.\n\n{url}")
-    
+
     @staticmethod
     def find_separators(displayname: str) -> Optional[list[str]]:
         """Check if Discord name contains spaces so we can bunnify an individual word in the name."""
@@ -139,7 +171,16 @@ class Easter(Cog):
         unmatched_name = self.append_name(username)
 
         if spaces_in_name is not None:
-            replacements = ["Cotton", "Fluff", "Floof" "Bounce", "Snuffle", "Nibble", "Cuddle", "Velvetpaw", "Carrot"]
+            replacements = [
+                "Cotton",
+                "Fluff",
+                "Floof" "Bounce",
+                "Snuffle",
+                "Nibble",
+                "Cuddle",
+                "Velvetpaw",
+                "Carrot",
+            ]
             word_to_replace = random.choice(spaces_in_name)
             substitute = random.choice(replacements)
             bunnified_name = username.replace(word_to_replace, substitute)
@@ -149,7 +190,7 @@ class Easter(Cog):
             bunnified_name = unmatched_name
 
         await ctx.send(bunnified_name)
-    
+
     @commands.command(aliases=("riddlemethis", "riddleme"))
     async def riddle(self, ctx: Context) -> None:
         """
@@ -157,7 +198,9 @@ class Easter(Cog):
         The duration of the hint interval can be configured by changing the TIMELIMIT constant in this file.
         """
         if self.current_channel:
-            await ctx.send(f"A riddle is already being solved in {self.current_channel.mention}!")
+            await ctx.send(
+                f"A riddle is already being solved in {self.current_channel.mention}!"
+            )
             return
 
         self.current_channel = ctx.channel
@@ -169,23 +212,19 @@ class Easter(Cog):
 
         description = f"You have {TIMELIMIT} seconds before the first hint."
 
-        riddle_embed = discord.Embed(title=question, description=description, colour=0xCF84E0)
+        riddle_embed = discord.Embed(
+            title=question, description=description, colour=0xCF84E0
+        )
 
         await ctx.send(embed=riddle_embed)
         await asyncio.sleep(TIMELIMIT)
 
-        hint_embed = discord.Embed(
-            title=f"Here's a hint: {hints[0]}!",
-            colour=0xCF84E0
-        )
+        hint_embed = discord.Embed(title=f"Here's a hint: {hints[0]}!", colour=0xCF84E0)
 
         await ctx.send(embed=hint_embed)
         await asyncio.sleep(TIMELIMIT)
 
-        hint_embed = discord.Embed(
-            title=f"Here's a hint: {hints[1]}!",
-            colour=0xCF84E0
-        )
+        hint_embed = discord.Embed(title=f"Here's a hint: {hints[1]}!", colour=0xCF84E0)
 
         await ctx.send(embed=hint_embed)
         await asyncio.sleep(TIMELIMIT)
@@ -197,8 +236,7 @@ class Easter(Cog):
             content = "Nobody got it right..."
 
         answer_embed = discord.Embed(
-            title=f"The answer is: {self.correct}!",
-            colour=0xCF84E0
+            title=f"The answer is: {self.correct}!", colour=0xCF84E0
         )
 
         await ctx.send(content, embed=answer_embed)
@@ -256,13 +294,17 @@ class Easter(Cog):
                 q, r = divmod(8, colours_n)
                 colours = colours * q + colours[:r]
             num = random.randint(1, 6)
-            im = Image.open(Path(f"bot/resources/holidays/easter/easter_eggs/design{num}.png"))
+            im = Image.open(
+                Path(f"bot/resources/holidays/easter/easter_eggs/design{num}.png")
+            )
             data = list(im.getdata())
 
             replaceable = {x for x in data if x not in IRREPLACEABLE}
             replaceable = sorted(replaceable, key=COLOURS.index)
 
-            replacing_colours = {colour: colours[i] for i, colour in enumerate(replaceable)}
+            replacing_colours = {
+                colour: colours[i] for i, colour in enumerate(replaceable)
+            }
             new_data = []
             for x in data:
                 if x in replacing_colours:
@@ -278,13 +320,18 @@ class Easter(Cog):
 
             bufferedio.seek(0)
 
-            file = discord.File(bufferedio, filename="egg.png")  # Creates file to be used in embed
+            file = discord.File(
+                bufferedio, filename="egg.png"
+            )  # Creates file to be used in embed
             embed = discord.Embed(
                 title="Your Colourful Easter Egg",
-                description="Here is your pretty little egg. Hope you like it!"
+                description="Here is your pretty little egg. Hope you like it!",
             )
             embed.set_image(url="attachment://egg.png")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}",
+                icon_url=ctx.author.display_avatar.url,
+            )
 
         await ctx.send(file=file, embed=embed)
         return new_im
@@ -294,7 +341,7 @@ class Easter(Cog):
         """A background task that sends an easter egg fact in the event channel everyday."""
         await self.bot.wait_until_guild_available()
 
-        channel = self.bot.get_channel(776420233832955934) # umm, IDK... LOL
+        channel = self.bot.get_channel(776420233832955934)  # umm, IDK... LOL
         await channel.send(embed=self.make_embed())
 
     @commands.command(name="eggfact", aliases=("fact",))
@@ -309,9 +356,9 @@ class Easter(Cog):
         return discord.Embed(
             colour=Colours.soft_red,
             title="Easter Egg Fact",
-            description=random.choice(EGG_FACTS)
+            description=random.choice(EGG_FACTS),
         )
-    
+
     @commands.command(aliases=("eggheadquiz", "easterquiz"))
     async def eggquiz(self, ctx: Context) -> None:
         """
@@ -326,9 +373,13 @@ class Easter(Cog):
         valid_emojis = [emoji for emoji, _ in answers]
 
         description = f"You have {TIMELIMIT} seconds to vote.\n\n"
-        description += "\n".join([f"{emoji} -> **{answer}**" for emoji, answer in answers])
+        description += "\n".join(
+            [f"{emoji} -> **{answer}**" for emoji, answer in answers]
+        )
 
-        q_embed = discord.Embed(title=question, description=description, colour=Colours.pink)
+        q_embed = discord.Embed(
+            title=question, description=description, colour=Colours.pink
+        )
 
         msg = await ctx.send(embed=q_embed)
         for emoji in valid_emojis:
@@ -342,43 +393,67 @@ class Easter(Cog):
 
         msg = await ctx.fetch_message(msg.id)  # Refreshes message
 
-        total_no = sum([len(await r.users().flatten()) for r in msg.reactions]) - len(valid_emojis)  # - bot's reactions
+        total_no = sum([len(await r.users().flatten()) for r in msg.reactions]) - len(
+            valid_emojis
+        )  # - bot's reactions
 
         if total_no == 0:
             return await msg.delete()  # To avoid ZeroDivisionError if nobody reacts
 
         results = ["**VOTES:**"]
         for emoji, _ in answers:
-            num = [len(await r.users().flatten()) for r in msg.reactions if str(r.emoji) == emoji][0] - 1
+            num = [
+                len(await r.users().flatten())
+                for r in msg.reactions
+                if str(r.emoji) == emoji
+            ][0] - 1
             percent = round(100 * num / total_no)
             s = "" if num == 1 else "s"
             string = f"{emoji} - {num} vote{s} ({percent}%)"
             results.append(string)
 
-        mentions = " ".join([
-            u.mention for u in [
-                await r.users().flatten() for r in msg.reactions if str(r.emoji) == correct
-            ][0] if not u.bot
-        ])
+        mentions = " ".join(
+            [
+                u.mention
+                for u in [
+                    await r.users().flatten()
+                    for r in msg.reactions
+                    if str(r.emoji) == correct
+                ][0]
+                if not u.bot
+            ]
+        )
 
-        content = f"Well done {mentions} for getting it correct!" if mentions else "Nobody got it right..."
+        content = (
+            f"Well done {mentions} for getting it correct!"
+            if mentions
+            else "Nobody got it right..."
+        )
 
         a_embed = discord.Embed(
             title=f"The correct answer was {correct}!",
             description="\n".join(results),
-            colour=Colours.pink
+            colour=Colours.pink,
         )
 
         await ctx.send(content, embed=a_embed)
 
     @staticmethod
-    async def already_reacted(message: discord.Message, user: Union[discord.Member, discord.User]) -> bool:
+    async def already_reacted(
+        message: discord.Message, user: Union[discord.Member, discord.User]
+    ) -> bool:
         """Returns whether a given user has reacted more than once to a given message."""
-        users = [u.id for reaction in [await r.users().flatten() for r in message.reactions] for u in reaction]
+        users = [
+            u.id
+            for reaction in [await r.users().flatten() for r in message.reactions]
+            for u in reaction
+        ]
         return users.count(user.id) > 1  # Old reaction plus new reaction
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]) -> None:
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]
+    ) -> None:
         """Listener to listen specifically for reactions of quiz messages."""
         if user.bot:
             return
@@ -388,7 +463,7 @@ class Easter(Cog):
             return await reaction.message.remove_reaction(reaction, user)
         if await self.already_reacted(reaction.message, user):
             return await reaction.message.remove_reaction(reaction, user)
-    
+
     @commands.command(aliases=("eastercustoms",))
     async def easter_tradition(self, ctx: Context) -> None:
         """Responds with a random tradition or custom."""

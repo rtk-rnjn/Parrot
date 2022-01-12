@@ -19,6 +19,7 @@ from .checks import in_whitelist_check
 
 ONE_DAY = 24 * 60 * 60
 
+
 def resolve_current_month() -> Month:
     """
     Determine current month w.r.t. `Client.month_override` env var.
@@ -27,9 +28,11 @@ def resolve_current_month() -> Month:
     """
     return Month(datetime.utcnow().month)
 
+
 def human_months(months: Iterable[Month]) -> str:
     """Build a comma separated list of `months`."""
     return ", ".join(str(m) for m in months)
+
 
 class InChannelCheckFailure(CheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
@@ -43,7 +46,9 @@ class InMonthCheckFailure(CheckFailure):
     pass
 
 
-def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY) -> Callable:
+def seasonal_task(
+    *allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY
+) -> Callable:
     """
     Perform the decorated method periodically in `allowed_months`.
     This provides a convenience wrapper to avoid code repetition where some task shall
@@ -52,6 +57,7 @@ def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DA
     the current UTC month is in `allowed_months`. Sleep time defaults to 24 hours.
     The wrapped task is responsible for waiting for the bot to be ready, if necessary.
     """
+
     def decorator(task_body: Callable) -> Callable:
         @functools.wraps(task_body)
         async def decorated_task(*args, **kwargs) -> None:
@@ -64,7 +70,9 @@ def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DA
                     await task_body(*args, **kwargs)
 
                 await asyncio.sleep(sleep_time)
+
         return decorated_task
+
     return decorator
 
 
@@ -73,6 +81,7 @@ def in_month_listener(*allowed_months: Month) -> Callable:
     Shield a listener from being invoked outside of `allowed_months`.
     The check is performed against current UTC month.
     """
+
     def decorator(listener: Callable) -> Callable:
         @functools.wraps(listener)
         async def guarded_listener(*args, **kwargs) -> None:
@@ -84,6 +93,7 @@ def in_month_listener(*allowed_months: Month) -> Callable:
                 return await listener(*args, **kwargs)
 
         return guarded_listener
+
     return decorator
 
 
@@ -92,6 +102,7 @@ def in_month_command(*allowed_months: Month) -> Callable:
     Check whether the command was invoked in one of `enabled_months`.
     Uses the current UTC month at the time of running the predicate.
     """
+
     async def predicate(ctx: Context) -> bool:
         current_month = resolve_current_month()
         can_run = current_month in allowed_months
@@ -99,7 +110,9 @@ def in_month_command(*allowed_months: Month) -> Callable:
         if can_run:
             return True
         else:
-            raise InMonthCheckFailure(f"Command can only be used in {human_months(allowed_months)}")
+            raise InMonthCheckFailure(
+                f"Command can only be used in {human_months(allowed_months)}"
+            )
 
     return commands.check(predicate)
 
@@ -119,28 +132,37 @@ def in_month(*allowed_months: Month) -> Callable:
     manually set to True - this causes a circumvention of the group's callback
     and the seasonal check applied to it.
     """
+
     def decorator(callable_: Callable) -> Callable:
         # Functions decorated as commands are turned into instances of `Command`
         if isinstance(callable_, Command):
-            logging.debug(f"Command {callable_.qualified_name} will be locked to {human_months(allowed_months)}")
+            logging.debug(
+                f"Command {callable_.qualified_name} will be locked to {human_months(allowed_months)}"
+            )
             actual_deco = in_month_command(*allowed_months)
 
         # D.py will assign this attribute when `callable_` is registered as a listener
         elif hasattr(callable_, "__cog_listener__"):
-            logging.debug(f"Listener {callable_.__qualname__} will be locked to {human_months(allowed_months)}")
+            logging.debug(
+                f"Listener {callable_.__qualname__} will be locked to {human_months(allowed_months)}"
+            )
             actual_deco = in_month_listener(*allowed_months)
 
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
+            raise TypeError(
+                f"Decorated object {callable_} is neither a command nor a listener"
+            )
 
         return actual_deco(callable_)
+
     return decorator
 
 
 def with_role(*role_ids: int) -> Callable:
     """Check to see whether the invoking user has any of the roles specified in role_ids."""
+
     async def predicate(ctx: Context) -> bool:
         if not ctx.guild:  # Return False in a DM
             return False
@@ -150,11 +172,13 @@ def with_role(*role_ids: int) -> Callable:
                 return True
 
         return False
+
     return commands.check(predicate)
 
 
 def without_role(*role_ids: int) -> Callable:
     """Check whether the invoking user does not have all of the roles specified in role_ids."""
+
     async def predicate(ctx: Context) -> bool:
         if not ctx.guild:  # Return False in a DM
             return False
@@ -163,6 +187,7 @@ def without_role(*role_ids: int) -> Callable:
         check = all(role not in author_roles for role in role_ids)
 
         return check
+
     return commands.check(predicate)
 
 
@@ -172,6 +197,7 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
     All arguments from `in_whitelist_check` are supported, with the exception of "fail_silently".
     If `whitelist_override` is present, it is added to the global whitelist.
     """
+
     def predicate(ctx: Context) -> bool:
         kwargs = default_kwargs.copy()
         allow_dms = False
@@ -200,7 +226,6 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
                         kwargs[arg] = (*default_value, *new_value)
                     else:
                         kwargs[arg] = new_value
-
 
         if ctx.guild is None:
             result = allow_dms
@@ -237,7 +262,9 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
     return predicate
 
 
-def whitelist_override(bypass_defaults: bool = False, allow_dm: bool = False, **kwargs: Container[int]) -> Callable:
+def whitelist_override(
+    bypass_defaults: bool = False, allow_dm: bool = False, **kwargs: Container[int]
+) -> Callable:
     """
     Override global whitelist context, with the kwargs specified.
     All arguments from `in_whitelist_check` are supported, with the exception of `fail_silently`.
@@ -246,6 +273,7 @@ def whitelist_override(bypass_defaults: bool = False, allow_dm: bool = False, **
     Note that you have to be careful with any references to the guild.
     This decorator has to go before (below) below the `command` decorator.
     """
+
     def inner(func: Callable) -> Callable:
         func.override = kwargs
         func.override_reset = bypass_defaults
@@ -261,11 +289,14 @@ def locked() -> Optional[Callable]:
     Subsequent calls to the command from the same author are ignored until the command has completed invocation.
     This decorator has to go before (below) the `command` decorator.
     """
+
     def wrap(func: Callable) -> Optional[Callable]:
         func.__locks = WeakValueDictionary()
 
         @wraps(func)
-        async def inner(self: Callable, ctx: Context, *args, **kwargs) -> Optional[Callable]:
+        async def inner(
+            self: Callable, ctx: Context, *args, **kwargs
+        ) -> Optional[Callable]:
             lock = func.__locks.setdefault(ctx.author.id, Lock())
             if lock.locked():
                 embed = Embed()
@@ -281,5 +312,7 @@ def locked() -> Optional[Callable]:
 
             async with func.__locks.setdefault(ctx.author.id, Lock()):
                 return await func(self, ctx, *args, **kwargs)
+
         return inner
+
     return wrap

@@ -8,6 +8,7 @@ from discord.ext import commands
 from core import Cog, Context, Parrot
 from utilities.constants import Colours, Month
 from utilities.deco import in_month
+
 HEBCAL_URL = (
     "https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&"
     "year=now&month=x&ss=on&mf=on&c=on&geo=geoname&geonameid=3448439&m=50&s=on"
@@ -87,11 +88,11 @@ class HanukkahEmbed(Cog):
         else:
             format_end = end_day.strftime("%d of %B")
             embed.description = (
-                "Looks like you missed Hanukkah! "
-                f"Hanukkah ended on {format_end}."
+                "Looks like you missed Hanukkah! " f"Hanukkah ended on {format_end}."
             )
 
         await ctx.send(embed=embed)
+
 
 def setup(bot: Parrot) -> None:
     """Load the Hanukkah Embed Cog."""

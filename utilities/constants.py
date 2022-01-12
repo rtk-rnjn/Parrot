@@ -6,6 +6,7 @@ from os import environ
 from typing import NamedTuple
 from .emotes import EMOJIS
 
+
 class Colours:
     blue = 0x0279FD
     bright_green = 0x01D277
@@ -38,6 +39,7 @@ class Colours:
         (64, 224, 208),
     ]
 
+
 class Month(enum.IntEnum):
     JANUARY = 1
     FEBRUARY = 2
@@ -54,6 +56,7 @@ class Month(enum.IntEnum):
 
     def __str__(self) -> str:
         return self.name.title()
+
 
 ERROR_REPLIES = [
     "Please don't do that.",
@@ -108,12 +111,14 @@ POSITIVE_REPLIES = [
     "I'll allow it.",
 ]
 
+
 class _Emoji:
     def __init__(self) -> None:
         for key in EMOJIS:
             setattr(self, key, EMOJIS[key])
-    
+
     def __repr__(self) -> str:
         return f"Total: {len(EMOJIS)}"
+
 
 Emoji = _Emoji()

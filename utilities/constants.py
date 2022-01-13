@@ -1,8 +1,4 @@
-import dataclasses
 import enum
-
-from datetime import datetime
-from os import environ
 from typing import NamedTuple
 from .emotes import EMOJIS
 

@@ -14,9 +14,7 @@ class TimeError(ParrotCheckFaliure):
 
 class NoModRole(ParrotCheckFaliure):
     def __init__(self):
-        super().__init__(
-            f"You are missing Mod role to use this command"
-        )
+        super().__init__(f"You are missing Mod role to use this command")
 
 
 class NoVerifiedRoleTicket(ParrotCheckFaliure):
@@ -28,9 +26,7 @@ class NoVerifiedRoleTicket(ParrotCheckFaliure):
 
 class NotGuildOwner(ParrotCheckFaliure):
     def __init__(self):
-        super().__init__(
-            f"You must be the owner of the Server to use this command"
-        )
+        super().__init__(f"You must be the owner of the Server to use this command")
 
 
 class NotMe(ParrotCheckFaliure):

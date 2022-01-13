@@ -44,7 +44,7 @@ class ErrorView(discord.ui.View):
         if interaction.user and interaction.user.id == self.author_id:
             return True
         await interaction.response.send_message(
-            f"Only {interaction.user} can interact", ephemeral=True
+            f"You can't interact with this button", ephemeral=True
         )
         return False
 
@@ -150,7 +150,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         ignore = (commands.CommandNotFound, discord.NotFound, discord.Forbidden)
 
         if isinstance(error, ignore):
-            print(error)
             return
 
         ERROR_EMBED = discord.Embed()
@@ -311,6 +310,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
         ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
         ERROR_EMBED.title = (
             f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"

@@ -295,9 +295,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(
-            error, (commands.BadUnionArgument, commands.BadLiteralArgument)
-        ):
+        if isinstance(error, (commands.BadUnionArgument, commands.BadLiteralArgument)):
             ERROR_EMBED.description = f"`@Parrot {ctx.command}` for help"
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)

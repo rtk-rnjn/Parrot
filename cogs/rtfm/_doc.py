@@ -39,7 +39,7 @@ async def python_doc(ctx, text: str):
             links = [link for link in links if link is not None]
 
             if not links:
-                return await ctx.send("No results")
+                return await ctx.send(f"{ctx.author.mention} no results")
 
             content = [
                 f"[{a.string}](https://docs.python.org/3/{a.get('href')})"
@@ -50,7 +50,7 @@ async def python_doc(ctx, text: str):
             emb.set_thumbnail(
                 url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png"
             )
-            emb.description = "Results for `{text}` :\n" + "\n".join(content)
+            emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)
 
@@ -78,7 +78,7 @@ async def _cppreference(language, ctx, text: str):
             )
 
             if not uls:
-                return await ctx.send("No results")
+                return await ctx.send(f"{ctx.author.mention} no results")
 
             if language == "C":
                 wanted = "w/c/"
@@ -99,7 +99,7 @@ async def _cppreference(language, ctx, text: str):
             emb = discord.Embed(title=f"{language} docs")
             emb.set_thumbnail(url=url)
 
-            emb.description = "Results for `{text}` :\n" + "\n".join(content)
+            emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)
 
@@ -131,7 +131,7 @@ async def haskell_doc(ctx, text: str):
             if results.find("p", class_="mw-search-nonefound") or not results.find(
                 "span", id="Page_title_matches"
             ):
-                return await ctx.send("No results")
+                return await ctx.send(f"{ctx.author.mention} no results")
 
             # Page_title_matches is first
             ul = results.find("ul", "mw-search-results")
@@ -142,12 +142,13 @@ async def haskell_doc(ctx, text: str):
             )
 
             content = []
-            for li in ul.find_all("li", limit=10):
+            ls = await asyncio.to_thread(ul.find_all, "li", limit=10)
+            for li in ls:
                 a = li.find("div", class_="mw-search-result-heading").find("a")
                 content.append(
                     f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})"
                 )
 
-            emb.description = "Results for `{text}` :\n" + "\n".join(content)
+            emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)

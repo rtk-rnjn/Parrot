@@ -91,6 +91,12 @@ class Context(commands.Context):
             return ref.resolved.to_reference()
         return None
 
+    @property
+    def command_syntax(self):
+        command = self.command
+        ctx = self
+        return f"{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}"
+
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
@@ -117,7 +123,7 @@ class Context(commands.Context):
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden:  # DMs locked
+            except discord.Forbidden: # DMs locked
                 pass
             return
 

@@ -228,7 +228,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         #     return
 
         if isinstance(error, commands.NSFWChannelRequired):
-            ERROR_EMBED.description = f"This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
+            ERROR_EMBED.description = "This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
             ERROR_EMBED.title = f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}"
             ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
@@ -239,40 +239,40 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.PrivateMessageOnly):
-            ERROR_EMBED.description = f"This comamnd will only work in DM messages"
+            ERROR_EMBED.description = "This comamnd will only work in DM messages"
             ERROR_EMBED.title = f"{QUESTION_MARK} Private Message Only {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.BadArgument):
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = (
-                    f"Message ID/Link you provied is either invalid or deleted"
+                    "Message ID/Link you provied is either invalid or deleted"
                 )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}"
                 return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
             if isinstance(error, commands.MemberNotFound):
-                ERROR_EMBED.description = f"Member ID/Mention/Name you provided is invalid or bot can not see that Member"
+                ERROR_EMBED.description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}"
                 return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
             if isinstance(error, commands.UserNotFound):
-                ERROR_EMBED.description = f"User ID/Mention/Name you provided is invalid or bot can not see that User"
+                ERROR_EMBED.description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
                 ERROR_EMBED.title = f"{QUESTION_MARK} User Not Found {QUESTION_MARK}"
                 return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
             if isinstance(error, commands.ChannelNotFound):
-                ERROR_EMBED.description = f"Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
+                ERROR_EMBED.description = "Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}"
                 return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
             if isinstance(error, commands.RoleNotFound):
-                ERROR_EMBED.description = f"Role ID/Mention/Name you provided is invalid or bot can not see that Role"
+                ERROR_EMBED.description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}"
                 return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
             if isinstance(error, commands.EmojiNotFound):
-                ERROR_EMBED.description = f"Emoji ID/Name you provided is invalid or bot can not see that Emoji"
+                ERROR_EMBED.description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}"
                 return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
@@ -289,7 +289,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MaxConcurrencyReached):
-            ERROR_EMBED.description = f"This command is already running in this server/channel by you. You have wait for it to finish"
+            ERROR_EMBED.description = "This command is already running in this server/channel by you. You have wait for it to finish"
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
             )

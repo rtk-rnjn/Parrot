@@ -82,7 +82,7 @@ PING = "<@{id}>"
 EMOJI_MESSAGE = "\n".join(f"- {emoji} {val}" for emoji, val in EMOJIS_VAL.items())
 HELP_MESSAGE_DICT = {
     "title": "Spooky Name Rate",
-    "description": f"Help for the `$spookynamerate` command",
+    "description": "Help for the `$spookynamerate` command",
     "color": Colours.soft_orange,
     "fields": [
         {
@@ -98,12 +98,12 @@ HELP_MESSAGE_DICT = {
         },
         {
             "name": "How do I add my spookified name?",
-            "value": f"Simply type `$spookynamerate add my name`",
+            "value": "Simply type `$spookynamerate add my name`",
             "inline": False,
         },
         {
             "name": "How do I *delete* my spookified name?",
-            "value": f"Simply type `$spookynamerate delete`",
+            "value": "Simply type `$spookynamerate delete`",
             "inline": False,
         },
     ],
@@ -693,7 +693,7 @@ class Halloween(Cog):
                 return
 
         await ctx.send(
-            f"But you don't have an entry... :eyes: Type `$spookynamerate add your entry`"
+            "But you don't have an entry... :eyes: Type `$spookynamerate add your entry`"
         )
 
     @Cog.listener()

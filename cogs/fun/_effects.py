@@ -91,7 +91,7 @@ class PfpEffects:
         """Applies the given pride effect to the given image."""
         image = PfpEffects.crop_avatar_circle(image)
 
-        ring = Image.open(Path(f"extra/holidays/pride/flags/{flag}.png")).resize(
+        ring = Image.open(Path(f"extra/pride/flags/{flag}.png")).resize(
             (1024, 1024)
         )
         ring = ring.convert("RGBA")

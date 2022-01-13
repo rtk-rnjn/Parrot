@@ -413,7 +413,7 @@ async def create_gw(bot: Parrot, ctx: Context):
 
 async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
     if data := await giveaway.find_one({"_id": _id}):
-        if not (data["guild"] == ctx.guild.id):
+        if not data["guild"] == ctx.guild.id:
             return await ctx.send(f"{ctx.author.mention} invalid message ID")
 
         channel = ctx.guild.get_channel(data["channel"])

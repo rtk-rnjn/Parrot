@@ -1,5 +1,6 @@
 # AUTHOR: https://github.com/davidetacchini/
 
+from tabnanny import check
 from typing import List, Union, Optional, NamedTuple
 from itertools import islice
 
@@ -66,12 +67,14 @@ class ParrotPaginator:
         title=None,
         show_page_count=True,
         embed_url: str = None,
+        check_other_ids: list = None
     ):
         self.ctx = ctx
         self.per_page = per_page
         self.timeout = timeout
         self.title = title
         self.show_page_count = show_page_count
+        self.check_other_ids = check_other_ids
 
         self.lines = []
         self.pages = None
@@ -114,6 +117,7 @@ class ParrotPaginator:
             pages=self.pages,
             embed=self.embed,
             timeout=self.timeout,
+            check_other_ids=self.check_other_ids,
             show_page_count=self.show_page_count,
         )
         self.view = view
@@ -122,7 +126,7 @@ class ParrotPaginator:
 
 
 class PaginatorView(discord.ui.View):
-    def __init__(self, ctx, pages: Pages, embed, timeout, show_page_count):
+    def __init__(self, ctx, pages: Pages, embed, timeout, show_page_count, *, check_other_ids: list=None):
 
         super().__init__(timeout=timeout)
 
@@ -130,7 +134,7 @@ class PaginatorView(discord.ui.View):
         self.pages = pages
         self.embed = embed
         self.show_page_count = show_page_count
-
+        self.check_other_ids = check_other_ids
         if self.pages.cur_page == 1:
             self.children[0].disabled = False
             self.children[1].disabled = False
@@ -165,6 +169,8 @@ class PaginatorView(discord.ui.View):
             self.embed.description = page.content
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id in self.check_other_ids:
+            return True
         if interaction.user.id != self.ctx.author.id:
             await interaction.response.send_message(
                 "Sorry, you can't use this interaction as it is not started by you.",

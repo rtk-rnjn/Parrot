@@ -57,20 +57,20 @@ async def dial(bot, ctx, server, reverse=False):
         temp_message = target_channel.send(
             f'{bot.get_guild(target_guild["_id"]).get_role(target_guild["pingrole"]).mention} {bot.get_user(target_guild["memberping"]).mention}'
         )
-        await temp_message.delete()
+        await temp_message.delete(delay=0)
     except Exception:
         pass
 
     def check_pickup_hangup(m):
         return (
             (m.content.lower() in ("pickup", "hangup"))
-            and (m.channel(channel, target_channel))
+            and (m.channel in (channel, target_channel))
             and (not m.author.bot)
         )
 
     try:
         _talk = await bot.wait_for("message", check=check_pickup_hangup, timeout=60)
-    except Exception:
+    except asyncio.TimeoutError:
         await asyncio.sleep(0.5)
         await target_channel.send(
             f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
@@ -114,7 +114,7 @@ async def dial(bot, ctx, server, reverse=False):
                 talk_message = await bot.wait_for(
                     "message", check=check_in_channel, timeout=60.0
                 )
-            except Exception:
+            except asyncio.TimeoutError:
                 await asyncio.sleep(0.5)
                 await target_channel.send(
                     f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"

@@ -10,6 +10,10 @@ import discord
 import io
 import json
 from discord import Webhook
+
+
+import typing as tp
+
 from utilities.database import parrot_db, msg_increment
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from time import time
@@ -19,6 +23,12 @@ collection = parrot_db["global_chat"]
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
 
+TRIGGER = (
+    'ok google,',
+    'ok google ',
+    'hey google,',
+    'hey google ',
+)
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
@@ -28,6 +38,38 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
         self.collection = None
         self.log_collection = parrot_db["logging"]
+
+    async def query_ddg(self, query: str) -> tp.Optional[str]:
+        link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
+        # saying `ok google`, and querying from ddg LOL. 
+        res = await self.bot.session.get(link)
+        data = await res.json()
+        if data.get('Abstract'):
+            return data.get('Abstract')
+        if data['RelatedTopics']:
+            return data['RelatedTopics'][0]['Text']
+
+    async def quick_answer(self, message: discord.Message):
+        """This is good."""
+        if message.content.lower().startswith(TRIGGER):
+            if message.content.lower().startswith('ok'):
+                query = message.content.lower()[10:]
+                res = await self.query_ddg(query)
+                if not res:
+                    return
+                try:
+                    return await message.channel.send(res)
+                except discord.Forbidden:
+                    pass
+            if message.content.lower().startswith('hey'):
+                query = message.content.lower()[11:]
+                res = await self.query_ddg(query)
+                if not res:
+                    return
+                try:
+                    return await message.channel.send(res)
+                except discord.Forbidden:
+                    pass
 
     def refrain_message(self, msg: str):
         if "chod" in msg.replace(",", "").split(" "):
@@ -83,6 +125,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if not message.guild or message.author.bot:
             return
         await msg_increment(message.guild.id, message.author.id)  # for gw only
+        await self.quick_answer(message)
         channel = await collection.find_one(
             {"_id": message.guild.id, "channel_id": message.channel.id}
         )
@@ -108,7 +151,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     return
 
             if message.content.startswith(
-                ("$", "!", "%", "^", "&", "*", "-", ">", "/")
+                ("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")
             ):  # bot commands or mention in starting
                 return
 

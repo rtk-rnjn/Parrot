@@ -50,7 +50,7 @@ async def python_doc(ctx, text: str):
             emb.set_thumbnail(
                 url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png"
             )
-            emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
+            emb.description = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)
 
@@ -99,7 +99,7 @@ async def _cppreference(language, ctx, text: str):
             emb = discord.Embed(title=f"{language} docs")
             emb.set_thumbnail(url=url)
 
-            emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
+            emb.description = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)
 
@@ -148,6 +148,6 @@ async def haskell_doc(ctx, text: str):
                     f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})"
                 )
 
-            emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
+            emb.description = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)

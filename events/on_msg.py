@@ -11,7 +11,6 @@ import io
 import json
 from discord import Webhook
 
-
 import typing as tp
 
 from utilities.database import parrot_db, msg_increment
@@ -43,7 +42,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
         # saying `ok google`, and querying from ddg LOL. 
         res = await self.bot.session.get(link)
-        data = await res.json()
+        data = json.loads(await res.text())
         if data.get('Abstract'):
             return data.get('Abstract')
         if data['RelatedTopics']:

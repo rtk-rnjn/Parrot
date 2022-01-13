@@ -243,7 +243,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = f"{QUESTION_MARK} Private Message Only {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        elif isinstance(error, commands.BadArgument):
+        if isinstance(error, commands.BadArgument):
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = (
                     f"Message ID/Link you provied is either invalid or deleted"
@@ -280,7 +280,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        elif isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(error, commands.MissingRequiredArgument):
             command = ctx.command
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
             ERROR_EMBED.title = (
@@ -288,42 +288,38 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        elif isinstance(error, commands.MaxConcurrencyReached):
+        if isinstance(error, commands.MaxConcurrencyReached):
             ERROR_EMBED.description = f"This command is already running in this server/channel by you. You have wait for it to finish"
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
             )
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        elif isinstance(
-            error, (commands.BadUnionArgument, commands.BadLiteralArgument)
-        ):
+        if isinstance(error, (commands.BadUnionArgument, commands.BadLiteralArgument)):
             ERROR_EMBED.description = f"`@Parrot {ctx.command}` for help"
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        elif isinstance(error, ParrotCheckFaliure):
+        if isinstance(error, ParrotCheckFaliure):
             ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        elif isinstance(error, commands.CheckAnyFailure):
+        if isinstance(error, commands.CheckAnyFailure):
             ERROR_EMBED.description = " or ".join(
                 [error.__str__().format(ctx=ctx) for error in error.errors]
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-
-        else:
-            ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
-            ERROR_EMBED.title = (
-                f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
-            )
-            return await ctx.reply(
-                random.choice(quote),
-                embed=ERROR_EMBED,
-                view=ErrorView(ctx.author.id, ctx=ctx, error=error),
-            )
+        ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
+        ERROR_EMBED.title = (
+            f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
+        )
+        return await ctx.reply(
+            random.choice(quote),
+            embed=ERROR_EMBED,
+            view=ErrorView(ctx.author.id, ctx=ctx, error=error),
+        )
 
 
 def setup(bot):

@@ -24,11 +24,12 @@ with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
 
 TRIGGER = (
-    'ok google,',
-    'ok google ',
-    'hey google,',
-    'hey google ',
+    "ok google,",
+    "ok google ",
+    "hey google,",
+    "hey google ",
 )
+
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
@@ -41,18 +42,18 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def query_ddg(self, query: str) -> tp.Optional[str]:
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
-        # saying `ok google`, and querying from ddg LOL. 
+        # saying `ok google`, and querying from ddg LOL.
         res = await self.bot.session.get(link)
         data = await res.json()
-        if data.get('Abstract'):
-            return data.get('Abstract')
-        if data['RelatedTopics']:
-            return data['RelatedTopics'][0]['Text']
+        if data.get("Abstract"):
+            return data.get("Abstract")
+        if data["RelatedTopics"]:
+            return data["RelatedTopics"][0]["Text"]
 
     async def quick_answer(self, message: discord.Message):
         """This is good."""
         if message.content.lower().startswith(TRIGGER):
-            if message.content.lower().startswith('ok'):
+            if message.content.lower().startswith("ok"):
                 query = message.content.lower()[10:]
                 res = await self.query_ddg(query)
                 if not res:
@@ -61,7 +62,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     return await message.channel.send(res)
                 except discord.Forbidden:
                     pass
-            if message.content.lower().startswith('hey'):
+            if message.content.lower().startswith("hey"):
                 query = message.content.lower()[11:]
                 res = await self.query_ddg(query)
                 if not res:

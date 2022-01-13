@@ -872,7 +872,7 @@ class ChessView(discord.ui.View):
             self.game.ctx,
             title="Legal Moves",
             embed_url="https://images.chesscomfiles.com/uploads/v1/images_users/tiny_mce/SamCopeland/phpmeXx6V.png",
-            check_other_ids=[self.game.white.id, self.game.black.id]
+            check_other_ids=[self.game.white.id, self.game.black.id],
         )
         for i in self.game.legal_moves():
             menu.add_line(i)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from cogs.meta.robopage import SimplePageSource, SimplePages
+from cogs.meta.robopage import SimplePages
 
 from discord.ext import commands
 from discord import Embed

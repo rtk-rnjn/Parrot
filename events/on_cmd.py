@@ -6,7 +6,6 @@ import math
 import random
 import aiohttp
 from discord.ext import commands
-from datetime import datetime
 
 from utilities.exceptions import ParrotCheckFaliure
 from utilities.database import cmd_increment, parrot_db

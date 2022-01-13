@@ -235,62 +235,71 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif isinstance(error, commands.BadArgument):
             if isinstance(error, commands.MessageNotFound):
-                return await ctx.reply(
-                    f"**{random.choice(quote)}**\nMessage Not Found. Message ID/Link you provied is either invalid or deleted"
-                )
-            if isinstance(error, commands.MemberNotFound):
-                return await ctx.reply(
-                    f"**{random.choice(quote)}**\nMember Not Found. Member ID/Mention/Name you provided is invalid or bot can not see that Member"
-                )
-            if isinstance(error, commands.UserNotFound):
-                return await ctx.reply(
-                    f"**{random.choice(quote)}**\nUser Not Found. User ID/Mention/Name you provided is invalid or bot can not see that User"
-                )
-            if isinstance(error, commands.ChannelNotFound):
-                return await ctx.reply(
-                    f"**{random.choice(quote)}**\nChannel Not Found. Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
-                )
-            if isinstance(error, commands.RoleNotFound):
-                return await ctx.reply(
-                    f"**{random.choice(quote)}**\nRole Not Found. Role ID/Mention/Name you provided is invalid or bot can not see that Role"
-                )
-            if isinstance(error, commands.EmojiNotFound):
-                return await ctx.reply(
-                    f"**{random.choice(quote)}**\nEmoji Not Found. Emoji ID/Name you provided is invalid or bot can not see that Emoji"
-                )
-            return await ctx.reply(f"**{random.choice(quote)}**\n{error}")
+                ERROR_EMBED.description = f"Message ID/Link you provied is either invalid or deleted"
+                ERROR_EMBED.title = f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}"
+                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
+            if isinstance(error, commands.MemberNotFound):
+                ERROR_EMBED.description = f"Member ID/Mention/Name you provided is invalid or bot can not see that Member"
+                ERROR_EMBED.title = f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}"
+                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
+            if isinstance(error, commands.UserNotFound):
+                ERROR_EMBED.description = f"User ID/Mention/Name you provided is invalid or bot can not see that User"
+                ERROR_EMBED.title = f"{QUESTION_MARK} User Not Found {QUESTION_MARK}"
+                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
+            if isinstance(error, commands.ChannelNotFound):
+                ERROR_EMBED.description = f"Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
+                ERROR_EMBED.title = f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}"
+                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
+            if isinstance(error, commands.RoleNotFound):
+                ERROR_EMBED.description = f"Role ID/Mention/Name you provided is invalid or bot can not see that Role"
+                ERROR_EMBED.title = f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}"
+                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
+            if isinstance(error, commands.EmojiNotFound):
+                ERROR_EMBED.description = f"Emoji ID/Name you provided is invalid or bot can not see that Emoji"
+                ERROR_EMBED.title = f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}"
+                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
+            ERROR_EMBED.description = f"{error}"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+            
         elif isinstance(error, commands.MissingRequiredArgument):
             command = ctx.command
-            return await ctx.reply(
-                f"**{random.choice(quote)}**\nMissing Required Argument. Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
-            )
-
+            ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Missing Required Argument {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+            
         elif isinstance(error, commands.MaxConcurrencyReached):
-            return await ctx.reply(
-                f"**{random.choice(quote)}**\nMax Concurrenry Reached. This command is already running in this server/channel by you. You have wait for it to finish"
-            )
-
+            ERROR_EMBED.description = f"This command is already running in this server/channel by you. You have wait for it to finish"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+   
         elif isinstance(
             error, (commands.BadUnionArgument, commands.BadLiteralArgument)
         ):
-            return await ctx.reply(
-                f"**{random.choice(quote)}**\nBad Argument! `@Parrot {ctx.command}` for help"
-            )
-
+            ERROR_EMBED.description = f"`@Parrot {ctx.command}` for help"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+   
         elif isinstance(error, ParrotCheckFaliure):
-            return await ctx.reply(error.__str__().format(ctx=ctx))
+            ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         elif isinstance(error, commands.CheckAnyFailure):
-            return await ctx.reply(
-                " or ".join([error.__str__().format(ctx=ctx) for error in error.errors])
-            )
+            ERROR_EMBED.description = " or ".join([error.__str__().format(ctx=ctx) for error in error.errors])
+            ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         else:
-            await ctx.reply(
-                f"**{random.choice(quote)}**\nWell this is embarrassing. For some reason **{ctx.command.qualified_name}** is not working",
-                view=ErrorView(ctx.author.id, ctx=ctx, error=error),
-            )
+            ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
+            ERROR_EMBED.title = f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED, view=ErrorView(ctx.author.id, ctx=ctx, error=error))
 
 
 def setup(bot):

@@ -73,7 +73,9 @@ async def _cppreference(language, ctx, text: str):
 
             soup = BeautifulSoup(await response.text(), "html.parser")
 
-            uls = await asyncio.to_thread(soup.find_all, "ul", class_="mw-search-results")
+            uls = await asyncio.to_thread(
+                soup.find_all, "ul", class_="mw-search-results"
+            )
 
             if not uls:
                 return await ctx.send("No results")
@@ -96,7 +98,7 @@ async def _cppreference(language, ctx, text: str):
             ]
             emb = discord.Embed(title=f"{language} docs")
             emb.set_thumbnail(url=url)
-            
+
             emb.desciption = "Results for `{text}` :\n" + "\n".join(content)
 
             await ctx.send(embed=emb)

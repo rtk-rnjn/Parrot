@@ -123,7 +123,7 @@ class Context(commands.Context):
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden: # DMs locked
+            except discord.Forbidden:  # DMs locked
                 pass
             return
 

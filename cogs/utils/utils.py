@@ -139,7 +139,6 @@ class Utils(Cog):
     async def tag_delete(self, ctx: Context, *, tag: str):
         """To delete tag. You must own the tag to delete"""
         await mt._delete_tag(self.bot, ctx, tag)
-
     @tag.command(name="editname")
     @commands.bot_has_permissions(embed_links=True)
     async def tag_edit_name(self, ctx: Context, tag: str, *, name: str):
@@ -152,7 +151,7 @@ class Utils(Cog):
         """To edit the tag text. You must own the tag to edit"""
         await mt._text_edit(self.bot, ctx, tag, text)
 
-    @tag.command(name="owner", alises=["info"])
+    @tag.command(name="owner", aliases=["info"])
     @commands.bot_has_permissions(embed_links=True)
     async def tag_owner(self, ctx: Context, *, tag: str):
         """To check the tag details."""

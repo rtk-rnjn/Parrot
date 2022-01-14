@@ -18,6 +18,7 @@ from core import Parrot, Context
 giveaway = parrot_db["giveaway"]
 reacter = cluster["reacter"]
 
+IGNORE = ['all', ' delete', ' del', ' create', ' add', ' editname', ' edittext', ' owner', ' info', ' snipe', ' steal', ' claim', ' tnsfw', ' nsfw', ' tooglensfw', ' give', ' transfer']
 
 async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
     collection = tags[f"{ctx.guild.id}"]
@@ -44,6 +45,8 @@ async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
 
 async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]
+    if tag in IGNORE:
+        return await ctx.reply(f"{ctx.author.mention} the name `{tag}` is reserved word.")
     if _ := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
     view = Prompt(ctx.author.id)

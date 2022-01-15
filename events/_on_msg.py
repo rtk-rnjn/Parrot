@@ -8,7 +8,6 @@ import discord
 from core import Parrot, Cog
 
 
-
 class CodeSnippets(Cog):
     """
     Cog that parses and sends code snippets to Discord.
@@ -19,16 +18,11 @@ class CodeSnippets(Cog):
         """Initializes the cog's bot."""
         self.bot = bot
 
-        
-
-    
-
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Checks if the message has a snippet link, removes the embed, then sends the snippet contents."""
         if message.author.bot:
             return
-
 
 
 def setup(bot: Parrot) -> None:

@@ -570,7 +570,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """Gives you a documentation link for a aiohttp entity"""
         await self.do_rtfm(ctx, "aiohttp", obj)
 
-    @rtfd.command(name="requests", aliases=["request", 'req'])
+    @rtfd.command(name="requests", aliases=["request", "req"])
     async def rtfd_request(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a request entity"""
         await self.do_rtfm(ctx, "requests", obj)
@@ -580,7 +580,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """Gives you a documentation link for a flask entity"""
         await self.do_rtfm(ctx, "flask", obj)
 
-    @rtfd.command(name="numpy", aliases=['np'])
+    @rtfd.command(name="numpy", aliases=["np"])
     async def rtfd_numpy(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a numpy entity"""
         await self.do_rtfm(ctx, "numpy", obj)
@@ -590,17 +590,17 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """Gives you a documentation link for a PIL entity"""
         await self.do_rtfm(ctx, "pil", obj)
 
-    @rtfd.command(name="matplotlib", aliases=['matlab', 'plt', 'mat'])
+    @rtfd.command(name="matplotlib", aliases=["matlab", "plt", "mat"])
     async def rtfd_matplotlib(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a matplotlib entity"""
         await self.do_rtfm(ctx, "matplotlib", obj)
 
-    @rtfd.command(name="pandas", aliases=['pd'])
+    @rtfd.command(name="pandas", aliases=["pd"])
     async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a pandas entity"""
         await self.do_rtfm(ctx, "pandas", obj)
 
-    @rtfd.command(name="pymongo", aliases=['mongo', 'pym'])
+    @rtfd.command(name="pymongo", aliases=["mongo", "pym"])
     async def rtfd_pymongo(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a pymongo entity"""
         await self.do_rtfm(ctx, "pymongo", obj)

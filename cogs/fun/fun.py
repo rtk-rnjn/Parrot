@@ -485,7 +485,7 @@ class Fun(Cog):
         )  # A variable to store the person's ID who started the quiz game in a channel.
         with open(Path(r"extra/ryanzec_colours.json")) as f:
             self.colour_mapping = json.load(f)
-            del self.colour_mapping['_']  # Delete source credit entry
+            del self.colour_mapping["_"]  # Delete source credit entry
         self.questions = self.load_questions()
         self.question_limit = 0
         self.games: dict[int, AnagramGame] = {}
@@ -512,7 +512,9 @@ class Fun(Cog):
 
         self.get_wiki_questions.start()
 
-    async def send_colour_response(self, ctx: commands.Context, rgb: tuple[int, int, int]) -> None:
+    async def send_colour_response(
+        self, ctx: commands.Context, rgb: tuple[int, int, int]
+    ) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
         try:
@@ -543,15 +545,11 @@ class Fun(Cog):
         colour_embed = discord.Embed(
             title=f"{name or input_colour}",
             description=f"{colour_or_color.title()} information for {colour_mode} `{input_colour or name}`.",
-            colour=discord.Color.from_rgb(*rgb)
+            colour=discord.Color.from_rgb(*rgb),
         )
         colour_conversions = self.get_colour_conversions(rgb)
         for colour_space, value in colour_conversions.items():
-            colour_embed.add_field(
-                name=colour_space,
-                value=f"`{value}`",
-                inline=True
-            )
+            colour_embed.add_field(name=colour_space, value=f"`{value}`", inline=True)
 
         thumbnail = Image.new("RGB", THUMBNAIL_SIZE, color=rgb)
         buffer = io.BytesIO()
@@ -574,7 +572,7 @@ class Fun(Cog):
             "HSL": self._rgb_to_hsl(rgb),
             "CMYK": self._rgb_to_cmyk(rgb),
             "Hex": self._rgb_to_hex(rgb),
-            "Name": colour_name
+            "Name": colour_name,
         }
 
     @staticmethod
@@ -620,20 +618,26 @@ class Fun(Cog):
             match, certainty, _ = rapidfuzz.process.extractOne(
                 query=input_hex_colour,
                 choices=self.colour_mapping.values(),
-                score_cutoff=80
+                score_cutoff=80,
             )
-            colour_name = [name for name, hex_code in self.colour_mapping.items() if hex_code == match][0]
+            colour_name = [
+                name
+                for name, hex_code in self.colour_mapping.items()
+                if hex_code == match
+            ][0]
         except TypeError:
             colour_name = None
         return colour_name
 
-    def match_colour_name(self, ctx: commands.Context, input_colour_name: str) -> Optional[str]:
+    def match_colour_name(
+        self, ctx: commands.Context, input_colour_name: str
+    ) -> Optional[str]:
         """Convert a colour name to HEX code."""
         try:
             match, certainty, _ = rapidfuzz.process.extractOne(
                 query=input_colour_name,
                 choices=self.colour_mapping.keys(),
-                score_cutoff=80
+                score_cutoff=80,
             )
         except (ValueError, TypeError):
             return
@@ -1469,7 +1473,9 @@ class Fun(Cog):
         await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 
     @commands.group(aliases=("color",), invoke_without_command=True)
-    async def colour(self, ctx: commands.Context, *, colour_input: Optional[str] = None) -> None:
+    async def colour(
+        self, ctx: commands.Context, *, colour_input: Optional[str] = None
+    ) -> None:
         """
         Create an embed that displays colour information.
 
@@ -1496,9 +1502,13 @@ class Fun(Cog):
         await self.send_colour_response(ctx, rgb_tuple)
 
     @colour.command()
-    async def hsv(self, ctx: commands.Context, hue: int, saturation: int, value: int) -> None:
+    async def hsv(
+        self, ctx: commands.Context, hue: int, saturation: int, value: int
+    ) -> None:
         """Create an embed from an HSV input."""
-        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
+        if (hue not in range(361)) or any(
+            c not in range(101) for c in (saturation, value)
+        ):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, value}`."
@@ -1507,9 +1517,13 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
-    async def hsl(self, ctx: commands.Context, hue: int, saturation: int, lightness: int) -> None:
+    async def hsl(
+        self, ctx: commands.Context, hue: int, saturation: int, lightness: int
+    ) -> None:
         """Create an embed from an HSL input."""
-        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
+        if (hue not in range(361)) or any(
+            c not in range(101) for c in (saturation, lightness)
+        ):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, lightness}`."
@@ -1518,7 +1532,9 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
-    async def cmyk(self, ctx: commands.Context, cyan: int, magenta: int, yellow: int, key: int) -> None:
+    async def cmyk(
+        self, ctx: commands.Context, cyan: int, magenta: int, yellow: int, key: int
+    ) -> None:
         """Create an embed from a CMYK input."""
         if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
             raise commands.BadArgument(
@@ -1535,7 +1551,9 @@ class Fun(Cog):
         if hex_code[0] != "#":
             hex_code = f"#{hex_code}"
 
-        if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
+        if len(hex_code) not in (4, 5, 7, 9) or any(
+            digit not in string.hexdigits for digit in hex_code[1:]
+        ):
             raise commands.BadArgument(
                 message=f"Cannot convert `{hex_code}` to a recognizable Hex format. "
                 "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
@@ -1543,7 +1561,9 @@ class Fun(Cog):
 
         hex_tuple = ImageColor.getrgb(hex_code)
         if len(hex_tuple) == 4:
-            hex_tuple = hex_tuple[:-1]  # Colour must be RGB. If RGBA, we remove the alpha value
+            hex_tuple = hex_tuple[
+                :-1
+            ]  # Colour must be RGB. If RGBA, we remove the alpha value
         await self.send_colour_response(ctx, hex_tuple)
 
     @colour.command()
@@ -1554,7 +1574,7 @@ class Fun(Cog):
             name_error_embed = discord.Embed(
                 title="No colour match found.",
                 description=f"No colour found for: `{user_colour_name}`",
-                colour=discord.Color.dark_red()
+                colour=discord.Color.dark_red(),
             )
             await ctx.send(embed=name_error_embed)
             return

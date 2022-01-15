@@ -98,7 +98,7 @@ class Parrot(commands.AutoShardedBot):
         self.http_session = ClientSession(
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
-        self.ipc = ipc.Server()
+        self.ipc = ipc.Server(self,)
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)

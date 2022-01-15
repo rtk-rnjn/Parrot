@@ -98,7 +98,7 @@ class Parrot(commands.AutoShardedBot):
         self.http_session = ClientSession(
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
-        self.ipc = ipc.Server(self,)
+        # self.ipc = ipc.Server(self,)
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -184,17 +184,17 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg) -> None:
         self._prev_events.append(msg)
 
-    async def on_ready(self):
-        """Called upon the READY event"""
-        print("Bot is ready.")
+    # async def on_ready(self):
+    #     """Called upon the READY event"""
+    #     print("Bot is ready.")
 
-    async def on_ipc_ready(self):
-        """Called upon the IPC Server being ready"""
-        print("Ipc is ready.")
+    # async def on_ipc_ready(self):
+    #     """Called upon the IPC Server being ready"""
+    #     print("Ipc is ready.")
 
-    async def on_ipc_error(self, endpoint, error):
-        """Called upon an error being raised within an IPC route"""
-        print(endpoint, "raised", error)
+    # async def on_ipc_error(self, endpoint, error):
+    #     """Called upon an error being raised within an IPC route"""
+    #     print(endpoint, "raised", error)
 
     # async def on_error(self, event: str, *args, **kwargs) -> None:
     #     traceback_string = traceback.format_exc()

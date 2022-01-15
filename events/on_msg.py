@@ -348,7 +348,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 if len(message_to_send) > 2000:
                     # Redirects to #bot-commands if the snippet contents are too long
                     await message.channel.send(
-                        "The snippet you tried to send was too long. "
+                        "The snippet you tried to send was too long.", delete_after=3 
                     )
                 else:
                     await message.channel.send(message_to_send)

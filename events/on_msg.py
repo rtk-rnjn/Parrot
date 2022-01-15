@@ -338,20 +338,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000 and message_to_send.count("\n") <= 15:
+            await message.channel.send(message_to_send)
             try:
                 await message.edit(suppress=True)
             except discord.NotFound:
                 pass
             except discord.Forbidden:
                 pass
-            else:
-                if len(message_to_send) > 2000:
-                    # Redirects to #bot-commands if the snippet contents are too long
-                    await message.channel.send(
-                        "The snippet you tried to send was too long.", delete_after=3 
-                    )
-                else:
-                    await message.channel.send(message_to_send)
         await msg_increment(message.guild.id, message.author.id)  # for gw only
         await self.quick_answer(message)
         channel = await collection.find_one(

@@ -243,7 +243,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     snippet = await handler(**match.groupdict())
                     all_snippets.append((match.start(), snippet))
                 except ClientResponseError as error:
-                    error_message = error.message  # noqa: B306
+                    error_message = error.message
+                    print(error_message)
 
         # Sorts the list of snippets by their match index and joins them into a single message
         return "\n".join(map(lambda x: x[1], sorted(all_snippets)))
@@ -349,6 +350,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     await message.channel.send(
                         "The snippet you tried to send was too long. "
                     )
+                else:
+                    await message.channel.send(message_to_send)
         await msg_increment(message.guild.id, message.author.id)  # for gw only
         await self.quick_answer(message)
         channel = await collection.find_one(

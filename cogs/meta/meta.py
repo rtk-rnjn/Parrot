@@ -495,7 +495,7 @@ class Meta(Cog):
             ),
             (
                 "Statuses",
-                f":green_circle: {statuses[0]} :yellow_circle:  {statuses[1]} :red_circle: {statuses[2]} :black_circle: {statuses[3]}",
+                f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]",
                 True,
             ),
         ]
@@ -572,6 +572,9 @@ class Meta(Cog):
                 name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True
             )
 
+        if ctx.guild.banner:
+            embed.set_image(url=ctx.guild.banner.url)
+
         await ctx.reply(embed=embed)
 
     @commands.command(name="stats")
@@ -636,10 +639,10 @@ class Meta(Cog):
         fields = [
             ("Name", str(target), True),
             ("Created at", f"<t:{int(target.created_at.timestamp())}>", True),
-            ("Status", str(target.status).title(), True),
+            ("Status", f"{str(target.status).title()} [Blame Discord]", True),
             (
                 "Activity",
-                f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''}",
+                f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''} [Blame Discord]",
                 True,
             ),
             ("Joined at", f"<t:{int(target.joined_at.timestamp())}>", True),

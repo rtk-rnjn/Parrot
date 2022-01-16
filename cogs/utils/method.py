@@ -80,10 +80,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag, text):
         return await msg.reply(
             f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
         )
-    if view.value:
-        nsfw = True
-    else:
-        nsfw = False
+    nsfw = bool(view.value)
     await collection.insert_one(
         {
             "id": tag,

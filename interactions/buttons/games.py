@@ -3233,7 +3233,6 @@ class Games(Cog):
     @commands.group(name="minesweeper", aliases=["ms"], invoke_without_command=True)
     async def minesweeper(self, ctx):
         """Minesweeper game commands"""
-        pass
 
     @minesweeper.group(name="start")
     @commands.check(is_no_game)

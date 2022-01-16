@@ -37,13 +37,9 @@ def human_months(months: Iterable[Month]) -> str:
 class InChannelCheckFailure(CheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
 
-    pass
-
 
 class InMonthCheckFailure(CheckFailure):
     """Check failure for when a command is invoked outside of its allowed month."""
-
-    pass
 
 
 def seasonal_task(

@@ -44,7 +44,7 @@ class ErrorView(discord.ui.View):
         if interaction.user and interaction.user.id == self.author_id:
             return True
         await interaction.response.send_message(
-            f"You can't interact with this button", ephemeral=True
+            "You can't interact with this button", ephemeral=True
         )
         return False
 

@@ -2350,7 +2350,7 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2462,7 +2462,7 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2654,7 +2654,7 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2913,7 +2913,7 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2945,7 +2945,7 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
-    
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)

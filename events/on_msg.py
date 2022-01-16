@@ -332,12 +332,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_message(self, message):
-        if not message.guild or message.author.bot:
+        if not message.guild:
             return
-
+        if message.guild.me.id == message.author.id:
+            return
         message_to_send = await self._parse_snippets(message.content)
 
-        if 0 < len(message_to_send) <= 2000 and message_to_send.count("\n") <= 15:
+        if 0 < len(message_to_send) <= 1990:
             await message.channel.send(message_to_send)
             try:
                 await message.edit(suppress=True)
@@ -345,6 +346,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 pass
             except discord.Forbidden:
                 pass
+        if message.author.bot:
+            return
         await msg_increment(message.guild.id, message.author.id)  # for gw only
         await self.quick_answer(message)
         channel = await collection.find_one(

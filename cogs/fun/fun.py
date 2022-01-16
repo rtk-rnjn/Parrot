@@ -2350,6 +2350,22 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def bubble(self, ctx: Context, *, member: discord.Member = None):
+        """Bubble image generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
+        await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
@@ -2437,6 +2453,22 @@ class Fun(Cog):
     @Context.with_type
     async def radiate(self, ctx: Context, *, member: discord.Member = None):
         """Radiate image generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def cartoon(self, ctx: Context, *, member: discord.Member = None):
+        """Cartoon image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
         r = await self.bot.session.get(
@@ -2613,6 +2645,38 @@ class Fun(Cog):
     @Context.with_type
     async def shock(self, ctx: Context, *, member: discord.Member = None):
         """Shock image generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def curvy(self, ctx: Context, *, member: discord.Member = None):
+        """curvy image generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/wave", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
+        await ctx.reply(file=file_obj)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def hearts(self, ctx: Context, *, member: discord.Member = None):
+        """Hearts image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
         r = await self.bot.session.get(
@@ -2849,6 +2913,22 @@ class Fun(Cog):
             io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
         )
         await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def ads(self, ctx: Context, *, member: discord.Member = None):
+        """Ads image generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
+        await ctx.reply(file=file_obj)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
@@ -2856,6 +2936,22 @@ class Fun(Cog):
     @Context.with_type
     async def matrix(self, ctx: Context, *, member: discord.Member = None):
         """Matrix image generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await self.bot.session.get(
+            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
+        )
+        file_obj = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+        )
+        await ctx.reply(file=file_obj)
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def pattern(self, ctx: Context, *, member: discord.Member = None):
+        """Pattern image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
         r = await self.bot.session.get(

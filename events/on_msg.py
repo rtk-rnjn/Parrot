@@ -78,7 +78,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         ) as response:
             if response_format == "text":
                 return await response.text()
-            elif response_format == "json":
+            if response_format == "json":
                 return await response.json()
 
     def _find_ref(self, path: str, refs: tuple) -> tuple:

@@ -418,7 +418,6 @@ class Mod(Cog):
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
                 return
-            pass
 
         await mt._text_unlock(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel

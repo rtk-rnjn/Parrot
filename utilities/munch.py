@@ -375,7 +375,7 @@ try:
         return yaml.dump(self, **opts)
 
     def fromYAML(*args, **kwargs):
-        return munchify(yaml.load(*args, **kwargs))
+        return munchify(yaml.safe_load(*args, **kwargs))
 
     Munch.toYAML = toYAML
     Munch.fromYAML = staticmethod(fromYAML)

@@ -2926,7 +2926,7 @@ class Fun(Cog):
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
-            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
+            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.png"
         )
         await ctx.reply(file=file_obj)
 

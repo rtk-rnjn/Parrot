@@ -192,11 +192,11 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                     f"{after.category.name} ({after.category.id})",
                 )
             )
-        if not before.permissions_synced is after.permissions_synced:
+        if before.permissions_synced is not after.permissions_synced:
             ls.append(("`Toggled Permissions Sync:`", after.permissions_synced))
 
         if "text" in TYPE.lower():
-            if not before.nsfw is after.nsfw:
+            if before.nsfw is not after.nsfw:
                 ls.append(("`NSFW Toggled     :`", after.nsfw))
             if before.topic != after.topic:
                 ls.append(("`Topic Changed    :`", after.topic))

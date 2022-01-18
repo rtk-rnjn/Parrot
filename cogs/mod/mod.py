@@ -946,7 +946,7 @@ class Mod(Cog):
                     "reaction_add", timeout=60.0, check=check
                 )
             except asyncio.TimeoutError:
-                return await msg.delete()
+                return await msg.delete(delay=0)
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[0]:
                 await mt._ban(
@@ -1015,7 +1015,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=30, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 role = await commands.RoleConverter().convert(ctx, m.content)
                 await temp.delete()
                 await mt._add_roles(
@@ -1036,7 +1036,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=30, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 role = await commands.RoleConverter().convert(ctx, m.content)
                 await temp.delete()
                 await mt._remove_roles(
@@ -1058,7 +1058,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=30, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
 
                 await mt._change_nickname(
                     ctx.guild,
@@ -1102,7 +1102,7 @@ class Mod(Cog):
                     "reaction_add", timeout=60.0, check=check
                 )
             except asyncio.TimeoutError:
-                return await msg.delete()
+                return await msg.delete(delay=0)
 
             if str(reaction.emoji) == mt.TEXT_REACTION[0]:
                 await mt._text_lock(
@@ -1123,7 +1123,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 await mt._change_channel_topic(
                     ctx.guild,
                     ctx.command.name,
@@ -1141,7 +1141,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 await mt._change_channel_name(
                     ctx.guild,
                     ctx.command.name,
@@ -1183,7 +1183,7 @@ class Mod(Cog):
                     "reaction_add", timeout=60.0, check=check_reaction_vc
                 )
             except asyncio.TimeoutError:
-                return await msg.delete()
+                return await msg.delete(delay=0)
 
             if str(reaction.emoji) == mt.VC_REACTION[0]:
                 await mt._vc_lock(
@@ -1212,7 +1212,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 await mt._change_channel_name(
                     ctx.guild,
                     ctx.command.name,
@@ -1252,7 +1252,7 @@ class Mod(Cog):
                     "reaction_add", timeout=60.0, check=check_reaction_role
                 )
             except asyncio.TimeoutError:
-                return await msg.delete()
+                return await msg.delete(delay=0)
 
             if str(reaction.emoji) == mt.ROLE_REACTION[0]:
                 await mt._role_hoist(
@@ -1286,7 +1286,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 try:
                     color = int(m.content)
                 except Exception:
@@ -1310,7 +1310,7 @@ class Mod(Cog):
                 try:
                     m = await self.bot.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
-                    return await msg.delete()
+                    return await msg.delete(delay=0)
                 await mt._change_role_name(
                     ctx.guild,
                     ctx.command.name,
@@ -1322,65 +1322,7 @@ class Mod(Cog):
                 )
                 await self.log(ctx, "Role name changed", target, reason)
 
-        return await msg.delete()
-
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @Context.with_type
-    async def warn(self, ctx: Context, member: discord.Member, *, reason: str):
-        """A warning command"""
-        infrac = Infraction(self.bot)
-        mod = ctx.author.id
-        user = member.id
-        at = datetime.utcnow().timestamp()
-        await ctx.send(f"**{member}**! You are being warned!")
-        try:
-            await member.send(
-                f"You are being warned from the server **{ctx.guild.name}**\nReason: **{reason}*\nResponsible Moderator: **{ctx.author}** ({ctx.author.id})"
-            )
-        except Exception:
-            pass
-        finally:
-            await infrac.make_warn(
-                at=at,
-                reason=reason,
-                mod=mod,
-                expires_at=None,
-                guild_id=ctx.guild.id,
-                user=user,
-            )
-
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @Context.with_type
-    async def delwarn(
-        self, ctx: Context, member: discord.Member, *, caseID: int = None
-    ):
-        """To delete the warning"""
-        infrac = Infraction(self.bot)
-        mod = ctx.author.id
-        user = member.id
-        if caseID:
-            await infrac.del_warn_by_id(
-                guild_id=ctx.guild.id, user_id=member.id, case_id=caseID
-            )
-            await ctx.send(
-                f"{ctx.author.mention} deleted infraction ID: **{caseID}** of **{member}**"
-            )
-        else:
-            await infrac.del_warn_all(guild_id=ctx.guild.id, user_id=member.id)
-            await ctx.send(
-                f"{ctx.author.mention} deleted all the infraction of **{member}**"
-            )
-
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @Context.with_type
-    async def warnings(self, ctx: Context, *, member: discord.Member):
-        """To display warning log"""
-        infrac = Infraction(self.bot)
-        table = infrac.to_table(guild_id=ctx.guild.id, user_id=member.id)
-        await ctx.send(table)
+        return await msg.delete(delay=0)
 
     @tasks.loop(seconds=2)
     async def unban_task(self):

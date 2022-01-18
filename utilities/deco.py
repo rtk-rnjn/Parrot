@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import functools
-import logging
 import random
 from asyncio import Lock
 from collections.abc import Container, Iterable
@@ -10,37 +9,51 @@ from functools import wraps
 from typing import Callable, Optional, Union
 from weakref import WeakValueDictionary
 from datetime import datetime
-from discord import Colour, Embed
-from discord.ext import commands
-from discord.ext.commands import CheckFailure, Command, Context
 
-from .constants import ERROR_REPLIES, Month
+import discord
+from discord.ext import commands
+from discord.ext.commands import CheckFailure, Command
+from discord import Colour, Embed
+
+from .constants import ERROR_REPLIES, Month, Day
 from .checks import in_whitelist_check
+
+from core import Context
 
 ONE_DAY = 24 * 60 * 60
 
 
 def resolve_current_month() -> Month:
-    """
-    Determine current month w.r.t. `Client.month_override` env var.
-    If the env variable was set, current month always resolves to the configured value.
-    Otherwise, the current UTC month is given.
-    """
     return Month(datetime.utcnow().month)
 
+def resolve_current_day() -> Day:
+    return Day(datetime.utcnow().day)
+
+def resolve_current_time(*, _time: datetime) -> datetime:
+    return _time or datetime.utcnow()
 
 def human_months(months: Iterable[Month]) -> str:
     """Build a comma separated list of `months`."""
     return ", ".join(str(m) for m in months)
 
+def human_days(days: Iterable[Day]) -> str:
+    """Build a comma separated list of `days`."""
+    return ", ".join(str(m) for m in days)
+
+def human_time(past: datetime, future: datetime) -> str:
+    return f"{discord.utils.format_dt(past)} and {discord.utils.format_dt(future)}"
 
 class InChannelCheckFailure(CheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
 
-
 class InMonthCheckFailure(CheckFailure):
     """Check failure for when a command is invoked outside of its allowed month."""
 
+class InDayCheckFailure(CheckFailure):
+    """Check failure for when a command is invoked outside of its allowed day."""
+
+class InTimeCheckFaliure(CheckFailure):
+    """Check failure for when a command is invoked outside of its allowed time."""
 
 def seasonal_task(
     *allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY
@@ -92,6 +105,45 @@ def in_month_listener(*allowed_months: Month) -> Callable:
 
     return decorator
 
+def in_day_listener(*allowed_day: Day) -> Callable:
+    """
+    Shield a listener from being invoked outside of `allowed_day`.
+    The check is performed against current UTC Day.
+    """
+
+    def decorator(listener: Callable) -> Callable:
+        @functools.wraps(listener)
+        async def guarded_listener(*args, **kwargs) -> None:
+            """Wrapped listener will abort if not in allowed day."""
+            current_day = resolve_current_day()
+
+            if current_day in allowed_day:
+                # Propagate return value although it should always be None
+                return await listener(*args, **kwargs)
+
+        return guarded_listener
+
+    return decorator
+
+
+def in_time_listener(*, past: datetime, future: datetime) -> Callable:
+    """
+    Shield a listener from being invoked outside of `allowed_time`.
+    The check is performed against current UTC Day.
+    """
+
+    def decorator(listener: Callable) -> Callable:
+        @functools.wraps(listener)
+        async def guarded_listener(*args, **kwargs) -> None:
+            """Wrapped listener will abort if not in allowed day."""
+            current_time = resolve_current_time()
+            if past < current_time < future:
+                # Propagate return value although it should always be None
+                return await listener(*args, **kwargs)
+
+        return guarded_listener
+
+    return decorator
 
 def in_month_command(*allowed_months: Month) -> Callable:
     """
@@ -111,36 +163,46 @@ def in_month_command(*allowed_months: Month) -> Callable:
 
     return commands.check(predicate)
 
+def in_day_command(*allowed_day: Day) -> Callable:
+    """
+    Check whether the command was invoked in one of `enabled_days`.
+    Uses the current UTC day at the time of running the predicate.
+    """
+
+    async def predicate(ctx: Context) -> bool:
+        current_day = resolve_current_month()
+        can_run = current_day in allowed_day
+
+        if can_run:
+            return True
+        raise InDayCheckFailure(
+            f"Command can only be used in {human_days(allowed_day)}"
+        )
+
+    return commands.check(predicate)
+
+def in_time_command(*, past: datetime, future: datetime) -> Callable:
+    async def predicate(ctx: Context) -> bool:
+        current_time = resolve_current_month()
+        can_run = past < current_time < future
+
+        if can_run:
+            return True
+        raise InTimeCheckFaliure(
+            f"Command can only be used during {human_time(past, future)}"
+        )
+
+    return commands.check(predicate)
+
 
 def in_month(*allowed_months: Month) -> Callable:
-    """
-    Universal decorator for season-locking commands and listeners alike.
-    This only serves to determine whether the decorated callable is a command,
-    a listener, or neither. It then delegates to either `in_month_command`,
-    or `in_month_listener`, or raises TypeError, respectively.
-    Please note that in order for this decorator to correctly determine whether
-    the decorated callable is a cmd or listener, it **has** to first be turned
-    into one. This means that this decorator should always be placed **above**
-    the d.py one that registers it as either.
-    This will decorate groups as well, as those subclass Command. In order to lock
-    all subcommands of a group, its `invoke_without_command` param must **not** be
-    manually set to True - this causes a circumvention of the group's callback
-    and the seasonal check applied to it.
-    """
-
     def decorator(callable_: Callable) -> Callable:
         # Functions decorated as commands are turned into instances of `Command`
         if isinstance(callable_, Command):
-            logging.debug(
-                f"Command {callable_.qualified_name} will be locked to {human_months(allowed_months)}"
-            )
             actual_deco = in_month_command(*allowed_months)
 
         # D.py will assign this attribute when `callable_` is registered as a listener
         elif hasattr(callable_, "__cog_listener__"):
-            logging.debug(
-                f"Listener {callable_.__qualname__} will be locked to {human_months(allowed_months)}"
-            )
             actual_deco = in_month_listener(*allowed_months)
 
         # Otherwise we're unsure exactly what has been decorated
@@ -154,6 +216,48 @@ def in_month(*allowed_months: Month) -> Callable:
 
     return decorator
 
+
+def in_day(*allowed_days: Day) -> Callable:
+    def decorator(callable_: Callable) -> Callable:
+        # Functions decorated as commands are turned into instances of `Command`
+        if isinstance(callable_, Command):
+            actual_deco = in_day_command(*allowed_days)
+
+        # D.py will assign this attribute when `callable_` is registered as a listener
+        elif hasattr(callable_, "__cog_listener__"):
+            actual_deco = in_day_listener(*allowed_days)
+
+        # Otherwise we're unsure exactly what has been decorated
+        # This happens before the bot starts, so let's just raise
+        else:
+            raise TypeError(
+                f"Decorated object {callable_} is neither a command nor a listener"
+            )
+
+        return actual_deco(callable_)
+
+    return decorator
+
+def in_time(*, past: datetime, future: datetime) -> Callable:
+    def decorator(callable_: Callable) -> Callable:
+        # Functions decorated as commands are turned into instances of `Command`
+        if isinstance(callable_, Command):
+            actual_deco = in_time_command(past=past, future=future)
+
+        # D.py will assign this attribute when `callable_` is registered as a listener
+        elif hasattr(callable_, "__cog_listener__"):
+            actual_deco = in_time_listener(past=past, future=future)
+
+        # Otherwise we're unsure exactly what has been decorated
+        # This happens before the bot starts, so let's just raise
+        else:
+            raise TypeError(
+                f"Decorated object {callable_} is neither a command nor a listener"
+            )
+
+        return actual_deco(callable_)
+
+    return decorator
 
 def with_role(*role_ids: int) -> Callable:
     """Check to see whether the invoking user has any of the roles specified in role_ids."""

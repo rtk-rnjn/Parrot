@@ -490,7 +490,7 @@ class Meta(Cog):
             ),
             (
                 "General",
-                f"Roles: {len(ctx.guild.roles)}\n Emojis: {len(ctx.guild.emojis)}\n Boost Level: {ctx.guild.premium_tier}",
+                f"Roles: {len(ctx.guild.roles)}\nEmojis: {len(ctx.guild.emojis)}\nBoost Level: {ctx.guild.premium_tier}",
                 True,
             ),
             (

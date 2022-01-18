@@ -696,7 +696,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         return {"Bot": count}
 
     async def _complex_cleanup_strategy(self, ctx, search):
-        prefixes = tuple(self.bot.get_guild_prefixes(ctx.guild))  # thanks startswith
+        prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))  # thanks startswith
 
         def check(m):
             return m.author == ctx.me or m.content.startswith(prefixes)
@@ -705,7 +705,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         return Counter(m.author.display_name for m in deleted)
 
     async def _regular_user_cleanup_strategy(self, ctx, search):
-        prefixes = tuple(self.bot.get_guild_prefixes(ctx.guild))
+        prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not (

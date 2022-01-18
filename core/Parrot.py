@@ -384,6 +384,9 @@ class Parrot(commands.AutoShardedBot):
             )
         return commands.when_mentioned_or(prefix)(self, message)
 
+    async def get_guild_prefixes(self, guild: discord.Guild) -> typing.Optional[str]:
+        if data := await collection.find_one({"_id": guild.id}):
+            return data.get('prefix')
     async def send_raw(
         self, channel_id: int, content: str, **kwargs
     ) -> typing.Optional[discord.Message]:

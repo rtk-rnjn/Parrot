@@ -2,6 +2,7 @@ import enum
 from typing import NamedTuple
 from .emotes import EMOJIS
 
+
 class Colours:
     blue = 0x0279FD
     bright_green = 0x01D277
@@ -52,6 +53,7 @@ class Month(enum.IntEnum):
     def __str__(self) -> str:
         return self.name.title()
 
+
 class Day(enum.IntEnum):
     ONE = 1
     TWO = 2
@@ -86,7 +88,7 @@ class Day(enum.IntEnum):
     THIRTY_ONE = 31
 
     def __str__(self) -> str:
-        return self.name.replace('_', ' ').title()
+        return self.name.replace("_", " ").title()
 
 
 ERROR_REPLIES = [

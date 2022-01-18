@@ -158,7 +158,7 @@ class Misc(Cog):
                 embed=discord.Embed(
                     title=f"First message in {channel.name}",
                     url=msg.jump_url,
-                    description=f"{msg.content}", # fuck you pycord
+                    description=f"{msg.content}",  # fuck you pycord
                     timestamp=datetime.datetime.utcnow(),
                 ).set_footer(text=f"Message sent by {msg.author}")
             )
@@ -311,7 +311,7 @@ class Misc(Cog):
             emb.set_author(
                 name=str(snipe.author), icon_url=snipe.author.display_avatar.url
             )
-            emb.description = f"{self.sanitise(snipe.content)}" # fuck you pycord
+            emb.description = f"{self.sanitise(snipe.content)}"  # fuck you pycord
             emb.colour = snipe.author.colour
             emb.timestamp = snipe.created_at
             emb.set_footer(

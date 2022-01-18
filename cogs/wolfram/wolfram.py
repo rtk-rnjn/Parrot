@@ -41,7 +41,7 @@ async def send_embed(
 ) -> None:
     """Generate & send a response embed with Wolfram as the author."""
     embed = Embed(colour=colour)
-    embed.description = message_txt
+    embed.description = f"{message_txt}" # well, fuck you pycord
     embed.set_author(
         name="Wolfram Alpha", icon_url=WOLF_IMAGE, url="https://www.wolframalpha.com/"
     )

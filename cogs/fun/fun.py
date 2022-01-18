@@ -853,7 +853,7 @@ class Fun(Cog):
                     return
 
         embed.title = f"XKCD comic #{info['num']}"
-        embed.description = info["alt"]
+        embed.description = f"{info['alt']}" # fuck you pycord
         embed.url = f"{BASE_URL}/{info['num']}"
 
         if info["img"][-3:] in ("jpg", "png", "gif"):
@@ -1045,7 +1045,7 @@ class Fun(Cog):
                 embed = discord.Embed(
                     colour=Colours.gold,
                     title=f"Question #{len(done_questions)}",
-                    description=quiz_entry.question,
+                    description=f"{quiz_entry.question}", # fuck you pycord
                 )
 
                 if img_url := question_dict.get("img_url"):
@@ -1170,7 +1170,7 @@ class Fun(Cog):
         error_embed = discord.Embed(
             colour=Colours.soft_red,
             title=random.choice(NEGATIVE_REPLIES),
-            description=desc,
+            description=f"{desc}", # fuck you pycord
         )
 
         return error_embed

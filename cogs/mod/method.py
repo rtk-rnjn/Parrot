@@ -950,4 +950,3 @@ ROLE_REACTION = [
     "\N{RAINBOW}",
     "\N{LOWER LEFT FOUNTAIN PEN}",
 ]
-

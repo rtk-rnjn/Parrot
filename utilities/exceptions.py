@@ -41,20 +41,14 @@ class NotMe(ParrotCheckFaliure):
 
 class DisabledCommandChannel(ParrotCheckFaliure):
     def __init__(self):
-        super().__init__(
-            "Command Disabled. This command is disabled in this channel"
-        )
+        super().__init__("Command Disabled. This command is disabled in this channel")
 
 
 class CommandDisabledCategory(ParrotCheckFaliure):
     def __init__(self):
-        super().__init__(
-            "Command Disabled. This command is disabled in this category"
-        )
+        super().__init__("Command Disabled. This command is disabled in this category")
 
 
 class CommandDisabledServer(ParrotCheckFaliure):
     def __init__(self):
-        super().__init__(
-            "Command Disabled. This command is disabled in this server"
-        )
+        super().__init__("Command Disabled. This command is disabled in this server")

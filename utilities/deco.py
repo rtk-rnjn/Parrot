@@ -26,34 +26,44 @@ ONE_DAY = 24 * 60 * 60
 def resolve_current_month() -> Month:
     return Month(datetime.utcnow().month)
 
+
 def resolve_current_day() -> Day:
     return Day(datetime.utcnow().day)
 
+
 def resolve_current_time(*, _time: datetime) -> datetime:
     return _time or datetime.utcnow()
+
 
 def human_months(months: Iterable[Month]) -> str:
     """Build a comma separated list of `months`."""
     return ", ".join(str(m) for m in months)
 
+
 def human_days(days: Iterable[Day]) -> str:
     """Build a comma separated list of `days`."""
     return ", ".join(str(m) for m in days)
 
+
 def human_time(past: datetime, future: datetime) -> str:
     return f"{discord.utils.format_dt(past)} and {discord.utils.format_dt(future)}"
+
 
 class InChannelCheckFailure(CheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
 
+
 class InMonthCheckFailure(CheckFailure):
     """Check failure for when a command is invoked outside of its allowed month."""
+
 
 class InDayCheckFailure(CheckFailure):
     """Check failure for when a command is invoked outside of its allowed day."""
 
+
 class InTimeCheckFaliure(CheckFailure):
     """Check failure for when a command is invoked outside of its allowed time."""
+
 
 def seasonal_task(
     *allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY
@@ -105,6 +115,7 @@ def in_month_listener(*allowed_months: Month) -> Callable:
 
     return decorator
 
+
 def in_day_listener(*allowed_day: Day) -> Callable:
     """
     Shield a listener from being invoked outside of `allowed_day`.
@@ -145,6 +156,7 @@ def in_time_listener(*, past: datetime, future: datetime) -> Callable:
 
     return decorator
 
+
 def in_month_command(*allowed_months: Month) -> Callable:
     """
     Check whether the command was invoked in one of `enabled_months`.
@@ -163,6 +175,7 @@ def in_month_command(*allowed_months: Month) -> Callable:
 
     return commands.check(predicate)
 
+
 def in_day_command(*allowed_day: Day) -> Callable:
     """
     Check whether the command was invoked in one of `enabled_days`.
@@ -180,6 +193,7 @@ def in_day_command(*allowed_day: Day) -> Callable:
         )
 
     return commands.check(predicate)
+
 
 def in_time_command(*, past: datetime, future: datetime) -> Callable:
     async def predicate(ctx: Context) -> bool:
@@ -238,6 +252,7 @@ def in_day(*allowed_days: Day) -> Callable:
 
     return decorator
 
+
 def in_time(*, past: datetime, future: datetime) -> Callable:
     def decorator(callable_: Callable) -> Callable:
         # Functions decorated as commands are turned into instances of `Command`
@@ -258,6 +273,7 @@ def in_time(*, past: datetime, future: datetime) -> Callable:
         return actual_deco(callable_)
 
     return decorator
+
 
 def with_role(*role_ids: int) -> Callable:
     """Check to see whether the invoking user has any of the roles specified in role_ids."""

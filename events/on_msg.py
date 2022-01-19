@@ -349,7 +349,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             except discord.Forbidden:
                 pass
         else:
-            await message.channel.send(f"{message.author.mention} codeblock too large to send...")
+            await message.channel.send(
+                f"{message.author.mention} codeblock too large to send..."
+            )
         if message.author.bot:
             return
         await msg_increment(message.guild.id, message.author.id)  # for gw only

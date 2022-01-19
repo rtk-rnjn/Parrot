@@ -232,10 +232,10 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.NotOwner):
-            ERROR_EMBED.description = f"You must have ownership of the bot to run `{ctx.command.qualified_name}`"
-            ERROR_EMBED.title = f"{QUESTION_MARK} Not Owner {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+        # if isinstance(error, commands.NotOwner):
+        #     ERROR_EMBED.description = f"You must have ownership of the bot to run `{ctx.command.qualified_name}`"
+        #     ERROR_EMBED.title = f"{QUESTION_MARK} Not Owner {QUESTION_MARK}"
+        #     return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.PrivateMessageOnly):
             ERROR_EMBED.description = "This comamnd will only work in DM messages"

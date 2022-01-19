@@ -17,7 +17,6 @@ aiofile
 async-property
 git+https://github.com/Pycord-Development/pycord
 tabulate
-prettytable
 lru_dict
 python-dateutil
 click

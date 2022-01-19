@@ -1,5 +1,5 @@
 from __future__ import annotations
-from cogs.mod.flags import purgeFlag
+from cogs.mod.flags import purgeFlag, warnFlag
 from cogs.mod import method as mt
 
 from discord.ext import commands, tasks
@@ -15,8 +15,11 @@ from utilities.converters import BannedMember, reason_convert
 from utilities.database import parrot_db
 from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
-from utilities.infraction import Infraction
+from utilities.infraction import delete_many_warn, delete_warn_by_message_id, custom_delete_warn, warn, show_warn
 from datetime import datetime
+
+from cogs.meta.robopage import TextPageSource, RoboPages
+from typing import Optional
 
 collection = parrot_db["server_config"]
 mute_collection = parrot_db["mute"]
@@ -1323,6 +1326,67 @@ class Mod(Cog):
                 await self.log(ctx, "Role name changed", target, reason)
 
         return await msg.delete(delay=0)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    async def warn(self, ctx: Context, user: discord.Member, *, reason: reason_convert):
+        """To warn the user"""
+        try:
+            await user.send(f"{user.mention} you are being in **{ctx.guild.name}** warned for: **{reason}**")
+        except discord.Forbidden:
+            pass
+        finally:
+            _ = await warn(ctx.guild, user, reason, moderator=ctx.author, message=ctx.message, at=ctx.message.created_at.timestamp())
+            await ctx.send(f"{ctx.author.mention} **{user}** warned")
+    
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    async def delwarn(self, ctx: Context, warn_id: Optional[int]=None):
+        """To delete warn of user by ID"""
+        if not warn_id: return
+        await custom_delete_warn(ctx.guild, warn_id=warn_id)
+        await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    async def delwarns(self, ctx: Context, *, flags: warnFlag):
+        """To delete warn of user by ID"""
+        payload = {}
+        if flags.target:
+            payload['target'] = flags.target.id
+        if flags.moderator:
+            payload['moderator'] = flags.moderator.id
+        if flags.message:
+            payload['message'] = flags.message
+        if flags.channel:
+            payload['channel'] = flags.channel.id
+        if flags.message:
+            payload['warn_id'] = flags.warn_id
+        
+        await delete_many_warn(ctx.guild, payload)
+        await ctx.send(f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join([_ for _ in payload])}`")
+
+    @commands.command()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    async def warns(self, ctx: Context, *, flags: warnFlag):
+        """To display warning in the server"""
+        payload = {}
+        if flags.target:
+            payload['target'] = flags.target.id
+        if flags.moderator:
+            payload['moderator'] = flags.moderator.id
+        if flags.message:
+            payload['message'] = flags.message
+        if flags.channel:
+            payload['channel'] = flags.channel.id
+        if flags.message:
+            payload['warn_id'] = flags.warn_id
+        data = await show_warn(ctx.guild, payload)        
+        page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
+        await page.start()
 
     @tasks.loop(seconds=2)
     async def unban_task(self):

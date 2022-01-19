@@ -1,127 +1,69 @@
 from __future__ import annotations
-from prettytable import PrettyTable
-from core import Parrot
-from utilities.database import parrot_db, warn_db
 
-from typing import Optional
+from discord.ext import commands
+import discord
 
+from typing import Optional, Union
 
-class Infraction:
-    def __init__(self, bot: Parrot) -> None:
-        self.bot = bot
-        self._parrot_collection = parrot_db["server_config"]
-        self._warn_db = warn_db
+from datetime import datetime
 
-    async def total_warns(self) -> int:
-        if self._warn_db is None:
-            self._warn_db = await self.bot.db("warn_db")
+from utilities.database import warn_db, parrot_db
+collection_config = parrot_db['server_config']
 
-        collection = self._warn_db[str(self.guild.id)]
-        data = await collection.find_one({"_id": self.user.id})
-        if not data:
-            return 0
-        return len(data["warns"])
+async def get_warn_count(guild: discord.Guild) -> Optional[int]:
+    if data := await collection_config.find_one({'_id': guild.id, 'warn_count': {'exists': True}}):
+        return data['warn_count']
+    else:
+        await collection_config.update_one({'_id': guild.id}, {'$set': {'warn_count': 1}})
+        return 1
 
-    async def total_warns_server(self) -> int:
-        data = await self._parrot_collection.find_one({"_id": self.guild.id})
-        try:
-            return data["warn_count"]
-        except KeyError:
-            await self._parrot_collection.update_one(
-                {"_id": self.guild_id}, {"$set": {"warn_count": 1}}
-            )
-            return 0
+async def warn(
+    guild: discord.Guild,
+    user: Union[
+        discord.Member, 
+        discord.User], 
+    reason: str, *, 
+    moderator: discord.Member,
+    expires_at: Optional[float]=None,
+    message: Optional[discord.Message]=None,
+    at: Optional[float]=None
+) -> dict:
+    post = {
+        'warn_id': await get_warn_count(guild),
+        'target': user.id,
+        'moderator': moderator.id,
+        'reason': reason,
+        'expires_at': expires_at,
+        'message_link': message.jump_url,
+        'channel': message.channel.id,
+        'message': message.id,
+        'at': at
+    }
+    collection = warn_db[f"{guild.id}"]
+    await collection.insert_one(post)
+    return post
 
-    async def to_table(self, *, guild_id: int, user_id: int) -> str:
-        my_table = PrettyTable(["Case ID", "AT", "Reason", "Moderator", "Expires At"])
-        if self._warn_db is None:
-            self._warn_db = await self.bot.db("warn_db")
+async def custom_delete_warn(guild: discord.Guild, **kwargs) -> None:
+    collection = warn_db[f"{guild.id}"]
+    await collection.delete_one(kwargs)
 
-        collection = self._warn_db[str(guild_id)]
-        data = await collection.find_one({"_id": user_id})
-        if not data:
-            return str(my_table)
-        if len(data["warns"]) == 0:
-            return str(my_table)
+async def delete_warn_by_message_id(guild: discord.Guild, *, messageID: int) -> None:
+    collection = warn_db[f"{guild.id}"]
+    await collection.delete_one({'message': messageID})
 
-        for data in data["warns"]:
-            my_table.add_row(
-                data["case_id"],
-                data["at"],
-                data["reason"],
-                data["mod"],
-                data["expires_at"],
-            )
+async def delete_many_warn(guild: discord.Guild, **kw) -> None:
+    collection = warn_db[f"{guild.id}"]
+    await collection.delete_many(kw)
 
-        return str(my_table)
+async def edit_warn(guild: discord.Guild, **kw):
+    collection = warn_db[f"{guild.id}"]
+    await collection.update_one(kw)
 
-    async def get_case_id(self) -> int:
-        if self._parrot_collection is None:
-            parrot_db = await self.bot.db("parrot_db")
-            self._parrot_collection = parrot_db["server_config"]
-
-        if self._warn_db is None:
-            self._warn_db = await self.bot.db("warn_db")
-
-        data = await self._parrot_collection.find_one({"_id": self.guild_id})
-        try:
-            return data["warn_count"]
-        except KeyError:
-            await self._parrot_collection.update_one(
-                {"_id": self.guild_id}, {"$set": {"warn_count": 1}}
-            )
-            return 1
-
-    async def make_warn(
-        self,
-        *,
-        at: int,
-        reason: str,
-        mod: int,
-        expires_at: Optional[int],
-        guild_id: int,
-        user_id: int,
-        auto: Optional[bool] = True,
-    ) -> dict:
-        case_id = self.get_case_id()
-        warn = {
-            "case_id": case_id,
-            "at": at,
-            "reason": reason,
-            "mod": mod,
-            "expires_at": expires_at,
-        }
-        await self._parrot_collection.update_one(
-            {"_id": guild_id}, {"$inc": {"warn_count": 1}}
-        )
-        if auto:
-            await self.add_warn(guild_id=guild_id, user_id=user_id, warn=warn)
-        return warn
-
-    async def add_warn(self, guild_id: int, user_id: int, warn: dict) -> dict:
-        collection = self._warn_db[f"{guild_id}"]
-
-        if _ := await collection.find_one({"_id": user_id}):
-            await collection.insert_one({"_id": user_id, "warns": [warn]})
-        else:
-            await collection.update_one(
-                {"_id": user_id}, {"$addToSet": {"warns": warn}}
-            )
-        return warn
-
-    async def del_warn_all(self, guild_id: int, user_id: int) -> None:
-        collection = self._warn_db[f"{guild_id}"]
-        if _ := await collection.find_one({"_id": user_id}):
-            await collection.update_one({"_id": user_id}, {"$set": {"warns": []}})
-
-    async def del_warn_by_id(self, guild_id: int, user_id: int, case_id: int) -> None:
-        collection = self._warn_db[f"{guild_id}"]
-        await collection.update_one(
-            {"_id": user_id}, {"$pull": {"warns.case_id": case_id}}
-        )
-
-    async def del_warn_by_mod(self, guild_id: int, user_id: int, mod: int) -> None:
-        collection = self._warn_db[f"{guild_id}"]
-        await collection.update_one(
-            {"_id": user_id}, {"$pull": {"warns.mod": mod}}, {"multi": True}
-        )
+async def show_warn(guild: discord.Guild, **kw):
+    collection = warn_db[f"{guild.id}"]
+    temp = {"User": [], "Moderator": [], "At": []}
+    async for data in collection.find({**kw}):
+        temp['User'].append(data['target'])
+        temp['Moderator'].append(data['moderator'])
+        temp['At'].append(f"{datetime.fromtimestamp(data['at'])}")
+    return temp

@@ -696,7 +696,9 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         return {"Bot": count}
 
     async def _complex_cleanup_strategy(self, ctx, search):
-        prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))  # thanks startswith
+        prefixes = tuple(
+            await self.bot.get_guild_prefixes(ctx.guild)
+        )  # thanks startswith
 
         def check(m):
             return m.author == ctx.me or m.content.startswith(prefixes)

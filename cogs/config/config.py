@@ -938,7 +938,8 @@ Server Wide?:{data['server']}"""
             },
         }
         await csc.update_one(
-            {"_id": ctx.guild.id}, {"$set": {f"automod.{action.lower()}.autowarn": data}}
+            {"_id": ctx.guild.id},
+            {"$set": {f"automod.{action.lower()}.autowarn": data}},
         )
         await ctx.send(
             f"""{ctx.author.mention} configuration you set:

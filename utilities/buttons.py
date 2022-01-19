@@ -72,6 +72,7 @@ class Prompt(discord.ui.View):
         self.value = False
         self.stop()
 
+
 class Delete(discord.ui.View):
     def __init__(self, user):
         super().__init__(timeout=30.0)

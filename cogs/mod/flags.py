@@ -22,7 +22,7 @@ class reasonFlag(
 
 
 class warnFlag(
-    commands.FlagConverter, case_insensitive=True, prefix='--', delimiter=" "
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
     message: typing.Optional[int] = None
     warn_id: typing.Optional[int] = None

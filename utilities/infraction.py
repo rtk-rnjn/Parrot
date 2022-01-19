@@ -8,62 +8,73 @@ from typing import Optional, Union
 from datetime import datetime
 
 from utilities.database import warn_db, parrot_db
-collection_config = parrot_db['server_config']
+
+collection_config = parrot_db["server_config"]
+
 
 async def get_warn_count(guild: discord.Guild) -> Optional[int]:
-    if data := await collection_config.find_one({'_id': guild.id, 'warn_count': {'exists': True}}):
-        return data['warn_count']
+    if data := await collection_config.find_one(
+        {"_id": guild.id, "warn_count": {"exists": True}}
+    ):
+        return data["warn_count"]
     else:
-        await collection_config.update_one({'_id': guild.id}, {'$set': {'warn_count': 1}})
+        await collection_config.update_one(
+            {"_id": guild.id}, {"$set": {"warn_count": 1}}
+        )
         return 1
+
 
 async def warn(
     guild: discord.Guild,
-    user: Union[
-        discord.Member, 
-        discord.User], 
-    reason: str, *, 
+    user: Union[discord.Member, discord.User],
+    reason: str,
+    *,
     moderator: discord.Member,
-    expires_at: Optional[float]=None,
-    message: Optional[discord.Message]=None,
-    at: Optional[float]=None
+    expires_at: Optional[float] = None,
+    message: Optional[discord.Message] = None,
+    at: Optional[float] = None,
 ) -> dict:
     post = {
-        'warn_id': await get_warn_count(guild),
-        'target': user.id,
-        'moderator': moderator.id,
-        'reason': reason,
-        'expires_at': expires_at,
-        'message_link': message.jump_url,
-        'channel': message.channel.id,
-        'message': message.id,
-        'at': at
+        "warn_id": await get_warn_count(guild),
+        "target": user.id,
+        "moderator": moderator.id,
+        "reason": reason,
+        "expires_at": expires_at,
+        "message_link": message.jump_url,
+        "channel": message.channel.id,
+        "message": message.id,
+        "at": at,
     }
     collection = warn_db[f"{guild.id}"]
     await collection.insert_one(post)
     return post
 
+
 async def custom_delete_warn(guild: discord.Guild, **kwargs) -> None:
     collection = warn_db[f"{guild.id}"]
     await collection.delete_one(kwargs)
 
+
 async def delete_warn_by_message_id(guild: discord.Guild, *, messageID: int) -> None:
     collection = warn_db[f"{guild.id}"]
-    await collection.delete_one({'message': messageID})
+    await collection.delete_one({"message": messageID})
+
 
 async def delete_many_warn(guild: discord.Guild, **kw) -> None:
     collection = warn_db[f"{guild.id}"]
     await collection.delete_many(kw)
 
+
 async def edit_warn(guild: discord.Guild, **kw):
     collection = warn_db[f"{guild.id}"]
     await collection.update_one(kw)
+
 
 async def show_warn(guild: discord.Guild, **kw):
     collection = warn_db[f"{guild.id}"]
     temp = {"User": [], "Moderator": [], "At": []}
     async for data in collection.find({**kw}):
-        temp['User'].append(data['target'])
-        temp['Moderator'].append(data['moderator'])
-        temp['At'].append(f"{datetime.fromtimestamp(data['at'])}")
+        temp["User"].append(data["target"])
+        temp["Moderator"].append(data["moderator"])
+        temp["At"].append(f"{datetime.fromtimestamp(data['at'])}")
     return temp

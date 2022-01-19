@@ -35,7 +35,7 @@ class ShortTime:
 
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
         now = now or datetime.datetime.now(datetime.timezone.utc)
-        self.dt = now + relativedelta(**data)
+        self.dt: datetime.datetime = now + relativedelta(**data)
 
     @classmethod
     async def convert(cls, ctx, argument):

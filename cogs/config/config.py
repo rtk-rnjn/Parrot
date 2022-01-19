@@ -934,7 +934,7 @@ Server Wide?:{data['server']}"""
             "to_delete": flags.delete,
             "punish": {
                 "type": flags.punish if flags.punish in PUNISH else None,
-                "duration": flags.duration.timestamp() if flags.duration else None,
+                "duration": flags.duration.dt.timestamp() if flags.duration and flags.punish not in ('kick', 'addrole', 'removerole') else None,
             },
         }
         await csc.update_one(

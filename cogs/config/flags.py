@@ -11,7 +11,7 @@ class AutoWarn(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
     enable: Optional[convert_bool] = True
-    count: Optional[int]
-    punish: Optional[str]
-    duration: Optional[ShortTime]
+    count: Optional[int] = None
+    punish: Optional[str] = None
+    duration: Optional[ShortTime] = None
     delete: Optional[convert_bool] = True

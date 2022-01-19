@@ -1382,7 +1382,7 @@ class Mod(Cog):
         if flags.message:
             payload["warn_id"] = flags.warn_id
 
-        await delete_many_warn(ctx.guild, payload)
+        await delete_many_warn(ctx.guild, **payload)
         await ctx.send(
             f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join([_ for _ in payload])}`"
         )
@@ -1402,7 +1402,7 @@ class Mod(Cog):
             payload["channel"] = flags.channel.id
         if flags.message:
             payload["warn_id"] = flags.warn_id
-        data = await show_warn(ctx.guild, payload)
+        data = await show_warn(ctx.guild, **payload)
         page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
         await page.start()
 

@@ -934,11 +934,15 @@ Server Wide?:{data['server']}"""
             "to_delete": flags.delete,
             "punish": {
                 "type": flags.punish if flags.punish in PUNISH else None,
-                "duration": flags.duration.dt.timestamp() if flags.duration and flags.punish not in ('kick', 'addrole', 'removerole') else None,
+                "duration": flags.duration.dt.timestamp()
+                if flags.duration
+                and flags.punish not in ("kick", "addrole", "removerole")
+                else None,
             },
         }
         await csc.update_one(
-            {"_id": ctx.guild.id}, {"$set": {f"automod.{action.lower()}.autowarn": data}}
+            {"_id": ctx.guild.id},
+            {"$set": {f"automod.{action.lower()}.autowarn": data}},
         )
         await ctx.send(
             f"""{ctx.author.mention} configuration you set:

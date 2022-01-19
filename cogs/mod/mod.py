@@ -1335,7 +1335,7 @@ class Mod(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     async def warn(self, ctx: Context, user: discord.Member, *, reason: reason_convert):
         """To warn the user"""
         try:
@@ -1357,7 +1357,7 @@ class Mod(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     async def delwarn(self, ctx: Context, warn_id: Optional[int] = None):
         """To delete warn of user by ID"""
         if not warn_id:
@@ -1367,7 +1367,7 @@ class Mod(Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     async def delwarns(self, ctx: Context, *, flags: warnFlag):
         """To delete warn of user by ID"""
         payload = {}
@@ -1388,7 +1388,7 @@ class Mod(Cog):
         )
 
     @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(manage_message=True))
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     async def warns(self, ctx: Context, *, flags: warnFlag):
         """To display warning in the server"""
         payload = {}

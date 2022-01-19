@@ -23,7 +23,7 @@ python-dateutil
 click
 parsedatetime
 topggpy
-Brotli
+brotlipy
 aiodns
 orjson
 cchardet

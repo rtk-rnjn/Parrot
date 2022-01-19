@@ -341,7 +341,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000:
-            await message.channel.send(message_to_send, view=Delete(message.author.id))
+            await message.channel.send(message_to_send, view=Delete(message.author))
             try:
                 await message.edit(suppress=True)
             except discord.NotFound:

@@ -71,3 +71,25 @@ class Prompt(discord.ui.View):
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.value = False
         self.stop()
+
+class Delete(discord.ui.View):
+    def __init__(self, user_id):
+        super().__init__(timeout=30.0)
+        self.user_id = user_id
+        self.value = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message(
+                "Sorry, you can't use this interaction as it is not started by you.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
+    async def confirm(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        await interaction.delete_original_message()
+        self.stop()

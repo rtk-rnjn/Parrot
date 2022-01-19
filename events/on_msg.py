@@ -19,6 +19,8 @@ import typing as tp
 
 from utilities.database import parrot_db, msg_increment
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
+from utilities.buttons import Delete
+
 from time import time
 
 collection = parrot_db["global_chat"]
@@ -338,8 +340,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
         message_to_send = await self._parse_snippets(message.content)
 
-        if 0 < len(message_to_send) <= 1990:
-            await message.channel.send(message_to_send)
+        if 0 < len(message_to_send) <= 2000:
+            await message.channel.send(message_to_send, view=Delete(message.author.id))
             try:
                 await message.edit(suppress=True)
             except discord.NotFound:

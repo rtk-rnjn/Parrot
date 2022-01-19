@@ -28,4 +28,4 @@ class warnFlag(
     warn_id: typing.Optional[int] = None
     moderator: typing.Union[discord.Member, discord.User] = None
     target: typing.Union[discord.Member, discord.User] = None
-    channel: typing.Union[discord.Channel, discord.Thread] = None
+    channel: typing.Union[discord.TextChannel, discord.Thread] = None

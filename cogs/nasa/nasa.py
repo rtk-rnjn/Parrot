@@ -118,6 +118,8 @@ class NASA(Cog):
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
             )
             em_list.append(embed)
+        if not em_list:
+            return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
         # paginator = Paginator(pages=em_list, timeout=60.0)
         # await paginator.start(ctx)
@@ -197,6 +199,8 @@ class NASA(Cog):
                     url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
                 )
                 embed.set_footer(text=f"Page {index+1}/{len(date)} | {ctx.author.name}")
+        if not em_list:
+            return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
         # paginator = Paginator(pages=em_list, timeout=60.0)
 
@@ -282,7 +286,8 @@ class NASA(Cog):
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
             )
             em_list.append(embed)
-
+        if not em_list:
+            return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
         # paginator = Paginator(pages=em_list, timeout=60.0)
 
@@ -296,16 +301,12 @@ class NASA(Cog):
         link = f"https://images-api.nasa.gov/search?q={string}"
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:
-                if r.status == 404:
+                if r.status >= 300:
                     return await ctx.reply(
-                        f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library."
+                        f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
                     )
-                try:
+                else:
                     res = await r.json()
-                except Exception as e:
-                    return await ctx.reply(
-                        f"For some reason, can not search any image or video at this time: Error raised {e}"
-                    )
 
         if not res["collection"]["items"]:
             await ctx.reply(
@@ -355,6 +356,8 @@ class NASA(Cog):
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
             )
             em_list.append(embed)
+        if not em_list:
+            return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
         # paginator = Paginator(pages=em_list, timeout=60.0)
         # await paginator.start(ctx)

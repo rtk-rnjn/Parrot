@@ -2112,7 +2112,7 @@ class Fun(Cog):
                 url=f"{_link}",
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.add_field(name="Example", value=f"{example}")
+            embed.add_field(name="Example", value=f"{example[:250:]}...")
             embed.set_author(name=f"Author: {author}")
             embed.set_footer(
                 text=f"\N{THUMBS UP SIGN} {thumbs_up} • \N{THUMBS DOWN SIGN} {thumbs_down}"

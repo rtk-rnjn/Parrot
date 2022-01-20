@@ -58,7 +58,7 @@ class LinkProt(Cog):
             if any(temp in message.content for temp in whitelist):
                 return
             try:
-                to_delete = data['automod']['antilinks']['autowarn']['to_delete']
+                to_delete = data["automod"]["antilinks"]["autowarn"]["to_delete"]
             except KeyError:
                 to_delete = True
 
@@ -66,12 +66,19 @@ class LinkProt(Cog):
                 await message.delete(delay=0)
 
             try:
-                to_warn = data['automod']['antilinks']['autowarn']['enable']
+                to_warn = data["automod"]["antilinks"]["autowarn"]["enable"]
             except KeyError:
                 to_warn = False
 
             if to_warn:
-                await warn(message.guild, message.author, "Automod: Mass Mention", moderator=self.bot.user, message=message, at=message.created_at, )
+                await warn(
+                    message.guild,
+                    message.author,
+                    "Automod: Mass Mention",
+                    moderator=self.bot.user,
+                    message=message,
+                    at=message.created_at,
+                )
 
             has_links = await self.has_links(message.content)
 
@@ -80,7 +87,6 @@ class LinkProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**",
                     delete_after=10,
                 )
-
 
     @tasks.loop(hours=0.5)
     async def update_data(self):

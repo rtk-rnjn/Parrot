@@ -78,6 +78,4 @@ async def show_warn(guild: discord.Guild, **kw):
         temp["User"].append(data["target"])
         temp["Moderator"].append(data["moderator"])
         temp["At"].append(f"{datetime.fromtimestamp(data['at'])}")
-    return str(
-        tabulate(temp, headers="keys", tablefmt="pretty")
-    )
+    return str(tabulate(temp, headers="keys", tablefmt="pretty"))

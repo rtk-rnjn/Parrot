@@ -2,7 +2,7 @@ from __future__ import annotations
 import discord
 
 from utilities.database import parrot_db
-
+from utilities.infraction import warn
 import re
 import random
 import typing
@@ -84,16 +84,57 @@ class EmojiCapsProt(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        if message.author.guild_permissions.administrator:
+        perms = message.author.guild_permissions
+
+        if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
         caps_ = await self.is_caps_infilterated(message)
         emoj_ = await self.is_emoji_infilterated(message)
+        if data := await self.collection.find_one(
+            {"_id": message.guild.id, "automod.emoji.enable": {"$exists": True}}
+        ):
+            if emoj_:
+                try:
+                    to_delete = data['automod']['emoji']['autowarn']['to_delete']
+                except KeyError:
+                    to_delete = True
 
-        if emoj_ or caps_:
-            await self.delete(
-                message, reason="Excess Caps" if caps_ else "Excess Emoji"
-            )
-            await message.channel.send(
-                f"{message.author.mention} *{random.choice(quotes)}* **[{'Excess Caps' if caps_ else 'Excess Emoji'}] [Warning]**",
-                delete_after=10,
-            )
+                if to_delete:
+                    await message.delete(delay=0)
+
+                try:
+                    to_warn = data['automod']['emoji']['autowarn']['enable']
+                except KeyError:
+                    to_warn = False
+
+                if to_warn:
+                    await warn(message.guild, message.author, "Automod: Mass Emoji", moderator=self.bot.user, message=message, at=message.created_at, )
+
+                await message.channel.send(
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] [Warning]**",
+                    delete_after=10,
+                )
+        if data := await self.collection.find_one(
+            {"_id": message.guild.id, "automod.caps.enable": {"$exists": True}}
+        ):
+            if caps_:
+                try:
+                    to_delete = data['automod']['caps']['autowarn']['to_delete']
+                except KeyError:
+                    to_delete = True
+
+                if to_delete:
+                    await message.delete(delay=0)
+
+                try:
+                    to_warn = data['automod']['caps']['autowarn']['enable']
+                except KeyError:
+                    to_warn = False
+
+                if to_warn:
+                    await warn(message.guild, message.author, "Automod: Excess Caps", moderator=self.bot.user, message=message, at=message.created_at, )
+
+                await message.channel.send(
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] [Warning]**",
+                    delete_after=10,
+                )

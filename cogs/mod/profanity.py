@@ -37,7 +37,9 @@ class Profanity(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        if message.author.guild_permissions.administrator:
+        perms = message.author.guild_permissions
+
+        if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
         bad_words = await self.get_bad_words(message)
 
@@ -68,7 +70,7 @@ class Profanity(Cog):
             try:
                 to_delete = data['automod']['profanity']['autowarn']['to_delete']
             except KeyError:
-                to_delete = False
+                to_delete = True
 
             if to_delete:
                 await message.delete(delay=0)

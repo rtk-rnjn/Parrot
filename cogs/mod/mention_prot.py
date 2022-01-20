@@ -27,7 +27,9 @@ class MentionProt(Cog):
         if message.author.bot or (not message.guild):
             return
 
-        if message.author.guild_permissions.administrator:
+        perms = message.author.guild_permissions
+
+        if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
 
         try:
@@ -59,7 +61,7 @@ class MentionProt(Cog):
             try:
                 to_delete = data['automod']['mention']['autowarn']['to_delete']
             except KeyError:
-                to_delete = False
+                to_delete = True
 
             if to_delete:
                 await message.delete(delay=0)

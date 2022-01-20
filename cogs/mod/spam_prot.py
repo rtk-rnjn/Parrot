@@ -57,7 +57,7 @@ class SpamProt(Cog):
                 try:
                     to_delete = data['automod']['spam']['autowarn']['to_delete']
                 except KeyError:
-                    to_delete = False
+                    to_delete = True
 
                 if to_delete:
                     await self.delete(message)

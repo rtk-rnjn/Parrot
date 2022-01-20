@@ -1428,5 +1428,4 @@ class Mod(Cog):
 
     @tasks.loop()
     async def warn_task(self, **kw):
-        ctx = kw.get('ctx')
-        
+        ctx = kw.get("ctx")

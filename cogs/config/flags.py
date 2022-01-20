@@ -16,6 +16,7 @@ class AutoWarn(
     duration: Optional[ShortTime] = None
     delete: Optional[convert_bool] = True
 
+
 class warnConfig(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):

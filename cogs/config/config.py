@@ -121,13 +121,11 @@ class BotConfig(Cog):
         await ctx.reply(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
         )
-
+    
     @config.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def warnadd(
-        self, ctx: Context, count: int, action: str, duration: ShortTime = None
-    ):
+    async def warnadd(self, ctx: Context, count: int, action: str, duration: ShortTime=None):
         """To configure the warn settings"""
         ACTIONS = [
             "ban",
@@ -138,32 +136,19 @@ class BotConfig(Cog):
             "block",
         ]
         if action.lower() not in ACTIONS:
-            return await ctx.send(
-                f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
-            )
-
-        if _ := await csc.find_one({"_id": ctx.guild.id, "warn_db.count": count}):
-            return await ctx.send(
-                f"{ctx.author.mention} warn count {count} already exists."
-            )
+            return await ctx.send(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
+        
+        if _ := await csc.find_one({'_id': ctx.guild.id, 'warn_db.count': count}):
+            return await ctx.send(f"{ctx.author.mention} warn count {count} already exists.")
         await csc.update_one(
-            {"_id": ctx.guild.id},
+            {'_id': ctx.guild.id},
             {
-                "$addToSet": {
-                    "warn_auto": [
-                        {
-                            "count": count,
-                            "action": action.lower(),
-                            "duration": duration.dt.timestamp()
-                            - datetime.utcnow().timestamp()
-                            if duration
-                            else None,
-                        }
-                    ]
+                '$addToSet': {
+                    "warn_auto": [{'count': count, 'action': action.lower(), 'duration': duration.dt.timestamp() - datetime.utcnow().timestamp() if duration else None}]
                 }
-            },
+            }
         )
-
+    
     @config.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
@@ -177,17 +162,20 @@ class BotConfig(Cog):
             "mute",
             "block",
         ]
-        payload = {}
+        payload={}
         if flags.action:
             if flags.action.lower() not in ACTIONS:
-                return await ctx.send(
-                    f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
-                )
-            payload["action"] = flags.action.lower()
+                return await ctx.send(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
+            payload['action'] = flags.action.lower()
         if flags.count:
-            payload["count"] = flags.count
+            payload['count'] = flags.count
         await csc.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"warn_auto": {**payload}}}
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    "warn_auto": {**payload}
+                }
+            }
         )
 
     @config.command(aliases=["mute-role"])
@@ -994,7 +982,7 @@ Server Wide?:{data['server']}"""
             return
         data = {
             "enabled": flags.enable,
-            "warn_count": flags.count,
+            "count": flags.count, # NOTE: its just count
             "to_delete": flags.delete,
             "punish": {
                 "type": flags.punish if flags.punish in PUNISH else None,

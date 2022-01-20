@@ -6,9 +6,9 @@ import typing
 from discord.ext import tasks
 import discord
 import random
-
+import re
 from utilities.database import parrot_db
-
+from utilities.infraction import warn
 from core import Parrot, Cog
 
 with open("extra/duke_nekum.txt") as f:
@@ -27,6 +27,11 @@ class Profanity(Cog):
             return self.data[message.guild.id]
         except KeyError:
             return None
+    
+    def isin(self, phrase: str, sentence: str) -> bool:
+        word = re.escape(phrase)
+        pattern = rf'\b{word}\b'
+        return re.search(pattern, sentence) is not None
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -60,16 +65,27 @@ class Profanity(Cog):
             if not bad_words:
                 return
 
-            if any(temp in message.content.lower().split(" ") for temp in bad_words):
+            try:
+                to_delete = data['automod']['profanity']['autowarn']['to_delete']
+            except KeyError:
+                to_delete = False
+
+            if to_delete:
+                await message.delete(delay=0)
+
+            try:
+                to_warn = data['automod']['profanity']['autowarn']['enable']
+            except KeyError:
+                to_warn = False
+
+            if to_warn:
+                await warn(message.guild, message.author, "Automod: Bad words usage", moderator=self.bot.user, message=message, at=message.created_at, )
+
+            if any(self.isin(word, message.content.lower()) for word in bad_words):
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] [Warning]**",
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
-
-                try:
-                    await message.delete()
-                except Exception:
-                    pass
 
     @tasks.loop(seconds=5)
     async def update_data(self):

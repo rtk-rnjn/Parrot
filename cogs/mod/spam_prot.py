@@ -7,6 +7,7 @@ import discord
 import random
 
 from utilities.database import parrot_db
+from utilities.infraction import warn
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -17,7 +18,7 @@ class SpamProt(Cog):
         self.bot = bot
         self.collection = parrot_db["server_config"]
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            10, 12.0, commands.BucketType.member
+            5, 5, commands.BucketType.member
         )
 
     async def delete(self, message: discord.Message) -> None:
@@ -26,15 +27,18 @@ class SpamProt(Cog):
 
         try:
             await message.channel.purge(5, check=check)
-        except discord.Forbidden:
+        except discord.Forbidden:  # this is faster than `if` `else`
             pass
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        if message.author.guild_permissions.administrator:
+        perms = message.author.guild_permissions
+
+        if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
+
         bucket = self.cd_mapping.get_bucket(message)
         retry_after = bucket.update_rate_limit()
         if retry_after:
@@ -50,8 +54,24 @@ class SpamProt(Cog):
 
                 if message.channel.id in ignore:
                     return
-                await self.delete(message)
+                try:
+                    to_delete = data['automod']['spam']['autowarn']['to_delete']
+                except KeyError:
+                    to_delete = False
+
+                if to_delete:
+                    await self.delete(message)
+
+                try:
+                    to_warn = data['automod']['spam']['autowarn']['enable']
+                except KeyError:
+                    to_warn = False
+
+                if to_warn:
+                    await warn(message.guild, message.author, "Automod: Spammed 5 messages in 5 seconds", 
+                    moderator=self.bot.user, message=message, at=message.created_at, )
+
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] [Warning]**",
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )

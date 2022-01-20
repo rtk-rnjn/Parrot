@@ -71,7 +71,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.collection = parrot_db["logging"]
 
-    async def paste(self, text):
+    async def paste(self, text: str):
         """Return an online bin of given text"""
         async with aiohttp.ClientSession() as aioclient:
             post = await aioclient.post("https://hastebin.com/documents", data=text)

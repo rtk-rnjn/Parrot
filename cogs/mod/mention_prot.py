@@ -8,6 +8,8 @@ from discord.ext import tasks
 import discord
 import random
 
+from utilities.infraction import warn
+
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
 
@@ -19,11 +21,6 @@ class MentionProt(Cog):
         self.data = {}
         self.clear_data.start()
 
-    async def delete(self, message: discord.Message):
-        try:
-            await message.delete()
-        except Exception:
-            return
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -59,11 +56,25 @@ class MentionProt(Cog):
 
             if not count:
                 return
+            try:
+                to_delete = data['automod']['mention']['autowarn']['to_delete']
+            except KeyError:
+                to_delete = False
+
+            if to_delete:
+                await message.delete(delay=0)
+
+            try:
+                to_warn = data['automod']['mention']['autowarn']['enable']
+            except KeyError:
+                to_warn = False
+
+            if to_warn:
+                await warn(message.guild, message.author, "Automod: Mass Mention", moderator=self.bot.user, message=message, at=message.created_at, )
 
             if len(message.mentions) >= count:
-                await self.delete(message)
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] [Warning]**",
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
 

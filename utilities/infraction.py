@@ -18,8 +18,11 @@ async def get_warn_count(guild: discord.Guild) -> Optional[int]:
         {"_id": guild.id, "warn_count": {"exists": True}}
     ):
         return data["warn_count"]
-    await collection_config.update_one({"_id": guild.id}, {"$set": {"warn_count": 1}})
-    return 1
+    else:
+        await collection_config.update_one(
+            {"_id": guild.id}, {"$set": {"warn_count": 1}}
+        )
+        return 1
 
 
 async def warn(
@@ -38,9 +41,9 @@ async def warn(
         "moderator": moderator.id,
         "reason": reason,
         "expires_at": expires_at,
-        "message_link": message.jump_url,
-        "channel": message.channel.id,
-        "message": message.id,
+        "message_link": message.jump_url if message else None,
+        "channel": message.channel.id if message else None,
+        "message": message.id if message else None,
         "at": at,
     }
     collection = warn_db[f"{guild.id}"]
@@ -74,6 +77,8 @@ async def show_warn(guild: discord.Guild, **kw):
     async for data in collection.find({**kw}):
         temp["User"].append(data["target"])
         # temp["Moderator"].append(data["moderator"])
-        temp["Reason"].append(data["reason"])
+        temp["Reason"].append(data['reason'])
         temp["At"].append(f"{datetime.fromtimestamp(data['at'])}")
-    return str(tabulate(temp, headers="keys", tablefmt="pretty"))
+    return str(
+        tabulate(temp, headers="keys", tablefmt="pretty")
+    )

@@ -1425,7 +1425,3 @@ class Mod(Cog):
                     pass
                 finally:
                     await ban_collection.delete_one({"_id": data["_id"]})
-
-    @tasks.loop()
-    async def warn_task(self, **kw):
-        ctx = kw.get("ctx")

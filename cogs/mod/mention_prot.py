@@ -21,7 +21,6 @@ class MentionProt(Cog):
         self.data = {}
         self.clear_data.start()
 
-
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
@@ -59,7 +58,7 @@ class MentionProt(Cog):
             if not count:
                 return
             try:
-                to_delete = data['automod']['mention']['autowarn']['to_delete']
+                to_delete = data["automod"]["mention"]["autowarn"]["to_delete"]
             except KeyError:
                 to_delete = True
 
@@ -67,12 +66,19 @@ class MentionProt(Cog):
                 await message.delete(delay=0)
 
             try:
-                to_warn = data['automod']['mention']['autowarn']['enable']
+                to_warn = data["automod"]["mention"]["autowarn"]["enable"]
             except KeyError:
                 to_warn = False
 
             if to_warn:
-                await warn(message.guild, message.author, "Automod: Mass Mention", moderator=self.bot.user, message=message, at=message.created_at, )
+                await warn(
+                    message.guild,
+                    message.author,
+                    "Automod: Mass Mention",
+                    moderator=self.bot.user,
+                    message=message,
+                    at=message.created_at,
+                )
 
             if len(message.mentions) >= count:
                 await message.channel.send(

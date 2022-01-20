@@ -55,7 +55,7 @@ class SpamProt(Cog):
                 if message.channel.id in ignore:
                     return
                 try:
-                    to_delete = data['automod']['spam']['autowarn']['to_delete']
+                    to_delete = data["automod"]["spam"]["autowarn"]["to_delete"]
                 except KeyError:
                     to_delete = True
 
@@ -63,13 +63,19 @@ class SpamProt(Cog):
                     await self.delete(message)
 
                 try:
-                    to_warn = data['automod']['spam']['autowarn']['enable']
+                    to_warn = data["automod"]["spam"]["autowarn"]["enable"]
                 except KeyError:
                     to_warn = False
 
                 if to_warn:
-                    await warn(message.guild, message.author, "Automod: Spammed 5 messages in 5 seconds", 
-                    moderator=self.bot.user, message=message, at=message.created_at, )
+                    await warn(
+                        message.guild,
+                        message.author,
+                        "Automod: Spammed 5 messages in 5 seconds",
+                        moderator=self.bot.user,
+                        message=message,
+                        at=message.created_at,
+                    )
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",

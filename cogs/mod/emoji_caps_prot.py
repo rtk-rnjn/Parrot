@@ -95,7 +95,7 @@ class EmojiCapsProt(Cog):
         ):
             if emoj_:
                 try:
-                    to_delete = data['automod']['emoji']['autowarn']['to_delete']
+                    to_delete = data["automod"]["emoji"]["autowarn"]["to_delete"]
                 except KeyError:
                     to_delete = True
 
@@ -103,12 +103,19 @@ class EmojiCapsProt(Cog):
                     await message.delete(delay=0)
 
                 try:
-                    to_warn = data['automod']['emoji']['autowarn']['enable']
+                    to_warn = data["automod"]["emoji"]["autowarn"]["enable"]
                 except KeyError:
                     to_warn = False
 
                 if to_warn:
-                    await warn(message.guild, message.author, "Automod: Mass Emoji", moderator=self.bot.user, message=message, at=message.created_at, )
+                    await warn(
+                        message.guild,
+                        message.author,
+                        "Automod: Mass Emoji",
+                        moderator=self.bot.user,
+                        message=message,
+                        at=message.created_at,
+                    )
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] [Warning]**",
@@ -119,7 +126,7 @@ class EmojiCapsProt(Cog):
         ):
             if caps_:
                 try:
-                    to_delete = data['automod']['caps']['autowarn']['to_delete']
+                    to_delete = data["automod"]["caps"]["autowarn"]["to_delete"]
                 except KeyError:
                     to_delete = True
 
@@ -127,12 +134,19 @@ class EmojiCapsProt(Cog):
                     await message.delete(delay=0)
 
                 try:
-                    to_warn = data['automod']['caps']['autowarn']['enable']
+                    to_warn = data["automod"]["caps"]["autowarn"]["enable"]
                 except KeyError:
                     to_warn = False
 
                 if to_warn:
-                    await warn(message.guild, message.author, "Automod: Excess Caps", moderator=self.bot.user, message=message, at=message.created_at, )
+                    await warn(
+                        message.guild,
+                        message.author,
+                        "Automod: Excess Caps",
+                        moderator=self.bot.user,
+                        message=message,
+                        at=message.created_at,
+                    )
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] [Warning]**",

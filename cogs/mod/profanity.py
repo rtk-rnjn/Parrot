@@ -27,10 +27,10 @@ class Profanity(Cog):
             return self.data[message.guild.id]
         except KeyError:
             return None
-    
+
     def isin(self, phrase: str, sentence: str) -> bool:
         word = re.escape(phrase)
-        pattern = rf'\b{word}\b'
+        pattern = rf"\b{word}\b"
         return re.search(pattern, sentence) is not None
 
     @Cog.listener()
@@ -68,7 +68,7 @@ class Profanity(Cog):
                 return
 
             try:
-                to_delete = data['automod']['profanity']['autowarn']['to_delete']
+                to_delete = data["automod"]["profanity"]["autowarn"]["to_delete"]
             except KeyError:
                 to_delete = True
 
@@ -76,12 +76,19 @@ class Profanity(Cog):
                 await message.delete(delay=0)
 
             try:
-                to_warn = data['automod']['profanity']['autowarn']['enable']
+                to_warn = data["automod"]["profanity"]["autowarn"]["enable"]
             except KeyError:
                 to_warn = False
 
             if to_warn:
-                await warn(message.guild, message.author, "Automod: Bad words usage", moderator=self.bot.user, message=message, at=message.created_at, )
+                await warn(
+                    message.guild,
+                    message.author,
+                    "Automod: Bad words usage",
+                    moderator=self.bot.user,
+                    message=message,
+                    at=message.created_at,
+                )
 
             if any(self.isin(word, message.content.lower()) for word in bad_words):
                 await message.channel.send(

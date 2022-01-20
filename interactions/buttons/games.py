@@ -640,7 +640,7 @@ BoardState = list[list[Optional[bool]]]
 
 
 class SlidingPuzzle:
-    def __init__(self, size, *, invert: bool=False) -> None:
+    def __init__(self, size, *, invert: bool = False) -> None:
         self.size = size
 
         self.grid = []
@@ -713,7 +713,7 @@ class SlidingPuzzle:
             self._move_down()
             return
         self._move_up()
-    
+
     def move_down(self) -> None:
         if self.invert:
             self._move_up()
@@ -725,12 +725,13 @@ class SlidingPuzzle:
             self._move_left()
             return
         self._move_right()
-    
+
     def move_left(self) -> None:
         if self.invert:
             self._move_right()
             return
         self._move_left()
+
 
 class SlidingPuzzleView(discord.ui.View):
     def __init__(

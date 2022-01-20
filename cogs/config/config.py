@@ -54,26 +54,16 @@ class BotConfig(Cog):
     async def config(self, ctx: Context):
         """To config the bot, mod role, prefix, or you can disable the commands and cogs."""
         data = await csc.find_one({"_id": ctx.guild.id})
-        if not data:
-            await csc.insert_one(
-                {
-                    "_id": ctx.guild.id,
-                    "prefix": "$",
-                    "mod_role": None,
-                    "action_log": None,
-                    "mute_role": None,
-                }
-            )
         if not ctx.invoked_subcommand:
             data = await csc.find_one({"_id": ctx.guild.id})
             if data:
-                role = ctx.guild.get_role(data.get("mod_role")).name
-                mod_log = ctx.guild.get_channel(data.get("action_log")).name
+                role = ctx.guild.get_role(data.get("mod_role"))
+                mod_log = ctx.guild.get_channel(data.get("action_log"))
                 await ctx.reply(
                     f"Configuration of this server [server_config]\n\n"
-                    f"`Prefix :` **{data.get('prefix')}**\n"
-                    f"`ModRole:` **{role} ({data.get('mod_role')})**\n"
-                    f"`MogLog :` **{mod_log} ({data.get('action_log')})**\n"
+                    f"`Prefix :` **{data['prefix']}**\n"
+                    f"`ModRole:` **{role.name if role else 'None'} ({data.get('mod_role')})**\n"
+                    f"`MogLog :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
                 )
 
     @config.command(aliases=["log"])
@@ -729,7 +719,7 @@ class BotConfig(Cog):
     ):
         """Automatic ticket making system. On reaction basis"""
         channel = channel or ctx.channel
-        message = message or "React to ✉️ to create ticket"
+        message = message or "React to \N{ENVELOPE} to create ticket"
         await mt._auto(ctx, channel, message)
 
     @ticketconfig.command()

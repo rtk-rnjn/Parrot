@@ -640,7 +640,7 @@ BoardState = list[list[Optional[bool]]]
 
 
 class SlidingPuzzle:
-    def __init__(self, size):
+    def __init__(self, size, *, invert: bool=False) -> None:
         self.size = size
 
         self.grid = []
@@ -651,7 +651,9 @@ class SlidingPuzzle:
         self._make_grid()
         self._get_blank()
 
-    def __repr__(self):
+        self.invert = invert
+
+    def __repr__(self) -> str:
         _ = ""
         for i in self.grid:
             _ += str(i) + "\n"
@@ -660,7 +662,7 @@ class SlidingPuzzle:
     def board_str(self) -> str:
         return str(tabulate.tabulate(self.grid, tablefmt="grid", numalign="center"))
 
-    def _make_grid(self):
+    def _make_grid(self) -> None:
         nums = list(range(self.size * self.size))
         nums[-1] = "\u200b"
         random.shuffle(nums)
@@ -668,44 +670,67 @@ class SlidingPuzzle:
             self.grid.append(nums[i : i + self.size])
         self.temp = self.grid
 
-    def _get_blank(self):
+    def _get_blank(self) -> None:
         for i in self.grid:
             for j in i:
                 if j == "\u200b":
                     self.x = [self.grid.index(i), i.index(j)]
                     return
 
-    def _is_game_over(self):
+    def _is_game_over(self) -> bool:
         return self.grid == self.temp
 
-    def move_up(self):
+    def _move_up(self) -> None:
         if self.x[0] == self.size - 1:
             return
         self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] + 1][self.x[1]]
         self.x = [self.x[0] + 1, self.x[1]]
         self.grid[self.x[0]][self.x[1]] = "\u200b"
 
-    def move_down(self):
+    def _move_down(self) -> None:
         if self.x[0] == 0:
             return
         self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0] - 1][self.x[1]]
         self.x = [self.x[0] - 1, self.x[1]]
         self.grid[self.x[0]][self.x[1]] = "\u200b"
 
-    def move_left(self):
+    def _move_left(self) -> None:
         if self.x[1] == self.size - 1:
             return
         self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] + 1]
         self.x = [self.x[0], self.x[1] + 1]
         self.grid[self.x[0]][self.x[1]] = "\u200b"
 
-    def move_right(self):
+    def _move_right(self) -> None:
         if self.x[1] == 0:
             return
         self.grid[self.x[0]][self.x[1]] = self.grid[self.x[0]][self.x[1] - 1]
         self.x = [self.x[0], self.x[1] - 1]
         self.grid[self.x[0]][self.x[1]] = "\u200b"
 
+    def move_up(self) -> None:
+        if self.invert:
+            self._move_down()
+            return
+        self._move_up()
+    
+    def move_down(self) -> None:
+        if self.invert:
+            self._move_up()
+            return
+        self._move_down()
+
+    def move_right(self) -> None:
+        if self.invert:
+            self._move_left()
+            return
+        self._move_right()
+    
+    def move_left(self) -> None:
+        if self.invert:
+            self._move_right()
+            return
+        self._move_left()
 
 class SlidingPuzzleView(discord.ui.View):
     def __init__(

@@ -14,8 +14,9 @@ from utilities.database import guild_update, gchat_update, parrot_db, telephone_
 from utilities.paginator import PaginationView
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
+from utilities.time import ShortTime
 
-from .flags import AutoWarn
+from .flags import AutoWarn, warnConfig
 
 from cogs.ticket import method as mt
 from cogs.config import method as mt_
@@ -119,6 +120,62 @@ class BotConfig(Cog):
 
         await ctx.reply(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
+        )
+    
+    @config.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def warnadd(self, ctx: Context, count: int, action: str, duration: ShortTime=None):
+        """To configure the warn settings"""
+        ACTIONS = [
+            "ban",
+            "tempban",
+            "kick",
+            "timeout",
+            "mute",
+            "block",
+        ]
+        if action.lower() not in ACTIONS:
+            return await ctx.send(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
+        
+        if _ := await csc.find_one({'_id': ctx.guild.id, 'warn_db.count': count}):
+            return await ctx.send(f"{ctx.author.mention} warn count {count} already exists.")
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$addToSet': {
+                    "warn_auto": [{'count': count, 'action': action.lower(), 'duration': duration.dt.timestamp() - datetime.utcnow().timestamp() if duration else None}]
+                }
+            }
+        )
+    
+    @config.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def warndel(self, ctx: Context, *, flags: warnConfig):
+        """To configure the warn settings"""
+        ACTIONS = [
+            "ban",
+            "tempban",
+            "kick",
+            "timeout",
+            "mute",
+            "block",
+        ]
+        payload={}
+        if flags.action:
+            if flags.action.lower() not in ACTIONS:
+                return await ctx.send(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
+            payload['action'] = flags.action.lower()
+        if flags.count:
+            payload['count'] = flags.count
+        await csc.update_one(
+            {'_id': ctx.guild.id},
+            {
+                '$pull': {
+                    "warn_auto": {**payload}
+                }
+            }
         )
 
     @config.command(aliases=["mute-role"])
@@ -279,7 +336,9 @@ class BotConfig(Cog):
             {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
         )
         await ctx.reply(
-            f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**. Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. Bot will be issuing warning if someone exceeds the limit."
+            f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**. "
+            "Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. "
+            "Bot will be issuing warning if someone exceeds the limit."
         )
 
     @automod.command()
@@ -775,7 +834,8 @@ class BotConfig(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addadminrole(self, ctx: Context, *, role: discord.Role):
-        """This command gives all users with a specific role access to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`."""
+        """This command gives all users with a specific role access to the admin-level commands for the bot,
+        such as `Addpingedrole` and `Addaccess`."""
         await mt._addadimrole(ctx, role)
 
     @ticketconfig.command(hidden=False)
@@ -785,7 +845,8 @@ class BotConfig(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addpingedrole(self, ctx: Context, *, role: discord.Role):
-        """This command adds a role to the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""
+        """This command adds a role to the list of roles that are pinged when a new ticket is created.
+        This command can only be run if you have an admin-level role for this bot."""
         await mt._addpingedrole(ctx, role)
 
     @ticketconfig.command()
@@ -793,7 +854,8 @@ class BotConfig(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def deladminrole(self, ctx: Context, *, role: discord.Role):
-        """This command removes access for all users with the specified role to the admin-level commands for the bot, such as `Addpingedrole` and `Addaccess`."""
+        """This command removes access for all users with the specified role to the admin-level commands for the bot,
+        such as `Addpingedrole` and `Addaccess`."""
         await mt._deladminrole(ctx, role)
 
     @ticketconfig.command()

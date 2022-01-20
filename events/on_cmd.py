@@ -106,7 +106,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                     data["on_mod_command"], session=self.bot.session
                 )
                 if webhook:
-                    main_content = """**On Moderator Command**
+                    main_content = f"""**On Moderator Command**
 
 `Mod    `: **{ctx.author}**
 `Command`: **{ctx.command.qualified_name}**
@@ -126,7 +126,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                     data["on_config_command"], session=self.bot.session
                 )
                 if webhook:
-                    main_content = """**On Config Command**
+                    main_content = f"""**On Config Command**
 
 `Admin  `: **{ctx.author}**
 `Command`: **{ctx.command.qualified_name}**

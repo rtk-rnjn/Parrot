@@ -15,3 +15,10 @@ class AutoWarn(
     punish: Optional[str] = None
     duration: Optional[ShortTime] = None
     delete: Optional[convert_bool] = True
+
+class warnConfig(
+    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
+):
+    count: Optional[int] = None
+    action: Optional[str] = None
+    duration: Optional[ShortTime] = None

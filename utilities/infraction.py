@@ -18,9 +18,7 @@ async def get_warn_count(guild: discord.Guild) -> Optional[int]:
         {"_id": guild.id, "warn_count": {"exists": True}}
     ):
         return data["warn_count"]
-    await collection_config.update_one(
-        {"_id": guild.id}, {"$set": {"warn_count": 1}}
-    )
+    await collection_config.update_one({"_id": guild.id}, {"$set": {"warn_count": 1}})
     return 1
 
 
@@ -76,8 +74,6 @@ async def show_warn(guild: discord.Guild, **kw):
     async for data in collection.find({**kw}):
         temp["User"].append(data["target"])
         # temp["Moderator"].append(data["moderator"])
-        temp["Reason"].append(data['reason'])
+        temp["Reason"].append(data["reason"])
         temp["At"].append(f"{datetime.fromtimestamp(data['at'])}")
-    return str(
-        tabulate(temp, headers="keys", tablefmt="pretty")
-    )
+    return str(tabulate(temp, headers="keys", tablefmt="pretty"))

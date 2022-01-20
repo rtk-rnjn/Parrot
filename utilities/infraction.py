@@ -6,6 +6,7 @@ import discord
 from typing import Optional, Union
 
 from datetime import datetime
+from tabulate import tabulate
 
 from utilities.database import warn_db, parrot_db
 
@@ -77,4 +78,6 @@ async def show_warn(guild: discord.Guild, **kw):
         temp["User"].append(data["target"])
         temp["Moderator"].append(data["moderator"])
         temp["At"].append(f"{datetime.fromtimestamp(data['at'])}")
-    return temp
+    return str(
+        tabulate(temp, headers="keys", tablefmt="pretty")
+    )

@@ -112,7 +112,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if before.roles != after.roles:
             ls.append(
                 f"`Role Update     :`",
-                ', '.join([role.name for role in self.difference_list(before.roles, after.roles)]),
+                ", ".join(
+                    [
+                        role.name
+                        for role in self.difference_list(before.roles, after.roles)
+                    ]
+                ),
             )
         return ls
 

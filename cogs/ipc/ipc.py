@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord.ext import commands, ipc
+from discord.ext import ipc
 
 from core import Cog, Parrot
 

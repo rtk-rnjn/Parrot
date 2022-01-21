@@ -5,7 +5,6 @@ from utilities.database import parrot_db
 import discord
 import asyncio
 import aiohttp
-import time
 
 collection = parrot_db["server_config"]
 ban_collection = parrot_db["banned_members"]

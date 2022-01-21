@@ -1,6 +1,5 @@
 # AUTHOR: https://github.com/davidetacchini/
 
-from tabnanny import check
 from typing import List, Union, Optional, NamedTuple
 from itertools import islice
 

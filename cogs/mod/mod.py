@@ -17,11 +17,9 @@ from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import (
     delete_many_warn,
-    delete_warn_by_message_id,
     custom_delete_warn,
     warn,
-    show_warn,
-)
+    show_warn)
 from datetime import datetime
 
 from cogs.meta.robopage import TextPageSource, RoboPages

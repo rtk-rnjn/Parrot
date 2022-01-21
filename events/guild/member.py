@@ -95,7 +95,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     self.muted[member.guild.id].add(member.id)
                 elif member.guild.id not in self.muted:
                     self.muted[member.guild.id] = {member.id}
-    
+
     def difference_list(self, li1: list, li2: list) -> list:
         [i for i in li1 + li2 if i not in li1 or i not in li2]
 
@@ -110,15 +110,20 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if before.display_avatar.url != after.display_avatar.url:
             ls.append(["`Avatar Changed  :`", f"<{before.display_avatar.url}>"])
         if before.roles != after.roles:
-            ls.append(f"`Role Update     :`", [role.name for role in self.difference_list(before.roles, after.roles)])
+            ls.append(
+                f"`Role Update     :`",
+                [role.name for role in self.difference_list(before.roles, after.roles)],
+            )
         return ls
 
     @Cog.listener()
     async def on_member_update(self, before, after):
-        if data := await log.find_one({"_id": after.guild.id, "on_member_update": {"$exists": True}}):
+        if data := await log.find_one(
+            {"_id": after.guild.id, "on_member_update": {"$exists": True}}
+        ):
             webhook = discord.Webhook.from_url(
-            data["on_member_update"], session=self.bot.session
-        )   
+                data["on_member_update"], session=self.bot.session
+            )
             ch = ""
             for i, j in self._member_change(before, after):
                 ch += f"{i} {j}\n"
@@ -145,10 +150,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if member.bot:
             return
         if before is None:
-            if data := await log.find_one({"_id": member.guild.id, "on_vc_join": {"$exists": True}}):
+            if data := await log.find_one(
+                {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
+            ):
                 webhook = discord.Webhook.from_url(
-                data["on_vc_join"], session=self.bot.session
-            )
+                    data["on_vc_join"], session=self.bot.session
+                )
             if webhook:
                 content = f"""**On VC Join Event**
 
@@ -167,10 +174,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 return
 
         if after is None:
-            if data := await log.find_one({"_id": member.guild.id, "on_vc_leave": {"$exists": True}}):
+            if data := await log.find_one(
+                {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
+            ):
                 webhook = discord.Webhook.from_url(
-                data["on_vc_leave"], session=self.bot.session
-            )
+                    data["on_vc_leave"], session=self.bot.session
+                )
             if webhook:
                 content = f"""**On VC Leave Event**
 
@@ -182,17 +191,19 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Self Deaf  :` **{after.self_deaf}**
 """
                 await webhook.send(
-                        content=content,
-                        avatar_url=self.bot.user.avatar.url,
-                        username=self.bot.user.name,
-                    )
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
+                    username=self.bot.user.name,
+                )
                 return
 
         if before and after:
-            if data := await log.find_one({"_id": member.guild.id, "on_vc_move": {"$exists": True}}):
+            if data := await log.find_one(
+                {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
+            ):
                 webhook = discord.Webhook.from_url(
-                data["on_vc_move"], session=self.bot.session
-            )
+                    data["on_vc_move"], session=self.bot.session
+                )
             if webhook:
                 content = f"""**On VC Move Event**
 
@@ -205,10 +216,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Self Deaf  :` **A: {after.self_deaf}** | **B: {after.self_deaf}**
 """
                 await webhook.send(
-                        content=content,
-                        avatar_url=self.bot.user.avatar.url,
-                        username=self.bot.user.name,
-                    )
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
+                    username=self.bot.user.name,
+                )
                 return
 
     @Cog.listener()

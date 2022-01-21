@@ -140,6 +140,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
         if before.color != after.color:
             ls.append(("`Color Changed     :`", after.color.to_rgb()))
         return ls
+
     @Cog.listener()
     async def on_guild_role_update(self, before, after):
         if not after.guild.me.guild_permissions.view_audit_log:

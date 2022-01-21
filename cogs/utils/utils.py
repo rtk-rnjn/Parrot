@@ -77,7 +77,7 @@ class Utils(Cog):
         try:
             await ctx.reply(f"{ctx.author.mention} check you DM")
             await ctx.author.send(text)
-        except Exception:
+        except discord.Fobidden:
             await ctx.reply(text)
         await self.create_timer(
             ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=False
@@ -110,7 +110,7 @@ class Utils(Cog):
         try:
             await ctx.reply(f"{ctx.author.mention} check you DM")
             await ctx.author.send(text)
-        except Exception:
+        except discord.Fobidden:
             await ctx.reply(text)
         await self.create_timer(
             ctx.channel, ctx.message, ctx.author, seconds, remark=task, dm=True
@@ -354,7 +354,7 @@ class Utils(Cog):
                         await channel.send(
                             f"<@{data['author']}> reminder for: {data['remark']}"
                         )
-                    except Exception:
+                    except discord.Fobidden:
                         pass  # this is done as bot may have being denied to send message
                     await self.collection.delete_one({"_id": data["_id"]})
                 else:
@@ -366,7 +366,7 @@ class Utils(Cog):
                             await member.send(
                                 f"<@{data['author']}> reminder for: {data['remark']}"
                             )
-                        except Exception:
+                        except discord.Fobidden:
                             pass  # what if member DM are blocked?
                         await self.collection.delete_one({"_id": data["_id"]})
                     if data.get("todo"):

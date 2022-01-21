@@ -2084,6 +2084,17 @@ class Fun(Cog):
     async def urbandictionary(self, ctx: Context, *, text: commands.clean_content):
         """LOL. This command is insane."""
         t = text
+        BRACKETED = re.compile(r'(\[(.+?)\])')
+        def cleanup_definition(self, definition, *, regex=BRACKETED):
+            def repl(m):
+                word = m.group(2)
+                return f'[{word}](http://{word.replace(" ", "-")}.urbanup.com)'
+
+            ret = regex.sub(repl, definition)
+            if len(ret) >= 2048:
+                return ret[0:2000] + ' [...]'
+            return ret
+        # Thanks Danny
         text = urllib.parse.quote(text)
         link = "http://api.urbandictionary.com/v0/define?term=" + text
 
@@ -2108,7 +2119,7 @@ class Fun(Cog):
             word = res["list"][i]["word"].capitalize()
             embed = discord.Embed(
                 title=f"{word}",
-                description=f"{_def}",
+                description=f"{cleanup_definition(_def)}",
                 url=f"{_link}",
                 timestamp=datetime.datetime.utcnow(),
             )

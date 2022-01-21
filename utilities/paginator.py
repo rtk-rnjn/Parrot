@@ -66,7 +66,7 @@ class ParrotPaginator:
         title=None,
         show_page_count=True,
         embed_url: str = None,
-        check_other_ids: list = None
+        check_other_ids: list = None,
     ):
         self.ctx = ctx
         self.per_page = per_page
@@ -125,7 +125,16 @@ class ParrotPaginator:
 
 
 class PaginatorView(discord.ui.View):
-    def __init__(self, ctx, pages: Pages, embed, timeout, show_page_count, *, check_other_ids: list=None):
+    def __init__(
+        self,
+        ctx,
+        pages: Pages,
+        embed,
+        timeout,
+        show_page_count,
+        *,
+        check_other_ids: list = None,
+    ):
 
         super().__init__(timeout=timeout)
 

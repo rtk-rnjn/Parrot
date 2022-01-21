@@ -1378,7 +1378,7 @@ class Mod(Cog):
 
         await delete_many_warn(ctx.guild, **payload)
         await ctx.send(
-            f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join([_ for _ in payload])}`"
+            f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
         )
 
     @commands.command()

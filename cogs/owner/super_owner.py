@@ -359,7 +359,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async with async_open("no-bg.png", "wb") as out:
             await out.write(await response.read())
         await ctx.send(file=discord.File("no-bg.png"))
-        os.system("rm no-bg.png")
 
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)

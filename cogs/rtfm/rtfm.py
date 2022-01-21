@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from os import system
-
 import unicodedata
 import os
 import re
@@ -35,7 +33,6 @@ from . import _doc
 
 from ._used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
 
-system("pip install lxml")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 with open("extra/lang.txt") as f:

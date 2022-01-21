@@ -305,8 +305,7 @@ class NASA(Cog):
                     return await ctx.reply(
                         f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
                     )
-                else:
-                    res = await r.json()
+                res = await r.json()
 
         if not res["collection"]["items"]:
             await ctx.reply(

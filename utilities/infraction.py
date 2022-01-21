@@ -16,9 +16,7 @@ async def get_warn_count(guild: discord.Guild) -> Optional[int]:
         {"_id": guild.id, "warn_count": {"exists": True}}
     ):
         return data["warn_count"]
-    await collection_config.update_one(
-        {"_id": guild.id}, {"$set": {"warn_count": 1}}
-    )
+    await collection_config.update_one({"_id": guild.id}, {"$set": {"warn_count": 1}})
     return 1
 
 

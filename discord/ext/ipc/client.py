@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import typing
 
 import aiohttp
 from discord.ext.ipc.errors import *

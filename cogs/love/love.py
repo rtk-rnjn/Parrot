@@ -6,15 +6,12 @@ import json
 import random
 import calendar
 import collections
-import enum
 import bisect
 import hashlib
-import functools
 
 from pathlib import Path
 from random import choice
 from datetime import datetime
-from collections.abc import Iterable
 
 import discord
 from discord.ext import commands

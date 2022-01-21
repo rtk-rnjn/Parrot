@@ -161,8 +161,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 webhook = discord.Webhook.from_url(
                     data["on_vc_join"], session=self.bot.session
                 )
-            if webhook:
-                content = f"""**On VC Join Event**
+                if webhook:
+                    content = f"""**On VC Join Event**
 
 `Member     :` **{member}** (`{member.id}`)
 `Channel    :` **{before.channel.mention}** (`{before.channel.id}`)
@@ -171,12 +171,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Self Mute  :` **{before.self_mute}**
 `Self Deaf  :` **{before.self_deaf}**
 """
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
-                return
+                    await webhook.send(
+                        content=content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                    )
+                    return
 
         if after is None:
             if data := await log.find_one(
@@ -185,8 +185,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 webhook = discord.Webhook.from_url(
                     data["on_vc_leave"], session=self.bot.session
                 )
-            if webhook:
-                content = f"""**On VC Leave Event**
+                if webhook:
+                    content = f"""**On VC Leave Event**
 
 `Member     :` **{member}** (`{member.id}`)
 `Channel    :` **{after.channel.mention}** (`{after.channel.id}`)
@@ -195,12 +195,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Self Mute  :` **{after.self_mute}**
 `Self Deaf  :` **{after.self_deaf}**
 """
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
-                return
+                    await webhook.send(
+                        content=content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                    )
+                    return
 
         if before and after:
             if data := await log.find_one(
@@ -209,8 +209,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 webhook = discord.Webhook.from_url(
                     data["on_vc_move"], session=self.bot.session
                 )
-            if webhook:
-                content = f"""**On VC Move Event**
+                if webhook:
+                    content = f"""**On VC Move Event**
 
 `Member     :` **{member}** (`{member.id}`)
 `Channel (A):` **{after.channel.mention}** (`{after.channel.id}`) 
@@ -220,12 +220,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 `Self Mute  :` **A: {after.self_mute}** | **B: {after.self_mute}**
 `Self Deaf  :` **A: {after.self_deaf}** | **B: {after.self_deaf}**
 """
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
-                return
+                    await webhook.send(
+                        content=content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                    )
+                    return
 
     @Cog.listener()
     async def on_presence_update(self, before, after):

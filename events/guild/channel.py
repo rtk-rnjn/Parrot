@@ -160,7 +160,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Entry ID  :` **{entryID if entryID else None}**
 `Updated by:` **{user}**
 
-**Change/Update**
+**Change/Update (Before)**
 {ext}
 """
                         break
@@ -176,12 +176,12 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     def _channel_change(self, before, after, *, TYPE: str) -> tuple:
         ls = []
         if before.name != after.name:
-            ls.append(("`Name Changed     :`", after.name))
+            ls.append(("`Name Changed     :`", before.name))
         if before.position != after.position:
-            ls.append(("`Position Changed :`", after.position))
+            ls.append(("`Position Changed :`", before.position))
         if before.overwrites != after.overwrites:
             ls.append(
-                ("`Overwrite Changed:`", self._overwrite_to_json(after.overwrites))
+                ("`Overwrite Changed:`", self._overwrite_to_json(before.overwrites))
             )
         if before.category.id != after.category.id:
             ls.append(
@@ -189,7 +189,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                     "`Category Changed :`"
                     if after.category
                     else "`Category Removed :`",
-                    f"{after.category.name} ({after.category.id})",
+                    f"{before.category.name} ({before.category.id})",
                 )
             )
         if before.permissions_synced is not after.permissions_synced:
@@ -214,18 +214,18 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 ls.append(
                     (
                         "`Limit Updated    :`",
-                        after.user_limit if after.user_limit else None,
+                        before.user_limit if before.user_limit else None,
                     )
                 )
             if before.rtc_region != after.rtc_region:
                 ls.append(
                     (
                         "`Region Updated   :`",
-                        after.rtc_region if after.rtc_region is not None else "Auto",
+                        before.rtc_region if after.rtc_region is not None else "Auto",
                     )
                 )
             if before.bitrate != after.bitrate:
-                ls.append(("`Bitrate Updated  :`", after.bitrate))
+                ls.append(("`Bitrate Updated  :`", before.bitrate))
 
     @Cog.listener()
     async def on_guild_channel_pins_update(self, channel, last_pin):

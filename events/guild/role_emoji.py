@@ -139,7 +139,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             ls.append(("`Hoist Toggled     :`", after.hoist))
         if before.color != after.color:
             ls.append(("`Color Changed     :`", after.color.to_rgb()))
-
+        return ls
     @Cog.listener()
     async def on_guild_role_update(self, before, after):
         if not after.guild.me.guild_permissions.view_audit_log:
@@ -207,9 +207,11 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         url = None
                 content = f"""**On Emoji Create**
 
+`Name    `: **{emoji_name}**
 `Raw     `: **`{entry.target if isinstance(entry.target, discord.Emoji) else None}`**
 `ID      `: **{_id}**
 `URL     `: **<{url}>**
+`Animated`: **{animated}**
 """
             await webhook.send(
                 content=content,

@@ -95,14 +95,121 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     self.muted[member.guild.id].add(member.id)
                 elif member.guild.id not in self.muted:
                     self.muted[member.guild.id] = {member.id}
+    
+    def difference_list(self, li1: list, li2: list) -> list:
+        [i for i in li1 + li2 if i not in li1 or i not in li2]
+
+    def _member_change(self, before, after):
+        ls = []
+        if before.nick != after.nick:
+            ls.append(["`Nickname Changed:`", before.nick])
+        if before.name != after.name:
+            ls.append(["`Name changed    :`", before.name])
+        if before.discriminator != after.discriminator:
+            ls.append(["`Discriminator   :`", before.discriminator])
+        if before.display_avatar.url != after.display_avatar.url:
+            ls.append(["`Avatar Changed  :`", f"<{before.display_avatar.url}>"])
+        if before.roles != after.roles:
+            ls.append(f"`Role Update     :`", [role.name for role in self.difference_list(before.roles, after.roles)])
+        return ls
 
     @Cog.listener()
     async def on_member_update(self, before, after):
-        pass
+        if data := await log.find_one({"_id": after.guild.id, "on_member_update": {"$exists": True}}):
+            webhook = discord.Webhook.from_url(
+            data["on_member_update"], session=self.bot.session
+        )   
+            ch = ""
+            for i, j in self._member_change(before, after):
+                ch += f"{i} {j}\n"
+            if webhook:
+                content = f"""**On Member Update**
+
+`Name       :` **{after.name} (`{after.id}`)**
+`Account age:` **{discord.utils.format_dt(after.created_at)}**
+`Joined at  :` **{discord.utils.format_dt(after.joined_at)}**
+`Badges     :` **{', '.join([str(i).replace('.', ':').split(':')[1].replace('_', ' ').title() if i else None for i in after.public_flags.all()])}**
+`Premium Since:` **{discord.utils.format_dt(after.premium_since) if after.premium_since else None}**
+
+**Change/Update (Before)**
+{ch}
+"""
+                await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
+                    username=self.bot.user.name,
+                )
 
     @Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        pass
+        if member.bot:
+            return
+        if before is None:
+            if data := await log.find_one({"_id": member.guild.id, "on_vc_join": {"$exists": True}}):
+                webhook = discord.Webhook.from_url(
+                data["on_vc_join"], session=self.bot.session
+            )
+            if webhook:
+                content = f"""**On VC Join Event**
+
+`Member     :` **{member}** (`{member.id}`)
+`Channel    :` **{before.channel.mention}** (`{before.channel.id}`)
+`Server Mute:` **{before.mute}**
+`Server Deaf:` **{before.deaf}**
+`Self Mute  :` **{before.self_mute}**
+`Self Deaf  :` **{before.self_deaf}**
+"""
+                await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
+                    username=self.bot.user.name,
+                )
+                return
+
+        if after is None:
+            if data := await log.find_one({"_id": member.guild.id, "on_vc_leave": {"$exists": True}}):
+                webhook = discord.Webhook.from_url(
+                data["on_vc_leave"], session=self.bot.session
+            )
+            if webhook:
+                content = f"""**On VC Leave Event**
+
+`Member     :` **{member}** (`{member.id}`)
+`Channel    :` **{after.channel.mention}** (`{after.channel.id}`)
+`Server Mute:` **{after.mute}**
+`Server Deaf:` **{after.deaf}**
+`Self Mute  :` **{after.self_mute}**
+`Self Deaf  :` **{after.self_deaf}**
+"""
+                await webhook.send(
+                        content=content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                    )
+                return
+
+        if before and after:
+            if data := await log.find_one({"_id": member.guild.id, "on_vc_move": {"$exists": True}}):
+                webhook = discord.Webhook.from_url(
+                data["on_vc_move"], session=self.bot.session
+            )
+            if webhook:
+                content = f"""**On VC Move Event**
+
+`Member     :` **{member}** (`{member.id}`)
+`Channel (A):` **{after.channel.mention}** (`{after.channel.id}`) 
+`Channel (B):` **{before.channel.mention}** (`{before.channel.id}`)
+`Server Mute:` **A: {after.mute}** | **B: {before.mute}**
+`Server Deaf:` **A: {after.deaf}** | **B: {before.deaf}**
+`Self Mute  :` **A: {after.self_mute}** | **B: {after.self_mute}**
+`Self Deaf  :` **A: {after.self_deaf}** | **B: {after.self_deaf}**
+"""
+                await webhook.send(
+                        content=content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                    )
+                return
 
     @Cog.listener()
     async def on_presence_update(self, before, after):

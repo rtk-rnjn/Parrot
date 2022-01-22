@@ -57,6 +57,10 @@ BITBUCKET_RE = re.compile(
     r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)"
 )
 
+WHITELIST = [
+    615785223296253953, 741614468546560092, 523452718413643788
+]
+
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
@@ -340,7 +344,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
         message_to_send = await self._parse_snippets(message.content)
 
-        if 0 < len(message_to_send) <= 2000:
+        if 0 < len(message_to_send) <= 2000 and message.author.id in WHITELIST:
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
                 await message.edit(suppress=True)

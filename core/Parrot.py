@@ -184,10 +184,6 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg) -> None:
         self._prev_events.append(msg)
 
-    # async def on_ready(self):
-    #     """Called upon the READY event"""
-    #     print("Bot is ready.")
-
     # async def on_ipc_ready(self):
     #     """Called upon the IPC Server being ready"""
     #     print("Ipc is ready.")

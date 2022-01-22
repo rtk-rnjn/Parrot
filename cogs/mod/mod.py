@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from cogs.mod.flags import purgeFlag, warnFlag
 from cogs.mod import method as mt
 
@@ -26,7 +27,7 @@ mute_collection = parrot_db["mute"]
 ban_collection = parrot_db["banned_members"]
 
 
-class Mod(Cog):
+class Moderator(Cog):
     """A simple moderator's tool for managing the server."""
 
     def __init__(self, bot: Parrot):

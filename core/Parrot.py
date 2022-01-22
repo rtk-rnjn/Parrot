@@ -74,7 +74,9 @@ class Parrot(commands.AutoShardedBot):
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
-        self._CogMixin__cogs = commands.core._CaseInsensitiveDict()  # say `hi` to pycord
+        self._CogMixin__cogs = (
+            commands.core._CaseInsensitiveDict()
+        )  # say `hi` to pycord
         self._seen_messages = 0
         self._change_log = None
         self._error_log_token = os.environ["CHANNEL_TOKEN1"]

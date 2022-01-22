@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .mod import Mod
+from .mod import Moderator
 from .profanity import Profanity
 from .anti_links import LinkProt
 from .spam_prot import SpamProt

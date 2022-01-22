@@ -73,7 +73,7 @@ class Parrot(commands.AutoShardedBot):
             shard_count=1,
             **kwargs,
         )
-        # self._BotBase__cogs = commands.core._CaseInsensitiveDict()
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages = 0
         self._change_log = None
         self._error_log_token = os.environ["CHANNEL_TOKEN1"]

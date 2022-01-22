@@ -11,7 +11,7 @@ from core import Parrot
 
 
 def setup(bot: Parrot):
-    bot.add_cog(Mod(bot))
+    bot.add_cog(Moderator(bot))
     bot.add_cog(Profanity(bot))
     bot.add_cog(LinkProt(bot))
     bot.add_cog(SpamProt(bot))

@@ -19,6 +19,7 @@
     "events.guild.extra",
     "events.guild.join",
     "events.guild.member",
+    "events.guild.thread",
     "events.guild.role_emoji",
     "cogs.meta",
     "cogs.mod",

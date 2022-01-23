@@ -269,7 +269,7 @@ def in_whitelist_check(
     return False
 
 
-class InWhitelistCheckFailure(ex.ParrotCheckFaliure):
+class InWhitelistCheckFailure(ex.ParrotCheckFailure):
     """Raised when the `in_whitelist` check fails."""
 
     def __init__(self, redirect_channel: Optional[int]):

@@ -42,7 +42,7 @@
     "jishaku",
     "cogs.holidays",
     "cogs.holidays.easter",
-    "cogs.holidays.haloween"
+    "cogs.holidays.halloween"
   ],
   "invite": "https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot",
   "dev_logo": "https://res.cloudinary.com/teepublic/image/private/s--YEWJeY8b--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1506698819/production/designs/1938379_1.jpg",

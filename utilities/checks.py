@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import datetime
+from typing import Callable, Optional
+from collections.abc import Container, Iterable
+
 from discord.ext import commands
 from discord.ext.commands import (
     BucketType,
-    CheckFailure,
     Cog,
     Command,
     CommandOnCooldown,
@@ -11,11 +14,9 @@ from discord.ext.commands import (
     Cooldown,
     CooldownMapping,
 )
+
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
-from typing import Callable, Optional
-from collections.abc import Container, Iterable
-import datetime
 from utilities.database import parrot_db, enable_disable
 
 collection = parrot_db["server_config"]
@@ -268,7 +269,7 @@ def in_whitelist_check(
     return False
 
 
-class InWhitelistCheckFailure(CheckFailure):
+class InWhitelistCheckFailure(ex.ParrotCheckFaliure):
     """Raised when the `in_whitelist` check fails."""
 
     def __init__(self, redirect_channel: Optional[int]):

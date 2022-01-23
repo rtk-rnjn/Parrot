@@ -12,11 +12,12 @@ from datetime import datetime
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import CheckFailure, Command
+from discord.ext.commands import Command
 from discord import Colour, Embed
 
 from .constants import ERROR_REPLIES, Month, Day
 from .checks import in_whitelist_check
+from .exceptions import ParrotCheckFailure
 
 from core import Context
 
@@ -49,19 +50,19 @@ def human_time(past: datetime, future: datetime) -> str:
     return f"{discord.utils.format_dt(past)} and {discord.utils.format_dt(future)}"
 
 
-class InChannelCheckFailure(CheckFailure):
+class InChannelCheckFailure(ParrotCheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
 
 
-class InMonthCheckFailure(CheckFailure):
+class InMonthCheckFailure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed month."""
 
 
-class InDayCheckFailure(CheckFailure):
+class InDayCheckFailure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed day."""
 
 
-class InTimeCheckFaliure(CheckFailure):
+class InTimeCheckFaliure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed time."""
 
 

@@ -17,14 +17,14 @@ from utilities.deco import seasonal_task
 
 from core import Cog, Context, Parrot
 
-ALL_VIDS = loads(Path(r"extra/april_fools_vids.json").read_text("utf-8"))
+ALL_VIDS = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))
 BUNNY_NAMES = loads(Path(r"extra/easter/bunny_names.json").read_text("utf8"))
 RIDDLE_QUESTIONS = loads(Path(r"extra/easter/easter_riddle.json").read_text("utf8"))
 
 TIMELIMIT = 10
 HTML_COLOURS = loads(Path(r"extra/html_colours.json").read_text("utf8"))
 EGG_FACTS = loads(Path(r"extra/easter/easter_egg_facts.json").read_text("utf8"))
-XKCD_COLOURS = loads(Path(r"bot/resources/fun/xkcd_colours.json").read_text("utf8"))
+XKCD_COLOURS = loads(Path(r"extra/xkcd_colours.json").read_text("utf8"))
 EGGHEAD_QUESTIONS = loads(
     Path(r"extra/easter/egghead_questions.json").read_text("utf8")
 )

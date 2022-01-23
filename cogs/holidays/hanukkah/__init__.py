@@ -92,4 +92,3 @@ class Hanukkah(Cog):
             )
 
         await ctx.send(embed=embed)
-

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import os
 import typing
 from async_property import async_property
@@ -12,7 +11,7 @@ import aiohttp
 import topgg
 import socket
 from collections import Counter, deque, defaultdict
-from discord.ext import commands, ipc
+from discord.ext import commands # , ipc
 import discord
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 
@@ -49,7 +48,7 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 SUPPORT_SERVER_ID = 741614680652644382
-ERROR_CHANNEL_ID = 924513442273054730
+
 
 
 class Parrot(commands.AutoShardedBot):
@@ -74,7 +73,7 @@ class Parrot(commands.AutoShardedBot):
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
-        self._CogMixin__cogs = commands.core._CaseInsensitiveDict()  # say `hi` to pycord
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages = 0
         self._change_log = None
         self._error_log_token = os.environ["CHANNEL_TOKEN1"]
@@ -193,23 +192,6 @@ class Parrot(commands.AutoShardedBot):
     #     """Called upon an error being raised within an IPC route"""
     #     print(endpoint, "raised", error)
 
-    # async def on_error(self, event: str, *args, **kwargs) -> None:
-    #     traceback_string = traceback.format_exc()
-    #     await self.wait_until_ready()
-    #     file_obj = io.BytesIO(
-    #         "Ignoring Exception at the {event}: {traceback_string}".encode()
-    #     )
-    #     if self.error_channel is None:
-    #         self.error_channel = self.get_channel(924356857508790282)
-    #     if len(traceback_string) < 1900:
-    #         return await self.error_channel.send(
-    #             f"```py\nIgnoring Exception at the {event}: {traceback_string}\n```"
-    #         )
-    #     return await self.error_channel.send(
-    #         "\u200b",
-    #         file=discord.File(file_obj, filename="error.py"),
-    #     )
-
     async def before_identify_hook(self, shard_id, *, initial):
         self._clear_gateway_data()
         self.identifies[shard_id].append(discord.utils.utcnow())
@@ -255,6 +237,10 @@ class Parrot(commands.AutoShardedBot):
 
         if ctx.command is None:
             # ignore if no command found
+            return
+
+        if str(ctx.channel.type) == 'public_thread':
+            # no messages in discord.Thread
             return
 
         bucket = self.spam_control.get_bucket(message)

@@ -11,7 +11,7 @@ import aiohttp
 import topgg
 import socket
 from collections import Counter, deque, defaultdict
-from discord.ext import commands # , ipc
+from discord.ext import commands  # , ipc
 import discord
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 
@@ -48,7 +48,6 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 SUPPORT_SERVER_ID = 741614680652644382
-
 
 
 class Parrot(commands.AutoShardedBot):
@@ -239,7 +238,7 @@ class Parrot(commands.AutoShardedBot):
             # ignore if no command found
             return
 
-        if str(ctx.channel.type) == 'public_thread':
+        if str(ctx.channel.type) == "public_thread":
             # no messages in discord.Thread
             return
 

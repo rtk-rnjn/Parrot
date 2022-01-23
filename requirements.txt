@@ -31,5 +31,4 @@ chess
 Pillow
 typing_extensions
 arrow
-async-rediscache
 quart

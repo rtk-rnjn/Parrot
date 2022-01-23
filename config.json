@@ -41,7 +41,6 @@
     "interactions.buttons.foggle",
     "jishaku",
     "cogs.holidays",
-    "cogs.holidays.easter",
     "cogs.holidays.halloween"
   ],
   "invite": "https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot",

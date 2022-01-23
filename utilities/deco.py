@@ -52,19 +52,23 @@ def human_time(past: datetime, future: datetime) -> str:
 
 class InChannelCheckFailure(ParrotCheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
-
+    def __init__(self, error: str=None):
+        super().__init__(error)
 
 class InMonthCheckFailure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed month."""
-
+    def __init__(self, error: str=None):
+        super().__init__(error)
 
 class InDayCheckFailure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed day."""
-
+    def __init__(self, error: str=None):
+        super().__init__(error)
 
 class InTimeCheckFaliure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed time."""
-
+    def __init__(self, error: str=None):
+        super().__init__(error)
 
 def seasonal_task(
     *allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY

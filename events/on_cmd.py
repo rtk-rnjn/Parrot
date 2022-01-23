@@ -327,31 +327,5 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             view=ErrorView(ctx.author.id, ctx=ctx, error=error),
         )
 
-    @Cog.listener()
-    async def on_error(self, event, *args, **kwargs):
-        traceback_string = traceback.format_exc()
-        await self.bot.wait_until_ready()
-        file_obj = io.BytesIO(
-            "Ignoring Exception at the {event}: {traceback_string}".encode()
-        )
-        link = f"https://discord.com/api/webhooks/{CHANNEL_TOKEN_2}/{TOKEN_2}"
-        webhook = discord.Webhook.from_url(link, session=self.bot.session)
-        if webhook:
-            content = f"""Ignoring Exception at: {event}\n{traceback_string}"""
-            if len(content) < 2000:
-                return await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
-            else:
-                return await webhook.send(
-                    content="\u200b",
-                    file=discord.File(file_obj, filename=f"Error_{event}.py"),
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
-
-
 def setup(bot):
     bot.add_cog(Cmd(bot))

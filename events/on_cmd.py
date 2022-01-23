@@ -305,7 +305,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, ParrotCheckFaliure):
+        if isinstance(error, ParrotCheckFailure):
             ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)

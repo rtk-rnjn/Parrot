@@ -342,7 +342,7 @@ class Easter(Cog):
         channel = self.bot.get_channel(776420233832955934)  # umm, IDK... LOL
         await channel.send(embed=self.make_embed())
 
-    @commands.command(name="eggfact", aliases=("fact",))
+    @commands.command(name="eggfact", aliases=("efact",))
     async def easter_facts(self, ctx: Context) -> None:
         """Get easter egg facts."""
         embed = self.make_embed()

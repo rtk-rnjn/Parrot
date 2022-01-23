@@ -131,14 +131,6 @@ SPOOKY_TRIGGERS = {
 class Halloween(Cog):
     """Halloween collection games and other stuff."""
 
-    # User candy amount records
-    candy_records = RedisCache()
-    messages = RedisCache()
-    data = RedisCache()
-    # Candy and skull messages mapping
-    candy_messages = RedisCache()
-    skull_messages = RedisCache()
-
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.registry_path = Path("extra", "halloween", "monstersurvey.json")
@@ -154,6 +146,13 @@ class Halloween(Cog):
 
     async def load_vars(self) -> None:
         """Loads the variables that couldn't be loaded in __init__."""
+        self.data = RedisCache()
+        # User candy amount records
+        self.candy_records = RedisCache()
+        self.messages = RedisCache()
+        # Candy and skull messages mapping
+        self.candy_messages = RedisCache()
+        self.skull_messages = RedisCache()
         self.first_time = await self.data.get("first_time", True)
         self.name = await self.data.get("name")
 
@@ -221,7 +220,7 @@ class Halloween(Cog):
             if trigger_test:
                 # Check message for bot replies and/or command invocations
                 # Short circuit if they're found, logging is handled in _short_circuit_check
-                if await self._short_circuit_check(message):
+                if (await self._short_circuit_check(message)):
                     return
                 await message.add_reaction(trigger[1])
 
@@ -265,7 +264,7 @@ class Halloween(Cog):
             and str(reaction.emoji) == EMOJIS["CANDY"]
         ):
             await self.candy_messages.delete(message.id)
-            if await self.candy_records.contains(user.id):
+            if (await self.candy_records.contains(user.id)):
                 await self.candy_records.increment(user.id)
             else:
                 await self.candy_records.set(user.id, 1)
@@ -699,7 +698,7 @@ class Halloween(Cog):
     @Cog.listener()
     async def on_reaction_add(self, reaction: Reaction, user: User) -> None:
         """Ensures that each user adds maximum one reaction."""
-        if user.bot or not await self.messages.contains(reaction.message.id):
+        if user.bot or not (await self.messages.contains(reaction.message.id)):
             return
 
         async with self.checking_messages:  # Acquire the lock so that the dictionary isn't reset while iterating.
@@ -740,8 +739,8 @@ class Halloween(Cog):
             self.first_time = False
 
         else:
-            if await self.messages.items():
-                await channel.send(embed=await self.get_responses_list(final=True))
+            if (await self.messages.items()):
+                await channel.send(embed=(await self.get_responses_list(final=True)))
                 self.poll = True
                 if not self.debug:
                     await asyncio.sleep(2 * 60 * 60)  # sleep for two hours
@@ -767,7 +766,7 @@ class Halloween(Cog):
             winner_messages = sorted(
                 (
                     (msg_id, loads(usr_data))
-                    for msg_id, usr_data in await self.messages.items()
+                    for msg_id, usr_data in (await self.messages.items())
                 ),
                 key=lambda x: x[1]["score"],
                 reverse=True,
@@ -858,7 +857,7 @@ class Halloween(Cog):
     async def get_responses_list(self, final: bool = False) -> Embed:
         """Returns an embed containing the responses of the people."""
         embed = Embed(color=Colour.red())
-        if await self.messages.items():
+        if (await self.messages.items()):
             if final:
                 embed.title = "Spooky Name Rate is about to end!"
                 embed.description = (
@@ -871,13 +870,13 @@ class Halloween(Cog):
         else:
             embed.title = "No one has added an entry yet..."
 
-        for message_id, data in await self.messages.items():
+        for message_id, data in (await self.messages.items()):
             data = loads(data)
 
             embed.add_field(
                 name=(
                     self.bot.get_user(data["author"])
-                    or await self.bot.fetch_user(data["author"])
+                    or (await self.bot.fetch_user(data["author"]))
                 ).name,
                 value=f"{data['name']}",
             )

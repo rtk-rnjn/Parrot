@@ -9,7 +9,7 @@ import io
 import aiohttp
 from discord.ext import commands
 
-from utilities.exceptions import ParrotCheckFaliure
+from utilities.exceptions import ParrotCheckFailure
 from utilities.database import cmd_increment, parrot_db
 
 from core import Parrot, Context, Cog

@@ -220,7 +220,7 @@ class Halloween(Cog):
             if trigger_test:
                 # Check message for bot replies and/or command invocations
                 # Short circuit if they're found, logging is handled in _short_circuit_check
-                if (await self._short_circuit_check(message)):
+                if await self._short_circuit_check(message):
                     return
                 await message.add_reaction(trigger[1])
 
@@ -264,7 +264,7 @@ class Halloween(Cog):
             and str(reaction.emoji) == EMOJIS["CANDY"]
         ):
             await self.candy_messages.delete(message.id)
-            if (await self.candy_records.contains(user.id)):
+            if await self.candy_records.contains(user.id):
                 await self.candy_records.increment(user.id)
             else:
                 await self.candy_records.set(user.id, 1)
@@ -739,7 +739,7 @@ class Halloween(Cog):
             self.first_time = False
 
         else:
-            if (await self.messages.items()):
+            if await self.messages.items():
                 await channel.send(embed=(await self.get_responses_list(final=True)))
                 self.poll = True
                 if not self.debug:
@@ -857,7 +857,7 @@ class Halloween(Cog):
     async def get_responses_list(self, final: bool = False) -> Embed:
         """Returns an embed containing the responses of the people."""
         embed = Embed(color=Colour.red())
-        if (await self.messages.items()):
+        if await self.messages.items():
             if final:
                 embed.title = "Spooky Name Rate is about to end!"
                 embed.description = (
@@ -870,7 +870,7 @@ class Halloween(Cog):
         else:
             embed.title = "No one has added an entry yet..."
 
-        for message_id, data in (await self.messages.items()):
+        for message_id, data in await self.messages.items():
             data = loads(data)
 
             embed.add_field(

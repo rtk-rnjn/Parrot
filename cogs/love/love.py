@@ -265,7 +265,7 @@ class Love(Cog):
         )
         embed.set_thumbnail(url=random_line.get("image", PICKUP_LINES["placeholder"]))
         await ctx.send(embed=embed)
-    
+
     @in_month(Month.FEBRUARY)
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

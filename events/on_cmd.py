@@ -327,5 +327,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             view=ErrorView(ctx.author.id, ctx=ctx, error=error),
         )
 
+
 def setup(bot):
     bot.add_cog(Cmd(bot))

@@ -18,6 +18,9 @@ from discord.ext import commands
 from discord.ext.commands import clean_content
 from discord import Member
 
+from utilities.deco import in_month
+from utilities.constants import Month
+
 from typing import Union, Coroutine, Optional, Callable
 
 FACTS = json.loads(Path(r"extra/valentines/valentine_facts.json").read_text("utf8"))
@@ -138,6 +141,7 @@ class Love(Cog):
             ):
                 return zodiac_name
 
+    @in_month(Month.FEBRUARY)
     @commands.command(aliases=["saintvalentine"])
     async def whoisvalentine(
         self,
@@ -155,6 +159,7 @@ class Love(Cog):
 
         await ctx.send(embed=embed)
 
+    @in_month(Month.FEBRUARY)
     @commands.command(aliases=["valentine-fact"])
     async def valentinefact(self, ctx: Context) -> None:
         """Shows a random fact about Valentine's Day."""
@@ -166,12 +171,14 @@ class Love(Cog):
 
         await ctx.send(embed=embed)
 
+    @in_month(Month.FEBRUARY)
     @commands.group(name="zodiac", invoke_without_command=True)
     async def zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides information about zodiac sign by taking zodiac sign name as input."""
         final_embed = self.zodiac_build_embed(zodiac_sign)
         await ctx.send(embed=final_embed)
 
+    @in_month(Month.FEBRUARY)
     @zodiac.command(name="date")
     async def date_and_month(
         self, ctx: Context, date: int, month: Union[int, str]
@@ -205,6 +212,7 @@ class Love(Cog):
 
         await ctx.send(embed=final_embed)
 
+    @in_month(Month.FEBRUARY)
     @zodiac.command(name="partnerzodiac", aliases=("partner",))
     async def partner_zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides a random counter compatible zodiac sign to the given user's zodiac sign."""
@@ -228,6 +236,7 @@ class Love(Cog):
             embed = self.generate_invalidname_embed(zodiac_sign)
         await ctx.send(embed=embed)
 
+    @in_month(Month.FEBRUARY)
     @commands.command()
     async def savethedate(self, ctx: Context) -> None:
         """Gives you ideas for what to do on a date with your valentine."""
@@ -241,6 +250,7 @@ class Love(Cog):
         )
         await ctx.send(embed=embed)
 
+    @in_month(Month.FEBRUARY)
     @commands.command()
     async def pickupline(self, ctx: Context) -> None:
         """
@@ -255,8 +265,10 @@ class Love(Cog):
         )
         embed.set_thumbnail(url=random_line.get("image", PICKUP_LINES["placeholder"]))
         await ctx.send(embed=embed)
-
+    
+    @in_month(Month.FEBRUARY)
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def myvalenstate(self, ctx: Context, *, name: str = None) -> None:
         """Find the vacation spot(s) with the most matching characters to the invoking user."""
         eq_chars = collections.defaultdict(int)
@@ -298,9 +310,7 @@ class Love(Cog):
         embed.set_image(url=STATES[valenstate]["flag"])
         await ctx.send(embed=embed)
 
-    """A cog for calculating the love between two people."""
-
-    # @in_month(Month.FEBRUARY)
+    @in_month(Month.FEBRUARY)
     @commands.command(aliases=("love_calculator", "love_calc"))
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
     async def love(

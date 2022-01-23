@@ -15,7 +15,7 @@ HEBCAL_URL = (
 )
 
 
-class HanukkahEmbed(Cog):
+class Hanukkah(Cog):
     """A cog that returns information about Hanukkah festival."""
 
     def __init__(self, bot: Parrot):
@@ -93,7 +93,3 @@ class HanukkahEmbed(Cog):
 
         await ctx.send(embed=embed)
 
-
-def setup(bot: Parrot) -> None:
-    """Load the Hanukkah Embed Cog."""
-    bot.add_cog(HanukkahEmbed(bot))

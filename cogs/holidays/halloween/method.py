@@ -887,8 +887,7 @@ class Halloween(Cog):
     async def get_channel(self) -> Optional[TextChannel]:
         """Gets the parrot-channel after waiting until ready."""
         await self.bot.wait_until_ready()
-        channel = discord.utils.get(self.bot.get_all_channels(), name="parrot")
-        return channel
+        return self.bot.get_channel(776420233832955934)
 
     @staticmethod
     def in_allowed_month() -> bool:

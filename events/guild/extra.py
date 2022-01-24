@@ -58,7 +58,6 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                         )
                         break
 
-
     @Cog.listener()
     async def on_invite_delete(self, invite):
         if not invite.guild:
@@ -98,6 +97,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                             username=self.bot.user.name,
                         )
                         break
+
 
 def setup(bot):
     bot.add_cog(Extra(bot))

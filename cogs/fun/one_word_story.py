@@ -37,9 +37,7 @@ class OneWordStory(Cog):
         if not data:
             return
 
-        channel = self.bot.get_channel(
-            data["oneword"]
-        )
+        channel = self.bot.get_channel(data["oneword"])
         if not channel:
             return
 

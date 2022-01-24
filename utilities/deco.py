@@ -32,7 +32,7 @@ def resolve_current_day() -> Day:
     return Day(datetime.utcnow().day)
 
 
-def resolve_current_time(*, _time: datetime=None) -> datetime:
+def resolve_current_time(*, _time: datetime = None) -> datetime:
     return _time or datetime.utcnow()
 
 

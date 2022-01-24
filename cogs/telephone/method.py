@@ -55,7 +55,7 @@ async def dial(bot, ctx, server, reverse=False):
     )
     try:
         temp_message = target_channel.send(
-            f'<&!{target_guild["pingrole"]}> <@!{target_guild["memberping"]}>',
+            f'<@&{target_guild["pingrole"]}> <@{target_guild["memberping"]}>',
             delete_after=1,
         )
         await temp_message.delete(delay=0)

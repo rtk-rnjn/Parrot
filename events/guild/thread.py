@@ -10,7 +10,7 @@ from discord import utils
 class OnThread(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-    
+
     @Cog.listener()
     async def on_thread_join(self, thread: discord.Thread) -> None:
         if not thread.guild.me.guild_permissions.view_audit_log:
@@ -46,7 +46,7 @@ class OnThread(Cog):
                             username=self.bot.user.name,
                         )
                         break
-    
+
     @Cog.listener()
     async def on_thread_remove(self, thread: discord.Thread) -> None:
         if not thread.guild.me.guild_permissions.view_audit_log:
@@ -104,7 +104,7 @@ class OnThread(Cog):
                             username=self.bot.user.name,
                         )
                         break
-    
+
     @Cog.listener()
     async def on_thread_member_join(self, member: discord.ThreadMember) -> None:
         if data := await self.collection.find_one(
@@ -162,7 +162,9 @@ class OnThread(Cog):
         return ls
 
     @Cog.listener
-    async def on_thread_update(self, before: discord.Thread, after: discord.Thread) -> None:
+    async def on_thread_update(
+        self, before: discord.Thread, after: discord.Thread
+    ) -> None:
         if data := await self.collection.find_one(
             {"_id": after.guild.id, "on_thread_update": {"$exists": True}}
         ):

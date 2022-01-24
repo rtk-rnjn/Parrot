@@ -30,7 +30,7 @@ class ErrorView(discord.ui.View):
         self.ctx = ctx
         self.error = error
 
-    async def paste(self, text:str, *, lang: str='txt'):
+    async def paste(self, text: str, *, lang: str = "txt"):
         """Return an online bin of given text"""
         async with aiohttp.ClientSession() as aioclient:
             post = await aioclient.post("https://hastebin.com/documents", data=text)

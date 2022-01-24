@@ -97,7 +97,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     self.muted[member.guild.id] = {member.id}
 
     def difference_list(self, li1: list, li2: list) -> list:
-        [i for i in li1 + li2 if i not in li1 or i not in li2]
+        return [i for i in li1 + li2 if i not in li1 or i not in li2]
 
     def _member_change(self, before, after):
         ls = []

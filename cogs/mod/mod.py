@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from cogs.mod.flags import purgeFlag, warnFlag
 from cogs.mod import method as mt
+from cogs.meta.robopage import TextPageSource, RoboPages
 
 from discord.ext import commands, tasks
 import discord
@@ -18,8 +19,6 @@ from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
 from datetime import datetime
-
-from cogs.meta.robopage import TextPageSource, RoboPages
 from typing import Optional
 
 collection = parrot_db["server_config"]

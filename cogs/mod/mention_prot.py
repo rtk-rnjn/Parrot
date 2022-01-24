@@ -3,12 +3,11 @@ from __future__ import annotations
 from core import Parrot, Cog
 
 from utilities.database import parrot_db
+from utilities.infraction import warn
 
 from discord.ext import tasks
 import discord
 import random
-
-from utilities.infraction import warn
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")

@@ -111,7 +111,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             ls.append(["`Avatar Changed  :`", f"<{before.display_avatar.url}>"])
         if before.roles != after.roles:
             ls.append(
-                f"`Role Update     :`",
+                "`Role Update     :`",
                 ", ".join(
                     [
                         role.name

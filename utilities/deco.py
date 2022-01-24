@@ -32,7 +32,7 @@ def resolve_current_day() -> Day:
     return Day(datetime.utcnow().day)
 
 
-def resolve_current_time(*, _time: datetime) -> datetime:
+def resolve_current_time(*, _time: datetime=None) -> datetime:
     return _time or datetime.utcnow()
 
 
@@ -160,7 +160,7 @@ def in_time_listener(*, past: datetime, future: datetime) -> Callable:
         @functools.wraps(listener)
         async def guarded_listener(*args, **kwargs) -> None:
             """Wrapped listener will abort if not in allowed day."""
-            current_time = resolve_current_time()
+            current_time = datetime.utcnow()
             if past < current_time < future:
                 # Propagate return value although it should always be None
                 return await listener(*args, **kwargs)

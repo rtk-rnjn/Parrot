@@ -34,17 +34,12 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                 data["on_invite_create"], session=self.bot.session
             )
             if webhook:
-                try:
-                    async for entry in invite.guild.audit_logs(
-                        action=discord.AuditLogAction.invite_delete, limit=5
-                    ):
-                        if entry.extra.id == invite.id:
-                            reason = entry.reason or None
-                            break
-                except Exception:
-                    reason = None
-
-                content = f"""**On Invite Create**
+                async for entry in invite.guild.audit_logs(
+                    action=discord.AuditLogAction.invite_delete, limit=5
+                ):
+                    if entry.extra.id == invite.id:
+                        reason = entry.reason or None
+                        content = f"""**On Invite Create**
 
 `Member Count?  :` **{invite.approximate_member_count}**
 `Presence Count?:` **{invite.approximate_presence_count}**
@@ -56,15 +51,19 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Inviter?    :` **{invite.inviter}**
 `Reason?     :` **{reason}**
 """
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                        )
+                        break
+
 
     @Cog.listener()
     async def on_invite_delete(self, invite):
         if not invite.guild:
+            return
+        if not invite.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
             {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
@@ -73,19 +72,14 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                 data["on_invite_create"], session=self.bot.session
             )
             if webhook:
-                try:
-                    async for entry in invite.guild.audit_logs(
-                        action=discord.AuditLogAction.invite_delete, limit=5
-                    ):
-                        if entry.extra.id == invite.id:
-                            reason = entry.reason or None
-                            user = entry.user or "UNKNOWN#0000"
-                            break
-                except Exception:
-                    reason = None
-                    user = "UNKNOWN#0000"
+                async for entry in invite.guild.audit_logs(
+                    action=discord.AuditLogAction.invite_delete, limit=5
+                ):
+                    if entry.extra.id == invite.id:
+                        reason = entry.reason or None
+                        user = entry.user or "UNKNOWN#0000"
 
-                content = f"""**On Invite Create**
+                        content = f"""**On Invite Create**
 
 `Member Count?  :` **{invite.approximate_member_count}**
 `Presence Count?:` **{invite.approximate_presence_count}**
@@ -98,12 +92,12 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Reason?     :` **{reason}**
 `Deleted By? :` **{user}**
 """
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
-
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                        )
+                        break
 
 def setup(bot):
     bot.add_cog(Extra(bot))

@@ -970,7 +970,7 @@ class Chess:
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=self.timeout)
             return msg
-        except Exception:
+        except asyncio.TimeoutError:
             if not self.game_stop:
                 await self.ctx.send(
                     f"**{self.turn}** did not responded on time! Game Over!"
@@ -1079,7 +1079,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 if self.react_on_success:
                     try:
                         await msg.add_reaction("\N{BLACK CHESS PAWN}")
-                    except Exception:
+                    except discord.Forbidden:
                         pass
                 await self.place_move(msg.content)
                 self.switch()
@@ -3052,10 +3052,10 @@ class Games(Cog):
             self.games_c4.append(game)
             await game.start_game()
             self.games_c4.remove(game)
-        except Exception:
+        except Exception as e:
             # End the game in the event of an unforeseen error so the players aren't stuck in a game
             await ctx.send(
-                f"{ctx.author.mention} {user.mention if user else ''} An error occurred. Game failed."
+                f"{ctx.author.mention} {user.mention if user else ''} An error occurred. Game failed | Error: {e}"
             )
             if game in self.games_c4:
                 self.games_c4.remove(game)
@@ -3189,7 +3189,7 @@ class Games(Cog):
                 msg = await self.bot.wait_for(
                     "message", check=check_response, timeout=30
                 )
-            except Exception:
+            except asyncio.TimeoutError:
                 return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
             if msg.content.lower() in ("b", "back"):
                 try:
@@ -3218,7 +3218,7 @@ class Games(Cog):
 
         try:
             correct = await self.bot.wait_for("message", check=check_yes_no, timeout=30)
-        except Exception:
+        except asyncio.TimeoutError:
             return await ctx.send(f"{ctx.author.mention} you didn't answer on time")
         if correct.content.lower() in ("yes", "y"):
             embed = discord.Embed(title="Yay! I guessed it right", color=0xFF0000)
@@ -3397,10 +3397,10 @@ class Games(Cog):
                 "Game failed. This is likely due to you not having your DMs open. Check and try again."
             )
             self.games.remove(game)
-        except Exception:
+        except Exception as e:
             # End the game in the event of an unforseen error so the players aren't stuck in a game
             await ctx.send(
-                f"{ctx.author.mention} {user.mention} An error occurred. Game failed."
+                f"{ctx.author.mention} {user.mention} An error occurred. Game failed | Error: {e}"
             )
             self.games.remove(game)
             raise

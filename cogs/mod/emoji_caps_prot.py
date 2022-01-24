@@ -19,10 +19,7 @@ class EmojiCapsProt(Cog):
         self.collection = parrot_db["server_config"]
 
     async def delete(self, message: discord.Message) -> None:
-        try:
-            await message.delete()
-        except Exception:
-            return
+        await message.delete(delay=0)
 
     async def get_emoji_count(self, message_content: str) -> int:
         str_count = len(re.findall(r"[\U0001f600-\U0001f650]", message_content))

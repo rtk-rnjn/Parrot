@@ -21,6 +21,8 @@ from .flags import AutoWarn, warnConfig
 from cogs.ticket import method as mt
 from cogs.config import method as mt_
 
+import pymongo.errors.DuplicateKeyError as DPError
+
 
 with open(r"cogs/config/events.json") as f:
     events = json.load(f)
@@ -40,7 +42,7 @@ class BotConfig(Cog):
     async def log_in(self, guild: int):
         try:
             await logs.insert_one({"_id": guild})
-        except Exception:
+        except DPError:
             pass
 
     @property

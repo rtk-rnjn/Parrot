@@ -50,7 +50,7 @@ class Counting(Cog):
         if msg and (message.author.id == msg.author.id):
             try:
                 return await message.delete()
-            except Exception:
+            except discord.Forbidden:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"
                 )
@@ -66,7 +66,7 @@ class Counting(Cog):
         except ValueError:
             try:
                 await message.delete()
-            except Exception:
+            except discord.Forbidden:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"
                 )
@@ -74,7 +74,7 @@ class Counting(Cog):
         if new_number - 1 != number:
             try:
                 return await message.delete()
-            except Exception:
+            except discord.Forbidden:
                 return await message.channel.send(
                     "Bot need manage message permission to work properly"
                 )

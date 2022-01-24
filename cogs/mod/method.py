@@ -419,7 +419,7 @@ async def _mute(guild, command_name, ctx_author, destination, member, reason):
                 await channel.set_permissions(
                     muted, send_messages=False, add_reactions=False
                 )
-            except Exception:
+            except discord.Forbidden:
                 pass
     try:
         await member.add_roles(

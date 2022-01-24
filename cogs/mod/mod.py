@@ -1293,7 +1293,7 @@ class Moderator(Cog):
                     return await msg.delete(delay=0)
                 try:
                     color = int(m.content)
-                except Exception:
+                except ValueError:
                     await ctx.send(f"{ctx.author.mention} invalid color")
                 else:
                     await mt._change_role_color(

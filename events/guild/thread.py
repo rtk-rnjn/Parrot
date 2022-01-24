@@ -8,11 +8,11 @@ from discord import utils
 
 
 class OnThread(Cog):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
     
     @Cog.listener()
-    async def on_thread_join(self, thread: discord.Thread):
+    async def on_thread_join(self, thread: discord.Thread) -> None:
         if not thread.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -48,7 +48,7 @@ class OnThread(Cog):
                         break
     
     @Cog.listener()
-    async def on_thread_remove(self, thread: discord.Thread):
+    async def on_thread_remove(self, thread: discord.Thread) -> None:
         if not thread.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -72,7 +72,7 @@ class OnThread(Cog):
                 )
 
     @Cog.listener()
-    async def on_thread_delete(self, thread: discord.Thread):
+    async def on_thread_delete(self, thread: discord.Thread) -> None:
         if not thread.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -106,7 +106,7 @@ class OnThread(Cog):
                         break
     
     @Cog.listener()
-    async def on_thread_member_join(self, member: discord.ThreadMember):
+    async def on_thread_member_join(self, member: discord.ThreadMember) -> None:
         if data := await self.collection.find_one(
             {"_id": member.thread.guild.id, "on_member_join_thread": {"$exists": True}}
         ):
@@ -130,7 +130,7 @@ class OnThread(Cog):
                 )
 
     @Cog.listener()
-    async def on_thread_member_remove(self, member: discord.ThreadMember):
+    async def on_thread_member_remove(self, member: discord.ThreadMember) -> None:
         if data := await self.collection.find_one(
             {"_id": member.thread.guild.id, "on_member_leave_thread": {"$exists": True}}
         ):
@@ -152,6 +152,42 @@ class OnThread(Cog):
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
                 )
+
+    def difference_thread(self, before: discord.Thread, after: discord.Thread) -> list:
+        ls = []
+        if before.name != after.name:
+            ls.append(["`Name        :`", f"**{before.name}**"])
+        if before.member_count != after.member_count:
+            ls.append(["`Member Count:`", f"**{before.member_count}**"])
+        return ls
+
+    @Cog.listener
+    async def on_thread_update(self, before: discord.Thread, after: discord.Thread) -> None:
+        if data := await self.collection.find_one(
+            {"_id": after.guild.id, "on_thread_update": {"$exists": True}}
+        ):
+            thread = after
+            webhook = discord.Webhook.from_url(
+                data["on_thread_update"], session=self.bot.session
+            )
+            if webhook:
+                change = "\n".join(self.difference_thread(before, after))
+                content = f"""**On Thread Update**
+
+`Name      :` **{thread.name}** **(`{thread.id}`)**
+`Created at:` **{utils.format_dt(utils.snowflake_time(thread.id))}**
+`Parent    :` **<#{thread.parent_id}>**
+`Owner     :` **{thread.owner}** **(`{thread.owner_id}`)**
+
+**Change/Update (Before)**
+{change}
+"""
+                await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
+                    username=self.bot.user.name,
+                )
+
 
 def setup(bot: Parrot):
     bot.add_cog(OnThread(bot))

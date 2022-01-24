@@ -55,10 +55,10 @@ async def dial(bot, ctx, server, reverse=False):
     )
     try:
         temp_message = target_channel.send(
-            f'{bot.get_guild(target_guild["_id"]).get_role(target_guild["pingrole"]).mention} {bot.get_user(target_guild["memberping"]).mention}'
+            f'<&!{target_guild["pingrole"]}> <@!{target_guild["memberping"]}>', delete_after=1
         )
         await temp_message.delete(delay=0)
-    except Exception:
+    except AttributeError:
         pass
 
     def check_pickup_hangup(m):

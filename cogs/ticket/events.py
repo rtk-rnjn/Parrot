@@ -56,7 +56,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         if (message is not None) and (emoji == "✉️"):
             try:
                 await message.remove_reaction("✉️", member)
-            except Exception:
+            except discord.Forbidden:
                 return await channel.send(
                     "Missing Manage Message permisssion to work properly",
                     delete_after=10,

@@ -348,7 +348,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
     async def send_group_help(self, group):
         try:
             await self.context.trigger_typing()
-        except Exception:
+        except discord.Forbidden:
             await self.context.reply(
                 f"{self.context.author.mention} preparing help menu..."
             )

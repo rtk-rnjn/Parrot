@@ -6,7 +6,7 @@ from datetime import datetime
 
 from utilities.database import ticket_update, parrot_db
 from core import Context
-
+import asyncio
 collection = parrot_db["ticket"]
 
 
@@ -205,7 +205,7 @@ async def _close(ctx: Context, bot):
                             f"**Closed by:** {ctx.author} ({ctx.author.id})",
                             "CLOSED",
                         )
-            except Exception:
+            except asyncio.TimeoutError:
                 em = discord.Embed(
                     title="Parrot Ticket Bot",
                     description="You have run out of time to close this ticket. Please run the command again.",
@@ -387,7 +387,7 @@ async def _auto(ctx, channel, message):
     )
     embed.set_footer(text=f"{ctx.guild.name}")
     message = await channel.send(embed=embed)
-    await message.add_reaction("✉️")
+    await message.add_reaction("\N{ENVELOPE}")
     post = {"message_id": message.id, "channel_id": channel.id}
     await ticket_update(ctx.guild.id, post)
     em = discord.Embed(

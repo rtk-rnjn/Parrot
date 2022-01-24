@@ -23,7 +23,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 for target, overwrite in overwrites.items()
             }
             return json.dumps(over, indent=4)
-        except Exception:
+        except TypeError:
             return "{}"
 
     @Cog.listener()

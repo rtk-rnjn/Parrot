@@ -387,12 +387,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             urls = LINKS_NO_PROTOCOLS.search(message.content)
             if urls:
                 try:
-                    await message.delete()
+                    await message.delete(delay=0)
                     return await message.channel.send(
                         f"{message.author.mention} | URLs aren't allowed.",
                         delete_after=5,
                     )
-                except Exception:
+                except discord.Forbidden:
                     return await message.channel.send(
                         f"{message.author.mention} | URLs aren't allowed.",
                         delete_after=5,
@@ -400,24 +400,24 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
             if "discord.gg" in message.content.lower():
                 try:
-                    await message.delete()
+                    await message.delete(delay=0)
                     return await message.channel.send(
                         f"{message.author.mention} | Advertisements aren't allowed.",
                         delete_after=5,
                     )
-                except Exception:
+                except discord.Forbidden:
                     return await message.channel.send(
                         f"{message.author.mention} | Advertisements aren't allowed.",
                         delete_after=5,
                     )
             if len(message.content.split("\n")) > 4:
                 try:
-                    await message.delete()
+                    await message.delete(delay=0)
                     return await message.channel.send(
                         f"{message.author.mention} | Do not send message in 4-5 lines or above.",
                         delete_after=5,
                     )
-                except Exception:
+                except discord.Forbidden:
                     return await message.channel.send(
                         f"{message.author.mention} | Do not send message in 4-5 lines or above.",
                         delete_after=5,
@@ -425,12 +425,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
             if "discord.com" in message.content.lower():
                 try:
-                    await message.delete()
+                    await message.delete(delay=0)
                     return await message.channel.send(
                         f"{message.author.mention} | Advertisements aren't allowed.",
                         delete_after=5,
                     )
-                except Exception:
+                except discord.Forbidden:
                     return await message.channel.send(
                         f"{message.author.mention} | Advertisements aren't allowed.",
                         delete_after=5,
@@ -441,12 +441,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 pass
             elif not to_send:
                 try:
-                    await message.delete()
+                    await message.delete(delay=0)
                     return await message.channel.send(
                         f"{message.author.mention} | Sending Bad Word not allowed",
                         delete_after=5,
                     )
-                except Exception:
+                except discord.Forbidden:
                     return await message.channel.send(
                         f"{message.author.mention} | Sending Bad Word not allowed",
                         delete_after=5,
@@ -456,8 +456,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return
             try:
                 await asyncio.sleep(0.1)
-                await message.delete()
-            except Exception:
+                await message.delete(delay=0)
+            except discord.Forbidden:
                 return await message.channel.send(
                     "Bot requires **Manage Messages** permission(s) to function properly."
                 )
@@ -468,14 +468,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     try:
                         async with aiohttp.ClientSession() as session:
                             webhook = Webhook.from_url(f"{hook}", session=session)
-                            await webhook.send(
-                                content=message.content,
-                                username=f"{message.author}",
-                                avatar_url=message.author.display_avatar.url,
-                                allowed_mentions=discord.AllowedMentions.none(),
-                            )
-                    except Exception:
-                        continue
+                            if webhook:
+                                await webhook.send(
+                                    content=message.content,
+                                    username=f"{message.author}",
+                                    avatar_url=message.author.display_avatar.url,
+                                    allowed_mentions=discord.AllowedMentions.none(),
+                                )
+                    except Exception as e:
+                        print(e)
 
     @Cog.listener()
     async def on_message_delete(self, message):

@@ -643,7 +643,9 @@ class Misc(Cog):
             poll = await session.get(URL, headers={"API-KEY": os.environ["STRAW_POLL"]})
         try:
             data = await poll.json()
-        except Exception:
+        except json.decoder.JSONDecodeError:
+            return
+        except aiohttp.client_exceptions.ContentTypeError:
             return
         embed = discord.Embed(
             title=data["content"]["poll"]["title"],

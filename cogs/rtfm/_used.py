@@ -342,7 +342,7 @@ def typing(func):
         try:
             async with context.typing():
                 await func(*args, **kwargs)
-        except Exception:
+        except discord.Forbidden:
             await func(*args, **kwargs)
 
     return wrapped

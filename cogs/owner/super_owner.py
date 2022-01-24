@@ -223,7 +223,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await user.send(
                 f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban."
             )
-        except Exception:
+        except discord.Forbidden:
             pass
 
     @commands.command(name="image-search", aliases=["imagesearch", "imgs"], hidden=True)

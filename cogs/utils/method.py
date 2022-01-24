@@ -195,7 +195,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
         i += 1
     try:
         await paginator.start()
-    except Exception:
+    except IndexError:
         await ctx.reply(
             f"{ctx.author.mention} you don't have any tags registered with your name"
         )
@@ -210,7 +210,7 @@ async def _show_all_tags(bot: Parrot, ctx: Context):
         i += 1
     try:
         await paginator.start()
-    except Exception:
+    except IndexError:
         await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
 
 
@@ -391,7 +391,7 @@ async def create_gw(bot: Parrot, ctx: Context):
         if i == 3:
             try:
                 winner = int(msg.content)
-            except Exception:
+            except ValueError:
                 return await ctx.send(f"{ctx.author.mention} Invalid Winner count")
             answers["winners"] = winner
         if i == 4:

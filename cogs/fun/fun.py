@@ -1242,7 +1242,7 @@ class Fun(Cog):
                 message = await self.bot.wait_for(
                     event="message", timeout=60.0, check=check
                 )
-            except Exception:
+            except asyncio.exceptions.TimeoutError:
                 timeout_embed = Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",

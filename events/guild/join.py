@@ -30,7 +30,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
-        except Exception as _:
+        except AttributeError:
             return
 
         await guild_join(guild.id)
@@ -43,6 +43,8 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             async with session.post(self.url, json=data) as res:
                 if res in range(200, 300 + 1):
                     pass
+                else:
+                    print("Guild Add")
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
@@ -56,8 +58,9 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
-        except Exception as _:
+        except AttributeError:
             return
+
         await guild_remove(guild.id)
         data = {
             "username": "Parrot",
@@ -68,6 +71,8 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             async with session.post(self.url, json=data) as res:
                 if res in range(200, 300 + 1):
                     pass
+                else:
+                    print("Guild Remove")
 
     @Cog.listener()
     async def on_guild_update(self, before, after):

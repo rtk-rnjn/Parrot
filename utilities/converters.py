@@ -7,7 +7,8 @@ import asyncio
 from discord.ext import commands
 import discord
 
-from typing import Optional
+from typing import Any, Optional
+from core import Context
 
 
 def convert_bool(text: str) -> Optional[bool]:
@@ -47,29 +48,33 @@ class to_async:
 class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild"""
 
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: Any) -> Optional[discord.User]:
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
-                return await ctx.guild.fetch_ban(discord.Object(id=member_id))
+                ban_entry = await ctx.guild.fetch_ban(discord.Object(id=member_id))
+                return ban_entry.user
             except discord.NotFound:
                 raise commands.BadArgument(
-                    "This member has not been banned before."
+                    "User Not Found! Probably this member has not been banned before."
                 ) from None
 
         ban_list = await ctx.guild.bans()
-        entity = discord.utils.find(lambda u: str(u.user) == argument, ban_list)
-
-        if entity is None:
-            raise commands.BadArgument("This member has not been banned before.")
-
-        return entity
+        for entry in ban_list:
+            if argument in (entry.user.name, str(entry.user)):
+                return entry.user
+            if str(entry.user) == argument:
+                return entry.user
+        else:
+            raise commands.BadArgument(
+                "User Not Found! Probably this member has not been banned before."
+            ) from None
 
 
 class WrappedMessageConverter(commands.MessageConverter):
     """A converter that handles embed-suppressed links like <http://example.com>."""
 
-    async def convert(self, ctx: commands.Context, argument: str) -> discord.Message:
+    async def convert(self, ctx: Context, argument: str) -> discord.Message:
         """Wrap the commands.MessageConverter to handle <> delimited message links."""
         # It's possible to wrap a message in [<>] as well, and it's supported because its easy
         if argument.startswith("[") and argument.endswith("]"):

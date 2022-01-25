@@ -961,7 +961,9 @@ Server Wide?:{data['server']}"""
             em_lis.append(em)
         paginator = PaginationView(em_lis)
         if not em_lis:
-            return await ctx.send(f"{ctx.author.mention} no commands/category overwrite found")
+            return await ctx.send(
+                f"{ctx.author.mention} no commands/category overwrite found"
+            )
         await paginator.start(ctx)
 
     @cmdconfig.command()

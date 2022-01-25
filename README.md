@@ -63,4 +63,4 @@ No Help will be given if You are self Hosting. Tho' Bot is very easy to understa
 
 If you found any Error. In some of the command then please let me know, or you can ask for Pull Request. It would be helpful. Thanks
 
-[![DeepSource](https://deepsource.io/gh/rtk-rnjn/Parrot.svg/?label=active+issues&show_trend=true&token=TBX3EuSkNCA4VrsKvt4K4l64)](https://deepsource.io/gh/rtk-rnjn/Parrot/?ref=repository-badge)
+[![DeepSource](https://deepsource.io/gh/rtk-rnjn/Parrot.svg/?label=active+issues&show_trend=true&token=TBX3EuSkNCA4VrsKvt4K4l64)](https://deepsource.io/gh/rtk-rnjn/Parrot/?ref=repository-badge) [![DeepSource](https://deepsource.io/gh/rtk-rnjn/Parrot.svg/?label=resolved+issues&show_trend=true&token=TBX3EuSkNCA4VrsKvt4K4l64)](https://deepsource.io/gh/rtk-rnjn/Parrot/?ref=repository-badge)

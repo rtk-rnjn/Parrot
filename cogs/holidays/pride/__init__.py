@@ -30,14 +30,6 @@ class Pride(Cog):
         self.bot = bot
         self.daily_fact_task = self.bot.loop.create_task(self.send_pride_fact_daily())
 
-    @seasonal_task(Month.JUNE)
-    async def send_pride_fact_daily(self) -> None:
-        """Background task to post the daily pride fact every day."""
-        await self.bot.wait_until_guild_available()
-
-        channel = self.bot.get_channel(Channels.community_bot_commands)
-        await self.send_select_fact(channel, datetime.utcnow())
-
     async def send_random_fact(self, ctx: Context) -> None:
         """Provides a fact from any previous day, or today."""
         now = datetime.utcnow()

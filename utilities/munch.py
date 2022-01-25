@@ -19,6 +19,8 @@
     converted via Munch.to/fromDict().
 """
 
+import sys
+
 __version__ = "2.0.2"
 VERSION = tuple(map(int, __version__.split(".")))
 
@@ -27,8 +29,6 @@ __all__ = (
     "munchify",
     "unmunchify",
 )
-
-import sys
 
 _PY2 = sys.version_info < (3, 0)
 
@@ -278,7 +278,7 @@ def unmunchify(x):
     return x
 
 
-### Serialization
+# Serialization
 
 try:
     import orjson as json

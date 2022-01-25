@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 import discord
 
 from ..game import Party, Player
-from .select import *
+from .select import SelectButton, SelectUI
 
 if TYPE_CHECKING:
     from .game import GameUI

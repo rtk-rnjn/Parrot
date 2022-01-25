@@ -16,7 +16,7 @@ warn_db = cluster["warn_db"]
 async def cmd_increment(cmd: str) -> None:
     collection = parrot_db["cmd_count"]
 
-    if data := await collection.find_one({"_id": cmd}):
+    if _ := await collection.find_one({"_id": cmd}):
         await collection.update_one({"_id": cmd}, {"$inc": {"count": 1}})
     else:
         await collection.insert_one({"_id": cmd, "count": 1})
@@ -25,7 +25,7 @@ async def cmd_increment(cmd: str) -> None:
 async def gchat_update(guild_id: int, post: dict) -> None:
     collection = parrot_db["global_chat"]
 
-    if data := await collection.find_one({"_id": guild_id}):
+    if _ := await collection.find_one({"_id": guild_id}):
         await collection.update_one({"_id": guild_id}, {"$set": post})
     else:
         await collection.insert_one({"_id": guild_id})
@@ -34,7 +34,7 @@ async def gchat_update(guild_id: int, post: dict) -> None:
 
 async def msg_increment(guild_id: int, user_id: int) -> None:
     collection = msg_db[f"{guild_id}"]
-    if data := await collection.find_one({"_id": user_id}):
+    if _ := await collection.find_one({"_id": user_id}):
         await collection.update_one({"_id": user_id}, {"$inc": {"count": 1}})
     try:
         await collection.insert_one({"_id": user_id, "count": 1})

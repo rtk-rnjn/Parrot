@@ -2,12 +2,26 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Collection
-from typing import Union
+from typing import Union, Optional
 
 import discord
 from discord import Member as User
 
-from ..game import *
+from ..game import (
+    SECRET_MESSAGES,
+    ChancellorDiscardsPolicy,
+    Game,
+    GameCancelled,
+    Player,
+    PlayerToBeChancellor,
+    PlayerWasInvestigated,
+    PolicyListPeek,
+    Role,
+    SelectGameState,
+    Skip,
+    VoteGameState,
+)
+
 from .discard import DiscardUI
 from .peek import PeekUI
 from .player import PlayerUI

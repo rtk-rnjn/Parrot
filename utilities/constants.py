@@ -1,5 +1,4 @@
 import enum
-from typing import NamedTuple
 from .emotes import EMOJIS
 
 

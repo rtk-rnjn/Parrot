@@ -4,7 +4,7 @@ from typing import ClassVar
 
 import discord
 
-from .peek import *
+from .peek import PeekButton, PeekUI
 
 __all__ = (
     "DiscardButton",

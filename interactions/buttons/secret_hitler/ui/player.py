@@ -6,7 +6,7 @@ import discord
 from discord import Member as User
 
 from ..game import Player
-from .select import *
+from .select import SelectButton, SelectUI
 
 if TYPE_CHECKING:
     from .game import GameUI

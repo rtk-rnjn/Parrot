@@ -1,6 +1,6 @@
 # AUTHOR: https://github.com/davidetacchini/
 
-from typing import List, Union, Optional, NamedTuple
+from typing import Optional, NamedTuple
 from itertools import islice
 
 import discord

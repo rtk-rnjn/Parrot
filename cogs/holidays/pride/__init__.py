@@ -9,9 +9,7 @@ from datetime import datetime
 from rapidfuzz import fuzz
 import dateutil.parser
 from typing import Optional, Union
-
-from utilities.deco import seasonal_task
-from utilities.constants import Month, Colours
+from utilities.constants import Colours
 
 from core import Cog, Context, Parrot
 

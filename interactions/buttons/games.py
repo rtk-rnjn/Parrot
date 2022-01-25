@@ -1484,7 +1484,7 @@ class SokobanGameView(discord.ui.View):
         game: SokobanGame,
         user: discord.Member,
         ctx: Context,
-        level: Optional[int]=None,
+        level: Optional[int] = None,
         *,
         timeout: float = 60.0,
     ):

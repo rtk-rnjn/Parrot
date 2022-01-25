@@ -696,7 +696,8 @@ class Misc(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} something not right. Error raised {e}"
             )
-        json = await res.json()
+        else:
+            json = await res.json()
         if str(json["status"]) != str(200):
             return await ctx.reply(f"{ctx.author.mention} something not right.")
         msg = json["message"][:2000:]

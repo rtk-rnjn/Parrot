@@ -143,7 +143,7 @@ async def _can_run(ctx):
 def cooldown_with_role_bypass(
     rate: int,
     per: float,
-    type: BucketType = BucketType.default,
+    _type: BucketType = BucketType.default,
     *,
     bypass_roles: Iterable[int],
 ) -> Callable:
@@ -155,7 +155,7 @@ def cooldown_with_role_bypass(
     bypass = set(bypass_roles)
 
     # This handles the actual cooldown logic.
-    buckets = CooldownMapping(Cooldown(rate, per, type))
+    buckets = CooldownMapping(Cooldown(rate, per, _type))
 
     # Will be called after the command has been parse but before it has been invoked, ensures that
     # the cooldown won't be updated if the user screws up their input to the command.

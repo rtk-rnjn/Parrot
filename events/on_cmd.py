@@ -5,7 +5,6 @@ import traceback
 import math
 import random
 import os
-import io
 import aiohttp
 from discord.ext import commands
 

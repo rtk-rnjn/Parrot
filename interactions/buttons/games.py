@@ -1483,8 +1483,8 @@ class SokobanGameView(discord.ui.View):
         self,
         game: SokobanGame,
         user: discord.Member,
-        level: int,
         ctx: Context,
+        level: Optional[int]=None,
         *,
         timeout: float = 60.0,
     ):
@@ -3483,7 +3483,7 @@ class Games(Cog):
             ls.append(list(list(i)))
         game = SokobanGame(ls)
         game._get_cords()
-        main_game = SokobanGameView(game, ctx.author)
+        main_game = SokobanGameView(game, ctx.author, level=None, ctx=ctx)
         await main_game.start(ctx)
 
     @commands.command(name="2048")

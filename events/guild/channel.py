@@ -226,6 +226,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 )
             if before.bitrate != after.bitrate:
                 ls.append(("`Bitrate Updated  :`", before.bitrate))
+        return ls
 
     @Cog.listener()
     async def on_guild_channel_pins_update(self, channel, last_pin):

@@ -2086,7 +2086,7 @@ class Fun(Cog):
         t = text
         BRACKETED = re.compile(r"(\[(.+?)\])")
 
-        def cleanup_definition(self, definition, *, regex=BRACKETED):
+        def cleanup_definition(definition, *, regex=BRACKETED) -> str:
             def repl(m):
                 word = m.group(2)
                 return f'[{word}](http://{word.replace(" ", "-")}.urbanup.com)'

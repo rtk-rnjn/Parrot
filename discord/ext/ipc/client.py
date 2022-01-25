@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
-from discord.ext.ipc.errors import *
+from discord.ext.ipc.errors import NotConnected
 
 log = logging.getLogger(__name__)
 

@@ -685,7 +685,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             try:
                 await returned.edit(view=None)
                 view.stop()
-            except Exception:
+            except (discord.Forbidden, discord.NotFound):
                 # We deleted the message
                 pass
 
@@ -781,7 +781,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             )
             return await ctx.reply(embed=emb)
 
-        if not group in choices:
+        if group not in choices:
             emb = discord.Embed(
                 title="Available listed commands",
                 description=f"`languages`, `{'`, `'.join(choices)}`",
@@ -850,7 +850,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """
         algo = algorithm.lower()
 
-        if not algo in self.algos:
+        if algo not in self.algos:
             matches = "\n".join(
                 [supported for supported in self.algos if algo in supported][:10]
             )

@@ -208,7 +208,7 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
 
     if lang in default_langs:
         lang = default_langs[lang]
-    if not lang in languages:
+    if lang not in languages:
         matches = []
         i = 0
         for language in languages:

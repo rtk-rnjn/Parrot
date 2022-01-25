@@ -237,10 +237,11 @@ async def _change_role_color(
 
 
 async def _ban(guild, command_name, ctx_author, destination, member, days, reason):
-    if ctx_author.top_role.position < member.top_role.position:
-        return await destination.send(
-            f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-        )
+    if isinstance(member, discord.Member):
+        if ctx_author.top_role.position < member.top_role.position:
+            return await destination.send(
+                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+            )
     try:
         if member.id in (ctx_author.id, guild.me.id):
             await destination.send(
@@ -248,7 +249,7 @@ async def _ban(guild, command_name, ctx_author, destination, member, days, reaso
             )
             return
         await guild.ban(
-            member,
+            discord.Object(member if type(member) is int else member.id),
             reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}",
             delete_message_days=days,
         )

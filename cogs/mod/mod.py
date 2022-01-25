@@ -19,7 +19,7 @@ from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 collection = parrot_db["server_config"]
 mute_collection = parrot_db["mute"]
@@ -182,7 +182,7 @@ class Moderator(Cog):
     async def ban(
         self,
         ctx: Context,
-        member: discord.User,
+        member: Union[discord.Member, discord.User, int],
         days: typing.Optional[int] = None,
         *,
         reason: reason_convert = None,

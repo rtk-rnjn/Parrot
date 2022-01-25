@@ -21,7 +21,7 @@ from .flags import AutoWarn, warnConfig
 from cogs.ticket import method as mt
 from cogs.config import method as mt_
 
-import pymongo.errors.DuplicateKeyError as DPError
+from pymongo.errors import DuplicateKeyError as DPError
 
 
 with open(r"cogs/config/events.json") as f:

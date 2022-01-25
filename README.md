@@ -2,6 +2,9 @@
 
 Imagine a Discord bot with Mini Ticket System, Moderation tools for admins and lots of fun commands for the users. And International Global Chat.
 
+[![Discord Bots](https://top.gg/api/widget/800780974274248764.svg)](https://top.gg/bot/800780974274248764)
+
+
 Invite bot with:-
  - [No permission](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=0&scope=bot%20applications.commands)
  - [Minimal permission](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=385088&scope=bot%20applications.commands)
@@ -59,3 +62,5 @@ In future these modules will be upgraded.
 No Help will be given if You are self Hosting. Tho' Bot is very easy to understand there is No Theta Theory. Yes, if you need any Python Help. You can ask me out at my Discord Server. All you need is few API(s)
 
 If you found any Error. In some of the command then please let me know, or you can ask for Pull Request. It would be helpful. Thanks
+
+[![DeepSource](https://deepsource.io/gh/rtk-rnjn/Parrot.svg/?label=active+issues&show_trend=true&token=TBX3EuSkNCA4VrsKvt4K4l64)](https://deepsource.io/gh/rtk-rnjn/Parrot/?ref=repository-badge)

@@ -1,7 +1,7 @@
 import logging
 
 import aiohttp.web
-from discord.ext.ipc.errors import *
+from discord.ext.ipc.errors import JSONEncodeError
 
 log = logging.getLogger(__name__)
 

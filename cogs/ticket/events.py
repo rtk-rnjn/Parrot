@@ -12,7 +12,6 @@ from core import Parrot, Cog
 collection = parrot_db["server_config"]
 
 
-
 class TicketReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot

@@ -5,6 +5,15 @@ from typing import TYPE_CHECKING, Any
 import discord
 from discord import Member as User
 
+from ..game import Player, VoteGameState
+from .input import InputUI
+
+if TYPE_CHECKING:
+    from .game import GameUI
+
+
+__all__ = ("VoteUI",)
+
 
 def format_list(
     string: str,
@@ -21,15 +30,6 @@ def format_list(
     *rest, last = list
     rest_str = ", ".join(str(item) for item in rest)
     return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
-
-
-from ..game import Player, VoteGameState
-from .input import InputUI
-
-if TYPE_CHECKING:
-    from .game import GameUI
-
-__all__ = ("VoteUI",)
 
 
 class VoteUI(InputUI):

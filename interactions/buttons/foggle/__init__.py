@@ -15,12 +15,8 @@ from discord.ext import old_menus as menus
 
 from core import Parrot, Cog, Context
 
-
-def ordinal(number: int, /) -> str:
-    return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
-
-
 from .parser import View
+
 
 SMALL = 3
 ORIGINAL = 4
@@ -49,6 +45,10 @@ NUMBER_EMOJI = {
 Bases = Literal[2, 10, 16]
 
 # fmt: off
+
+def ordinal(number: int, /) -> str:
+    return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
+
 
 DIE = {
     2: {

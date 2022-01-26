@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from core import Parrot, Cog
-from utilities.database import parrot_db, ticket_update
 import discord
 from datetime import datetime
 
+from typing import Optional
+
+from utilities.database import parrot_db, ticket_update
+
+from core import Parrot, Cog
+
 collection = parrot_db["server_config"]
 
-from typing import Optional
 
 
 class TicketReaction(Cog, command_attrs=dict(hidden=True)):

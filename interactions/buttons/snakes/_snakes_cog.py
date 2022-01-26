@@ -590,55 +590,54 @@ class Snakes(Cog):
             except asyncio.TimeoutError:
                 break  # We're done, no reactions for the last 5 minutes
 
-            if antidote_tries < 10:
-                if antidote_guess_count < 4:
-                    if reaction.emoji in ANTIDOTE_EMOJI:
-                        antidote_guess_list.append(reaction.emoji)
-                        antidote_guess_count += 1
+            if antidote_tries < 10 and antidote_guess_count < 4:
+                if reaction.emoji in ANTIDOTE_EMOJI:
+                    antidote_guess_list.append(reaction.emoji)
+                    antidote_guess_count += 1
 
-                    if antidote_guess_count == 4:  # Guesses complete
-                        antidote_guess_count = 0
-                        page_guess_list[antidote_tries] = " ".join(antidote_guess_list)
+                if antidote_guess_count == 4:  # Guesses complete
+                    antidote_guess_count = 0
+                    page_guess_list[antidote_tries] = " ".join(antidote_guess_list)
 
-                        # Now check guess
-                        for i in range(0, len(antidote_answer)):
-                            if antidote_guess_list[i] == antidote_answer[i]:
-                                guess_result.append(TICK_EMOJI)
-                            elif antidote_guess_list[i] in antidote_answer:
-                                guess_result.append(BLANK_EMOJI)
-                            else:
-                                guess_result.append(CROSS_EMOJI)
-                        guess_result.sort()
-                        page_result_list[antidote_tries] = " ".join(guess_result)
+                    # Now check guess
+                    for i in range(0, len(antidote_answer)):
+                        if antidote_guess_list[i] == antidote_answer[i]:
+                            guess_result.append(TICK_EMOJI)
+                        elif antidote_guess_list[i] in antidote_answer:
+                            guess_result.append(BLANK_EMOJI)
+                        else:
+                            guess_result.append(CROSS_EMOJI)
+                    guess_result.sort()
+                    page_result_list[antidote_tries] = " ".join(guess_result)
 
-                        # Rebuild the board
-                        board = []
-                        for i in range(0, 10):
-                            board.append(
-                                f"`{i+1:02d}` "
-                                f"{page_guess_list[i]} - "
-                                f"{page_result_list[i]}"
-                            )
-                            board.append(EMPTY_UNICODE)
-
-                        # Remove Reactions
-                        for emoji in antidote_guess_list:
-                            await board_id.remove_reaction(emoji, user)
-
-                        if antidote_guess_list == antidote_answer:
-                            win = True
-
-                        antidote_tries += 1
-                        guess_result = []
-                        antidote_guess_list = []
-
-                        antidote_embed.clear_fields()
-                        antidote_embed.add_field(
-                            name=f"{10 - antidote_tries} " f"guesses remaining",
-                            value="\n".join(board),
+                    # Rebuild the board
+                    board = []
+                    for i in range(0, 10):
+                        board.append(
+                            f"`{i+1:02d}` "
+                            f"{page_guess_list[i]} - "
+                            f"{page_result_list[i]}"
                         )
-                        # Redisplay the board
-                        await board_id.edit(embed=antidote_embed)
+                        board.append(EMPTY_UNICODE)
+
+                    # Remove Reactions
+                    for emoji in antidote_guess_list:
+                        await board_id.remove_reaction(emoji, user)
+
+                    if antidote_guess_list == antidote_answer:
+                        win = True
+
+                    antidote_tries += 1
+                    guess_result = []
+                    antidote_guess_list = []
+
+                    antidote_embed.clear_fields()
+                    antidote_embed.add_field(
+                        name=f"{10 - antidote_tries} " f"guesses remaining",
+                        value="\n".join(board),
+                    )
+                    # Redisplay the board
+                    await board_id.edit(embed=antidote_embed)
 
         # Winning / Ending Screen
         if win is True:

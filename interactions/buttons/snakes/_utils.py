@@ -446,12 +446,11 @@ class SnakeAndLaddersGame:
                         await self.cancel_game()
                         return
                     await self.player_leave(user)
-                elif reaction.emoji == START_EMOJI:
-                    if self.ctx.author == user:
-                        self.started = True
-                        await self.start_game(user)
-                        await startup.delete()
-                        break
+                elif reaction.emoji == START_EMOJI and self.ctx.author == user:
+                    self.started = True
+                    await self.start_game(user)
+                    await startup.delete()
+                    break
 
                 await startup.remove_reaction(reaction.emoji, user)
 

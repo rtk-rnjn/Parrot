@@ -501,7 +501,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         return
                     content = msg.content
                 else:
-                    guild = self.bot.get_guild(payload.guild_id)
                     message_author = None
                     content = None
 

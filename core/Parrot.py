@@ -170,12 +170,12 @@ class Parrot(commands.AutoShardedBot):
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
-        for shard_id, dates in self.identifies.items():
+        for _, dates in self.identifies.items():
             to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
             for index in reversed(to_remove):
                 del dates[index]
 
-        for shard_id, dates in self.resumes.items():
+        for _, dates in self.resumes.items():
             to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
             for index in reversed(to_remove):
                 del dates[index]

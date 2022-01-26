@@ -621,8 +621,8 @@ class NSFW(Cog):
         """
         if subreddit is None:
             subreddit = "NSFW"
-        end = time() + 60
-        while time() < end:
+        end = time.time() + 60
+        while time.time() < end:
             url = f"https://memes.blademaker.tv/api/{subreddit}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as r:

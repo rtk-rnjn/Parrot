@@ -430,7 +430,7 @@ class Snakes(Cog):
 
             for image in snake_info["images"]:
                 # Images come in the format of `File:filename.extension`
-                file, sep, filename = image["title"].partition(":")
+                _, _, filename = image["title"].partition(":")
                 filename = filename.replace(" ", "%20")  # Wikipedia returns good data!
 
                 if not filename.startswith("Map"):
@@ -481,7 +481,7 @@ class Snakes(Cog):
 
         # Validate the answer
         try:
-            reaction, user = await ctx.bot.wait_for(
+            reaction, _ = await ctx.bot.wait_for(
                 "reaction_add", timeout=45.0, check=predicate
             )
         except asyncio.TimeoutError:

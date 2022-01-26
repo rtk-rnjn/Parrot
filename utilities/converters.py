@@ -65,10 +65,10 @@ class BannedMember(commands.Converter):
                 return entry.user
             if str(entry.user) == argument:
                 return entry.user
-        else:
-            raise commands.BadArgument(
-                "User Not Found! Probably this member has not been banned before."
-            ) from None
+
+        raise commands.BadArgument(
+            "User Not Found! Probably this member has not been banned before."
+        ) from None
 
 
 class WrappedMessageConverter(commands.MessageConverter):

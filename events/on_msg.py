@@ -375,9 +375,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             # data = await collection.find({})
 
             role = message.guild.get_role(guild["ignore-role"])
-            if role:
-                if role in message.author.roles:
-                    return
+            if role and role in message.author.roles:
+                return
 
             if message.content.startswith(
                 ("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")

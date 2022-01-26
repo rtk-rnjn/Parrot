@@ -3239,14 +3239,16 @@ class Games(Cog):
         else:
             if opponent == ctx.author:
                 raise commands.BadArgument("You cannot play against yourself.")
-            if not opponent.bot:
-                if not await ctx.confirm(
-                    self.bot,
-                    ctx.channel,
-                    opponent,
-                    f"{opponent.mention}, {ctx.author} has challenged you to Tic-Tac-Toe! do you accept?",
-                ):
-                    opponent = None
+            if (
+                not opponent.bot
+                and not await ctx.confirm(
+                self.bot,
+                ctx.channel,
+                opponent,
+                f"{opponent.mention}, {ctx.author} has challenged you to Tic-Tac-Toe! do you accept?",
+            )
+            ):
+                opponent = None
 
         # If challenge timed out
         if opponent is None:

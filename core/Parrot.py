@@ -11,9 +11,11 @@ import aiohttp
 import topgg
 import socket
 from collections import Counter, deque, defaultdict
-from discord.ext import commands  # , ipc
 import discord
+from discord.ext import commands  # , ipc
+
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
+from lru import LRU
 
 from utilities.config import (
     EXTENSIONS,
@@ -98,6 +100,7 @@ class Parrot(commands.AutoShardedBot):
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
         # self.ipc = ipc.Server(self,)
+        self.server_config = LRU(128)
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -351,24 +354,32 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_prefix(self, message: discord.Message) -> str:
         """Dynamic prefixing"""
-        if data := await collection.find_one({"_id": message.guild.id}):
-            prefix = data["prefix"]
-        else:
-            prefix = "$"  # default prefix
-            await collection.insert_one(
-                {
+        try:
+            prefix = self.server_config[message.guild.id]['prefix']
+        except KeyError:
+            if data := await collection.find_one({"_id": message.guild.id}):
+                prefix = data["prefix"]
+                post = data
+            else:
+                post = {
                     "_id": message.guild.id,
                     "prefix": "$",  # to make entry
                     "mod_role": None,  # in database
                     "action_log": None,
                     "mute_role": None,
                 }
-            )
-        return commands.when_mentioned_or(prefix)(self, message)
+                prefix = "$"  # default prefix
+                await collection.insert_one(post)
+            self.server_config[message.guild.id] = post
+        finally:
+            return commands.when_mentioned_or(prefix)(self, message)
 
     async def get_guild_prefixes(self, guild: discord.Guild) -> typing.Optional[str]:
-        if data := await collection.find_one({"_id": guild.id}):
-            return data.get("prefix")
+        try:
+            return self.server_config[guild.id]['prefix']
+        except KeyError:
+            if data := await collection.find_one({"_id": guild.id}):
+                return data.get("prefix")
 
     async def send_raw(
         self, channel_id: int, content: str, **kwargs

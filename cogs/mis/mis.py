@@ -54,13 +54,13 @@ WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
 WIKI_SEARCH_RESULT = "**[{name}]({url})**\n{description}\n"
 
 FORMATTED_CODE_REGEX = re.compile(
-    r"(?P<delim>(?P<block>```)|``?)"        # code delimiter: 1-3 backticks; (?P=block) only matches if it's a block
-    r"(?(block)(?:(?P<lang>[a-z]+)\n)?)"    # if we're in a block, match optional language (only letters plus newline)
-    r"(?:[ \t]*\n)*"                        # any blank (empty or tabs/spaces only) lines before the code
-    r"(?P<code>.*?)"                        # extract all code inside the markup
-    r"\s*"                                  # any more whitespace before the end of the code markup
-    r"(?P=delim)",                          # match the exact same delimiter from the start again
-    re.DOTALL | re.IGNORECASE,              # "." also matches newlines, case insensitive
+    r"(?P<delim>(?P<block>```)|``?)"  # code delimiter: 1-3 backticks; (?P=block) only matches if it's a block
+    r"(?(block)(?:(?P<lang>[a-z]+)\n)?)"  # if we're in a block, match optional language (only letters plus newline)
+    r"(?:[ \t]*\n)*"  # any blank (empty or tabs/spaces only) lines before the code
+    r"(?P<code>.*?)"  # extract all code inside the markup
+    r"\s*"  # any more whitespace before the end of the code markup
+    r"(?P=delim)",  # match the exact same delimiter from the start again
+    re.DOTALL | re.IGNORECASE,  # "." also matches newlines, case insensitive
 )
 
 LATEX_API_URL = "https://rtex.probablyaweb.site/api/v2"
@@ -73,9 +73,11 @@ TEMPLATE = string.Template(Path("extra/latex_template.txt").read_text())
 BG_COLOR = (54, 57, 63, 255)
 PAD = 10
 
+
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
+
 
 def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):
@@ -90,12 +92,15 @@ def _process_image(data: bytes, out_file: typing.BinaryIO) -> None:
     background = Image.new("RGBA", (width + 2 * PAD, height + 2 * PAD), "WHITE")
     background.paste(image, (PAD, PAD), image)
     background.save(out_file)
+
+
 class InvalidLatexError(Exception):
     """Represents an error caused by invalid latex."""
 
     def __init__(self, logs: str):
         super().__init__(logs)
         self.logs = logs
+
 
 class Misc(Cog):
     """Those commands which can't be listed"""
@@ -156,17 +161,20 @@ class Misc(Cog):
     async def _generate_image(self, query: str, out_file: typing.BinaryIO) -> None:
         """Make an API request and save the generated image to cache."""
         payload = {"code": query, "format": "png"}
-        async with self.bot.http_session.post(LATEX_API_URL, data=payload, raise_for_status=True) as response:
+        async with self.bot.http_session.post(
+            LATEX_API_URL, data=payload, raise_for_status=True
+        ) as response:
             response_json = await response.json()
         if response_json["status"] != "success":
             raise InvalidLatexError(logs=response_json["log"])
         async with self.bot.http_session.get(
-            f"{LATEX_API_URL}/{response_json['filename']}",
-            raise_for_status=True
+            f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True
         ) as response:
             _process_image(await response.read(), out_file)
 
-    async def _upload_to_pastebin(self, text: str, lang: str='txt') -> typing.Optional[str]:
+    async def _upload_to_pastebin(
+        self, text: str, lang: str = "txt"
+    ) -> typing.Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
         async with aiohttp.ClientSession() as aioclient:
             post = await aioclient.post("https://hastebin.com/documents", data=text)
@@ -192,7 +200,9 @@ class Misc(Cog):
             if not image_path.exists():
                 try:
                     with open(image_path, "wb") as out_file:
-                        await self._generate_image(TEMPLATE.substitute(text=query), out_file)
+                        await self._generate_image(
+                            TEMPLATE.substitute(text=query), out_file
+                        )
                 except InvalidLatexError as err:
                     logs_paste_url = await self._upload_to_pastebin(err.logs)
                     embed = discord.Embed(title="Failed to render input.")

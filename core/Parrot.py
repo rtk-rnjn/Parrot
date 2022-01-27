@@ -355,7 +355,7 @@ class Parrot(commands.AutoShardedBot):
     async def get_prefix(self, message: discord.Message) -> str:
         """Dynamic prefixing"""
         try:
-            prefix = self.server_config[message.guild.id]['prefix']
+            prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
             if data := await collection.find_one({"_id": message.guild.id}):
                 prefix = data["prefix"]
@@ -376,7 +376,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_guild_prefixes(self, guild: discord.Guild) -> typing.Optional[str]:
         try:
-            return self.server_config[guild.id]['prefix']
+            return self.server_config[guild.id]["prefix"]
         except KeyError:
             if data := await collection.find_one({"_id": guild.id}):
                 return data.get("prefix")

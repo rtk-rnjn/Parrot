@@ -1,12 +1,10 @@
 from __future__ import annotations
+import hashlib
 
 from cogs.meta.robopage import SimplePages
 
 from discord.ext import commands
 from discord import Embed
-from utilities.youtube_search import YoutubeSearch
-from utilities.converters import convert_bool
-from utilities.paginator import PaginationView
 
 import urllib.parse
 import aiohttp
@@ -18,9 +16,19 @@ import typing
 import os
 import inspect
 import json
+from pathlib import Path
+import io
+import string
 from html import unescape
 
 from core import Parrot, Context, Cog
+
+from utilities.youtube_search import YoutubeSearch
+from utilities.converters import convert_bool
+from utilities.paginator import PaginationView
+
+from PIL import Image
+
 
 invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"
 invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\/)?([A-Za-z0-9\-]+)(\/)?"
@@ -45,11 +53,49 @@ WIKI_THUMBNAIL = (
 WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
 WIKI_SEARCH_RESULT = "**[{name}]({url})**\n{description}\n"
 
+FORMATTED_CODE_REGEX = re.compile(
+    r"(?P<delim>(?P<block>```)|``?)"        # code delimiter: 1-3 backticks; (?P=block) only matches if it's a block
+    r"(?(block)(?:(?P<lang>[a-z]+)\n)?)"    # if we're in a block, match optional language (only letters plus newline)
+    r"(?:[ \t]*\n)*"                        # any blank (empty or tabs/spaces only) lines before the code
+    r"(?P<code>.*?)"                        # extract all code inside the markup
+    r"\s*"                                  # any more whitespace before the end of the code markup
+    r"(?P=delim)",                          # match the exact same delimiter from the start again
+    re.DOTALL | re.IGNORECASE,              # "." also matches newlines, case insensitive
+)
+
+LATEX_API_URL = "https://rtex.probablyaweb.site/api/v2"
+
+THIS_DIR = Path(__file__).parent
+CACHE_DIRECTORY = THIS_DIR / "_latex_cache"
+CACHE_DIRECTORY.mkdir(exist_ok=True)
+TEMPLATE = string.Template(Path("extra/latex_template.txt").read_text())
+
+BG_COLOR = (54, 57, 63, 255)
+PAD = 10
 
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
 
+def _prepare_input(text: str) -> str:
+    if match := FORMATTED_CODE_REGEX.match(text):
+        return match.group("code")
+    else:
+        return text
+
+
+def _process_image(data: bytes, out_file: typing.BinaryIO) -> None:
+    image = Image.open(io.BytesIO(data)).convert("RGBA")
+    width, height = image.size
+    background = Image.new("RGBA", (width + 2 * PAD, height + 2 * PAD), "WHITE")
+    background.paste(image, (PAD, PAD), image)
+    background.save(out_file)
+class InvalidLatexError(Exception):
+    """Represents an error caused by invalid latex."""
+
+    def __init__(self, logs: str):
+        super().__init__(logs)
+        self.logs = logs
 
 class Misc(Cog):
     """Those commands which can't be listed"""
@@ -106,6 +152,58 @@ class Misc(Cog):
             string = string[0:1021] + "..."
         string = re.sub(invitere2, "[INVITE REDACTED]", string)
         return string
+
+    async def _generate_image(self, query: str, out_file: typing.BinaryIO) -> None:
+        """Make an API request and save the generated image to cache."""
+        payload = {"code": query, "format": "png"}
+        async with self.bot.http_session.post(LATEX_API_URL, data=payload, raise_for_status=True) as response:
+            response_json = await response.json()
+        if response_json["status"] != "success":
+            raise InvalidLatexError(logs=response_json["log"])
+        async with self.bot.http_session.get(
+            f"{LATEX_API_URL}/{response_json['filename']}",
+            raise_for_status=True
+        ) as response:
+            _process_image(await response.read(), out_file)
+
+    async def _upload_to_pastebin(self, text: str, lang: str='txt') -> typing.Optional[str]:
+        """Uploads `text` to the paste service, returning the url if successful."""
+        async with aiohttp.ClientSession() as aioclient:
+            post = await aioclient.post("https://hastebin.com/documents", data=text)
+            if post.status == 200:
+                response = await post.text()
+                return f"https://hastebin.com/{response[8:-2]}"
+
+            # Rollback bin
+            post = await aioclient.post(
+                "https://bin.readthedocs.fr/new", data={"code": text, "lang": lang}
+            )
+            if post.status == 200:
+                return str(post.url)
+
+    @commands.command()
+    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
+    async def latex(self, ctx: commands.Context, *, query: str) -> None:
+        """Renders the text in latex and sends the image."""
+        query = _prepare_input(query)
+        query_hash = hashlib.md5(query.encode()).hexdigest()
+        image_path = CACHE_DIRECTORY / f"{query_hash}.png"
+        async with ctx.typing():
+            if not image_path.exists():
+                try:
+                    with open(image_path, "wb") as out_file:
+                        await self._generate_image(TEMPLATE.substitute(text=query), out_file)
+                except InvalidLatexError as err:
+                    logs_paste_url = await self._upload_to_pastebin(err.logs)
+                    embed = discord.Embed(title="Failed to render input.")
+                    if logs_paste_url:
+                        embed.description = f"[View Logs]({logs_paste_url})"
+                    else:
+                        embed.description = "Couldn't upload logs."
+                    await ctx.send(embed=embed)
+                    image_path.unlink()
+                    return
+            await ctx.send(file=discord.File(image_path, "latex.png"))
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -380,7 +478,7 @@ class Misc(Cog):
         country = res["sys"]["country"]
 
         embed = discord.Embed(
-            title=f"Weather Menu of: {loc}",
+            title=f"Weather Menu of: {location}",
             description=f"Weather: {weather}",
             timestamp=datetime.datetime.utcnow(),
         )
@@ -398,7 +496,7 @@ class Misc(Cog):
         embed.add_field(name="Visibility", value=f"{visiblity} m", inline=True)
         embed.add_field(name="Wind Speed", value=f"{wind_speed} m/s", inline=True)
         embed.add_field(name="Country", value=f"{country}", inline=True)
-        embed.add_field(name="Loaction ID", value=f"{loc}: {loc_id}", inline=True)
+        embed.add_field(name="Loaction ID", value=f"{location}: {loc_id}", inline=True)
         embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed)

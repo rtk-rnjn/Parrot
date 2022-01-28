@@ -26,7 +26,6 @@ class Pride(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.daily_fact_task = self.bot.loop.create_task(self.send_pride_fact_daily())
 
     async def send_random_fact(self, ctx: Context) -> None:
         """Provides a fact from any previous day, or today."""

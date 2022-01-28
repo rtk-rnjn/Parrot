@@ -100,7 +100,7 @@ class Parrot(commands.AutoShardedBot):
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
         # self.ipc = ipc.Server(self,)
-        self.server_config = LRU(32)
+        self.server_config = LRU(16)
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -135,7 +135,8 @@ class Parrot(commands.AutoShardedBot):
         perms.attach_files = True
         perms.add_reactions = True
 
-        url = f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}&redirect_uri={SUPPORT_SERVER}&scope=bot%20applications.commands"
+        url = f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}" \
+              f"&redirect_uri={SUPPORT_SERVER}&scope=bot%20applications.commands"
         return url
 
     @property
@@ -202,6 +203,9 @@ class Parrot(commands.AutoShardedBot):
     async def db(self, db_name: str):
         return cluster[db_name]
 
+    def db(self, db_name: str):
+        return cluster[db_name]
+
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
         print(f"Received a vote:\n{data}")
@@ -212,7 +216,7 @@ class Parrot(commands.AutoShardedBot):
         )
 
     def run(self) -> None:
-        """ "To run connect and login into discord"""
+        """To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
 
     async def on_ready(self) -> None:

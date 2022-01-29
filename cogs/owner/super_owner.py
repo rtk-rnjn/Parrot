@@ -393,7 +393,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     @commands.is_owner()
-    async def announce_global(self, *, announcement: str):
+    async def announce_global(self, ctx: Context, *, announcement: str):
         collection = parrot_db["global_chat"]
         async for webhook in collection.find({}):
             hook = webhook["webhook"]

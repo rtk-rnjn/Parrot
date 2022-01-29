@@ -135,8 +135,10 @@ class Parrot(commands.AutoShardedBot):
         perms.attach_files = True
         perms.add_reactions = True
 
-        url = f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}" \
-              f"&redirect_uri={SUPPORT_SERVER}&scope=bot%20applications.commands"
+        url = (
+            f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}"
+            f"&redirect_uri={SUPPORT_SERVER}&scope=bot%20applications.commands"
+        )
         return url
 
     @property
@@ -266,7 +268,7 @@ class Parrot(commands.AutoShardedBot):
                 return
             if not _true:
                 await ctx.reply(
-                    f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in " \
+                    f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in "
                     f"**{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )

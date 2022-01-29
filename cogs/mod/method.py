@@ -235,7 +235,10 @@ async def _change_role_color(
 
 # BAN
 
-async def _ban(guild, command_name, ctx_author, destination, member, days, reason, silent=False):
+
+async def _ban(
+    guild, command_name, ctx_author, destination, member, days, reason, silent=False
+):
     if (
         isinstance(member, discord.Member)
         and ctx_author.top_role.position < member.top_role.position
@@ -347,7 +350,9 @@ async def _temp_ban(
             data = {
                 "member_id": member.id,
                 "guild": guild.id,
-                "duration": duration.timestamp() if type(duration) is not int else duration,
+                "duration": duration.timestamp()
+                if type(duration) is not int
+                else duration,
             }
             await ban_collection.insert_one(data)
         except Exception as e:
@@ -372,7 +377,14 @@ async def _unban(guild, command_name, ctx_author, destination, member, reason):
 
 # MUTE
 async def _timeout(
-    guild, command_name, ctx_author, destination, member, _datetime, reason, silent=False
+    guild,
+    command_name,
+    ctx_author,
+    destination,
+    member,
+    _datetime,
+    reason,
+    silent=False,
 ):
     if ctx_author.top_role.position < member.top_role.position:
         if not silent:
@@ -405,7 +417,9 @@ async def _timeout(
             )
 
 
-async def _mute(guild, command_name, ctx_author, destination, member, reason, silent=False):
+async def _mute(
+    guild, command_name, ctx_author, destination, member, reason, silent=False
+):
     if ctx_author.top_role.position < member.top_role.position:
         if not silent:
             return await destination.send(
@@ -445,7 +459,7 @@ async def _mute(guild, command_name, ctx_author, destination, member, reason, si
             await destination.send(f"{ctx_author.mention} **{member}** is muted!")
         return
     except Exception as e:
-        if not silent:   
+        if not silent:
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
@@ -489,7 +503,9 @@ async def _unmute(guild, command_name, ctx_author, destination, member, reason):
         )
 
 
-async def _kick(guild, command_name, ctx_author, destination, member, reason, silent=False):
+async def _kick(
+    guild, command_name, ctx_author, destination, member, reason, silent=False
+):
     try:
         if ctx_author.top_role.position < member.top_role.position:
             if not silent:
@@ -546,7 +562,9 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members, reas
 # BLOCK
 
 
-async def _block(guild, command_name, ctx_author, destination, channel, member, reason, silent=False):
+async def _block(
+    guild, command_name, ctx_author, destination, channel, member, reason, silent=False
+):
     for member in member:
         if ctx_author.top_role.position < member.top_role.position:
             if not silent:

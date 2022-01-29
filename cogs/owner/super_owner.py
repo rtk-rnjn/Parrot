@@ -13,7 +13,7 @@ import os
 import traceback
 import typing
 
-from utilities.database import ban
+from utilities.database import ban, parrot_db
 import re
 import io
 import zlib
@@ -390,6 +390,26 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         p = SimplePages(ls, ctx=ctx, per_page=5)
         await p.start()
+
+    @commands.command()
+    @commands.is_owner()
+    async def announce_global(self, *, announcement: str):
+        collection = parrot_db["global_chat"]
+        async for webhook in collection.find({}):
+            hook = webhook["webhook"]
+            if hook:
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        webhook = discord.Webhook.from_url(f"{hook}", session=session)
+                        if webhook:
+                            await webhook.send(
+                                content=announcement,
+                                username=f"SERVER",
+                                avatar_url=self.bot.user.display_avatar.url,
+                                allowed_mentions=discord.AllowedMentions.none(),
+                            )
+                except Exception as e:
+                    print(e)
 
 
 class SphinxObjectFileReader:

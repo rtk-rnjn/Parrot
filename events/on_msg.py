@@ -436,9 +436,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
             to_send = self.refrain_message(message.content.lower())
-            if to_send:
-                pass
-            elif not to_send:
+            if not to_send:
                 try:
                     await message.delete(delay=0)
                     return await message.channel.send(

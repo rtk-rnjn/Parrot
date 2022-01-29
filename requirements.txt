@@ -15,7 +15,7 @@ dnspython
 motor
 aiofile
 async-property
-git+https://github.com/rtk-rnjn/pycord
+git+https://github.com/Pycord-Development/pycord
 tabulate
 lru_dict
 python-dateutil

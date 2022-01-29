@@ -264,7 +264,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} bonked {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} bonked {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -293,32 +297,46 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def blush(self, ctx: Context,):
+    async def blush(
+        self,
+        ctx: Context,
+    ):
         """Blush pics?"""
         async with aiohttp.ClientSession() as session:
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} blushes", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} blushes",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
         await ctx.reply(embed=em)
 
-    @commands.command(aliases=['grin'])
+    @commands.command(aliases=["grin"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def smile(self, ctx: Context,):
+    async def smile(
+        self,
+        ctx: Context,
+    ):
         """Smile pics?"""
         async with aiohttp.ClientSession() as session:
             data = await session.get(f"{self.url}/{ctx.command.name}")
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} smiles", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} smiles",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -358,7 +376,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} highfive {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} highfive {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -376,7 +398,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} holds hand {'of' + str(member) if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} holds hand {'of' + str(member) if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -394,7 +420,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} nom nom nom >:c", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} nom nom nom >:c",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -412,7 +442,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} bites {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} bites {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -475,7 +509,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} killed {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} killed {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_footer(text=f"{ctx.author} report if the picture is explicit")
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
@@ -494,7 +532,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} kicked {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} kicked {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -512,7 +554,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} is happy", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} is happy",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -530,7 +576,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} winked {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} winked {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -548,7 +598,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} poked {member if member else ''}", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} poked {member if member else ''}",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 
@@ -566,7 +620,11 @@ class Actions(Cog):
 
         json = await data.json()
         url = json["url"]
-        em = discord.Embed(title=f"{ctx.author} danced", color=ctx.author.color, timestamp=datetime.utcnow())
+        em = discord.Embed(
+            title=f"{ctx.author} danced",
+            color=ctx.author.color,
+            timestamp=datetime.utcnow(),
+        )
         em.set_image(url=url)
         em.set_footer(text=f"{ctx.author}")
 

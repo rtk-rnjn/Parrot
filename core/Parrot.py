@@ -205,9 +205,6 @@ class Parrot(commands.AutoShardedBot):
     async def db(self, db_name: str):
         return cluster[db_name]
 
-    def db(self, db_name: str):
-        return cluster[db_name]
-
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
         print(f"Received a vote:\n{data}")

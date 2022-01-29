@@ -9,17 +9,17 @@ import discord
 import typing
 import re
 import asyncio
+from datetime import datetime
+from typing import Optional, Union
 
 from core import Parrot, Context, Cog
 
 from utilities.checks import is_mod
 from utilities.converters import BannedMember, reason_convert
-from utilities.database import parrot_db
+from utilities.database import parrot_db, warn_db
 from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
-from datetime import datetime
-from typing import Optional, Union
 
 collection = parrot_db["server_config"]
 mute_collection = parrot_db["mute"]
@@ -1419,3 +1419,38 @@ class Moderator(Cog):
                     pass
                 finally:
                     await ban_collection.delete_one({"_id": data["_id"]})
+    
+    @tasks.loop()
+    async def warn(self, **kw):
+        target: Union[discord.Member, discord.User] = kw.get('target')
+        ctx: Context = kw.get('ctx')
+        if not (target and ctx): return
+        count = 0
+        col = warn_db[f'{ctx.guild.id}']
+        async for data in col.find({'target': target.id}):
+            count += 1
+        if data := await collection.find_one({'_id': ctx.guild.id, 'warn_auto': {'$exists': True}}):
+            for i in data['warn_auto']:
+                if i['count'] == count:
+                    await self.execute_action(
+                        action=i['action'], duration=i['duration'], mod=ctx.author, ctx=ctx
+                    )
+                    return
+
+    async def execute_action(self, **kw):
+        action: str = kw.get('action')
+        duration: str = kw.get('duration')
+        dt = ShortTime(duration)
+        mod: discord.Member | discord.User = kw.get('mod')
+        ctx: Context = kw.get('ctx')
+        target: discord.Member | discord.User = kw.get('target')
+        if action == 'kick':
+            return await mt._kick(ctx.guild, ctx.command, ctx.author, ctx.channel, target, f"Automod. {target} reached warncount threshold", True)
+        if action == 'ban':
+            return await mt._ban(ctx.guild, ctx.command, ctx.author, ctx.channel, target, 0, f"Automod. {target} reached warncount threshold", True)
+        if action == 'tempban':
+            return await mt._temp_ban(ctx.guild, ctx.command, ctx.author, ctx.channel, target, dt.dt, f"Automod. {target} reached warncount threshold", True)
+        if action == 'mute':
+            return await mt._mute(ctx.guild, ctx.command, ctx.author, ctx.channel, target, f"Automod. {target} reached warncount threshold", True)
+        if action == 'timeout':
+            return await mt._timeout(ctx.guild, ctx.command, ctx.author, ctx.channel, target, dt.dt, f"Automod. {target} reached warncount threshold", True)

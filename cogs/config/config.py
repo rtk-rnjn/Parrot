@@ -128,22 +128,22 @@ class BotConfig(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def warnadd(
-        self, ctx: Context, count: int, action: str, duration: ShortTime = None
+        self, ctx: Context, count: int, action: str, duration: str = None
     ):
-        """To configure the warn settings"""
+        """To configure the warn settings in server"""
         ACTIONS = [
             "ban",
             "tempban",
             "kick",
             "timeout",
             "mute",
-            "block",
         ]
         if action.lower() not in ACTIONS:
             return await ctx.send(
                 f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
             )
-
+        if duration:
+            _ = ShortTime(duration)
         if _ := await csc.find_one({"_id": ctx.guild.id, "warn_db.count": count}):
             return await ctx.send(
                 f"{ctx.author.mention} warn count {count} already exists."
@@ -156,10 +156,7 @@ class BotConfig(Cog):
                         {
                             "count": count,
                             "action": action.lower(),
-                            "duration": duration.dt.timestamp()
-                            - datetime.utcnow().timestamp()
-                            if duration
-                            else None,
+                            "duration": duration if duration else None,
                         }
                     ]
                 }

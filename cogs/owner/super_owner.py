@@ -260,7 +260,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             "key": os.environ["GOOGLE_KEY"],
             "cx": os.environ["GOOGLE_CX"],
             "q": text,
-            "searchType": "image"
+            "searchType": "image",
         }
         url = f"https://www.googleapis.com/customsearch/v1"
         res = await self.bot.session.get(url, params=params)
@@ -303,14 +303,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             "element_overlap": params.element_overlap,
             "extract_html": params.extract_html,
             "extract_text": params.extract_text,
-            "transparent": params.transparent
+            "transparent": params.transparent,
         }
         link = f"https://api.apiflash.com/v1/urltoimage"
         res = await self.bot.session.get(link, params=params)
         imageData = io.BytesIO(await res.read())
-        await ctx.reply(
-            file=discord.File(imageData, f"screenshot.{params.format}")
-        )
+        await ctx.reply(file=discord.File(imageData, f"screenshot.{params.format}"))
 
     @commands.command()
     @commands.is_owner()

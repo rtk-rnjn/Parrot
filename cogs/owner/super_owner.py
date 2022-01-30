@@ -308,7 +308,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         link = f"https://api.apiflash.com/v1/urltoimage"
         res = await self.bot.session.get(link, params=params)
         imageData = io.BytesIO(await res.read())
-        await ctx.reply(file=discord.File(imageData, f"screenshot.{params.format}"))
+        await ctx.reply(file=discord.File(imageData, f"screenshot.{params['format']}"))
 
     @commands.command()
     @commands.is_owner()

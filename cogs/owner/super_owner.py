@@ -36,8 +36,32 @@ class auditFlag(
     before: typing.Optional[ShortTime]
     after: typing.Optional[ShortTime]
     oldest_first: typing.Optional[convert_bool] = False
-    user: typing.Optional[int]
+    user: typing.Union[discord.User, discord.Member, int]
     action: typing.Optional[str]
+
+
+class paramFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
+    format: typing.Optional[str] = "jpeg"
+    width: typing.Optional[int] = 1920
+    height: typing.Optional[int] = 1080
+    fresh: typing.Optional[convert_bool] = False
+    full_page: typing.Optional[convert_bool] = False
+    quality: typing.Optional[int] = 0
+    delay: typing.Optional[int] = 0
+    scroll_page: typing.Optional[convert_bool] = False
+    ttl: typing.Optional[int] = 86400
+    no_cookie_banners: typing.Optional[convert_bool] = False
+    no_ads: typing.Optional[convert_bool] = False
+    no_tracking: typing.Optional[convert_bool] = False
+    scale_factor: typing.Optional[int] = 1
+    element_overlap: typing.Optional[convert_bool] = False
+    extract_html: typing.Optional[convert_bool] = False
+    extract_text: typing.Optional[convert_bool] = False
+    transparent: typing.Optional[convert_bool] = False
+    wait_for: typing.Optional[int] = 0
+    wait_until: typing.Optional[str]
 
 
 act = {
@@ -232,8 +256,14 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def imgsearch(self, ctx: Context, *, text: str):
         """Image Search. Anything"""
         text = urllib.parse.quote(text)
-        url = f"https://www.googleapis.com/customsearch/v1?key={os.environ['GOOGLE_KEY']}&cx={os.environ['GOOGLE_CX']}&q={text}&searchType=image"
-        res = await self.bot.session.get(url)
+        params = {
+            "key": os.environ["GOOGLE_KEY"],
+            "cx": os.environ["GOOGLE_CX"],
+            "q": text,
+            "searchType": "image"
+        }
+        url = f"https://www.googleapis.com/customsearch/v1"
+        res = await self.bot.session.get(url, params=params)
         data = await res.json()
         ls = []
         for i in data["items"]:
@@ -251,13 +281,35 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command(name="ss", hidden=True)
     @commands.is_owner()
     @Context.with_type
-    async def ss(self, ctx: Context, *, site: str):
+    async def ss(self, ctx: Context, site: str, *, params: paramFlag):
         """To take the ss"""
-        link = f"https://api.apiflash.com/v1/urltoimage?access_key={os.environ['SCREEN_SHOT']}&delay=1&format=png&no_ads=true&no_cookie_banners=true&no_tracking=true&response_type=image&transparent=true&url={site}&wait_until=page_loaded"
-        return await ctx.reply(
-            embed=discord.Embed(
-                color=ctx.author.color, timestamp=datetime.datetime.utcnow()
-            ).set_image(url=link)
+        params = {
+            "access_key": os.environ["SCREEN_SHOT"],
+            "url": site,
+            "wait_until": params.wait_until,
+            "wait_for": params.wait_for,
+            "format": params.format,
+            "width": params.height,
+            "fresh": params.fresh,
+            "full_page": params.full_page,
+            "qualilty": params.quality,
+            "delay": params.delay,
+            "scroll_page": params.scroll_page,
+            "ttl": params.ttl,
+            "no_cookie_banners": params.no_cookie_banners,
+            "no_ads": params.no_ads,
+            "no_tracking": params.no_tracking,
+            "scale_factor": params.scale_factor,
+            "element_overlap": params.element_overlap,
+            "extract_html": params.extract_html,
+            "extract_text": params.extract_text,
+            "transparent": params.transparent
+        }
+        link = f"https://api.apiflash.com/v1/urltoimage"
+        res = await self.bot.session.get(link, params=params)
+        imageData = io.BytesIO(await res.read())
+        await ctx.reply(
+            file=discord.File(imageData, f"screenshot.{params.format}")
         )
 
     @commands.command()

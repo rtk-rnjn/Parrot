@@ -61,7 +61,7 @@ class paramFlag(
     extract_text: typing.Optional[convert_bool] = False
     transparent: typing.Optional[convert_bool] = False
     wait_for: typing.Optional[int] = 0
-    wait_until: typing.Optional[str]
+    wait_until: typing.Optional[str] = "page_loaded"
 
 
 act = {

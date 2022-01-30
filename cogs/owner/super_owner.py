@@ -48,8 +48,8 @@ class paramFlag(
     height: typing.Optional[int] = 1080
     fresh: typing.Optional[convert_bool] = False
     full_page: typing.Optional[convert_bool] = False
-    quality: typing.Optional[int] = 0
-    delay: typing.Optional[int] = 0
+    quality: typing.Optional[int] = 0str(
+    delay:).lower() typing.Optional[int] = 0
     scroll_page: typing.Optional[convert_bool] = False
     ttl: typing.Optional[int] = 86400
     no_cookie_banners: typing.Optional[convert_bool] = False
@@ -286,24 +286,24 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         params = {
             "access_key": os.environ["SCREEN_SHOT"],
             "url": site,
-            "wait_until": params.wait_until,
-            "wait_for": params.wait_for,
-            "format": params.format,
-            "width": params.height,
-            "fresh": params.fresh,
-            "full_page": params.full_page,
-            "qualilty": params.quality,
-            "delay": params.delay,
-            "scroll_page": params.scroll_page,
-            "ttl": params.ttl,
-            "no_cookie_banners": params.no_cookie_banners,
-            "no_ads": params.no_ads,
-            "no_tracking": params.no_tracking,
-            "scale_factor": params.scale_factor,
-            "element_overlap": params.element_overlap,
-            "extract_html": params.extract_html,
-            "extract_text": params.extract_text,
-            "transparent": params.transparent,
+            "wait_until": str(params.wait_until).lower(),
+            "wait_for": str(params.wait_for).lower(),
+            "format": str(params.format).lower(),
+            "width": str(params.height).lower(),
+            "fresh": str(params.fresh).lower(),
+            "full_page": str(params.full_page).lower(),
+            "qualilty": str(params.quality).lower(),
+            "delay": str(params.delay).lower(),
+            "scroll_page": str(params.scroll_page).lower(),
+            "ttl": str(params.ttl).lower(),
+            "no_cookie_banners": str(params.no_cookie_banners).lower(),
+            "no_ads": str(params.no_ads).lower(),
+            "no_tracking": str(params.no_tracking).lower(),
+            "scale_factor": str(params.scale_factor).lower(),
+            "element_overlap": str(params.element_overlap).lower(),
+            "extract_html": str(params.extract_html).lower(),
+            "extract_text": str(params.extract_text).lower(),
+            "transparent": str(params.transparent).lower(),
         }
         link = f"https://api.apiflash.com/v1/urltoimage"
         res = await self.bot.session.get(link, params=params)

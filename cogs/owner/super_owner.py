@@ -48,8 +48,8 @@ class paramFlag(
     height: typing.Optional[int] = 1080
     fresh: typing.Optional[convert_bool] = False
     full_page: typing.Optional[convert_bool] = False
-    quality: typing.Optional[int] = 0str(
-    delay:).lower() typing.Optional[int] = 0
+    quality: typing.Optional[int] = 80
+    delay: typing.Optional[int] = 0
     scroll_page: typing.Optional[convert_bool] = False
     ttl: typing.Optional[int] = 86400
     no_cookie_banners: typing.Optional[convert_bool] = False

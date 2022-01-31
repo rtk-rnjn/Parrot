@@ -278,7 +278,7 @@ class Misc(Cog):
     async def maths(self, ctx: Context, operation: str, *, expression: str):
         """Another calculator but quite advance one
 
-        Note: Available operation - 
+        Note: Available operation -
             - Simplify
             - Factor
             - Derive

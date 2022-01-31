@@ -821,7 +821,9 @@ class Meta(Cog):
             )
         elif view.value:
             if self.bot.author_obj:
-                await self.bot.author_obj.send(f"**{ctx.author}** [{ctx.author.id}] {text[:1800:]}")  # pepole spams T_T
+                await self.bot.author_obj.send(
+                    f"**{ctx.author}** [{ctx.author.id}] {text[:1800:]}"
+                )  # pepole spams T_T
             else:
                 from utilities.config import SUPER_USER
 

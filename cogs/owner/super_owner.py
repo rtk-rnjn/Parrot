@@ -40,30 +40,6 @@ class auditFlag(
     action: typing.Optional[str]
 
 
-class paramFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
-    format: typing.Optional[str] = "jpeg"
-    width: typing.Optional[int] = 1920
-    height: typing.Optional[int] = 1080
-    fresh: typing.Optional[convert_bool] = False
-    full_page: typing.Optional[convert_bool] = False
-    quality: typing.Optional[int] = 80
-    delay: typing.Optional[int] = 0
-    scroll_page: typing.Optional[convert_bool] = False
-    ttl: typing.Optional[int] = 86400
-    no_cookie_banners: typing.Optional[convert_bool] = False
-    no_ads: typing.Optional[convert_bool] = False
-    no_tracking: typing.Optional[convert_bool] = False
-    scale_factor: typing.Optional[int] = 1
-    element_overlap: typing.Optional[convert_bool] = False
-    extract_html: typing.Optional[convert_bool] = False
-    extract_text: typing.Optional[convert_bool] = False
-    transparent: typing.Optional[convert_bool] = False
-    wait_for: typing.Optional[int] = 0
-    wait_until: typing.Optional[str] = "page_loaded"
-
-
 act = {
     "channel_create": discord.AuditLogAction.channel_create,
     "channel_delete": discord.AuditLogAction.channel_delete,
@@ -277,38 +253,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             ls.append(embed)
         page = PaginationView(embed_list=ls)
         await page.start(ctx)
-
-    @commands.command(name="ss", hidden=True)
-    @commands.is_owner()
-    @Context.with_type
-    async def ss(self, ctx: Context, site: str, *, params: paramFlag):
-        """To take the ss"""
-        params = {
-            "access_key": os.environ["SCREEN_SHOT"],
-            "url": site,
-            "wait_until": str(params.wait_until).lower(),
-            "wait_for": str(params.wait_for).lower(),
-            "format": str(params.format).lower(),
-            "width": str(params.height).lower(),
-            "fresh": str(params.fresh).lower(),
-            "full_page": str(params.full_page).lower(),
-            "qualilty": str(params.quality).lower(),
-            "delay": str(params.delay).lower(),
-            "scroll_page": str(params.scroll_page).lower(),
-            "ttl": str(params.ttl).lower(),
-            "no_cookie_banners": str(params.no_cookie_banners).lower(),
-            "no_ads": str(params.no_ads).lower(),
-            "no_tracking": str(params.no_tracking).lower(),
-            "scale_factor": str(params.scale_factor).lower(),
-            "element_overlap": str(params.element_overlap).lower(),
-            "extract_html": str(params.extract_html).lower(),
-            "extract_text": str(params.extract_text).lower(),
-            "transparent": str(params.transparent).lower(),
-        }
-        link = f"https://api.apiflash.com/v1/urltoimage"
-        res = await self.bot.session.get(link, params=params)
-        imageData = io.BytesIO(await res.read())
-        await ctx.reply(file=discord.File(imageData, f"screenshot.{params['format']}"))
 
     @commands.command()
     @commands.is_owner()

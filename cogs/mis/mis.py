@@ -278,11 +278,26 @@ class Misc(Cog):
     async def maths(self, ctx: Context, operation: str, *, expression: str):
         """Another calculator but quite advance one
 
-        Note: Available operation - Simplify, Factor, Derive, Integrate, Zeroes, Tangent, Area, Cos, Sin, Tan, Arccos, Arcsin, Arctan, Abs, Log
+        Note: Available operation - 
+            - Simplify
+            - Factor
+            - Derive
+            - Integrate
+            - Zeroes
+            - Tangent
+            - Area
+            - Cos
+            - Sin
+            - Tan
+            - Arccos
+            - Arcsin
+            - Arctan
+            - Abs
+            - Log
         For more detailed use, visit: `https://github.com/aunyks/newton-api/blob/master/README.md`
         """
         new_expression = urllib.parse.quote(expression)
-        link = "https://newton.now.sh/api/v2/" + operation + "/" + new_expression
+        link = f"https://newton.now.sh/api/v2/{operation}/{new_expression}"
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as r:
                 if r.status == 200:
@@ -793,9 +808,8 @@ class Misc(Cog):
     @Context.with_type
     async def ocr(self, ctx: Context, *, link: str = None):
         """To convert image to text"""
+        link = link or ctx.message.attachments[0].url
         if not link:
-            link = ctx.message.attachments[0].url
-        else:
             await ctx.reply(f"{ctx.author.mention} must provide the link")
         try:
             async with aiohttp.ClientSession() as session:
@@ -823,7 +837,6 @@ class Misc(Cog):
     @Context.with_type
     async def qrcode(self, ctx: Context, text: str):
         """To generate the QR"""
-        text = text.split(" ")[0]
         await ctx.reply(
             embed=discord.Embed(
                 color=ctx.author.color, timestamp=datetime.datetime.utcnow()

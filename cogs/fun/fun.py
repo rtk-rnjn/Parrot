@@ -3351,7 +3351,9 @@ class Fun(Cog):
 
             await ctx.send(file=file, embed=embed)
 
-    @commands.command(name="cathi",)
+    @commands.command(
+        name="cathi",
+    )
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(self, ctx: Context, text: str = None):
@@ -3376,7 +3378,6 @@ class Fun(Cog):
             for cat in list:
                 await m.edit(content=cat)
                 await asyncio.sleep(1)
-            
 
     @commands.command(name="flop")
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -3409,7 +3410,9 @@ class Fun(Cog):
     @commands.command(name="virus", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def fun_animation_virus(self, ctx: Context, user: discord.Member = None, virus: str = "trojan"):
+    async def fun_animation_virus(
+        self, ctx: Context, user: discord.Member = None, virus: str = "trojan"
+    ):
         """Insert a virus to yourself or someone else"""
         m = await ctx.send("...")
         user = user or ctx.author
@@ -3444,26 +3447,30 @@ class Fun(Cog):
             "THIS MESSAGE WILL SELFDESTRUCT IN 2",
             "THIS MESSAGE WILL SELFDESTRUCT IN 1",
             "THIS MESSAGE WILL SELFDESTRUCT IN 0",
-            "\N{BOMB}","\N{COLLISION SYMBOL}")
+            "\N{BOMB}",
+            "\N{COLLISION SYMBOL}",
+        )
         for i in ls:
             await asyncio.sleep(1)
             await m.edit(content=i)
-        
+
     @commands.command(name="table", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
         m = await ctx.send("`(\°-°)\  ┬─┬`")
-        lst = ("`(\°□°)\  ┬─┬`",
-        "`(-°□°)-  ┬─┬`",
-        "`(╯°□°)╯    ]`",
-        "`(╯°□°)╯     ┻━┻`",
-        "`(╯°□°)╯       [`",
-        "`(╯°□°)╯          ┬─┬`",
-        "`(╯°□°)╯                 ]`",
-        "`(╯°□°)╯                  ┻━┻`",
-        "`(╯°□°)╯                         [`",
-        "`(\°-°)\                               ┬─┬`")
+        lst = (
+            "`(\°□°)\  ┬─┬`",
+            "`(-°□°)-  ┬─┬`",
+            "`(╯°□°)╯    ]`",
+            "`(╯°□°)╯     ┻━┻`",
+            "`(╯°□°)╯       [`",
+            "`(╯°□°)╯          ┬─┬`",
+            "`(╯°□°)╯                 ]`",
+            "`(╯°□°)╯                  ┻━┻`",
+            "`(╯°□°)╯                         [`",
+            "`(\°-°)\                               ┬─┬`",
+        )
 
         for k in lst:
             await asyncio.sleep(0.5)
@@ -3475,32 +3482,32 @@ class Fun(Cog):
     async def fun_animation_warning(self, ctx: Context):
         msg = await ctx.send("...")
         ls = (
-        "```diff\n- LOAD !! WARNING !! SYSTEM OVER -\n```",
-        "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
-        "```diff\n- AD !! WARNING !! SYSTEM OVERLO -\n```",
-        "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
-        "```diff\n-  !! WARNING !! SYSTEM OVERLOAD -\n```",
-        "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
-        "```diff\n- ! WARNING !! SYSTEM OVERLOAD ! -\n```",
-        "```diff\n-  WARNING !! SYSTEM OVERLOAD !! -\n```",
-        "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
-        "```diff\n- ARNING !! SYSTEM OVERLOAD !! W -\n```",
-        "```diff\n- RNING !! SYSTEM OVERLOAD !! WA -\n```",
-        "```diff\n- NING !! SYSTEM OVERLOAD !! WAR -\n```",
-        "```diff\n- ING !! SYSTEM OVERLOAD !! WARN -\n```",
-        "```diff\n- NG !! SYSTEM OVERLOAD !! WARNI -\n```",
-        "```diff\n- G !! SYSTEM OVERLOAD !! WARNIN -\n```",
-        "```diff\n-  !! SYSTEM OVERLOAD !! WARNING -\n```",
-        "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
-        "```diff\n- ! SYSTEM OVERLOAD !! WARNING ! -\n```",
-        "```diff\n-  SYSTEM OVERLOAD !! WARNING !! -\n```",
-        "```diff\n- IMMINENT SHUT-DOWN IN 0.5 SEC! -\n```",
-        "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
-        "```diff\n- IMMINENT SHUT-DOWN IN 0.2 SEC! -\n```",
-        "```diff\n- SYSTEM OVERLOAD !! WARNING !!  -\n```",
-        "```diff\n- IMMINENT SHUT-DOWN IN 0.01 SEC! -\n```",
-        "```diff\n- SHUT-DOWN EXIT ERROR ¯\\(｡･益･)/¯ -\n```",
-        "```diff\n- CTRL + R FOR MANUAL OVERRIDE... -\n```",
+            "```diff\n- LOAD !! WARNING !! SYSTEM OVER -\n```",
+            "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
+            "```diff\n- AD !! WARNING !! SYSTEM OVERLO -\n```",
+            "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
+            "```diff\n-  !! WARNING !! SYSTEM OVERLOAD -\n```",
+            "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
+            "```diff\n- ! WARNING !! SYSTEM OVERLOAD ! -\n```",
+            "```diff\n-  WARNING !! SYSTEM OVERLOAD !! -\n```",
+            "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
+            "```diff\n- ARNING !! SYSTEM OVERLOAD !! W -\n```",
+            "```diff\n- RNING !! SYSTEM OVERLOAD !! WA -\n```",
+            "```diff\n- NING !! SYSTEM OVERLOAD !! WAR -\n```",
+            "```diff\n- ING !! SYSTEM OVERLOAD !! WARN -\n```",
+            "```diff\n- NG !! SYSTEM OVERLOAD !! WARNI -\n```",
+            "```diff\n- G !! SYSTEM OVERLOAD !! WARNIN -\n```",
+            "```diff\n-  !! SYSTEM OVERLOAD !! WARNING -\n```",
+            "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
+            "```diff\n- ! SYSTEM OVERLOAD !! WARNING ! -\n```",
+            "```diff\n-  SYSTEM OVERLOAD !! WARNING !! -\n```",
+            "```diff\n- IMMINENT SHUT-DOWN IN 0.5 SEC! -\n```",
+            "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
+            "```diff\n- IMMINENT SHUT-DOWN IN 0.2 SEC! -\n```",
+            "```diff\n- SYSTEM OVERLOAD !! WARNING !!  -\n```",
+            "```diff\n- IMMINENT SHUT-DOWN IN 0.01 SEC! -\n```",
+            "```diff\n- SHUT-DOWN EXIT ERROR ¯\\(｡･益･)/¯ -\n```",
+            "```diff\n- CTRL + R FOR MANUAL OVERRIDE... -\n```",
         )
 
         for i in ls:

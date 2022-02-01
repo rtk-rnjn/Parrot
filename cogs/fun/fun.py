@@ -3475,7 +3475,7 @@ class Fun(Cog):
         )
 
         for k in lst:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
             await m.edit(content=k)
 
     @commands.command(name="funwarn", hidden=True)

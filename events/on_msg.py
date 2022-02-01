@@ -343,7 +343,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
         message_to_send = await self._parse_snippets(message.content)
 
-        if 0 < len(message_to_send) <= 2000 and (message.guild.id != 336642139381301249 or message.author.id in whitelist):
+        if 0 < len(message_to_send) <= 2000 and (
+            message.guild.id != 336642139381301249 or message.author.id in whitelist
+        ):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
                 await message.edit(suppress=True)

@@ -3432,7 +3432,7 @@ class Fun(Cog):
         )
         for i in ls:
             await m.edit(content=i)
-            await asyncio.sleep(0.8)
+            await asyncio.sleep(1)
 
     @commands.command(name="boom", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -3459,17 +3459,19 @@ class Fun(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
         m = await ctx.send("`(\°-°)\  ┬─┬`")
+        # Thanks `CutieRei#5211`(830248412904947753)
+        # ㅠㅕㅛㅑ
         lst = (
-            "`(\°□°)\  ┬─┬`",
-            "`(-°□°)-  ┬─┬`",
-            "`(╯°□°)╯    ]`",
-            "`(╯°□°)╯     ┻━┻`",
-            "`(╯°□°)╯       [`",
-            "`(╯°□°)╯          ┬─┬`",
-            "`(╯°□°)╯                 ]`",
-            "`(╯°□°)╯                  ┻━┻`",
-            "`(╯°□°)╯                         [`",
-            "`(\°-°)\                               ┬─┬`",
+            "`(\°□°)\  ㅠ`",
+            "`(-°□°)-  ㅠ`",
+            "`(╯°□°)╯  ㅕ`",
+            "`(╯°□°)╯    ㅛ`",
+            "`(╯°□°)╯      ㅑ`",
+            "`(╯°□°)╯        ㅠ`",
+            "`(╯°□°)╯          ㅕ`",
+            "`(╯°□°)╯            ㅛ`",
+            "`(╯°□°)╯              ㅑ`",
+            "`(\°-°)\                 ㅠ`",
         )
 
         for k in lst:
@@ -3512,4 +3514,4 @@ class Fun(Cog):
 
         for i in ls:
             await msg.edit(content=i)
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(1)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from string import whitespace
 
 from core import Parrot, Cog
 
@@ -56,6 +57,8 @@ BITBUCKET_RE = re.compile(
     r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)"
     r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)"
 )
+
+whitelist = [615785223296253953, 741614468546560092, 523452718413643788]
 
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):
@@ -340,7 +343,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
         message_to_send = await self._parse_snippets(message.content)
 
-        if 0 < len(message_to_send) <= 2000 and message.guild.id != 336642139381301249:
+        if 0 < len(message_to_send) <= 2000 and (message.guild.id != 336642139381301249 or message.author.id in whitelist):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
                 await message.edit(suppress=True)

@@ -3350,3 +3350,159 @@ class Fun(Cog):
             )
 
             await ctx.send(file=file, embed=embed)
+
+    @commands.command(name="cathi",)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_cathi(self, ctx: Context, text: str = None):
+        """Make a cat say something"""
+        ctx = await ctx.reply("starting")
+        text = text or "Hi..."
+        BLANK = ""
+        list = (
+            """ຸ 　　　＿＿_＿＿
+    　　／　／　  ／|"
+    　　|￣￣￣￣|　|
+    　　|　　　　|／
+    　　￣￣￣￣""",
+            f"""ຸ 　　　{text}
+    　   　 ∧＿∧＿_
+    　　／(´･ω･`)  ／＼
+    　／|￣￣￣￣|＼／
+    　　|　　　　|／
+    　　￣￣￣￣""",
+        )
+        for i in range(3):
+            for cat in list:
+                await ctx.edit(content=cat)
+                await asyncio.sleep(1)
+            
+
+    @commands.command(name="flop")
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_flop(self, ctx: Context):
+        """Flop"""
+        m = await ctx.send("Starting...")
+        ls = (
+            "(   ° - °) (' - '   )",
+            "(\\\° - °)\ (' - '   )",
+            "(—°□°)— (' - '   )",
+            "(╯°□°)╯(' - '   )",
+            "(╯°□°)╯︵(\\\ .o.)\\",
+        )
+        for i in ls:
+            await m.edit(content=i)
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="poof", hidden=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_poof(self, ctx: Context):
+        """Poof"""
+        m = await ctx.send("...")
+        ls = ("(   ' - ')", "' - ')", "- ')", "')", ")", "*poofness*")
+        for i in ls:
+            await m.edit(content=i)
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="virus", hidden=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_virus(self, ctx: Context, user: discord.Member = None, virus: str = "trojan"):
+        """Insert a virus to yourself or someone else"""
+        m = await ctx.send("...")
+        user = user or ctx.author
+        ls = (
+            f"`[▓▓▓                    ] / {virus}-virus.exe Packing files.`",
+            f"`[▓▓▓▓▓▓▓                ] - {virus}-virus.exe Packing files..`",
+            f"`[▓▓▓▓▓▓▓▓▓▓▓▓           ] \ {virus}-virus.exe Packing files..`",
+            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓         ] | {virus}-virus.exe Packing files..`",
+            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓      ] / {virus}-virus.exe Packing files..`",
+            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   ] - {virus}-virus.exe Packing files..`",
+            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ ] \ {virus}-virus.exe Packing files..`",
+            f"`Successfully downloaded {virus}-virus.exe`",
+            "`Injecting virus.           |`",
+            "`Injecting virus..          /`",
+            "`Injecting virus...         -`",
+            f"`Successfully Injected {virus}-virus.exe into {user.name}`",
+        )
+        for i in ls:
+            await m.edit(content=i)
+            await asyncio.sleep(0.8)
+
+    @commands.command(name="boom", hidden=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_boom(self, ctx: Context):
+        """Booms a message!"""
+        m = await ctx.send("THIS MESSAGE WILL SELFDESTRUCT IN 5")
+        await asyncio.sleep(1)
+        ls = (
+            "THIS MESSAGE WILL SELFDESTRUCT IN 4",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 3",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 2",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 1",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 0",
+            "\N{BOMB}","\N{COLLISION SYMBOL}")
+        for i in ls:
+            await asyncio.sleep(1)
+            await m.edit(content=i)
+        
+    @commands.command(name="table", hidden=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_table(self, ctx: Context):
+        m = await ctx.send("`(\°-°)\  ┬─┬`")
+        lst = ("`(\°□°)\  ┬─┬`",
+        "`(-°□°)-  ┬─┬`",
+        "`(╯°□°)╯    ]`",
+        "`(╯°□°)╯     ┻━┻`",
+        "`(╯°□°)╯       [`",
+        "`(╯°□°)╯          ┬─┬`",
+        "`(╯°□°)╯                 ]`",
+        "`(╯°□°)╯                  ┻━┻`",
+        "`(╯°□°)╯                         [`",
+        "`(\°-°)\                               ┬─┬`")
+
+        for k in lst:
+            await asyncio.sleep(0.5)
+            await ctx.edit(content=k)
+
+    @commands.command(name="funwarn", hidden=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_warning(self, ctx: Context):
+        await ctx.send("...")
+        ls = (
+        "```diff\n- LOAD !! WARNING !! SYSTEM OVER -\n```",
+        "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
+        "```diff\n- AD !! WARNING !! SYSTEM OVERLO -\n```",
+        "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
+        "```diff\n-  !! WARNING !! SYSTEM OVERLOAD -\n```",
+        "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
+        "```diff\n- ! WARNING !! SYSTEM OVERLOAD ! -\n```",
+        "```diff\n-  WARNING !! SYSTEM OVERLOAD !! -\n```",
+        "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
+        "```diff\n- ARNING !! SYSTEM OVERLOAD !! W -\n```",
+        "```diff\n- RNING !! SYSTEM OVERLOAD !! WA -\n```",
+        "```diff\n- NING !! SYSTEM OVERLOAD !! WAR -\n```",
+        "```diff\n- ING !! SYSTEM OVERLOAD !! WARN -\n```",
+        "```diff\n- NG !! SYSTEM OVERLOAD !! WARNI -\n```",
+        "```diff\n- G !! SYSTEM OVERLOAD !! WARNIN -\n```",
+        "```diff\n-  !! SYSTEM OVERLOAD !! WARNING -\n```",
+        "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
+        "```diff\n- ! SYSTEM OVERLOAD !! WARNING ! -\n```",
+        "```diff\n-  SYSTEM OVERLOAD !! WARNING !! -\n```",
+        "```diff\n- IMMINENT SHUT-DOWN IN 0.5 SEC! -\n```",
+        "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
+        "```diff\n- IMMINENT SHUT-DOWN IN 0.2 SEC! -\n```",
+        "```diff\n- SYSTEM OVERLOAD !! WARNING !!  -\n```",
+        "```diff\n- IMMINENT SHUT-DOWN IN 0.01 SEC! -\n```",
+        "```diff\n- SHUT-DOWN EXIT ERROR ¯\\(｡･益･)/¯ -\n```",
+        "```diff\n- CTRL + R FOR MANUAL OVERRIDE... -\n```",
+        )
+
+        for i in ls:
+            await ctx.message.edit(content=i)
+            await asyncio.sleep(0.3)

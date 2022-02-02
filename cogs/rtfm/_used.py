@@ -9,6 +9,8 @@ from yaml import safe_load as yaml_load
 
 from ._tio import Tio
 
+from core import Parrot
+
 with open("extra/lang.txt") as f:
     languages = f.read().split("\n")
 
@@ -66,7 +68,7 @@ async def get_message(interaction: discord.Interaction, fetch=False) -> discord.
 
 
 class RerunBtn(discord.ui.Button):
-    def __init__(self, bot, **kwargs):
+    def __init__(self, bot: Parrot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
 
@@ -90,11 +92,10 @@ class RerunBtn(discord.ui.Button):
 
         # we need to strip the prefix and command name ('do run '), the prefix
         # having multiple and even custom possible values
-        parrot_db = await self.bot.db("parrot_db")
-        collection = parrot_db["server_config"]
-        data = await collection.find_one({"_id": interaction.guild_id})
-        if payload.startswith(data["prefix"]):
-            payload = payload[len(data["prefix"]) + 4 :]
+
+        prefix = self.bot.get_guild_prefixes(interaction.guild)
+        if payload.startswith(prefix):
+            payload = payload[len(prefix) + 4 :]
 
         language, text, errored = prepare_payload(payload)
 
@@ -208,7 +209,7 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
 
     if lang in default_langs:
         lang = default_langs[lang]
-    if lang not in languages:
+    if not lang in languages:  # this is intentional
         matches = []
         i = 0
         for language in languages:
@@ -300,7 +301,7 @@ def get_raw(link):
 
     if not any(link.startswith(url) for url in authorized):
         raise commands.BadArgument(
-            message=f"I only accept links from {', '.join(authorized)}. (Starting with 'http')."
+            message=f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http')."
         )
 
     domain = link.split("/")[2]

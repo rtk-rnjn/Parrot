@@ -58,7 +58,7 @@ BITBUCKET_RE = re.compile(
     r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)"
 )
 
-whitelist = [615785223296253953, 741614468546560092, 523452718413643788]
+whitelist = [615785223296253953, 741614468546560092, 523452718413643788, 699839134709317642]
 
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):

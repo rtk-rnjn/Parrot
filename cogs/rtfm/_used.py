@@ -203,13 +203,14 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
         "q#": "qs",
         "rs": "rust",
         "sh": "bash",
+        "python": "python"
     }
 
-    lang = quickmap.get(lang)
+    lang = quickmap.get(lang) or lang
 
     if lang in default_langs:
         lang = default_langs[lang]
-    if not lang in languages:  # this is intentional
+    if lang not in languages:  # this is intentional
         matches = []
         i = 0
         for language in languages:

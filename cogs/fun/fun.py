@@ -57,6 +57,9 @@ with open("extra/wyr.txt") as h:
 with open("extra/nhi.txt") as i:
     _nhi = i.read()
 
+with open("extra/twister.txt") as t:
+    _twister = t.read()
+
 with open(Path("extra/anagram.json"), "r") as f:
     ANAGRAMS_ALL = json.load(f)
 
@@ -1588,80 +1591,6 @@ class Fun(Cog):
         hex_tuple = ImageColor.getrgb(f"#{hex_colour}")
         await self.send_colour_response(ctx, hex_tuple)
 
-    # @commands.command(aliases=["colours", "colour"])
-    # @commands.bot_has_permissions(embed_links=True)
-    # @commands.max_concurrency(1, per=commands.BucketType.user)
-    # @Context.with_type
-    # async def color(self, ctx: Context, colour):
-    #     """To get colour information using the hexadecimal codes."""
-    #     link = f"https://www.thecolorapi.com/id?format=json&hex={colour}"
-    #     async with aiohttp.ClientSession() as session:
-    #         async with session.get(link) as response:
-    #             if response.status == 200:
-    #                 res = await response.json()
-    #             else:
-    #                 return
-
-    #     green = round(res["rgb"]["fraction"]["g"], 2)
-    #     red = round(res["rgb"]["fraction"]["r"], 2)
-    #     blue = round(res["rgb"]["fraction"]["b"], 2)
-    #     _green = res["rgb"]["g"]
-    #     _red = res["rgb"]["r"]
-    #     _blue = res["rgb"]["b"]
-
-    #     # HSL VALUE
-    #     hue = round(res["hsl"]["fraction"]["h"], 2)
-    #     saturation = round(res["hsl"]["fraction"]["s"], 2)
-    #     lightness = round(res["hsl"]["fraction"]["l"], 2)
-    #     _hue = res["hsl"]["h"]
-    #     _saturation = res["hsl"]["s"]
-    #     _lightness = res["hsl"]["l"]
-
-    #     # HSV VALUE
-    #     hue_ = round(res["hsv"]["fraction"]["h"], 2)
-    #     saturation_ = round(res["hsv"]["fraction"]["s"], 2)
-    #     value_ = round(res["hsv"]["fraction"]["v"], 2)
-    #     _hue_ = res["hsv"]["h"]
-    #     _saturation_ = res["hsv"]["s"]
-    #     _value_ = res["hsv"]["v"]
-
-    #     # GENERAL
-    #     name = res["name"]["value"]
-    #     close_name_hex = res["name"]["closest_named_hex"]
-    #     exact_name = res["name"]["exact_match_name"]
-    #     distance = res["name"]["distance"]
-
-    #     embed = discord.Embed(
-    #         title="Parrot colour prompt",
-    #         timestamp=datetime.datetime.utcnow(),
-    #         colour=discord.Color.from_rgb(_red, _green, _blue),
-    #         description=f"Colour name: `{name}` | Close Hex code: `{close_name_hex}` | Having exact name? `{exact_name}` | Distance: `{distance}`",
-    #     )
-    #     embed.set_thumbnail(
-    #         url=f"https://some-random-api.ml/canvas/colorviewer?hex={colour}"
-    #     )
-    #     embed.set_footer(text=f"{ctx.author.name}")
-    #     fields = [
-    #         (
-    #             "RGB value (fraction)",
-    #             f"Red: `{_red}` (`{red}`)\nGreen: `{_green}` (`{green}`)\nBlue: `{_blue}` (`{blue}`)",
-    #             True,
-    #         ),
-    #         (
-    #             "HSL value (fraction)",
-    #             f"Hue: `{_hue}` (`{hue}`)\nSaturation: `{_saturation}` (`{saturation}`)\nLightness: `{_lightness}` (`{lightness}`)",
-    #             True,
-    #         ),
-    #         (
-    #             "HSV value (fraction)",
-    #             f"Hue: `{_hue_}` (`{hue_}`)\nSaturation: `{_saturation_}` (`{saturation_}`)\nValue: `{_value_}` (`{value_}`)",
-    #             True,
-    #         ),
-    #     ]
-    #     for name, value, inline in fields:
-    #         embed.add_field(name=name, value=value, inline=inline)
-    #     await ctx.reply(embed=embed)
-
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2269,6 +2198,29 @@ class Fun(Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             em.set_footer(text=f"{ctx.author.name}")
+        await ctx.reply(embed=em)
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def twister(self, ctx: Context, *, member: discord.Member = None):
+        """I scream, you scream, we all scream for ice-cream"""
+        t = _twister.split("\n")
+        if member is None:
+            em = discord.Embed(
+                title="Say",
+                description=f"{random.choice(t)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+            em.set_footer(text=f"{ctx.author}")
+        else:
+            em = discord.Embed(
+                title=f"{member} reply!",
+                description=f"{random.choice(t)}",
+                timestamp=datetime.datetime.utcnow(),
+            )
+            em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)
 
     @commands.group(aliases=["https"], invoke_without_command=True)

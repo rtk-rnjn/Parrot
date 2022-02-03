@@ -93,7 +93,8 @@ class Context(commands.Context):
     def command_syntax(self):
         command = self.command
         ctx = self
-        return f"{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}"
+        return f"{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}" \
+               f"{'|'.join(command.aliases if command.aliases else '')} {command.signature}"
 
     def with_type(func):
         @functools.wraps(func)

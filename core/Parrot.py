@@ -277,7 +277,7 @@ class Parrot(commands.AutoShardedBot):
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
 
-        if not message.guild:
+        if message.guild is None or message.author.bot:
             # to prevent the usage of command in DMs
             return
 

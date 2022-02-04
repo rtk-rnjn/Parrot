@@ -1447,7 +1447,6 @@ class Moderator(Cog):
         action: str = kw.get("action")
         duration: str = kw.get("duration")
         dt = ShortTime(duration)
-        mod: discord.Member | discord.User = kw.get("mod")
         ctx: Context = kw.get("ctx")
         target: discord.Member | discord.User = kw.get("target")
         if action == "kick":

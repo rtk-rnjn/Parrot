@@ -108,14 +108,14 @@ class RerunBtn(discord.ui.Button):
 
 
 class Refresh(discord.ui.View):
-    def __init__(self, bot, no_rerun, timeout=300):
-        super().__init__()
+    def __init__(self, bot, no_rerun, timeout: float=300):
+        super().__init__(timeout=timeout)
 
         item = RerunBtn(
             bot=bot,
             label="Run again",
             style=discord.ButtonStyle.grey,
-            emoji="🔄",
+            emoji="\N{ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS}",
             disabled=no_rerun,
         )
 
@@ -123,7 +123,7 @@ class Refresh(discord.ui.View):
 
         self.children.reverse()  # Run again first
 
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.grey, emoji="🗑")
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.grey, emoji="\N{WASTEBASKET}")
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         message = await get_message(interaction)
 
@@ -290,7 +290,7 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
     return f"```p\n{output}```"
 
 
-def get_raw(link):
+def get_raw(link: str) -> str:
     """Returns the url for raw version on a hastebin-like"""
     link = link.strip("<>/")  # Allow for no-embed links
 
@@ -321,7 +321,7 @@ def get_raw(link):
     return link + "/raw"
 
 
-async def paste(text):
+async def paste(text: str) -> str:
     """Return an online bin of given text"""
     async with aiohttp.ClientSession() as aioclient:
         post = await aioclient.post("https://hastebin.com/documents", data=text)

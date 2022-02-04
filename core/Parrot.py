@@ -12,7 +12,7 @@ import topgg
 import socket
 from collections import Counter, deque, defaultdict
 import discord
-from discord.ext import commands  # , ipc
+from discord.ext import commands, tasks  # , ipc
 
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from lru import LRU
@@ -392,3 +392,9 @@ class Parrot(commands.AutoShardedBot):
 
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)
+
+    @tasks.loop(count=1)
+    async def update_server_config_cache(self):
+        for i in self.server_config:
+            if data := await collection.find_one({'_id': i}):
+                self.server_config[i] = data

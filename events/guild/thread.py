@@ -160,7 +160,7 @@ class OnThread(Cog):
             ls.append(["`Member Count:`", f"**{before.member_count}**"])
         return ls
 
-    @Cog.listener
+    @Cog.listener()
     async def on_thread_update(
         self, before: discord.Thread, after: discord.Thread
     ) -> None:

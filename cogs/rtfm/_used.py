@@ -203,7 +203,7 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
         "q#": "qs",
         "rs": "rust",
         "sh": "bash",
-        "python": "python"
+        "python": "python",
     }
 
     lang = quickmap.get(lang) or lang

@@ -1327,10 +1327,10 @@ class Moderator(Cog):
 
         return await msg.delete(delay=0)
 
-    @commands.command()
+    @commands.command(name='warn')
     @commands.bot_has_permissions(embed_links=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warn(self, ctx: Context, user: discord.Member, *, reason: reason_convert):
+    async def warnuser(self, ctx: Context, user: discord.Member, *, reason: reason_convert):
         """To warn the user"""
         try:
             await user.send(
@@ -1338,7 +1338,7 @@ class Moderator(Cog):
             )
         except discord.Forbidden:
             pass
-        finally:
+        else:
             _ = await warn(
                 ctx.guild,
                 user,
@@ -1348,6 +1348,8 @@ class Moderator(Cog):
                 at=ctx.message.created_at.timestamp(),
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
+        finally:
+            await self.warn.start()
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1358,6 +1360,7 @@ class Moderator(Cog):
             return
         await custom_delete_warn(ctx.guild, warn_id=warn_id)
         await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
+        await self.warn.start()
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1380,6 +1383,7 @@ class Moderator(Cog):
         await ctx.send(
             f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
         )
+        await self.warn.start()
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -1422,6 +1426,10 @@ class Moderator(Cog):
 
     @tasks.loop()
     async def warn(self, **kw):
+        """Main system to warn
+        - target: discord.Member
+        - ctx: Context
+        """
         target: Union[discord.Member, discord.User] = kw.get("target")
         ctx: Context = kw.get("ctx")
         if not (target and ctx):
@@ -1441,7 +1449,6 @@ class Moderator(Cog):
                         mod=ctx.author,
                         ctx=ctx,
                     )
-                    return
 
     async def execute_action(self, **kw):
         action: str = kw.get("action")
@@ -1449,6 +1456,9 @@ class Moderator(Cog):
         dt = ShortTime(duration)
         ctx: Context = kw.get("ctx")
         target: discord.Member | discord.User = kw.get("target")
+        perms = ctx.guild.me.guild_permisisons
+        if not (perms.kick_members and perms.moderate_members and perms.ban_members):
+            return  # sob sob sob
         if action == "kick":
             return await mt._kick(
                 ctx.guild,

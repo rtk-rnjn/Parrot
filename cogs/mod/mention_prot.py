@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core import Parrot, Cog
+from core import Parrot, Cog, Context
 
 from utilities.database import parrot_db
 from utilities.infraction import warn
@@ -78,6 +78,8 @@ class MentionProt(Cog):
                     message=message,
                     at=message.created_at,
                 )
+                ctx = await self.bot.get_context(message, cls=Context)
+                await self.bot.get_cog('Moderator').warn(target=message.author, cls=ctx)
 
             if len(message.mentions) >= count:
                 await message.channel.send(

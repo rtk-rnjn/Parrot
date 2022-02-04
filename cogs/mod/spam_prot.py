@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core import Parrot, Cog
+from core import Parrot, Cog, Context
 
 from discord.ext import commands
 import discord
@@ -76,6 +76,8 @@ class SpamProt(Cog):
                         message=message,
                         at=message.created_at,
                     )
+                    ctx = await self.bot.get_context(message, cls=Context)
+                    await self.bot.get_cog('Moderator').warn(target=message.author, cls=ctx)
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",

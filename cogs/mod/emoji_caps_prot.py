@@ -6,7 +6,8 @@ from utilities.infraction import warn
 import re
 import random
 import typing
-from core import Parrot, Cog
+import emojis
+from core import Parrot, Cog, Context
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -22,7 +23,7 @@ class EmojiCapsProt(Cog):
         await message.delete(delay=0)
 
     async def get_emoji_count(self, message_content: str) -> int:
-        str_count = len(re.findall(r"[\U0001f600-\U0001f650]", message_content))
+        str_count = emojis.count(message_content)
         dis_count = len(
             re.findall(
                 r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>",
@@ -113,6 +114,8 @@ class EmojiCapsProt(Cog):
                         message=message,
                         at=message.created_at,
                     )
+                    ctx = await self.bot.get_context(message, cls=Context)
+                    await self.bot.get_cog('Moderator').warn(target=message.author, cls=ctx)
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] [Warning]**",
@@ -144,6 +147,8 @@ class EmojiCapsProt(Cog):
                         message=message,
                         at=message.created_at,
                     )
+                    ctx = await self.bot.get_context(message, cls=Context)
+                    await self.bot.get_cog('Moderator').warn(target=message.author, cls=ctx)
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] [Warning]**",

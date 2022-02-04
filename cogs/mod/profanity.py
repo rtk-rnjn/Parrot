@@ -9,7 +9,7 @@ import random
 import re
 from utilities.database import parrot_db
 from utilities.infraction import warn
-from core import Parrot, Cog
+from core import Parrot, Cog, Context
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -89,6 +89,8 @@ class Profanity(Cog):
                     message=message,
                     at=message.created_at,
                 )
+                ctx = await self.bot.get_context(message, cls=Context)
+                await self.bot.get_cog('Moderator').warn(target=message.author, cls=ctx)
 
             if any(self.isin(word, message.content.lower()) for word in bad_words):
                 await message.channel.send(

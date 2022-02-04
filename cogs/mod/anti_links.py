@@ -8,7 +8,7 @@ from utilities.database import parrot_db
 from utilities.infraction import warn
 from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE
 
-from core import Parrot, Cog
+from core import Parrot, Cog, Context
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -79,7 +79,8 @@ class LinkProt(Cog):
                     message=message,
                     at=message.created_at,
                 )
-
+                ctx = await self.bot.get_context(message, cls=Context)
+                await self.bot.get_cog('Moderator').warn(target=message.author, cls=ctx)
             has_links = await self.has_links(message.content)
 
             if has_links:

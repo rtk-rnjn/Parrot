@@ -108,7 +108,7 @@ class RerunBtn(discord.ui.Button):
 
 
 class Refresh(discord.ui.View):
-    def __init__(self, bot, no_rerun, timeout: float=300):
+    def __init__(self, bot, no_rerun, timeout: float = 300):
         super().__init__(timeout=timeout)
 
         item = RerunBtn(
@@ -123,7 +123,9 @@ class Refresh(discord.ui.View):
 
         self.children.reverse()  # Run again first
 
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.grey, emoji="\N{WASTEBASKET}")
+    @discord.ui.button(
+        label="Delete", style=discord.ButtonStyle.grey, emoji="\N{WASTEBASKET}"
+    )
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         message = await get_message(interaction)
 

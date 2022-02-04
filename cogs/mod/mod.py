@@ -1327,10 +1327,12 @@ class Moderator(Cog):
 
         return await msg.delete(delay=0)
 
-    @commands.command(name='warn')
+    @commands.command(name="warn")
     @commands.bot_has_permissions(embed_links=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warnuser(self, ctx: Context, user: discord.Member, *, reason: reason_convert):
+    async def warnuser(
+        self, ctx: Context, user: discord.Member, *, reason: reason_convert
+    ):
         """To warn the user"""
         try:
             await user.send(

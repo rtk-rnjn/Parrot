@@ -102,6 +102,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         """Only for logging"""
         if ctx.cog is None:
             return
+        print(ctx.cog)
         if ctx.cog.qualified_name.lower() == "mod":
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_mod_command": {"$exists": True}}
@@ -123,7 +124,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                     )
 
         if ctx.cog.qualified_name.lower() == "botconfig":
-            await self.bot.update_server_config_cache.start(ctx.guild.id)
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_config_command": {"$exists": True}}
             ):

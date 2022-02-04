@@ -395,5 +395,5 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await collection.find_one({'_id': guild_id}):
+        if data := await collection.find_one({"_id": guild_id}):
             self.server_config[guild_id] = data

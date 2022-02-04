@@ -141,7 +141,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                         avatar_url=self.bot.user.avatar.url,
                         username=self.bot.user.name,
                     )
-                await self.bot.update_server_config_cache.start()
+            await self.bot.update_server_config_cache.start()
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error):

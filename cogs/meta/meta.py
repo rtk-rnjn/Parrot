@@ -227,8 +227,8 @@ class FrontPageSource(menus.PageSource):
                 (
                     "[--arg ]",
                     "This means you can pass flags in with `--` prefix and `arg` argument.\n"
-                    "Space after `arg ` means you need to put the space. It's not specific.\n"
-                )
+                    "Space after `arg ` means you need to put the space. It's not specific.\n",
+                ),
             )
 
             embed.add_field(

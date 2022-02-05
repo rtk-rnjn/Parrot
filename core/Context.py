@@ -97,7 +97,7 @@ class Context(commands.Context):
             f"{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}"
             f"{'|'.join(command.aliases if command.aliases else '')} {command.signature}"
         )
-    
+
     @property
     def get_command_flags(self) -> list:
         ctx = self
@@ -109,10 +109,10 @@ class Context(commands.Context):
                     pre = params.annotation.__commands_flag_prefix__
                     for _, value in params.annotation.get_flags().items():
                         if value.required:
-                            default = '=' + value.default if value.default else ''
+                            default = "=" + value.default if value.default else ""
                             result.append(f"<{pre}{value.name}{del_}{default}>")
                         else:
-                            default = '=' + value.default if value.default else ''
+                            default = "=" + value.default if value.default else ""
                             result.append(f"[{pre}{value.name}{del_}{default}]")
         return result
 

@@ -93,10 +93,28 @@ class Context(commands.Context):
     def command_syntax(self):
         command = self.command
         ctx = self
-        return (
+        main = (
             f"{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}"
             f"{'|'.join(command.aliases if command.aliases else '')} {command.signature}"
         )
+    
+    @property
+    def get_command_flags(self) -> list:
+        ctx = self
+        result = []
+        for params in ctx.command.clean_params:
+            if isinstance(params.annotation, commands.flags.FlagsMeta):
+                if params.annotation.get_flags():  # type: ignore
+                    del_ = params.annotation.__commands_flag_delimiter__
+                    pre = params.annotation.__commands_flag_prefix__
+                    for _, value in params.annotation.get_flags().items():
+                        if value.required:
+                            default = '=' + value.default if value.default else ''
+                            result.append(f"<{pre}{value.name}{del_}{default}>")
+                        else:
+                            default = '=' + value.default if value.default else ''
+                            result.append(f"[{pre}{value.name}{del_}{default}]")
+        return result
 
     def with_type(func):
         @functools.wraps(func)

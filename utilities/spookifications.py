@@ -5,8 +5,6 @@ from random import choice, randint
 
 from PIL import Image, ImageOps
 
-log = logging.getLogger()
-
 
 def inversion(im: Image) -> Image:
     """
@@ -53,5 +51,4 @@ def get_random_effect(im: Image) -> Image:
     """Randomly selects and applies an effect."""
     effects = [inversion, pentagram, bat]
     effect = choice(effects)
-    log.info("Spookyavatar's chosen effect: " + effect.__name__)
     return effect(im)

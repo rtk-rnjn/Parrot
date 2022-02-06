@@ -1,12 +1,10 @@
 markdownify
 psutil
-truth_table_generator
 aiohttp
 async_timeout
 jishaku
 beautifulsoup4
 PyYAML
-ttg
 PyNacl
 akinator.py
 opuslib
@@ -32,3 +30,5 @@ Pillow
 typing_extensions
 arrow
 quart
+pandas
+numpy

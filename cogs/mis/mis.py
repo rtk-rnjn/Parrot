@@ -10,7 +10,6 @@ import urllib.parse
 import aiohttp
 import discord
 import re
-import ttg
 import datetime
 import typing
 import os
@@ -26,6 +25,7 @@ from core import Parrot, Context, Cog
 from utilities.youtube_search import YoutubeSearch
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
+from utilities.ttg import Truths
 
 from PIL import Image
 
@@ -77,7 +77,12 @@ PAD = 10
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
-
+    ints: bool = False
+    ascending: bool = True
+    table_format: str = "psql"
+    aling: str = "center"
+    valuation: bool = False
+    latex: bool = False
 
 def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):
@@ -444,19 +449,29 @@ class Misc(Cog):
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
 
-    @commands.command(aliases=["trutht", "tt", "ttable"])
+    @commands.command(aliases=["trutht", "tt", "ttable"],)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truthtable(self, ctx: Context, *, flags: TTFlag):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
         Syntax:
-                Truthtable --var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
+            Truthtable --var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
         (Example: `tt --var a, b --con a and b, a or b`)
+
+        Negation: 'not', '-', '~'
+        Logical disjunction: 'or'
+        Logical nor: 'nor'
+        Exclusive disjunction: 'xor', '!='
+        Logical conjunction: 'and'
+        Logical NAND: 'nand'
+        Material implication: '=>', 'implies'
+        Logical biconditional: '='
         """
-        table = ttg.Truths(
-            flags.var.split(","), flags.con.split(","), ints=False
-        ).as_prettytable()
-        await ctx.reply(f"```\n{table}\n```")
+        table = Truths(
+            flags.var.split(","), flags.con.split(","), ints=flags.ints, ascending=flags.ascending
+        )
+        main = table.as_tabulate(index=False, table_format=flags.table_format, align=flags.aling)
+        await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 
     @commands.command(aliases=["w"])
     @commands.bot_has_permissions(embed_links=True)
@@ -718,6 +733,7 @@ class Misc(Cog):
         ctx: Context,
     ):
         """To make polls. Thanks to Strawpoll API"""
+        await self.bot.invoke_help_command(ctx)
 
     @poll.command(name="create")
     @commands.max_concurrency(1, per=commands.BucketType.user)

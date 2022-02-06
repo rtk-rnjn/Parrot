@@ -84,6 +84,7 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     valuation: bool = False
     latex: bool = False
 
+
 def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):
         return match.group("code")
@@ -449,7 +450,9 @@ class Misc(Cog):
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
 
-    @commands.command(aliases=["trutht", "tt", "ttable"],)
+    @commands.command(
+        aliases=["trutht", "tt", "ttable"],
+    )
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truthtable(self, ctx: Context, *, flags: TTFlag):
@@ -468,9 +471,14 @@ class Misc(Cog):
         Logical biconditional: '='
         """
         table = Truths(
-            flags.var.split(","), flags.con.split(","), ints=flags.ints, ascending=flags.ascending
+            flags.var.split(","),
+            flags.con.split(","),
+            ints=flags.ints,
+            ascending=flags.ascending,
         )
-        main = table.as_tabulate(index=False, table_format=flags.table_format, align=flags.aling)
+        main = table.as_tabulate(
+            index=False, table_format=flags.table_format, align=flags.aling
+        )
         await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 
     @commands.command(aliases=["w"])

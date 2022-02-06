@@ -1366,7 +1366,7 @@ class Moderator(Cog):
             return
         await custom_delete_warn(ctx.guild, warn_id=warn_id)
         await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
-        await self.warn.start()
+        await self.warn_task.start()
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1389,7 +1389,7 @@ class Moderator(Cog):
         await ctx.send(
             f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
         )
-        await self.warn.start()
+        await self.warn_task.start()
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -1433,12 +1433,8 @@ class Moderator(Cog):
     async def before_unban(self):
         await self.bot.wait_until_read()
 
-    @warn.before_loop
-    async def before_warn(self):
-        await self.bot.wait_until_ready()
-
     @tasks.loop(count=1)
-    async def warn(self, **kw):
+    async def warn_task(self, **kw):
         """Main system to warn
         - target: discord.Member
         - ctx: Context
@@ -1525,3 +1521,7 @@ class Moderator(Cog):
                 f"Automod. {target} reached warncount threshold",
                 True,
             )
+
+    @warn_task.before_loop
+    async def before_warn(self):
+        await self.bot.wait_until_ready()

@@ -7,17 +7,17 @@ import asyncio
 from discord.ext import commands
 import discord
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from core import Context
 
 
-def convert_bool(text: str) -> Optional[bool]:
+def convert_bool(text: Union[str, bool]) -> bool:
     """True/False converter"""
-    if text.lower() in ("yes", "y", "true", "t", "1", "enable", "on", "o"):
+    if str(text).lower() in ("yes", "y", "true", "t", "1", "enable", "on", "o"):
         return True
-    if text.lower() in ("no", "n", "false", "f", "0", "disable", "off", "x"):
+    if str(text).lower() in ("no", "n", "false", "f", "0", "disable", "off", "x"):
         return False
-    return None
+    return False
 
 
 def reason_convert(text: commands.clean_content) -> str:

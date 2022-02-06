@@ -458,17 +458,18 @@ class Misc(Cog):
     async def truthtable(self, ctx: Context, *, flags: TTFlag):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
         Syntax:
-            Truthtable --var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
+            Truthtable `--var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
         (Example: `tt --var a, b --con a and b, a or b`)
-
-        Negation: 'not', '-', '~'
-        Logical disjunction: 'or'
-        Logical nor: 'nor'
-        Exclusive disjunction: 'xor', '!='
-        Logical conjunction: 'and'
-        Logical NAND: 'nand'
-        Material implication: '=>', 'implies'
-        Logical biconditional: '='
+        ```
+        Negation             : not, -, ~
+        Logical disjunction  : or
+        Logical nor          : nor
+        Exclusive disjunction: xor, !=
+        Logical conjunction  : and
+        Logical NAND         : nand
+        Material implication : =>, implies
+        Logical biconditional: =
+        ```
         """
         table = Truths(
             flags.var.split(","),

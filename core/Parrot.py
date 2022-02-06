@@ -10,6 +10,7 @@ import traceback
 import aiohttp
 import topgg
 import socket
+import re
 from collections import Counter, deque, defaultdict
 import discord
 from discord.ext import commands, tasks  # , ipc
@@ -357,7 +358,7 @@ class Parrot(commands.AutoShardedBot):
         ):
             return msg
 
-    async def get_prefix(self, message: discord.Message) -> str:
+    async def get_prefix(self, message: discord.Message) -> typing.Union[str, typing.List[str]]:
         """Dynamic prefixing"""
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
@@ -377,6 +378,10 @@ class Parrot(commands.AutoShardedBot):
                 await collection.insert_one(post)
             self.server_config[message.guild.id] = post
         finally:
+            comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
+            match = comp.match(message.content)
+            if match is not None:
+                prefix = match.group(1)
             return commands.when_mentioned_or(prefix)(self, message)
 
     async def get_guild_prefixes(self, guild: discord.Guild) -> typing.Optional[str]:

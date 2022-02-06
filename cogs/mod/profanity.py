@@ -28,6 +28,9 @@ class Profanity(Cog):
         except KeyError:
             return None
 
+    def cog_unload(self):
+        self.update_data.cancel()
+
     def isin(self, phrase: str, sentence: str) -> bool:
         word = re.escape(phrase)
         pattern = rf"\b{word}\b"
@@ -106,3 +109,7 @@ class Profanity(Cog):
             except KeyError:
                 return
             self.data[data["_id"]] = bad_words
+
+    @update_data.before_loop
+    async def before_data_update(self):
+        await self.bot.wait_until_ready()

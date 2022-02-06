@@ -37,6 +37,10 @@ class Moderator(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="moderator", id=892424227007918121)
 
+    def cog_unload(self):
+        self.unban_task.cancel()
+        self.warn.cancel()
+
     async def log(self, ctx, cmd, performed_on, reason):
         """A simple and nerdy Logging System"""
         data = await collection.find_one({"_id": ctx.guild.id})
@@ -1408,7 +1412,6 @@ class Moderator(Cog):
 
     @tasks.loop(seconds=2)
     async def unban_task(self):
-        await self.bot.wait_until_ready()
         async for data in ban_collection.find(
             {"duration": {"$lte": datetime.utcnow().timestamp()}}
         ):
@@ -1426,7 +1429,15 @@ class Moderator(Cog):
                 finally:
                     await ban_collection.delete_one({"_id": data["_id"]})
 
-    @tasks.loop()
+    @unban_task.before_loop
+    async def before_unban(self):
+        await self.bot.wait_until_read()
+
+    @warn.before_loop
+    async def before_warn(self):
+        await self.bot.wait_until_ready()
+
+    @tasks.loop(count=1)
     async def warn(self, **kw):
         """Main system to warn
         - target: discord.Member

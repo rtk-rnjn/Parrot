@@ -1,7 +1,5 @@
 # What is AnonSurf? #
 
-<img src="./images/anonsurf/logo.png" width="150vw" style="display: block; margin: 0 auto"/>
-
 [AnonSurf](https://nest.parrotsec.org/packages/tools/anonsurf/-/tree/3.2.0) is Parrot's anonymous mode wrapper to force connections through [Tor](https://www.torproject.org/). It is written in Nim Language and uses GTK libraries so it can be used via a graphical interface (GUI) and a CommandLine Interface (CLI).
 
 It can be used on ParrotOS and it is pre-installed on both main editions (Home and Security). It can be started from the Parrot menu, going to **Applications** and then **Privacy**:
@@ -14,11 +12,7 @@ To start it, press **Start**, and to verify that everything is working, you can 
 
 Clicking on **Tor Stats** will show all the details about the current use being made under the Tor network.
 
-<img src="./images/anonsurf/4.png" width="85%"/>
-
 With **Change Identity** you will switch to another exit node:
-
-<img src="./images/anonsurf/5.png" width="85%"/>
 
 ### AnonSurf CLI ###
 

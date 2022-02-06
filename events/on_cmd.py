@@ -196,6 +196,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}"
+            await ctx.command.reset_cooldown(ctx)
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MissingRole):
@@ -208,6 +209,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 f"You need the the following role(s) to use the command```\n{fmt}```"
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
+            await ctx.command.reset_cooldown(ctx)
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MissingAnyRole):
@@ -220,6 +222,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 f"You need the the following role(s) to use the command```\n{fmt}```"
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
+            await ctx.command.reset_cooldown(ctx)
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         # if isinstance(error, commands.NoPrivateMessage):
@@ -235,6 +238,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.description = "This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
             ERROR_EMBED.title = f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}"
             ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
+            await ctx.command.reset_cooldown(ctx)
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.NotOwner):
@@ -244,11 +248,13 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             # return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.PrivateMessageOnly):
-            ERROR_EMBED.description = "This comamnd will only work in DM messages"
-            ERROR_EMBED.title = f"{QUESTION_MARK} Private Message Only {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+            return
+            # ERROR_EMBED.description = "This comamnd will only work in DM messages"
+            # ERROR_EMBED.title = f"{QUESTION_MARK} Private Message Only {QUESTION_MARK}"
+            # return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.BadArgument):
+            await ctx.command.reset_cooldown(ctx)
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = (
                     "Message ID/Link you provied is either invalid or deleted"
@@ -287,6 +293,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         if isinstance(error, commands.MissingRequiredArgument):
             command = ctx.command
+            await ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Missing Required Argument {QUESTION_MARK}"
@@ -301,16 +308,19 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, (commands.BadUnionArgument, commands.BadLiteralArgument)):
+            await ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"`@Parrot {ctx.command}` for help"
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, ParrotCheckFailure):
+            await ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.CheckAnyFailure):
+            await ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = " or ".join(
                 [error.__str__().format(ctx=ctx) for error in error.errors]
             )

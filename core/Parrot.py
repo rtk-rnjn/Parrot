@@ -358,7 +358,9 @@ class Parrot(commands.AutoShardedBot):
         ):
             return msg
 
-    async def get_prefix(self, message: discord.Message) -> typing.Union[str, typing.List[str]]:
+    async def get_prefix(
+        self, message: discord.Message
+    ) -> typing.Union[str, typing.List[str]]:
         """Dynamic prefixing"""
         try:
             prefix = self.server_config[message.guild.id]["prefix"]

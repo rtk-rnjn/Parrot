@@ -77,12 +77,12 @@ PAD = 10
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
-    ints: bool = False
-    ascending: bool = True
+    ints: convert_bool = False
+    ascending: convert_bool = True
     table_format: str = "psql"
     aling: str = "center"
-    valuation: bool = False
-    latex: bool = False
+    valuation: convert_bool = False
+    latex: convert_bool = False
 
 
 def _prepare_input(text: str) -> str:

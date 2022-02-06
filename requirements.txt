@@ -32,3 +32,4 @@ arrow
 quart
 pandas
 numpy
+pyparsing

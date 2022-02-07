@@ -49,5 +49,6 @@ class EventCustom(Cog):
             except (discord.NotFound, discord.HTTPError, discord.Forbidden):
                 pass
 
+
 def setup(bot: Parrot):
     bot.add_cog(EventCustom(bot))

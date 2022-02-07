@@ -79,7 +79,7 @@ class Utils(Cog):
             "mod_action": mod_action,
             "cmd_exec_str": cmd_exec_str,
             "extra": kw.get("extra"),
-            **kw
+            **kw,
         }
         await self.collection.insert_one(post)
 

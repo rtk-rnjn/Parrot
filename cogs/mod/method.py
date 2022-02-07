@@ -330,7 +330,16 @@ async def _softban(guild, command_name, ctx_author, destination, member, reason)
 
 
 async def _temp_ban(
-    guild, command_name, ctx_author, destination, member, duration, reason, silent=True, *, bot: Parrot=None
+    guild,
+    command_name,
+    ctx_author,
+    destination,
+    member,
+    duration,
+    reason,
+    silent=True,
+    *,
+    bot: Parrot = None,
 ):
     for member in member:
         if ctx_author.top_role.position < member.top_role.position:

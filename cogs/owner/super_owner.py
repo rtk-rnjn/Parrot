@@ -405,6 +405,15 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 except Exception as e:
                     print(e)
 
+    @commands.command()
+    async def python(self, ctx: Context, *, text: str):
+        try:
+            async with async_open(f"extra/tutorials/python/{text.replace(' ', '-')}.md") as f:
+                data = await f.read()
+        except Exception as e:
+            return await ctx.send(e)
+        await ctx.send(embed=discord.Embed(description=data))
+
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

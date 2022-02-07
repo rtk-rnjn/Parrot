@@ -4,11 +4,13 @@ from core import Parrot, Cog
 
 import discord
 from discord import utils
+from utilities.database import parrot_db
 
 
 class OnThread(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self.collection = parrot_db["logging"]
 
     @Cog.listener()
     async def on_thread_join(self, thread: discord.Thread) -> None:

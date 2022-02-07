@@ -71,7 +71,7 @@ class Utils(Cog):
             "created_at": created_at,
             "content": content,
             "embed": embed,
-            "messageURL": message.url,
+            "messageURL": message.jump_url,
             "messageAuthor": message.author.id,
             "messageChannel": message.channel.id,
             "dm_notify": dm_notify,

@@ -11,7 +11,6 @@ class EventCustom(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    @Cog.listener("on_timer_complete")
     async def on_timer_complete(self, **kw):
         print("revieved", kw)
         embed = discord.Embed.from_dict(kw.get("embed"))

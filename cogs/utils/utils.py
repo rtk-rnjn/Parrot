@@ -299,13 +299,14 @@ class Utils(Cog):
         """To set timer for your Timer"""
         await mt._set_timer_todo(self.bot, ctx, name, deadline.dt.timestamp())
 
-    @tasks.loop(seconds=1.0)
+    @tasks.loop(seconds=3)
     async def reminder_task(self):
         async with asyncio.Lock():
             async for data in self.collection.find(
                 {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
             ):
-                self.bot.dispatch("on_timer_complete", **data)
+                cog = self.bot.get_cog("EventCustom")
+                await cog.on_timer_complete(**data)
                 await self.collection.delete_one({"_id": data["_id"]})
 
     @reminder_task.before_loop

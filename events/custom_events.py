@@ -16,7 +16,7 @@ class EventCustom(Cog):
         embed = discord.Embed.from_dict(kw.get("embed"))
         if kw.get("dm_notify") or kw.get("is_todo"):
             user = self.bot.get_user(kw["messageAuthor"])
-            if user is None:
+            if user:
                 try:
                     await user.send(
                         content=f"{user.mention} this is reminder for: **{kw['content']}**\n\n>>> {kw['messageURL']}",

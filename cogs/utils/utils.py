@@ -303,10 +303,9 @@ class Utils(Cog):
     async def reminder_task(self):
         async with asyncio.Lock():
             async for data in self.collection.find(
-                {"age": {"$lte": datetime.datetime.utcnow().timestamp()}}
+                {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
             ):
                 await self.bot.dispatch("on_timer_complete", **data)
-                print("dispatch", data)
                 await self.collection.delete_one({"_id": data["_id"]})
 
     @reminder_task.before_loop

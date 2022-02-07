@@ -12,7 +12,7 @@ class EventCustom(Cog):
         self.bot = bot
 
     async def on_timer_complete(self, **kw):
-        embed = discord.Embed.from_dict(kw.get("embed", {}))
+        embed = discord.Embed.from_dict(kw.get("embed") or {})
         if kw.get("dm_notify") or kw.get("is_todo"):
             user = self.bot.get_user(kw["messageAuthor"])
             if user:

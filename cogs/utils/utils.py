@@ -117,7 +117,7 @@ class Utils(Cog):
         ls = []
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
             ls.append(
-                f"<t:{int(data['expires_at'])}:R>\n> ({data['content']})[{data['messageURL']}]"
+                f"<t:{int(data['expires_at'])}:R>\n> [{data['content']}]({data['messageURL']})"
             )
         p = SimplePages(ls, ctx=ctx, per_page=4)
         await p.start()

@@ -117,7 +117,7 @@ class Utils(Cog):
         ls = []
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
             ls.append(
-                f"{discord.utils.format_dt(int(data['expires_at']), 'R')}\n> ({data['content']})[{data['messageURL']}]"
+                f"<t:{int(data['expires_at'])}:R>\n> ({data['content']})[{data['messageURL']}]"
             )
         p = SimplePages(ls, ctx=ctx, per_page=4)
         await p.start()
@@ -306,6 +306,7 @@ class Utils(Cog):
                 {"age": {"$lte": datetime.datetime.utcnow().timestamp()}}
             ):
                 await self.bot.dispatch("on_timer_complete", **data)
+                print("dispatch", data)
                 await self.collection.delete_one({"_id": data["_id"]})
 
     @reminder_task.before_loop

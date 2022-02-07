@@ -31,8 +31,17 @@ class Utils(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="sparkles_", id=892435276264259665)
 
-    async def create_timer(self, *, expires_at: float=None, created_at: float=None, content: str=None, 
-        message: discord.Message=None, dm_notify: bool=False, is_todo: bool=False, **kw):
+    async def create_timer(
+        self,
+        *,
+        expires_at: float = None,
+        created_at: float = None,
+        content: str = None,
+        message: discord.Message = None,
+        dm_notify: bool = False,
+        is_todo: bool = False,
+        **kw,
+    ):
         """|coro|
 
         Master Function to register Timers.
@@ -69,7 +78,7 @@ class Utils(Cog):
             "is_todo": is_todo,
             "mod_action": mod_action,
             "cmd_exec_str": cmd_exec_str,
-            "extra": kw.get("extra")
+            "extra": kw.get("extra"),
         }
         await self.collection.insert_one(post)
 
@@ -77,30 +86,39 @@ class Utils(Cog):
         collection = self.collection
         await collection.delete_one(kw)
 
-    @commands.group(aliases=['remind'], invoke_without_command=True)
+    @commands.group(aliases=["remind"], invoke_without_command=True)
     @Context.with_type
     async def remindme(
-        self, ctx: Context, age: ShortTime, *, task: commands.clean_content=None
+        self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
     ):
         """To make reminders as to get your tasks done on time"""
         if not ctx.invoked_subcommand:
             seconds = age.dt.timestamp()
-            text = f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}>**." \
+            text = (
+                f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}>**."
                 f"To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
+            )
             try:
                 await ctx.reply(f"{ctx.author.mention} check you DM", delete_after=5)
                 await ctx.author.send(text)
             except discord.Fobidden:
                 await ctx.reply(text)
-            await self.create_timer(expires_at=seconds, created_at=ctx.message.created_at.timestamp(), content=task, message=ctx.message)
+            await self.create_timer(
+                expires_at=seconds,
+                created_at=ctx.message.created_at.timestamp(),
+                content=task,
+                message=ctx.message,
+            )
 
     @remindme.command(name="list")
     @Context.with_type
     async def _list(self, ctx: Context):
         """To get all your reminders"""
         ls = []
-        async for data in self.collection.find({'messageAuthor': ctx.author.id}):
-            ls.append(f"{discord.utils.format_dt(int(data['expires_at']), 'R')}\n> ({data['content']})[{data['messageURL']}]")
+        async for data in self.collection.find({"messageAuthor": ctx.author.id}):
+            ls.append(
+                f"{discord.utils.format_dt(int(data['expires_at']), 'R')}\n> ({data['content']})[{data['messageURL']}]"
+            )
         p = SimplePages(ls, ctx=ctx, per_page=4)
         await p.start()
 
@@ -114,18 +132,26 @@ class Utils(Cog):
     @remindme.command(name="dm")
     @Context.with_type
     async def remindmedm(
-        self, ctx: Context, age: ShortTime, *, task: commands.clean_content=None
+        self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
     ):
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = age.dt.timestamp()
-        text = f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) " \
-               f"within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
+        text = (
+            f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
+            f"within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
+        )
         try:
             await ctx.reply(f"{ctx.author.mention} check you DM", delete_after=5)
             await ctx.author.send(text)
         except discord.Fobidden:
             await ctx.reply(text)
-        await self.create_timer(expires_at=seconds, created_at=ctx.message.created_at.timestamp(), content=task, message=ctx.message, dm_notify=True)
+        await self.create_timer(
+            expires_at=seconds,
+            created_at=ctx.message.created_at.timestamp(),
+            content=task,
+            message=ctx.message,
+            dm_notify=True,
+        )
 
     @commands.group(invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)

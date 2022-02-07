@@ -1001,10 +1001,7 @@ Server Wide?:{data['server']}"""
             "to_delete": flags.delete,
             "punish": {
                 "type": flags.punish if flags.punish in PUNISH else None,
-                "duration": datetime.utcnow().timestamp()
-                - flags.duration.dt.timestamp()
-                if flags.duration
-                and flags.punish not in ("kick", "addrole", "removerole")
+                "duration": flags.duration if flags.punish not in ("kick", "addrole", "removerole")
                 else None,
             },
         }

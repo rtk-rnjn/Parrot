@@ -13,7 +13,7 @@ class AutoWarn(
     enable: Optional[convert_bool] = True
     count: Optional[int] = None
     punish: Optional[str] = None
-    duration: Optional[ShortTime] = None
+    duration: str = None
     delete: Optional[convert_bool] = True
 
 

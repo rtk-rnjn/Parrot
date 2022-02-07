@@ -20,22 +20,22 @@ reacter = cluster["reacter"]
 
 IGNORE = [
     "all",
-    " delete",
-    " del",
-    " create",
-    " add",
-    " editname",
-    " edittext",
-    " owner",
-    " info",
-    " snipe",
-    " steal",
-    " claim",
-    " tnsfw",
-    " nsfw",
-    " tooglensfw",
-    " give",
-    " transfer",
+    "delete",
+    "del",
+    "create",
+    "add",
+    "editname",
+    "edittext",
+    "owner",
+    "info",
+    "snipe",
+    "steal",
+    "claim",
+    "tnsfw",
+    "nsfw",
+    "tooglensfw",
+    "give",
+    "transfer",
 ]
 
 
@@ -270,13 +270,12 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
         finally:
             await collection.update_one({"_id": name}, {"$set": post})
             await bot.get_cog("Utils").create_timer(
-                ctx.channel,
-                ctx.message,
-                ctx.author,
-                timestamp,
-                remark=f"you had set TODO reminder for your task named **{name}**",
-                dm=True,
-                todo=True,
+                expires_at=timestamp,
+                created_at=ctx.message.created_at.timestamp(),
+                message=ctx.message,
+                content=f"you had set TODO reminder for your task named **{name}**",
+                dm_notify=True,
+                is_todo=True
             )
     else:
         await ctx.reply(
@@ -349,116 +348,3 @@ async def _delete_todo(bot: Parrot, ctx: Context, name):
         await ctx.reply(
             f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
         )
-
-
-async def create_gw(bot: Parrot, ctx: Context):
-    questions = [
-        (1, "Enter the prize of Giveaway"),
-        (2, "Enter the channel in which the giveaway will be hosted"),
-        (3, "Enter amount of winners"),
-        (4, "Enter duration of giveaway"),
-    ]
-
-    def check(m: discord.Message):
-        return (m.author.id == ctx.author.id) and (m.channel.id == ctx.channel.id)
-
-    answers = {}
-    channel = None
-
-    for i, q in questions:
-        await ctx.send(f"{ctx.author.mention} **{q}**")
-        msg = await bot.wait_for("message", check=check, timeout=30)
-
-        if msg.content.lower() in ("end", "cancel"):
-            return await ctx.send(
-                f"{ctx.author.mention} alright, reverting all process"
-            )
-        if i == 1:
-            answers["prize"] = msg.content
-        if i == 2:
-            channel = await commands.TextChannelConverter().convert(ctx, msg.content)
-            if not channel:
-                return await ctx.send(f"{ctx.author.mention} Invalid Channel")
-            if not (
-                channel.permissions_for(ctx.guild.me).add_reactions
-                and channel.permissions_for(ctx.guild.me).embed_links
-            ):
-                return await ctx.send(
-                    f"{ctx.author.mention} bot don't have Add Reaction and Embed Links permission in {channel.mention}"
-                )
-            answers["channel"] = channel.id
-
-        if i == 3:
-            try:
-                winner = int(msg.content)
-            except ValueError:
-                return await ctx.send(f"{ctx.author.mention} Invalid Winner count")
-            answers["winners"] = winner
-        if i == 4:
-            seconds = ShortTime(f"{msg.content}").dt.timestamp()
-            answers["endtime"] = seconds
-
-    _id = await channel.send(
-        embed=discord.Embed(
-            description=f"**Prize:** {answers['prize']}\n**Ends In:** <t:{int(answers['endtime'])}>\n**Winner:** {answers['winners']}\n**Hosted By:** {ctx.author.mention}",
-            timestamp=datetime.utcnow(),
-            color=ctx.guild.owner.color,
-        )
-        .set_author(name="GIVEAWAY!")
-        .set_footer(text=f"ID: {ctx.message.id}")
-    )
-    answers["_id"] = _id.id
-    answers["guild"] = ctx.guild.id
-    await giveaway.insert_one(answers)
-    await _id.add_reaction("\N{PARTY POPPER}")
-
-    await ctx.send(
-        f"{ctx.author.mention} success. Giveaway created in {channel.mention}. Giveaway URL: **<{_id.jump_url}>**"
-    )
-
-
-async def end_giveaway_with_id(bot: Parrot, _id: int, ctx: Context):
-    if data := await giveaway.find_one({"_id": _id}):
-        if not data["guild"] == ctx.guild.id:
-            return await ctx.send(f"{ctx.author.mention} invalid message ID")
-
-        channel = ctx.guild.get_channel(data["channel"])
-
-        if not channel:
-            await giveaway.delete_one({"_id": _id})
-            return await ctx.send(
-                f"{ctx.author.mention} the channel in which the giveaway with id **{_id}** was hosted is either deleted or bot do not have permission to see that channel"
-            )
-
-        async for msg in channel.history(
-            limit=1, before=discord.Object(_id + 1), after=discord.Object(_id - 1)
-        ):  # this is good. UwU
-            if msg is None:
-                return await ctx.send(
-                    f"{ctx.author.mention} no message found! Proably deleted"
-                )
-            await msg.remove_reaction("\N{PARTY POPPER}", channel.guild.me)
-
-        for reaction in msg.reactions:
-            if str(reaction) == "\N{PARTY POPPER}":
-                if reaction.count < (data["winners"] - 1):
-                    return await ctx.send(
-                        f"{ctx.author.mention} winner can not be decided due to insufficient reaction count."
-                    )
-                users = await reaction.users().flatten()
-                ls = await get_winners(users=users, winners=data["winners"], msg=msg)
-                return await channel.send(
-                    f"**Congrats {', '.join(member.mention for member in ls)}. You won {data['prize']}.**"
-                )
-
-        return await ctx.send(
-            f"{ctx.author.mention} winner can not be decided as reactions on the messages had being cleared."
-        )
-    await ctx.send(f"{ctx.author.mention} invalid message ID")
-
-
-async def get_winners(users: list, winners: int, msg: discord.Message) -> list:
-    wins = random.sample(users, winners)
-    for m in wins:
-        await msg.remove_reaction("\N{PARTY POPPER}", m)
-    return wins

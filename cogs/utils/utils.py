@@ -305,7 +305,7 @@ class Utils(Cog):
             async for data in self.collection.find(
                 {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
             ):
-                await self.bot.dispatch("on_timer_complete", **data)
+                self.bot.dispatch("on_timer_complete", **data)
                 await self.collection.delete_one({"_id": data["_id"]})
 
     @reminder_task.before_loop

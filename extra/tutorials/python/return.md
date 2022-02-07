@@ -2,7 +2,7 @@
 
 When calling a function, you'll often want it to give you a value back. In order to do that, you must `return` it. The reason for this is because functions have their own scope. Any values defined within the function body are inaccessible outside of that function.
 
-*For more information about scope, see `!tags scope`*
+*For more information about scope, see `@Parrot python scope`*
 
 Consider the following function:
 ```py

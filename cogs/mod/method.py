@@ -1,4 +1,5 @@
 from __future__ import annotations
+from core.Parrot import Parrot
 
 from utilities.database import parrot_db
 
@@ -329,7 +330,7 @@ async def _softban(guild, command_name, ctx_author, destination, member, reason)
 
 
 async def _temp_ban(
-    guild, command_name, ctx_author, destination, member, duration, reason, silent=True
+    guild, command_name, ctx_author, destination, member, duration, reason, silent=True, *, bot: Parrot=None
 ):
     for member in member:
         if ctx_author.top_role.position < member.top_role.position:
@@ -347,14 +348,18 @@ async def _temp_ban(
             await member.ban(
                 reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
             )
-            data = {
-                "member_id": member.id,
+            mod_action = {
+                "action": "UNBAN",
+                "member": member.id,
+                "reason": f"Action requested by: {ctx_author} ({ctx_author.id}) | Reason: Automatic tempban action",
                 "guild": guild.id,
-                "duration": duration.timestamp()
-                if type(duration) is not int
-                else duration,
             }
-            await ban_collection.insert_one(data)
+            cog = bot.get_cog("Utils")
+            await cog.create_timer(
+                expires_at=duration.dt.timestamp(),
+                created_at=discord.utils.utcnow().timestamp(),
+                mod_action=mod_action,
+            )
         except Exception as e:
             if not silent:
                 await destination.send(

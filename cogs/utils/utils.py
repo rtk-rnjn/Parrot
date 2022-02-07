@@ -79,6 +79,7 @@ class Utils(Cog):
             "mod_action": mod_action,
             "cmd_exec_str": cmd_exec_str,
             "extra": kw.get("extra"),
+            **kw
         }
         await self.collection.insert_one(post)
 
@@ -99,7 +100,7 @@ class Utils(Cog):
                 f"To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
             )
             try:
-                await ctx.reply(f"{ctx.author.mention} check you DM", delete_after=5)
+                await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
                 await ctx.author.send(text)
             except discord.Fobidden:
                 await ctx.reply(text)
@@ -119,6 +120,8 @@ class Utils(Cog):
             ls.append(
                 f"<t:{int(data['expires_at'])}:R>\n> [{data['content']}]({data['messageURL']})"
             )
+        if not ls:
+            return await ctx.send(f"{ctx.author.mention} you don't have any reminders")
         p = SimplePages(ls, ctx=ctx, per_page=4)
         await p.start()
 
@@ -141,7 +144,7 @@ class Utils(Cog):
             f"within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
         )
         try:
-            await ctx.reply(f"{ctx.author.mention} check you DM", delete_after=5)
+            await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
             await ctx.author.send(text)
         except discord.Fobidden:
             await ctx.reply(text)

@@ -22,8 +22,6 @@ from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
 
 collection = parrot_db["server_config"]
-mute_collection = parrot_db["mute"]
-ban_collection = parrot_db["banned_members"]
 
 
 class Moderator(Cog):
@@ -267,6 +265,7 @@ class Moderator(Cog):
             member,
             duration,
             reason,
+            bot=self.bot
         )
         await self.log(
             ctx,
@@ -1409,29 +1408,6 @@ class Moderator(Cog):
         data = await show_warn(ctx.guild, **payload)
         page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
         await page.start()
-
-    @tasks.loop(seconds=2)
-    async def unban_task(self):
-        async for data in ban_collection.find(
-            {"duration": {"$lte": datetime.utcnow().timestamp()}}
-        ):
-            guild = self.bot.get_guild(data["guild_id"])
-            if not guild:
-                await ban_collection.delete_one({"_id": data["_id"]})
-            else:
-                try:
-                    await guild.unban(
-                        discord.Object(id=data["member_id"]),
-                        reason="Ban duration expires!",
-                    )
-                except discord.NotFound:
-                    pass
-                finally:
-                    await ban_collection.delete_one({"_id": data["_id"]})
-
-    @unban_task.before_loop
-    async def before_unban(self):
-        await self.bot.wait_until_read()
 
     @tasks.loop(count=1)
     async def warn_task(self, **kw):

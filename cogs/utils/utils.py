@@ -96,7 +96,7 @@ class Utils(Cog):
             seconds = age.dt.timestamp()
             text = (
                 f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}>**."
-                f"To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
+                f"To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
             )
             try:
                 await ctx.reply(f"{ctx.author.mention} check you DM", delete_after=5)
@@ -138,7 +138,7 @@ class Utils(Cog):
         seconds = age.dt.timestamp()
         text = (
             f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
-            f"within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}delremind {ctx.message.id}```"
+            f"within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
         )
         try:
             await ctx.reply(f"{ctx.author.mention} check you DM", delete_after=5)

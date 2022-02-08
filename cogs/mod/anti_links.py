@@ -88,7 +88,3 @@ class LinkProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**",
                     delete_after=10,
                 )
-
-    @tasks.loop(hours=0.5)
-    async def update_data(self):
-        pass

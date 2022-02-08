@@ -29,14 +29,12 @@ class Moderator(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.unban_task.start()
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="moderator", id=892424227007918121)
 
     def cog_unload(self):
-        self.unban_task.cancel()
         self.warn.cancel()
 
     async def log(self, ctx, cmd, performed_on, reason):

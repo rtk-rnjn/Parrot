@@ -101,7 +101,7 @@ class Profanity(Cog):
                     delete_after=10,
                 )
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(seconds=900)
     async def update_data(self):
         async for data in self.collection.find({}):
             try:

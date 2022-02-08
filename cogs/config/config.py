@@ -1,4 +1,5 @@
 from __future__ import annotations
+from cogs.meta.robopage import SimplePages
 
 from discord.ext import commands
 import discord
@@ -99,7 +100,7 @@ class BotConfig(Cog):
         else:
             webhook = await channel.create_webhook(
                 name=self.bot.user.name,
-                reason=f"On request from {ctx.author} | Reason: Setting Up Logging",
+                reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
             )
             await logs.update_one(
                 {"_id": ctx.guild.id}, {"$set": {str(event): str(webhook.url)}}
@@ -944,24 +945,24 @@ class BotConfig(Cog):
         em_lis = []
         collection = enable_disable[f"{ctx.guild.id}"]
         async for data in collection.find({}):
-            em = discord.Embed(
-                title=f"Cmd/Cog: {data['_id']}",
-                timestamp=datetime.utcnow(),
-                color=ctx.author.color,
-            ).set_footer(text=f"{ctx.author}")
-            em.description = f"""`Channel In :` {(str(data['channel_in']))}
-`Channel Out:` {(str(data['channel_out']))}
-`Role In    :` {(str(data['role_in']))}
-`Role Out   :` {(str(data['role_out']))}
+            main = f"> Command/Cog: {data['_id']}"
+            if data.get("channel_in"):
+                main += f"\n`Channel In  :` <#{'>, <#'.join([(str(c) for c in data['channel_in'])])}>"
+            if data.get("channel_out"):
+                main += f"\n`Channel Out :` <#{'>, <#'.join([(str(c) for c in data['channel_out'])])}>"
+            if data.get("role_in"):
+                main += f"\n`Role In     :` <@&{'>, <@&'.join([(str(c) for c in data['role_in'])])}>"
+            if data.get("role_out"):
+                main += f"\n`Role In     :` <@&{'>, <@&'.join([(str(c) for c in data['role_out'])])}>"
+            if data.get("server"):
+                main += f"`\nServer Wide?:` {data['server']}"
 
-Server Wide?:{data['server']}"""
-            em_lis.append(em)
-        paginator = PaginationView(em_lis)
         if not em_lis:
             return await ctx.send(
                 f"{ctx.author.mention} no commands/category overwrite found"
             )
-        await paginator.start(ctx)
+        p = SimplePages(em_lis, ctx=ctx, per_page=3)
+        await p.start()
 
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)

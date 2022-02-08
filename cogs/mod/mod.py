@@ -265,7 +265,7 @@ class Moderator(Cog):
             member,
             duration,
             reason,
-            bot=self.bot
+            bot=self.bot,
         )
         await self.log(
             ctx,

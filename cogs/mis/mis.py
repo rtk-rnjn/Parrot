@@ -131,7 +131,7 @@ def _create_qr(
     qr.add_data(text)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white", **kw)
-    _timestamp = datetime.datetime.utcnow().timestamp()
+    _timestamp = int(datetime.datetime.utcnow().timestamp())  # float float
     img.save(f"temp/{_timestamp}.png")
     return f"temp/{_timestamp}.png"
 

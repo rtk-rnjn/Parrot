@@ -47,8 +47,6 @@ class APIError(MystbinException):
         The Message supplied with the HTTP status code from the API.
     """
 
-    __slots__ = ("status_code", "message")
-
     def __init__(self, status_code: int, message: str):
         self.status_code: int = status_code
         self.message: str = message
@@ -72,8 +70,6 @@ class Paste:
     syntax: :class:`str`
         The syntax (or syntax highlighting) you requested when creating the Paste. Returns as a suffix on the URL.
     """
-
-    __slots__ = ("paste_id", "nick", "syntax")
 
     def __init__(self, json_data: Dict[str, Any], syntax: str = None):
         self.paste_id: str = json_data["pastes"][0]["id"]
@@ -121,15 +117,6 @@ class PasteData:
         The date this paste was created on the API.
     """
 
-    __slots__ = (
-        "paste_id",
-        "_paste_data",
-        "paste_content",
-        "paste_syntax",
-        "paste_nick",
-        "paste_date",
-    )
-
     def __init__(self, paste_id: str, paste_data: Dict[str, Any]):
         self.paste_id: str = paste_id
         self._paste_data: Dict[str, Any] = paste_data
@@ -169,8 +156,6 @@ class Client:
     session: Optional[Union[:class:`aiohttp.ClientSession`, :class:`requests.Session`]]
         Optional session to be passed to the creation of the client.
     """
-
-    __slots__ = ("session",)
 
     def __init__(
         self,

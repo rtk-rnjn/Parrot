@@ -22,8 +22,22 @@ from html import unescape
 
 import qrcode
 from qrcode.image.styledpil import StyledPilImage
-from qrcode.image.styles.moduledrawers import RoundedModuleDrawer, CircleModuleDrawer, GappedSquareModuleDrawer, HorizontalBarsDrawer, SquareModuleDrawer, VerticalBarsDrawer
-from qrcode.image.styles.colormasks import RadialGradiantColorMask, SquareGradiantColorMask, HorizontalGradiantColorMask, VerticalGradiantColorMask, ImageColorMask, SolidFillColorMask
+from qrcode.image.styles.moduledrawers import (
+    RoundedModuleDrawer,
+    CircleModuleDrawer,
+    GappedSquareModuleDrawer,
+    HorizontalBarsDrawer,
+    SquareModuleDrawer,
+    VerticalBarsDrawer,
+)
+from qrcode.image.styles.colormasks import (
+    RadialGradiantColorMask,
+    SquareGradiantColorMask,
+    HorizontalGradiantColorMask,
+    VerticalGradiantColorMask,
+    ImageColorMask,
+    SolidFillColorMask,
+)
 
 from core import Parrot, Context, Cog
 
@@ -117,10 +131,10 @@ class InvalidLatexError(Exception):
 def _create_qr(
     text: str,
     *,
-    version: typing.Optional[int]=1,
-    board_size: typing.Optional[int]=10,
-    border: typing.Optional[int]=4,
-    **kw
+    version: typing.Optional[int] = 1,
+    board_size: typing.Optional[int] = 10,
+    border: typing.Optional[int] = 4,
+    **kw,
 ) -> str:
     qr = qrcode.QRCode(
         version=1,
@@ -135,9 +149,13 @@ def _create_qr(
     img.save(f"temp/{_timestamp}.png")
     return f"temp/{_timestamp}.png"
 
-class QRCodeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+
+class QRCodeFlags(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
     module_drawer: typing.Optional[str] = None
     color_mask: typing.Optional[str] = None
+
 
 qr_modular = {
     "square": SquareModuleDrawer(),
@@ -159,6 +177,7 @@ qr_color_mask = {
     "vertical": VerticalGradiantColorMask(),
     "ver": VerticalGradiantColorMask(),
 }
+
 
 class Misc(Cog):
     """Those commands which can't be listed"""
@@ -919,7 +938,7 @@ class Misc(Cog):
             payload["module_drawer"] = qr_modular.get(flags.module_drawer)
         if flags.color_mask:
             payload["color_mask"] = qr_modular.get(flags.color_mask)
-        
+
         if payload:
             payload["image_factory"] = StyledPilImage
 

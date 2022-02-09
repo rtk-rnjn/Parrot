@@ -103,8 +103,8 @@ class Parrot(commands.AutoShardedBot):
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
         # self.ipc = ipc.Server(self,)
-        self.server_config = LRU(8),
-        self.mystbin = Client(),
+        self.server_config = (LRU(8),)
+        self.mystbin = (Client(),)
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -286,11 +286,13 @@ class Parrot(commands.AutoShardedBot):
             return
 
         await self.process_commands(message)
-    
-    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         if after.guild is None or after.author.bot:
             return
-        
+
         if before.content != after.content and before.author.id in OWNER_IDS:
             await self.process_commands(after)
 
@@ -367,7 +369,9 @@ class Parrot(commands.AutoShardedBot):
         ):
             return msg
 
-    async def get_prefix(self, message: discord.Message) -> typing.Union[str, typing.List[str]]:
+    async def get_prefix(
+        self, message: discord.Message
+    ) -> typing.Union[str, typing.List[str]]:
         """Dynamic prefixing"""
         try:
             prefix = self.server_config[message.guild.id]["prefix"]

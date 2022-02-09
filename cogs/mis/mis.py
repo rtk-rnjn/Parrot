@@ -20,10 +20,15 @@ import io
 import string
 from html import unescape
 
+import qrcode
+from qrcode.image.styledpil import StyledPilImage
+from qrcode.image.styles.moduledrawers import RoundedModuleDrawer, CircleModuleDrawer, GappedSquareModuleDrawer, HorizontalBarsDrawer, SquareModuleDrawer, VerticalBarsDrawer
+from qrcode.image.styles.colormasks import RadialGradiantColorMask, SquareGradiantColorMask, HorizontalGradiantColorMask, VerticalGradiantColorMask, ImageColorMask, SolidFillColorMask
+
 from core import Parrot, Context, Cog
 
 from utilities.youtube_search import YoutubeSearch
-from utilities.converters import convert_bool
+from utilities.converters import ToAsync, convert_bool
 from utilities.paginator import PaginationView
 from utilities.ttg import Truths
 
@@ -107,6 +112,53 @@ class InvalidLatexError(Exception):
         super().__init__(logs)
         self.logs = logs
 
+
+@ToAsync()
+def _create_qr(
+    text: str,
+    *,
+    version: typing.Optional[int]=1,
+    board_size: typing.Optional[int]=10,
+    border: typing.Optional[int]=4,
+    **kw
+) -> str:
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(text)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white", **kw)
+    _timestamp = datetime.datetime.utcnow().timestamp()
+    img.save(f"temp/{_timestamp}.png")
+    return f"temp/{_timestamp}.png"
+
+class QRCodeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+    module_drawer: typing.Optional[str] = None
+    color_mask: typing.Optional[str] = None
+
+qr_modular = {
+    "square": SquareModuleDrawer(),
+    "gapped": GappedSquareModuleDrawer(),
+    "circle": CircleModuleDrawer(),
+    "round": RoundedModuleDrawer(),
+    "vertical": VerticalBarsDrawer(),
+    "ver": VerticalBarsDrawer(),
+    "horizontal": HorizontalBarsDrawer(),
+    "hori": HorizontalBarsDrawer(),
+}
+
+qr_color_mask = {
+    "solid": SolidFillColorMask(),
+    "radial": RadialGradiantColorMask(),
+    "square": SquareGradiantColorMask(),
+    "hor": HorizontalGradiantColorMask(),
+    "horizontal": HorizontalGradiantColorMask(),
+    "vertical": VerticalGradiantColorMask(),
+    "ver": VerticalGradiantColorMask(),
+}
 
 class Misc(Cog):
     """Those commands which can't be listed"""
@@ -860,15 +912,21 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def qrcode(self, ctx: Context, text: str):
-        """To generate the QR"""
-        await ctx.reply(
-            embed=discord.Embed(
-                color=ctx.author.color, timestamp=datetime.datetime.utcnow()
-            )
-            .set_image(url=f"https://normal-api.ml/createqr?text={text}")
-            .set_footer(text=f"{ctx.author}")
-        )
+    async def qrcode(self, ctx: Context, text: str, *, flags: QRCodeFlags):
+        """To generate the QR from the given Text"""
+        payload = {}
+        if flags.module_drawer:
+            payload["module_drawer"] = qr_modular.get(flags.module_drawer)
+        if flags.color_mask:
+            payload["color_mask"] = qr_modular.get(flags.color_mask)
+        
+        if payload:
+            payload["image_factory"] = StyledPilImage
+
+        path = await _create_qr(text, **payload)
+        f = discord.File(path, filename="name.png")
+        e = discord.Embed().set_image(url="attachment://name.png")
+        await ctx.reply(embed=e, file=f)
 
     @commands.command(name="minecraftstatus", aliases=["mcs", "mcstatus"])
     @commands.cooldown(1, 5, commands.BucketType.member)

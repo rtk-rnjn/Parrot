@@ -32,6 +32,7 @@ from utilities.config import (
 )
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
+from utilities.paste import Client
 
 from time import time
 
@@ -102,7 +103,8 @@ class Parrot(commands.AutoShardedBot):
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
         # self.ipc = ipc.Server(self,)
-        self.server_config = LRU(8)
+        self.server_config = LRU(16)
+        self.mystbin = Client(),
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -284,6 +286,13 @@ class Parrot(commands.AutoShardedBot):
             return
 
         await self.process_commands(message)
+    
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+        if after.guild is None or after.author.bot:
+            return
+        
+        if before.content != after.content and before.author.id in OWNER_IDS:
+            await self.process_commands(after)
 
     async def resolve_member_ids(self, guild: discord.Guild, member_ids: list):
         needs_resolution = []

@@ -33,3 +33,4 @@ quart
 pandas
 numpy
 pyparsing
+qrcode

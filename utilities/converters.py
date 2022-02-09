@@ -25,7 +25,7 @@ def reason_convert(text: commands.clean_content) -> str:
     return text[:450:]
 
 
-class to_async:
+class ToAsync:
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None):
 
         self.executor = executor

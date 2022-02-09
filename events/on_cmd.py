@@ -29,21 +29,6 @@ class ErrorView(discord.ui.View):
         self.ctx = ctx
         self.error = error
 
-    async def paste(self, text: str, *, lang: str = "txt"):
-        """Return an online bin of given text"""
-        async with aiohttp.ClientSession() as aioclient:
-            post = await aioclient.post("https://hastebin.com/documents", data=text)
-            if post.status == 200:
-                response = await post.text()
-                return f"https://hastebin.com/{response[8:-2]}"
-
-            # Rollback bin
-            post = await aioclient.post(
-                "https://bin.readthedocs.fr/new", data={"code": text, "lang": lang}
-            )
-            if post.status == 200:
-                return str(post.url)
-
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
@@ -56,16 +41,7 @@ class ErrorView(discord.ui.View):
     async def show_full_traceback(
         self, button: discord.ui.button, interaction: discord.Interaction
     ):
-        tb = traceback.format_exception(
-            type(self.error), self.error, self.error.__traceback__
-        )
-        tbe = "".join(tb) + ""
-        er = f"```py\nIgnoring exception in command {self.ctx.command.name}: {tbe}\n```"
-        text = await self.paste(er)
-        if len(er) < 1950:
-            await interaction.response.send_message(er, ephemeral=True)
-        else:
-            await interaction.response.send_message(text, ephemeral=True)
+        await interaction.response.send_message(str(self.error), ephemeral=True)
 
 
 class Cmd(Cog, command_attrs=dict(hidden=True)):
@@ -74,21 +50,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.collection = parrot_db["logging"]
-
-    async def paste(self, text: str):
-        """Return an online bin of given text"""
-        async with aiohttp.ClientSession() as aioclient:
-            post = await aioclient.post("https://hastebin.com/documents", data=text)
-            if post.status == 200:
-                response = await post.text()
-                return f"https://hastebin.com/{response[8:-2]}"
-
-            # Rollback bin
-            post = await aioclient.post(
-                "https://bin.readthedocs.fr/new", data={"code": text, "lang": "txt"}
-            )
-            if post.status == 200:
-                return str(post.url)
 
     @Cog.listener()
     async def on_command(self, ctx: Context):

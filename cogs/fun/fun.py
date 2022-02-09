@@ -3306,7 +3306,7 @@ class Fun(Cog):
     @commands.command(
         name="cathi",
     )
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(self, ctx: Context, text: str = None):
         """Make a cat say something"""
@@ -3332,7 +3332,7 @@ class Fun(Cog):
                 await asyncio.sleep(1)
 
     @commands.command(name="flop")
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_flop(self, ctx: Context):
         """Flop"""
@@ -3349,7 +3349,7 @@ class Fun(Cog):
             await asyncio.sleep(1.5)
 
     @commands.command(name="poof", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_poof(self, ctx: Context):
         """Poof"""
@@ -3360,7 +3360,7 @@ class Fun(Cog):
             await asyncio.sleep(1.5)
 
     @commands.command(name="virus", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_virus(
         self, ctx: Context, user: discord.Member = None, virus: str = "trojan"
@@ -3387,7 +3387,7 @@ class Fun(Cog):
             await asyncio.sleep(1)
 
     @commands.command(name="boom", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_boom(self, ctx: Context):
         """Booms a message!"""
@@ -3407,7 +3407,7 @@ class Fun(Cog):
             await m.edit(content=i)
 
     @commands.command(name="table", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
         m = await ctx.send("`(\°-°)\  ┬─┬`")
@@ -3431,30 +3431,20 @@ class Fun(Cog):
             await m.edit(content=k)
 
     @commands.command(name="funwarn", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_warning(self, ctx: Context):
         msg = await ctx.send("...")
         ls = (
-            "```diff\n- LOAD !! WARNING !! SYSTEM OVER -\n```",
             "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
-            "```diff\n- AD !! WARNING !! SYSTEM OVERLO -\n```",
             "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
-            "```diff\n-  !! WARNING !! SYSTEM OVERLOAD -\n```",
             "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
-            "```diff\n- ! WARNING !! SYSTEM OVERLOAD ! -\n```",
             "```diff\n-  WARNING !! SYSTEM OVERLOAD !! -\n```",
-            "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
             "```diff\n- ARNING !! SYSTEM OVERLOAD !! W -\n```",
-            "```diff\n- RNING !! SYSTEM OVERLOAD !! WA -\n```",
             "```diff\n- NING !! SYSTEM OVERLOAD !! WAR -\n```",
-            "```diff\n- ING !! SYSTEM OVERLOAD !! WARN -\n```",
             "```diff\n- NG !! SYSTEM OVERLOAD !! WARNI -\n```",
-            "```diff\n- G !! SYSTEM OVERLOAD !! WARNIN -\n```",
             "```diff\n-  !! SYSTEM OVERLOAD !! WARNING -\n```",
-            "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
             "```diff\n- ! SYSTEM OVERLOAD !! WARNING ! -\n```",
-            "```diff\n-  SYSTEM OVERLOAD !! WARNING !! -\n```",
             "```diff\n- IMMINENT SHUT-DOWN IN 0.5 SEC! -\n```",
             "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
             "```diff\n- IMMINENT SHUT-DOWN IN 0.2 SEC! -\n```",

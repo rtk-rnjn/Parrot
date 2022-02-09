@@ -386,12 +386,11 @@ class Parrot(commands.AutoShardedBot):
                 prefix = "$"  # default prefix
                 await collection.insert_one(post)
             self.server_config[message.guild.id] = post
-        finally:
-            comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
-            match = comp.match(message.content)
-            if match is not None:
-                prefix = match.group(1)
-            return commands.when_mentioned_or(prefix)(self, message)
+        comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
+        match = comp.match(message.content)
+        if match is not None:
+            prefix = match.group(1)
+        return commands.when_mentioned_or(prefix)(self, message)
 
     async def get_guild_prefixes(self, guild: discord.Guild) -> typing.Optional[str]:
         try:

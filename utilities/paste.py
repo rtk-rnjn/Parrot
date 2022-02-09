@@ -4,7 +4,9 @@ from textwrap import dedent
 from typing import Any, Dict, Optional
 import datetime
 
-MB_URL_RE = re.compile(r"(?:(?:https?://)?mystb\.in/)?(?P<ID>[a-zA-Z]+)(?:\.(?P<syntax>[a-zA-Z0-9]+))?")
+MB_URL_RE = re.compile(
+    r"(?:(?:https?://)?mystb\.in/)?(?P<ID>[a-zA-Z]+)(?:\.(?P<syntax>[a-zA-Z0-9]+))?"
+)
 
 API_BASE_URL = "https://mystb.in/api/pastes"
 PASTE_BASE = "https://mystb.in/{}{}"
@@ -205,7 +207,9 @@ class Client:
         multi_part_write = aiohttp.MultipartWriter()
         paste_content = multi_part_write.append(content)
         paste_content.set_content_disposition("form-data", name="data")
-        paste_content = multi_part_write.append_json({"meta": [{"index": 0, "syntax": syntax}]})
+        paste_content = multi_part_write.append_json(
+            {"meta": [{"index": 0, "syntax": syntax}]}
+        )
         paste_content.set_content_disposition("form-data", name="meta")
 
         async with self.session.post(
@@ -244,7 +248,9 @@ class Client:
 
         assert self.session is not None
 
-        async with self.session.get(f"{API_BASE_URL}/{paste_id}", timeout=aiohttp.ClientTimeout(CLIENT_TIMEOUT)) as response:
+        async with self.session.get(
+            f"{API_BASE_URL}/{paste_id}", timeout=aiohttp.ClientTimeout(CLIENT_TIMEOUT)
+        ) as response:
             if 200 <= response.status < 300:
                 raise BadPasteID("This is an invalid Mystb.in paste ID.")
             paste_data = await response.json()

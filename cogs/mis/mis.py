@@ -139,8 +139,8 @@ def _create_qr(
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
+        box_size=board_size,
+        border=border,
     )
     qr.add_data(text)
     qr.make(fit=True)
@@ -153,6 +153,8 @@ def _create_qr(
 class QRCodeFlags(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
+    board_size: typing.Optional[int] = 10
+    border: typing.Optional[int] = 4
     module_drawer: typing.Optional[str] = None
     color_mask: typing.Optional[str] = None
 
@@ -941,7 +943,8 @@ class Misc(Cog):
 
         if payload:
             payload["image_factory"] = StyledPilImage
-
+        payload["board_size"] = flags.board_size
+        payload["border"] = flags.border
         path = await _create_qr(text, **payload)
         f = discord.File(path, filename="name.png")
         e = discord.Embed().set_image(url="attachment://name.png")

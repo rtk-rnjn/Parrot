@@ -1845,14 +1845,17 @@ class GameC4:
                 )
                 return
             else:
-                await message.delete()
+                await message.delete(delay=0)
                 if str(reaction.emoji) == CROSS_EMOJI:
                     await self.game_over(
                         "quit", self.player_active, self.player_inactive
                     )
                     return
 
-                await self.message.remove_reaction(reaction, user)
+                try:
+                    await self.message.remove_reaction(reaction, user)
+                except discord.Forbidden:
+                    pass
 
                 column_num = self.unicode_numbers.index(str(reaction.emoji))
                 column = [row[column_num] for row in self.grid]

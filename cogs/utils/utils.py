@@ -25,7 +25,6 @@ class Utils(Cog):
         self.bot = bot
         self.react_collection = parrot_db["reactions"]
         self.reminder_task.start()
-        self.bulk_add_afk.start()
         self.collection = parrot_db["timers"]
         self.lock = asyncio.Lock()
 

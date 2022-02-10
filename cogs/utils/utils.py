@@ -18,6 +18,7 @@ from cogs.utils.method import giveaway
 
 afk = parrot_db["afk"]
 
+
 class Utils(Cog):
     """Utilities for server, UwU"""
 
@@ -304,9 +305,9 @@ class Utils(Cog):
         await mt._set_timer_todo(self.bot, ctx, name, deadline.dt.timestamp())
 
     @commands.group(invoke_without_command=True)
-    async def afk(self, ctx: Context, *, text: commands.clean_content=None):
+    async def afk(self, ctx: Context, *, text: commands.clean_content = None):
         """To set AFK
-        
+
         AFK will be removed once you message.
         If provided permissions, bot will add `[AFK]` as the prefix in nickname.
         The deafult AFK is on Server Basis
@@ -321,28 +322,27 @@ class Utils(Cog):
                 "pings": [],
                 "at": ctx.message.created_at.timestamp(),
                 "global": False,
-                "text": text or "AFK"
+                "text": text or "AFK",
             }
             await afk.insert_one({**post})
             await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
-    
-    @afk.command(name='global')
-    async def _global(self, ctx: Context, *, text: commands.clean_content=None):
+
+    @afk.command(name="global")
+    async def _global(self, ctx: Context, *, text: commands.clean_content = None):
         """To set the AFK globally (works only if the bot can see you)"""
         post = {
-                "_id": ctx.message.id,
-                "messageURL": ctx.message.jump_url,
-                "messageAuthor": ctx.author.id,
-                "guild": ctx.guild.id,
-                "channel": ctx.channel.id,
-                "pings": [],
-                "at": ctx.message.created_at.timestamp(),
-                "global": True,
-                "text": text or "AFK"
-            }
+            "_id": ctx.message.id,
+            "messageURL": ctx.message.jump_url,
+            "messageAuthor": ctx.author.id,
+            "guild": ctx.guild.id,
+            "channel": ctx.channel.id,
+            "pings": [],
+            "at": ctx.message.created_at.timestamp(),
+            "global": True,
+            "text": text or "AFK",
+        }
         await afk.insert_one({**post})
         await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
-
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):

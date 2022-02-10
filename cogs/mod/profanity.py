@@ -36,8 +36,7 @@ class Profanity(Cog):
         pattern = rf"\b{word}\b"
         return re.search(pattern, sentence) is not None
 
-    @Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def _one_message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
         perms = message.author.guild_permissions
@@ -100,6 +99,15 @@ class Profanity(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
+
+    @Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await self._one_message_passive(message)
+    
+    @Cog.listner()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.content != after.content:
+            await self._one_message_passive(after)
 
     @tasks.loop(seconds=900)
     async def update_data(self):

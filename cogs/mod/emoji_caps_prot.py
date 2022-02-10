@@ -78,8 +78,7 @@ class EmojiCapsProt(Cog):
             if limit <= (await self.get_emoji_count(message.content)):
                 return True
 
-    @Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def _on_message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
         perms = message.author.guild_permissions
@@ -158,3 +157,12 @@ class EmojiCapsProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] [Warning]**",
                     delete_after=10,
                 )
+
+    @Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await self._on_message_passive(message)
+    
+    @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.content != after.content:
+            await self._on_message_passive(after)

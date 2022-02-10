@@ -32,12 +32,12 @@ class auditFlag(
 ):
     guild: typing.Optional[discord.Guild]
     limit: typing.Optional[int] = 100
-    action: typing.Optional[str]
-    before: typing.Optional[ShortTime]
-    after: typing.Optional[ShortTime]
+    action: typing.Optional[str] = None
+    before: typing.Optional[ShortTime] = None
+    after: typing.Optional[ShortTime] = None
     oldest_first: typing.Optional[convert_bool] = False
     user: typing.Union[discord.User, discord.Member, int]
-    action: typing.Optional[str]
+    action: typing.Optional[str] = None
 
 
 act = {

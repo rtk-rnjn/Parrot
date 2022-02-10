@@ -18,16 +18,13 @@ class LinkProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.collection = parrot_db["server_config"]
-        # self.data = {}
-        # self.update_data.start()
 
     async def has_links(self, message_content: str) -> bool:
         url1 = LINKS_NO_PROTOCOLS.search(message_content)
         url2 = LINKS_RE.search(message_content)
         return bool(url1 or url2)
 
-    @Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def _message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
         perms = message.author.guild_permissions
@@ -88,3 +85,12 @@ class LinkProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**",
                     delete_after=10,
                 )
+
+    @Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await self._message_passive(message)
+    
+    @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.content != after.content:
+            await self._message_passive(after)

@@ -3,7 +3,7 @@ from string import whitespace
 
 from core import Parrot, Cog
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import aiohttp
 import asyncio
@@ -25,6 +25,7 @@ from utilities.buttons import Delete
 from time import time
 
 collection = parrot_db["global_chat"]
+afk = parrot_db["afk"]
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -565,8 +566,34 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @Cog.listener()
-    async def on_message_edit(self, before, after):
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
         pass
+    
+    async def _on_message_passive(self, message: discord.Message):
+        if not message.guild:
+            return
+        if message.author.bot:
+            return
+        
+        if data := await afk.find_one({"messageAuthor": message.author.id,}):
+            await message.channel.send(
+                f"{message.author.mention} welcome back! After: <t:{int(data['at'])}>"
+                f"> You were being mentioned {len(data['pings'])}"
+            )
+            return await afk.delete_one({"_id": data['_id']})
+
+        if message.mentions:
+            for user in message.mentions:
+                if data := await afk.find_one({ "$or": [{"messageAuthor": user.id, "guild": user.guild.id}, {"messageAuthor": user.id, "global": True}]}):
+                    post = {
+                        "messageAuthor": message.author.id,
+                        "channel": message.channel.id,
+                        "messageURL": message.jump_url
+                    }
+                    afk.update_one({'_id': data['_id']}, {'$addToSet': {"pings": post}})
+                    await message.channel.send(
+                        f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
+                    )
 
     @Cog.listener()
     async def on_raw_message_edit(self, payload):
@@ -609,6 +636,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     file=discord.File(fp, filename="content.txt"),
                 )
 
+    @tasks.loop()
+    async def update_afk_member(self):
+        ...
 
 def setup(bot):
     bot.add_cog(OnMsg(bot))

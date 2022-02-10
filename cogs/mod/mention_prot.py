@@ -20,8 +20,7 @@ class MentionProt(Cog):
         self.data = {}
         self.clear_data.start()
 
-    @Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def _on_message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
 
@@ -86,6 +85,15 @@ class MentionProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
+
+    @Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await self._on_message_passive(message)
+    
+    @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.content != after.content:
+            await self._on_message_passive(after)
 
     @tasks.loop(seconds=900)
     async def clear_data(self):

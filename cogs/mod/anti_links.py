@@ -89,7 +89,7 @@ class LinkProt(Cog):
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         await self._message_passive(message)
-    
+
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.content != after.content:

@@ -408,7 +408,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     async def python(self, ctx: Context, *, text: str):
         try:
-            async with async_open(f"extra/tutorials/python/{text.replace(' ', '-')}.md") as f:
+            async with async_open(
+                f"extra/tutorials/python/{text.replace(' ', '-')}.md"
+            ) as f:
                 data = await f.read()
         except Exception as e:
             return await ctx.send(e)

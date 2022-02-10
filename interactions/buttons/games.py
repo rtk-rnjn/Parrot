@@ -126,7 +126,7 @@ POINTS = {
     5: 2,
     6: 3,
     7: 5,
-} | {x: 11 for x in range(8, SUPER_BIG ** 2)}
+} | {x: 11 for x in range(8, SUPER_BIG**2)}
 
 
 class Position(NamedTuple):
@@ -3461,7 +3461,7 @@ class Games(Cog):
                 )
             ls = []
             async with async_open(
-                fr"extra/sokoban/level{level if level else 1}.txt", "r"
+                rf"extra/sokoban/level{level if level else 1}.txt", "r"
             ) as fp:
                 lvl_str = await fp.read()
             for i in lvl_str.split("\n"):

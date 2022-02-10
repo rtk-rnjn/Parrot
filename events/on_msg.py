@@ -570,29 +570,40 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.conten != after.content:
             await self._on_message_passive(after)
-    
+
     async def _on_message_passive(self, message: discord.Message):
         if not message.guild:
             return
         if message.author.bot:
             return
-        
-        if data := await afk.find_one({"messageAuthor": message.author.id,}):
+
+        if data := await afk.find_one(
+            {
+                "messageAuthor": message.author.id,
+            }
+        ):
             await message.channel.send(
                 f"{message.author.mention} welcome back! You were being AFK <t:{int(data['at'])}:R>\n"
                 f"> You were being mentioned **{len(data['pings'])}** times"
             )
-            await afk.delete_one({"_id": data['_id']})
+            await afk.delete_one({"_id": data["_id"]})
 
         if message.mentions:
             for user in message.mentions:
-                if data := await afk.find_one({ "$or": [{"messageAuthor": user.id, "guild": user.guild.id}, {"messageAuthor": user.id, "global": True}]}):
+                if data := await afk.find_one(
+                    {
+                        "$or": [
+                            {"messageAuthor": user.id, "guild": user.guild.id},
+                            {"messageAuthor": user.id, "global": True},
+                        ]
+                    }
+                ):
                     post = {
                         "messageAuthor": message.author.id,
                         "channel": message.channel.id,
-                        "messageURL": message.jump_url
+                        "messageURL": message.jump_url,
                     }
-                    afk.update_one({'_id': data['_id']}, {'$addToSet': {"pings": post}})
+                    afk.update_one({"_id": data["_id"]}, {"$addToSet": {"pings": post}})
                     await message.channel.send(
                         f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                     )
@@ -641,6 +652,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @tasks.loop()
     async def update_afk_member(self):
         ...
+
 
 def setup(bot):
     bot.add_cog(OnMsg(bot))

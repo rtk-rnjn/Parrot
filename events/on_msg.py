@@ -365,6 +365,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
         await msg_increment(message.guild.id, message.author.id)  # for gw only
         await self.quick_answer(message)
+        await self._on_message_passive(message)
         channel = await collection.find_one(
             {"_id": message.guild.id, "channel_id": message.channel.id}
         )
@@ -567,7 +568,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        pass
+        if before.conten != after.content:
+            await self._on_message_passive(after)
     
     async def _on_message_passive(self, message: discord.Message):
         if not message.guild:
@@ -580,7 +582,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 f"{message.author.mention} welcome back! After: <t:{int(data['at'])}>"
                 f"> You were being mentioned {len(data['pings'])}"
             )
-            return await afk.delete_one({"_id": data['_id']})
+            await afk.delete_one({"_id": data['_id']})
 
         if message.mentions:
             for user in message.mentions:

@@ -327,7 +327,6 @@ class Utils(Cog):
             await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
             await asyncio.sleep(10)
             await afk.insert_one({**post})
-    
 
     @afk.command(name="global")
     async def _global(self, ctx: Context, *, text: commands.clean_content = None):

@@ -576,12 +576,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
         if message.author.bot:
             return
-        
+
         if data := await afk.find_one(
-            { "$or": [
-                {"messageAuthor": message.author.id, "guild": message.guild.id},
-                {"messageAuthor": message.author.id, "global": True}
-            ]}
+            {
+                "$or": [
+                    {"messageAuthor": message.author.id, "guild": message.guild.id},
+                    {"messageAuthor": message.author.id, "global": True},
+                ]
+            }
         ):
             await message.channel.send(
                 f"{message.author.mention} welcome back! You were being AFK <t:{int(data['at'])}:R>\n"
@@ -592,10 +594,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if message.mentions:
             for user in message.mentions:
                 if data := await afk.find_one(
-                    { "$or": [
-                        {"messageAuthor": user.id, "guild": user.guild.id},
-                        {"messageAuthor": user.id, "global": True}
-                    ]}
+                    {
+                        "$or": [
+                            {"messageAuthor": user.id, "guild": user.guild.id},
+                            {"messageAuthor": user.id, "global": True},
+                        ]
+                    }
                 ):
                     post = {
                         "messageAuthor": message.author.id,
@@ -647,6 +651,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt"),
                 )
+
 
 def setup(bot):
     bot.add_cog(OnMsg(bot))

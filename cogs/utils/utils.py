@@ -326,7 +326,7 @@ class Utils(Cog):
                 "global": False,
                 "text": text or "AFK",
             }
-            await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
+            await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
             await afk.insert_one({**post})
 
     @afk.command(name="global")
@@ -344,9 +344,9 @@ class Utils(Cog):
             "text": text or "AFK",
         }
         await afk.insert_one({**post})
-        await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
+        await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
 
-    @afk.command(name="till")
+    @afk.command(name="for")
     async def afk_till(
         self, ctx: Context, till: ShortTime, *, text: commands.clean_content = None
     ):
@@ -364,7 +364,7 @@ class Utils(Cog):
         }
         await afk.insert_one({**post})
         await ctx.send(
-            f"{ctx.author.mention} set your AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
+            f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
         )
         await self.create_timer(
             expires_at=till.dt.timestamp(),

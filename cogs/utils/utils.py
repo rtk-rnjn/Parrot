@@ -344,6 +344,7 @@ class Utils(Cog):
             "text": text or "AFK",
         }
         await afk.insert_one({**post})
+        await asyncio.sleep(10)
         await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
 
     @tasks.loop(seconds=3)

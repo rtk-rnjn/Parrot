@@ -313,6 +313,8 @@ class Utils(Cog):
         The deafult AFK is on Server Basis
         """
         if not ctx.invoked_subcommand:
+            if text and "global" in text.split(" ")[0].lower():
+                return
             post = {
                 "_id": ctx.message.id,
                 "messageURL": ctx.message.jump_url,
@@ -325,7 +327,6 @@ class Utils(Cog):
                 "text": text or "AFK",
             }
             await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
-            await asyncio.sleep(10)
             await afk.insert_one({**post})
 
     @afk.command(name="global")
@@ -343,7 +344,6 @@ class Utils(Cog):
             "text": text or "AFK",
         }
         await afk.insert_one({**post})
-        await asyncio.sleep(10)
         await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
 
     @tasks.loop(seconds=3)

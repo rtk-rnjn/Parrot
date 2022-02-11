@@ -6,7 +6,8 @@ from utilities.database import parrot_db
 
 import discord
 
-afk = parrot_db['afk']
+afk = parrot_db["afk"]
+
 
 class EventCustom(Cog):
     def __init__(self, bot: Parrot):
@@ -36,7 +37,7 @@ class EventCustom(Cog):
                     )
                 except discord.Forbidden:
                     pass
-        if kw.get('extra'):
+        if kw.get("extra"):
             data = kw.get("extra")
             await self.extra_action_parser(data["name"], **data["main"])
 
@@ -52,10 +53,11 @@ class EventCustom(Cog):
                 await guild.unban(discord.Object(target), reason=kw.get("reason"))
             except (discord.NotFound, discord.HTTPError, discord.Forbidden):
                 pass
-    
+
     async def extra_action_parser(self, name, **kw):
         if name.upper() == "REMOVE_AFK":
-            await afk.delete_one({'_id': kw.get("_id")})
+            await afk.delete_one({"_id": kw.get("_id")})
+
 
 def setup(bot: Parrot):
     bot.add_cog(EventCustom(bot))

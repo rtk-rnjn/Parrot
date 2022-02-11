@@ -345,9 +345,11 @@ class Utils(Cog):
         }
         await afk.insert_one({**post})
         await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
-    
-    @afk.command(name='till')
-    async def afk_till(self, ctx: Context, till: ShortTime, *, text: commands.clean_content=None):
+
+    @afk.command(name="till")
+    async def afk_till(
+        self, ctx: Context, till: ShortTime, *, text: commands.clean_content = None
+    ):
         """To set the AFK time"""
         post = {
             "_id": ctx.message.id,
@@ -365,7 +367,9 @@ class Utils(Cog):
             f"{ctx.author.mention} set your AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
         )
         await self.create_timer(
-            expires_at=till.dt.timestamp(), created_at=ctx.message.created_at.timestamp(), extra={"name": "REMOVE_AFK", "data": {**post}}
+            expires_at=till.dt.timestamp(),
+            created_at=ctx.message.created_at.timestamp(),
+            extra={"name": "REMOVE_AFK", "data": {**post}},
         )
 
     @tasks.loop(seconds=3)

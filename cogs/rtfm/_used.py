@@ -94,7 +94,7 @@ class RerunBtn(discord.ui.Button):
         # we need to strip the prefix and command name ('do run '), the prefix
         # having multiple and even custom possible values
 
-        prefix = self.bot.get_guild_prefixes(interaction.guild)
+        prefix = await self.bot.get_guild_prefixes(interaction.guild)
         if payload.startswith(prefix):
             payload = payload[len(prefix) + 4 :]
 

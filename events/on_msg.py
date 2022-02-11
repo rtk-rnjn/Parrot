@@ -568,7 +568,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        if before.conten != after.content:
+        if before.content != after.content:
             await self._on_message_passive(after)
 
     async def _on_message_passive(self, message: discord.Message):

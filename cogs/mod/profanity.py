@@ -103,7 +103,7 @@ class Profanity(Cog):
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         await self._one_message_passive(message)
-    
+
     @Cog.listner()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.content != after.content:

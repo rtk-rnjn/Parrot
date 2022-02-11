@@ -570,7 +570,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.conten != after.content:
             await self._on_message_passive(after)
-    
+
     async def _on_message_passive(self, message: discord.Message):
         if not message.guild:
             return
@@ -579,7 +579,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         
         if data := await afk.find_one(
             { "$or": [
-                {"messageAuthor": message.author.id, "guild": user.guild.id},
+                {"messageAuthor": message.author.id, "guild": message.guild.id},
                 {"messageAuthor": message.author.id, "global": True}
             ]}
         ):
@@ -587,7 +587,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 f"{message.author.mention} welcome back! You were being AFK <t:{int(data['at'])}:R>\n"
                 f"> You were being mentioned **{len(data['pings'])}** times"
             )
-            await afk.delete_one({"_id": data['_id']})
+            await afk.delete_one({"_id": data["_id"]})
 
         if message.mentions:
             for user in message.mentions:
@@ -596,13 +596,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         {"messageAuthor": user.id, "guild": user.guild.id},
                         {"messageAuthor": user.id, "global": True}
                     ]}
-            ):
+                ):
                     post = {
                         "messageAuthor": message.author.id,
                         "channel": message.channel.id,
-                        "messageURL": message.jump_url
+                        "messageURL": message.jump_url,
                     }
-                    afk.update_one({'_id': data['_id']}, {'$addToSet': {"pings": post}})
+                    afk.update_one({"_id": data["_id"]}, {"$addToSet": {"pings": post}})
                     await message.channel.send(
                         f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                     )

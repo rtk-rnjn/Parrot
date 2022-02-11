@@ -351,6 +351,8 @@ class Utils(Cog):
         self, ctx: Context, till: ShortTime, *, text: commands.clean_content = None
     ):
         """To set the AFK time"""
+        if till.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
+            return await ctx.send(f"{ctx.author.mention} time must be above 120s")
         post = {
             "_id": ctx.message.id,
             "messageURL": ctx.message.jump_url,

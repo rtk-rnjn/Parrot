@@ -347,7 +347,7 @@ class Utils(Cog):
         await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
     
     @afk.command(name='till')
-    async def afk_till(self, ctx: Context, till: typing.Optional[ShortTime], *, text: commands.clean_content=None):
+    async def afk_till(self, ctx: Context, till: ShortTime, *, text: commands.clean_content=None):
         """To set the AFK time"""
         post = {
             "_id": ctx.message.id,

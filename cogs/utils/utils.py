@@ -369,7 +369,7 @@ class Utils(Cog):
         await self.create_timer(
             expires_at=till.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
-            extra={"name": "REMOVE_AFK", "data": {**post}},
+            extra={"name": "REMOVE_AFK", "main": {**post}},
             message=ctx.message,
         )
 

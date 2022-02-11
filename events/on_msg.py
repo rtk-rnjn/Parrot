@@ -587,8 +587,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             }
         ):
             await message.channel.send(
-                f"{message.author.mention} welcome back! You were being AFK <t:{int(data['at'])}:R>\n"
-                f"> You were being mentioned **{len(data['pings'])}** times"
+                f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
+                f"> You were mentioned **{len(data['pings'])}** times"
             )
             await afk.delete_one({"_id": data["_id"]})
 

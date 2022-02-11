@@ -16,6 +16,9 @@ class EventCustom(Cog):
     async def on_timer_complete(self, **kw):
         if kw.get("mod_action"):
             return await self.mod_action_parser(**kw.get("mod_action"))
+        if kw.get("extra"):
+            data = kw.get("extra")
+            await self.extra_action_parser(data["name"], **data["main"])
         embed = discord.Embed.from_dict(kw.get("embed") or {})
         if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
             user = self.bot.get_user(kw["messageAuthor"])
@@ -37,9 +40,6 @@ class EventCustom(Cog):
                     )
                 except discord.Forbidden:
                     pass
-        if kw.get("extra"):
-            data = kw.get("extra")
-            await self.extra_action_parser(data["name"], **data["main"])
 
     async def mod_action_parser(self, **kw):
         action: str = kw.get("action")

@@ -96,11 +96,11 @@ class RerunBtn(discord.ui.Button):
 
         prefix = await self.bot.get_guild_prefixes(interaction.guild)
         if payload.startswith(prefix):
-            match = re.match(fr"{prefix}( )?run ", payload)
+            match = re.match(rf"{prefix}( )?run ", payload)
             if not match:
                 return
             span = match.span()
-            payload = payload[span[1]:]  # this should work
+            payload = payload[span[1] :]  # this should work
 
         language, text, errored = prepare_payload(payload)
 

@@ -313,7 +313,7 @@ class Utils(Cog):
         The deafult AFK is on Server Basis
         """
         if not ctx.invoked_subcommand:
-            if text and "global" in text.split(" ")[0].lower():
+            if text and text.split(" ")[0].lower() in ("global", "till", "ignore"):
                 return
             post = {
                 "_id": ctx.message.id,
@@ -345,6 +345,28 @@ class Utils(Cog):
         }
         await afk.insert_one({**post})
         await ctx.send(f"{ctx.author.mention} set your AFK: {text or 'AFK'}")
+    
+    @afk.command(name='till')
+    async def afk_till(self, ctx: Context, till: typing.Optional[ShortTime], *, text: commands.clean_content=None):
+        """To set the AFK time"""
+        post = {
+            "_id": ctx.message.id,
+            "messageURL": ctx.message.jump_url,
+            "messageAuthor": ctx.author.id,
+            "guild": ctx.guild.id,
+            "channel": ctx.channel.id,
+            "pings": [],
+            "at": ctx.message.created_at.timestamp(),
+            "global": True,
+            "text": text or "AFK",
+        }
+        await afk.insert_one({**post})
+        await ctx.send(
+            f"{ctx.author.mention} set your AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
+        )
+        await self.create_timer(
+            expires_at=till.dt.timestamp(), created_at=ctx.message.created_at.timestamp(), extra={"name": "REMOVE_AFK", "data": {**post}}
+        )
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):

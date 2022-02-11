@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from core import Cog, Parrot
 
-# from utilities.database import parrot_db
+from utilities.database import parrot_db
 
 import discord
 
+afk = parrot_db['afk']
 
 class EventCustom(Cog):
     def __init__(self, bot: Parrot):
@@ -15,7 +16,7 @@ class EventCustom(Cog):
         if kw.get("mod_action"):
             return await self.mod_action_parser(**kw.get("mod_action"))
         embed = discord.Embed.from_dict(kw.get("embed") or {})
-        if kw.get("dm_notify") or kw.get("is_todo"):
+        if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
             user = self.bot.get_user(kw["messageAuthor"])
             if user:
                 try:
@@ -25,7 +26,7 @@ class EventCustom(Cog):
                     )
                 except discord.Forbidden:
                     pass  # I don't know whytf user blocks the DM
-        else:
+        elif kw.get("content"):
             channel = self.bot.get_channel(kw["messageChannel"])
             if channel:
                 try:
@@ -35,6 +36,9 @@ class EventCustom(Cog):
                     )
                 except discord.Forbidden:
                     pass
+        if kw.get('extra'):
+            data = kw.get("extra")
+            await self.extra_action_parser(data["name"], **data["main"])
 
     async def mod_action_parser(self, **kw):
         action: str = kw.get("action")
@@ -48,7 +52,10 @@ class EventCustom(Cog):
                 await guild.unban(discord.Object(target), reason=kw.get("reason"))
             except (discord.NotFound, discord.HTTPError, discord.Forbidden):
                 pass
-
+    
+    async def extra_action_parser(self, name, **kw):
+        if name.upper() == "REMOVE_AFK":
+            await afk.delete_one({'_id': kw.get("_id")})
 
 def setup(bot: Parrot):
     bot.add_cog(EventCustom(bot))

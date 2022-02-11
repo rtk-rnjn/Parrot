@@ -370,7 +370,7 @@ class Utils(Cog):
             expires_at=till.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
             extra={"name": "REMOVE_AFK", "data": {**post}},
-            message=ctx.message
+            message=ctx.message,
         )
 
     @tasks.loop(seconds=3)

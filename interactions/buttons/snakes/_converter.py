@@ -181,7 +181,6 @@ class LinePaginator(Paginator):
             embed.url = url
         message = await ctx.send(embed=embed)
 
-
         for emoji in PAGINATION_EMOJI:
             # Add all the applicable emoji to the message
             await message.add_reaction(emoji)

@@ -264,7 +264,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     async def spy_server(
-        self, ctx: Context, guild: typing.Union[discord.Guild, int] = None, channel_member: str = None
+        self,
+        ctx: Context,
+        guild: typing.Union[discord.Guild, int] = None,
+        channel_member: str = None,
     ):
         """This is not really a spy command"""
         guild = guild or ctx.guild

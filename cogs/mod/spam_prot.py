@@ -20,7 +20,6 @@ class SpamProt(Cog):
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             5, 5, commands.BucketType.member
         )
-        self.data_update.start()
         self.data = {}
 
     async def delete(self, message: discord.Message) -> None:

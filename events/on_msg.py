@@ -586,6 +586,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 ]
             }
         ):
+            if message.channel.id in data['ignoredChannel']:
+                return  # There exists `$nin` operator in MongoDB
             await message.channel.send(
                 f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
                 f"> You were mentioned **{len(data['pings'])}** times"

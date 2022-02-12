@@ -59,6 +59,8 @@ class EventCustom(Cog):
     async def extra_action_parser(self, name, **kw):
         if name.upper() == "REMOVE_AFK":
             await afk.delete_one(kw)
+        if name.upper() == "SET_AFK":
+            await afk.insert_one(kw)
 
 
 def setup(bot: Parrot):

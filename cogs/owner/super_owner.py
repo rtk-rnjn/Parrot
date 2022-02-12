@@ -264,11 +264,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     async def spy_server(
-        self, ctx: Context, guild: discord.Guild = None, channel_member: str = None
+        self, ctx: Context, guild: typing.Union[discord.Guild, int] = None, channel_member: str = None
     ):
         """This is not really a spy command"""
         guild = guild or ctx.guild
-        URL = f"https://discord.com/api/guilds/{guild.id}/widget.json"
+        channel_member = channel_member or "members"
+        URL = f"https://discord.com/api/guilds/{guild.id if type(guild) is discord.Guild else guild}/widget.json"
         data = await self.bot.session.get(URL)
         json = await data.json()
         if "message" in json:

@@ -325,6 +325,7 @@ class Utils(Cog):
                 "at": ctx.message.created_at.timestamp(),
                 "global": False,
                 "text": text or "AFK",
+                "ignoredChannel": [],
             }
             await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
             await afk.insert_one({**post})
@@ -342,6 +343,7 @@ class Utils(Cog):
             "at": ctx.message.created_at.timestamp(),
             "global": True,
             "text": text or "AFK",
+            "ignoredChannel": [],
         }
         await afk.insert_one({**post})
         await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
@@ -363,6 +365,7 @@ class Utils(Cog):
             "at": ctx.message.created_at.timestamp(),
             "global": True,
             "text": text or "AFK",
+            "ignoredChannel": [],
         }
         await afk.insert_one({**post})
         await ctx.send(
@@ -372,6 +375,35 @@ class Utils(Cog):
             expires_at=till.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
             extra={"name": "REMOVE_AFK", "main": {**post}},
+            message=ctx.message,
+        )
+
+    @afk.command(name="after")
+    async def afk_after(
+        self, ctx: Context, after: ShortTime, *, text: commands.clean_content = None
+    ):
+        """To set the AFK future time"""
+        if after.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
+            return await ctx.send(f"{ctx.author.mention} time must be above 120s")
+        post = {
+            "_id": ctx.message.id,
+            "messageURL": ctx.message.jump_url,
+            "messageAuthor": ctx.author.id,
+            "guild": ctx.guild.id,
+            "channel": ctx.channel.id,
+            "pings": [],
+            "at": ctx.message.created_at.timestamp(),
+            "global": True,
+            "text": text or "AFK",
+            "ignoredChannel": [],
+        }
+        await ctx.send(
+            f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(after.dt, 'R')}"
+        )
+        await self.create_timer(
+            expires_at=after.dt.timestamp(),
+            created_at=ctx.message.created_at.timestamp(),
+            extra={"name": "SET_AFK", "main": {**post}},
             message=ctx.message,
         )
 

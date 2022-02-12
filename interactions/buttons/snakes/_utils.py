@@ -161,7 +161,7 @@ class PerlinNoiseFactory:
 
         # For n dimensions, the range of Perlin noise is ±sqrt(n)/2; multiply
         # by this to scale to ±1
-        self.scale_factor = 2 * dimension ** -0.5
+        self.scale_factor = 2 * dimension**-0.5
 
         self.gradient = {}
 

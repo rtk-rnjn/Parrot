@@ -333,7 +333,7 @@ class DynamicQuestionGen:
         """Generate a negative square root question."""
         ans_coeff = random.randint(3, 10)
 
-        question = q_format.format(ans_coeff ** 2)
+        question = q_format.format(ans_coeff**2)
         answer = a_format.format(ans_coeff)
 
         return QuizEntry(question, [answer], DYNAMICALLY_GEN_VARIATION_TOLERANCE)

@@ -25,9 +25,22 @@ CHANNEL_TOKEN1=""
 CHANNEL_TOKEN2=""
 
 # Extra
+# https://www.remove.bg/api#remove-background
 REMOVE_BG=""
+
+# https://products.wolframalpha.com/api/
 WOLFRAM_APP=""
+
+# https://newsapi.org/
 NEWSKEY=""
+
+# https://strawpoll.com/en/api-docs/
 STRAW_POLL=""
+
+# https://apiflash.com/
 SCREEN_SHOT=""
+
+# For this you need to contact `proguy914629.bot#5419` in Discord
+# Or Use `OpenRobot#1952` (759591316627128320)
+# https://api.openrobot.xyz/
 OPEN_ROBOT_API=""

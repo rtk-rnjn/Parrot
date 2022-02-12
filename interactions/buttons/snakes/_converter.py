@@ -151,39 +151,23 @@ class LinePaginator(Paginator):
 
         if not lines:
             if exception_on_empty_embed:
-                log.exception("Pagination asked for empty lines iterable")
                 raise EmptyPaginatorEmbedError("No lines to paginate")
 
-            log.debug(
-                "No lines to add to paginator, adding '(nothing to display)' message"
-            )
             lines.append("(nothing to display)")
 
         for line in lines:
             try:
                 paginator.add_line(line, empty=empty)
             except Exception:
-                log.exception(f"Failed to add line to paginator: '{line}'")
                 raise  # Should propagate
-            else:
-                log.trace(f"Added line to paginator: '{line}'")
-
-        log.debug(f"Paginator created with {len(paginator.pages)} pages")
-
         embed.description = paginator.pages[current_page]
 
         if len(paginator.pages) <= 1:
             if footer_text:
                 embed.set_footer(text=footer_text)
-                log.trace(f"Setting embed footer to '{footer_text}'")
 
             if url:
                 embed.url = url
-                log.trace(f"Setting embed url to '{url}'")
-
-            log.debug(
-                "There's less than two pages, so we won't paginate - sending single page on its own"
-            )
             await ctx.send(embed=embed)
             return
         if footer_text:
@@ -192,20 +176,14 @@ class LinePaginator(Paginator):
             )
         else:
             embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
-        log.trace(f"Setting embed footer to '{embed.footer.text}'")
 
         if url:
             embed.url = url
-            log.trace(f"Setting embed url to '{url}'")
-
-        log.debug("Sending first page to channel...")
         message = await ctx.send(embed=embed)
 
-        log.debug("Adding emoji reactions to message...")
 
         for emoji in PAGINATION_EMOJI:
             # Add all the applicable emoji to the message
-            log.trace(f"Adding reaction: {repr(emoji)}")
             await message.add_reaction(emoji)
 
         while True:
@@ -213,24 +191,17 @@ class LinePaginator(Paginator):
                 reaction, user = await ctx.bot.wait_for(
                     "reaction_add", timeout=timeout, check=event_check
                 )
-                log.trace(f"Got reaction: {reaction}")
             except asyncio.TimeoutError:
-                log.debug("Timed out waiting for a reaction")
                 break  # We're done, no reactions for the last 5 minutes
 
             if (
                 str(reaction.emoji) == DELETE_EMOJI
             ):  # Note: DELETE_EMOJI is a string and not unicode
-                log.debug("Got delete reaction")
                 return await message.delete()
 
             if reaction.emoji == FIRST_EMOJI:
                 await message.remove_reaction(reaction.emoji, user)
                 current_page = 0
-
-                log.debug(
-                    f"Got first page reaction - changing to page 1/{len(paginator.pages)}"
-                )
 
                 embed.description = paginator.pages[current_page]
                 if footer_text:
@@ -247,10 +218,6 @@ class LinePaginator(Paginator):
                 await message.remove_reaction(reaction.emoji, user)
                 current_page = len(paginator.pages) - 1
 
-                log.debug(
-                    f"Got last page reaction - changing to page {current_page + 1}/{len(paginator.pages)}"
-                )
-
                 embed.description = paginator.pages[current_page]
                 if footer_text:
                     embed.set_footer(
@@ -266,15 +233,9 @@ class LinePaginator(Paginator):
                 await message.remove_reaction(reaction.emoji, user)
 
                 if current_page <= 0:
-                    log.debug(
-                        "Got previous page reaction, but we're on the first page - ignoring"
-                    )
                     continue
 
                 current_page -= 1
-                log.debug(
-                    f"Got previous page reaction - changing to page {current_page + 1}/{len(paginator.pages)}"
-                )
 
                 embed.description = paginator.pages[current_page]
 
@@ -293,16 +254,9 @@ class LinePaginator(Paginator):
                 await message.remove_reaction(reaction.emoji, user)
 
                 if current_page >= len(paginator.pages) - 1:
-                    log.debug(
-                        "Got next page reaction, but we're on the last page - ignoring"
-                    )
                     continue
 
                 current_page += 1
-                log.debug(
-                    f"Got next page reaction - changing to page {current_page + 1}/{len(paginator.pages)}"
-                )
-
                 embed.description = paginator.pages[current_page]
 
                 if footer_text:
@@ -316,7 +270,6 @@ class LinePaginator(Paginator):
 
                 await message.edit(embed=embed)
 
-        log.debug("Ending pagination and clearing reactions...")
         await message.clear_reactions()
 
 
@@ -398,9 +351,6 @@ async def disambiguate(
         return entries[index - 1]
     except IndexError:
         raise BadArgument("Invalid choice.")
-
-
-log = logging.getLogger(__name__)
 
 
 class Snake(Converter):

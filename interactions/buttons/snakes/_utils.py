@@ -408,10 +408,6 @@ class SnakeAndLaddersGame:
 
         # Check to see if the bot can remove reactions
         if not self.channel.permissions_for(self.ctx.guild.me).manage_messages:
-            log.warning(
-                "Unable to start Snakes and Ladders - "
-                f"Missing manage_messages permissions in {self.channel}"
-            )
             return
 
         await self._add_player(self.author)
@@ -455,7 +451,6 @@ class SnakeAndLaddersGame:
                 await startup.remove_reaction(reaction.emoji, user)
 
             except asyncio.TimeoutError:
-                log.debug("Snakes and Ladders timed out waiting for a reaction")
                 await self.cancel_game()
                 return  # We're done, no reactions for the last 5 minutes
 
@@ -658,7 +653,6 @@ class SnakeAndLaddersGame:
                     break
 
             except asyncio.TimeoutError:
-                log.debug("Snakes and Ladders timed out waiting for a reaction")
                 await self.cancel_game()
                 return  # We're done, no reactions for the last 5 minutes
 

@@ -1,0 +1,33 @@
+# Your Discord Bot Token
+# https://discord.com/developers/applications
+TOKEN=""
+
+# Google Keys
+# https://developers.google.com/
+GOOGLE_KEY=""
+GOOGLE_CX=""
+
+# Top.gg
+# https://docs.top.gg/api/@reference/
+TOPGG=""
+TOPGG_AUTH=""
+
+# MongoDB
+# https://www.mongodb.com
+DATABASE_KEY=""
+
+# NASA
+# https://api.nasa.gov/
+NASA_KEY=""
+
+# Discord Webhook Tokens
+CHANNEL_TOKEN1=""
+CHANNEL_TOKEN2=""
+
+# Extra
+REMOVE_BG=""
+WOLFRAM_APP=""
+NEWSKEY=""
+STRAW_POLL=""
+SCREEN_SHOT=""
+OPEN_ROBOT_API=""

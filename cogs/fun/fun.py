@@ -34,6 +34,7 @@ from collections import defaultdict
 
 from utilities.paginator import PaginationView
 from utilities import spookifications
+from utilities.constants import Colours
 
 from core import Parrot, Context, Cog
 
@@ -401,39 +402,6 @@ DYNAMIC_QUESTIONS_FORMAT_FUNCS = {
     302: DynamicQuestionGen.taxonomic_rank,
     303: DynamicQuestionGen.base_units_convert,
 }
-
-
-class Colours:
-    blue = 0x0279FD
-    bright_green = 0x01D277
-    dark_green = 0x1F8B4C
-    orange = 0xE67E22
-    pink = 0xCF84E0
-    purple = 0xB734EB
-    soft_green = 0x68C290
-    soft_orange = 0xF9CB54
-    soft_red = 0xCD6D6D
-    yellow = 0xF9F586
-    python_blue = 0x4B8BBE
-    python_yellow = 0xFFD43B
-    grass_green = 0x66FF00
-    gold = 0xE6C200
-
-    easter_like_colours = [
-        (255, 247, 0),
-        (255, 255, 224),
-        (0, 255, 127),
-        (189, 252, 201),
-        (255, 192, 203),
-        (255, 160, 122),
-        (181, 115, 220),
-        (221, 160, 221),
-        (200, 162, 200),
-        (238, 130, 238),
-        (135, 206, 235),
-        (0, 204, 204),
-        (64, 224, 208),
-    ]
 
 
 def replace_many(

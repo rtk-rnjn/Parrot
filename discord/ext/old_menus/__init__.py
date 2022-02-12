@@ -481,7 +481,7 @@ class Menu(metaclass=_MenuMeta):
     async def on_menu_button_error(self, exc):
         # some users may wish to take other actions during or beyond logging
         # which would require awaiting, such as stopping an erroring menu.
-        log.exception("Unhandled exception during menu update.", exc_info=exc)
+        ...
 
     async def start(self, ctx, *, channel=None, wait=False):
 

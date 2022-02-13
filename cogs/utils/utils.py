@@ -27,6 +27,7 @@ class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     text: typing.Optional[str] = None
     after: typing.Optional[ShortTime] = None
 
+
 class Utils(Cog):
     """Utilities for server, UwU"""
 
@@ -327,7 +328,13 @@ class Utils(Cog):
         except discord.Forbidden:
             pass
         if not ctx.invoked_subcommand:
-            if text and text.split(" ")[0].lower() in ("global", "till", "ignore", "after", "custom"):
+            if text and text.split(" ")[0].lower() in (
+                "global",
+                "till",
+                "ignore",
+                "after",
+                "custom",
+            ):
                 return
             post = {
                 "_id": ctx.message.id,
@@ -439,7 +446,9 @@ class Utils(Cog):
         payload["_id"] = ctx.message.id
 
         if flags.after and flags._for:
-            return await ctx.send(f"{ctx.author.mention} can not have both `after` and `for` argument")
+            return await ctx.send(
+                f"{ctx.author.mention} can not have both `after` and `for` argument"
+            )
         await afk.insert_one({**payload})
         if flags.after:
             await self.create_timer(

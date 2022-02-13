@@ -21,11 +21,14 @@ afk = parrot_db["afk"]
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
-    ignore_channel: typing.Optional[tuple[discord.TextChannel, ...]] = commands.flag(name="ignore-channel", aliases=["ignore_channel"], default=[])
+    ignore_channel: typing.Optional[tuple[discord.TextChannel, ...]] = commands.flag(
+        name="ignore-channel", aliases=["ignore_channel"], default=[]
+    )
     _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
     _for: typing.Optional[ShortTime] = commands.flag(name="for", default=None)
     text: typing.Optional[str] = None
     after: typing.Optional[ShortTime] = None
+
 
 class Utils(Cog):
     """Utilities for server, UwU"""
@@ -327,7 +330,13 @@ class Utils(Cog):
         except discord.Forbidden:
             pass
         if not ctx.invoked_subcommand:
-            if text and text.split(" ")[0].lower() in ("global", "till", "ignore", "after", "custom"):
+            if text and text.split(" ")[0].lower() in (
+                "global",
+                "till",
+                "ignore",
+                "after",
+                "custom",
+            ):
                 return
             post = {
                 "_id": ctx.message.id,
@@ -439,7 +448,9 @@ class Utils(Cog):
         payload["_id"] = ctx.message.id
 
         if flags.after and flags._for:
-            return await ctx.send(f"{ctx.author.mention} can not have both `after` and `for` argument")
+            return await ctx.send(
+                f"{ctx.author.mention} can not have both `after` and `for` argument"
+            )
         await afk.insert_one({**payload})
         if flags.after:
             await self.create_timer(

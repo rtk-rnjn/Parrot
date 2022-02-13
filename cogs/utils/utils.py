@@ -426,11 +426,8 @@ class Utils(Cog):
         """To set the custom AFK"""
         payload = {}
         payload["text"] = flags.text or "AFK"
-        if flags.ignore_channel:
-            payload["ignoredChannel"] = [c.id for c in flags.ignore_channel]
-        if flags._global:
-            payload["global"] = flags._global
-
+        payload["ignoredChannel"] = [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
+        payload["global"] = flags._global
         payload["at"] = ctx.message.created_at.timestamp()
         payload["guild"] = ctx.guild.id
         payload["messageAuthor"] = ctx.author.id
@@ -451,6 +448,7 @@ class Utils(Cog):
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(flags.after.dt, 'R')}"
             )
+            return
         if flags._for:
             await self.create_timer(
                 expires_at=flags.till.dt.timestamp(),
@@ -461,6 +459,8 @@ class Utils(Cog):
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
             )
+            return
+        await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):

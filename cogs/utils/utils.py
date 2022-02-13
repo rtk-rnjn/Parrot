@@ -21,7 +21,7 @@ afk = parrot_db["afk"]
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
-    ignore_channel: typing.Optional[tuple(discord.TextChannel, ...)] = commands.flag(name="ignore-channel", aliases=["ignore_channel"], default=[])
+    ignore_channel: typing.Optional[tuple[discord.TextChannel, ...]] = commands.flag(name="ignore-channel", aliases=["ignore_channel"], default=[])
     _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
     _for: typing.Optional[ShortTime] = commands.flag(name="global", default=None)
     text: typing.Optional[str] = None

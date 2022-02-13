@@ -12,12 +12,20 @@ import asyncio
 from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
 from utilities.paginator import PaginationView
+from utilities.converters import convert_bool
 
 from cogs.utils import method as mt
 from cogs.utils.method import giveaway
 
 afk = parrot_db["afk"]
 
+
+class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
+    ignore_channel: typing.Optional[tuple(discord.TextChannel, ...)] = commands.flag(name="ignore-channel", aliases=["ignore_channel"], default=[])
+    _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
+    _for: typing.Optional[ShortTime] = commands.flag(name="global", default=None)
+    text: typing.Optional[str] = None
+    after: typing.Optional[ShortTime] = None
 
 class Utils(Cog):
     """Utilities for server, UwU"""
@@ -312,8 +320,14 @@ class Utils(Cog):
         If provided permissions, bot will add `[AFK]` as the prefix in nickname.
         The deafult AFK is on Server Basis
         """
+        try:
+            nick = f"[AFK] {ctx.author.display_name}"
+            if len(nick) <= 32:  # discord limitation
+                await ctx.author.edit(nick=nick, reason=f"{ctx.author} set their AFK")
+        except discord.Forbidden:
+            pass
         if not ctx.invoked_subcommand:
-            if text and text.split(" ")[0].lower() in ("global", "till", "ignore"):
+            if text and text.split(" ")[0].lower() in ("global", "till", "ignore", "after", "custom"):
                 return
             post = {
                 "_id": ctx.message.id,
@@ -406,6 +420,47 @@ class Utils(Cog):
             extra={"name": "SET_AFK", "main": {**post}},
             message=ctx.message,
         )
+
+    @afk.command(name="custom")
+    async def custom_afk(self, ctx: Context, *, flags: afkFlags):
+        """To set the custom AFK"""
+        payload = {}
+        payload["text"] = flags.text or "AFK"
+        if flags.ignore_channel:
+            payload["ignoredChannel"] = [c.id for c in flags.ignore_channel]
+        if flags._global:
+            payload["global"] = flags._global
+
+        payload["at"] = ctx.message.created_at.timestamp()
+        payload["guild"] = ctx.guild.id
+        payload["messageAuthor"] = ctx.author.id
+        payload["messageURL"] = ctx.message.jump_url
+        payload["channel"] = ctx.channel.id
+        payload["_id"] = ctx.message.id
+
+        if flags.after and flags._for:
+            return await ctx.send(f"{ctx.author.mention} can not have both `after` and `for` argument")
+        await afk.insert_one({**payload})
+        if flags.after:
+            await self.create_timer(
+                expires_at=flags.after.dt.timestamp(),
+                created_at=ctx.message.created_at.timestamp(),
+                extra={"name": "SET_AFK", "main": {**payload}},
+                message=ctx.message,
+            )
+            await ctx.send(
+                f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(flags.after.dt, 'R')}"
+            )
+        if flags._for:
+            await self.create_timer(
+                expires_at=flags.till.dt.timestamp(),
+                created_at=ctx.message.created_at.timestamp(),
+                extra={"name": "REMOVE_AFK", "main": {**payload}},
+                message=ctx.message,
+            )
+            await ctx.send(
+                f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
+            )
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):

@@ -452,7 +452,7 @@ class Utils(Cog):
             return
         if flags._for:
             await self.create_timer(
-                expires_at=flags.till.dt.timestamp(),
+                expires_at=flags._for.dt.timestamp(),
                 created_at=ctx.message.created_at.timestamp(),
                 extra={"name": "REMOVE_AFK", "main": {**payload}},
                 message=ctx.message,

@@ -7,7 +7,7 @@ import asyncio
 import io
 import functools
 from utilities.emotes import emojis
-from typing import Any
+from typing import Any, Literal, Union
 
 __all__ = ("Context",)
 
@@ -89,14 +89,74 @@ class Context(commands.Context):
             return ref.resolved.to_reference()
         return None
 
+    def get_flag(self, ls, ann, *, deli, pref, alis,) -> list:
+        for flag in (ann).get_flags().values():
+            if flag.required:
+                ls.append(f"<{pref}{flag.name}{'|'.join(alis)}{deli}>")
+            else:
+                ls.append(f"[{pref}{flag.name}{'|'.join(alis)}{deli}={flag.default}]")
+        return ls
+
     @property
-    def command_syntax(self):
-        command = self.command
-        ctx = self
-        main = (
-            f"{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}"
-            f"{'|'.join(command.aliases if command.aliases else '')} {command.signature}"
-        )
+    def command_syntax(self,):
+        cmd = self.command
+        if cmd.usage is not None:
+            return cmd.usage
+
+        params = cmd.clean_params
+        if not params:
+            return ''
+
+        result = []
+        for name, param in params.items():
+            greedy = isinstance(param.annotation, commands.Greedy)
+            optional = False  # postpone evaluation of if it's an optional argument
+
+            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
+            # parameter signature is a literal list of it's values
+            annotation = param.annotation.converter if greedy else param.annotation
+            origin = getattr(annotation, '__origin__', None)
+            if not greedy and origin is Union:
+                none_cls = type(None)
+                union_args = annotation.__args__
+                optional = union_args[-1] is none_cls
+                if len(union_args) == 2 and optional:
+                    annotation = union_args[0]
+                    origin = getattr(annotation, '__origin__', None)
+
+            if origin is Literal:
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
+            if param.default is not param.empty:
+                # We don't want None or '' to trigger the [name=value] case and instead it should
+                # do [name] since [name=None] or [name=] are not exactly useful for the user.
+                should_print = param.default if isinstance(param.default, str) else param.default is not None
+                if should_print:
+                    result.append(f'[{name}={param.default}]' if not greedy else
+                                  f'[{name}={param.default}]...')
+                    continue
+                else:
+                    result.append(f'[{name}]')
+
+            elif param.kind == param.VAR_POSITIONAL:
+                if cmd.require_var_positional:
+                    result.append(f'<{name}...>')
+                else:
+                    result.append(f'[{name}...]')
+            elif greedy:
+                result.append(f'[{name}]...')
+            elif optional:
+                result.append(f'[{name}]')
+            elif isinstance(param.annotation, commands.flags.FlagsMeta):
+                ann = param.annotation
+                deli = ann.__commands_flag_delimiter__
+                pref = ann.__commands_flag_prefix__
+                alis = ann.__commands_flag_aliases__
+                self.get_flag(result, param.annotation, deli=deli, pref=pref, alis=alis)
+            else:
+                result.append(f'<{name}>')
+
+        return ' '.join(result)
+
 
     def with_type(func):
         @functools.wraps(func)

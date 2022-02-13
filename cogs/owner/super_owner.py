@@ -30,13 +30,13 @@ from cogs.meta.robopage import SimplePages
 class auditFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
-    guild: typing.Optional[discord.Guild]
+    guild: typing.Optional[discord.Guild] = None
     limit: typing.Optional[int] = 100
     action: typing.Optional[str] = None
     before: typing.Optional[ShortTime] = None
     after: typing.Optional[ShortTime] = None
     oldest_first: typing.Optional[convert_bool] = False
-    user: typing.Union[discord.User, discord.Member, int]
+    user: typing.Union[discord.User, discord.Member] = None
     action: typing.Optional[str] = None
 
 
@@ -367,7 +367,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         guild = args.guild or ctx.guild
         async for entry in guild.audit_logs(
             limit=args.limit if args.limit else 100,
-            user=discord.Object(id=args.user) if args.user else None,
+            user=discord.Object(id=args.id) if type(args.user) in (discord.User, discord.Member) else None,
             action=act.get(args.action.lower().replace(" ", "_"))
             if args.action
             else None,

@@ -21,7 +21,7 @@ afk = parrot_db["afk"]
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
-    ignore_channel: typing.Optional[tuple[discord.TextChannel, ...]] = None
+    ignore_channel: typing.Tuple[discord.TextChannel, ...] = []
     _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
     _for: typing.Optional[ShortTime] = commands.flag(name="for", default=None)
     text: typing.Optional[str] = None
@@ -434,6 +434,7 @@ class Utils(Cog):
         payload["messageURL"] = ctx.message.jump_url
         payload["channel"] = ctx.channel.id
         payload["_id"] = ctx.message.id
+        payload["pings"] = []
 
         if flags.after and flags._for:
             return await ctx.send(f"{ctx.author.mention} can not have both `after` and `for` argument")

@@ -592,6 +592,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
                 f"> You were mentioned **{len(data['pings'])}** times"
             )
+            try:
+                if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
+                    name = message.author.display_name[5:]
+                    if len(name) != 0 or name not in (" ", ""):
+                        await message.author.edit(nick=name)
+            except discord.Forbidden:
+                pass
             await afk.delete_one({"_id": data["_id"]})
 
         if message.mentions:

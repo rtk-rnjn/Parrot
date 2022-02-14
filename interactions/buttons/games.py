@@ -1088,7 +1088,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 
 class Twenty48:
     def __init__(self, number_to_display_dict, *, size: int = 4):
-
+        self.has_empty = True
         self.board = [[0 for _ in range(size)] for _ in range(size)]
         self.size = size
         self.message = None
@@ -1166,9 +1166,13 @@ class Twenty48:
             (j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0
         ]
         if not zeroes:
+            self.has_empty = False
             return
         i, j = random.choice(zeroes)
         board[i][j] = 2
+        self.has_empty = True
+
+        if all([0 not in i for i in self.board]):self.has_empty = False
 
     def number_to_emoji(self):
         board = self.board
@@ -1177,6 +1181,23 @@ class Twenty48:
         for row in emoji_array:
             GameString += "".join(row) + "\n"
         return GameString
+
+    def lost(self):
+        if self.has_empty:
+            return
+
+        board = [[b for b in i] for i in self.board]
+        restore = lambda: setattr(self,"board",board)
+
+        self.MoveUp()
+        if self.board != board: return restore()
+        self.MoveDown()
+        if self.board != board: return restore()
+        self.MoveLeft()
+        if self.board != board: return restore()
+        self.MoveRight()
+        if self.board != board: return restore()
+        return True
 
     def start(self):
 
@@ -1236,7 +1257,9 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
-
+        if game.lost():
+            for c in self.children: c.disabled = True
+            embed.add_field(name="Result",value="```\nYou have lost```")
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
@@ -1274,6 +1297,9 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
+        if game.lost():
+            for c in self.children: c.disabled = True
+            embed.add_field(name="Result",value="```\nYou have lost```")
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -1300,6 +1326,9 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
+        if game.lost():
+            for c in self.children: c.disabled = True
+            embed.add_field(name="Result",value="```\nYou have lost```")
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -1326,6 +1355,9 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
+        if game.lost():
+            for c in self.children: c.disabled = True
+            embed.add_field(name="Result",value="```\nYou have lost```")
 
         await interaction.response.edit_message(embed=embed, view=self)
 

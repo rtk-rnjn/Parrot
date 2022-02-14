@@ -121,7 +121,7 @@ def get_flag(
     return ls
 
 
-def get_cmd_signature(cmd):
+def get_cmd_signature(cmd, *, default: bool=True):
     if cmd.usage is not None:
         return cmd.usage
 

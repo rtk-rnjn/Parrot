@@ -1492,7 +1492,7 @@ class SokobanGameView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
-        self.level = level
+        self.level = level or 0
         self.ctx = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:

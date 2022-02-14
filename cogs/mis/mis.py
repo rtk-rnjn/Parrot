@@ -99,7 +99,7 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     ints: convert_bool = False
     ascending: convert_bool = True
     table_format: str = "psql"
-    aling: str = "center"
+    align: str = "center"
     valuation: convert_bool = False
     latex: convert_bool = False
 

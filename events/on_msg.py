@@ -26,6 +26,7 @@ from time import time
 
 collection = parrot_db["global_chat"]
 afk = parrot_db["afk"]
+timer = parrot_db["timers"]
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -600,6 +601,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             except discord.Forbidden:
                 pass
             await afk.delete_one({"_id": data["_id"]})
+            await timer.delete_one({"_id": data["_id"]})
 
         if message.mentions:
             for user in message.mentions:
@@ -611,6 +613,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         ]
                     }
                 ):
+                    if message.channel.id in data["ignoredChannel"]:
+                        return
                     post = {
                         "messageAuthor": message.author.id,
                         "channel": message.channel.id,

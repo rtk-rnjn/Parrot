@@ -4,7 +4,7 @@ import datetime
 import re
 from discord.ext import commands
 
-from typing import Union, Literal
+from typing import Union, Literal ,Any
 
 class plural:
     def __init__(self, value):
@@ -103,12 +103,12 @@ def suppress_links(message: str) -> str:
         message = message.replace(link, f"<{link}>")
     return message
 
-def get_flag(self, ls, ann, *, deli, pref, alis,) -> list:
+def get_flag(ls: list, ann: Any, *, deli: Any, pref: Any, alis: Any,) -> list:
     for flag in (ann).get_flags().values():
         if flag.required:
             ls.append(f"<{pref}{flag.name}{'|'.join(alis)}{deli}>")
         else:
-            ls.append(f"[{pref}{flag.name}{'|'.join(alis)}{deli}={flag.default}]")
+            ls.append(f"[{pref}{flag.name}{'|'.join(list(alis))}{deli}={flag.default}]")
     return ls
 
 def get_cmd_signature(cmd):

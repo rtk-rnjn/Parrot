@@ -75,7 +75,7 @@ REGIONAL_INDICATOR_EMOJI = (
 
 DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 
-LETTERS_EMOJI = {
+LETTERS_EMOJI = {**{
     "#": "\N{BLACK SQUARE FOR STOP}\ufe0f",
     "1": AN_EMOJI,
     "2": ER_EMOJI,
@@ -83,7 +83,7 @@ LETTERS_EMOJI = {
     "4": IN_EMOJI,
     "5": QU_EMOJI,
     "6": TH_EMOJI,
-} | dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI))
+}, **dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI))}
 
 # fmt: off
 
@@ -121,13 +121,14 @@ DIE = {
 with open("extra/boggle.txt") as f:
     DICTIONARY = set(f.read().splitlines())
 
-POINTS = {
-    3: 1,
+__1 = {
+    3: 1, 
     4: 1,
     5: 2,
     6: 3,
-    7: 5,
-} | {x: 11 for x in range(8, SUPER_BIG**2)}
+    7: 5}
+__2 = {x: 11 for x in range(8, SUPER_BIG**2)}
+POINTS = {**__1, **__2}
 
 
 class Position(NamedTuple):

@@ -238,6 +238,12 @@ class Utils(Cog):
     async def tag_mine(self, ctx: Context):
         """To show those tag which you own"""
         await mt._show_tag_mine(self.bot, ctx)
+    
+    @tag.command(name="raw")
+    @commands.bot_has_permissions(embed_links=True)
+    async def tag_raw(self, ctx: Context, *, tag:str):
+        """To show the tag in raw format"""
+        await mt._show_raw_tag(self.bot, ctx, tag)
 
     @commands.command()
     @commands.has_permissions(manage_messages=True, add_reactions=True)

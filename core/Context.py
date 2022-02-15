@@ -101,11 +101,6 @@ class Context(commands.Context):
 
         return wrapped
 
-    async def show_help(self, command=None):
-        cmd = self.bot.get_command("help")
-        command = command or self.command.qualified_name
-        await self.invoke(cmd, command=command)
-
     async def send(
         self, content: typing.Optional[str] = None, **kwargs
     ) -> typing.Optional[discord.Message]:

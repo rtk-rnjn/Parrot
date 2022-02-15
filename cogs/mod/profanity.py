@@ -109,7 +109,7 @@ class Profanity(Cog):
         if before.content != after.content:
             await self._one_message_passive(after)
 
-    @tasks.loop(seconds=900)
+    @tasks.loop(seconds=15)
     async def update_data(self):
         async for data in self.collection.find({}):
             try:

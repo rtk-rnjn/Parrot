@@ -7,7 +7,7 @@ from discord.utils import MISSING
 from discord import Member as User
 
 from core import Context
-from typing import Any
+from typing import Any, Dict
 
 from .game import GameUI
 
@@ -34,10 +34,10 @@ def format_list(
 class JoinUI(discord.ui.View):
     message: discord.Message
 
-    def __init__(self, host: User, games: dict[int, discord.ui.View]):
+    def __init__(self, host: User, games: Dict[int, discord.ui.View]):
         super().__init__(timeout=60 * 15)
         self.host = host
-        self.users: dict[User, discord.Interaction] = {host: MISSING}
+        self.users: Dict[User, discord.Interaction] = {host: MISSING}
         self.user_lock = asyncio.Lock()
         self.started: bool = False
         self.games = games
@@ -109,7 +109,7 @@ class JoinUI(discord.ui.View):
 
     @classmethod
     async def start(
-        cls, ctx: Context, games: dict[int, discord.ui.View]
+        cls, ctx: Context, games: Dict[int, discord.ui.View]
     ) -> JoinUI:  # todo: TextGuildChannel
         games[ctx.channel.id] = self = cls(ctx.author, games)
         self.message = await ctx.channel.send(self.content, view=self)

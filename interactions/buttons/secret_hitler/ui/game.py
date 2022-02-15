@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Collection
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict
 
 import discord
 from discord import Member as User
@@ -101,11 +101,11 @@ class GameUI(discord.ui.View):
         message: discord.Message,
         host: User,
         users: Collection[User],
-        games: dict[int, discord.ui.View],
+        games: Dict[int, discord.ui.View],
     ):
         self.host: User = host
         self.game: Game[User] = Game[User](users)
-        self.interactions: dict[User, discord.Interaction] = {}
+        self.interactions: Dict[User, discord.Interaction] = {}
         self.message = message
         self.games = games
         self.waiting = asyncio.Event()
@@ -219,8 +219,8 @@ class GameUI(discord.ui.View):
         cls,
         message: discord.Message,
         host: User,
-        users: dict[User, discord.Interaction],
-        games: dict[int, discord.ui.View],
+        users: Dict[User, discord.Interaction],
+        games: Dict[int, discord.ui.View],
     ) -> None:
         games[message.channel.id] = self = cls(message, host, users.keys(), games)
 

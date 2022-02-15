@@ -13,7 +13,7 @@ import rapidfuzz
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Dict
 import asyncio
 import urllib.parse
 from urllib.parse import quote, quote_plus
@@ -239,7 +239,7 @@ class RTFM(Cog):
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
         self.bot.languages = ()
-        self.headers: dict[str, str] = {}
+        self.headers: Dict[str, str] = {}
         self.fetch_readme.start()
 
     @tasks.loop(minutes=60)

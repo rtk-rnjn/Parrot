@@ -7,7 +7,7 @@ import re
 from functools import wraps
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Literal, NamedTuple, Optional, List
+from typing import Literal, NamedTuple, Optional, List, Dict
 
 import discord
 from discord.ext import commands
@@ -541,7 +541,7 @@ class Foggle(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.games: dict[str, Game] = {}
+        self.games: Dict[str, Game] = {}
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

@@ -9,7 +9,7 @@ import string
 import textwrap
 from functools import partial, wraps
 from io import BytesIO
-from typing import Any, Optional, Callable, List
+from typing import Any, Optional, Callable, List, Dict
 from asyncio import Lock
 import async_timeout
 from PIL import Image, ImageDraw, ImageFont
@@ -357,7 +357,7 @@ class Snakes(Cog):
 
         return long_message
 
-    async def _get_snek(self, name: str) -> dict[str, Any]:
+    async def _get_snek(self, name: str) -> Dict[str, Any]:
         """
         Fetches all the data from a wikipedia article about a snake.
         Builds a dict that the .get() method can use.
@@ -457,12 +457,12 @@ class Snakes(Cog):
 
         return snake_info
 
-    async def _get_snake_name(self) -> dict[str, str]:
+    async def _get_snake_name(self) -> Dict[str, str]:
         """Gets a random snake name."""
         return random.choice(self.snake_names)
 
     async def _validate_answer(
-        self, ctx: Context, message: Message, answer: str, options: dict[str, str]
+        self, ctx: Context, message: Message, answer: str, options: Dict[str, str]
     ) -> None:
         """Validate the answer using a reaction event loop."""
 

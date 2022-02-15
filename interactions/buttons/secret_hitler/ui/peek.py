@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, List
+from typing import TYPE_CHECKING, ClassVar, List, Dict
 
 import discord
 
@@ -15,7 +15,7 @@ __all__ = (
     "PeekUI",
 )
 
-POLICY_STYLE: dict[Party, discord.ButtonStyle] = {
+POLICY_STYLE: Dict[Party, discord.ButtonStyle] = {
     Party.Liberal: discord.ButtonStyle.primary,
     Party.Fascist: discord.ButtonStyle.danger,
 }

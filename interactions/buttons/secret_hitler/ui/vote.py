@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Dict
 
 import discord
 from discord import Member as User
@@ -46,7 +46,7 @@ class VoteUI(InputUI):
         )
 
     @property
-    def votes(self) -> dict[Player[User], bool]:
+    def votes(self) -> Dict[Player[User], bool]:
         if isinstance(self.game.game.state, VoteGameState):
             return self.game.game.state.votes
         return {}

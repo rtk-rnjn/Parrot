@@ -25,7 +25,7 @@ import colorsys
 
 from pathlib import Path
 from random import choice, randint
-from typing import Callable, Optional, Union, TypeVar, List, Tuple
+from typing import Callable, Optional, Union, TypeVar, List, Tuple, Dict
 from concurrent.futures import ThreadPoolExecutor
 from rapidfuzz import fuzz
 
@@ -459,7 +459,7 @@ class Fun(Cog):
             del self.colour_mapping["_"]  # Delete source credit entry
         self.questions = self.load_questions()
         self.question_limit = 0
-        self.games: dict[int, AnagramGame] = {}
+        self.games: Dict[int, AnagramGame] = {}
 
         self.player_scores = defaultdict(
             int
@@ -468,7 +468,7 @@ class Fun(Cog):
             {}
         )  # A variable to store temporary game player's scores.
 
-        self.latest_comic_info: dict[str, Union[int, str]] = {}
+        self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.get_latest_comic_info.start()
 
         self.categories = {
@@ -532,7 +532,7 @@ class Fun(Cog):
 
         await ctx.send(file=thumbnail_file, embed=colour_embed)
 
-    def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> dict[str, str]:
+    def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> Dict[str, str]:
         """Create a dictionary mapping of colour types and their values."""
         colour_name = self._rgb_to_name(rgb)
         if colour_name is None:

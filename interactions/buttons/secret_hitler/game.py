@@ -5,7 +5,7 @@ import random
 from abc import ABCMeta, abstractmethod
 from collections.abc import Collection
 from functools import cached_property
-from typing import Any, Generic, Literal, NoReturn, Optional, TypeVar, Union, List
+from typing import Any, Generic, Literal, NoReturn, Optional, TypeVar, Union, List, Dict
 
 from discord.enums import Enum
 from discord.utils import MISSING
@@ -70,7 +70,7 @@ class Power(Enum):
     Execution = 3
 
 
-ROLES: dict[PlayerCount, List[Role]] = {
+ROLES: Dict[PlayerCount, List[Role]] = {
     5: [Role.Liberal] * 3 + [Role.Fascist] * 1,
     6: [Role.Liberal] * 4 + [Role.Fascist] * 1,
     7: [Role.Liberal] * 4 + [Role.Fascist] * 2,
@@ -89,7 +89,7 @@ _r()
 
 # fmt: on
 
-SECRET_MESSAGES: dict[PlayerCount, dict[Role, str]] = {
+SECRET_MESSAGES: Dict[PlayerCount, Dict[Role, str]] = {
     5: {
         Role.Liberal: "You are a Liberal.",
         Role.Fascist: "You are a Fascist, {0} is Hitler.",
@@ -124,18 +124,18 @@ def _s():  # See above
 
 _s()
 
-PARTIES: dict[Role, Party] = {
+PARTIES: Dict[Role, Party] = {
     Role.Liberal: Party.Liberal,
     Role.Fascist: Party.Fascist,
     Role.Hitler: Party.Fascist,
 }
 
-POLICIES: dict[Party, int] = {
+POLICIES: Dict[Party, int] = {
     Party.Liberal: 6,
     Party.Fascist: 11,
 }
 
-POWERS: dict[PlayerCount, List[Optional[Power]]] = {
+POWERS: Dict[PlayerCount, List[Optional[Power]]] = {
     5: [None, None, None, Power.Peek],
     7: [None, None, Power.Investigate, Power.Election],
     9: [None, Power.Investigate, Power.Investigate, Power.Election],
@@ -191,10 +191,10 @@ class UserInputGameState(GameState[T], metaclass=ABCMeta):
 
 
 class AfterVoteGameState(GameState[T], metaclass=ABCMeta):
-    votes: dict[Player[T], bool]
+    votes: Dict[Player[T], bool]
 
-    def __init__(self, game: Game[T], votes: dict[Player[T], bool]) -> None:
-        self.votes: dict[Player[T], bool] = votes
+    def __init__(self, game: Game[T], votes: Dict[Player[T], bool]) -> None:
+        self.votes: Dict[Player[T], bool] = votes
         super().__init__(game)
 
     @property
@@ -233,7 +233,7 @@ class SelectGameState(UserInputGameState[T], Generic[T, U], metaclass=ABCMeta):
 class VoteGameState(UserInputGameState[T], metaclass=ABCMeta):
     def __init__(self, game: Game[T]) -> None:
         super().__init__(game)
-        self.votes: dict[Player[T], bool] = {}
+        self.votes: Dict[Player[T], bool] = {}
 
     @property
     @abstractmethod
@@ -320,7 +320,7 @@ class VotePassed(AfterVoteGameState[T]):
     def __init__(
         self,
         game: Game[T],
-        votes: dict[Player[T], bool],
+        votes: Dict[Player[T], bool],
         president: Player[T],
         chancellor: Player[T],
     ) -> None:
@@ -430,7 +430,7 @@ class PolicyEnacted(GameState[T]):
 class VoteFailed(AfterVoteGameState[T]):
     _message = "The vote failed. The Election Tracker moves to position {0.game.election_tracker}."
 
-    def __init__(self, game: Game[T], votes: dict[Player[T], bool]) -> None:
+    def __init__(self, game: Game[T], votes: Dict[Player[T], bool]) -> None:
         super().__init__(game, votes)
 
         self.game.election_tracker += 1

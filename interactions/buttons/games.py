@@ -9,7 +9,18 @@ from functools import partial, cached_property, wraps
 from string import ascii_uppercase
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Iterator, Literal, Optional, Union, overload, Dict, NamedTuple, List, Tuple
+from typing import (
+    Any,
+    Iterator,
+    Literal,
+    Optional,
+    Union,
+    overload,
+    Dict,
+    NamedTuple,
+    List,
+    Tuple,
+)
 
 import discord
 from discord import Member as User
@@ -75,15 +86,18 @@ REGIONAL_INDICATOR_EMOJI = (
 
 DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 
-LETTERS_EMOJI = {**{
-    "#": "\N{BLACK SQUARE FOR STOP}\ufe0f",
-    "1": AN_EMOJI,
-    "2": ER_EMOJI,
-    "3": HE_EMOJI,
-    "4": IN_EMOJI,
-    "5": QU_EMOJI,
-    "6": TH_EMOJI,
-}, **dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI))}
+LETTERS_EMOJI = {
+    **{
+        "#": "\N{BLACK SQUARE FOR STOP}\ufe0f",
+        "1": AN_EMOJI,
+        "2": ER_EMOJI,
+        "3": HE_EMOJI,
+        "4": IN_EMOJI,
+        "5": QU_EMOJI,
+        "6": TH_EMOJI,
+    },
+    **dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI)),
+}
 
 # fmt: off
 
@@ -121,12 +135,7 @@ DIE = {
 with open("extra/boggle.txt") as f:
     DICTIONARY = set(f.read().splitlines())
 
-__1 = {
-    3: 1, 
-    4: 1,
-    5: 2,
-    6: 3,
-    7: 5}
+__1 = {3: 1, 4: 1, 5: 2, 6: 3, 7: 5}
 __2 = {x: 11 for x in range(8, SUPER_BIG**2)}
 POINTS = {**__1, **__2}
 

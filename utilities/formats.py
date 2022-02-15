@@ -106,13 +106,7 @@ def suppress_links(message: str) -> str:
 
 
 def get_flag(
-    ls: list,
-    ann: Any,
-    *,
-    deli: Any,
-    pref: Any,
-    alis: Any,
-    default: bool
+    ls: list, ann: Any, *, deli: Any, pref: Any, alis: Any, default: bool
 ) -> list:
     for flag in (ann).get_flags().values():
         if flag.required:
@@ -124,7 +118,7 @@ def get_flag(
     return ls
 
 
-def get_cmd_signature(cmd, *, default: bool=True):
+def get_cmd_signature(cmd, *, default: bool = True):
     if cmd.usage is not None:
         return cmd.usage
 
@@ -185,7 +179,14 @@ def get_cmd_signature(cmd, *, default: bool=True):
             deli = ann.__commands_flag_delimiter__
             pref = ann.__commands_flag_prefix__
             alis = ann.__commands_flag_aliases__
-            get_flag(result, param.annotation, deli=deli, pref=pref, alis=alis, default=default)
+            get_flag(
+                result,
+                param.annotation,
+                deli=deli,
+                pref=pref,
+                alis=alis,
+                default=default,
+            )
         else:
             result.append(f"<{name}>")
 

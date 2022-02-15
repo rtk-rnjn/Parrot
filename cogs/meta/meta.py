@@ -339,9 +339,15 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     def common_command_formatting(self, embed_like, command):
         embed_like.title = command.qualified_name
-        embed_like.add_field(name="Syntax", value=f"`{self.get_command_signature(command)}`", inline=False)
+        embed_like.add_field(
+            name="Syntax",
+            value=f"`{self.get_command_signature(command)}`",
+            inline=False,
+        )
         if command.aliases:
-            embed_like.add_field(name="Aliases", value=f"`{', '.join(command.aliases)}`", inline=False)
+            embed_like.add_field(
+                name="Aliases", value=f"`{', '.join(command.aliases)}`", inline=False
+            )
         if command.description:
             embed_like.description = f"> {command.description}\n\n{command.help}"
         else:
@@ -354,7 +360,9 @@ class PaginatedHelpCommand(commands.HelpCommand):
             colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow()
         )
         embed.set_thumbnail(url=self.context.me.display_avatar.url)
-        embed.set_footer(text=f"{self.ctx.author}", icon_url=self.context.author.display_avatar.url)
+        embed.set_footer(
+            text=f"{self.ctx.author}", icon_url=self.context.author.display_avatar.url
+        )
         self.common_command_formatting(embed, command)
         await self.context.send(embed=embed)
 
@@ -608,7 +616,7 @@ class Meta(Cog):
         with proc.oneshot():
             uptime = timedelta(seconds=time() - proc.create_time())
             cpu_time = timedelta(seconds=(cpu := proc.cpu_times()).system + cpu.user)
-            mem_total = virtual_memory().total / (1024 ** 2)
+            mem_total = virtual_memory().total / (1024**2)
             mem_of_total = proc.memory_percent()
             mem_usage = mem_total * (mem_of_total / 100)
 

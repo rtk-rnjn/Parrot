@@ -7,7 +7,7 @@ import re
 from functools import wraps
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Literal, NamedTuple, Optional
+from typing import Literal, NamedTuple, Optional, List
 
 import discord
 from discord.ext import commands
@@ -197,7 +197,7 @@ class Board:
         self.number = magic_number
 
     def board_contains(
-        self, numbers: str, pos: Position = None, passed: list[Position] = None
+        self, numbers: str, pos: Position = None, passed: List[Position] = None
     ) -> bool:
         if passed is None:
             passed = []

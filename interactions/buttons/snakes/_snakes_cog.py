@@ -9,7 +9,7 @@ import string
 import textwrap
 from functools import partial, wraps
 from io import BytesIO
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, List
 from asyncio import Lock
 import async_timeout
 from PIL import Image, ImageDraw, ImageFont
@@ -346,7 +346,7 @@ class Snakes(Cog):
             async with self.bot.http_session.get(url, params=params) as response:
                 return await response.json()
 
-    def _get_random_long_message(self, messages: list[str], retries: int = 10) -> str:
+    def _get_random_long_message(self, messages: List[str], retries: int = 10) -> str:
         """
         Fetch a message that's at least 3 words long, if possible to do so in retries attempts.
         Else, just return whatever the last message is.

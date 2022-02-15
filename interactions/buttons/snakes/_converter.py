@@ -5,7 +5,7 @@ import asyncio
 import logging
 import random
 from collections.abc import Iterable
-from typing import Optional
+from typing import Optional, List
 
 from discord import Embed, Member, Reaction
 from discord.abc import User
@@ -274,7 +274,7 @@ class LinePaginator(Paginator):
 
 async def disambiguate(
     ctx: Context,
-    entries: list[str],
+    entries: List[str],
     *,
     timeout: float = 30,
     entries_per_page: int = 20,
@@ -366,7 +366,7 @@ class Snake(Converter):
         if name == "python":
             return "Python (programming language)"
 
-        def get_potential(iterable: Iterable, *, threshold: int = 80) -> list[str]:
+        def get_potential(iterable: Iterable, *, threshold: int = 80) -> List[str]:
             nonlocal name
             potential = []
 

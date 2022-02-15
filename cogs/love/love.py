@@ -21,7 +21,7 @@ from discord import Member
 from utilities.deco import in_month
 from utilities.constants import Month
 
-from typing import Union, Coroutine, Optional, Callable
+from typing import Union, Coroutine, Optional, Callable, Tuple, List
 
 FACTS = json.loads(Path(r"extra/valentines/valentine_facts.json").read_text("utf8"))
 
@@ -74,7 +74,7 @@ class Love(Cog):
         return pre_row[-1]
 
     @staticmethod
-    def load_comp_json() -> tuple[dict, dict]:
+    def load_comp_json() -> Tuple[dict, dict]:
         """Load zodiac compatibility from static JSON resource."""
         explanation_file = Path("extra/valentines/zodiac_explanation.json")
         compatibility_file = Path("extra/valentines/zodiac_compatibility.json")

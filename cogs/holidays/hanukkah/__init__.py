@@ -8,7 +8,7 @@ from discord.ext import commands
 from core import Cog, Context, Parrot
 from utilities.constants import Colours, Month
 from utilities.deco import in_month
-
+from typing import List
 HEBCAL_URL = (
     "https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&"
     "year=now&month=x&ss=on&mf=on&c=on&geo=geoname&geonameid=3448439&m=50&s=on"
@@ -20,9 +20,9 @@ class Hanukkah(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.hanukkah_dates: list[datetime.date] = []
+        self.hanukkah_dates: List[datetime.date] = []
 
-    def _parse_time_to_datetime(self, date: list[str]) -> datetime.datetime:
+    def _parse_time_to_datetime(self, date: List[str]) -> datetime.datetime:
         """Format the times provided by the api to datetime forms."""
         try:
             return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
@@ -31,7 +31,7 @@ class Hanukkah(Cog):
             # to catch this, we try again without time information
             return datetime.datetime.strptime(date, "%Y-%m-%d")
 
-    async def fetch_hanukkah_dates(self) -> list[datetime.date]:
+    async def fetch_hanukkah_dates(self) -> List[datetime.date]:
         """Gets the dates for hanukkah festival."""
         # clear the datetime objects to prevent a memory link
         self.hanukkah_dates = []

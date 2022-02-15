@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, List
 
 import discord
 
@@ -33,7 +33,7 @@ class PeekButton(SelectButton[Party, "PeekUI"]):
 class PeekUI(SelectUI):
     button_type: ClassVar[type[SelectButton]] = PeekButton
 
-    def __init__(self, game: GameUI, target: Player, options: list[Party]):
+    def __init__(self, game: GameUI, target: Player, options: List[Party]):
         super().__init__(game, target, options)
 
         for option in options:

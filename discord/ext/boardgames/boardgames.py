@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Iterator, TypeVar, Union
+from typing import Generic, Iterator, TypeVar, Union, List, Tuple
 
 T = TypeVar("T")
 
@@ -56,21 +56,21 @@ class Board(Generic[T]):
 
         self.size_x = size_x
         self.size_y = size_y
-        self._state: list[list[T]] = [
+        self._state: List[List[T]] = [
             [fill_with for _ in range(size_x)] for _ in range(size_y)
         ]
         self._draw_row_guide = draw_row_guide
         self._draw_column_guide = draw_column_guide
 
-    def __getitem__(self, ij: tuple[int, int]) -> T:
+    def __getitem__(self, ij: Tuple[int, int]) -> T:
         i, j = ij
         return self._state[j][i]
 
-    def __setitem__(self, ij: tuple[int, int], value: T):
+    def __setitem__(self, ij: Tuple[int, int], value: T):
         i, j = ij
         self._state[j][i] = value
 
-    def __iter__(self) -> Iterator[list[T]]:
+    def __iter__(self) -> Iterator[List[T]]:
         return self._state.__iter__()
 
     def __len__(self) -> int:

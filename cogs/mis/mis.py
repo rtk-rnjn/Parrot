@@ -203,7 +203,7 @@ class Misc(Cog):
 
     async def wiki_request(
         self, channel: discord.TextChannel, search: str
-    ) -> list[str]:
+    ) -> typing.List[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
         params = WIKI_PARAMS | {"srlimit": 10, "srsearch": search}
         async with self.bot.http_session.get(url=SEARCH_API, params=params) as resp:

@@ -7,7 +7,7 @@ import asyncio
 from discord.ext import commands
 
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, List, Tuple
 from contextlib import suppress
 from io import BytesIO
 from PIL import Image
@@ -112,7 +112,7 @@ class Easter(Cog):
         await ctx.send(f"Check out this April Fools' video by {channel}.\n\n{url}")
 
     @staticmethod
-    def find_separators(displayname: str) -> Optional[list[str]]:
+    def find_separators(displayname: str) -> Optional[List[str]]:
         """Check if Discord name contains spaces so we can bunnify an individual word in the name."""
         new_name = re.split(r"[_.\s]", displayname)
         if displayname not in new_name:

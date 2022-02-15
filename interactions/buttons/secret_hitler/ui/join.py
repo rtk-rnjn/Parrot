@@ -16,17 +16,17 @@ __all__ = ("JoinUI",)
 
 def format_list(
     string: str,
-    *list: Any,
+    *ls: Any,
     singular: str = "has",
     plural: str = "have",
     oxford_comma: bool = True
 ) -> str:
-    if len(list) == 0:
+    if len(ls) == 0:
         return string.format("no-one", singular)
-    if len(list) == 1:
-        return string.format(list[0], singular)
+    if len(ls) == 1:
+        return string.format(ls[0], singular)
 
-    *rest, last = list
+    *rest, last = ls
     rest_str = ", ".join(str(item) for item in rest)
     return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
 

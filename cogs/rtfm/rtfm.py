@@ -13,7 +13,7 @@ import rapidfuzz
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 import asyncio
 import urllib.parse
 from urllib.parse import quote, quote_plus
@@ -388,7 +388,7 @@ class RTFM(Cog):
 
     def result_fmt(
         self, url: str, body_text: str
-    ) -> tuple[bool, Union[str, discord.Embed]]:
+    ) -> Tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()

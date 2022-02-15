@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Collection
-from typing import Union, Optional
+from typing import Union, Optional, List
 
 import discord
 from discord import Member as User
@@ -94,7 +94,7 @@ class BlankButton(discord.ui.Button["GameUI"]):
 
 
 class GameUI(discord.ui.View):
-    children: list[discord.ui.Button]
+    children: List[discord.ui.Button]
 
     def __init__(
         self,

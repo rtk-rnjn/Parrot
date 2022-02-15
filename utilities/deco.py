@@ -21,8 +21,9 @@ from .exceptions import ParrotCheckFailure
 
 from core import Context
 
-ONE_DAY = 86400 # faster response time if in seconds
-# 2 days = 2 * ONE_DAY 
+ONE_DAY = 86400  # faster response time if in seconds
+# 2 days = 2 * ONE_DAY
+
 
 def resolve_current_month() -> Month:
     return Month(datetime.utcnow().month)

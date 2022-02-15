@@ -326,16 +326,3 @@ def get_raw(link: str) -> str:
     if "/raw" in link:
         return link
     return link + "/raw"
-
-
-def typing(func):
-    @functools.wraps(func)
-    async def wrapped(*args, **kwargs):
-        context = args[0] if isinstance(args[0], commands.Context) else args[1]
-        try:
-            async with context.typing():
-                await func(*args, **kwargs)
-        except discord.Forbidden:
-            await func(*args, **kwargs)
-
-    return wrapped

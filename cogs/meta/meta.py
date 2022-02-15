@@ -87,7 +87,7 @@ class GroupHelpPageSource(menus.ListPageSource):
         for index, command in enumerate(commands):
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
-                name=f"`[{'0' + str(index) if index < 10 else index}]` {command.qualified_name}",
+                name=f"\N{BULLET} {command.qualified_name}",
                 value=f"> `{signature}`\n{command.short_doc or 'No help given for the time being...'}",
                 inline=False,
             )

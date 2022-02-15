@@ -31,7 +31,7 @@ from discord import Embed, Interaction, SelectOption, ui
 from . import _ref
 from . import _doc
 
-from ._used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
+from ._used import get_raw, Refresh, wrapping, prepare_payload, execute_run
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -691,7 +691,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)
-    @typing
+    @Context.with_type
     async def reference(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
         lang = language.strip("`")
@@ -704,7 +704,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["doc"])
     @commands.bot_has_permissions(embed_links=True)
-    @typing
+    @Context.with_type
     async def documentation(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
         lang = language.strip("`")
@@ -717,7 +717,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @typing
+    @Context.with_type
     async def man(self, ctx: Context, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command"""
         base_url = f"https://man.cx/{page}"

@@ -1,7 +1,6 @@
-from core import Parrot
-
-bot = Parrot()
+from dotenv import load_dotenv
+load_dotenv()
 
 if __name__ == "__main__":
-    # bot.ipc.start()
-    bot.run()
+    from core import Parrot
+    Parrot().run()

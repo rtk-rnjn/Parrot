@@ -34,3 +34,4 @@ pandas
 numpy
 pyparsing
 qrcode
+python-dotenv

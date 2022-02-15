@@ -20,7 +20,7 @@ def format_list(
     *ls: Any,
     singular: str = "has",
     plural: str = "have",
-    oxford_comma: bool = True
+    oxford_comma: bool = True,
 ) -> str:
     if len(ls) == 0:
         return string.format("no-one", singular)

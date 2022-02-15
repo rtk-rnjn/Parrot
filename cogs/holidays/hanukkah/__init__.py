@@ -9,6 +9,7 @@ from core import Cog, Context, Parrot
 from utilities.constants import Colours, Month
 from utilities.deco import in_month
 from typing import List
+
 HEBCAL_URL = (
     "https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&"
     "year=now&month=x&ss=on&mf=on&c=on&geo=geoname&geonameid=3448439&m=50&s=on"

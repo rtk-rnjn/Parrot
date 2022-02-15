@@ -147,7 +147,7 @@ POINTS = {
     5: 2,
     6: 3,
     7: 5,
-} | {x: 11 for x in range(8, SUPER_BIG ** 2)}
+} | {x: 11 for x in range(8, SUPER_BIG**2)}
 
 FOGGLE_RULES = """The goal of Foggle is create equations, using simple arithmetic (e.g. +, -, *, /, ^ and parentheses) which equates to the given magic number.
 Numbers must be adjacent (up-down, left-right or diagonal) to eachother on the Foggle board.
@@ -191,7 +191,7 @@ class Board:
                 for row in range(self.size)
             ]
         if magic_number is None:
-            magic_number = random.randint(00, base ** 2 - 1)
+            magic_number = random.randint(00, base**2 - 1)
 
         self.columns = board
         self.number = magic_number

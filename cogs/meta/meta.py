@@ -354,7 +354,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow()
         )
         embed.set_thumbnail(url=self.context.me.display_avatar.url)
-        embed.set_footer(text=f"{self.ctx.author}", icon_url=self.context.author.display_avatar.url)
+        embed.set_footer(text=f"{self.context.author}", icon_url=self.context.author.display_avatar.url)
         self.common_command_formatting(embed, command)
         await self.context.send(embed=embed)
 

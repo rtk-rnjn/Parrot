@@ -9,7 +9,18 @@ from functools import partial, cached_property, wraps
 from string import ascii_uppercase
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Iterator, Literal, Optional, Union, overload, Dict, NamedTuple, List, Tuple
+from typing import (
+    Any,
+    Iterator,
+    Literal,
+    Optional,
+    Union,
+    overload,
+    Dict,
+    NamedTuple,
+    List,
+    Tuple,
+)
 
 import discord
 from discord import Member as User

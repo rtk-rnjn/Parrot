@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Optional, List, Tuple, Dict
 
 OPS: Dict[str, Callable[[int, int], Optional[int]]] = {
-    "^": lambda x, y: x ** y,
+    "^": lambda x, y: x**y,
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
     "*": lambda x, y: x * y,

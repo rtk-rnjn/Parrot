@@ -229,7 +229,7 @@ class GameUI(discord.ui.View):
             if player.role is Role.Fascist:
                 content = content.format(
                     self.game.hitler,
-                    *[user for user in self.game.fascists if user != player.identifier]
+                    *[user for user in self.game.fascists if user != player.identifier],
                 )
             await users[player.identifier].followup.send(content, ephemeral=True)
 

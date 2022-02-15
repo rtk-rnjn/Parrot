@@ -87,8 +87,8 @@ class GroupHelpPageSource(menus.ListPageSource):
         for index, command in enumerate(commands):
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
-                name=command.qualified_name,
-                value=f"> `[{'0' + str(index) if index < 10 else index}] {signature}`\n{command.short_doc or 'No help given for the time being...'}",
+                name=f"`[{'0' + str(index) if index < 10 else index}]` {command.qualified_name}",
+                value=f"> `{signature}`\n{command.short_doc or 'No help given for the time being...'}",
                 inline=False,
             )
         maximum = self.get_max_pages()

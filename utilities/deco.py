@@ -21,8 +21,8 @@ from .exceptions import ParrotCheckFailure
 
 from core import Context
 
-ONE_DAY = 24 * 60 * 60
-
+ONE_DAY = 86400 # faster response time if in seconds
+# 2 days = 2 * ONE_DAY 
 
 def resolve_current_month() -> Month:
     return Month(datetime.utcnow().month)
@@ -413,7 +413,7 @@ def whitelist_override(
 
 def locked() -> Optional[Callable]:
     """
-    Allows the user to only run one instance of the decorated command at a time.
+    Allows the user to only run an instance of one decorated command at a time.
     Subsequent calls to the command from the same author are ignored until the command has completed invocation.
     This decorator has to go before (below) the `command` decorator.
     """

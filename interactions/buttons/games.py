@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 import re
+import itertools
 
 from dataclasses import dataclass
 from functools import partial, cached_property, wraps
@@ -1180,9 +1181,7 @@ class Twenty48:
             return
         i, j = random.choice(zeroes)
         board[i][j] = 2
-        self.has_empty = True
-
-        if all([0 not in i for i in self.board]):self.has_empty = False
+        self.has_empty = 0 in itertools.chain(*self.board)
 
     def number_to_emoji(self):
         board = self.board
@@ -1267,7 +1266,7 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
-        if game.lost():
+        if self.game.lost():
             for c in self.children: c.disabled = True
             embed.add_field(name="Result",value="```\nYou have lost```")
         await interaction.response.edit_message(embed=embed, view=self)
@@ -1307,7 +1306,7 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
-        if game.lost():
+        if self.game.lost():
             for c in self.children: c.disabled = True
             embed.add_field(name="Result",value="```\nYou have lost```")
 
@@ -1336,7 +1335,7 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
-        if game.lost():
+        if self.game.lost():
             for c in self.children: c.disabled = True
             embed.add_field(name="Result",value="```\nYou have lost```")
 
@@ -1365,7 +1364,7 @@ class Twenty48_Button(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
             )
         )
-        if game.lost():
+        if self.game.lost():
             for c in self.children: c.disabled = True
             embed.add_field(name="Result",value="```\nYou have lost```")
 

@@ -1197,16 +1197,20 @@ class Twenty48:
             return
 
         board = [[b for b in i] for i in self.board]
-        restore = lambda: setattr(self,"board",board)
+        restore = lambda: setattr(self, "board", board)
 
         self.MoveUp()
-        if self.board != board: return restore()
+        if self.board != board:
+            return restore()
         self.MoveDown()
-        if self.board != board: return restore()
+        if self.board != board:
+            return restore()
         self.MoveLeft()
-        if self.board != board: return restore()
+        if self.board != board:
+            return restore()
         self.MoveRight()
-        if self.board != board: return restore()
+        if self.board != board:
+            return restore()
         return True
 
     def start(self):
@@ -1268,8 +1272,9 @@ class Twenty48_Button(discord.ui.View):
             )
         )
         if self.game.lost():
-            for c in self.children: c.disabled = True
-            embed.add_field(name="Result",value="```\nYou have lost```")
+            for c in self.children:
+                c.disabled = True
+            embed.add_field(name="Result", value="```\nYou have lost```")
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
@@ -1308,8 +1313,9 @@ class Twenty48_Button(discord.ui.View):
             )
         )
         if self.game.lost():
-            for c in self.children: c.disabled = True
-            embed.add_field(name="Result",value="```\nYou have lost```")
+            for c in self.children:
+                c.disabled = True
+            embed.add_field(name="Result", value="```\nYou have lost```")
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -1337,8 +1343,9 @@ class Twenty48_Button(discord.ui.View):
             )
         )
         if self.game.lost():
-            for c in self.children: c.disabled = True
-            embed.add_field(name="Result",value="```\nYou have lost```")
+            for c in self.children:
+                c.disabled = True
+            embed.add_field(name="Result", value="```\nYou have lost```")
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -1366,8 +1373,9 @@ class Twenty48_Button(discord.ui.View):
             )
         )
         if self.game.lost():
-            for c in self.children: c.disabled = True
-            embed.add_field(name="Result",value="```\nYou have lost```")
+            for c in self.children:
+                c.disabled = True
+            embed.add_field(name="Result", value="```\nYou have lost```")
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -2125,9 +2133,9 @@ class NegamaxAI(AI):
         possible_positions = []
         for i in range(3):
             for x in range(3):
-                if board[i][x] == GameState.empty: possible_positions.append([i, x])
+                if board[i][x] == GameState.empty:
+                    possible_positions.append([i, x])
         return possible_positions
-
 
     def min_max(self, board: list, depth: int, player: GameState):
         def determine_win_state(board_, player):
@@ -2144,22 +2152,25 @@ class NegamaxAI(AI):
             return [player, player, player] in win_states
 
         def evaluate(board_):
-            if determine_win_state(board_, GameState.ai): score = +1
-            elif determine_win_state(board_, GameState.player): score = -1
-            else: score = 0
-           
+            if determine_win_state(board_, GameState.ai):
+                score = +1
+            elif determine_win_state(board_, GameState.player):
+                score = -1
+            else:
+                score = 0
+
             return score
 
-
         best = [-1, -1, -math.inf]
-        if player == GameState.player: best[-1] = +math.inf
-
+        if player == GameState.player:
+            best[-1] = +math.inf
 
         if (
             depth == 0
             or determine_win_state(board, GameState.ai)
             or determine_win_state(board, GameState.player)
-        ): return [-1, -1, evaluate(board)]
+        ):
+            return [-1, -1, evaluate(board)]
 
         for cell in self.determine_possible_positions(board):
             x, y = cell[0], cell[1]
@@ -2168,12 +2179,13 @@ class NegamaxAI(AI):
             board[x][y] = GameState.empty
             score[0], score[1] = x, y
             if player == GameState.ai:
-                if score[2] > best[2]: best = score
-            elif score[2] < best[2]: best = score
-
+                if score[2] > best[2]:
+                    best = score
+            elif score[2] < best[2]:
+                best = score
 
         return best
-    
+
     @overload
     def negamax(
         self,
@@ -2207,8 +2219,12 @@ class NegamaxAI(AI):
         if game.over:
             return sign * self.heuristic(game, sign)
 
-
-        return self.min_max(copy.deepcopy,(game.state),len(self.determine_possible_positions()),GameState.ai)
+        return self.min_max(
+            copy.deepcopy,
+            (game.state),
+            len(self.determine_possible_positions()),
+            GameState.ai,
+        )
 
     def move(self, game: Board) -> Board:
         return game.move(*self.negamax(game))

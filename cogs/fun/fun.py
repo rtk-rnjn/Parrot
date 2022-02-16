@@ -3307,10 +3307,10 @@ class Fun(Cog):
         m = await ctx.send("Starting...")
         ls = (
             "(   ° - °) (' - '   )",
-            "(\\\° - °)\ (' - '   )",
+            r"(\° - °)\ (' - '   )",
             "(—°□°)— (' - '   )",
             "(╯°□°)╯(' - '   )",
-            "(╯°□°)╯︵(\\\ .o.)\\",
+            r"(╯°□°)╯︵(\ .o.)\",
         )
         for i in ls:
             await m.edit(content=i)
@@ -3378,11 +3378,11 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
-        m = await ctx.send("`(\°-°)\  ┬─┬`")
+        m = await ctx.send(r"`(\°-°)\  ┬─┬`")
         # Thanks `CutieRei#5211`(830248412904947753)
         # ㅠㅕㅛㅑ
         lst = (
-            "`(\°□°)\  ㅠ`",
+            r"`(\°□°)\  ㅠ`",
             "`(-°□°)-  ㅠ`",
             "`(╯°□°)╯  ㅕ`",
             "`(╯°□°)╯    ㅛ`",
@@ -3391,7 +3391,7 @@ class Fun(Cog):
             "`(╯°□°)╯          ㅕ`",
             "`(╯°□°)╯            ㅛ`",
             "`(╯°□°)╯              ㅑ`",
-            "`(\°-°)\                 ㅠ`",
+            r"`(\°-°)\                 ㅠ`",
         )
 
         for k in lst:

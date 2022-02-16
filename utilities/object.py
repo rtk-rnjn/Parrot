@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Munch is a subclass of dict with attribute-style access.
-    >>> b = Munch()
+""" Object is a subclass of dict with attribute-style access.
+    >>> b = Object()
     >>> b.hello = 'world'
     >>> b.hello
     'world'
     >>> b['hello'] += "!"
     >>> b.hello
     'world!'
-    >>> b.foo = Munch(lol=True)
+    >>> b.foo = Object(lol=True)
     >>> b.foo.lol
     True
     >>> b.foo is b['foo']
     True
     It is safe to import * from this module:
-        __all__ = ('Munch', 'munchify','unmunchify')
-    un/munchify provide dictionary conversion; Munches can also be
-    converted via Munch.to/fromDict().
+        __all__ = ('Object', 'objectify','unobjectify')
+    un/objectify provide dictionary conversion; Munches can also be
+    converted via Object.to/fromDict().
 """
 
 import sys
@@ -25,9 +25,9 @@ __version__ = "2.0.2"
 VERSION = tuple(map(int, __version__.split(".")))
 
 __all__ = (
-    "Munch",
-    "munchify",
-    "unmunchify",
+    "Object",
+    "objectify",
+    "unobjectify",
 )
 
 _PY2 = sys.version_info < (3, 0)
@@ -53,38 +53,38 @@ else:
     iterkeys = dict.keys
 
 
-class Munch(dict):
+class Object(dict):
     """A dictionary that provides attribute-style access.
-    >>> b = Munch()
+    >>> b = Object()
     >>> b.hello = 'world'
     >>> b.hello
     'world'
     >>> b['hello'] += "!"
     >>> b.hello
     'world!'
-    >>> b.foo = Munch(lol=True)
+    >>> b.foo = Object(lol=True)
     >>> b.foo.lol
     True
     >>> b.foo is b['foo']
     True
-    A Munch is a subclass of dict; it supports all the methods a dict does...
+    A Object is a subclass of dict; it supports all the methods a dict does...
     >>> sorted(b.keys())
     ['foo', 'hello']
     Including update()...
     >>> b.update({ 'ponies': 'are pretty!' }, hello=42)
     >>> print (repr(b))
-    Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+    Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
     As well as iteration...
     >>> [ (k,b[k]) for k in b ]
-    [('ponies', 'are pretty!'), ('foo', Munch(lol=True)), ('hello', 42)]
+    [('ponies', 'are pretty!'), ('foo', Object(lol=True)), ('hello', 42)]
     And "splats".
-    >>> "The {knights} who say {ni}!".format(**Munch(knights='lolcats', ni='can haz'))
+    >>> "The {knights} who say {ni}!".format(**Object(knights='lolcats', ni='can haz'))
     'The lolcats who say can haz!'
-    See unmunchify/Munch.toDict, munchify/Munch.fromDict for notes about conversion.
+    See unobjectify/Object.toDict, objectify/Object.fromDict for notes about conversion.
     """
 
     def __contains__(self, k):
-        """>>> b = Munch(ponies='are pretty!')
+        """>>> b = Object(ponies='are pretty!')
         >>> 'ponies' in b
         True
         >>> 'foo' in b
@@ -111,7 +111,7 @@ class Munch(dict):
     def __getattr__(self, k):
         """Gets key if it exists, otherwise throws AttributeError.
         nb. __getattr__ is only called if key is not found in normal places.
-        >>> b = Munch(bar='baz', lol={})
+        >>> b = Object(bar='baz', lol={})
         >>> b.foo
         Traceback (most recent call last):
             ...
@@ -138,11 +138,11 @@ class Munch(dict):
 
     def __setattr__(self, k, v):
         """Sets attribute k if it exists, otherwise sets key k. A KeyError
-        raised by set-item (only likely if you subclass Munch) will
+        raised by set-item (only likely if you subclass Object) will
         propagate as an AttributeError instead.
-        >>> b = Munch(foo='bar', this_is='useful when subclassing')
+        >>> b = Object(foo='bar', this_is='useful when subclassing')
         >>> b.values                            #doctest: +ELLIPSIS
-        <built-in method values of Munch object at 0x...>
+        <built-in method values of Object object at 0x...>
         >>> b.values = 'uh oh'
         >>> b.values
         'uh oh'
@@ -166,11 +166,11 @@ class Munch(dict):
         """Deletes attribute k if it exists, otherwise deletes key k. A KeyError
         raised by deleting the key--such as when the key is missing--will
         propagate as an AttributeError instead.
-        >>> b = Munch(lol=42)
+        >>> b = Object(lol=42)
         >>> del b.values
         Traceback (most recent call last):
             ...
-        AttributeError: 'Munch' object attribute 'values' is read-only
+        AttributeError: 'Object' object attribute 'values' is read-only
         >>> del b.lol
         >>> b.lol
         Traceback (most recent call last):
@@ -189,21 +189,21 @@ class Munch(dict):
             object.__delattr__(self, k)
 
     def toDict(self):
-        """Recursively converts a munch back into a dictionary.
-        >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+        """Recursively converts a Object back into a dictionary.
+        >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         >>> b.toDict()
         {'ponies': 'are pretty!', 'foo': {'lol': True}, 'hello': 42}
-        See unmunchify for more info.
+        See unobjectify for more info.
         """
-        return unmunchify(self)
+        return unobjectify(self)
 
     def __repr__(self):
-        """Invertible* string-form of a Munch.
-        >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+        """Invertible* string-form of a Object.
+        >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         >>> print (repr(b))
-        Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+        Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         >>> eval(repr(b))
-        Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+        Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         (*) Invertible so long as collection contents are each repr-invertible.
         """
         keys = list(iterkeys(self))
@@ -218,31 +218,31 @@ class Munch(dict):
 
     @staticmethod
     def fromDict(d):
-        """Recursively transforms a dictionary into a Munch via copy.
-        >>> b = Munch.fromDict({'urmom': {'sez': {'what': 'what'}}})
+        """Recursively transforms a dictionary into a Object via copy.
+        >>> b = Object.fromDict({'urmom': {'sez': {'what': 'what'}}})
         >>> b.urmom.sez.what
         'what'
-        See munchify for more info.
+        See objectify for more info.
         """
-        return munchify(d)
+        return objectify(d)
 
 
 # While we could convert abstract types like Mapping or Iterable, I think
-# munchify is more likely to "do what you mean" if it is conservative about
+# objectify is more likely to "do what you mean" if it is conservative about
 # casting (ex: isinstance(str,Iterable) == True ).
 #
 # Should you disagree, it is not difficult to duplicate this function with
 # more aggressive coercion to suit your own purposes.
 
 
-def munchify(x):
-    """Recursively transforms a dictionary into a Munch via copy.
-    >>> b = munchify({'urmom': {'sez': {'what': 'what'}}})
+def objectify(x):
+    """Recursively transforms a dictionary into a Object via copy.
+    >>> b = objectify({'urmom': {'sez': {'what': 'what'}}})
     >>> b.urmom.sez.what
     'what'
-    munchify can handle intermediary dicts, lists and tuples (as well as
+    objectify can handle intermediary dicts, lists and tuples (as well as
     their subclasses), but ymmv on custom datatypes.
-    >>> b = munchify({ 'lol': ('cats', {'hah':'i win again'}),
+    >>> b = objectify({ 'lol': ('cats', {'hah':'i win again'}),
     ...         'hello': [{'french':'salut', 'german':'hallo'}] })
     >>> b.hello[0].french
     'salut'
@@ -251,30 +251,30 @@ def munchify(x):
     nb. As dicts are not hashable, they cannot be nested in sets/frozensets.
     """
     if isinstance(x, dict):
-        return Munch((k, munchify(v)) for k, v in iteritems(x))
+        return Object((k, objectify(v)) for k, v in iteritems(x))
     if isinstance(x, (list, tuple)):
-        return type(x)(munchify(v) for v in x)
+        return type(x)(objectify(v) for v in x)
     return x
 
 
-def unmunchify(x):
-    """Recursively converts a Munch into a dictionary.
-    >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
-    >>> unmunchify(b)
+def unobjectify(x):
+    """Recursively converts a Object into a dictionary.
+    >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
+    >>> unobjectify(b)
     {'ponies': 'are pretty!', 'foo': {'lol': True}, 'hello': 42}
-    unmunchify will handle intermediary dicts, lists and tuples (as well as
+    unobjectify will handle intermediary dicts, lists and tuples (as well as
     their subclasses), but ymmv on custom datatypes.
-    >>> b = Munch(foo=['bar', Munch(lol=True)], hello=42,
-    ...         ponies=('are pretty!', Munch(lies='are trouble!')))
-    >>> unmunchify(b) #doctest: +NORMALIZE_WHITESPACE
+    >>> b = Object(foo=['bar', Object(lol=True)], hello=42,
+    ...         ponies=('are pretty!', Object(lies='are trouble!')))
+    >>> unobjectify(b) #doctest: +NORMALIZE_WHITESPACE
     {'ponies': ('are pretty!', {'lies': 'are trouble!'}),
      'foo': ['bar', {'lol': True}], 'hello': 42}
     nb. As dicts are not hashable, they cannot be nested in sets/frozensets.
     """
     if isinstance(x, dict):
-        return {(k, unmunchify(v)) for k, v in iteritems(x)}
+        return {(k, unobjectify(v)) for k, v in iteritems(x)}
     if isinstance(x, (list, tuple)):
-        return type(x)(unmunchify(v) for v in x)
+        return type(x)(unobjectify(v) for v in x)
     return x
 
 
@@ -287,8 +287,8 @@ except ImportError:
 
 
 def toJSON(self, **options):
-    """Serializes this Munch to JSON. Accepts the same keyword options as `json.dumps()`.
-    >>> b = Munch(foo=Munch(lol=True), hello=42, ponies='are pretty!')
+    """Serializes this Object to JSON. Accepts the same keyword options as `json.dumps()`.
+    >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
     >>> json.dumps(b)
     '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
     >>> b.toJSON()
@@ -297,7 +297,7 @@ def toJSON(self, **options):
     return (json.dumps(self, **options)).decode()
 
 
-Munch.toJSON = toJSON
+Object.toJSON = toJSON
 
 try:
     # Attempt to register ourself with PyYAML as a representer
@@ -305,30 +305,30 @@ try:
     from yaml.representer import Representer, SafeRepresenter
 
     def from_yaml(loader, node):
-        """PyYAML support for Munches using the tag `!munch` and `!munch.Munch`.
+        """PyYAML support for Munches using the tag `!object` and `!object.Object`.
         >>> import yaml
         >>> yaml.load('''
-        ... Flow style: !munch.Munch { Clark: Evans, Brian: Ingerson, Oren: Ben-Kiki }
-        ... Block style: !munch
+        ... Flow style: !object.Object { Clark: Evans, Brian: Ingerson, Oren: Ben-Kiki }
+        ... Block style: !object
         ...   Clark : Evans
         ...   Brian : Ingerson
         ...   Oren  : Ben-Kiki
         ... ''') #doctest: +NORMALIZE_WHITESPACE
-        {'Flow style': Munch(Brian='Ingerson', Clark='Evans', Oren='Ben-Kiki'),
-         'Block style': Munch(Brian='Ingerson', Clark='Evans', Oren='Ben-Kiki')}
-        This module registers itself automatically to cover both Munch and any
+        {'Flow style': Object(Brian='Ingerson', Clark='Evans', Oren='Ben-Kiki'),
+         'Block style': Object(Brian='Ingerson', Clark='Evans', Oren='Ben-Kiki')}
+        This module registers itself automatically to cover both Object and any
         subclasses. Should you want to customize the representation of a subclass,
         simply register it with PyYAML yourself.
         """
-        data = Munch()
+        data = Object()
         yield data
         value = loader.construct_mapping(node)
         data.update(value)
 
     def to_yaml_safe(dumper, data):
-        """Converts Munch to a normal mapping node, making it appear as a
+        """Converts Object to a normal mapping node, making it appear as a
         dict in the YAML output.
-        >>> b = Munch(foo=['bar', Munch(lol=True)], hello=42)
+        >>> b = Object(foo=['bar', Object(lol=True)], hello=42)
         >>> import yaml
         >>> yaml.safe_dump(b, default_flow_style=True)
         '{foo: [bar, {lol: true}], hello: 42}\\n'
@@ -336,37 +336,37 @@ try:
         return dumper.represent_dict(data)
 
     def to_yaml(dumper, data):
-        """Converts Munch to a representation node.
-        >>> b = Munch(foo=['bar', Munch(lol=True)], hello=42)
+        """Converts Object to a representation node.
+        >>> b = Object(foo=['bar', Object(lol=True)], hello=42)
         >>> import yaml
         >>> yaml.dump(b, default_flow_style=True)
-        '!munch.Munch {foo: [bar, !munch.Munch {lol: true}], hello: 42}\\n'
+        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
         """
-        return dumper.represent_mapping(u("!munch.Munch"), data)
+        return dumper.represent_mapping(u("!object.Object"), data)
 
-    yaml.add_constructor(u("!munch"), from_yaml)
-    yaml.add_constructor(u("!munch.Munch"), from_yaml)
+    yaml.add_constructor(u("!object"), from_yaml)
+    yaml.add_constructor(u("!object.Object"), from_yaml)
 
-    SafeRepresenter.add_representer(Munch, to_yaml_safe)
-    SafeRepresenter.add_multi_representer(Munch, to_yaml_safe)
+    SafeRepresenter.add_representer(Object, to_yaml_safe)
+    SafeRepresenter.add_multi_representer(Object, to_yaml_safe)
 
-    Representer.add_representer(Munch, to_yaml)
-    Representer.add_multi_representer(Munch, to_yaml)
+    Representer.add_representer(Object, to_yaml)
+    Representer.add_multi_representer(Object, to_yaml)
 
     # Instance methods for YAML conversion
     def toYAML(self, **options):
-        """Serializes this Munch to YAML, using `yaml.safe_dump()` if
+        """Serializes this Object to YAML, using `yaml.safe_dump()` if
         no `Dumper` is provided. See the PyYAML documentation for more info.
-        >>> b = Munch(foo=['bar', Munch(lol=True)], hello=42)
+        >>> b = Object(foo=['bar', Object(lol=True)], hello=42)
         >>> import yaml
         >>> yaml.safe_dump(b, default_flow_style=True)
         '{foo: [bar, {lol: true}], hello: 42}\\n'
         >>> b.toYAML(default_flow_style=True)
         '{foo: [bar, {lol: true}], hello: 42}\\n'
         >>> yaml.dump(b, default_flow_style=True)
-        '!munch.Munch {foo: [bar, !munch.Munch {lol: true}], hello: 42}\\n'
+        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
         >>> b.toYAML(Dumper=yaml.Dumper, default_flow_style=True)
-        '!munch.Munch {foo: [bar, !munch.Munch {lol: true}], hello: 42}\\n'
+        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
         """
         opts = dict(indent=4, default_flow_style=False)
         opts.update(options)
@@ -375,10 +375,10 @@ try:
         return yaml.dump(self, **opts)
 
     def fromYAML(*args, **kwargs):
-        return munchify(yaml.safe_load(*args, **kwargs))
+        return objectify(yaml.safe_load(*args, **kwargs))
 
-    Munch.toYAML = toYAML
-    Munch.fromYAML = staticmethod(fromYAML)
+    Object.toYAML = toYAML
+    Object.fromYAML = staticmethod(fromYAML)
 
 except ImportError:
     pass

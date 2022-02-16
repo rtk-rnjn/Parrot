@@ -2284,7 +2284,7 @@ class GameTicTacToe(discord.ui.View):
         self.board = Board.new_game()
 
         if self.current_player.bot:
-            self.make_ai_move()
+            await self.make_ai_move()
 
         for r in range(3):
             for c in range(3):

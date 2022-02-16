@@ -656,7 +656,7 @@ class Meta(Cog):
             timestamp=datetime.datetime.utcnow(),
         )
 
-        embed.set_thumbnail(url=target.avatar.url)
+        embed.set_thumbnail(url=target.display_avatar.url)
         embed.set_footer(text=f"ID: {target.id}")
         fields = [
             ("Name", str(target), True),

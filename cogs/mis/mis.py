@@ -107,8 +107,7 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
 def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):
         return match.group("code")
-    else:
-        return text
+    return text
 
 
 def _process_image(data: bytes, out_file: typing.BinaryIO) -> None:

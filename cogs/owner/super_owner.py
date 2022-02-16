@@ -354,9 +354,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             data={"size": "auto", "image_file": imgdata},
             headers={"X-Api-Key": f'{os.environ["REMOVE_BG"]}'},
         )
-        async with async_open("no-bg.png", "wb") as out:
-            await out.write(await response.read())
-        await ctx.send(file=discord.File("no-bg.png"))
+        img = io.BytesIO(await response.read())
+        await ctx.send(file=discord.File(img, "nobg.png"))
 
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
@@ -381,7 +380,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
-`Responsible Moderator`: <@{entry.user.id if entry.user else 'Can not determine the Moderator'}>
+`Responsible Moderator`: {'<@' + str(entry.user.id) + '>' if entry.user else 'Can not determine the Moderator'}
 `Action performed on  `: {entry.target or 'Can not determine the Target'}
 """
             ls.append(st)

@@ -238,10 +238,10 @@ class Utils(Cog):
     async def tag_mine(self, ctx: Context):
         """To show those tag which you own"""
         await mt._show_tag_mine(self.bot, ctx)
-    
+
     @tag.command(name="raw")
     @commands.bot_has_permissions(embed_links=True)
-    async def tag_raw(self, ctx: Context, *, tag:str):
+    async def tag_raw(self, ctx: Context, *, tag: str):
         """To show the tag in raw format"""
         await mt._show_raw_tag(self.bot, ctx, tag)
 
@@ -482,13 +482,13 @@ class Utils(Cog):
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):
-        async with asyncio.Lock():
+        async with self.lock:
             async for data in self.collection.find(
                 {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
             ):
                 cog = self.bot.get_cog("EventCustom")
-                await cog.on_timer_complete(**data)
                 await self.collection.delete_one({"_id": data["_id"]})
+                await cog.on_timer_complete(**data)
 
     @reminder_task.before_loop
     async def before_reminder_task(self):

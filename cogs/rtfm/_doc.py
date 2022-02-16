@@ -6,11 +6,22 @@ from string import ascii_uppercase
 
 import aiohttp
 import discord
-from bs4 import BeautifulSoup
 import asyncio
 
+from bs4 import BeautifulSoup
+from typing import Any, Optional
 
-async def python_doc(ctx, text: str):
+from utilities.converters import ToAsync
+from core import Context
+
+
+@ToAsync
+def get_ele(soup, *arg: Any, **kw: Any):
+    url = soup.find_all(*arg, **kw)
+    return url
+
+
+async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     """Filters python.org results based on your query"""
     text = text.strip("`")
 
@@ -34,7 +45,7 @@ async def python_doc(ctx, text: str):
                     and tag.name == "li"
                 )
 
-            elements = await asyncio.to_thread(soup.find_all, soup_match, limit=10)
+            elements = await get_ele(soup.find_all, soup_match, limit=10)
             links = [tag.select_one("li > a") for tag in elements]
             links = [link for link in links if link is not None]
 
@@ -55,7 +66,7 @@ async def python_doc(ctx, text: str):
             await ctx.send(embed=emb)
 
 
-async def _cppreference(language, ctx, text: str):
+async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.Message]:
     """Search something on cppreference"""
     text = text.strip("`")
 
@@ -72,10 +83,7 @@ async def _cppreference(language, ctx, text: str):
                 )
 
             soup = BeautifulSoup(await response.text(), "html.parser")
-
-            uls = await asyncio.to_thread(
-                soup.find_all, "ul", class_="mw-search-results"
-            )
+            uls = await get_ele(soup, "ul", class_="mw-search-results")
 
             if not uls:
                 return await ctx.send(f"{ctx.author.mention} no results")
@@ -108,7 +116,7 @@ c_doc = partial(_cppreference, "C")
 cpp_doc = partial(_cppreference, "C++")
 
 
-async def haskell_doc(ctx, text: str):
+async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     """Search something on wiki.haskell.org"""
     text = text.strip("`")
 
@@ -142,7 +150,7 @@ async def haskell_doc(ctx, text: str):
             )
 
             content = []
-            ls = await asyncio.to_thread(ul.find_all, "li", limit=10)
+            ls = await get_ele(ul.find_all, "li", limit=10)
             for li in ls:
                 a = li.find("div", class_="mw-search-result-heading").find("a")
                 content.append(

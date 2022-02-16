@@ -58,9 +58,10 @@ async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
     await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
 
+
 async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({'_id': tag}):
+    if data := await collection.find_one({"_id": tag}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mention(first)
         if not data["nsfw"]:
@@ -74,6 +75,7 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
                 )
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+
 
 async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]

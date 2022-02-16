@@ -375,7 +375,9 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one({"_id": message.guild.id}, {"prefix": 1}):
+            if data := await collection.find_one(
+                {"_id": message.guild.id}, {"prefix": 1}
+            ):
                 prefix = data["prefix"]
                 post = data
             else:

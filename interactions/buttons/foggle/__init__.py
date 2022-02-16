@@ -141,13 +141,16 @@ DIE = {
 
 NUMBER_PATTERN = re.compile("[^0-9A-Fa-f]")
 
-POINTS = {**{
-    3: 1,
-    4: 1,
-    5: 2,
-    6: 3,
-    7: 5,
-}, **{x: 11 for x in range(8, SUPER_BIG**2)}}
+POINTS = {
+    **{
+        3: 1,
+        4: 1,
+        5: 2,
+        6: 3,
+        7: 5,
+    },
+    **{x: 11 for x in range(8, SUPER_BIG**2)},
+}
 
 FOGGLE_RULES = """The goal of Foggle is create equations, using simple arithmetic (e.g. +, -, *, /, ^ and parentheses) which equates to the given magic number.
 Numbers must be adjacent (up-down, left-right or diagonal) to eachother on the Foggle board.

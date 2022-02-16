@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import discord
-import random
 
 from datetime import datetime
 from time import time
@@ -9,9 +8,6 @@ from time import time
 from utilities.database import tags, todo, parrot_db, cluster
 from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
-from utilities.time import ShortTime
-
-from discord.ext import commands
 
 from core import Parrot, Context
 
@@ -62,9 +58,10 @@ async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
     await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
 
+
 async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
     collection = tags[f"{ctx.guild.id}"]
-    if data := await collection.find_one({'_id': tag}):
+    if data := await collection.find_one({"_id": tag}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mention(first)
         if not data["nsfw"]:
@@ -78,6 +75,7 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
                 )
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+
 
 async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     collection = tags[f"{ctx.guild.id}"]

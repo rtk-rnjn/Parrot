@@ -36,10 +36,7 @@ from akinator.async_aki import Akinator
 import emojis
 import chess
 import tabulate
-import copy
 from aiofile import async_open
-
-from utilities.converters import ToAsync
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.paginator import ParrotPaginator
 from utilities.constants import Colours

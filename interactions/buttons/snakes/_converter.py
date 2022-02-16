@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import asyncio
-import logging
 import random
 from collections.abc import Iterable
 from typing import Optional, List

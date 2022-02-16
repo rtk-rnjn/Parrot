@@ -1,9 +1,8 @@
 from __future__ import annotations
-from string import whitespace
 
 from core import Parrot, Cog
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 import aiohttp
 import asyncio

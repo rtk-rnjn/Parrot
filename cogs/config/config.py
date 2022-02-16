@@ -9,10 +9,8 @@ import re
 import json
 
 from core import Parrot, Context, Cog
-from datetime import datetime
 
 from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
-from utilities.paginator import PaginationView
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime

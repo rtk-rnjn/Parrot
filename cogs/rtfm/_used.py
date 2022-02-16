@@ -1,12 +1,8 @@
 from __future__ import annotations
-
-import functools
-import aiohttp
 import discord
 import re
 from discord.ext import commands
 from yaml import safe_load as yaml_load
-from utilities.paste import paste
 
 from ._tio import Tio
 

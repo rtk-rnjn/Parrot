@@ -2260,7 +2260,7 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
             return
 
         if self.view.current_player.bot:
-            await self.view.make_ai_move()
+            self.view.make_ai_move()
             self.view.update()
 
         if self.view.board.over:
@@ -2284,7 +2284,7 @@ class GameTicTacToe(discord.ui.View):
         self.board = Board.new_game()
 
         if self.current_player.bot:
-            await self.make_ai_move()
+            self.make_ai_move()
 
         for r in range(3):
             for c in range(3):
@@ -2321,7 +2321,6 @@ class GameTicTacToe(discord.ui.View):
             return False
         return True
 
-    @ToAsync()
     def make_ai_move(self):
         ai = NegamaxAI(self.board.current_player)
         self.board = ai.move(self.board)

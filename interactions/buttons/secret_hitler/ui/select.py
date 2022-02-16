@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, List
 
 import discord
 
@@ -34,9 +34,9 @@ class SelectButton(discord.ui.Button[V], Generic[T, V]):
 
 
 class SelectUI(InputUI, Generic[T], metaclass=ABCMeta):
-    children: list[SelectButton]
+    children: List[SelectButton]
 
-    def __init__(self, game: GameUI, target: Player, options: list[T]):
+    def __init__(self, game: GameUI, target: Player, options: List[T]):
         self.target = target
         self.options = options
         super().__init__(game)

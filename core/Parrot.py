@@ -102,7 +102,7 @@ class Parrot(commands.AutoShardedBot):
         self.http_session = ClientSession(
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
-        self.server_config = LRU(8)
+        self.server_config = LRU(64)
         self.mystbin = Client()
         for ext in EXTENSIONS:
             try:
@@ -375,7 +375,9 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one({"_id": message.guild.id}):
+            if data := await collection.find_one(
+                {"_id": message.guild.id}, {"prefix": 1}
+            ):
                 prefix = data["prefix"]
                 post = data
             else:

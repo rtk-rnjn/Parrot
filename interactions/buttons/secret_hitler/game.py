@@ -5,7 +5,7 @@ import random
 from abc import ABCMeta, abstractmethod
 from collections.abc import Collection
 from functools import cached_property
-from typing import Any, Generic, Literal, NoReturn, Optional, TypeVar, Union
+from typing import Any, Generic, Literal, NoReturn, Optional, TypeVar, Union, List, Dict
 
 from discord.enums import Enum
 from discord.utils import MISSING
@@ -13,17 +13,17 @@ from discord.utils import MISSING
 
 def format_list(
     string: str,
-    *list: Any,
+    *ls: Any,
     singular: str = "has",
     plural: str = "have",
-    oxford_comma: bool = True
+    oxford_comma: bool = True,
 ) -> str:
-    if len(list) == 0:
+    if len(ls) == 0:
         return string.format("no-one", singular)
-    if len(list) == 1:
-        return string.format(list[0], singular)
+    if len(ls) == 1:
+        return string.format(ls[0], singular)
 
-    *rest, last = list
+    *rest, last = ls
     rest_str = ", ".join(str(item) for item in rest)
     return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
 
@@ -33,7 +33,7 @@ U = TypeVar("U")
 
 PlayerCount = Literal[5, 6, 7, 8, 9, 10]
 
-PLAYER_COUNTS: list[PlayerCount] = [5, 6, 7, 8, 9, 10]
+PLAYER_COUNTS: List[PlayerCount] = [5, 6, 7, 8, 9, 10]
 
 
 class _Skip:
@@ -70,7 +70,7 @@ class Power(Enum):
     Execution = 3
 
 
-ROLES: dict[PlayerCount, list[Role]] = {
+ROLES: Dict[PlayerCount, List[Role]] = {
     5: [Role.Liberal] * 3 + [Role.Fascist] * 1,
     6: [Role.Liberal] * 4 + [Role.Fascist] * 1,
     7: [Role.Liberal] * 4 + [Role.Fascist] * 2,
@@ -89,7 +89,7 @@ _r()
 
 # fmt: on
 
-SECRET_MESSAGES: dict[PlayerCount, dict[Role, str]] = {
+SECRET_MESSAGES: Dict[PlayerCount, Dict[Role, str]] = {
     5: {
         Role.Liberal: "You are a Liberal.",
         Role.Fascist: "You are a Fascist, {0} is Hitler.",
@@ -124,18 +124,18 @@ def _s():  # See above
 
 _s()
 
-PARTIES: dict[Role, Party] = {
+PARTIES: Dict[Role, Party] = {
     Role.Liberal: Party.Liberal,
     Role.Fascist: Party.Fascist,
     Role.Hitler: Party.Fascist,
 }
 
-POLICIES: dict[Party, int] = {
+POLICIES: Dict[Party, int] = {
     Party.Liberal: 6,
     Party.Fascist: 11,
 }
 
-POWERS: dict[PlayerCount, list[Optional[Power]]] = {
+POWERS: Dict[PlayerCount, List[Optional[Power]]] = {
     5: [None, None, None, Power.Peek],
     7: [None, None, Power.Investigate, Power.Election],
     9: [None, Power.Investigate, Power.Investigate, Power.Election],
@@ -191,10 +191,10 @@ class UserInputGameState(GameState[T], metaclass=ABCMeta):
 
 
 class AfterVoteGameState(GameState[T], metaclass=ABCMeta):
-    votes: dict[Player[T], bool]
+    votes: Dict[Player[T], bool]
 
-    def __init__(self, game: Game[T], votes: dict[Player[T], bool]) -> None:
-        self.votes: dict[Player[T], bool] = votes
+    def __init__(self, game: Game[T], votes: Dict[Player[T], bool]) -> None:
+        self.votes: Dict[Player[T], bool] = votes
         super().__init__(game)
 
     @property
@@ -222,7 +222,7 @@ class SelectGameState(UserInputGameState[T], Generic[T, U], metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def selectable(self) -> list[U]:
+    def selectable(self) -> List[U]:
         raise NotImplementedError
 
     @property
@@ -233,11 +233,11 @@ class SelectGameState(UserInputGameState[T], Generic[T, U], metaclass=ABCMeta):
 class VoteGameState(UserInputGameState[T], metaclass=ABCMeta):
     def __init__(self, game: Game[T]) -> None:
         super().__init__(game)
-        self.votes: dict[Player[T], bool] = {}
+        self.votes: Dict[Player[T], bool] = {}
 
     @property
     @abstractmethod
-    def voters(self) -> list[Player[T]]:
+    def voters(self) -> List[Player[T]]:
         raise NotImplementedError
 
     @property
@@ -257,7 +257,7 @@ class PlayerToBeChancellor(SelectGameState[T, Player[T]]):
             self.game.shuffle_policies()
 
     @property
-    def selectable(self) -> list[Player[T]]:
+    def selectable(self) -> List[Player[T]]:
         players = []
 
         for player in self.game.players:
@@ -289,7 +289,7 @@ class VoteOnGovernment(VoteGameState[T]):
         super().__init__(game)
 
     @property
-    def voters(self) -> list[Player[T]]:
+    def voters(self) -> List[Player[T]]:
         return [player for player in self.game.players if not player.dead]
 
     # region private properties
@@ -320,7 +320,7 @@ class VotePassed(AfterVoteGameState[T]):
     def __init__(
         self,
         game: Game[T],
-        votes: dict[Player[T], bool],
+        votes: Dict[Player[T], bool],
         president: Player[T],
         chancellor: Player[T],
     ) -> None:
@@ -346,10 +346,10 @@ class PresidentDiscardsPolicy(SelectGameState[T, Party]):
     def __init__(self, game: Game[T]) -> None:
         super().__init__(game)
 
-        self.policies: list[Party] = self.game.draw_policies()
+        self.policies: List[Party] = self.game.draw_policies()
 
     @property
-    def selectable(self) -> list[Party]:
+    def selectable(self) -> List[Party]:
         return self.policies
 
     def next_state(self) -> GameState[T]:
@@ -363,12 +363,12 @@ class ChancellorDiscardsPolicy(SelectGameState[T, Party]):
     message = "The Chancellor will select a policy to be discarded."
     tooltip = "Select a policy to discard, the remaining policy will be enacted."
 
-    def __init__(self, game: Game[T], policies: list[Party]) -> None:
-        self.policies: list[Party] = policies
+    def __init__(self, game: Game[T], policies: List[Party]) -> None:
+        self.policies: List[Party] = policies
         super().__init__(game)
 
     @property
-    def selectable(self) -> list[Party]:
+    def selectable(self) -> List[Party]:
         return self.policies
 
     def next_state(self) -> GameState[T]:
@@ -430,7 +430,7 @@ class PolicyEnacted(GameState[T]):
 class VoteFailed(AfterVoteGameState[T]):
     _message = "The vote failed. The Election Tracker moves to position {0.game.election_tracker}."
 
-    def __init__(self, game: Game[T], votes: dict[Player[T], bool]) -> None:
+    def __init__(self, game: Game[T], votes: Dict[Player[T], bool]) -> None:
         super().__init__(game, votes)
 
         self.game.election_tracker += 1
@@ -478,7 +478,7 @@ class PolicyListPeek(UserInputGameState[T]):
     def __init__(self, game: Game[T]) -> None:
         super().__init__(game)
 
-        self.policies: list[Party] = self.game.draw_pile[:3]
+        self.policies: List[Party] = self.game.draw_pile[:3]
 
     def next_state(self) -> GameState[T]:
         return PresidencyRotates[T](self.game)
@@ -489,7 +489,7 @@ class PlayerToBePresident(SelectGameState[T, Player[T]]):
     tooltip = "Select the next president."
 
     @property
-    def selectable(self) -> list[Player[T]]:
+    def selectable(self) -> List[Player[T]]:
         players = []
 
         for player in self.game.players:
@@ -510,7 +510,7 @@ class PlayerToBeInvesitgated(SelectGameState[T, Player[T]]):
     tooltip = "Select a player to investigate."
 
     @property
-    def selectable(self) -> list[Player[T]]:
+    def selectable(self) -> List[Player[T]]:
         players = []
 
         for player in self.game.players:
@@ -542,7 +542,7 @@ class PlayerToBeExecuted(SelectGameState[T, Player[T]]):
     tooltip = "Select a player to execute."
 
     @property
-    def selectable(self) -> list[Player[T]]:
+    def selectable(self) -> List[Player[T]]:
         players = []
 
         for player in self.game.players:
@@ -578,7 +578,7 @@ class GovernmentCanVeto(VoteGameState[T]):
         super().__init__(game)
 
     @property
-    def voters(self) -> list[Player[T]]:
+    def voters(self) -> List[Player[T]]:
         return [self.game.president, self.game.chancellor]
 
     # region private properties
@@ -682,10 +682,10 @@ class GameOver(GameState[T]):
 
 class Game(Generic[T]):
     def __init__(self, identifiers: Collection[T]) -> None:
-        self._summary: list[str] = []
+        self._summary: List[str] = []
 
         # Players
-        self.players: list[Player[T]] = [
+        self.players: List[Player[T]] = [
             Player[T](identifier, role)
             for identifier, role in zip(identifiers, ROLES[len(identifiers)])
         ]  # type: ignore
@@ -696,17 +696,17 @@ class Game(Generic[T]):
         # Policies
         liberal_policies = POLICIES[Party.Liberal]
         fascsit_policies = POLICIES[Party.Fascist]
-        self.draw_pile: list[Party] = [Party.Liberal] * liberal_policies + [
+        self.draw_pile: List[Party] = [Party.Liberal] * liberal_policies + [
             Party.Fascist
         ] * fascsit_policies
-        self.discard_pile: list[Party] = []
+        self.discard_pile: List[Party] = []
         random.shuffle(self.draw_pile)
 
         self.liberal_policies: int = 0
         self.fascist_policies: int = 0
 
         # Election tracking
-        self.previously_elected: list[Player] = []
+        self.previously_elected: List[Player] = []
         self.president: Player = MISSING
         self.chancellor: Player = MISSING
         self.election_tracker: int = 0
@@ -730,11 +730,11 @@ class Game(Generic[T]):
         return self.get_players(Role.Hitler)[0]
 
     @cached_property
-    def liberals(self) -> list[Player]:
+    def liberals(self) -> List[Player]:
         return self.get_players(Party.Liberal)
 
     @cached_property
-    def fascists(self) -> list[Player]:
+    def fascists(self) -> List[Player]:
         return self.get_players(Party.Fascist)
 
     def get_player(self, identifier: Optional[T]) -> Optional[Player[T]]:
@@ -743,7 +743,7 @@ class Game(Generic[T]):
                 return player
         return None
 
-    def get_players(self, identifier: Union[Party, Role]) -> list[Player[T]]:
+    def get_players(self, identifier: Union[Party, Role]) -> List[Player[T]]:
         if isinstance(identifier, Role):
             return [player for player in self.players if player.role is identifier]
         return [player for player in self.players if player.party is identifier]
@@ -751,7 +751,7 @@ class Game(Generic[T]):
     def draw_policy(self) -> Party:
         return self.draw_pile.pop(0)
 
-    def draw_policies(self) -> list[Party]:
+    def draw_policies(self) -> List[Party]:
         return [self.draw_policy() for _ in range(3)]
 
     def shuffle_policies(self):

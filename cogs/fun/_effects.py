@@ -2,7 +2,7 @@ import math
 import random
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple, List
 
 import discord
 from PIL import Image, ImageDraw, ImageOps
@@ -47,14 +47,14 @@ class PfpEffects:
         return discord.File(bufferedio, filename=filename)
 
     @staticmethod
-    def closest(x: tuple[int, int, int]) -> tuple[int, int, int]:
+    def closest(x: Tuple[int, int, int]) -> Tuple[int, int, int]:
         """
         Finds the closest "easter" colour to a given pixel.
         Returns a merge between the original colour and the closest colour.
         """
         r1, g1, b1 = x
 
-        def distance(point: tuple[int, int, int]) -> int:
+        def distance(point: Tuple[int, int, int]) -> int:
             """Finds the difference between a pastel colour and the original pixel colour."""
             r2, g2, b2 = point
             return (r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2
@@ -225,7 +225,7 @@ class PfpEffects:
         return new_imgs
 
     @staticmethod
-    def join_images(images: list[Image.Image]) -> Image.Image:
+    def join_images(images: List[Image.Image]) -> Image.Image:
         """
         Stitches all the image squares into a new image.
         Explanation:

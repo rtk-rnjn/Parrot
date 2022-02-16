@@ -18,6 +18,8 @@ from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
 from collections import Counter
+
+from utilities.formats import get_cmd_signature
 from .robopage import RoboPages
 
 import datetime
@@ -82,10 +84,10 @@ class GroupHelpPageSource(menus.ListPageSource):
             timestamp=datetime.datetime.utcnow(),
         )
 
-        for command in commands:
+        for index, command in enumerate(commands):
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
-                name=command.qualified_name,
+                name=f"\N{BULLET} {command.qualified_name}",
                 value=f"> `{signature}`\n{command.short_doc or 'No help given for the time being...'}",
                 inline=False,
             )
@@ -289,16 +291,17 @@ class PaginatedHelpCommand(commands.HelpCommand):
             )
 
     def get_command_signature(self, command):
-        parent = command.full_parent_name
-        if len(command.aliases) > 0:
-            aliases = "|".join(command.aliases)
-            fmt = f"[{command.name}|{aliases}]"
-            if parent:
-                fmt = f"{parent} {fmt}"
-            alias = fmt
-        else:
-            alias = command.name if not parent else f"{parent} {command.name}"
-        return f"{alias} {command.signature}"
+        # parent = command.full_parent_name
+        # if len(command.aliases) > 0:
+        #     aliases = "|".join(command.aliases)
+        #     fmt = f"[{command.name}|{aliases}]"
+        #     if parent:
+        #         fmt = f"{parent} {fmt}"
+        #     alias = fmt
+        # else:
+        #     alias = command.name if not parent else f"{parent} {command.name}"
+        # return f"{alias} {command.signature}"
+        return get_cmd_signature(command, default=False)
 
     async def send_bot_help(self, mapping):
         await self.context.trigger_typing()
@@ -335,17 +338,31 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await menu.start()
 
     def common_command_formatting(self, embed_like, command):
-        embed_like.title = self.get_command_signature(command)
+        embed_like.title = command.qualified_name
+        embed_like.add_field(
+            name="Syntax",
+            value=f"`{self.get_command_signature(command)}`",
+            inline=False,
+        )
+        if command.aliases:
+            embed_like.add_field(
+                name="Aliases", value=f"`{', '.join(command.aliases)}`", inline=False
+            )
         if command.description:
-            embed_like.description = f"{command.description}\n\n{command.help}"
+            embed_like.description = f"> {command.description}\n\n{command.help}"
         else:
-            embed_like.description = command.help or "No help found..."
+            embed_like.description = f'> {command.help or "No help found..."}'
 
     async def send_command_help(self, command):
         await self.context.trigger_typing()
         # No pagination necessary for a single command.
         embed = discord.Embed(
             colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_thumbnail(url=self.context.me.display_avatar.url)
+        embed.set_footer(
+            text=f"{self.context.author}",
+            icon_url=self.context.author.display_avatar.url,
         )
         self.common_command_formatting(embed, command)
         await self.context.send(embed=embed)
@@ -413,12 +430,12 @@ class Meta(Cog):
         """
         member = member or ctx.author
         embed = discord.Embed(timestamp=datetime.datetime.utcnow())
-        embed.add_field(
-            name=member.name, value=f"[Download]({member.display_avatar.url})"
-        )
+        # embed.add_field(
+        #     name=member.name, value=f"[Download]({member.display_avatar.url})"
+        # )
         embed.set_image(url=member.display_avatar.url)
         embed.set_footer(
-            text=f"Requested by {ctx.author.name}",
+            text=f"Requested by {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
         await ctx.reply(embed=embed)
@@ -600,7 +617,7 @@ class Meta(Cog):
         with proc.oneshot():
             uptime = timedelta(seconds=time() - proc.create_time())
             cpu_time = timedelta(seconds=(cpu := proc.cpu_times()).system + cpu.user)
-            mem_total = virtual_memory().total / (1024 ** 2)
+            mem_total = virtual_memory().total / (1024**2)
             mem_of_total = proc.memory_percent()
             mem_usage = mem_total * (mem_of_total / 100)
 

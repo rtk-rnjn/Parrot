@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Tuple
 
 from discord.ext import commands
 
@@ -39,11 +40,11 @@ class Row(commands.Converter[int]):
         return cls.from_char(argument)
 
 
-class Cell(commands.Converter[tuple[int, int]]):
+class Cell(commands.Converter[Tuple[int, int]]):
     """Returns the index of a row and column."""
 
     @classmethod
-    async def convert(cls, ctx: commands.Context, argument: str) -> tuple[int, int]:
+    async def convert(cls, ctx: commands.Context, argument: str) -> Tuple[int, int]:
         if re.match(r"[A-z]:?\d+", argument):
             return (Row.from_char(argument[1:]), Column.from_char(argument[0]))
 

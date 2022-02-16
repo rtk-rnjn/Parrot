@@ -9,7 +9,18 @@ from functools import partial, cached_property, wraps
 from string import ascii_uppercase
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Iterator, Literal, Optional, Union, overload, Dict, NamedTuple
+from typing import (
+    Any,
+    Iterator,
+    Literal,
+    Optional,
+    Union,
+    overload,
+    Dict,
+    NamedTuple,
+    List,
+    Tuple,
+)
 
 import discord
 from discord import Member as User
@@ -76,14 +87,17 @@ REGIONAL_INDICATOR_EMOJI = (
 DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 
 LETTERS_EMOJI = {
-    "#": "\N{BLACK SQUARE FOR STOP}\ufe0f",
-    "1": AN_EMOJI,
-    "2": ER_EMOJI,
-    "3": HE_EMOJI,
-    "4": IN_EMOJI,
-    "5": QU_EMOJI,
-    "6": TH_EMOJI,
-} | dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI))
+    **{
+        "#": "\N{BLACK SQUARE FOR STOP}\ufe0f",
+        "1": AN_EMOJI,
+        "2": ER_EMOJI,
+        "3": HE_EMOJI,
+        "4": IN_EMOJI,
+        "5": QU_EMOJI,
+        "6": TH_EMOJI,
+    },
+    **dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI)),
+}
 
 # fmt: off
 
@@ -121,13 +135,9 @@ DIE = {
 with open("extra/boggle.txt") as f:
     DICTIONARY = set(f.read().splitlines())
 
-POINTS = {
-    3: 1,
-    4: 1,
-    5: 2,
-    6: 3,
-    7: 5,
-} | {x: 11 for x in range(8, SUPER_BIG**2)}
+__1 = {3: 1, 4: 1, 5: 2, 6: 3, 7: 5}
+__2 = {x: 11 for x in range(8, SUPER_BIG**2)}
+POINTS = {**__1, **__2}
 
 
 class Position(NamedTuple):
@@ -157,7 +167,7 @@ class BoardBoogle:
         self.columns = board
 
     def board_contains(
-        self, word: str, pos: Position = None, passed: list[Position] = None
+        self, word: str, pos: Position = None, passed: List[Position] = None
     ) -> bool:
         if passed is None:
             passed = []
@@ -358,7 +368,7 @@ class DiscordGame(GameBoogle):
 
     def setup(self):
         self.all_words: set[str] = set()
-        self.words: dict[User, set[str]] = defaultdict(set)
+        self.words: Dict[User, set[str]] = defaultdict(set)
 
     async def check_message(self, message: discord.Message):
         word = message.content
@@ -462,9 +472,9 @@ class ClassicGame(GameBoogle):
     def setup(self):
         self.over = False
         self.used_words: set[str] = set()
-        self.word_lists: dict[User, str] = {}
-        self.words: dict[User, set[str]] = defaultdict(set)
-        self.unique_words: dict[User, set[str]] = defaultdict(set)
+        self.word_lists: Dict[User, str] = {}
+        self.words: Dict[User, set[str]] = defaultdict(set)
+        self.unique_words: Dict[User, set[str]] = defaultdict(set)
 
     async def finalize(self, timed_out: bool):
         await super().finalize(timed_out)
@@ -637,7 +647,7 @@ _2048_GAME = a = {
     "512": "<:512:922741086017978368>",
 }
 
-BoardState = list[list[Optional[bool]]]
+BoardState = List[List[Optional[bool]]]
 
 
 class SlidingPuzzle:
@@ -1524,7 +1534,7 @@ class SokobanGameView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
-        self.level = level
+        self.level = level or 0
         self.ctx = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -1737,7 +1747,7 @@ class Emojis:
 NUMBERS = list(Emojis.number_emojis.values())
 CROSS_EMOJI = Emojis.incident_unactioned
 
-Coordinate = Optional[tuple[int, int]]
+Coordinate = Optional[Tuple[int, int]]
 EMOJI_CHECK = Union[discord.Emoji, discord.PartialEmoji, str]
 
 
@@ -1770,7 +1780,7 @@ class GameC4:
         self.player_inactive = None
 
     @staticmethod
-    def generate_board(size: int) -> list[list[int]]:
+    def generate_board(size: int) -> List[List[int]]:
         """Generate the connect 4 board."""
         return [[0 for _ in range(size)] for _ in range(size)]
 
@@ -1935,7 +1945,7 @@ class AI_C4:
         self.game = game
         self.mention = bot.user.mention
 
-    def get_possible_places(self) -> list[Coordinate]:
+    def get_possible_places(self) -> List[Coordinate]:
         """Gets all the coordinates where the AI_C4 could possibly place a counter."""
         possible_coords = []
         for column_num in range(self.game.grid_size):
@@ -1946,7 +1956,7 @@ class AI_C4:
                     break
         return possible_coords
 
-    def check_ai_win(self, coord_list: list[Coordinate]) -> Optional[Coordinate]:
+    def check_ai_win(self, coord_list: List[Coordinate]) -> Optional[Coordinate]:
         """
         Check AI_C4 win.
         Check if placing a counter in any possible coordinate would cause the AI_C4 to win
@@ -1958,7 +1968,7 @@ class AI_C4:
             if self.game.check_win(coords, 2):
                 return coords
 
-    def check_player_win(self, coord_list: list[Coordinate]) -> Optional[Coordinate]:
+    def check_player_win(self, coord_list: List[Coordinate]) -> Optional[Coordinate]:
         """
         Check Player win.
         Check if placing a counter in possible coordinates would stop the player
@@ -1971,7 +1981,7 @@ class AI_C4:
                 return coords
 
     @staticmethod
-    def random_coords(coord_list: list[Coordinate]) -> Coordinate:
+    def random_coords(coord_list: List[Coordinate]) -> Coordinate:
         """Picks a random coordinate from the possible ones."""
         return random.choice(coord_list)
 
@@ -2011,7 +2021,7 @@ class Board:
         self.winner: Optional[bool] = MISSING
 
     @property
-    def legal_moves(self) -> Iterator[tuple[int, int]]:
+    def legal_moves(self) -> Iterator[Tuple[int, int]]:
         for c in range(3):
             for r in range(3):
                 if self.state[r][c] is None:
@@ -2112,7 +2122,7 @@ class NegamaxAI(AI):
         alpha: float = ...,
         beta: float = ...,
         sign: int = ...,
-    ) -> tuple[int, int]:
+    ) -> Tuple[int, int]:
         ...
 
     @overload
@@ -2133,7 +2143,7 @@ class NegamaxAI(AI):
         alpha: float = float("-inf"),
         beta: float = float("inf"),
         sign: int = 1,
-    ) -> Union[float, tuple[int, int]]:
+    ) -> Union[float, Tuple[int, int]]:
         if game.over:
             return sign * self.heuristic(game, sign)
 
@@ -2202,9 +2212,9 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
 
 
 class GameTicTacToe(discord.ui.View):
-    children: list[ButtonTicTacToe]
+    children: List[ButtonTicTacToe]
 
-    def __init__(self, players: tuple[User, User]):
+    def __init__(self, players: Tuple[User, User]):
         self.players = list(players)
         random.shuffle(self.players)
 
@@ -2266,8 +2276,8 @@ class Square:
     aimed: bool
 
 
-Grid = list[list[Square]]
-EmojiSet = dict[tuple[bool, bool], str]
+Grid = List[List[Square]]
+EmojiSet = Dict[Tuple[bool, bool], str]
 
 
 @dataclass
@@ -2546,7 +2556,7 @@ class GameBattleShip:
         await turn_message.delete()
         return square
 
-    async def hit(self, square: Square, alert_messages: list[discord.Message]) -> None:
+    async def hit(self, square: Square, alert_messages: List[discord.Message]) -> None:
         """Occurs when a player successfully aims for a ship."""
         await self.turn.user.send("Hit!", delete_after=3.0)
         alert_messages.append(await self.next.user.send("Hit!"))
@@ -2786,7 +2796,7 @@ class Button(discord.ui.Button["GameUI"]):
 
 
 class GameUI(discord.ui.View):
-    children: list[Button]
+    children: List[Button]
 
     def __init__(self, meta: MetaGameUI, offset: int):
         self.meta = meta
@@ -2866,14 +2876,14 @@ class Games(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.games: list[Game] = []
-        self.waiting: list[discord.Member] = []
-        self._games: dict[discord.TextChannel, Game] = {}
-        self.games_c4: list[GameC4] = []
-        self.waiting_c4: list[discord.Member] = []
-        self.games_boogle: dict[discord.TextChannel, Game] = {}
+        self.games: List[Game] = []
+        self.waiting: List[discord.Member] = []
+        self._games: Dict[discord.TextChannel, Game] = {}
+        self.games_c4: List[GameC4] = []
+        self.waiting_c4: List[discord.Member] = []
+        self.games_boogle: Dict[discord.TextChannel, Game] = {}
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
-        self.games_hitler: dict[int, discord.ui.View] = {}
+        self.games_hitler: Dict[int, discord.ui.View] = {}
         self.chess_games = []
 
         self.max_board_size = 9
@@ -3028,7 +3038,7 @@ class Games(Cog):
         return any(player in (game.player1, game.player2) for game in self.games_c4)
 
     @staticmethod
-    def check_emojis(e1: EMOJI_CHECK, e2: EMOJI_CHECK) -> tuple[bool, Optional[str]]:
+    def check_emojis(e1: EMOJI_CHECK, e2: EMOJI_CHECK) -> Tuple[bool, Optional[str]]:
         """Validate the emojis, the user put."""
         if isinstance(e1, str) and emoji.count(e1) != 1:
             return False, e1

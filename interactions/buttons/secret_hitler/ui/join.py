@@ -7,7 +7,7 @@ from discord.utils import MISSING
 from discord import Member as User
 
 from core import Context
-from typing import Any
+from typing import Any, Dict
 
 from .game import GameUI
 
@@ -16,17 +16,17 @@ __all__ = ("JoinUI",)
 
 def format_list(
     string: str,
-    *list: Any,
+    *ls: Any,
     singular: str = "has",
     plural: str = "have",
-    oxford_comma: bool = True
+    oxford_comma: bool = True,
 ) -> str:
-    if len(list) == 0:
+    if len(ls) == 0:
         return string.format("no-one", singular)
-    if len(list) == 1:
-        return string.format(list[0], singular)
+    if len(ls) == 1:
+        return string.format(ls[0], singular)
 
-    *rest, last = list
+    *rest, last = ls
     rest_str = ", ".join(str(item) for item in rest)
     return string.format(rest_str + "," * oxford_comma + " and " + str(last), plural)
 
@@ -34,10 +34,10 @@ def format_list(
 class JoinUI(discord.ui.View):
     message: discord.Message
 
-    def __init__(self, host: User, games: dict[int, discord.ui.View]):
+    def __init__(self, host: User, games: Dict[int, discord.ui.View]):
         super().__init__(timeout=60 * 15)
         self.host = host
-        self.users: dict[User, discord.Interaction] = {host: MISSING}
+        self.users: Dict[User, discord.Interaction] = {host: MISSING}
         self.user_lock = asyncio.Lock()
         self.started: bool = False
         self.games = games
@@ -109,7 +109,7 @@ class JoinUI(discord.ui.View):
 
     @classmethod
     async def start(
-        cls, ctx: Context, games: dict[int, discord.ui.View]
+        cls, ctx: Context, games: Dict[int, discord.ui.View]
     ) -> JoinUI:  # todo: TextGuildChannel
         games[ctx.channel.id] = self = cls(ctx.author, games)
         self.message = await ctx.channel.send(self.content, view=self)

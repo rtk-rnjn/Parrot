@@ -7,7 +7,7 @@ import re
 from functools import wraps
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Literal, NamedTuple, Optional
+from typing import Literal, NamedTuple, Optional, List, Dict
 
 import discord
 from discord.ext import commands
@@ -147,7 +147,7 @@ POINTS = {
     5: 2,
     6: 3,
     7: 5,
-} | {x: 11 for x in range(8, SUPER_BIG ** 2)}
+} | {x: 11 for x in range(8, SUPER_BIG**2)}
 
 FOGGLE_RULES = """The goal of Foggle is create equations, using simple arithmetic (e.g. +, -, *, /, ^ and parentheses) which equates to the given magic number.
 Numbers must be adjacent (up-down, left-right or diagonal) to eachother on the Foggle board.
@@ -191,13 +191,13 @@ class Board:
                 for row in range(self.size)
             ]
         if magic_number is None:
-            magic_number = random.randint(00, base ** 2 - 1)
+            magic_number = random.randint(00, base**2 - 1)
 
         self.columns = board
         self.number = magic_number
 
     def board_contains(
-        self, numbers: str, pos: Position = None, passed: list[Position] = None
+        self, numbers: str, pos: Position = None, passed: List[Position] = None
     ) -> bool:
         if passed is None:
             passed = []
@@ -541,7 +541,7 @@ class Foggle(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.games: dict[str, Game] = {}
+        self.games: Dict[str, Game] = {}
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

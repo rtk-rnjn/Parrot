@@ -6,7 +6,7 @@ import math
 import random
 from itertools import product
 from pathlib import Path
-from typing import Union
+from typing import Union, List, Tuple
 
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
@@ -112,7 +112,7 @@ Y = 1
 ANGLE_RANGE = math.pi * 2
 
 
-def get_resource(file: str) -> list[dict]:
+def get_resource(file: str) -> List[dict]:
     """Load Snake resources JSON."""
     return json.loads((SNAKE_RESOURCES / f"{file}.json").read_text("utf-8"))
 
@@ -140,7 +140,7 @@ class PerlinNoiseFactory:
         self,
         dimension: int,
         octaves: int = 1,
-        tile: tuple[int, ...] = (),
+        tile: Tuple[int, ...] = (),
         unbias: bool = False,
     ):
         """
@@ -165,7 +165,7 @@ class PerlinNoiseFactory:
 
         self.gradient = {}
 
-    def _generate_gradient(self) -> tuple[float, ...]:
+    def _generate_gradient(self) -> Tuple[float, ...]:
         """
         Generate a random unit vector at each grid point.
         This is the "gradient" vector, in that the grid tile slopes towards it
@@ -272,15 +272,15 @@ class PerlinNoiseFactory:
 def create_snek_frame(
     perlin_factory: PerlinNoiseFactory,
     perlin_lookup_vertical_shift: float = 0,
-    image_dimensions: tuple[int, int] = DEFAULT_IMAGE_DIMENSIONS,
-    image_margins: tuple[int, int] = DEFAULT_IMAGE_MARGINS,
+    image_dimensions: Tuple[int, int] = DEFAULT_IMAGE_DIMENSIONS,
+    image_margins: Tuple[int, int] = DEFAULT_IMAGE_MARGINS,
     snake_length: int = DEFAULT_SNAKE_LENGTH,
     snake_color: int = DEFAULT_SNAKE_COLOR,
     bg_color: int = DEFAULT_BACKGROUND_COLOR,
-    segment_length_range: tuple[int, int] = DEFAULT_SEGMENT_LENGTH_RANGE,
+    segment_length_range: Tuple[int, int] = DEFAULT_SEGMENT_LENGTH_RANGE,
     snake_width: int = DEFAULT_SNAKE_WIDTH,
     text: str = DEFAULT_TEXT,
-    text_position: tuple[float, float] = DEFAULT_TEXT_POSITION,
+    text_position: Tuple[float, float] = DEFAULT_TEXT_POSITION,
     text_color: int = DEFAULT_TEXT_COLOR,
 ) -> Image.Image:
     """
@@ -290,7 +290,7 @@ def create_snek_frame(
     """
     start_x = random.randint(image_margins[X], image_dimensions[X] - image_margins[X])
     start_y = random.randint(image_margins[Y], image_dimensions[Y] - image_margins[Y])
-    points: list[tuple[float, float]] = [(start_x, start_y)]
+    points: List[Tuple[float, float]] = [(start_x, start_y)]
 
     for index in range(0, snake_length):
         angle = (
@@ -311,8 +311,8 @@ def create_snek_frame(
         )
 
     # normalize bounds
-    min_dimensions: list[float] = [start_x, start_y]
-    max_dimensions: list[float] = [start_x, start_y]
+    min_dimensions: List[float] = [start_x, start_y]
+    max_dimensions: List[float] = [start_x, start_y]
     for point in points:
         min_dimensions[X] = min(point[X], min_dimensions[X])
         min_dimensions[Y] = min(point[Y], min_dimensions[Y])
@@ -733,7 +733,7 @@ class SnakeAndLaddersGame:
         """Clean up the finished game object."""
         del self.snakes.active_sal[self.channel]
 
-    def _board_coordinate_from_index(self, index: int) -> tuple[int, int]:
+    def _board_coordinate_from_index(self, index: int) -> Tuple[int, int]:
         """Convert the tile number to the x/y coordinates for graphical purposes."""
         y_level = 9 - math.floor((index - 1) / 10)
         is_reversed = math.floor((index - 1) / 10) % 2 != 0

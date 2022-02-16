@@ -13,7 +13,7 @@ import rapidfuzz
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
-from typing import Optional, Union
+from typing import Optional, Union, Tuple, Dict
 import asyncio
 import urllib.parse
 from urllib.parse import quote, quote_plus
@@ -31,7 +31,7 @@ from discord import Embed, Interaction, SelectOption, ui
 from . import _ref
 from . import _doc
 
-from ._used import typing, get_raw, Refresh, wrapping, prepare_payload, execute_run
+from ._used import get_raw, Refresh, wrapping, prepare_payload, execute_run
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -239,7 +239,7 @@ class RTFM(Cog):
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
         self.bot.languages = ()
-        self.headers: dict[str, str] = {}
+        self.headers: Dict[str, str] = {}
         self.fetch_readme.start()
 
     @tasks.loop(minutes=60)
@@ -388,7 +388,7 @@ class RTFM(Cog):
 
     def result_fmt(
         self, url: str, body_text: str
-    ) -> tuple[bool, Union[str, discord.Embed]]:
+    ) -> Tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -691,7 +691,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)
-    @typing
+    @Context.with_type
     async def reference(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
         lang = language.strip("`")
@@ -704,7 +704,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["doc"])
     @commands.bot_has_permissions(embed_links=True)
-    @typing
+    @Context.with_type
     async def documentation(self, ctx: Context, language, *, query: str):
         """Returns element reference from given language"""
         lang = language.strip("`")
@@ -717,7 +717,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @typing
+    @Context.with_type
     async def man(self, ctx: Context, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command"""
         base_url = f"https://man.cx/{page}"

@@ -95,6 +95,9 @@ class MentionProt(Cog):
         if before.content != after.content:
             await self._on_message_passive(after)
 
+    def cog_unload(self):
+        self.clear_data.cancel()
+
     @tasks.loop(seconds=900)
     async def clear_data(self):
         self.data = {}

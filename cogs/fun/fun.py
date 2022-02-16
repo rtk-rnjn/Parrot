@@ -25,7 +25,7 @@ import colorsys
 
 from pathlib import Path
 from random import choice, randint
-from typing import Callable, Optional, Union, TypeVar
+from typing import Callable, Optional, Union, TypeVar, List, Tuple, Dict
 from concurrent.futures import ThreadPoolExecutor
 from rapidfuzz import fuzz
 
@@ -204,7 +204,7 @@ class QuizEntry:
     """Stores quiz entry (a question and a list of answers)."""
 
     question: str
-    answers: list[str]
+    answers: List[str]
     var_tol: int
 
 
@@ -215,7 +215,7 @@ class AnagramGame:
     can be used for keeping track of each anagram game.
     """
 
-    def __init__(self, scrambled: str, correct: list[str]) -> None:
+    def __init__(self, scrambled: str, correct: List[str]) -> None:
         self.scrambled = scrambled
         self.correct = set(correct)
 
@@ -459,7 +459,7 @@ class Fun(Cog):
             del self.colour_mapping["_"]  # Delete source credit entry
         self.questions = self.load_questions()
         self.question_limit = 0
-        self.games: dict[int, AnagramGame] = {}
+        self.games: Dict[int, AnagramGame] = {}
 
         self.player_scores = defaultdict(
             int
@@ -468,7 +468,7 @@ class Fun(Cog):
             {}
         )  # A variable to store temporary game player's scores.
 
-        self.latest_comic_info: dict[str, Union[int, str]] = {}
+        self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.get_latest_comic_info.start()
 
         self.categories = {
@@ -484,7 +484,7 @@ class Fun(Cog):
         self.get_wiki_questions.start()
 
     async def send_colour_response(
-        self, ctx: commands.Context, rgb: tuple[int, int, int]
+        self, ctx: commands.Context, rgb: Tuple[int, int, int]
     ) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
@@ -532,7 +532,7 @@ class Fun(Cog):
 
         await ctx.send(file=thumbnail_file, embed=colour_embed)
 
-    def get_colour_conversions(self, rgb: tuple[int, int, int]) -> dict[str, str]:
+    def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> Dict[str, str]:
         """Create a dictionary mapping of colour types and their values."""
         colour_name = self._rgb_to_name(rgb)
         if colour_name is None:
@@ -547,7 +547,7 @@ class Fun(Cog):
         }
 
     @staticmethod
-    def _rgb_to_hsv(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
+    def _rgb_to_hsv(rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
         """Convert RGB values to HSV values."""
         rgb_list = [val / 255 for val in rgb]
         h, s, v = colorsys.rgb_to_hsv(*rgb_list)
@@ -555,7 +555,7 @@ class Fun(Cog):
         return hsv
 
     @staticmethod
-    def _rgb_to_hsl(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
+    def _rgb_to_hsl(rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
         """Convert RGB values to HSL values."""
         rgb_list = [val / 255.0 for val in rgb]
         h, l, s = colorsys.rgb_to_hls(*rgb_list)
@@ -563,7 +563,7 @@ class Fun(Cog):
         return hsl
 
     @staticmethod
-    def _rgb_to_cmyk(rgb: tuple[int, int, int]) -> tuple[int, int, int, int]:
+    def _rgb_to_cmyk(rgb: Tuple[int, int, int]) -> Tuple[int, int, int, int]:
         """Convert RGB values to CMYK values."""
         rgb_list = [val / 255.0 for val in rgb]
         if not any(rgb_list):
@@ -576,13 +576,13 @@ class Fun(Cog):
         return cmyk
 
     @staticmethod
-    def _rgb_to_hex(rgb: tuple[int, int, int]) -> str:
+    def _rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
         """Convert RGB values to HEX code."""
         hex_ = "".join([hex(val)[2:].zfill(2) for val in rgb])
         hex_code = f"#{hex_}".upper()
         return hex_code
 
-    def _rgb_to_name(self, rgb: tuple[int, int, int]) -> Optional[str]:
+    def _rgb_to_name(self, rgb: Tuple[int, int, int]) -> Optional[str]:
         """Convert RGB values to a fuzzy matched name."""
         input_hex_colour = self._rgb_to_hex(rgb)
         try:
@@ -659,7 +659,7 @@ class Fun(Cog):
 
     async def _get_text_and_embed(
         self, ctx: Context, text: str
-    ) -> tuple[str, Optional[Embed]]:
+    ) -> Tuple[str, Optional[Embed]]:
         embed = None
 
         msg = await self._get_discord_message(ctx, text)
@@ -1398,7 +1398,7 @@ class Fun(Cog):
     @staticmethod
     async def send_answer(
         channel: discord.TextChannel,
-        answers: list[str],
+        answers: List[str],
         answer_is_correct: bool,
         question_dict: dict,
         q_left: int,

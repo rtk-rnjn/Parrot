@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 
 from collections.abc import Callable
-from typing import Optional
+from typing import Optional, List, Tuple, Dict
 
-OPS: dict[str, Callable[[int, int], Optional[int]]] = {
-    "^": lambda x, y: x ** y,
+OPS: Dict[str, Callable[[int, int], Optional[int]]] = {
+    "^": lambda x, y: x**y,
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
     "*": lambda x, y: x * y,
@@ -57,7 +57,7 @@ class View:
         return e
 
     def parse_prec_lvl(
-        self, ops: tuple[str, ...], below: Callable[[], Optional[int]]
+        self, ops: Tuple[str, ...], below: Callable[[], Optional[int]]
     ) -> Callable[[], Optional[int]]:
         def parser():
             e = below()

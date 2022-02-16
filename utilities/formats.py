@@ -106,22 +106,19 @@ def suppress_links(message: str) -> str:
 
 
 def get_flag(
-    ls: list,
-    ann: Any,
-    *,
-    deli: Any,
-    pref: Any,
-    alis: Any,
+    ls: list, ann: Any, *, deli: Any, pref: Any, alis: Any, default: bool
 ) -> list:
     for flag in (ann).get_flags().values():
         if flag.required:
             ls.append(f"<{pref}{flag.name}{'|'.join(alis)}{deli}>")
-        else:
+        elif default:
             ls.append(f"[{pref}{flag.name}{'|'.join(list(alis))}{deli}={flag.default}]")
+        else:
+            ls.append(f"[{pref}{flag.name}{'|'.join(list(alis))}{deli}]")
     return ls
 
 
-def get_cmd_signature(cmd):
+def get_cmd_signature(cmd, *, default: bool = True):
     if cmd.usage is not None:
         return cmd.usage
 
@@ -158,7 +155,7 @@ def get_cmd_signature(cmd):
                 if isinstance(param.default, str)
                 else param.default is not None
             )
-            if should_print:
+            if should_print and default:
                 result.append(
                     f"[{name}={param.default}]"
                     if not greedy
@@ -182,7 +179,14 @@ def get_cmd_signature(cmd):
             deli = ann.__commands_flag_delimiter__
             pref = ann.__commands_flag_prefix__
             alis = ann.__commands_flag_aliases__
-            get_flag(result, param.annotation, deli=deli, pref=pref, alis=alis)
+            get_flag(
+                result,
+                param.annotation,
+                deli=deli,
+                pref=pref,
+                alis=alis,
+                default=default,
+            )
         else:
             result.append(f"<{name}>")
 

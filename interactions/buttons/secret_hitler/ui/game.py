@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Collection
-from typing import Union, Optional
+from typing import Union, Optional, List, Dict
 
 import discord
 from discord import Member as User
@@ -94,18 +94,18 @@ class BlankButton(discord.ui.Button["GameUI"]):
 
 
 class GameUI(discord.ui.View):
-    children: list[discord.ui.Button]
+    children: List[discord.ui.Button]
 
     def __init__(
         self,
         message: discord.Message,
         host: User,
         users: Collection[User],
-        games: dict[int, discord.ui.View],
+        games: Dict[int, discord.ui.View],
     ):
         self.host: User = host
         self.game: Game[User] = Game[User](users)
-        self.interactions: dict[User, discord.Interaction] = {}
+        self.interactions: Dict[User, discord.Interaction] = {}
         self.message = message
         self.games = games
         self.waiting = asyncio.Event()
@@ -219,8 +219,8 @@ class GameUI(discord.ui.View):
         cls,
         message: discord.Message,
         host: User,
-        users: dict[User, discord.Interaction],
-        games: dict[int, discord.ui.View],
+        users: Dict[User, discord.Interaction],
+        games: Dict[int, discord.ui.View],
     ) -> None:
         games[message.channel.id] = self = cls(message, host, users.keys(), games)
 
@@ -229,7 +229,7 @@ class GameUI(discord.ui.View):
             if player.role is Role.Fascist:
                 content = content.format(
                     self.game.hitler,
-                    *[user for user in self.game.fascists if user != player.identifier]
+                    *[user for user in self.game.fascists if user != player.identifier],
                 )
             await users[player.identifier].followup.send(content, ephemeral=True)
 

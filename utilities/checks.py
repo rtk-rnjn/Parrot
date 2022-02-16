@@ -34,7 +34,7 @@ def is_guild_owner():
 
 def is_me():
     async def predicate(ctx):
-        if ctx.message.author.id == SUPER_USER:  # !! Ritik Ranjan [*.*]#9230
+        if ctx.message.author.id == SUPER_USER:  # `!! Ritik Ranjan [*.*]#9230`
             return True
         raise ex.NotMe()
 

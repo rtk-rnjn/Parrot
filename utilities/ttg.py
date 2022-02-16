@@ -55,9 +55,7 @@ def solve_phrase(phrase):
         # single operand operation
         if len(phrase) == 2:
             return OPERATIONS[phrase[0]](solve_phrase(phrase[1]))
-        return OPERATIONS[phrase[1]](
-            solve_phrase(phrase[0]), solve_phrase([phrase[2]])
-        )
+        return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
 
 
 def group_operations(phrase):

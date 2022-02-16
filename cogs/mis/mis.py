@@ -551,7 +551,7 @@ class Misc(Cog):
             ascending=flags.ascending,
         )
         main = table.as_tabulate(
-            index=False, table_format=flags.table_format, align=flags.aling
+            index=False, table_format=flags.table_format, align=flags.align
         )
         await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 

@@ -10,6 +10,7 @@ import asyncio
 afk = parrot_db["afk"]
 timers = parrot_db["timers"]
 
+
 class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -58,14 +59,13 @@ class EventCustom(Cog):
             except (discord.NotFound, discord.HTTPError, discord.Forbidden):
                 # User not found, Bot Not having permissions, Other HTTP Error
                 pass
-        
+
         if action.upper() == "BAN":
             try:
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
             except (discord.NotFound, discord.HTTPError, discord.Forbidden):
                 # User not found, Bot Not having permissions, Other HTTP Error
                 pass
-
 
     async def extra_action_parser(self, name, **kw) -> None:
         await asyncio.sleep(1)

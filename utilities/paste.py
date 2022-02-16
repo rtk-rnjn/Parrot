@@ -187,7 +187,8 @@ class Client:
         if not self.session:
             await self._generate_async_session()
 
-        assert self.session is not None
+        if self.session is None:
+            raise AssertionError
 
         multi_part_write = aiohttp.MultipartWriter()
         paste_content = multi_part_write.append(content)
@@ -231,7 +232,8 @@ class Client:
         if not self.session:
             await self._generate_async_session()
 
-        assert self.session is not None
+        if self.session is None:
+            raise AssertionError
 
         async with self.session.get(
             f"{API_BASE_URL}/{paste_id}", timeout=aiohttp.ClientTimeout(CLIENT_TIMEOUT)

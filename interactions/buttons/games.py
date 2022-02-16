@@ -2103,6 +2103,7 @@ class AI:
         column = random.choice(tuple(game.legal_moves))
         return game.move(*column)
 
+
 class NegamaxAI(AI):
     def __init__(self, player: bool) -> None:
         super().__init__(player)

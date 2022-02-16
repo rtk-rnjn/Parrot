@@ -6,7 +6,6 @@ from string import ascii_uppercase
 
 import aiohttp
 import discord
-import asyncio
 
 from bs4 import BeautifulSoup
 from typing import Any, Optional

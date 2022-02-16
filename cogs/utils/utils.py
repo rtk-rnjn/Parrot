@@ -11,11 +11,9 @@ import asyncio
 
 from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
-from utilities.paginator import PaginationView
 from utilities.converters import convert_bool
 
 from cogs.utils import method as mt
-from cogs.utils.method import giveaway
 
 afk = parrot_db["afk"]
 

@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import discord
-import traceback
 import math
 import random
 import os
-import aiohttp
 from discord.ext import commands
 
 from utilities.exceptions import ParrotCheckFailure

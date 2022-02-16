@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import discord
-import random
 
 from datetime import datetime
 from time import time
@@ -9,9 +8,6 @@ from time import time
 from utilities.database import tags, todo, parrot_db, cluster
 from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
-from utilities.time import ShortTime
-
-from discord.ext import commands
 
 from core import Parrot, Context
 

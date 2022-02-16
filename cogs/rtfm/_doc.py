@@ -16,8 +16,8 @@ from core import Context
 
 
 @ToAsync
-def get_ele(soup, *arg: Any, **kw: Any):
-    url = soup.find_all(*arg, **kw)
+def get_ele(soup, name, **kw: Any):
+    url = soup.find_all(name, **kw)
     return url
 
 

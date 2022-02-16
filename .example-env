@@ -44,3 +44,6 @@ SCREEN_SHOT=""
 # Or Use `OpenRobot#1952` (759591316627128320)
 # https://api.openrobot.xyz/
 OPEN_ROBOT_API=""
+
+# https://home.openweathermap.org/api_keys
+WEATHERID=""

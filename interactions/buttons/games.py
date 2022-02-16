@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-import re
+import re, enum
 import itertools
 
 from dataclasses import dataclass
@@ -23,7 +23,7 @@ from typing import (
     Tuple,
 )
 
-import discord
+import discord, math
 from discord import Member as User
 from discord.ext import commands, boardgames
 from discord.ext import old_menus as menus
@@ -36,8 +36,9 @@ from akinator.async_aki import Akinator
 import emojis
 import chess
 import tabulate
-
+import copy
 from aiofile import async_open
+from utilities.converters import ToAsync
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.paginator import ParrotPaginator
 from utilities.constants import Colours
@@ -2094,6 +2095,12 @@ class AI:
         return game.move(*column)
 
 
+class GameState(enum.IntEnum):
+    empty = 0
+    player = -1
+    ai = +1
+
+
 class NegamaxAI(AI):
     def __init__(self, player: bool) -> None:
         super().__init__(player)
@@ -2113,6 +2120,60 @@ class NegamaxAI(AI):
 
         return random.randint(-10, 10)
 
+    def determine_possible_positions(self, board: list = None):
+        board = board or self.board
+        possible_positions = []
+        for i in range(3):
+            for x in range(3):
+                if board[i][x] == GameState.empty: possible_positions.append([i, x])
+        return possible_positions
+
+
+    def min_max(self, board: list, depth: int, player: GameState):
+        def determine_win_state(board_, player):
+            win_states = [
+                [board_[0][0], board_[0][1], board_[0][2]],
+                [board_[1][0], board_[1][1], board_[1][2]],
+                [board_[2][0], board_[2][1], board_[2][2]],
+                [board_[0][0], board_[1][0], board_[2][0]],
+                [board_[0][1], board_[1][1], board_[2][1]],
+                [board_[0][2], board_[1][2], board_[2][2]],
+                [board_[0][0], board_[1][1], board_[2][2]],
+                [board_[2][0], board_[1][1], board_[0][2]],
+            ]
+            return [player, player, player] in win_states
+
+        def evaluate(board_):
+            if determine_win_state(board_, GameState.ai): score = +1
+            elif determine_win_state(board_, GameState.player): score = -1
+            else: score = 0
+           
+            return score
+
+
+        best = [-1, -1, -math.inf]
+        if player == GameState.player: best[-1] = +math.inf
+
+
+        if (
+            depth == 0
+            or determine_win_state(board, GameState.ai)
+            or determine_win_state(board, GameState.player)
+        ): return [-1, -1, evaluate(board)]
+
+        for cell in self.determine_possible_positions(board):
+            x, y = cell[0], cell[1]
+            board[x][y] = player
+            score = self.min_max(board, depth - 1, -player)
+            board[x][y] = GameState.empty
+            score[0], score[1] = x, y
+            if player == GameState.ai:
+                if score[2] > best[2]: best = score
+            elif score[2] < best[2]: best = score
+
+
+        return best
+    
     @overload
     def negamax(
         self,
@@ -2146,23 +2207,8 @@ class NegamaxAI(AI):
         if game.over:
             return sign * self.heuristic(game, sign)
 
-        move = MISSING
 
-        score = float("-inf")
-        for c in game.legal_moves:
-            move_score = -self.negamax(game.move(*c), depth + 1, -beta, -alpha, -sign)
-
-            if move_score > score:
-                score = move_score
-                move = c
-
-            alpha = max(alpha, score)
-            if alpha >= beta:
-                break
-
-        if depth == 0:
-            return move
-        return score
+        return self.min_max(copy.deepcopy,(game.state),len(self.determine_possible_positions()),GameState.ai)
 
     def move(self, game: Board) -> Board:
         return game.move(*self.negamax(game))
@@ -2197,7 +2243,7 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
             return
 
         if self.view.current_player.bot:
-            self.view.make_ai_move()
+            await self.view.make_ai_move()
             self.view.update()
 
         if self.view.board.over:
@@ -2258,6 +2304,7 @@ class GameTicTacToe(discord.ui.View):
             return False
         return True
 
+    @ToAsync
     def make_ai_move(self):
         ai = NegamaxAI(self.board.current_player)
         self.board = ai.move(self.board)

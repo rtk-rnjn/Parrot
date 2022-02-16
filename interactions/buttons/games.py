@@ -38,6 +38,7 @@ import chess
 import tabulate
 import copy
 from aiofile import async_open
+
 from utilities.converters import ToAsync
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.paginator import ParrotPaginator
@@ -2320,7 +2321,7 @@ class GameTicTacToe(discord.ui.View):
             return False
         return True
 
-    @ToAsync
+    @ToAsync()
     def make_ai_move(self):
         ai = NegamaxAI(self.board.current_player)
         self.board = ai.move(self.board)

@@ -15,7 +15,7 @@ from utilities.converters import ToAsync
 from core import Context
 
 
-@ToAsync
+@ToAsync()
 def get_ele(soup, name, **kw: Any):
     url = soup.find_all(name, **kw)
     return url

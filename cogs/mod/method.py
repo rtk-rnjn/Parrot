@@ -243,18 +243,16 @@ async def _ban(
     if (
         isinstance(member, discord.Member)
         and ctx_author.top_role.position < member.top_role.position
-    ):
-        if not silent:
-            return await destination.send(
-                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-            )
+    ) and not silent:
+        return await destination.send(
+            f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+        )
     try:
-        if member.id in (ctx_author.id, guild.me.id):
-            if not silent:
-                await destination.send(
-                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
-                )
-                return
+        if member.id in (ctx_author.id, guild.me.id) and not silent:
+            await destination.send(
+                f"{ctx_author.mention} don't do that, Bot is only trying to help"
+            )
+            return
         await guild.ban(
             discord.Object(member if type(member) is int else member.id),
             reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}",
@@ -342,18 +340,16 @@ async def _temp_ban(
     bot: Parrot = None,
 ):
     for member in member:
-        if ctx_author.top_role.position < member.top_role.position:
-            if not silent:
-                return await destination.send(
-                    f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-                )
+        if ctx_author.top_role.position < member.top_role.position and not silent:
+            return await destination.send(
+                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+            )
         try:
-            if member.id in (ctx_author.id, guild.me.id):
-                if not silent:
-                    await destination.send(
-                        f"{ctx_author.mention} don't do that, Bot is only trying to help"
-                    )
-                    return
+            if member.id in (ctx_author.id, guild.me.id) and not silent:
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
+                return
             await member.ban(
                 reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
             )
@@ -400,17 +396,15 @@ async def _timeout(
     reason,
     silent=False,
 ):
-    if ctx_author.top_role.position < member.top_role.position:
-        if not silent:
-            return await destination.send(
-                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-            )
-    if member.id in (ctx_author.id, guild.me.id):
-        if not silent:
-            await destination.send(
-                f"{ctx_author.mention} don't do that, Bot is only trying to help"
-            )
-            return
+    if ctx_author.top_role.position < member.top_role.position and not silent:
+        return await destination.send(
+            f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+        )
+    if member.id in (ctx_author.id, guild.me.id) and not silent:
+        await destination.send(
+            f"{ctx_author.mention} don't do that, Bot is only trying to help"
+        )
+        return
     if member.timed_out:
         return await destination.send(
             f"{ctx_author.mention} **{member}** is already on timeout untill **<t:{int(member.communication_disabled_until.timestamp())}>**"
@@ -434,17 +428,15 @@ async def _timeout(
 async def _mute(
     guild, command_name, ctx_author, destination, member, reason, silent=False
 ):
-    if ctx_author.top_role.position < member.top_role.position:
-        if not silent:
-            return await destination.send(
-                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-            )
-    if member.id in (ctx_author.id, guild.me.id):
-        if not silent:
-            await destination.send(
-                f"{ctx_author.mention} don't do that, Bot is only trying to help"
-            )
-            return
+    if ctx_author.top_role.position < member.top_role.position and not silent:
+        return await destination.send(
+            f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+        )
+    if member.id in (ctx_author.id, guild.me.id) and not silent:
+        await destination.send(
+            f"{ctx_author.mention} don't do that, Bot is only trying to help"
+        )
+        return
 
     data = await collection.find_one({"_id": guild.id})
 
@@ -521,17 +513,15 @@ async def _kick(
     guild, command_name, ctx_author, destination, member, reason, silent=False
 ):
     try:
-        if ctx_author.top_role.position < member.top_role.position:
-            if not silent:
-                return await destination.send(
-                    f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-                )
-        if member.id in (ctx_author.id, guild.me.id):
-            if not silent:
-                await destination.send(
-                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
-                )
-                return
+        if ctx_author.top_role.position < member.top_role.position and not silent:
+            return await destination.send(
+                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+            )
+        if member.id in (ctx_author.id, guild.me.id) and not silent:
+            await destination.send(
+                f"{ctx_author.mention} don't do that, Bot is only trying to help"
+            )
+            return
         await member.kick(
             reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}"
         )
@@ -580,18 +570,16 @@ async def _block(
     guild, command_name, ctx_author, destination, channel, member, reason, silent=False
 ):
     for member in member:
-        if ctx_author.top_role.position < member.top_role.position:
-            if not silent:
-                return await destination.send(
-                    f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
-                )
+        if ctx_author.top_role.position < member.top_role.position and not silent:
+            return await destination.send(
+                f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
+            )
         try:
-            if member.id in (ctx_author.id, guild.me.id):
-                if not silent:
-                    await destination.send(
-                        f"{ctx_author.mention} don't do that, Bot is only trying to help"
-                    )
-                    return
+            if member.id in (ctx_author.id, guild.me.id) and not silent:
+                await destination.send(
+                    f"{ctx_author.mention} don't do that, Bot is only trying to help"
+                )
+                return
             await channel.set_permissions(
                 member,
                 send_messages=False,

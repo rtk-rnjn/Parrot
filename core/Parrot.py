@@ -29,6 +29,7 @@ from utilities.config import (
     MASTER_OWNER,
     GITHUB,
     SUPPORT_SERVER,
+    SUPPORT_SERVER_ID,
 )
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
@@ -52,8 +53,6 @@ intents.members = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-SUPPORT_SERVER_ID = 741614680652644382
-
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""

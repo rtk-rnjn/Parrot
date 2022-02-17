@@ -1,19 +1,16 @@
 from __future__ import annotations
 
+import psutil
+
 from discord import __version__ as discord_version
 from discord.ext import old_menus as menus
 import discord
-import typing
-import asyncio
 from discord.ext import commands
 
 from time import time
 from datetime import timedelta
 
-from psutil import Process, virtual_memory
-from platform import python_version
-
-from utilities.config import VERSION, PRIVACY_POLICY
+from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY, SUPPORT_SERVER_ID
 from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
@@ -25,6 +22,9 @@ from .robopage import RoboPages
 import datetime
 import inspect
 import itertools
+import pygit2
+import asyncio
+
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -600,7 +600,22 @@ class Meta(Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.command(name="stats")
+    def format_commit(self, commit):
+        short, _, _ = commit.message.partition('\n')
+        short_sha2 = commit.hex[0:6]
+        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
+        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
+
+        # [`hash`](url) message (offset)
+        offset = time.format_relative(commit_time.astimezone(datetime.timezone.utc))
+        return f'[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})'
+
+    def get_last_commits(self, count=3):
+        repo = pygit2.Repository('.git')
+        commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
+        return '\n'.join(self.format_commit(c) for c in commits)
+
+    @commands.command(name="stats", aliases=["about"])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
@@ -608,38 +623,52 @@ class Meta(Cog):
         """
         Get the bot stats
         """
+        revision = self.get_last_commits()
         embed = discord.Embed(
-            title="Bot stats",
+            title="Official Bot Server Invite",
             colour=ctx.author.colour,
             timestamp=datetime.datetime.utcnow(),
+            description='Latest Changes:\n' + revision,
+            url=SUPPORT_SERVER
         )
-        embed.set_thumbnail(url=f"{ctx.guild.me.avatar.url}")
-        proc = Process()
-        with proc.oneshot():
-            uptime = timedelta(seconds=time() - proc.create_time())
-            cpu_time = timedelta(seconds=(cpu := proc.cpu_times()).system + cpu.user)
-            mem_total = virtual_memory().total / (1024**2)
-            mem_of_total = proc.memory_percent()
-            mem_usage = mem_total * (mem_of_total / 100)
+        support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
+        owner = await self.bot.get_or_fetch_member(support_guild, self.bot.owner_id)
+        embed.set_author(name=str(owner), icon_url=owner.display_avatar.url)
 
-        fields = [
-            ("Bot version", f"`{VERSION}`", True),
-            ("Python version", f"`{str(python_version())}`", True),
-            ("discord.py version", f"`{str(discord_version)}`", True),
-            ("Uptime", f"`{str(uptime)}`", True),
-            ("CPU time", f"`{(cpu_time)}`", True),
-            (
-                "Memory usage",
-                f"`{mem_usage:,.3f} / {mem_total:,.0f} MiB ({mem_of_total:.0f}%)`",
-                True,
-            ),
-            ("Total users on count", f"`{len(self.bot.users)}`", True),
-            ("Owner", f"`{self.bot.author_name}`", True),
-            ("Total guild on count", f"`{len(self.bot.guilds)}`", True),
-        ]
-        for name, value, inline in fields:
-            embed.add_field(name=name, value=value, inline=inline)
-        await ctx.reply(embed=embed)
+        # statistics
+        total_members = 0
+        total_unique = len(self.bot.users)
+
+        text = 0
+        voice = 0
+        guilds = 0
+        for guild in self.bot.guilds:
+            guilds += 1
+            if guild.unavailable:
+                continue
+
+            total_members += guild.member_count
+            for channel in guild.channels:
+                if isinstance(channel, discord.TextChannel):
+                    text += 1
+                elif isinstance(channel, discord.VoiceChannel):
+                    voice += 1
+
+        embed.add_field(name='Members', value=f'{total_members} total\n{total_unique} unique')
+        embed.add_field(name='Channels', value=f'{text + voice} total\n{text} text\n{voice} voice')
+
+        memory_usage = self.process.memory_full_info().uss / 1024**2
+        cpu_usage = self.process.cpu_percent() / psutil.cpu_count()
+        embed.add_field(name='Process', value=f'{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU')
+
+        version = discord_version
+        embed.add_field(name='Guilds', value=guilds)
+        embed.add_field(name='Bot Version', value=VERSION)
+        embed.add_field(name='Uptime', value=discord.utils.format_dt(self.bot.uptime, "R"))
+        embed.set_footer(text=f'Made with discord.py v{version}', icon_url='http://i.imgur.com/5BFecvA.png')
+        embed.timestamp = discord.utils.utcnow()
+        await ctx.send(embed=embed)
+
 
     @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
     @commands.bot_has_permissions(embed_links=True)
@@ -797,7 +826,7 @@ class Meta(Cog):
         self,
         ctx: Context,
         *,
-        channel: typing.Union[
+        channel: Union[
             discord.TextChannel,
             discord.VoiceChannel,
             discord.CategoryChannel,

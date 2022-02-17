@@ -35,3 +35,4 @@ numpy
 pyparsing
 qrcode
 python-dotenv
+pygit2

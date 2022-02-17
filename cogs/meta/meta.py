@@ -347,7 +347,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             if syntax:
                 embed_like.add_field(
                     name="Syntax",
-                    value=f"`{command.qualified_name}{self.get_command_signature(command)}`",
+                    value=f"`{command.qualified_name} {self.get_command_signature(command)}`",
                     inline=False,
                 )
             if command.aliases:

@@ -31,8 +31,9 @@ async def warn(
     message: Optional[discord.Message] = None,
     at: Optional[float] = None,
 ) -> dict:
+    count = await get_warn_count(guild)
     post = {
-        "warn_id": await get_warn_count(guild),
+        "warn_id": count,
         "target": user.id,
         "moderator": moderator.id,
         "reason": reason,

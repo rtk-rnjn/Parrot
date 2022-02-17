@@ -34,9 +34,6 @@ class Moderator(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="moderator", id=892424227007918121)
 
-    def cog_unload(self):
-        self.warn_task.cancel()
-
     async def log(self, ctx, cmd, performed_on, reason):
         """A simple and nerdy Logging System"""
         data = await collection.find_one({"_id": ctx.guild.id})
@@ -1352,7 +1349,7 @@ class Moderator(Cog):
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
         finally:
-            await self.warn_task.start(target=user, ctx=ctx)
+            await self.warn_task(target=user, ctx=ctx)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1387,7 +1384,7 @@ class Moderator(Cog):
         )
         if flags.target:
             target = self.bot.get_or_fetch_member(ctx.guild, flags.target.id)
-            await self.warn_task.start(target=target, ctx=ctx)
+            await self.warn_task(target=target, ctx=ctx)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -1408,15 +1405,11 @@ class Moderator(Cog):
         page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
         await page.start()
 
-    @tasks.loop(count=1)
-    async def warn_task(self, **kw):
+    async def warn_task(self, *, ctx: Context, target: Union[discord.Member, discord.User],):
         """Main system to warn
         - target: discord.Member
         - ctx: Context
         """
-        target: Union[discord.Member, discord.User] = kw.get("target")
-        ctx: Context = kw.get("ctx")
-
         count = 0
         col = warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
@@ -1429,7 +1422,7 @@ class Moderator(Cog):
                 duration=data.get("duration"),
                 mod=ctx.author,
                 ctx=ctx,
-                **kw
+                target=target
             )
 
     async def execute_action(self, **kw):
@@ -1494,7 +1487,3 @@ class Moderator(Cog):
                 f"Automod. {target} reached warncount threshold",
                 True,
             )
-
-    @warn_task.before_loop
-    async def before_warn(self):
-        await self.bot.wait_until_ready()

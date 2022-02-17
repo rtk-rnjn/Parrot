@@ -45,7 +45,7 @@ class ConfirmationView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         if self.reacquire:
-            await self.ctx.acquire()
+            await asyncio.sleep(0)
         if self.delete_after and self.message:
             await self.message.delete(delay=0)
 

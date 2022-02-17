@@ -235,7 +235,7 @@ class RoboPages(discord.ui.View):
                 await asyncio.sleep(5)
             else:
                 page = int(msg.content)
-                await msg.delete()
+                await msg.delete(delay=0)
                 await self.show_checked_page(interaction, page - 1)
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)

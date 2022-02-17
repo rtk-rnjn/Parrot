@@ -13,7 +13,7 @@ collection_config = parrot_db["server_config"]
 
 async def get_warn_count(guild: discord.Guild) -> Optional[int]:
     if data := await collection_config.find_one(
-        {"_id": guild.id, "warn_count": {"exists": True}}
+        {"_id": guild.id, "warn_count": {"$exists": True}}
     ):
         await collection_config.update_one({"_id": guild.id}, {"$inc": {"warn_count": 1}})
         return data["warn_count"]

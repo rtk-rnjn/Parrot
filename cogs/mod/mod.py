@@ -1415,23 +1415,21 @@ class Moderator(Cog):
         """
         target: Union[discord.Member, discord.User] = kw.get("target")
         ctx: Context = kw.get("ctx")
-        if not (target and ctx):
-            return
+
         count = 0
         col = warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
         if data := await collection.find_one(
-            {"_id": ctx.guild.id, "warn_auto": {"$exists": True}}
+            {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
-            for i in data["warn_auto"]:
-                if i["count"] == count:
-                    await self.execute_action(
-                        action=i["action"].lower(),
-                        duration=i["duration"],
-                        mod=ctx.author,
-                        ctx=ctx,
-                    )
+            await self.execute_action(
+                action=data["action"].lower(),
+                duration=data.get("duration"),
+                mod=ctx.author,
+                ctx=ctx,
+                **kw
+            )
 
     async def execute_action(self, **kw):
         action: str = kw.get("action")

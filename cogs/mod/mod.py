@@ -1405,7 +1405,12 @@ class Moderator(Cog):
         page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
         await page.start()
 
-    async def warn_task(self, *, ctx: Context, target: Union[discord.Member, discord.User],):
+    async def warn_task(
+        self,
+        *,
+        ctx: Context,
+        target: Union[discord.Member, discord.User],
+    ):
         """Main system to warn
 
         - target: discord.Member
@@ -1426,7 +1431,7 @@ class Moderator(Cog):
                 duration=data.get("duration"),
                 mod=ctx.author,
                 ctx=ctx,
-                target=target
+                target=target,
             )
             print(4)
 

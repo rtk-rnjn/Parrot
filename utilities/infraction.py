@@ -48,9 +48,9 @@ async def warn(
     return post
 
 
-async def custom_delete_warn(guild: discord.Guild, **kwargs) -> None:
+async def custom_delete_warn(guild: discord.Guild, **kwargs):
     collection = warn_db[f"{guild.id}"]
-    await collection.delete_one(kwargs)
+    return await collection.delete_one(kwargs)
 
 
 async def delete_warn_by_message_id(guild: discord.Guild, *, messageID: int) -> None:

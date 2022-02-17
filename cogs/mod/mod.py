@@ -1383,7 +1383,7 @@ class Moderator(Cog):
             f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
         )
         if flags.target:
-            target = self.bot.get_or_fetch_member(ctx.guild, flags.target.id)
+            target = await self.bot.get_or_fetch_member(ctx.guild, flags.target.id)
             await self.warn_task(target=target, ctx=ctx)
 
     @commands.command()
@@ -1412,22 +1412,23 @@ class Moderator(Cog):
         - ctx: Context
         """
         count = 0
-        print(1)
         col = warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
-        print(2)
         if data := await collection.find_one(
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
-            print(3)
-            await self.execute_action(
-                action=data["action"].lower(),
-                duration=data.get("duration"),
-                mod=ctx.author,
-                ctx=ctx,
-                target=target
-            )
+            print(1)
+            for i in data["warn_auto"]:
+                print(2)
+                if i == count:
+                    await self.execute_action(
+                        action=data["action"].lower(),
+                        duration=data.get("duration"),
+                        mod=ctx.author,
+                        ctx=ctx,
+                        target=target
+                    )
             print(4)
 
     async def execute_action(self, **kw):

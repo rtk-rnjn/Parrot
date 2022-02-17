@@ -1428,7 +1428,7 @@ class Moderator(Cog):
                 duration=data.get("duration"),
                 mod=ctx.author,
                 ctx=ctx,
-                **kw
+                **kw,
             )
 
     async def execute_action(self, **kw):

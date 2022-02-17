@@ -10,7 +10,7 @@ from discord.ext import commands
 from time import time
 from datetime import timedelta
 
-from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY, SUPPORT_SERVER_ID
+from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt
 
 from core import Parrot, Context, Cog
@@ -27,6 +27,7 @@ import asyncio
 
 from typing import Any, Dict, List, Optional, Union
 
+SUPPORT_SERVER_ID = 741614680652644382
 
 def format_dt(dt, style=None):
     if dt.tzinfo is None:

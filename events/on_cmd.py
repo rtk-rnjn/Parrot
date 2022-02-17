@@ -7,7 +7,7 @@ import os
 from discord.ext import commands
 
 from utilities.exceptions import ParrotCheckFailure
-from utilities.database import cmd_increment, parrot_db
+from utilities.database import parrot_db
 
 from core import Parrot, Context, Cog
 

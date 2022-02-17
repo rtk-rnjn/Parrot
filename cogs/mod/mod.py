@@ -1424,7 +1424,7 @@ class Moderator(Cog):
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
             for i in data["warn_auto"]:
-                if i['count'] == count:
+                if i["count"] == count:
                     await self.execute_action(
                         action=i["action"].lower(),
                         duration=i.get("duration"),

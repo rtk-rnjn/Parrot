@@ -338,16 +338,17 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await menu.start()
 
     def common_command_formatting(self, embed_like, command):
-        embed_like.title = command.qualified_name
-        embed_like.add_field(
-            name="Syntax",
-            value=f"`{self.get_command_signature(command)}`",
-            inline=False,
-        )
-        if command.aliases:
+        embed_like.title = command.qualified_name.upper()
+        if isinstance(embed_like, discord.Embed):
             embed_like.add_field(
-                name="Aliases", value=f"`{', '.join(command.aliases)}`", inline=False
+                name="Syntax",
+                value=f"`{command.qualified_name}{self.get_command_signature(command)}`",
+                inline=False,
             )
+            if command.aliases:
+                embed_like.add_field(
+                    name="Aliases", value=f"`{', '.join(command.aliases)}`", inline=False
+                )
         if command.description:
             embed_like.description = f"> {command.description}\n\n{command.help}"
         else:

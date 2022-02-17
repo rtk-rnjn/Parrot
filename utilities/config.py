@@ -8,7 +8,7 @@ dotenv_values(".env")
 with open("config.json") as f:
     data = json.load(f)
 
-VERSION = "v4.1.0-stable"
+VERSION = "v4.4.0-stable"
 
 OWNER_IDS = data["owner_ids"]
 DEFAULT_PREFIX = data["prefix"]

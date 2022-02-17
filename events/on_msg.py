@@ -364,7 +364,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         if message.author.bot:
             return
-        await msg_increment(message.guild.id, message.author.id)  # for gw only
+
         await self.quick_answer(message)
         await self._on_message_passive(message)
         channel = await collection.find_one(

@@ -123,7 +123,7 @@ class Context(commands.Context):
                 await self.author.send(
                     "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
                 )
-            except discord.Fobidden:
+            except discord.Forbidden:
                 pass
             return
         return await super().reply(content, **kwargs)

@@ -30,6 +30,7 @@ from typing import Any, Dict, List, Optional, Union
 
 SUPPORT_SERVER_ID = 741614680652644382
 
+
 def format_dt(dt, style=None):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=datetime.timezone.utc)
@@ -351,7 +352,9 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 )
             if command.aliases:
                 embed_like.add_field(
-                    name="Aliases", value=f"`{', '.join(command.aliases)}`", inline=False
+                    name="Aliases",
+                    value=f"`{', '.join(command.aliases)}`",
+                    inline=False,
                 )
         if command.description:
             embed_like.description = f"> {command.description}\n\n{command.help}"
@@ -605,19 +608,27 @@ class Meta(Cog):
         await ctx.reply(embed=embed)
 
     def format_commit(self, commit):
-        short, _, _ = commit.message.partition('\n')
+        short, _, _ = commit.message.partition("\n")
         short_sha2 = commit.hex[0:6]
-        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
-        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
+        commit_tz = datetime.timezone(
+            datetime.timedelta(minutes=commit.commit_time_offset)
+        )
+        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(
+            commit_tz
+        )
 
         # [`hash`](url) message (offset)
         offset = Time.format_relative(commit_time.astimezone(datetime.timezone.utc))
-        return f'[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})'
+        return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})"
 
     def get_last_commits(self, count=3):
-        repo = pygit2.Repository('.git')
-        commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
-        return '\n'.join(self.format_commit(c) for c in commits)
+        repo = pygit2.Repository(".git")
+        commits = list(
+            itertools.islice(
+                repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count
+            )
+        )
+        return "\n".join(self.format_commit(c) for c in commits)
 
     @commands.command(name="stats", aliases=["about"])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -632,8 +643,8 @@ class Meta(Cog):
             title="Official Bot Server Invite",
             colour=ctx.author.colour,
             timestamp=datetime.datetime.utcnow(),
-            description='Latest Changes:\n' + revision,
-            url=SUPPORT_SERVER
+            description="Latest Changes:\n" + revision,
+            url=SUPPORT_SERVER,
         )
         support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
         owner = await self.bot.get_or_fetch_member(support_guild, self.bot.owner_id)
@@ -658,21 +669,31 @@ class Meta(Cog):
                 elif isinstance(channel, discord.VoiceChannel):
                     voice += 1
 
-        embed.add_field(name='Members', value=f'{total_members} total\n{total_unique} unique')
-        embed.add_field(name='Channels', value=f'{text + voice} total\n{text} text\n{voice} voice')
+        embed.add_field(
+            name="Members", value=f"{total_members} total\n{total_unique} unique"
+        )
+        embed.add_field(
+            name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice"
+        )
 
         memory_usage = self.process.memory_full_info().uss / 1024**2
         cpu_usage = self.process.cpu_percent() / psutil.cpu_count()
-        embed.add_field(name='Process', value=f'{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU')
+        embed.add_field(
+            name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU"
+        )
 
         version = discord_version
-        embed.add_field(name='Guilds', value=guilds)
-        embed.add_field(name='Bot Version', value=VERSION)
-        embed.add_field(name='Uptime', value=discord.utils.format_dt(self.bot.uptime, "R"))
-        embed.set_footer(text=f'Made with discord.py v{version}', icon_url='http://i.imgur.com/5BFecvA.png')
+        embed.add_field(name="Guilds", value=guilds)
+        embed.add_field(name="Bot Version", value=VERSION)
+        embed.add_field(
+            name="Uptime", value=discord.utils.format_dt(self.bot.uptime, "R")
+        )
+        embed.set_footer(
+            text=f"Made with discord.py v{version}",
+            icon_url="http://i.imgur.com/5BFecvA.png",
+        )
         embed.timestamp = discord.utils.utcnow()
         await ctx.send(embed=embed)
-
 
     @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
     @commands.bot_has_permissions(embed_links=True)

@@ -151,16 +151,14 @@ class BotConfig(Cog):
             {"_id": ctx.guild.id},
             {
                 "$addToSet": {
-                    "warn_auto": [
-                        {
+                    "warn_auto": {
                             "count": count,
                             "action": action.lower(),
                             "duration": duration if duration else None,
                         }
-                    ]
-                }
-            },
-        )
+                    }
+                },
+            )
         await ctx.send(f"{ctx.author.mention} updated")
 
     @config.command()

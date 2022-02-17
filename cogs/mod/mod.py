@@ -258,7 +258,7 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To Ban a member from a guild then immediately unban"""
-        b = await mt._tempban(
+        b = await mt._temp_ban(
             ctx.guild,
             ctx.command.name,
             ctx.author,
@@ -266,7 +266,8 @@ class Moderator(Cog):
             member,
             duration,
             reason,
-            bot=self.bot,
+            False,
+            bot=self.bot
         )
         if b is not False:
             await self.log(

@@ -143,7 +143,7 @@ class BotConfig(Cog):
             )
         if duration:
             _ = ShortTime(duration)
-        if _ := await csc.find_one({"_id": ctx.guild.id, "warn_db.count": count}):
+        if _ := await csc.find_one({"_id": ctx.guild.id, "warn_auto.count": count}):
             return await ctx.send(
                 f"{ctx.author.mention} warn count {count} already exists."
             )
@@ -161,6 +161,7 @@ class BotConfig(Cog):
                 }
             },
         )
+        await ctx.send(f"{ctx.author.mention} updated")
 
     @config.command()
     @commands.has_permissions(administrator=True)
@@ -187,6 +188,7 @@ class BotConfig(Cog):
         await csc.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"warn_auto": {**payload}}}
         )
+        await ctx.send(f"{ctx.author.mention} updated")
 
     @config.command(aliases=["mute-role"])
     @commands.has_permissions(administrator=True)

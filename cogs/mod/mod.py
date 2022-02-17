@@ -35,7 +35,7 @@ class Moderator(Cog):
         return discord.PartialEmoji(name="moderator", id=892424227007918121)
 
     def cog_unload(self):
-        self.warn.cancel()
+        self.warn_task.cancel()
 
     async def log(self, ctx, cmd, performed_on, reason):
         """A simple and nerdy Logging System"""
@@ -1352,7 +1352,7 @@ class Moderator(Cog):
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
         finally:
-            await self.warn.start()
+            await self.warn_task.start()
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

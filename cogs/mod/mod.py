@@ -1418,10 +1418,8 @@ class Moderator(Cog):
         if data := await collection.find_one(
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
-            print(1)
             for i in data["warn_auto"]:
-                print(2)
-                if i == count:
+                if i['count'] == count:
                     await self.execute_action(
                         action=data["action"].lower(),
                         duration=data.get("duration"),
@@ -1429,14 +1427,14 @@ class Moderator(Cog):
                         ctx=ctx,
                         target=target
                     )
-            print(4)
+                    print(4)
 
     async def execute_action(self, **kw):
         action: str = kw.get("action")
         duration: str = kw.get("duration")
         dt = ShortTime(duration)
         ctx: Context = kw.get("ctx")
-        target: discord.Member | discord.User = kw.get("target")
+        target: Union[discord.Member, discord.User] = kw.get("target")
         print(5)
         perms = ctx.guild.me.guild_permisisons
         if not (perms.kick_members and perms.moderate_members and perms.ban_members):

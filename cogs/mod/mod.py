@@ -131,10 +131,11 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """Gives a role to the all humans."""
-        await mt._add_roles_humans(
+        b = await mt._add_roles_humans(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, operator, role, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, "Humans", f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, "Humans", f"{reason}")
 
     @role.command(name="add", aliases=["arole", "giverole", "grole"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -149,10 +150,11 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """Gives a role to the specified member(s)."""
-        await mt._add_roles(
+        b = await mt._add_roles(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @role.command(name="remove", aliases=["urole", "removerole", "rrole"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -167,10 +169,11 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """Remove the mentioned role from mentioned/id member"""
-        await mt._remove_roles(
+        b = await mt._remove_roles(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, role, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @commands.command(aliases=["hackban"])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -187,10 +190,11 @@ class Moderator(Cog):
         """To ban a member from guild."""
         if days is None:
             days = 0
-        await mt._ban(
+        b = await mt._ban(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, days, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @commands.command(name="massban")
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -207,15 +211,16 @@ class Moderator(Cog):
         """To Mass ban list of members, from the guild"""
         if days is None:
             days = 0
-        await mt._mass_ban(
+        b = await mt._mass_ban(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, days, reason
         )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            f'{", ".join([str(member) for member in members])}',
-            f"{reason}",
-        )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                f'{", ".join([str(member) for member in members])}',
+                f"{reason}",
+            )
 
     @commands.command(aliases=["softkill"])
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -229,15 +234,16 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To Ban a member from a guild then immediately unban"""
-        await mt._softban(
+        b = await mt._softban(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
         )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            f'{", ".join([str(member) for member in member])}',
-            f"{reason}",
-        )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                f'{", ".join([str(member) for member in member])}',
+                f"{reason}",
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -252,22 +258,23 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To Ban a member from a guild then immediately unban"""
-        await mt._tempban(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            member,
-            duration,
-            reason,
-            bot=self.bot,
-        )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            f'{", ".join([str(member) for member in member])}',
-            f"{reason}",
-        )
+        b = await mt._tempban(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                member,
+                duration,
+                reason,
+                bot=self.bot,
+            )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                f'{", ".join([str(member) for member in member])}',
+                f"{reason}",
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -283,16 +290,17 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """Blocks a user from replying message in that channel."""
-        await mt._block(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            ctx.channel,
-            member,
-            reason,
-        )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        b = await mt._block(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                ctx.channel,
+                member,
+                reason,
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @commands.command(aliases=["nuke"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -306,17 +314,18 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To clone the channel or to nukes the channel (clones and delete)."""
-        await mt._clone(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            channel or ctx.channel,
-            reason,
-        )
-        await self.log(
-            ctx, ctx.command.qualified_name, channel or ctx.channel, f"{reason}"
-        )
+        b = await mt._clone(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                channel or ctx.channel,
+                reason,
+            )
+        if b is not False:
+            await self.log(
+                ctx, ctx.command.qualified_name, channel or ctx.channel, f"{reason}"
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -326,10 +335,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To kick a member from guild."""
-        await mt._kick(
-            ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
-        )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        b = await mt._kick(
+                ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @commands.command(name="masskick")
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -343,15 +353,16 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To kick a member from guild."""
-        await mt._mass_kick(
+        b = await mt._mass_kick(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, members, reason
         )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            f'{", ".join([str(member) for member in members])}',
-            f"{reason}",
-        )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                f'{", ".join([str(member) for member in members])}',
+                f"{reason}",
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -373,22 +384,19 @@ class Moderator(Cog):
         """To lock the channel"""
         for chn in channel:
             if type(chn) is discord.TextChannel:
-                await mt._text_lock(
+                b = await mt._text_lock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
             elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
-                await mt._vc_lock(
+                b = await mt._vc_lock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
             else:
-                pass
-
-        await mt._text_lock(
-            ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel
-        )
-        await self.log(
-            ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason
-        )
+                return
+        if b is not False:
+            await self.log(
+                ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -410,22 +418,19 @@ class Moderator(Cog):
         """To unlock the channel"""
         for chn in channel:
             if type(chn) is discord.TextChannel:
-                await mt._text_unlock(
+                b = await mt._text_unlock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
-                return
-            if type(chn) in (discord.VoiceChannel, discord.StageChannel):
-                await mt._vc_unlock(
-                    ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
-                )
-                return
 
-        await mt._text_unlock(
-            ctx.guild, ctx.command.name, ctx.author, ctx.channel, ctx.channel
-        )
-        await self.log(
-            ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason
-        )
+            elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
+                b = await mt._vc_unlock(
+                    ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
+                )
+
+        if b is not False:
+            await self.log(
+                ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason
+            )
 
     @commands.command(aliases=["mute"])
     @commands.bot_has_permissions(moderate_members=True)
@@ -442,30 +447,31 @@ class Moderator(Cog):
         """To Timeout the member, from chat."""
         seconds = duration
         if seconds:
-            await mt._timeout(
-                ctx.guild,
-                ctx.command.qualified_name,
-                ctx.author,
-                ctx.channel,
-                member,
-                duration.dt,
-                reason,
-            )
+            b = await mt._timeout(
+                    ctx.guild,
+                    ctx.command.qualified_name,
+                    ctx.author,
+                    ctx.channel,
+                    member,
+                    duration.dt,
+                    reason,
+                )
         else:
-            await mt._mute(
-                ctx.guild,
+            b = await mt._mute(
+                    ctx.guild,
+                    ctx.command.qualified_name,
+                    ctx.author,
+                    ctx.channel,
+                    member,
+                    reason,
+                )
+        if b is not False:
+            await self.log(
+                ctx,
                 ctx.command.qualified_name,
-                ctx.author,
-                ctx.channel,
                 member,
-                reason,
+                f'{reason} | Till {"<t:" + str(int(seconds.dt.timestamp())) + ">" if seconds else "end"}',
             )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            member,
-            f'{reason} | Till {"<t:" + str(int(seconds.dt.timestamp())) + ">" if seconds else "end"}',
-        )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_roles=True))
@@ -475,10 +481,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To allow a member to sending message in the Text Channels, if muted/timeouted."""
-        await mt._unmute(
+        b = await mt._unmute(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @commands.command(aliases=["purge"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -520,18 +527,19 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To set slowmode in the specified channel"""
-        await mt._slowmode(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            seconds,
-            channel or ctx.channel,
-            reason,
-        )
-        await self.log(
-            ctx, ctx.command.qualified_name, channel, f"{reason} | For {seconds}s"
-        )
+        b = await mt._slowmode(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                seconds,
+                channel or ctx.channel,
+                reason,
+            )
+        if b is not False:
+            await self.log(
+                ctx, ctx.command.qualified_name, channel, f"{reason} | For {seconds}s"
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -541,10 +549,11 @@ class Moderator(Cog):
         self, ctx: Context, member: BannedMember, *, reason: reason_convert = None
     ):
         """To Unban a member from a guild"""
-        await mt._unban(
+        b = await mt._unban(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @commands.command()
     @commands.check_any(
@@ -565,21 +574,22 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """Unblocks a user from the text channel"""
-        await mt._unblock(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            ctx.channel,
-            member,
-            reason,
-        )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            f'{", ".join([str(member) for member in member])}',
-            f"{reason}",
-        )
+        b = await mt._unblock(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                ctx.channel,
+                member,
+                reason,
+            )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                f'{", ".join([str(member) for member in member])}',
+                f"{reason}",
+            )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_nicknames=True))
@@ -591,15 +601,16 @@ class Moderator(Cog):
         """
         To change the nickname of the specified member
         """
-        await mt._change_nickname(
+        b = await mt._change_nickname(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, name
         )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            member,
-            f"Action Requested by {ctx.author.name} ({ctx.author.id})",
-        )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                member,
+                f"Action Requested by {ctx.author.name} ({ctx.author.id})",
+            )
 
     @commands.group()
     @commands.check_any(
@@ -633,10 +644,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice mute"""
-        await mt._voice_mute(
+        b = await mt._voice_mute(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="unmute")
     @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
@@ -646,10 +658,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice unmute"""
-        await mt._voice_unmute(
+        b = await mt._voice_unmute(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="ban")
     @commands.check_any(
@@ -662,16 +675,17 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice ban"""
-        await mt._voice_ban(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            member,
-            ctx.author.voice.channel or member.voice.channel,
-            reason,
-        )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        b = await mt._voice_ban(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                member,
+                ctx.author.voice.channel or member.voice.channel,
+                reason,
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="unban")
     @commands.check_any(
@@ -684,16 +698,17 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice unban"""
-        await mt._voice_unban(
-            ctx.guild,
-            ctx.command.name,
-            ctx.author,
-            ctx.channel,
-            member,
-            ctx.author.voice.channel or member.voice.channel,
-            reason,
-        )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        b = await mt._voice_unban(
+                ctx.guild,
+                ctx.command.name,
+                ctx.author,
+                ctx.channel,
+                member,
+                ctx.author.voice.channel or member.voice.channel,
+                reason,
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="deafen")
     @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
@@ -703,10 +718,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice deafen"""
-        await mt._voice_deafen(
-            ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
-        )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        b = await mt._voice_deafen(
+                ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="undeafen")
     @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
@@ -716,10 +732,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice undeafen"""
-        await mt._voice_undeafen(
+        b = await mt._voice_undeafen(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="kick")
     @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
@@ -729,10 +746,11 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice kick"""
-        await mt._voice_kick(
-            ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
-        )
-        await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+        b = await mt._voice_kick(
+                ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="move")
     @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
@@ -806,15 +824,16 @@ class Moderator(Cog):
         """To delete the emoji"""
         if not emoji:
             return
-        await mt._emoji_delete(
+        b = await mt._emoji_delete(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, reason
         )
-        await self.log(
-            ctx,
-            ctx.command.qualified_name,
-            [emoji.name for emoji in emoji],
-            f"{reason}",
-        )
+        if b is not False:
+            await self.log(
+                ctx,
+                ctx.command.qualified_name,
+                [emoji.name for emoji in emoji],
+                f"{reason}",
+            )
 
     @emoji.command(name="add")
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
@@ -830,10 +849,11 @@ class Moderator(Cog):
         """To add the emoji"""
         if not emoji:
             return
-        await mt._emoji_add(
+        b = await mt._emoji_add(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, emoji, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, emoji, f"{reason}")
 
     @emoji.command(name="addurl")
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
@@ -848,10 +868,11 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To add the emoji from url"""
-        await mt._emoji_addurl(
-            ctx.guild, ctx.command.name, ctx.author, ctx.channel, url, name, reason
-        )
-        await self.log(ctx, ctx.command.qualified_name, "Emoji", f"{reason}")
+        b = await mt._emoji_addurl(
+                ctx.guild, ctx.command.name, ctx.author, ctx.channel, url, name, reason
+            )
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, "Emoji", f"{reason}")
 
     @emoji.command(name="rename")
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
@@ -866,10 +887,11 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To rename the emoji"""
-        await mt._emoji_rename(
+        b = await mt._emoji_rename(
             ctx.guild, ctx.command.name, ctx.author, ctx.channel, emoji, name, reason
         )
-        await self.log(ctx, ctx.command.qualified_name, emoji, f"{reason}")
+        if b is not False:
+            await self.log(ctx, ctx.command.qualified_name, emoji, f"{reason}")
 
     @commands.command()
     @commands.check_any(

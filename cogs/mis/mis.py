@@ -529,8 +529,6 @@ class Misc(Cog):
     @Context.with_type
     async def truthtable(self, ctx: Context, *, flags: TTFlag):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
-        Syntax:
-            Truthtable `--var *variable1*, *variable2*, *variable3* ... --con *condition1*, *condition2*, *condition3* ...`
         (Example: `tt --var a, b --con a and b, a or b`)
         ```
         Negation             : not, -, ~
@@ -544,7 +542,7 @@ class Misc(Cog):
         ```
         """
         table = Truths(
-            flags.var.split(","),
+            flags.var.replace(" ", "").split(","),
             flags.con.split(","),
             ints=flags.ints,
             ascending=flags.ascending,

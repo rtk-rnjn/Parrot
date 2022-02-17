@@ -17,7 +17,7 @@ from urllib.parse import quote_plus
 
 import typing as tp
 
-from utilities.database import parrot_db, msg_increment
+from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from utilities.buttons import Delete
 

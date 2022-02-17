@@ -636,7 +636,7 @@ class Meta(Cog):
             url=SUPPORT_SERVER
         )
         support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
-        owner = await self.bot.get_or_fetch_member(support_guild, self.bot.owner_id)
+        owner = await self.bot.get_or_fetch_member(support_guild, self.bot.owner_ids[0])
         embed.set_author(name=str(owner), icon_url=owner.display_avatar.url)
 
         # statistics

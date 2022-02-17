@@ -267,7 +267,7 @@ class Moderator(Cog):
             duration,
             reason,
             False,
-            bot=self.bot
+            bot=self.bot,
         )
         if b is not False:
             await self.log(

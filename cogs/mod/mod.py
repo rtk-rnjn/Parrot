@@ -1441,7 +1441,7 @@ class Moderator(Cog):
         ctx: Context = kw.get("ctx")
         target: Union[discord.Member, discord.User] = kw.get("target")
         print(5)
-        perms = ctx.guild.me.guild_permisisons
+        perms = ctx.guild.me.guild_permissions
         if not (perms.kick_members and perms.moderate_members and perms.ban_members):
             print(6)
             return  # sob sob sob

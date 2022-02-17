@@ -1352,7 +1352,7 @@ class Moderator(Cog):
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
         finally:
-            await self.warn_task.start()
+            await self.warn_task.start(target=user, ctx=ctx)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1363,7 +1363,6 @@ class Moderator(Cog):
             return
         await custom_delete_warn(ctx.guild, warn_id=warn_id)
         await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
-        await self.warn_task.start()
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1386,7 +1385,9 @@ class Moderator(Cog):
         await ctx.send(
             f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
         )
-        await self.warn_task.start()
+        if flags.target:
+            target = self.bot.get_or_fetch_member(ctx.guild, flags.target.id)
+            await self.warn_task.start(target=target, ctx=ctx)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))

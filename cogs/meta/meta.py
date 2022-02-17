@@ -660,9 +660,9 @@ class Meta(Cog):
 
         embed.add_field(name='Members', value=f'{total_members} total\n{total_unique} unique')
         embed.add_field(name='Channels', value=f'{text + voice} total\n{text} text\n{voice} voice')
-
-        memory_usage = self.process.memory_full_info().uss / 1024**2
-        cpu_usage = self.process.cpu_percent() / psutil.cpu_count()
+        process = psutil.Process()
+        memory_usage = process.memory_full_info().uss / 1024**2
+        cpu_usage = process.cpu_percent() / psutil.cpu_count()
         embed.add_field(name='Process', value=f'{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU')
 
         version = discord_version

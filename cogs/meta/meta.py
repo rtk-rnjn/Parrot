@@ -12,6 +12,7 @@ from datetime import timedelta
 
 from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt
+from utilities import time as Time
 
 from core import Parrot, Context, Cog
 from collections import Counter
@@ -610,7 +611,7 @@ class Meta(Cog):
         commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
 
         # [`hash`](url) message (offset)
-        offset = time.format_relative(commit_time.astimezone(datetime.timezone.utc))
+        offset = Time.format_relative(commit_time.astimezone(datetime.timezone.utc))
         return f'[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})'
 
     def get_last_commits(self, count=3):

@@ -1123,7 +1123,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.bot_has_permissions(embed_links=True)
     async def stackoverflow(self, ctx: Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
-        params = SO_PARAMS | {"q": search_query}
+        params = {**SO_PARAMS, **{"q": search_query}}
         async with self.bot.http_session.get(
             url=BASE_URL_SO, params=params
         ) as response:

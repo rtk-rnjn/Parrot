@@ -1358,8 +1358,9 @@ class Moderator(Cog):
         """To delete warn of user by ID"""
         if not warn_id:
             return
-        await custom_delete_warn(ctx.guild, warn_id=warn_id)
-        await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
+        somthing = await custom_delete_warn(ctx.guild, warn_id=warn_id)
+        if somthing:
+            await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1432,20 +1433,17 @@ class Moderator(Cog):
                         ctx=ctx,
                         target=target,
                     )
-                    print(4)
 
     async def execute_action(self, **kw):
         action: str = kw.get("action")
         duration: str = kw.get("duration")
-        dt = ShortTime(duration)
+        if duration:
+            dt = ShortTime(duration)
         ctx: Context = kw.get("ctx")
         target: Union[discord.Member, discord.User] = kw.get("target")
-        print(5)
         perms = ctx.guild.me.guild_permissions
         if not (perms.kick_members and perms.moderate_members and perms.ban_members):
-            print(6)
             return  # sob sob sob
-        print(7)
         if action == "kick":
             return await mt._kick(
                 ctx.guild,

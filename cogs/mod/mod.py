@@ -259,15 +259,15 @@ class Moderator(Cog):
     ):
         """To Ban a member from a guild then immediately unban"""
         b = await mt._tempban(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                member,
-                duration,
-                reason,
-                bot=self.bot,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            member,
+            duration,
+            reason,
+            bot=self.bot,
+        )
         if b is not False:
             await self.log(
                 ctx,
@@ -291,14 +291,14 @@ class Moderator(Cog):
     ):
         """Blocks a user from replying message in that channel."""
         b = await mt._block(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                ctx.channel,
-                member,
-                reason,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            ctx.channel,
+            member,
+            reason,
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
@@ -315,13 +315,13 @@ class Moderator(Cog):
     ):
         """To clone the channel or to nukes the channel (clones and delete)."""
         b = await mt._clone(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                channel or ctx.channel,
-                reason,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            channel or ctx.channel,
+            reason,
+        )
         if b is not False:
             await self.log(
                 ctx, ctx.command.qualified_name, channel or ctx.channel, f"{reason}"
@@ -336,8 +336,8 @@ class Moderator(Cog):
     ):
         """To kick a member from guild."""
         b = await mt._kick(
-                ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
-            )
+            ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
@@ -395,7 +395,10 @@ class Moderator(Cog):
                 return
         if b is not False:
             await self.log(
-                ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason
+                ctx,
+                ctx.command.qualified_name,
+                channel if channel else ctx.channel,
+                reason,
             )
 
     @commands.command()
@@ -429,7 +432,10 @@ class Moderator(Cog):
 
         if b is not False:
             await self.log(
-                ctx, ctx.command.qualified_name, channel if channel else ctx.channel, reason
+                ctx,
+                ctx.command.qualified_name,
+                channel if channel else ctx.channel,
+                reason,
             )
 
     @commands.command(aliases=["mute"])
@@ -448,23 +454,23 @@ class Moderator(Cog):
         seconds = duration
         if seconds:
             b = await mt._timeout(
-                    ctx.guild,
-                    ctx.command.qualified_name,
-                    ctx.author,
-                    ctx.channel,
-                    member,
-                    duration.dt,
-                    reason,
-                )
+                ctx.guild,
+                ctx.command.qualified_name,
+                ctx.author,
+                ctx.channel,
+                member,
+                duration.dt,
+                reason,
+            )
         else:
             b = await mt._mute(
-                    ctx.guild,
-                    ctx.command.qualified_name,
-                    ctx.author,
-                    ctx.channel,
-                    member,
-                    reason,
-                )
+                ctx.guild,
+                ctx.command.qualified_name,
+                ctx.author,
+                ctx.channel,
+                member,
+                reason,
+            )
         if b is not False:
             await self.log(
                 ctx,
@@ -528,14 +534,14 @@ class Moderator(Cog):
     ):
         """To set slowmode in the specified channel"""
         b = await mt._slowmode(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                seconds,
-                channel or ctx.channel,
-                reason,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            seconds,
+            channel or ctx.channel,
+            reason,
+        )
         if b is not False:
             await self.log(
                 ctx, ctx.command.qualified_name, channel, f"{reason} | For {seconds}s"
@@ -575,14 +581,14 @@ class Moderator(Cog):
     ):
         """Unblocks a user from the text channel"""
         b = await mt._unblock(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                ctx.channel,
-                member,
-                reason,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            ctx.channel,
+            member,
+            reason,
+        )
         if b is not False:
             await self.log(
                 ctx,
@@ -676,14 +682,14 @@ class Moderator(Cog):
     ):
         """To give the member voice ban"""
         b = await mt._voice_ban(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                member,
-                ctx.author.voice.channel or member.voice.channel,
-                reason,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            member,
+            ctx.author.voice.channel or member.voice.channel,
+            reason,
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
@@ -699,14 +705,14 @@ class Moderator(Cog):
     ):
         """To give the member voice unban"""
         b = await mt._voice_unban(
-                ctx.guild,
-                ctx.command.name,
-                ctx.author,
-                ctx.channel,
-                member,
-                ctx.author.voice.channel or member.voice.channel,
-                reason,
-            )
+            ctx.guild,
+            ctx.command.name,
+            ctx.author,
+            ctx.channel,
+            member,
+            ctx.author.voice.channel or member.voice.channel,
+            reason,
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
@@ -719,8 +725,8 @@ class Moderator(Cog):
     ):
         """To give the member voice deafen"""
         b = await mt._voice_deafen(
-                ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
-            )
+            ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
@@ -747,8 +753,8 @@ class Moderator(Cog):
     ):
         """To give the member voice kick"""
         b = await mt._voice_kick(
-                ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
-            )
+            ctx.guild, ctx.command.name, ctx.author, ctx.channel, member, reason
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
@@ -869,8 +875,8 @@ class Moderator(Cog):
     ):
         """To add the emoji from url"""
         b = await mt._emoji_addurl(
-                ctx.guild, ctx.command.name, ctx.author, ctx.channel, url, name, reason
-            )
+            ctx.guild, ctx.command.name, ctx.author, ctx.channel, url, name, reason
+        )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, "Emoji", f"{reason}")
 

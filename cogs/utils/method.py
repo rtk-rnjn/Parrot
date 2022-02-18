@@ -152,7 +152,7 @@ async def _text_edit(bot: Parrot, ctx: Context, tag, text):
 async def _claim_owner(bot: Parrot, ctx: Context, tag):
     collection = tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
-        member = ctx.guild.get_member(data["owner"])
+        member = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         if member:
             return await ctx.reply(
                 f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server"
@@ -236,7 +236,7 @@ async def _view_tag(bot: Parrot, ctx: Context, tag):
             title=f"Tag: {tag}", timestamp=datetime.utcnow(), color=ctx.author.color
         )
         text_len = len(data["text"])
-        owner = ctx.guild.get_member(data["owner"])
+        owner = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         nsfw = data["nsfw"]
         count = data["count"]
         created_at = f"<t:{data['created_at']}>"

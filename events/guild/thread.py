@@ -115,9 +115,10 @@ class OnThread(Cog):
                 data["on_member_join_thread"], session=self.bot.session
             )
             if webhook:
+                guild_member = await self.bot.get_or_fetch_member(member.thread.guild, member.id)
                 content = f"""**On Member Thread Join**
 
-`Member    :` **{member.thred.guild.get_member(member.id)}** **(`{member.id}`)**
+`Member    :` **{guild_member}** **(`{member.id}`)**
 `Name      :` **{member.thread.name}** **(`{member.thread.id}`)**
 `Created at:` **{utils.format_dt(utils.snowflake_time(member.thread.id))}**
 `Joined at :` **{utils.format_dt(member.joined_at)}**
@@ -139,9 +140,10 @@ class OnThread(Cog):
                 data["on_member_leave_thread"], session=self.bot.session
             )
             if webhook:
+                guild_member = await self.bot.get_or_fetch_member(member.thread.guild, member.id)
                 content = f"""**On Member Thread Leave**
 
-`Member    :` **{member.thred.guild.get_member(member.id)}** **(`{member.id}`)**
+`Member    :` **{guild_member}** **(`{member.id}`)**
 `Name      :` **{member.thread.name}** **(`{member.thread.id}`)**
 `Created at:` **{utils.format_dt(utils.snowflake_time(member.thread.id))}**
 `Joined at :` **{utils.format_dt(member.joined_at)}**

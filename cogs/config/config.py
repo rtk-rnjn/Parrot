@@ -618,17 +618,17 @@ class BotConfig(Cog):
             if data:
                 role = (
                     ctx.guild.get_role(data["pingrole"]).name
-                    if data["pingrole"]
+                    if data.get("pingrole")
                     else None
                 )
                 channel = (
                     ctx.guild.get_channel(data["channel"]).name
-                    if data["channel"]
+                    if data.get("channel")
                     else None
                 )
                 member = (
                     ctx.guild.get_member(data["memberping"]).name
-                    if data["memberping"]
+                    if data.get("memberping")
                     else None
                 )
                 await ctx.reply(

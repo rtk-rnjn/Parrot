@@ -39,7 +39,8 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         if not data:
             return
         user_id = payload.user_id
-        member = guild.get_member(user_id)
+        member = await self.bot.get_or_fetch_member(guild, user_id)
+        
         if not member:
             return
         if member.bot:

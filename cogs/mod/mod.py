@@ -778,7 +778,7 @@ class Moderator(Cog):
 
         if channel is None:
             if voicestate := ctx.author.voice:
-                await voicestate.channel.connet()
+                await voicestate.channel.connect()
                 if not member:
                     member = voicestate.channel.members
             else:

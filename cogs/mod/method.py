@@ -930,9 +930,11 @@ async def _voice_unban(
     guild, command_name, ctx_author, destination, member, channel, reason
 ):
     try:
+        overwrite = channel.overwrites_for(member)
+        overwrite.connect = None
         await channel.set_permissions(
             member,
-            overwrite=None,
+            overwrite=overwrite,
             reason=f"Action requested by {ctx_author.name} ({ctx_author.id}) | Reason: {reason}",
         )
         await destination.send(f"{ctx_author.mention} voice unbanned **{member}**")

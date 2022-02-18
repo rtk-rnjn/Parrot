@@ -2124,7 +2124,8 @@ class NegamaxAI(AI):
         possible_positions = []
         for i in range(3):
             for x in range(3):
-                if board[i][x] == self.GameState.empty: possible_positions.append([i, x])
+                if board[i][x] == self.GameState.empty:
+                    possible_positions.append([i, x])
         return possible_positions
     
     def min_max(self, board: list, depth: int, player: bool):
@@ -2143,15 +2144,19 @@ class NegamaxAI(AI):
             return [player, player, player] in win_states
 
         def evaluate(board_):
-            if determine_win_state(board_, GameState.ai): score = +1
-            elif determine_win_state(board_, GameState.player): score = -1
-            else: score = 0
+            if determine_win_state(board_, GameState.ai):
+                score = +1
+            elif determine_win_state(board_, GameState.player):
+                score = -1
+            else:
+                score = 0
 
             return score
 
 
         best = [-1, -1, -math.inf]
-        if player == GameState.player: best[-1] = +math.inf
+        if player == GameState.player:
+            best[-1] = +math.inf
 
 
         if (
@@ -2167,8 +2172,10 @@ class NegamaxAI(AI):
             board[x][y] = GameState.empty
             score[0], score[1] = x, y
             if player == GameState.ai:
-                if score[2] > best[2]: best = score
-            elif score[2] < best[2]: best = score
+                if score[2] > best[2]:
+                    best = score
+            elif score[2] < best[2]:
+                best = score
 
 
         return best

@@ -115,7 +115,9 @@ class OnThread(Cog):
                 data["on_member_join_thread"], session=self.bot.session
             )
             if webhook:
-                guild_member = await self.bot.get_or_fetch_member(member.thread.guild, member.id)
+                guild_member = await self.bot.get_or_fetch_member(
+                    member.thread.guild, member.id
+                )
                 content = f"""**On Member Thread Join**
 
 `Member    :` **{guild_member}** **(`{member.id}`)**
@@ -140,7 +142,9 @@ class OnThread(Cog):
                 data["on_member_leave_thread"], session=self.bot.session
             )
             if webhook:
-                guild_member = await self.bot.get_or_fetch_member(member.thread.guild, member.id)
+                guild_member = await self.bot.get_or_fetch_member(
+                    member.thread.guild, member.id
+                )
                 content = f"""**On Member Thread Leave**
 
 `Member    :` **{guild_member}** **(`{member.id}`)**

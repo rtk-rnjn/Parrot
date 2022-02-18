@@ -383,11 +383,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     delete_after=10,
                 )
 
-            guild = await collection.find_one({"_id": message.guild.id})
-            # data = await collection.find({})
-
-            role = message.guild.get_role(guild["ignore-role"])
-            if role and role in message.author.roles:
+            guild = channel
+            role_id = guild.get("ignore_role") or guild.get("ignore-role") or 0
+            if message.author._roles.has(role_id):
                 return
 
             if message.content.startswith(
@@ -409,18 +407,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         delete_after=5,
                     )
 
-            if "discord.gg" in message.content.lower():
-                try:
-                    await message.delete(delay=0)
-                    return await message.channel.send(
-                        f"{message.author.mention} | Advertisements aren't allowed.",
-                        delete_after=5,
-                    )
-                except discord.Forbidden:
-                    return await message.channel.send(
-                        f"{message.author.mention} | Advertisements aren't allowed.",
-                        delete_after=5,
-                    )
             if len(message.content.split("\n")) > 4:
                 try:
                     await message.delete(delay=0)
@@ -431,19 +417,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 except discord.Forbidden:
                     return await message.channel.send(
                         f"{message.author.mention} | Do not send message in 4-5 lines or above.",
-                        delete_after=5,
-                    )
-
-            if "discord.com" in message.content.lower():
-                try:
-                    await message.delete(delay=0)
-                    return await message.channel.send(
-                        f"{message.author.mention} | Advertisements aren't allowed.",
-                        delete_after=5,
-                    )
-                except discord.Forbidden:
-                    return await message.channel.send(
-                        f"{message.author.mention} | Advertisements aren't allowed.",
                         delete_after=5,
                     )
 
@@ -464,14 +437,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if is_user_banned:
                 return
             try:
-                await asyncio.sleep(0.1)
-                await message.delete(delay=0)
+                await message.delete()
             except discord.Forbidden:
                 return await message.channel.send(
                     "Bot requires **Manage Messages** permission(s) to function properly."
                 )
 
-            async for webhook in collection.find({}):
+            async for webhook in collection.find({}, {"webhook": 1}):
                 hook = webhook["webhook"]
                 if hook:
                     try:

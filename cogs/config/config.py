@@ -280,7 +280,8 @@ class BotConfig(Cog):
                     }
                 )
             await ctx.reply(f"{channel.mention} created successfully.")
-        elif setting.lower() in ("ignore-role", "ignore_role", "ignorerole"):
+            return
+        if setting.lower() in ("ignore-role", "ignore_role", "ignorerole", "ignore"):
             post = {"ignore-role": role.id if role else None}
             await gchat_update(ctx.guild.id, post)
             if not role:

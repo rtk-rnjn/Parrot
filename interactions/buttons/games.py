@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import random
-import re, copy, math
+import re
+import copy
+import math
 import itertools
 
 from dataclasses import dataclass
@@ -2102,8 +2104,9 @@ class AI:
 
 
 class NegamaxAI(AI):
-    def __init__(self, player: bool) -> None:
+    def __init__(self, GameState, player: bool) -> None:
         super().__init__(player)
+        self.GameState = GameState
 
     def heuristic(self, game: Board, sign: int) -> float:
         if sign == -1:
@@ -2119,7 +2122,7 @@ class NegamaxAI(AI):
             return -1_000_000
 
         return random.randint(-10, 10)
-    
+
     def determine_possible_positions(self, board: BoardState):
         possible_positions = []
         for i in range(3):
@@ -2127,9 +2130,10 @@ class NegamaxAI(AI):
                 if board[i][x] == self.GameState.empty:
                     possible_positions.append([i, x])
         return possible_positions
-    
+
     def min_max(self, board: list, depth: int, player: bool):
         GameState = self.GameState
+
         def determine_win_state(board_, player):
             win_states = [
                 [board_[0][0], board_[0][1], board_[0][2]],
@@ -2153,17 +2157,16 @@ class NegamaxAI(AI):
 
             return score
 
-
         best = [-1, -1, -math.inf]
         if player == GameState.player:
             best[-1] = +math.inf
-
 
         if (
             depth == 0
             or determine_win_state(board, GameState.ai)
             or determine_win_state(board, GameState.player)
-        ): return [-1, -1, evaluate(board)]
+        ):
+            return [-1, -1, evaluate(board)]
 
         for cell in self.determine_possible_positions(board):
             x, y = cell[0], cell[1]
@@ -2176,7 +2179,6 @@ class NegamaxAI(AI):
                     best = score
             elif score[2] < best[2]:
                 best = score
-
 
         return best
 
@@ -2212,13 +2214,12 @@ class NegamaxAI(AI):
     ) -> Union[float, Tuple[int, int]]:
         if game.over:
             return sign * self.heuristic(game, sign)
-        
+
         return self.min_max(
             copy.deepcopy(game.state),
             len(self.determine_possible_positions(game.state)),
             self.GameState.ai
         )
-
 
     def move(self, game: Board) -> Board:
         return game.move(*self.negamax(game))
@@ -2320,8 +2321,7 @@ class GameTicTacToe(discord.ui.View):
             ai = self.board.current_player
             player = not ai
 
-        ai = NegamaxAI(gs.ai)
-        ai.GameState = gs
+        ai = NegamaxAI(gs, gs.ai)
         self.board = ai.move(self.board)
 
     @property

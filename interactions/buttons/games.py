@@ -2218,7 +2218,7 @@ class NegamaxAI(AI):
         return self.min_max(
             copy.deepcopy(game.state),
             len(self.determine_possible_positions(game.state)),
-            self.GameState.ai
+            self.GameState.ai,
         )
 
     def move(self, game: Board) -> Board:

@@ -3,8 +3,6 @@ from __future__ import annotations
 import asyncio
 import random
 import re
-import copy
-import math
 import itertools
 
 from dataclasses import dataclass
@@ -2104,9 +2102,8 @@ class AI:
 
 
 class NegamaxAI(AI):
-    def __init__(self, GameState, player: bool) -> None:
+    def __init__(self, player: bool) -> None:
         super().__init__(player)
-        self.GameState = GameState
 
     def heuristic(self, game: Board, sign: int) -> float:
         if sign == -1:
@@ -2122,65 +2119,6 @@ class NegamaxAI(AI):
             return -1_000_000
 
         return random.randint(-10, 10)
-
-    def determine_possible_positions(self, board: BoardState):
-        possible_positions = []
-        for i in range(3):
-            for x in range(3):
-                if board[i][x] == self.GameState.empty:
-                    possible_positions.append([i, x])
-        return possible_positions
-
-    def min_max(self, board: list, depth: int, player: bool):
-        GameState = self.GameState
-
-        def determine_win_state(board_, player):
-            win_states = [
-                [board_[0][0], board_[0][1], board_[0][2]],
-                [board_[1][0], board_[1][1], board_[1][2]],
-                [board_[2][0], board_[2][1], board_[2][2]],
-                [board_[0][0], board_[1][0], board_[2][0]],
-                [board_[0][1], board_[1][1], board_[2][1]],
-                [board_[0][2], board_[1][2], board_[2][2]],
-                [board_[0][0], board_[1][1], board_[2][2]],
-                [board_[2][0], board_[1][1], board_[0][2]],
-            ]
-            return [player, player, player] in win_states
-
-        def evaluate(board_):
-            if determine_win_state(board_, GameState.ai):
-                score = +1
-            elif determine_win_state(board_, GameState.player):
-                score = -1
-            else:
-                score = 0
-
-            return score
-
-        best = [-1, -1, -math.inf]
-        if player == GameState.player:
-            best[-1] = +math.inf
-
-        if (
-            depth == 0
-            or determine_win_state(board, GameState.ai)
-            or determine_win_state(board, GameState.player)
-        ):
-            return [-1, -1, evaluate(board)]
-
-        for cell in self.determine_possible_positions(board):
-            x, y = cell[0], cell[1]
-            board[x][y] = player
-            score = self.min_max(board, depth - 1, not player)
-            board[x][y] = GameState.empty
-            score[0], score[1] = x, y
-            if player == GameState.ai:
-                if score[2] > best[2]:
-                    best = score
-            elif score[2] < best[2]:
-                best = score
-
-        return best
 
     @overload
     def negamax(
@@ -2215,11 +2153,23 @@ class NegamaxAI(AI):
         if game.over:
             return sign * self.heuristic(game, sign)
 
-        return self.min_max(
-            copy.deepcopy(game.state),
-            len(self.determine_possible_positions(game.state)),
-            self.GameState.ai
-        )
+        move = MISSING
+
+        score = float("-inf")
+        for c in game.legal_moves:
+            move_score = -self.negamax(game.move(*c), depth + 1, -beta, -alpha, -sign)
+
+            if move_score > score:
+                score = move_score
+                move = c
+
+            alpha = max(alpha, score)
+            if alpha >= beta:
+                break
+
+        if depth == 0:
+            return move
+        return score
 
     def move(self, game: Board) -> Board:
         return game.move(*self.negamax(game))
@@ -2316,12 +2266,7 @@ class GameTicTacToe(discord.ui.View):
         return True
 
     def make_ai_move(self):
-        class gs:
-            empty = None
-            ai = self.board.current_player
-            player = not ai
-
-        ai = NegamaxAI(gs, gs.ai)
+        ai = NegamaxAI(self.board.current_player)
         self.board = ai.move(self.board)
 
     @property

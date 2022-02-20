@@ -54,6 +54,7 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 
+
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
@@ -263,7 +264,9 @@ class Parrot(commands.AutoShardedBot):
 
         if ctx.command is not None:
             _true = await _can_run(ctx)
-            if await collection_ban.find_one({"_id": message.author.id, "command": True}):
+            if await collection_ban.find_one(
+                {"_id": message.author.id, "command": True}
+            ):
                 return
             if not _true:
                 await ctx.reply(

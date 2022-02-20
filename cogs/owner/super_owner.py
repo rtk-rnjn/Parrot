@@ -13,7 +13,7 @@ import os
 import traceback
 import typing
 
-from utilities.database import ban, parrot_db
+from utilities.database import ban, unban, parrot_db
 import re
 import io
 import zlib

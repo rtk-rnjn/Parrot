@@ -39,6 +39,13 @@ class auditFlag(
     user: typing.Union[discord.User, discord.Member] = None
     action: typing.Optional[str] = None
 
+class banFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
+    reason: str = None
+    _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
+    command: typing.Optional[convert_bool] = False
+
 
 act = {
     "channel_create": discord.AuditLogAction.channel_create,
@@ -210,21 +217,42 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self,
         ctx: Context,
         user: discord.User,
-        cmd: bool = True,
-        chat: bool = True,
-        global_: bool = True,
         *,
-        reason: str = None,
+        args: banFlag,
     ):
         """To ban the user"""
-        reason = reason or "No reason provided"
-        await ban(user.id, cmd, chat, global_, reason)
+        reason = args.reason or "No reason provided"
+        payload = {"reason": reason, "command": args.command, "global": args._global} 
+        await ban(user.id, **payload)
         try:
             await user.send(
                 f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban."
             )
+            await ctx.send("User banned and DM-ed")
         except discord.Forbidden:
-            pass
+            await ctx.send("User banned, unable to DM as their DMs are locked")
+    
+    @commands.command()
+    @commands.is_owner()
+    @Context.with_type
+    async def unban_user(
+        self,
+        ctx: Context,
+        user: discord.User,
+        *,
+        args: banFlag,
+    ):
+        """To ban the user"""
+        reason = args.reason or "No reason provided"
+        payload = {"reason": reason, "command": args.command, "global": args._global} 
+        await unban(user.id, **payload)
+        try:
+            await user.send(
+                f"{user.mention} you are unbanned. You can now use Parrot bot. Reason: {reason}"
+            )
+            await ctx.send("User unbanned and DM-ed")
+        except discord.Forbidden:
+            await ctx.send("User unbanned, unable to DM as their DMs are locked")
 
     @commands.command(name="image-search", aliases=["imagesearch", "imgs"], hidden=True)
     @commands.is_owner()

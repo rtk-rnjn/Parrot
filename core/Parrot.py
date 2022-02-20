@@ -263,7 +263,7 @@ class Parrot(commands.AutoShardedBot):
 
         if ctx.command is not None:
             _true = await _can_run(ctx)
-            if await collection_ban.find_one({"_id": message.author.id}):
+            if await collection_ban.find_one({"_id": message.author.id, "command": True}):
                 return
             if not _true:
                 await ctx.reply(

@@ -307,8 +307,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             db = await self.bot.db("parrot_db")
             self.collection = db["banned_users"]
         if data := await self.collection.find_one({"_id": user.id}):
-            if data["chat"] or data["global"]:
-                return True
+            return bool(data.get("global"))
         else:
             return False
 

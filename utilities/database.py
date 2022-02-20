@@ -152,10 +152,10 @@ async def guild_remove(guild_id: int):
     await collection.drop()
 
 
-async def ban(
-    user_id: int, cmd: bool, chat: bool, global_: bool, reason: str
-):  # chat, cmd, global
+async def ban(user_id: int, **kw):
     collection = parrot_db["banned_users"]
-    await collection.insert_one(
-        {"_id": user_id, "cmd": cmd, "chat": chat, "global": global_, "reason": reason}
-    )
+    await collection.insert_one({"_id": user_id, **kw})
+
+async def unban(user_id: int, **kw):
+    collection = parrot_db["banned_users"]
+    await collection.delete_one({"_id": user_id,})

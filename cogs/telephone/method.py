@@ -23,7 +23,7 @@ async def dial(bot, ctx, server, reverse=False):
             f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this."
         )
     target_guild = await collection.find_one({"_id": number})
-    if not target_guild or (target_guild["channel"] != ctx.channel.id):
+    if not target_guild:
         return await ctx.send(
             f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server!"
         )

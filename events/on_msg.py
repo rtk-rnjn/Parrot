@@ -568,7 +568,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     name = message.author.display_name[5:]
                     if len(name) != 0 or name not in (" ", ""):
                         await message.author.edit(
-                            nick=name, reason="{message.author} came after AFK"
+                            nick=name, reason=f"{message.author} came after AFK"
                         )
             except discord.Forbidden:
                 pass

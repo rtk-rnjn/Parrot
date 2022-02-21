@@ -453,7 +453,7 @@ class Utils(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} can not have both `after` and `for` argument"
             )
-        await afk.insert_one({**payload})
+
         if flags.after:
             await self.create_timer(
                 expires_at=flags.after.dt.timestamp(),
@@ -472,10 +472,12 @@ class Utils(Cog):
                 extra={"name": "REMOVE_AFK", "main": {**payload}},
                 message=ctx.message,
             )
+            await afk.insert_one({**payload})
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
             )
             return
+        await afk.insert_one({**payload})
         await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 
     @tasks.loop(seconds=3)

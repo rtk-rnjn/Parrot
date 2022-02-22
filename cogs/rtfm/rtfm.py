@@ -27,6 +27,7 @@ from core import Parrot, Context, Cog
 
 from discord.ext import commands, tasks
 from discord import Embed, Interaction, SelectOption, ui
+from utilities.converters import WrappedMessageConverter
 
 from . import _ref
 from . import _doc
@@ -215,21 +216,6 @@ class InformationDropdown(ui.Select):
         # The attribute is not set during initialization.
         result_embed = self.mapping_of_embeds[self.values[0]]
         await self.original_message.edit(embed=result_embed)
-
-
-class WrappedMessageConverter(commands.MessageConverter):
-    """A converter that handles embed-suppressed links like <http://example.com>."""
-
-    async def convert(self, ctx: Context, argument: str) -> discord.Message:
-        """Wrap the commands.MessageConverter to handle <> delimited message links."""
-        # It's possible to wrap a message in [<>] as well, and it's supported because its easy
-        if argument.startswith("[") and argument.endswith("]"):
-            argument = argument[1:-1]
-        if argument.startswith("<") and argument.endswith(">"):
-            argument = argument[1:-1]
-
-        return await super().convert(ctx, argument)
-
 
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
@@ -594,9 +580,8 @@ class RTFM(Cog):
 
         await ctx.send(embed=em)
 
-    @commands.command(
-        help="""$run <language> [--wrapped] [--stats] <code>
-for command-line-options, compiler-flags and arguments you may add a line starting with this argument, and after a space add your options, flags or args.
+    @commands.command(usage="run <language> [--wrapped] [--stats] <code>",
+        help="""For command-line-options, compiler-flags and arguments you may add a line starting with this argument, and after a space add your options, flags or args.
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
 <code> may be normal code, but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com)

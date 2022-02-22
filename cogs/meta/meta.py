@@ -8,7 +8,6 @@ import discord
 from discord.ext import commands
 
 from time import time
-from datetime import timedelta
 
 from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt

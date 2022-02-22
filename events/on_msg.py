@@ -304,8 +304,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def is_banned(self, user) -> bool:
         if self.collection is None:
-            db = await self.bot.db("parrot_db")
-            self.collection = db["banned_users"]
+            self.collection = parrot_db["banned_users"]
         if data := await self.collection.find_one({"_id": user.id}):
             return bool(data.get("global"))
         else:

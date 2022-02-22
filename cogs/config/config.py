@@ -940,7 +940,7 @@ class BotConfig(Cog):
     @Context.with_type
     async def list(self, ctx: Context):
         """To view what all configuation are being made with command"""
-        enable_disable = await self.bot.db("enable_disable")
+        enable_disable = self.bot.mongo.enable_disable
         em_lis = []
         collection = enable_disable[f"{ctx.guild.id}"]
         async for data in collection.find({}):
@@ -968,7 +968,7 @@ class BotConfig(Cog):
     @Context.with_type
     async def clear(self, ctx: Context):
         """To clear all overrides"""
-        enable_disable = await self.bot.db("enable_disable")
+        enable_disable = self.bot.mongo.enable_disable
         collection = enable_disable[f"{ctx.guild.id}"]
         await collection.drop()
         await ctx.send(f"{ctx.author.mention} reseted everything!")

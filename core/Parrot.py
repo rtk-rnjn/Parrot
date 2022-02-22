@@ -104,6 +104,7 @@ class Parrot(commands.AutoShardedBot):
         )
         self.server_config = LRU(64)
         self.mystbin = Client()
+        self.mongo = cluster
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)

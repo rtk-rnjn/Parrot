@@ -89,8 +89,6 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         )
                         break
 
-        parrot_db = await self.bot.db("parrot_db")
-
         if data := await parrot_db["server_config"].find_one({"_id": role.guild.id}):
             if data["mod_role"] == role.id:
                 await parrot_db["server_config"].update_one(

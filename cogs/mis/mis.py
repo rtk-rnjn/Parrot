@@ -819,7 +819,7 @@ class Misc(Cog):
     @Context.with_type
     async def create_poll(self, ctx: Context, question: str, *, options: str):
         """To create a poll, options should be seperated by commas"""
-        parrot_db = await self.bot.db("parrot_db")
+        parrot_db = self.bot.mongo["parrot_db"]
         collection = parrot_db["poll"]
         BASE_URL = "https://strawpoll.com/api/poll/"
         options = options.split(",")
@@ -883,7 +883,7 @@ class Misc(Cog):
     @Context.with_type
     async def delete_poll(self, ctx: Context, content_id: str):
         """To delete the poll. Only if it's yours"""
-        parrot_db = await self.bot.db("parrot_db")
+        parrot_db = self.bot.mongo["parrot_db"]
         collection = parrot_db["poll"]
         _exists = await collection.find_one({"_id": ctx.author.id})
         if not _exists:

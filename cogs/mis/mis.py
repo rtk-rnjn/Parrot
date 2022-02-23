@@ -212,9 +212,7 @@ class Misc(Cog):
             raw_data = await resp.json()
 
             if not raw_data.get("query"):
-                if error := raw_data.get("errors"):
-                    pass
-                raise commands.BadArgument(f"Wikipedia API: {resp.status} {error}")
+                raise commands.BadArgument(f"Wikipedia API: {resp.status} {raw_data.get('errors')}")
 
             lines = []
             if raw_data["query"]["searchinfo"]["totalhits"]:

@@ -112,7 +112,7 @@ class RerunBtn(discord.ui.Button):
 class Refresh(discord.ui.View):
     def __init__(self, bot: Parrot, no_rerun, timeout: float = 300):
         super().__init__(timeout=timeout)
-
+        self.bot = bot
         item = RerunBtn(
             bot=bot,
             label="Run again",
@@ -129,7 +129,7 @@ class Refresh(discord.ui.View):
         label="Delete", style=discord.ButtonStyle.grey, emoji="\N{WASTEBASKET}"
     )
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
-        message = await get_message(interaction)
+        message = await get_message(interaction, fetch=False, bot=self.bot)
 
         if message is None:
             await interaction.response.send_message(

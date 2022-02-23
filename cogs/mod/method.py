@@ -306,8 +306,8 @@ async def _mass_ban(
     )
 
 
-async def _softban(guild, command_name, ctx_author, destination, member, reason):
-    for member in member:
+async def _softban(guild, command_name, ctx_author, destination, members, reason):
+    for member in members:
         if ctx_author.top_role.position < member.top_role.position:
             return await destination.send(
                 f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
@@ -342,14 +342,14 @@ async def _temp_ban(
     command_name,
     ctx_author,
     destination,
-    member,
+    members,
     duration,
     reason,
     silent=True,
     *,
     bot: Parrot = None,
 ):
-    for member in member:
+    for member in members:
         if ctx_author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
                 f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
@@ -583,9 +583,9 @@ async def _mass_kick(guild, command_name, ctx_author, destination, members, reas
 
 
 async def _block(
-    guild, command_name, ctx_author, destination, channel, member, reason, silent=False
+    guild, command_name, ctx_author, destination, channel, members, reason, silent=False
 ):
-    for member in member:
+    for member in members:
         if ctx_author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
                 f"{ctx_author.mention} can not {command_name} the {member}, as the their's role is above you"
@@ -615,9 +615,9 @@ async def _block(
 
 
 async def _unblock(
-    guild, command_name, ctx_author, destination, channel, member, reason
+    guild, command_name, ctx_author, destination, channel, members, reason
 ):
-    for member in member:
+    for member in members:
         try:
             if channel.permissions_for(member).send_messages:
                 await destination.send(
@@ -945,8 +945,8 @@ async def _voice_unban(
         return False
 
 
-async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, reason):
-    for emoji in emoji:
+async def _emoji_delete(guild, command_name, ctx_author, destination, emojis, reason):
+    for emoji in emojis:
         try:
             if emoji.guild.id == guild.id:
                 await emoji.delete(
@@ -960,8 +960,8 @@ async def _emoji_delete(guild, command_name, ctx_author, destination, emoji, rea
             return False
 
 
-async def _emoji_add(guild, command_name, ctx_author, destination, emoji, reason):
-    for emoji in emoji:
+async def _emoji_add(guild, command_name, ctx_author, destination, emojis, reason):
+    for emoji in emojis:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(emoji.url) as res:

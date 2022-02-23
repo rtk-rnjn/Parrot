@@ -450,40 +450,26 @@ class Misc(Cog):
         search = urllib.parse.quote(search)
 
         url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    json_ = await response.json()
-                else:
-                    return await ctx.reply(
-                        f"{ctx.author.mention} No results found.```\n{search}```"
-                    )
+        response = await self.bot.session.get(url)
+        if response.status == 200:
+            json_ = await response.json()
+        else:
+            return await ctx.reply(
+                f"{ctx.author.mention} No results found.```\n{search}```"
+            )
 
         pages = []
 
         for item in json_["items"]:
             title = item["title"]
             link = item["link"]
-            displaylink = item["displayLink"]
             snippet = item.get("snippet")
-            try:
-                img = item["pagemap"]["cse_thumbnail"][0]["src"]
-            except KeyError:
-                img = None
-            em = discord.Embed(
-                title=f"{title}",
-                description=f"{displaylink}```\n{snippet}```",
-                timestamp=datetime.datetime.utcnow(),
-                url=f"{link}",
-            )
-            em.set_footer(text=f"{ctx.author.name}")
-            if not img:
-                pass
-            else:
-                em.set_thumbnail(url=img)
-            pages.append(em)
 
-        await PaginationView(pages).start(ctx=ctx)
+            pages.append(f"""**[Title: {title}]({link})**
+>>> {snippet}
+""")
+        page = SimplePages(entries=pages, ctx=ctx, per_page=3)
+        await page.start()
 
     @commands.command()
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)

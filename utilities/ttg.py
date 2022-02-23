@@ -10,22 +10,18 @@ from distutils.util import strtobool
 
 # dict of boolean operations
 OPERATIONS = {
-    'not':      (lambda x: not x),
-    '-':        (lambda x: not x),
-    '~':        (lambda x: not x),
-
-    'or':       (lambda x, y: x or y),
-    'nor':      (lambda x, y: not (x or y)),
-    'xor':      (lambda x, y: x != y),
-
-    'and':      (lambda x, y: x and y),
-    'nand':     (lambda x, y: not (x and y)),
-
-    '=>':       (lambda x, y: (not x) or y),
-    'implies':  (lambda x, y: (not x) or y),
-
-    '=':        (lambda x, y: x == y),
-    '!=':       (lambda x, y: x != y),
+    "not": (lambda x: not x),
+    "-": (lambda x: not x),
+    "~": (lambda x: not x),
+    "or": (lambda x, y: x or y),
+    "nor": (lambda x, y: not (x or y)),
+    "xor": (lambda x, y: x != y),
+    "and": (lambda x, y: x and y),
+    "nand": (lambda x, y: not (x and y)),
+    "=>": (lambda x, y: (not x) or y),
+    "implies": (lambda x, y: (not x) or y),
+    "=": (lambda x, y: x == y),
+    "!=": (lambda x, y: x != y),
 }
 
 
@@ -33,8 +29,7 @@ def recursive_map(func, data):
     """Recursively applies a map function to a list and all sublists."""
     if isinstance(data, list):
         return [recursive_map(func, elem) for elem in data]
-    else:
-        return func(data)
+    return func(data)
 
 
 def string_to_bool(string):
@@ -62,10 +57,7 @@ def solve_phrase(phrase):
         # single operand operation
         if len(phrase) == 2:
             return OPERATIONS[phrase[0]](solve_phrase(phrase[1]))
-        # double operand operation
-        else:
-            return OPERATIONS[phrase[1]](solve_phrase(phrase[0]),
-                                         solve_phrase([phrase[2]]))
+        return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
 
 
 def group_operations(phrase):
@@ -75,27 +67,31 @@ def group_operations(phrase):
         not, and, or, implication
     """
     if isinstance(phrase, list):
-        for operator in ['not', '~', '-']:
+        for operator in ["not", "~", "-"]:
             while operator in phrase:
                 index = phrase.index(operator)
-                phrase[index] = [operator, group_operations(phrase[index+1])]
-                phrase.pop(index+1)
-        for operator in ['and', 'nand']:
+                phrase[index] = [operator, group_operations(phrase[index + 1])]
+                phrase.pop(index + 1)
+        for operator in ["and", "nand"]:
             while operator in phrase:
                 index = phrase.index(operator)
-                phrase[index] = [group_operations(phrase[index-1]),
-                                 operator,
-                                 group_operations(phrase[index+1])]
-                phrase.pop(index+1)
-                phrase.pop(index-1)
-        for operator in ['or', 'nor', 'xor']:
+                phrase[index] = [
+                    group_operations(phrase[index - 1]),
+                    operator,
+                    group_operations(phrase[index + 1]),
+                ]
+                phrase.pop(index + 1)
+                phrase.pop(index - 1)
+        for operator in ["or", "nor", "xor"]:
             while operator in phrase:
                 index = phrase.index(operator)
-                phrase[index] = [group_operations(phrase[index-1]),
-                                 operator,
-                                 group_operations(phrase[index+1])]
-                phrase.pop(index+1)
-                phrase.pop(index-1)
+                phrase[index] = [
+                    group_operations(phrase[index - 1]),
+                    operator,
+                    group_operations(phrase[index + 1]),
+                ]
+                phrase.pop(index + 1)
+                phrase.pop(index - 1)
     return phrase
 
 
@@ -106,7 +102,7 @@ class Truths:
 
     def __init__(self, bases=None, phrases=None, ints=True, ascending=False):
         if not bases:
-            raise Exception('Base items are required')
+            raise Exception("Base items are required")
         self.bases = bases
         self.phrases = phrases or []
         self.ints = ints
@@ -117,19 +113,19 @@ class Truths:
         else:
             order = [True, False]
 
-        self.base_conditions = list(itertools.product(order,
-                                                      repeat=len(bases)))
+        self.base_conditions = list(itertools.product(order, repeat=len(bases)))
 
         # regex to match whole words defined in self.bases
         # used to add object context to variables in self.phrases
-        self.p = re.compile(r'(?<!\w)(' + '|'.join(self.bases) + r')(?!\w)')
+        self.p = re.compile(r"(?<!\w)(" + "|".join(self.bases) + r")(?!\w)")
 
         # used for parsing logical operations and parenthesis
         self.to_match = pyparsing.Word(pyparsing.alphanums)
-        for item in itertools.chain(self.bases,
-                                    [key for key, val in OPERATIONS.items()]):
+        for item in itertools.chain(
+            self.bases, [key for key, val in OPERATIONS.items()]
+        ):
             self.to_match |= item
-        self.parens = pyparsing.nestedExpr('(', ')', content=self.to_match)
+        self.parens = pyparsing.nestedExpr("(", ")", content=self.to_match)
 
     def calculate(self, *args):
         """
@@ -140,9 +136,11 @@ class Truths:
         eval_phrases = []
         for phrase in self.phrases:
             # substitute bases in phrase with boolean values as strings
-            phrase = self.p.sub(lambda match: str(bools[match.group(0)]), phrase)  # NOQA long line
+            phrase = self.p.sub(
+                lambda match: str(bools[match.group(0)]), phrase
+            )  # NOQA long line
             # wrap phrase in parens
-            phrase = '(' + phrase + ')'
+            phrase = "(" + phrase + ")"
             # parse the expression using pyparsing
             interpreted = self.parens.parseString(phrase).asList()[0]
             # convert any 'True' or 'False' to boolean values
@@ -169,16 +167,18 @@ class Truths:
         df.index = np.arange(1, len(df) + 1)  # index starting in one
         return df
 
-    def as_tabulate(self, index=True, table_format='psql', align='center'):
+    def as_tabulate(self, index=True, table_format="psql", align="center"):
         """
         Returns table using tabulate package
         """
-        table = tabulate(Truths.as_pandas(self),
-                         headers='keys',
-                         tablefmt=table_format,
-                         showindex=index,
-                         colalign=[align] * (len(Truths.as_pandas(self).columns) + index)  # NOQA long
-                         )
+        table = tabulate(
+            Truths.as_pandas(self),
+            headers="keys",
+            tablefmt=table_format,
+            showindex=index,
+            colalign=[align]
+            * (len(Truths.as_pandas(self).columns) + index),  # NOQA long
+        )
         return table
 
     def valuation(self, col_number=-1):
@@ -190,16 +190,16 @@ class Truths:
         if col_number == -1:
             pass
         elif col_number not in range(1, len(df.columns) + 1):
-            raise Exception('Indexer is out-of-bounds')
+            raise Exception("Indexer is out-of-bounds")
         else:
             col_number = col_number - 1
 
         if sum(df.iloc[:, col_number]) == len(df):
-            val = 'Tautology'
+            val = "Tautology"
         elif sum(df.iloc[:, col_number]) == 0:
-            val = 'Contradiction'
+            val = "Contradiction"
         else:
-            val = 'Contingency'
+            val = "Contingency"
         return val
 
     def __str__(self):

@@ -449,13 +449,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                             webhook = Webhook.from_url(f"{hook}", session=session)
                             if webhook:
                                 await webhook.send(
-                                    content=message.content,
+                                    content=message.content[:1990],
                                     username=f"{message.author}",
                                     avatar_url=message.author.display_avatar.url,
                                     allowed_mentions=discord.AllowedMentions.none(),
                                 )
-                    except Exception as e:
-                        print(e)
+                    except discord.NotFound:
+                        await collection.delete_one({"webhook": hook})  # all hooks are unique
+                    except discord.HTTPException:
+                        pass
 
     @Cog.listener()
     async def on_message_delete(self, message):

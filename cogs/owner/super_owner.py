@@ -594,7 +594,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
         e = discord.Embed(
-            title="Read the Fine Manual", timestamp=datetime.datetime.utcnow()
+            title="Read the Fucking Manual", timestamp=datetime.datetime.utcnow()
         )
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")

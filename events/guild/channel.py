@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any, List, Tuple
 
 from core import Cog, Parrot
 from utilities.database import parrot_db
@@ -173,7 +174,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                     file=discord.File(fp, filename="overwrites.json"),
                 )
 
-    def _channel_change(self, before, after, *, TYPE: str) -> tuple:
+    def _channel_change(self, before, after, *, TYPE: str) -> List[Tuple[str, Any]]:
         ls = []
         if before.name != after.name:
             ls.append(("`Name Changed     :`", before.name))

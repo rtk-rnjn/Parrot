@@ -106,9 +106,6 @@ class Parrot(commands.AutoShardedBot):
         self.server_config = LRU(64)
         self.mystbin = Client()
         self.mongo = cluster
-        self.ipc_client = ipc.Server(
-            self, host="localhost", port=8765, secret_key=IPC_KEY
-        )
 
         for ext in EXTENSIONS:
             try:

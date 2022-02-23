@@ -1,5 +1,6 @@
 from __future__ import annotations
 from cogs.meta.robopage import SimplePages
+from cogs.utils import method as mt
 
 from core import Parrot, Cog, Context
 from discord.ext import commands, tasks
@@ -12,8 +13,6 @@ import asyncio
 from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
 from utilities.converters import convert_bool
-
-from cogs.utils import method as mt
 
 afk = parrot_db["afk"]
 

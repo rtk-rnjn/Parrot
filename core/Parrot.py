@@ -29,8 +29,8 @@ from utilities.config import (
     GITHUB,
     SUPPORT_SERVER,
     SUPPORT_SERVER_ID,
-    IPC_KEY,
 )
+
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client

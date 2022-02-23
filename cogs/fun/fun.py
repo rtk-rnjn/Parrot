@@ -2973,12 +2973,14 @@ class Fun(Cog):
         fetch_member can't be used due to the avatar url being part of the user object, and
         some weird caching that D.py does
         """
-        try:
-            user = await self.bot.fetch_user(user_id)
-        except discord.errors.NotFound:
-            return None
-        except discord.HTTPException:
-            return None
+        user = self.bot.get_user(user_id)
+        if user is None:
+            try:
+                user = await self.bot.fetch_user(user_id)
+            except discord.errors.NotFound:
+                return None
+            except discord.HTTPException:
+                return None
 
         return user
 

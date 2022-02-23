@@ -13,7 +13,7 @@ import socket
 import re
 from collections import Counter, deque, defaultdict
 import discord
-from discord.ext import commands, tasks  # , ipc
+from discord.ext import commands, tasks, ipc
 
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from lru import LRU
@@ -30,6 +30,7 @@ from utilities.config import (
     GITHUB,
     SUPPORT_SERVER,
     SUPPORT_SERVER_ID,
+    IPC_KEY
 )
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
@@ -105,6 +106,8 @@ class Parrot(commands.AutoShardedBot):
         self.server_config = LRU(64)
         self.mystbin = Client()
         self.mongo = cluster
+        self.ipc_client = ipc.Server(self, host="localhost", port=8765, secret_key=IPC_KEY)
+
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -417,5 +420,5 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await collection.find_one({"_id": guild_id}):
+        if data := await collection.find_one({"_id": guild_id}, {"prefix": 1}):
             self.server_config[guild_id] = data

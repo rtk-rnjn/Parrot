@@ -47,3 +47,5 @@ OPEN_ROBOT_API=""
 
 # https://home.openweathermap.org/api_keys
 WEATHERID=""
+
+IPC_KEY = ""

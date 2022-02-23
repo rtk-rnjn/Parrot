@@ -115,7 +115,7 @@ class Utils(Cog):
             await self.create_timer(
                 expires_at=seconds,
                 created_at=ctx.message.created_at.timestamp(),
-                content=task,
+                content=task or "...",
                 message=ctx.message,
             )
 
@@ -159,7 +159,7 @@ class Utils(Cog):
         await self.create_timer(
             expires_at=seconds,
             created_at=ctx.message.created_at.timestamp(),
-            content=task,
+            content=task or "...",
             message=ctx.message,
             dm_notify=True,
         )

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-import typing
+from typing import Any, Optional, Dict, Union, List
 from async_property import async_property
 import jishaku
 import datetime
@@ -14,7 +14,6 @@ import re
 from collections import Counter, deque, defaultdict
 import discord
 from discord.ext import commands, tasks, ipc
-
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from lru import LRU
 
@@ -106,7 +105,7 @@ class Parrot(commands.AutoShardedBot):
         self.server_config = LRU(64)
         self.mystbin = Client()
         self.mongo = cluster
-
+        self.message_cache: Dict[int, Any] = {}
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -120,7 +119,7 @@ class Parrot(commands.AutoShardedBot):
         return f"<core.{self.user.name}>"
 
     @property
-    def server(self) -> typing.Optional[discord.Guild]:
+    def server(self) -> Optional[discord.Guild]:
         return self.get_guild(SUPPORT_SERVER_ID)  # Main server
 
     @property
@@ -156,7 +155,7 @@ class Parrot(commands.AutoShardedBot):
         return SUPPORT_SERVER
 
     @async_property
-    async def change_log(self) -> typing.Optional[discord.Message]:
+    async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
         if self._change_log is None:
             self._change_log = (
@@ -166,7 +165,7 @@ class Parrot(commands.AutoShardedBot):
         return self._change_log[0]
 
     @property
-    def author_obj(self) -> typing.Optional[discord.User]:
+    def author_obj(self) -> Optional[discord.User]:
         return self.get_user(MASTER_OWNER)
 
     @property
@@ -194,14 +193,6 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_socket_raw_receive(self, msg) -> None:
         self._prev_events.append(msg)
-
-    # async def on_ipc_ready(self):
-    #     """Called upon the IPC Server being ready"""
-    #     print("Ipc is ready.")
-
-    # async def on_ipc_error(self, endpoint, error):
-    #     """Called upon an error being raised within an IPC route"""
-    #     print(endpoint, "raised", error)
 
     async def before_identify_hook(self, shard_id, *, initial):
         self._clear_gateway_data()
@@ -344,7 +335,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_or_fetch_member(
         self, guild: discord.Guild, member_id: int
-    ) -> typing.Optional[discord.Member]:
+    ) -> Optional[discord.Member]:
         member = guild.get_member(member_id)
         if member is not None:
             return member
@@ -365,17 +356,22 @@ class Parrot(commands.AutoShardedBot):
 
     async def fetch_message_by_channel(
         self, channel: discord.TextChannel, messageID: int
-    ) -> typing.Optional[discord.Message]:
-        async for msg in channel.history(
-            limit=1,
-            before=discord.Object(messageID + 1),
-            after=discord.Object(messageID - 1),
-        ):
-            return msg
+    ) -> Optional[discord.Message]:
+        try:
+            return self.message_cache[messageID]
+        except KeyError:
+            async for msg in channel.history(
+                limit=1,
+                before=discord.Object(messageID + 1),
+                after=discord.Object(messageID - 1),
+            ):
+                if msg:
+                    self.message_cache[messageID] = msg
+                    return msg
 
     async def get_prefix(
         self, message: discord.Message
-    ) -> typing.Union[str, typing.List[str]]:
+    ) -> Union[str, List[str]]:
         """Dynamic prefixing"""
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
@@ -402,7 +398,7 @@ class Parrot(commands.AutoShardedBot):
             prefix = match.group(1)
         return commands.when_mentioned_or(prefix)(self, message)
 
-    async def get_guild_prefixes(self, guild: discord.Guild) -> typing.Optional[str]:
+    async def get_guild_prefixes(self, guild: discord.Guild) -> Optional[str]:
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
@@ -411,7 +407,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def send_raw(
         self, channel_id: int, content: str, **kwargs
-    ) -> typing.Optional[discord.Message]:
+    ) -> Optional[discord.Message]:
         await self.http.send_message(channel_id, content, **kwargs)
 
     async def invoke_help_command(self, ctx: Context) -> None:

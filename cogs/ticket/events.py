@@ -53,12 +53,12 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         emoji = payload.emoji.name
 
         if message_id == data["message_id"] and channel_id == data["channel_id"]:
-            message = await channel.fetch_message(message_id)
+            message = await self.bot.fetch_message_by_channel(channel, message_id)
         else:
             return
-        if (message is not None) and (emoji == "✉️"):
+        if (message is not None) and (emoji == "\N{ENVELOPE}"):
             try:
-                await message.remove_reaction("✉️", member)
+                await message.remove_reaction("\N{ENVELOPE}", member)
             except discord.Forbidden:
                 return await channel.send(
                     "Missing Manage Message permisssion to work properly",

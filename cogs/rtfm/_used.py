@@ -42,7 +42,7 @@ def prepare_payload(payload):
     return (language, text, False)
 
 
-async def get_message(interaction: discord.Interaction, fetch=False) -> discord.Message:
+async def get_message(interaction: discord.Interaction, fetch=False, *, bot: Parrot) -> discord.Message:
     """Retrieve referenced message, trying cache first and handle deletion"""
     ref = interaction.message.reference
 
@@ -58,7 +58,8 @@ async def get_message(interaction: discord.Interaction, fetch=False) -> discord.
     # message is None, means we have to fetch
 
     try:
-        return await interaction.message.channel.fetch_message(ref.message_id)
+        return bot.fetch_message_by_channel(interaction.message.channel, ref.message_id)
+        # return await interaction.message.channel.fetch_message(ref.message_id)
     except discord.errors.NotFound:
         # message deleted
         return None
@@ -71,7 +72,7 @@ class RerunBtn(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         # We always fetch since we need an updated message.content
-        message = await get_message(interaction, fetch=True)
+        message = await get_message(interaction, fetch=True, bot=self.bot)
 
         if message is None:
             await interaction.response.send_message(

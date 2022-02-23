@@ -357,84 +357,84 @@ class Easter(Cog):
             description=random.choice(EGG_FACTS),
         )
 
-    @commands.command(aliases=("eggheadquiz", "easterquiz"))
-    async def eggquiz(self, ctx: Context) -> None:
-        """
-        Gives a random quiz question, waits 30 seconds and then outputs the answer.
-        Also informs of the percentages and votes of each option
-        """
-        random_question = random.choice(EGGHEAD_QUESTIONS)
-        question, answers = random_question["question"], random_question["answers"]
-        answers = [(EMOJIS[i], a) for i, a in enumerate(answers)]
-        correct = EMOJIS[random_question["correct_answer"]]
+    # @commands.command(aliases=("eggheadquiz", "easterquiz"))
+    # async def eggquiz(self, ctx: Context) -> None:
+    #     """
+    #     Gives a random quiz question, waits 30 seconds and then outputs the answer.
+    #     Also informs of the percentages and votes of each option
+    #     """
+    #     random_question = random.choice(EGGHEAD_QUESTIONS)
+    #     question, answers = random_question["question"], random_question["answers"]
+    #     answers = [(EMOJIS[i], a) for i, a in enumerate(answers)]
+    #     correct = EMOJIS[random_question["correct_answer"]]
 
-        valid_emojis = [emoji for emoji, _ in answers]
+    #     valid_emojis = [emoji for emoji, _ in answers]
 
-        description = f"You have {TIMELIMIT} seconds to vote.\n\n"
-        description += "\n".join(
-            [f"{emoji} -> **{answer}**" for emoji, answer in answers]
-        )
+    #     description = f"You have {TIMELIMIT} seconds to vote.\n\n"
+    #     description += "\n".join(
+    #         [f"{emoji} -> **{answer}**" for emoji, answer in answers]
+    #     )
 
-        q_embed = discord.Embed(
-            title=question, description=description, colour=Colours.pink
-        )
+    #     q_embed = discord.Embed(
+    #         title=question, description=description, colour=Colours.pink
+    #     )
 
-        msg = await ctx.send(embed=q_embed)
-        for emoji in valid_emojis:
-            await msg.add_reaction(emoji)
+    #     msg = await ctx.send(embed=q_embed)
+    #     for emoji in valid_emojis:
+    #         await msg.add_reaction(emoji)
 
-        self.quiz_messages[msg.id] = valid_emojis
+    #     self.quiz_messages[msg.id] = valid_emojis
 
-        await asyncio.sleep(TIMELIMIT)
+    #     await asyncio.sleep(TIMELIMIT)
 
-        del self.quiz_messages[msg.id]
+    #     del self.quiz_messages[msg.id]
 
-        msg = await ctx.fetch_message(msg.id)  # Refreshes message
+    #     msg = await ctx.fetch_message(msg.id)  # Refreshes message
 
-        total_no = sum([len(await r.users().flatten()) for r in msg.reactions]) - len(
-            valid_emojis
-        )  # - bot's reactions
+    #     total_no = sum([len(await r.users().flatten()) for r in msg.reactions]) - len(
+    #         valid_emojis
+    #     )  # - bot's reactions
 
-        if total_no == 0:
-            return await msg.delete()  # To avoid ZeroDivisionError if nobody reacts
+    #     if total_no == 0:
+    #         return await msg.delete()  # To avoid ZeroDivisionError if nobody reacts
 
-        results = ["**VOTES:**"]
-        for emoji, _ in answers:
-            num = [
-                len(await r.users().flatten())
-                for r in msg.reactions
-                if str(r.emoji) == emoji
-            ][0] - 1
-            percent = round(100 * num / total_no)
-            s = "" if num == 1 else "s"
-            string = f"{emoji} - {num} vote{s} ({percent}%)"
-            results.append(string)
+    #     results = ["**VOTES:**"]
+    #     for emoji, _ in answers:
+    #         num = [
+    #             len(await r.users().flatten())
+    #             for r in msg.reactions
+    #             if str(r.emoji) == emoji
+    #         ][0] - 1
+    #         percent = round(100 * num / total_no)
+    #         s = "" if num == 1 else "s"
+    #         string = f"{emoji} - {num} vote{s} ({percent}%)"
+    #         results.append(string)
 
-        mentions = " ".join(
-            [
-                u.mention
-                for u in [
-                    await r.users().flatten()
-                    for r in msg.reactions
-                    if str(r.emoji) == correct
-                ][0]
-                if not u.bot
-            ]
-        )
+    #     mentions = " ".join(
+    #         [
+    #             u.mention
+    #             for u in [
+    #                 await r.users().flatten()
+    #                 for r in msg.reactions
+    #                 if str(r.emoji) == correct
+    #             ][0]
+    #             if not u.bot
+    #         ]
+    #     )
 
-        content = (
-            f"Well done {mentions} for getting it correct!"
-            if mentions
-            else "Nobody got it right..."
-        )
+    #     content = (
+    #         f"Well done {mentions} for getting it correct!"
+    #         if mentions
+    #         else "Nobody got it right..."
+    #     )
 
-        a_embed = discord.Embed(
-            title=f"The correct answer was {correct}!",
-            description="\n".join(results),
-            colour=Colours.pink,
-        )
+    #     a_embed = discord.Embed(
+    #         title=f"The correct answer was {correct}!",
+    #         description="\n".join(results),
+    #         colour=Colours.pink,
+    #     )
 
-        await ctx.send(content, embed=a_embed)
+    #     await ctx.send(content, embed=a_embed)
 
     @staticmethod
     async def already_reacted(

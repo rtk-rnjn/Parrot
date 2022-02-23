@@ -26,8 +26,6 @@ DATABASE_KEY: str = os.environ["DATABASE_KEY"]
 OPEN_ROBOT_API: str = os.environ["OPEN_ROBOT_API"]
 my_secret = DATABASE_KEY
 
-IPC_KEY = os.environ.get("IPC_KEY")
-
 AUTHOR_NAME: str = data["author_name"]
 AUTHOR_DISCRIMINATOR: int = data["discriminator"]
 

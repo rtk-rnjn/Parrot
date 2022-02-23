@@ -1,5 +1,7 @@
 from __future__ import annotations
 from cogs.meta.robopage import SimplePages
+from cogs.config import method as mt_
+from cogs.ticket import method as mt
 
 from discord.ext import commands
 import discord
@@ -16,9 +18,6 @@ from utilities.converters import convert_bool
 from utilities.time import ShortTime
 
 from .flags import AutoWarn, warnConfig
-
-from cogs.ticket import method as mt
-from cogs.config import method as mt_
 
 from pymongo.errors import DuplicateKeyError as DPError
 

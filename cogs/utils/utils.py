@@ -1,5 +1,6 @@
 from __future__ import annotations
 from cogs.meta.robopage import SimplePages
+from cogs.utils import method as mt
 
 from core import Parrot, Cog, Context
 from discord.ext import commands, tasks
@@ -12,8 +13,6 @@ import asyncio
 from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
 from utilities.converters import convert_bool
-
-from cogs.utils import method as mt
 
 afk = parrot_db["afk"]
 
@@ -435,19 +434,20 @@ class Utils(Cog):
     @afk.command(name="custom")
     async def custom_afk(self, ctx: Context, *, flags: afkFlags):
         """To set the custom AFK"""
-        payload = {}
-        payload["text"] = flags.text or "AFK"
-        payload["ignoredChannel"] = (
-            [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
-        )
-        payload["global"] = flags._global
-        payload["at"] = ctx.message.created_at.timestamp()
-        payload["guild"] = ctx.guild.id
-        payload["messageAuthor"] = ctx.author.id
-        payload["messageURL"] = ctx.message.jump_url
-        payload["channel"] = ctx.channel.id
-        payload["_id"] = ctx.message.id
-        payload["pings"] = []
+        payload = {
+            "text": flags.text or "AFK",
+            "ignoredChannel": (
+                [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
+            ),
+            "global": flags._global,
+            "at": ctx.message.created_at.timestamp(),
+            "guild": ctx.guild.id,
+            "messageAuthor": ctx.author.id,
+            "messageURL": ctx.message.jump_url,
+            "channel": ctx.channel.id,
+            "_id": ctx.message.id,
+            "pings": [],
+        }
 
         if flags.after and flags._for:
             return await ctx.send(

@@ -12,11 +12,10 @@ from time import time
 from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
 from utilities.buttons import Prompt
 from utilities import time as Time
+from utilities.formats import get_cmd_signature
 
 from core import Parrot, Context, Cog
 from collections import Counter
-
-from utilities.formats import get_cmd_signature
 from .robopage import RoboPages
 
 import datetime

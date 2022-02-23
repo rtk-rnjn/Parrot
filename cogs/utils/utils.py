@@ -435,9 +435,20 @@ class Utils(Cog):
     @afk.command(name="custom")
     async def custom_afk(self, ctx: Context, *, flags: afkFlags):
         """To set the custom AFK"""
-        payload = {"text": flags.text or "AFK", "ignoredChannel": (
-            [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
-        ), "global": flags._global, "at": ctx.message.created_at.timestamp(), "guild": ctx.guild.id, "messageAuthor": ctx.author.id, "messageURL": ctx.message.jump_url, "channel": ctx.channel.id, "_id": ctx.message.id, "pings": []}
+        payload = {
+            "text": flags.text or "AFK",
+            "ignoredChannel": (
+                [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
+            ),
+            "global": flags._global,
+            "at": ctx.message.created_at.timestamp(),
+            "guild": ctx.guild.id,
+            "messageAuthor": ctx.author.id,
+            "messageURL": ctx.message.jump_url,
+            "channel": ctx.channel.id,
+            "_id": ctx.message.id,
+            "pings": [],
+        }
 
         if flags.after and flags._for:
             return await ctx.send(

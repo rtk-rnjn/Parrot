@@ -448,8 +448,12 @@ class Misc(Cog):
     async def search(self, ctx: Context, *, search: str):
         """Simple google search Engine"""
         search = urllib.parse.quote(search)
+        if ctx.channel.nsfw:
+            safe = "off"
+        else:
+            safe = "active"
+        url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
 
-        url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}"
         response = await self.bot.session.get(url)
         if response.status == 200:
             json_ = await response.json()

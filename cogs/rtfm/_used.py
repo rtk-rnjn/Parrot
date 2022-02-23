@@ -42,7 +42,9 @@ def prepare_payload(payload):
     return (language, text, False)
 
 
-async def get_message(interaction: discord.Interaction, fetch=False, *, bot: Parrot) -> discord.Message:
+async def get_message(
+    interaction: discord.Interaction, fetch=False, *, bot: Parrot
+) -> discord.Message:
     """Retrieve referenced message, trying cache first and handle deletion"""
     ref = interaction.message.reference
 

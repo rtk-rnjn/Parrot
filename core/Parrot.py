@@ -400,7 +400,9 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one({"_id": guild.id}, {"_id": 0, "prefix": 1}):
+            if data := await collection.find_one(
+                {"_id": guild.id}, {"_id": 0, "prefix": 1}
+            ):
                 return data.get("prefix")
 
     async def send_raw(
@@ -413,5 +415,7 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await collection.find_one({"_id": guild_id}, {"prefix": 1, "_id": 0}):
+        if data := await collection.find_one(
+            {"_id": guild_id}, {"prefix": 1, "_id": 0}
+        ):
             self.server_config[guild_id] = data

@@ -30,7 +30,7 @@ from utilities.config import (
     GITHUB,
     SUPPORT_SERVER,
     SUPPORT_SERVER_ID,
-    IPC_KEY
+    IPC_KEY,
 )
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
@@ -106,7 +106,9 @@ class Parrot(commands.AutoShardedBot):
         self.server_config = LRU(64)
         self.mystbin = Client()
         self.mongo = cluster
-        self.ipc_client = ipc.Server(self, host="localhost", port=8765, secret_key=IPC_KEY)
+        self.ipc_client = ipc.Server(
+            self, host="localhost", port=8765, secret_key=IPC_KEY
+        )
 
         for ext in EXTENSIONS:
             try:

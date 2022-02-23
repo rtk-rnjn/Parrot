@@ -465,9 +465,11 @@ class Misc(Cog):
             link = item["link"]
             snippet = item.get("snippet")
 
-            pages.append(f"""**[Title: {title}]({link})**
+            pages.append(
+                f"""**[Title: {title}]({link})**
 >>> {snippet}
-""")
+"""
+            )
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 

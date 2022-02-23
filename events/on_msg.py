@@ -455,7 +455,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                     allowed_mentions=discord.AllowedMentions.none(),
                                 )
                     except discord.NotFound:
-                        await collection.delete_one({"webhook": hook})  # all hooks are unique
+                        await collection.delete_one(
+                            {"webhook": hook}
+                        )  # all hooks are unique
                     except discord.HTTPException:
                         pass
 

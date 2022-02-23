@@ -307,8 +307,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             self.collection = parrot_db["banned_users"]
         if data := await self.collection.find_one({"_id": user.id}):
             return bool(data.get("global"))
-        else:
-            return False
+        return False
 
     async def on_invite(self, message: discord.Message, invite_link: list):
         if data := await self.log_collection.find_one(

@@ -1,3 +1,3 @@
-from .Parrot import Parrot  # type: ignore
-from .Cog import Cog  # type: ignore
-from .Context import Context  # type: ignore
+from .Parrot import Parrot  # flake8: noqa
+from .Cog import Cog  # flake8: noqa
+from .Context import Context  # flake8: noqa

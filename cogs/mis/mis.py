@@ -404,7 +404,10 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def news(self, ctx: Context, *, nat: str):
-        """This command will fetch the latest news from all over the world."""
+        """This command will fetch the latest news from all over the world.
+        
+        $news <country_code>
+        """
         NEWS_KEY = os.environ["NEWSKEY"]
         nat = get_country_code(nat)
         if not nat:

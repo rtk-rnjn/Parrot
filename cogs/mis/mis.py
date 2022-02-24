@@ -415,7 +415,7 @@ class Misc(Cog):
         r = await self.bot.session.get(link)
         res = await r.json()
 
-        if res["status"] != "OK":
+        if res["status"].upper() != "OK":
             return await ctx.send(f"{ctx.author.mention} something not right!")
 
         em_list = []
@@ -427,9 +427,8 @@ class Misc(Cog):
             title = res["articles"][data]["title"]
             description = res["articles"][data]["description"]
             img = res["articles"][data]["urlToImage"]
-            content = res["articles"][data]["content"]
-            if not content:
-                content = "N/A"
+            content = res["articles"][data]["content"] or "N/A"
+
             # publish = res['articles'][data]['publishedAt']
 
             embed = Embed(

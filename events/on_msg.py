@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from core import Parrot, Cog
@@ -66,6 +68,7 @@ whitelist = [
     699839134709317642,  # `proguy914629.bot#5419`
     531179463673774080,  # `ROLEX#6596`
     857103603130302514,  # `Var_Monke#1354`
+    770646750804312105,  #  Nιgнт Fυяу ♪🤍#4371
 ]
 
 

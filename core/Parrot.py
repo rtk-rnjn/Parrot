@@ -64,7 +64,7 @@ class Parrot(commands.AutoShardedBot):
             case_insensitive=CASE_INSENSITIVE,
             intents=intents,
             activity=discord.Activity(
-                type=discord.ActivityType.listening, name="@Parrot config gsetup"
+                type=discord.ActivityType.watching, name="you"
             ),
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
@@ -106,8 +106,8 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin = Client()
         self.mongo = cluster
         self.message_cache: Dict[int, Any] = {}
-
         self.banned_users: Dict[int, Any] = {}
+        self.afk = set()
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -177,7 +177,7 @@ class Parrot(commands.AutoShardedBot):
     @async_property
     async def db_latency(self) -> float:
         ini = time()
-        _ = await collection.find_one({})
+        await collection.find_one({})
         fin = time()
         return fin - ini
 
@@ -206,11 +206,11 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
-        print(f"Received a vote:\n{data}")
+        print(f"[{self.user.name.title()}] Received a vote:\n{data}")
 
     async def on_autopost_success(self) -> None:
         print(
-            f"Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
+            f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
         )
 
     def run(self) -> None:
@@ -221,8 +221,11 @@ class Parrot(commands.AutoShardedBot):
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
-        print(f"Ready: {self.user} (ID: {self.user.id})")
-        print(f"Using discord.py of version: {discord.__version__ }")
+        print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
+        print(f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__ }")
+
+        ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
+        self.afk = set(ls)
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")
@@ -233,7 +236,7 @@ class Parrot(commands.AutoShardedBot):
         return
 
     async def on_shard_resumed(self, shard_id) -> None:
-        print(f"Shard ID {shard_id} has resumed...")
+        print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:

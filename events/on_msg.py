@@ -552,32 +552,36 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if message.author.bot:
             return
 
-        if data := await afk.find_one(
-            {
-                "$or": [
-                    {"messageAuthor": message.author.id, "guild": message.guild.id},
-                    {"messageAuthor": message.author.id, "global": True},
-                ]
-            }
-        ):
-            if message.channel.id in data["ignoredChannel"]:
-                return  # There exists `$nin` operator in MongoDB
-            await message.channel.send(
-                f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
-                f"> You were mentioned **{len(data['pings'])}** times"
-            )
-            try:
-                if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
-                    name = message.author.display_name[5:]
-                    if len(name) != 0 or name not in (" ", ""):
-                        await message.author.edit(
-                            nick=name, reason=f"{message.author} came after AFK"
-                        )
-            except discord.Forbidden:
-                pass
-            await afk.delete_one({"_id": data["_id"]})
-            await timer.delete_one({"_id": data["_id"]})
+        # code: when the AFK user messages
+        if message.author.id in self.bot.afk:
+            if data := await afk.find_one(
+                {
+                    "$or": [
+                        {"messageAuthor": message.author.id, "guild": message.guild.id},
+                        {"messageAuthor": message.author.id, "global": True},
+                    ]
+                }
+            ):
+                if message.channel.id in data["ignoredChannel"]:
+                    return  # There exists `$nin` operator in MongoDB
+                await message.channel.send(
+                    f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
+                    f"> You were mentioned **{len(data['pings'])}** times"
+                )
+                try:
+                    if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
+                        name = message.author.display_name[5:]
+                        if len(name) != 0 or name not in (" ", ""):
+                            await message.author.edit(
+                                nick=name, reason=f"{message.author} came after AFK"
+                            )
+                except discord.Forbidden:
+                    pass
+                await afk.delete_one({"_id": data["_id"]})
+                await timer.delete_one({"_id": data["_id"]})
+                self.bot.afk.remove(message.author.id)
 
+        # code from someone mentions the AFK user
         if message.mentions:
             for user in message.mentions:
                 if data := await afk.find_one(

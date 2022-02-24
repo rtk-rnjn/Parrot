@@ -73,8 +73,10 @@ class EventCustom(Cog):
         # and the ``delete_one`` takes time
         if name.upper() == "REMOVE_AFK":
             await afk.delete_one(kw)
+            self.bot.afk.remove(kw.get("messageAuthor"))
         if name.upper() == "SET_AFK":
             await afk.insert_one(kw)
+            self.bot.afk.add(kw.get("messageAuthor"))
         if name.upper() == "SET_TIMER":
             await timers.insert_one(kw)
 

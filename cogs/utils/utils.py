@@ -35,6 +35,7 @@ class Utils(Cog):
         self.collection = parrot_db["timers"]
         self.lock = asyncio.Lock()
 
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="sparkles_", id=892435276264259665)
@@ -353,6 +354,7 @@ class Utils(Cog):
             }
             await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
             await afk.insert_one({**post})
+            self.bot.afk.add(ctx.author.id)
 
     @afk.command(name="global")
     async def _global(self, ctx: Context, *, text: commands.clean_content = None):
@@ -371,6 +373,7 @@ class Utils(Cog):
         }
         await afk.insert_one({**post})
         await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
+        self.bot.afk.add(ctx.author.id)
 
     @afk.command(name="for")
     async def afk_till(
@@ -392,6 +395,7 @@ class Utils(Cog):
             "ignoredChannel": [],
         }
         await afk.insert_one({**post})
+        self.bot.afk.add(ctx.author.id)
         await ctx.send(
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
         )

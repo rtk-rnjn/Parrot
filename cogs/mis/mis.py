@@ -92,6 +92,8 @@ TEMPLATE = string.Template(Path("extra/latex_template.txt").read_text())
 BG_COLOR = (54, 57, 63, 255)
 PAD = 10
 
+with open("extra/country.json") as f:
+    COUNTRY_CODES = json.load(f)
 
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
@@ -103,6 +105,10 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     valuation: convert_bool = False
     latex: convert_bool = False
 
+def get_country_code(country: str) -> str:
+    for c, n in COUNTRY_CODES.items():
+        if country.lower() in (c.lower(), n.lower()):
+            return c
 
 def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):
@@ -397,20 +403,21 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def news(self, ctx: Context, nat: str):
+    async def news(self, ctx: Context, *, nat: str):
         """This command will fetch the latest news from all over the world."""
-        key = os.environ["NEWSKEY"]
-
-        link = "http://newsapi.org/v2/top-headlines?country=" + nat + "&apiKey=" + key
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-
-        if res["totalResults"] == 0:
+        NEWS_KEY = os.environ["NEWSKEY"]
+        nat = get_country_code(nat)
+        if not nat:
             return await ctx.reply(
-                f"{ctx.author.mention} **{nat}** is nothing, please provide a valid country code."
+                f"{ctx.author.mention} **{nat}** is not a valid country code."
             )
+        link = f"http://newsapi.org/v2/top-headlines?country={nat}&apiKey={NEWS_KEY}"
+        r = await self.bot.session.get(link)
+        res = await r.json()
+
+        if res["status"] != "OK":
+            return await ctx.send(f"{ctx.author.mention} something not right!")
+
         em_list = []
         for data in range(0, len(res["articles"])):
 

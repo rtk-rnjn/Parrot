@@ -225,6 +225,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
         await ban(user.id, **payload)
+        await self.bot.update_banned_members.start()
         try:
             await user.send(
                 f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban."
@@ -247,6 +248,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
         await unban(user.id, **payload)
+        await self.bot.update_banned_members.start()
         try:
             await user.send(
                 f"{user.mention} you are unbanned. You can now use Parrot bot. Reason: {reason}"

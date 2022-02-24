@@ -106,6 +106,8 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin = Client()
         self.mongo = cluster
         self.message_cache: Dict[int, Any] = {}
+
+        self.banned_users: Dict[int, Any] = {}
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -257,11 +259,18 @@ class Parrot(commands.AutoShardedBot):
             self._auto_spam_count.pop(author_id, None)
 
         if ctx.command is not None:
+            if not self.banned_users:
+                await self.update_banned_members.start()
+            try:
+                self.banned_users[ctx.author.id]
+            except KeyError:
+                pass
+            else:
+                true = self.banned_users[ctx.author.id].get("command")
+                if true:
+                    return
+
             _true = await _can_run(ctx)
-            if await collection_ban.find_one(
-                {"_id": message.author.id, "command": True}
-            ):
-                return
             if not _true:
                 await ctx.reply(
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in "
@@ -419,3 +428,8 @@ class Parrot(commands.AutoShardedBot):
             {"_id": guild_id}, {"prefix": 1, "_id": 0}
         ):
             self.server_config[guild_id] = data
+
+    @tasks.loop(count=1)
+    async def update_banned_members(self):
+        async for data in collection_ban.find({}):
+            self.data[data["_id"]] = data

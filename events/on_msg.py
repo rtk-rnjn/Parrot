@@ -302,12 +302,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return False
         return True
 
-    async def is_banned(self, user) -> bool:
-        if self.collection is None:
-            self.collection = parrot_db["banned_users"]
-        if data := await self.collection.find_one({"_id": user.id}):
-            return bool(data.get("global"))
-        return False
+    def is_banned(self, user) -> bool:
+        # return True if member is banned else False
+        try:
+            user = self.bot.banned_users[user.id]
+        except KeyError:
+            return False
+        else:
+            return bool(self.bot.banned_users[user.id].get("global"))
 
     async def on_invite(self, message: discord.Message, invite_link: list):
         if data := await self.log_collection.find_one(
@@ -430,8 +432,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"{message.author.mention} | Sending Bad Word not allowed",
                         delete_after=5,
                     )
-            is_user_banned = await self.is_banned(message.author)
-            if is_user_banned:
+            if self.is_banned(message.author):
                 return
             try:
                 await message.delete()

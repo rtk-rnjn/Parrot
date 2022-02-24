@@ -435,4 +435,4 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_banned_members(self):
         async for data in collection_ban.find({}):
-            self.data[data["_id"]] = data
+            self.banned_users[data["_id"]] = data

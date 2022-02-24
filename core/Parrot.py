@@ -63,9 +63,7 @@ class Parrot(commands.AutoShardedBot):
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
             intents=intents,
-            activity=discord.Activity(
-                type=discord.ActivityType.watching, name="you"
-            ),
+            activity=discord.Activity(type=discord.ActivityType.watching, name="you"),
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=OWNER_IDS,
@@ -222,7 +220,9 @@ class Parrot(commands.AutoShardedBot):
             self.uptime = discord.utils.utcnow()
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
-        print(f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__ }")
+        print(
+            f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__ }"
+        )
 
         ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)

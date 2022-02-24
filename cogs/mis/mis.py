@@ -95,6 +95,7 @@ PAD = 10
 with open("extra/country.json") as f:
     COUNTRY_CODES = json.load(f)
 
+
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
@@ -105,10 +106,12 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     valuation: convert_bool = False
     latex: convert_bool = False
 
+
 def get_country_code(country: str) -> str:
     for c, n in COUNTRY_CODES.items():
         if country.lower() in (c.lower(), n.lower()):
             return c
+
 
 def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):

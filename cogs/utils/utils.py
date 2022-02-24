@@ -35,7 +35,6 @@ class Utils(Cog):
         self.collection = parrot_db["timers"]
         self.lock = asyncio.Lock()
 
-
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="sparkles_", id=892435276264259665)

@@ -102,12 +102,15 @@ class Parrot(commands.AutoShardedBot):
         self.http_session = ClientSession(
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )
-        self.server_config = LRU(64)
         self.mystbin = Client()
         self.mongo = cluster
+
+        # caching variables
+        self.server_config = LRU(64)
         self.message_cache: Dict[int, Any] = {}
         self.banned_users: Dict[int, Any] = {}
         self.afk = set()
+
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)

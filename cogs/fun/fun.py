@@ -1902,9 +1902,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def translate(
-        self, ctx: Context, *, message: commands.clean_content = None
-    ):
+    async def translate(self, ctx: Context, *, message: commands.clean_content = None):
         """Translates a message to English (default) using Google translate"""
         loop = self.bot.loop
         if message is None:
@@ -1919,13 +1917,13 @@ class Fun(Cog):
         try:
             ret = await loop.run_in_executor(None, self.trans.translate, message)
         except Exception as e:
-            return await ctx.send(f'An error occurred: {e.__class__.__name__}: {e}')
+            return await ctx.send(f"An error occurred: {e.__class__.__name__}: {e}")
 
-        embed = discord.Embed(title='Translated', colour=self.bot.color)
-        src = googletrans.LANGUAGES.get(ret.src, '(auto-detected)').title()
-        dest = googletrans.LANGUAGES.get(ret.dest, 'Unknown').title()
-        embed.add_field(name=f'From {src}', value=ret.origin, inline=False)
-        embed.add_field(name=f'To {dest}', value=ret.text, inline=False)
+        embed = discord.Embed(title="Translated", colour=self.bot.color)
+        src = googletrans.LANGUAGES.get(ret.src, "(auto-detected)").title()
+        dest = googletrans.LANGUAGES.get(ret.dest, "Unknown").title()
+        embed.add_field(name=f"From {src}", value=ret.origin, inline=False)
+        embed.add_field(name=f"To {dest}", value=ret.text, inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["triggered"])

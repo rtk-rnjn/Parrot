@@ -661,7 +661,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             except discord.HTTPException:  # message deleted
                 await ctx.send(output)
 
-
     @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type

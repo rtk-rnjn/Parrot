@@ -46,14 +46,34 @@ class Moderator(Cog):
         if isinstance(performed_on, Iterable):
             if isinstance(performed_on, (discord.Member, discord.User)):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
-            elif isinstance(target, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji, discord.PartialEmoji)):
+            elif isinstance(
+                target,
+                (
+                    discord.TextChannel,
+                    discord.VoiceChannel,
+                    discord.StageChannel,
+                    discord.Role,
+                    discord.Emoji,
+                    discord.PartialEmoji,
+                ),
+            ):
                 target = f"{performed_on.name} (ID: {performed_on.id})"
         elif isinstance(target, Iterable):
             target = ""
             for temp in performed_on:
                 if isinstance(temp, (discord.Member, discord.User)):
                     target = target + f"{temp}, "
-                elif isinstance(target, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji, discord.PartialEmoji)):
+                elif isinstance(
+                    target,
+                    (
+                        discord.TextChannel,
+                        discord.VoiceChannel,
+                        discord.StageChannel,
+                        discord.Role,
+                        discord.Emoji,
+                        discord.PartialEmoji,
+                    ),
+                ):
                     target = target + f"{temp.name} (ID: {temp.id}), "
         target = str(performed_on)
         embed = discord.Embed(

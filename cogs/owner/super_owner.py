@@ -398,7 +398,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async for entry in guild.audit_logs(
             limit=args.limit if args.limit else 100,
             user=discord.Object(id=args.id)
-            if type(args.user) in (discord.User, discord.Member)
+            if isinstance(args.user, (discord.User, discord.Member))
             else None,
             action=act.get(args.action.lower().replace(" ", "_"))
             if args.action

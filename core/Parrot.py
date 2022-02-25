@@ -423,7 +423,11 @@ class Parrot(commands.AutoShardedBot):
     async def send_raw(
         self, channel_id: int, content: str, **kwargs
     ) -> Optional[discord.Message]:
-        await self.http.send_message(channel_id, content, **kwargs)
+        """Sends message from channel ID"""
+        try:
+            return await self.http.send_message(channel_id, content, **kwargs)
+        except discord.NotFound:
+            pass
 
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)

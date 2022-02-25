@@ -31,7 +31,7 @@ async def _enable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable **server** wide"
             )
-    elif type(target) is discord.TextChannel:
+    elif isinstance(target, discord.TextChannel):
         if force:
             await collection.update_one(
                 {"_id": cmd_cog},
@@ -50,7 +50,7 @@ async def _enable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in {target.mention}"
             )
-    elif type(target) is discord.Role:
+    elif isinstance(target, discord.Role):
         if force:
             await collection.update_one(
                 {"_id": cmd_cog},
@@ -95,7 +95,7 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled **server** wide"
             )
-    elif type(target) is discord.TextChannel:
+    elif isinstance(target, discord.TextChannel):
         if force:
             await collection.update_one(
                 {"_id": cmd_cog},
@@ -114,7 +114,7 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}"
             )
-    elif type(target) is discord.Role:
+    elif isinstance(target, discord.Role):
         if force:
             await collection.update_one(
                 {"_id": cmd_cog},

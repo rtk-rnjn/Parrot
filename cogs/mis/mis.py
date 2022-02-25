@@ -501,7 +501,7 @@ class Misc(Cog):
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
         # there's gonna be a snipe after this point
         emb = discord.Embed()
-        if type(snipe) is list:  # edit snipe
+        if isinstance(snipe, typing.Iterable):  # edit snipe
             emb.set_author(
                 name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url
             )

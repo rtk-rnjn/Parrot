@@ -65,7 +65,7 @@ class Moderator(Cog):
         )
 
         embed.set_thumbnail(
-            url=f"{performed_on.display_avatar.url if type(performed_on) is discord.Member else ctx.guild.icon.url}"
+            url=f"{performed_on.display_avatar.url if isinstance(performed_on, discord.Member) else ctx.guild.icon.url}"
         )
         embed.set_author(
             name=f"{ctx.author} (ID:{ctx.author.id})",
@@ -372,11 +372,11 @@ class Moderator(Cog):
         b = False
         channel = channel or [ctx.channel]
         for chn in channel:
-            if type(chn) is discord.TextChannel:
+            if isinstance(chn, discord.TextChannel):
                 b = await mt._text_lock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
-            elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
+            elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
                 b = await mt._vc_lock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
@@ -411,12 +411,12 @@ class Moderator(Cog):
         b = False
         channel = channel or [ctx.channel]
         for chn in channel:
-            if type(chn) is discord.TextChannel:
+            if isinstance(chn, discord.TextChannel):
                 b = await mt._text_unlock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
 
-            elif type(chn) in (discord.VoiceChannel, discord.StageChannel):
+            elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
                 b = await mt._vc_unlock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
@@ -1173,10 +1173,7 @@ class Moderator(Cog):
                 )
                 await self.log(ctx, "Text name changeded", target, reason)
 
-        if type(target) in (
-            discord.VoiceChannel,
-            discord.StageChannel,
-        ):
+        if isinstance(target, (discord.VoiceChannel, discord.StageChannel,)):
             vc_embed = discord.Embed(
                 title="Mod Menu",
                 description=":lock: Lock\n"

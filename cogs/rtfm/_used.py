@@ -111,45 +111,6 @@ class RerunBtn(discord.ui.Button):
         await interaction.message.edit(content=result)
 
 
-class Refresh(discord.ui.View):
-    def __init__(self, bot: Parrot, no_rerun, timeout: float = 300):
-        super().__init__(timeout=timeout)
-        self.bot = bot
-        item = RerunBtn(
-            bot=bot,
-            label="Run again",
-            style=discord.ButtonStyle.grey,
-            emoji="\N{ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS}",
-            disabled=no_rerun,
-        )
-
-        self.add_item(item)
-
-        self.children.reverse()  # Run again first
-
-    @discord.ui.button(
-        label="Delete", style=discord.ButtonStyle.grey, emoji="\N{WASTEBASKET}"
-    )
-    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
-        message = await get_message(interaction, fetch=False, bot=self.bot)
-
-        if message is None:
-            await interaction.response.send_message(
-                "Cannot confirm right to deletion since original message was deleted.",
-                ephemeral=True,
-            )
-            return self.stop()
-
-        if interaction.user.id != message.author.id:
-            return await interaction.response.send_message(
-                "Only the one who used the run command can use these buttons.",
-                ephemeral=True,
-            )
-
-        await interaction.message.delete()
-        self.stop()
-
-
 async def execute_run(bot: Parrot, language, code, rerun=False) -> tuple:
     # Powered by tio.run
 

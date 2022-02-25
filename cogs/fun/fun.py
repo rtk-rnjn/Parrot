@@ -23,6 +23,7 @@ from PIL import Image, ImageColor
 import rapidfuzz
 import colorsys
 
+import googletrans
 from pathlib import Path
 from random import choice, randint
 from typing import Callable, Optional, Union, TypeVar, List, Tuple, Dict
@@ -470,6 +471,8 @@ class Fun(Cog):
 
         self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.get_latest_comic_info.start()
+
+        self.trans = googletrans.Translator()
 
         self.categories = {
             "general": "Test your general knowledge.",
@@ -1900,9 +1903,10 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def translate(
-        self, ctx: Context, to: str, *, message: commands.clean_content = None
+        self, ctx: Context, *, message: commands.clean_content = None
     ):
         """Translates a message to English (default) using Google translate"""
+        loop = self.bot.loop
         if message is None:
             ref = ctx.message.reference
             if ref and isinstance(ref.resolved, discord.Message):
@@ -1912,47 +1916,17 @@ class Fun(Cog):
                     f"{ctx.author.mention} you must provide the message reference or message for translation"
                 )
 
-        link = "https://translate-api.ml/translate?text={}&lang={}".format(
-            message.lower(), to.lower() if to else "en"
-        )
+        try:
+            ret = await loop.run_in_executor(None, self.trans.translate, message)
+        except Exception as e:
+            return await ctx.send(f'An error occurred: {e.__class__.__name__}: {e}')
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as response:
-                if response.status == 200:
-                    data = await response.json()
-                else:
-                    return await ctx.reply(f"{ctx.author.mention} Something not right!")
-
-        success = data["status"]
-        if success == 200:
-            lang = data["given"]["lang"]
-            translated_text = data["translated"]["text"]
-            translated_lang = data["translated"]["lang"]
-        else:
-            return await ctx.reply(
-                f"{ctx.author.mention} Can not translate **{message[1000::]}** to **{to}**"
-            )
-
-        if ctx.author.id == 741614468546560092:  # its kinda spammy for me. lol
-            return await ctx.send(f"{translated_text}")
-
-        embed = discord.Embed(
-            title="Translated",
-            description=f"```\n{translated_text}\n```",
-            color=ctx.author.color,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        embed.set_footer(text=f"{ctx.author.name}")
-        embed.add_field(
-            name="Info",
-            value=f"Tranlated from **{lg[lang]['name']}** to **{lg[translated_lang]['name']}**",
-            inline=False,
-        )
-        # embed.add_field(name="Pronunciation", value=f"```\n{translated_pronunciation}\n```", inline=False)
-        embed.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/1/14/Google_Translate_logo_%28old%29.png"
-        )
-        await ctx.reply(embed=embed)
+        embed = discord.Embed(title='Translated', colour=self.bot.color)
+        src = googletrans.LANGUAGES.get(ret.src, '(auto-detected)').title()
+        dest = googletrans.LANGUAGES.get(ret.dest, 'Unknown').title()
+        embed.add_field(name=f'From {src}', value=ret.origin, inline=False)
+        embed.add_field(name=f'To {dest}', value=ret.text, inline=False)
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["triggered"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)

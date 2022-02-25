@@ -10,7 +10,7 @@ import typing
 import re
 import asyncio
 from datetime import datetime
-from typing import Optional, Union
+from typing import Any, Iterable, Optional, Union
 
 from core import Parrot, Context, Cog
 
@@ -34,46 +34,32 @@ class Moderator(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="moderator", id=892424227007918121)
 
-    async def log(self, ctx, cmd, performed_on, reason):
+    async def log(self, ctx: Context, cmd: Any, performed_on: Any, reason: str):
         """A simple and nerdy Logging System"""
-        data = await collection.find_one({"_id": ctx.guild.id})
+        data = await collection.find_one({"_id": ctx.guild.id})  # TODO: Caching
+        if reason.lower() == "none":
+            reason = f"Action Requested by {ctx.author} ({ctx.author.id})"
         if not data["action_log"]:
             return
-        if not data:
-            return
-        target = "Can' determined"
-        if type(performed_on) is not list:
-            if type(performed_on) in (
-                discord.Member,
-                discord.User,
-            ):
+
+        target = "Can't determined"
+        if isinstance(performed_on, Iterable):
+            if isinstance(performed_on, (discord.Member, discord.User)):
                 target = f"{performed_on.name}#{performed_on.discriminator}"
-            elif type(target) in (
-                discord.TextChannel,
-                discord.VoiceChannel,
-                discord.StageChannel,
-                discord.Role,
-                discord.Emoji,
-            ):
+            elif isinstance(target, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji, discord.PartialEmoji)):
                 target = f"{performed_on.name} (ID: {performed_on.id})"
-        elif type(target) is list:
+        elif isinstance(target, Iterable):
             target = ""
             for temp in performed_on:
-                if type(temp) is discord.Member:
-                    target = target + f"{temp.name}#{temp.discriminator}, "
-                elif type(target) is (
-                    discord.TextChannel,
-                    discord.VoiceChannel,
-                    discord.StageChannel,
-                    discord.Role,
-                    discord.Emoji,
-                ):
+                if isinstance(temp, (discord.Member, discord.User)):
+                    target = target + f"{temp}, "
+                elif isinstance(target, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Role, discord.Emoji, discord.PartialEmoji)):
                     target = target + f"{temp.name} (ID: {temp.id}), "
         target = str(performed_on)
         embed = discord.Embed(
             description=f"**Command Used:** {cmd}\n"
             f"**Used On:** {target}\n"
-            f"**Reason:** {reason if reason else 'No Reason Provided'}",
+            f"**Reason:** {reason}",
             timestamp=datetime.utcnow(),
             colour=ctx.author.color,
         )
@@ -383,6 +369,8 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To lock the channel"""
+        b = False
+        channel = channel or [ctx.channel]
         for chn in channel:
             if type(chn) is discord.TextChannel:
                 b = await mt._text_lock(
@@ -393,14 +381,14 @@ class Moderator(Cog):
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
             else:
-                return
-        if b is not False:
-            await self.log(
-                ctx,
-                ctx.command.qualified_name,
-                channel if channel else ctx.channel,
-                reason,
-            )
+                b = False
+            if b is not False:
+                await self.log(
+                    ctx,
+                    ctx.command.qualified_name,
+                    chn,
+                    reason,
+                )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -420,6 +408,8 @@ class Moderator(Cog):
         reason: reason_convert = None,
     ):
         """To unlock the channel"""
+        b = False
+        channel = channel or [ctx.channel]
         for chn in channel:
             if type(chn) is discord.TextChannel:
                 b = await mt._text_unlock(
@@ -430,14 +420,15 @@ class Moderator(Cog):
                 b = await mt._vc_unlock(
                     ctx.guild, ctx.command.name, ctx.author, ctx.channel, chn
                 )
-
-        if b is not False:
-            await self.log(
-                ctx,
-                ctx.command.qualified_name,
-                channel if channel else ctx.channel,
-                reason,
-            )
+            else:
+                b = False
+            if b is not False:
+                await self.log(
+                    ctx,
+                    ctx.command.qualified_name,
+                    chn,
+                    reason,
+                )
 
     @commands.command(aliases=["mute"])
     @commands.bot_has_permissions(moderate_members=True)

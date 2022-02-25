@@ -32,7 +32,7 @@ from utilities.converters import WrappedMessageConverter
 from . import _ref
 from . import _doc
 
-from ._used import get_raw, Refresh, wrapping, prepare_payload, execute_run
+from ._used import get_raw, wrapping, prepare_payload, execute_run
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -656,25 +656,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
             output = await execute_run(self.bot, language, text)
 
-            view = Refresh(self.bot, no_rerun)
-
             try:
-                returned = await ctx.reply(output, view=view)
-                buttons = True
+                await ctx.reply(output)
             except discord.HTTPException:  # message deleted
-                returned = await ctx.send(output, view=view)
-                buttons = False
+                await ctx.send(output)
 
-        if buttons:
-
-            await view.wait()
-
-            try:
-                await returned.edit(view=None)
-                view.stop()
-            except (discord.Forbidden, discord.NotFound):
-                # We deleted the message
-                pass
 
     @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)

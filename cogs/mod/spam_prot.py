@@ -27,7 +27,7 @@ class SpamProt(Cog):
             return m.author.id == message.author.id
 
         try:
-            await message.channel.purge(5, check=check)
+            await message.channel.purge(limit=5, check=check)
         except discord.Forbidden:  # this is faster than `if` `else`
             pass
 

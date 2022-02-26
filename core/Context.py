@@ -94,10 +94,10 @@ class Context(commands.Context):
         async def wrapped(*args, **kwargs):
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             try:
-                async with context.typing():
-                    await func(*args, **kwargs)
-            except discord.Forbidden:
+                # async with context.typing():
                 await func(*args, **kwargs)
+            except discord.Forbidden:
+                pass
 
         return wrapped
 

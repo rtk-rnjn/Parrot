@@ -61,7 +61,6 @@ async def get_message(
 
     try:
         return bot.fetch_message_by_channel(interaction.message.channel, ref.message_id)
-        # return await interaction.message.channel.fetch_message(ref.message_id)
     except discord.errors.NotFound:
         # message deleted
         return None

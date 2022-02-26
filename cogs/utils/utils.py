@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional, Tuple
 from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
 
@@ -6,7 +7,6 @@ from core import Parrot, Cog, Context
 from discord.ext import commands, tasks
 import discord
 
-import typing
 import datetime
 import asyncio
 
@@ -18,11 +18,11 @@ afk = parrot_db["afk"]
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
-    ignore_channel: typing.Tuple[discord.TextChannel, ...] = []
-    _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
-    _for: typing.Optional[ShortTime] = commands.flag(name="for", default=None)
-    text: typing.Optional[str] = None
-    after: typing.Optional[ShortTime] = None
+    ignore_channel: Tuple[discord.TextChannel, ...] = []
+    _global: Optional[convert_bool] = commands.flag(name="global", default=False)
+    _for: Optional[ShortTime] = commands.flag(name="for", default=None)
+    text: Optional[str] = None
+    after: Optional[ShortTime] = None
 
 
 class Utils(Cog):
@@ -477,11 +477,13 @@ class Utils(Cog):
                 message=ctx.message,
             )
             await afk.insert_one({**payload})
+            self.bot.afk.add(ctx.author.id)
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
             )
             return
         await afk.insert_one({**payload})
+        self.bot.afk.add(ctx.author.id)
         await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 
     @tasks.loop(seconds=3)

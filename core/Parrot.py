@@ -66,7 +66,7 @@ class Parrot(commands.AutoShardedBot):
             activity=discord.Activity(type=discord.ActivityType.watching, name="you"),
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
-            owner_ids=OWNER_IDS,
+            owner_ids=set(OWNER_IDS),
             allowed_mentions=discord.AllowedMentions(
                 everyone=False, replied_user=False
             ),
@@ -420,17 +420,14 @@ class Parrot(commands.AutoShardedBot):
             ):
                 return data.get("prefix")
 
-    async def send_raw(
-        self, channel_id: int, content: str, **kwargs
-    ) -> Optional[discord.Message]:
-        """Sends message from channel ID"""
-        try:
-            return await self.http.send_message(channel_id, content, **kwargs)
-        except discord.NotFound:
-            pass
-
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)
+
+    async def getch(self, get_function, fetch_function, _id) -> Any:
+        try:
+            return get_function(_id) or await fetch_function(_id)
+        except Exception as e:
+            return e
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):

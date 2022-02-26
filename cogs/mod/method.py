@@ -261,7 +261,7 @@ async def _ban(
             )
             return
         await guild.ban(
-            discord.Object(member if type(member) is int else member.id),
+            discord.Object(member if isinstance(member, int) else member.id),
             reason=f"Action requested by: {ctx_author.name} ({ctx_author.id}) | Reason: {reason}",
             delete_message_days=days,
         )

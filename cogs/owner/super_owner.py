@@ -303,7 +303,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """This is not really a spy command"""
         guild = guild or ctx.guild
         channel_member = channel_member or "members"
-        URL = f"https://discord.com/api/guilds/{guild.id if type(guild) is discord.Guild else guild}/widget.json"
+        URL = f"https://discord.com/api/guilds/{guild.id if isinstance(guild, discord.Guild) else guild}/widget.json"
         data = await self.bot.session.get(URL)
         json = await data.json()
         if "message" in json:

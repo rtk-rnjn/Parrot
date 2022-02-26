@@ -69,7 +69,7 @@ async def html_ref(ctx, text):
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
     output = await _process_mozilla_doc(ctx, url)
-    if type(output) != str:
+    if not isinstance(output, str):
         # Error message already sent
         return
 
@@ -86,7 +86,7 @@ async def _http_ref(part, ctx, text):
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
     output = await _process_mozilla_doc(ctx, url)
-    if type(output) != str:
+    if isinstance(output, str):
         # Error message already sent
         return
 

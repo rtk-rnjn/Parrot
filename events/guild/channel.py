@@ -20,7 +20,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     def _overwrite_to_json(self, overwrites) -> str:
         try:
             over = {
-                f"{str(target.name)} ({'Role' if type(target) is discord.Role else 'Member'})": overwrite._values
+                f"{str(target.name)} ({'Role' if isinstance(target, discord.Role) else 'Member'})": overwrite._values
                 for target, overwrite in overwrites.items()
             }
             return json.dumps(over, indent=4)

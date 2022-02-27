@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from time import time
 
-from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
+from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY, MASTER_OWNER
 from utilities.buttons import Prompt
 from utilities import time as Time
 from utilities.formats import get_cmd_signature
@@ -645,7 +645,7 @@ class Meta(Cog):
             url=SUPPORT_SERVER,
         )
         support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
-        owner = await self.bot.get_or_fetch_member(support_guild, self.bot.owner_ids[0])
+        owner = await self.bot.get_or_fetch_member(support_guild, MASTER_OWNER)
         embed.set_author(name=str(owner), icon_url=owner.display_avatar.url)
 
         # statistics
@@ -664,7 +664,7 @@ class Meta(Cog):
             for channel in guild.channels:
                 if isinstance(channel, discord.TextChannel):
                     text += 1
-                elif isinstance(channel, discord.VoiceChannel):
+                elif isinstance(channel, discord.VoiceChannel, discord.StageChannel):
                     voice += 1
 
         embed.add_field(

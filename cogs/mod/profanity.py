@@ -26,7 +26,7 @@ class Profanity(Cog):
         try:
             return self.data[message.guild.id]
         except KeyError:
-            return None
+            return []
 
     def cog_unload(self):
         self.update_data.cancel()

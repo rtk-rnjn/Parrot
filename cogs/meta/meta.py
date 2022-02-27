@@ -664,7 +664,7 @@ class Meta(Cog):
             for channel in guild.channels:
                 if isinstance(channel, discord.TextChannel):
                     text += 1
-                elif isinstance(channel, discord.VoiceChannel, discord.StageChannel):
+                elif isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
                     voice += 1
 
         embed.add_field(

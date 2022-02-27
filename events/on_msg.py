@@ -278,7 +278,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def quick_answer(self, message: discord.Message):
         """This is good."""
         if message.content.lower().startswith(TRIGGER):
-            if message.content.lower().startswith("ok"):
+            if message.content.lower().startswith("ok google"):
                 query = message.content.lower()[10:]
                 res = await self.query_ddg(query)
                 if not res:
@@ -287,7 +287,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     return await message.channel.send(res)
                 except discord.Forbidden:
                     pass
-            if message.content.lower().startswith("hey"):
+            if message.content.lower().startswith("hey google"):
                 query = message.content.lower()[11:]
                 res = await self.query_ddg(query)
                 if not res:

@@ -54,8 +54,7 @@ intents.members = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
+
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -110,7 +109,6 @@ class Parrot(commands.AutoShardedBot):
         self.message_cache: Dict[int, Any] = {}
         self.banned_users: Dict[int, Any] = {}
         self.afk = set()
-        self.log = log
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
@@ -256,10 +254,8 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.is_ws_ratelimited():
-            log.info(f"Can't able to process '{ctx.command.qualified_name}' due to ratelimiting", message)
             return
         if not self.is_ready():
-            log.info(f"Can't able to process '{ctx.command.qualified_name}' as bot isn't ready", message)
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -269,7 +265,6 @@ class Parrot(commands.AutoShardedBot):
         if retry_after:
             self._auto_spam_count[author_id] += 1
             if self._auto_spam_count[author_id] >= 3:
-                log.info(f"Can't able to process `{ctx.command.qualified_name}` due to spam")
                 return
         else:
             self._auto_spam_count.pop(author_id, None)
@@ -385,7 +380,6 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.message_cache[messageID]
         except KeyError:
-            log.info(f"Can't find message: {messageID}. Quering the channel", channel, messageID)
             async for msg in channel.history(
                 limit=1,
                 before=discord.Object(messageID + 1),
@@ -393,7 +387,6 @@ class Parrot(commands.AutoShardedBot):
             ):
                 if msg:
                     self.message_cache[messageID] = msg
-                    log.info(f"Found msg: {msg}. Successfully stored in cache")
                     return msg
 
     async def get_prefix(self, message: discord.Message) -> Union[str, List[str]]:
@@ -401,14 +394,12 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            log.info(f"Trying to fetch from database, since the prefix do not present in cache")
             if data := await collection.find_one(
                 {"_id": message.guild.id}, {"prefix": 1, "_id": 0}
             ):
                 prefix = data["prefix"]
                 post = data
             else:
-                log.info(f"No record presend with guild ID: {message.guild.id}, updating the database", data)
                 post = {
                     "_id": message.guild.id,
                     "prefix": "$",     # to make entry
@@ -419,7 +410,6 @@ class Parrot(commands.AutoShardedBot):
                 prefix = "$"  # default prefix
                 await collection.insert_one(post)
             self.server_config[message.guild.id] = post
-            log.info(f"Setting up the cache", post)
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
         if match is not None:
@@ -442,7 +432,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             return get_function(_id) or await fetch_function(_id)
         except Exception as e:
-            log.error(f"Something fucked up while getting or fetching the data of `id`: {_id}", e)
+            return None
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):

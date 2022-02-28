@@ -16,6 +16,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        await self.bot.wait_until_ready()
         if data := await log.find_one(
             {"_id": member.guild.id, "on_member_join": {"$exists": True}}
         ):
@@ -62,6 +63,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_remove(self, member):
+        await self.bot.wait_until_ready()
         if data := await log.find_one(
             {"_id": member.guild.id, "on_member_leave": {"$exists": True}}
         ):
@@ -123,6 +125,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_update(self, before, after):
+        await self.bot.wait_until_ready()
         if data := await log.find_one(
             {"_id": after.guild.id, "on_member_update": {"$exists": True}}
         ):
@@ -152,6 +155,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        await self.bot.wait_until_ready()
         if member.bot:
             return
         if before is None:

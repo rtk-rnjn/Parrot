@@ -14,6 +14,7 @@ class OnThread(Cog):
 
     @Cog.listener()
     async def on_thread_join(self, thread: discord.Thread) -> None:
+        await self.bot.wait_until_ready()
         if not thread.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -50,6 +51,7 @@ class OnThread(Cog):
 
     @Cog.listener()
     async def on_thread_remove(self, thread: discord.Thread) -> None:
+        await self.bot.wait_until_ready()
         if not thread.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -74,6 +76,7 @@ class OnThread(Cog):
 
     @Cog.listener()
     async def on_thread_delete(self, thread: discord.Thread) -> None:
+        await self.bot.wait_until_ready()
         if not thread.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -108,6 +111,7 @@ class OnThread(Cog):
 
     @Cog.listener()
     async def on_thread_member_join(self, member: discord.ThreadMember) -> None:
+        await self.bot.wait_until_ready()
         if data := await self.collection.find_one(
             {"_id": member.thread.guild.id, "on_member_join_thread": {"$exists": True}}
         ):
@@ -135,6 +139,7 @@ class OnThread(Cog):
 
     @Cog.listener()
     async def on_thread_member_remove(self, member: discord.ThreadMember) -> None:
+        await self.bot.wait_until_ready()
         if data := await self.collection.find_one(
             {"_id": member.thread.guild.id, "on_member_leave_thread": {"$exists": True}}
         ):
@@ -172,6 +177,7 @@ class OnThread(Cog):
     async def on_thread_update(
         self, before: discord.Thread, after: discord.Thread
     ) -> None:
+        await self.bot.wait_until_ready()
         if data := await self.collection.find_one(
             {"_id": after.guild.id, "on_thread_update": {"$exists": True}}
         ):

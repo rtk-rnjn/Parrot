@@ -347,6 +347,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_message(self, message):
+        await self.bot.wait_until_ready()
         if not message.guild:
             return
         if message.guild.me.id == message.author.id:
@@ -474,6 +475,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_message_delete(self, payload):
+        await self.bot.wait_until_ready()
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
         ):
@@ -513,6 +515,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_bulk_message_delete(self, payload):
+        await self.bot.wait_until_ready()
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}
         ):
@@ -546,6 +549,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        await self.bot.wait_until_ready()
         if before.content != after.content:
             await self._on_message_passive(after)
 
@@ -609,6 +613,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_message_edit(self, payload):
+        await self.bot.wait_until_ready()
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}
         ):

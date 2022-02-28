@@ -29,6 +29,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
+        await self.bot.wait_until_ready()
         if not channel.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -74,6 +75,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
+        await self.bot.wait_until_ready()
         if not channel.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -130,6 +132,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_update(self, before, after):
+        await self.bot.wait_until_ready()
         channel = after
         if not channel.guild.me.guild_permissions.view_audit_log:
             return
@@ -231,6 +234,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_guild_channel_pins_update(self, channel, last_pin):
+        await self.bot.wait_until_ready()
         if not channel.guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(

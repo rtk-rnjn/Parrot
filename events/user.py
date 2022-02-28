@@ -13,6 +13,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_ban(self, guild, user):
+        await self.bot.wait_until_ready()
         if not guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(
@@ -42,6 +43,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_unban(self, guild, user):
+        await self.bot.wait_until_ready()
         if not guild.me.guild_permissions.view_audit_log:
             return
         if data := await self.collection.find_one(

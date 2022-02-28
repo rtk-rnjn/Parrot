@@ -16,6 +16,7 @@ class EventCustom(Cog):
         self.bot = bot
 
     async def on_timer_complete(self, **kw) -> None:
+        await self.bot.wait_until_ready()
         if kw.get("mod_action"):
             return await self.mod_action_parser(**kw.get("mod_action"))
 

@@ -39,12 +39,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             "avatar_url": self.bot.user.display_avatar.url,
             "content": CONTENT,
         }
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self.url, json=data) as res:
-                if res in range(200, 300 + 1):
-                    pass
-                else:
-                    print("Guild Add")
+        await self.bot.session.post(self.url, json=data)
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
@@ -67,12 +62,8 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             "avatar_url": self.bot.user.display_avatar.url,
             "content": CONTENT,
         }
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self.url, json=data) as res:
-                if res in range(200, 300 + 1):
-                    pass
-                else:
-                    print("Guild Remove")
+        await self.bot.session.post(self.url, json=data)
+
 
     @Cog.listener()
     async def on_guild_update(self, before, after):

@@ -23,6 +23,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_invite_create(self, invite):
+        await self.bot.wait_until_ready()
         if not invite.guild:
             return
         if not invite.guild.me.guild_permissions.view_audit_log:
@@ -60,6 +61,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_invite_delete(self, invite):
+        await self.bot.wait_until_ready()
         if not invite.guild:
             return
         if not invite.guild.me.guild_permissions.view_audit_log:

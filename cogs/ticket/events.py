@@ -32,6 +32,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        await self.bot.wait_until_ready()
         collection = parrot_db["ticket"]
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)

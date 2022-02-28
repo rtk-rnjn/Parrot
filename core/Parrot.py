@@ -244,11 +244,11 @@ class Parrot(commands.AutoShardedBot):
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:
-        if self.is_ws_ratelimited():
-            log.info(f"Can't able to process `{ctx.command.qualified_name}` due to ratelimiting")
-            return
 
         ctx = await self.get_context(message, cls=Context)
+        if self.is_ws_ratelimited():
+            log.info(f"Can't able to process '{ctx.command.qualified_name}' due to ratelimiting")
+            return
 
         if ctx.command is None:
             # ignore if no command found

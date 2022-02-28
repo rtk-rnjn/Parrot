@@ -258,6 +258,9 @@ class Parrot(commands.AutoShardedBot):
         if self.is_ws_ratelimited():
             log.info(f"Can't able to process '{ctx.command.qualified_name}' due to ratelimiting", message)
             return
+        if not self.is_ready():
+            log.info(f"Can't able to process '{ctx.command.qualified_name}' as bot isn't ready", message)
+            return
 
         bucket = self.spam_control.get_bucket(message)
         current = message.created_at.timestamp()

@@ -459,11 +459,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                     allowed_mentions=discord.AllowedMentions.none(),
                                 )
                     except discord.NotFound:
+                        self.bot.log.info(f"Can't send message via: {hook}. As it was deleted")
                         await collection.delete_one(
                             {"webhook": hook}
                         )  # all hooks are unique
-                    except discord.HTTPException:
-                        pass
+                    except discord.HTTPException as e:
+                        self.bot.log.error(f"Something else fucked up, while sending though {hook}", e)
 
     @Cog.listener()
     async def on_message_delete(self, message):

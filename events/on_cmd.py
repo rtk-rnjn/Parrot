@@ -291,6 +291,10 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         ERROR_EMBED.title = (
             f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
         )
+        self.bot.log.error(
+            f"Something fucked up while processing `{ctx.command.qualified_name}` in {ctx.channel} "
+            f"({ctx.channel.id}).", error
+        )
         return await ctx.reply(
             random.choice(quote),
             embed=ERROR_EMBED,

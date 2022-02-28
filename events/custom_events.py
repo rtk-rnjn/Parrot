@@ -17,6 +17,7 @@ class EventCustom(Cog):
 
     async def on_timer_complete(self, **kw) -> None:
         await self.bot.wait_until_ready()
+        self.bot.log.info(f"Recieved payload: {kw}")
         if kw.get("mod_action"):
             return await self.mod_action_parser(**kw.get("mod_action"))
 
@@ -48,6 +49,7 @@ class EventCustom(Cog):
             await self.extra_action_parser(data.get("name"), **data.get("main"))
 
     async def mod_action_parser(self, **kw) -> None:
+        self.bot.log.info(f"Recieved payload: {kw}")
         action: str = kw.get("action")
         guild = self.bot.get_guild(kw.get("guild"))
         if guild is None:
@@ -57,19 +59,19 @@ class EventCustom(Cog):
         if action.upper() == "UNBAN":
             try:
                 await guild.unban(discord.Object(target), reason=kw.get("reason"))
-            except (discord.NotFound, discord.HTTPError, discord.Forbidden):
+            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
                 # User not found, Bot Not having permissions, Other HTTP Error
                 pass
 
         if action.upper() == "BAN":
             try:
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
-            except (discord.NotFound, discord.HTTPError, discord.Forbidden):
+            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
                 # User not found, Bot Not having permissions, Other HTTP Error
                 pass
 
     async def extra_action_parser(self, name, **kw) -> None:
-        await asyncio.sleep(1)
+        self.bot.log.info(f"Recieved payload: {name} -> {kw}")
         # incase the parser have the excellent connection to DB
         # and the ``delete_one`` takes time
         if name.upper() == "REMOVE_AFK":

@@ -114,25 +114,36 @@ class Context(commands.Context):
             log.info(f"Can't send message as bot isn't ready yet")
             return
         if not (perms.send_messages and perms.embed_links):
+            log.info(
+                f"Bot dont have permission to send message/embed link in {self.channel} ({self.channel.id}). "
+                f"Trying to send the error to {self.author}"
+            )
             try:
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden:  # DMs locked
-                pass
+            except discord.Forbidden as e:
+                log.error(f"Can't send message to {self.author}", e)
             return
 
         return await super().send(content, **kwargs)
 
     async def reply(self, content: typing.Optional[str] = None, **kwargs):
         perms = self.channel.permissions_for(self.me)
+        if not self.bot.is_ready():
+            log.info(f"Can't send message as bot isn't ready yet")
+            return
         if not (perms.send_messages and perms.embed_links):
+            log.info(
+                f"Bot dont have permission to send message/embed link in {self.channel} ({self.channel.id}). "
+                f"Trying to send the error to {self.author}"
+            )
             try:
                 await self.author.send(
-                    "Bot don't have permission to send message in that channel. Please give me sufficient permissions to do so."
+                    "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden:
-                pass
+            except discord.Forbidden as e:
+                log.error(f"Can't send message to {self.author}", e)
             return
         return await super().reply(content, **kwargs)
 

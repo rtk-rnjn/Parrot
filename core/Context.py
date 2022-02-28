@@ -98,8 +98,8 @@ class Context(commands.Context):
                 # async with context.typing():
                 await func(*args, **kwargs)
                 log.info(
-                    f"{context.author} runs {context.command.qualified_name} in {context.channel} "
-                    f"with {args} and {kwargs} parameter"
+                    f"{context.author} runs {context.command.qualified_name} in {context.channel} ({context.channel.id}) "
+                    f"with {[str(i) for i in args]} and {kwargs} parameter"
                 )
             except discord.Forbidden:
                 pass
@@ -110,6 +110,9 @@ class Context(commands.Context):
         self, content: typing.Optional[str] = None, **kwargs
     ) -> typing.Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
+        if not self.bot.is_ready():
+            log.info(f"Can't send message as bot isn't ready yet")
+            return
         if not (perms.send_messages and perms.embed_links):
             try:
                 await self.author.send(

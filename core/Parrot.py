@@ -55,6 +55,7 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -252,6 +253,9 @@ class Parrot(commands.AutoShardedBot):
 
         if str(ctx.channel.type) == "public_thread":
             # no messages in discord.Thread
+            return
+        if self.is_ws_ratelimited():
+            log.info(f"Can't able to process {ctx.command.qualified_name} due to ratelimiting")
             return
 
         bucket = self.spam_control.get_bucket(message)

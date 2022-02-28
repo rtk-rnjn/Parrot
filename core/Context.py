@@ -111,7 +111,7 @@ class Context(commands.Context):
     ) -> typing.Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not self.bot.is_ready():
-            log.info(f"Can't send message as bot isn't ready yet", content, **kwargs)
+            log.info(f"Can't send message as bot isn't ready yet", content, {**kwargs})
             return
         if not (perms.send_messages and perms.embed_links):
             log.info(
@@ -131,7 +131,7 @@ class Context(commands.Context):
     async def reply(self, content: typing.Optional[str] = None, **kwargs):
         perms = self.channel.permissions_for(self.me)
         if not self.bot.is_ready():
-            log.info(f"Can't send message as bot isn't ready yet", content, **kwargs)
+            log.info(f"Can't send message as bot isn't ready yet", content, {**kwargs})
             return
         if not (perms.send_messages and perms.embed_links):
             log.info(

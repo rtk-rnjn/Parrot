@@ -16,7 +16,6 @@ CONFIRM_REACTIONS = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
-log = logging.getLogger(__name__)
 
 class ConfirmationView(discord.ui.View):
     def __init__(
@@ -97,10 +96,6 @@ class Context(commands.Context):
             try:
                 # async with context.typing():
                 await func(*args, **kwargs)
-                log.info(
-                    f"{context.author} runs {context.command.qualified_name} in {context.channel} ({context.channel.id})", 
-                    *args, **kwargs
-                )
             except discord.Forbidden:
                 pass
 
@@ -111,16 +106,12 @@ class Context(commands.Context):
     ) -> typing.Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
-            log.info(
-                f"Bot dont have permission to send message/embed link in {self.channel} ({self.channel.id}). "
-                f"Trying to send the error to {self.author}"
-            )
             try:
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
-                log.error(f"Can't send message to {self.author}", e)
+                pass
             return
 
         return await super().send(content, **kwargs)
@@ -128,16 +119,12 @@ class Context(commands.Context):
     async def reply(self, content: typing.Optional[str] = None, **kwargs):
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
-            log.info(
-                f"Bot dont have permission to send message/embed link in {self.channel} ({self.channel.id}). "
-                f"Trying to send the error to {self.author}"
-            )
             try:
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
-                log.error(f"Can't send message to {self.author}", e)
+                pass
             return
         return await super().reply(content, **kwargs)
 

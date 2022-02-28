@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 
 import os
 from typing import Any, Optional, Dict, Union, List
@@ -53,7 +54,7 @@ intents.members = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-
+logging.basicConfig(level=logging.INFO)
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""

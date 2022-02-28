@@ -587,7 +587,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     pass
                 await afk.delete_one({"_id": data["_id"]})
                 await timer.delete_one({"_id": data["_id"]})
-                self.bot.afk.remove(message.author.id)
+                self.bot.afk = set(await afk.distinct("messageAuthor"))
 
         # code from someone mentions the AFK user
         if message.mentions:

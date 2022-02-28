@@ -159,8 +159,4 @@ async def ban(user_id: int, **kw):
 
 async def unban(user_id: int, **kw):
     collection = parrot_db["banned_users"]
-    await collection.delete_one(
-        {
-            "_id": user_id,
-        }
-    )
+    await collection.delete_one({"_id": user_id,})

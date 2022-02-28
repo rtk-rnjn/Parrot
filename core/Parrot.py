@@ -246,9 +246,6 @@ class Parrot(commands.AutoShardedBot):
     async def process_commands(self, message: discord.Message) -> None:
 
         ctx = await self.get_context(message, cls=Context)
-        if self.is_ws_ratelimited():
-            log.info(f"Can't able to process '{ctx.command.qualified_name}' due to ratelimiting")
-            return
 
         if ctx.command is None:
             # ignore if no command found
@@ -256,6 +253,10 @@ class Parrot(commands.AutoShardedBot):
 
         if str(ctx.channel.type) == "public_thread":
             # no messages in discord.Thread
+            return
+
+        if self.is_ws_ratelimited():
+            log.info(f"Can't able to process '{ctx.command.qualified_name}' due to ratelimiting", message)
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -381,7 +382,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.message_cache[messageID]
         except KeyError:
-            log.info(f"Can't find message: {messageID}. Quering the channel")
+            log.info(f"Can't find message: {messageID}. Quering the channel", channel, messageID)
             async for msg in channel.history(
                 limit=1,
                 before=discord.Object(messageID + 1),
@@ -404,7 +405,7 @@ class Parrot(commands.AutoShardedBot):
                 prefix = data["prefix"]
                 post = data
             else:
-                log.info(f"No record presend with guild ID: {message.guild.id}, updating the database")
+                log.info(f"No record presend with guild ID: {message.guild.id}, updating the database", data)
                 post = {
                     "_id": message.guild.id,
                     "prefix": "$",     # to make entry
@@ -415,7 +416,7 @@ class Parrot(commands.AutoShardedBot):
                 prefix = "$"  # default prefix
                 await collection.insert_one(post)
             self.server_config[message.guild.id] = post
-            log.info(f"Setting up the cache: {post}, for faster prefixing")
+            log.info(f"Setting up the cache", post)
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
         if match is not None:

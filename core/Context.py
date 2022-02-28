@@ -8,6 +8,7 @@ import io
 import functools
 from utilities.emotes import emojis
 from typing import Any, Literal, Union
+import logging
 
 __all__ = ("Context",)
 
@@ -15,7 +16,7 @@ CONFIRM_REACTIONS = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
-
+log = logging.getLogger(__name__)
 
 class ConfirmationView(discord.ui.View):
     def __init__(
@@ -96,6 +97,10 @@ class Context(commands.Context):
             try:
                 # async with context.typing():
                 await func(*args, **kwargs)
+                log.info(
+                    f"{context.author} runs {context.command.qualified_name} in {context.channel} "
+                    f"with {args} and {kwargs} parameter"
+                )
             except discord.Forbidden:
                 pass
 

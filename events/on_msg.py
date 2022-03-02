@@ -21,7 +21,6 @@ import typing as tp
 
 from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
-from utilities.buttons import Delete
 
 from time import time
 
@@ -70,6 +69,27 @@ whitelist = [
     857103603130302514,  # `Var_Monke#1354`
     770646750804312105,  #  Nιgнт Fυяу ♪🤍#4371
 ]
+
+
+class Delete(discord.ui.View):
+    def __init__(self, user):
+        super().__init__(timeout=30.0)
+        self.user = user
+        self.value = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if self.user.bot:
+            return True
+        if self.user.id != interaction.user.id:
+            return False
+        return True
+
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
+    async def confirm(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        await interaction.message.delete()
+        self.stop()
 
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):

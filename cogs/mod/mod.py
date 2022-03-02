@@ -37,11 +37,25 @@ class Moderator(Cog):
     async def log(
         self,
         ctx: Context,
-        cmd: Any,
+        cmd: str,
         performed_on: Any,
-        reason: str
+        reason: Optional[str] = None
     ) -> Optional[discord.Message]:
-        """A simple and nerdy Logging System"""
+        """|coro|
+
+        A simple and nerdy Logging System
+        
+        Parameters
+        -----------
+        ctx: Context
+            commands.Context instance
+        cmd: str
+            Name of the command
+        performed_on: Union[List, Tuple, Iterable, Object]
+            Target on which the mod action is performed
+        reason: Optional[str]
+            Reason for doing the mod action
+        """
         log_channel = await ctx.modlog()
         if str(reason).lower() == "none":
             reason = f"Action Requested by {ctx.author} ({ctx.author.id})"
@@ -1449,10 +1463,16 @@ class Moderator(Cog):
         ctx: Context,
         target: Union[discord.Member, discord.User],
     ):
-        """Main system to warn
+        """|coro|
+        
+        Main system to warn
 
-        - target: discord.Member
-        - ctx: Context
+        Parameters
+        -----------
+        target: Member
+            Target, which will be issued warn
+        ctx: Context
+            commands.Context instance
         """
         count = 0
         col = warn_db[f"{ctx.guild.id}"]

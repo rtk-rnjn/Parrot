@@ -10,7 +10,6 @@ from discord.ext import commands
 from time import time
 
 from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY, MASTER_OWNER
-from utilities.buttons import Prompt
 from utilities import time as Time
 from utilities.formats import get_cmd_signature
 
@@ -884,17 +883,14 @@ class Meta(Cog):
     @Context.with_type
     async def request(self, ctx: Context, *, text: str):
         """To request directly from the owner"""
-        view = Prompt(ctx.author.id)
-        msg = await ctx.reply(
-            f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue",
-            view=view,
+        view = ctx.prompt(
+            f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue"
         )
-        await view.wait()
-        if view.value is None:
-            await msg.reply(
+        if view is None:
+            await ctx.reply(
                 f"{ctx.author.mention} you did not responds on time. No request is being sent!"
             )
-        elif view.value:
+        elif view:
             if self.bot.author_obj:
                 await self.bot.author_obj.send(
                     f"**{ctx.author}** [`{ctx.author.id}`]\n>>> {text[:1800:]}"
@@ -903,9 +899,9 @@ class Meta(Cog):
                 from utilities.config import SUPER_USER
 
                 await self.bot.get_user(SUPER_USER).send(text[:1800:])
-            await msg.reply(f"{ctx.author.mention} your message is being delivered!")
+            await ctx.reply(f"{ctx.author.mention} your message is being delivered!")
         else:
-            await msg.reply(f"{ctx.author.mention} nvm, reverting the process")
+            await ctx.reply(f"{ctx.author.mention} nvm, reverting the process")
 
     @commands.command(hidden=True)
     async def hello(self, ctx: Context):

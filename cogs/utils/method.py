@@ -6,7 +6,6 @@ from datetime import datetime
 from time import time
 
 from utilities.database import tags, todo, parrot_db, cluster
-from utilities.buttons import Confirm, Prompt
 from utilities.paginator import ParrotPaginator
 
 from core import Parrot, Context
@@ -85,17 +84,13 @@ async def _create_tag(bot: Parrot, ctx: Context, tag, text):
         )
     if _ := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
-    view = Prompt(ctx.author.id)
-    msg = await ctx.send(
-        f"{ctx.author.mention} do you want to make the tag as NSFW marked channels",
-        view=view,
-    )
-    await view.wait()
-    if view.value is None:
-        return await msg.reply(
+
+    val = await ctx.prompt(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels")
+    if val is None:
+        return await ctx.reply(
             f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
         )
-    nsfw = bool(view.value)
+    nsfw = bool(val)
     await collection.insert_one(
         {
             "id": tag,
@@ -168,21 +163,18 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag, member):
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
-        view = Confirm(ctx.author.id)
-        msg = await ctx.reply(
-            f"{ctx.author.mention} are you sure to transfer the tag ownership to **{member}**? This process is irreversible!",
-            view=view,
+        val = await ctx.prompt(
+            f"{ctx.author.mention} are you sure to transfer the tag ownership to **{member}**? This process is irreversible!"
         )
-        await view.wait()
-        if view.value is None:
-            await msg.reply(f"{ctx.author.mention} you did not responds on time")
-        elif view.value:
+        if val is None:
+            await ctx.reply(f"{ctx.author.mention} you did not responds on time")
+        elif val:
             await collection.update_one({"id": tag}, {"$set": {"owner": member.id}})
-            await msg.reply(
+            await ctx.reply(
                 f"{ctx.author.mention} tag ownership successfully transfered to **{member}**"
             )
         else:
-            await msg.reply(f"{ctx.author.mention} ok! reverting the process!")
+            await ctx.reply(f"{ctx.author.mention} ok! reverting the process!")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 

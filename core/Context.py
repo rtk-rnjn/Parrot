@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from discord.ext import commands
 import discord
-import typing
 import asyncio
 import io
 import functools
@@ -28,12 +27,12 @@ class ConfirmationView(discord.ui.View):
         delete_after: bool,
     ) -> None:
         super().__init__(timeout=timeout)
-        self.value: typing.Optional[bool] = None
+        self.value: Optional[bool] = None
         self.delete_after: bool = delete_after
         self.author_id: int = author_id
         self.ctx: Context = ctx
         self.reacquire: bool = reacquire
-        self.message: typing.Optional[discord.Message] = None
+        self.message: Optional[discord.Message] = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
@@ -123,7 +122,7 @@ class Context(commands.Context):
                 )
 
     @discord.utils.cached_property
-    def replied_reference(self) -> typing.Optional[discord.Message]:
+    def replied_reference(self) -> Optional[discord.Message]:
         ref = self.message.reference
         if ref and isinstance(ref.resolved, discord.Message):
             return ref.resolved.to_reference()
@@ -133,22 +132,25 @@ class Context(commands.Context):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
-            try:
-                # async with context.typing():
-                await func(*args, **kwargs)
-            except discord.Forbidden:
-                pass
+            await func(*args, **kwargs)
+
+            # try:
+            #     async with context.typing():
+            #         await func(*args, **kwargs)
+            # except discord.Forbidden:
+            #     pass
 
         return wrapped
 
     async def send(
-        self, content: typing.Optional[str] = None, **kwargs
-    ) -> typing.Optional[discord.Message]:
+        self, content: Optional[str] = None, **kwargs
+    ) -> Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             try:
                 await self.author.send(
-                    "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
+                    "Bot don't have either Embed Links/Send Messages permission in that channel. "
+                    "Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
                 pass
@@ -156,19 +158,27 @@ class Context(commands.Context):
 
         return await super().send(content, **kwargs)
 
-    async def reply(self, content: typing.Optional[str] = None, **kwargs):
+    async def reply(
+        self, content: Optional[str] = None, **kwargs
+    ) -> Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             try:
                 await self.author.send(
-                    "Bot don't have either Embed Links/Send Messages permission in that channel. Please give sufficient permissions to the bot."
+                    "Bot don't have either Embed Links/Send Messages permission in that channel. "
+                    "Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
                 pass
             return
-        return await super().reply(content, **kwargs)
+        try:
+            await self.send(content, reference=self.message)
+        except discord.HTTPException:  # message deleted
+            await self.send(content, **kwargs)
 
-    async def entry_to_code(self, entries) -> typing.Optional[discord.Message]:
+        # return await super().reply(content, **kwargs)
+
+    async def entry_to_code(self, entries) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:
@@ -176,7 +186,7 @@ class Context(commands.Context):
         output.append("```")
         await self.send("\n".join(output))
 
-    async def indented_entry_to_code(self, entries) -> typing.Optional[discord.Message]:
+    async def indented_entry_to_code(self, entries) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:
@@ -194,9 +204,9 @@ class Context(commands.Context):
         timeout: float = 60.0,
         delete_after: bool = True,
         reacquire: bool = True,
-        author_id: typing.Optional[int] = None,
+        author_id: Optional[int] = None,
         **kwargs,
-    ) -> typing.Optional[bool]:
+    ) -> Optional[bool]:
         """|coro|
 
         An interactive reaction confirmation dialog.
@@ -238,7 +248,7 @@ class Context(commands.Context):
 
     async def safe_send(
         self, content, *, escape_mentions=True, **kwargs
-    ) -> typing.Optional[discord.Message]:
+    ) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
 
@@ -251,7 +261,7 @@ class Context(commands.Context):
         return await self.send(content)
 
     async def bulk_add_reactions(
-        self, message: discord.Message, *reactions: typing.Union[discord.Emoji, str]
+        self, message: discord.Message, *reactions: Union[discord.Emoji, str]
     ) -> None:
         coros = [
             asyncio.ensure_future(message.add_reaction(reaction))
@@ -261,15 +271,32 @@ class Context(commands.Context):
 
     async def confirm(
         self,
-        bot: Any,
         channel: discord.TextChannel,
-        user: typing.Union[discord.Member, discord.User],
-        *args: typing.Any,
+        user: Union[discord.Member, discord.User],
+        *args: Any,
         timeout: float = 60,
         delete_after: bool = False,
-        **kwargs: typing.Any,
-    ) -> typing.Optional[bool]:
+        **kwargs: Any,
+    ) -> Optional[bool]:
+        """|coro|
         
+        Reaction based Prompt
+        Parameters
+        -----------
+        channel: Channel
+            Message that will be sent in the channel
+        timeout: float
+            How long to wait before returning.
+        delete_after: bool
+            Whether to delete the confirmation message after we're done.
+        user: Union[Member, User]
+            The member who should respond to the prompt.
+        Returns
+        --------
+        Optional[bool]
+            ``True`` if explicit confirm,
+            ``None`` if deny due to timeout
+        """
 
         message = await channel.send(*args, **kwargs)
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
@@ -282,7 +309,7 @@ class Context(commands.Context):
             )
 
         try:
-            payload = await bot.wait_for(
+            payload = await self.bot.wait_for(
                 "raw_reaction_add", check=check, timeout=timeout
             )
             return str(payload.emoji) == "\N{THUMBS UP SIGN}"

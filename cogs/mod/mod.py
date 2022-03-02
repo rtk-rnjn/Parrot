@@ -464,6 +464,7 @@ class Moderator(Cog):
     ):
         """To Timeout the member, from chat."""
         seconds = duration
+        b = False
         if seconds:
             b = await mt._timeout(
                 ctx.guild,

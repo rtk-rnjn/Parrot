@@ -26,7 +26,7 @@ async def is_role_mod(guild, role) -> bool:
 async def _add_roles_bot(
     guild, command_name, ctx, destination, operator, role, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -58,7 +58,7 @@ async def _add_roles_bot(
 async def _add_roles_humans(
     guild, command_name, ctx, destination, operator, role, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -90,7 +90,7 @@ async def _add_roles_humans(
 async def _add_roles(
     guild, command_name, ctx, destination, member, role, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -121,7 +121,7 @@ async def _add_roles(
 async def _remove_roles(
     guild, command_name, ctx, destination, member, role, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -152,7 +152,7 @@ async def _remove_roles(
 async def _role_hoist(
     guild, command_name, ctx, destination, role, _bool, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -183,7 +183,7 @@ async def _role_hoist(
 async def _change_role_name(
     guild, command_name, ctx, destination, role, text, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -214,7 +214,7 @@ async def _change_role_name(
 async def _change_role_color(
     guild, command_name, ctx, destination, role, int_, reason
 ):
-    if ctx.top_role.position < role.position:
+    if ctx.author.top_role.position < role.position:
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit the role which is above you"
         )
@@ -250,7 +250,7 @@ async def _ban(
 ):
     if (
         isinstance(member, discord.Member)
-        and ctx.top_role.position < member.top_role.position
+        and ctx.author.top_role.position < member.top_role.position
     ) and not silent:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
@@ -281,7 +281,7 @@ async def _mass_ban(
 ):
 
     for member in members:
-        if ctx.top_role.position < member.top_role.position:
+        if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
@@ -309,7 +309,7 @@ async def _mass_ban(
 
 async def _softban(guild, command_name, ctx, destination, members, reason):
     for member in members:
-        if ctx.top_role.position < member.top_role.position:
+        if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
@@ -351,7 +351,7 @@ async def _temp_ban(
     bot: Parrot = None,
 ):
     for member in members:
-        if ctx.top_role.position < member.top_role.position and not silent:
+        if ctx.author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
@@ -409,7 +409,7 @@ async def _timeout(
     reason,
     silent=False,
 ):
-    if ctx.top_role.position < member.top_role.position and not silent:
+    if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
@@ -442,7 +442,7 @@ async def _timeout(
 async def _mute(
     guild, command_name, ctx, destination, member, reason, silent=False
 ):
-    if ctx.top_role.position < member.top_role.position and not silent:
+    if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
@@ -524,7 +524,7 @@ async def _kick(
     guild, command_name, ctx, destination, member, reason, silent=False
 ):
     try:
-        if ctx.top_role.position < member.top_role.position and not silent:
+        if ctx.author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
@@ -550,7 +550,7 @@ async def _kick(
 
 async def _mass_kick(guild, command_name, ctx, destination, members, reason):
     for member in members:
-        if ctx.top_role.position < member.top_role.position:
+        if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
@@ -581,7 +581,7 @@ async def _block(
     guild, command_name, ctx, destination, channel, members, reason, silent=False
 ):
     for member in members:
-        if ctx.top_role.position < member.top_role.position and not silent:
+        if ctx.author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
@@ -713,7 +713,7 @@ async def _vc_unlock(guild, command_name, ctx, destination, channel):
 
 
 async def _change_nickname(guild, command_name, ctx, destination, member, name):
-    if ctx.top_role.position < member.top_role.position:
+    if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
@@ -819,7 +819,7 @@ async def _clone(guild, command_name, ctx, destination, channel, reason):
 
 
 async def _voice_mute(guild, command_name, ctx, destination, member, reason):
-    if ctx.top_role.position < member.top_role.position:
+    if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
@@ -851,7 +851,7 @@ async def _voice_unmute(guild, command_name, ctx, destination, member, reason):
 
 
 async def _voice_deafen(guild, command_name, ctx, destination, member, reason):
-    if ctx.top_role.position < member.top_role.position:
+    if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
@@ -883,7 +883,7 @@ async def _voice_undeafen(guild, command_name, ctx, destination, member, reason)
 
 
 async def _voice_kick(guild, command_name, ctx, destination, member, reason):
-    if ctx.top_role.position < member.top_role.position:
+    if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
@@ -903,7 +903,7 @@ async def _voice_kick(guild, command_name, ctx, destination, member, reason):
 async def _voice_ban(
     guild, command_name, ctx, destination, member, channel, reason
 ):
-    if ctx.top_role.position < member.top_role.position:
+    if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )

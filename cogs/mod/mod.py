@@ -43,7 +43,7 @@ class Moderator(Cog):
     ) -> Optional[discord.Message]:
         """A simple and nerdy Logging System"""
         log_channel = await ctx.modlog()
-        if reason.lower() == "none":
+        if str(reason).lower() == "none":
             reason = f"Action Requested by {ctx.author} ({ctx.author.id})"
 
         target = "Can't determined"

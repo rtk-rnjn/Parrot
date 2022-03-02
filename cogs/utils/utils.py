@@ -271,8 +271,7 @@ class Utils(Cog):
 
         body = "\n".join(f"{key}: {c}" for key, c in choices)
         poll = await ctx.send(f"**Poll: {question}**\n\n{body}")
-        for emoji, _ in choices:
-            await poll.add_reaction(emoji)
+        await ctx.bulk_add_reactions(poll, *[emoji for emoji, _ in choices])
 
     @commands.group(name="todo", invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)

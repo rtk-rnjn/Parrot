@@ -197,6 +197,30 @@ class Context(commands.Context):
         author_id: typing.Optional[int] = None,
         **kwargs,
     ) -> typing.Optional[bool]:
+        """|coro|
+
+        An interactive reaction confirmation dialog.
+        Parameters
+        -----------
+        message: str
+            The message to show along with the prompt.
+        timeout: float
+            How long to wait before returning.
+        delete_after: bool
+            Whether to delete the confirmation message after we're done.
+        reacquire: bool
+            Whether to release the database connection and then acquire it
+            again when we're done.
+        author_id: Optional[int]
+            The member who should respond to the prompt. Defaults to the author of the
+            Context's message.
+        Returns
+        --------
+        Optional[bool]
+            ``True`` if explicit confirm,
+            ``False`` if explicit deny,
+            ``None`` if deny due to timeout
+        """
         author_id = author_id or self.author.id
         view = ConfirmationView(
             timeout=timeout,
@@ -245,6 +269,8 @@ class Context(commands.Context):
         delete_after: bool = False,
         **kwargs: typing.Any,
     ) -> typing.Optional[bool]:
+        
+
         message = await channel.send(*args, **kwargs)
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 

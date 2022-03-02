@@ -212,7 +212,7 @@ class Moderator(Cog):
     async def mass_ban(
         self,
         ctx: Context,
-        members: commands.Greedy[discord.User],
+        members: commands.Greedy[Union[discord.User, discord.Member]],
         days: typing.Optional[int] = None,
         *,
         reason: reason_convert = None,
@@ -976,8 +976,7 @@ class Moderator(Cog):
             if guild.icon:
                 member_embed.set_thumbnail(url=ctx.guild.icon.url)
             msg = await ctx.send(embed=member_embed)
-            for reaction in mt.MEMBER_REACTION:
-                await msg.add_reaction(reaction)
+            await ctx.bulk_add_reactions(ctx.message, *mt.MEMBER_REACTION)
 
             def check(reaction, user):
                 return (
@@ -1129,8 +1128,7 @@ class Moderator(Cog):
             if guild.icon:
                 tc_embed.set_thumbnail(url=ctx.guild.icon.url)
             msg = await ctx.send(embed=tc_embed)
-            for reaction in mt.TEXT_REACTION:
-                await msg.add_reaction(reaction)
+            await ctx.bulk_add_reactions(ctx.message, *mt.TEXT_REACTION)
 
             def check(reaction, user):
                 return (
@@ -1210,8 +1208,7 @@ class Moderator(Cog):
             if guild.icon:
                 vc_embed.set_thumbnail(url=ctx.guild.icon.url)
             msg = await ctx.send(embed=vc_embed)
-            for reaction in mt.VC_REACTION:
-                await msg.add_reaction(reaction)
+            await ctx.bulk_add_reactions(ctx.message, *mt.VC_REACTION)
 
             def check_reaction_vc(reaction, user):
                 return (
@@ -1279,8 +1276,7 @@ class Moderator(Cog):
             if ctx.guild.icon:
                 role_embed.set_thumbnail(url=ctx.guild.icon.url)
             msg = await ctx.send(embed=role_embed)
-            for reaction in mt.ROLE_REACTION:
-                await msg.add_reaction(reaction)
+            await ctx.bulk_add_reactions(ctx.message, *mt.ROLE_REACTION)
 
             def check_reaction_role(reaction, user):
                 return (

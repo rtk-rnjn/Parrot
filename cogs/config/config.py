@@ -627,7 +627,7 @@ class BotConfig(Cog):
                     else None
                 )
                 member = (
-                    ctx.guild.get_member(data["memberping"]).name
+                    await self.bot.get_or_fetch_member(ctx.guild, data["memberping"])
                     if data.get("memberping")
                     else None
                 )

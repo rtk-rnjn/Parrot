@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-from typing import Collection
-import typing
+import asyncio
 
 from discord.ext import tasks
 import discord
@@ -16,19 +14,20 @@ with open("extra/duke_nekum.txt") as f:
 
 
 class Profanity(Cog):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.collection = parrot_db["server_config"]
         self.data = {}
         self.update_data.start()
+        self.lock = asyncio.Lock()
 
-    async def get_bad_words(self, message) -> typing.Optional[list]:
+    async def get_bad_words(self, message) -> Optional[List[str]]:
         try:
             return self.data[message.guild.id]
         except KeyError:
             return []
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.update_data.cancel()
 
     def isin(self, phrase: str, sentence: str) -> bool:
@@ -36,7 +35,7 @@ class Profanity(Cog):
         pattern = rf"\b{word}\b"
         return re.search(pattern, sentence) is not None
 
-    async def _one_message_passive(self, message: discord.Message):
+    async def _one_message_passive(self, message: discord.Message) -> Any:
         if message.author.bot or (not message.guild):
             return
         perms = message.author.guild_permissions
@@ -91,8 +90,8 @@ class Profanity(Cog):
                     message=message,
                     at=message.created_at,
                 )
-                ctx = await self.bot.get_context(message, cls=Context)
-                await self.bot.get_cog("Moderator").warn(target=message.author, cls=ctx)
+                ctx: Context = await self.bot.get_context(message, cls=Context)
+                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
 
             if any(self.isin(word, message.content.lower()) for word in bad_words):
                 await message.channel.send(
@@ -114,12 +113,13 @@ class Profanity(Cog):
 
     @tasks.loop(seconds=15)
     async def update_data(self):
-        async for data in self.collection.find({}):
-            try:
-                bad_words = data["automod"]["profanity"]["words"]
-            except KeyError:
-                return
-            self.data[data["_id"]] = bad_words
+        async with self.lock:
+            async for data in self.collection.find({}):
+                try:
+                    bad_words = data["automod"]["profanity"]["words"]
+                except KeyError:
+                    return
+                self.data[data["_id"]] = bad_words
 
     @update_data.before_loop
     async def before_data_update(self):

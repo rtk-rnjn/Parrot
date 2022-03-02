@@ -312,6 +312,27 @@ class Parrot(commands.AutoShardedBot):
             await self.process_commands(after)
 
     async def resolve_member_ids(self, guild: discord.Guild, member_ids: list):
+        """|coro|
+        
+        Bulk resolves member IDs to member instances, if possible.
+
+        Members that can't be resolved are discarded from the list.
+
+        This is done lazily using an asynchronous iterator.
+
+        Note that the order of the resolved members is not the same as the input.
+
+        Parameters
+        -----------
+        guild: Guild
+            The guild to resolve from.
+        member_ids: Iterable[int]
+            An iterable of member IDs.
+        Yields
+        --------
+        Member
+            The resolved members.
+        """
         needs_resolution = []
         for member_id in member_ids:
             member = guild.get_member(member_id)
@@ -356,6 +377,21 @@ class Parrot(commands.AutoShardedBot):
     async def get_or_fetch_member(
         self, guild: discord.Guild, member_id: int
     ) -> Optional[discord.Member]:
+        """|coro|
+        
+        Looks up a member in cache or fetches if not found.
+
+        Parameters
+        -----------
+        guild: Guild
+            The guild to look in.
+        member_id: int
+            The member ID to search for.
+        Returns
+        ---------
+        Optional[Member]
+            The member or None if not found.
+        """
         member = guild.get_member(member_id)
         if member is not None:
             return member
@@ -377,6 +413,21 @@ class Parrot(commands.AutoShardedBot):
     async def fetch_message_by_channel(
         self, channel: discord.TextChannel, messageID: int
     ) -> Optional[discord.Message]:
+        """|coro|
+        
+        Get message from cache. Fetches if not found, and stored in cache
+
+        Parameters
+        -----------
+        channel: Channel
+            The channel to look in.
+        messageID: int
+            The message ID to search for.
+        Returns
+        ---------
+        Optional[Message]
+            The Message or None if not found.
+        """
         try:
             return self.message_cache[messageID]
         except KeyError:

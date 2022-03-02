@@ -395,7 +395,7 @@ class Parrot(commands.AutoShardedBot):
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
             if data := await collection.find_one(
-                {"_id": message.guild.id}, {"prefix": 1, "_id": 0}
+                {"_id": message.guild.id}
             ):
                 prefix = data["prefix"]
                 post = data
@@ -420,9 +420,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one(
-                {"_id": guild.id}, {"_id": 0, "prefix": 1}
-            ):
+            if data := await collection.find_one({"_id": guild.id}):
                 return data.get("prefix")
 
     async def invoke_help_command(self, ctx: Context) -> None:
@@ -430,15 +428,16 @@ class Parrot(commands.AutoShardedBot):
 
     async def getch(self, get_function, fetch_function, _id) -> Any:
         try:
-            return get_function(_id) or await fetch_function(_id)
+            something = get_function(_id)
+            if something is None:
+                return await fetch_function(_id)
+            return something
         except Exception as e:
             return None
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await collection.find_one(
-            {"_id": guild_id}, {"prefix": 1, "_id": 0}
-        ):
+        if data := await collection.find_one({"_id": guild_id}):
             self.server_config[guild_id] = data
 
     @tasks.loop(count=1)

@@ -7,7 +7,7 @@ import asyncio
 import io
 import functools
 from utilities.emotes import emojis
-from typing import Any, Literal, Union
+from typing import Any, Literal, Optional, Union
 import logging
 
 __all__ = ("Context",)
@@ -81,6 +81,46 @@ class Context(commands.Context):
     @property
     def session(self) -> Any:
         return self.bot.session
+
+    async def modlog(self, *, guild_id: int=None) -> Optional[discord.TextChannel]:
+        guild_id = guild_id or self.guild.id
+        try:
+            return self.bot.getch(
+                self.bot.get_channel,
+                self.bot.fetch_channel,
+                self.bot.server_config[self.guild.id]["action_log"]
+            )
+        except KeyError:
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": guild_id}):
+                return self.bot.getch(
+                    self.bot.get_channel,
+                    self.bot.fetch_channel,
+                    self.bot.server_config[self.guild.id]["action_log"]
+                )
+
+    async def muterole(self,) -> Optional[discord.Role]:
+        try:
+            global_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.guild.roles)
+            author_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.author.roles)
+            return self.guild.get_role(
+                self.bot.server_config[self.guild.id]["mute_role"]
+            ) or global_muted or author_muted
+        except KeyError:
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
+                return self.guild.get_role(
+                    self.bot.server_config[self.guild.id]["mute_role"]
+                )
+    
+    async def modrole(self,) -> Optional[discord.Role]:
+        try:
+            return self.guild.get_role(
+                self.bot.server_config[self.guild.id]["mod_role"]
+            )
+        except KeyError:
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
+                return self.guild.get_role(
+                    self.bot.server_config[self.guild.id]["mod_role"]
+                )
 
     @discord.utils.cached_property
     def replied_reference(self) -> typing.Optional[discord.Message]:

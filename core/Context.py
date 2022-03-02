@@ -85,14 +85,14 @@ class Context(commands.Context):
     async def modlog(self, *, guild_id: int=None) -> Optional[discord.TextChannel]:
         guild_id = guild_id or self.guild.id
         try:
-            return self.bot.getch(
+            return await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
                 self.bot.server_config[self.guild.id]["action_log"]
             )
         except KeyError:
             if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": guild_id}):
-                return self.bot.getch(
+                return await self.bot.getch(
                     self.bot.get_channel,
                     self.bot.fetch_channel,
                     self.bot.server_config[self.guild.id]["action_log"]

@@ -2893,7 +2893,7 @@ class Fun(Cog):
     @Context.with_type
     async def coinflip(self, ctx: Context, *, choose: str = None):
         """Coin Flip, It comes either HEADS or TAILS"""
-        choose = "tails" if choose.lower() in ("tails", "tail", "t") else "heads"
+        choose = "tails" if str(choose).lower() in ("tails", "tail", "t") else "heads"
         msg = await ctx.send(
             f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
         )

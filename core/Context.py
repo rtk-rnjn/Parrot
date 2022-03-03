@@ -6,7 +6,7 @@ import asyncio
 import io
 import functools
 from utilities.emotes import emojis
-from typing import Any, Literal, Optional, Union
+from typing import Literal, Optional, Union, List, Tuple, Any
 import logging
 
 __all__ = ("Context",)
@@ -131,9 +131,9 @@ class Context(commands.Context):
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
-            context = args[0] if isinstance(args[0], commands.Context) else args[1]
             await func(*args, **kwargs)
 
+            # context = args[0] if isinstance(args[0], commands.Context) else args[1]
             # try:
             #     async with context.typing():
             #         await func(*args, **kwargs)
@@ -178,7 +178,7 @@ class Context(commands.Context):
 
         # return await super().reply(content, **kwargs)
 
-    async def entry_to_code(self, entries) -> Optional[discord.Message]:
+    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:
@@ -186,7 +186,7 @@ class Context(commands.Context):
         output.append("```")
         await self.send("\n".join(output))
 
-    async def indented_entry_to_code(self, entries) -> Optional[discord.Message]:
+    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:

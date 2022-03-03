@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 
 import os
-from typing import Any, Optional, Dict, Union, List
+from typing import Any, Callable, Optional, Dict, Union, List
 from async_property import async_property
 import jishaku
 import datetime
@@ -12,6 +12,7 @@ import aiohttp
 import topgg
 import socket
 import re
+import logging
 from collections import Counter, deque, defaultdict
 import discord
 from discord.ext import commands, tasks, ipc
@@ -55,6 +56,17 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -82,7 +94,7 @@ class Parrot(commands.AutoShardedBot):
         self._error_log_token = os.environ["CHANNEL_TOKEN1"]
         self.color = 0x87CEEB
         self.topggpy = topgg.DBLClient(
-            self, dbl_token, autopost=True, post_shard_count=True
+            self, dbl_token, autopost=True, post_shard_count=False
         )
         self.topgg_webhook = topgg.WebhookManager(self).dbl_webhook(
             "/dblwebhook", f"{os.environ['TOPGG_AUTH']}"
@@ -477,7 +489,7 @@ class Parrot(commands.AutoShardedBot):
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)
 
-    async def getch(self, get_function, fetch_function, _id) -> Any:
+    async def getch(self, get_function: Callable, fetch_function: Callable, _id: int) -> Any:
         try:
             something = get_function(_id)
             if something is None:

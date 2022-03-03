@@ -33,6 +33,27 @@ async def warn(
     message: Optional[discord.Message] = None,
     at: Optional[float] = None,
 ) -> dict:
+    """|coro|
+
+    To warn the user.
+
+    Parameters
+    -----------
+    guild: discord.Guild
+        Guild instance, in which the Member in
+    user: Union[discord.Member, discord.User]
+        User who is getting warned
+    reason: str
+        Reason for warning user
+    moderator: discord.Member
+        The moderator who is issuing warn
+    expires_at: Optional[float]
+        Time at which the warning will be deleted
+    message: Optional[discord.Message]
+        Message object (ctx.message)
+    at: Optional[float]
+        Time ate which the warning is issued
+    """
     count = await get_warn_count(guild)
     post = {
         "warn_id": count,
@@ -43,6 +64,7 @@ async def warn(
         "message_link": message.jump_url if message else None,
         "channel": message.channel.id if message else None,
         "message": message.id if message else None,
+        "messageUrl": message.jump_url,
         "at": at,
     }
     collection = warn_db[f"{guild.id}"]

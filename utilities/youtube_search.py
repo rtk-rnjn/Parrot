@@ -13,15 +13,15 @@ class YoutubeSearch:
         BASE_URL = "https://youtube.com"
         url = f"{BASE_URL}/results?search_query={encoded_search}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    response = await response.text()
+            response = await session.get(url)
+            if response.status == 200:
+                response = await response.text()
 
         while "ytInitialData" not in response:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        response = await response.text()
+                response = await session.get(url)
+                if response.status == 200:
+                    response = await response.text()
         results = self._parse_html(response)
         if self.max_results is not None and len(results) > self.max_results:
             return results[: self.max_results]

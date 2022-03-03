@@ -38,7 +38,7 @@ def setup() -> None:
     logging.addLevelName(TRACE_LEVEL, "TRACE")
     logging.setLoggerClass(CustomLogger)
     root_log = get_logger()
-    format_string = "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    format_string = "%(asctime)s | %(name)s | %(levelname)s | %(funcName)s | %(message)s"
     log_format = logging.Formatter(format_string)
     root_log.setLevel(logging.INFO)
 

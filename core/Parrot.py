@@ -56,9 +56,9 @@ intents.members = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-
-
 logger = get_logger(__name__)
+
+
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
@@ -115,11 +115,9 @@ class Parrot(commands.AutoShardedBot):
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
-                print(f"[EXTENSION] {ext} was loaded successfully!")
+                logger.info(f"Successfully loaded {ext}")
             except Exception as e:
-                tb = traceback.format_exception(type(e), e, e.__traceback__)
-                tbe = "".join(tb) + ""
-                print(f"[WARNING] Could not load extension {ext}: {tbe}")
+                logger.exception("Something fucked up while adding {ext}. {e}")
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -295,7 +293,7 @@ class Parrot(commands.AutoShardedBot):
                     f"**{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
-                logger.info(f"")
+                logger.trace(f"Can not process command of message {message}. Command disabled")
                 return
 
         await self.invoke(ctx)
@@ -453,7 +451,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            logger.trace("Fetching from database.")
+            logger.trace(f"Fetching prefix from database. Of message {message}")
             if data := await collection.find_one(
                 {"_id": message.guild.id}
             ):
@@ -496,6 +494,7 @@ class Parrot(commands.AutoShardedBot):
                 return await fetch_function(_id)
             return something
         except Exception as e:
+            logger.exception(f"Something fucked up while getting or fetching {_id}. {e}")
             return None
 
     @tasks.loop(count=1)

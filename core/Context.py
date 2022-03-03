@@ -7,7 +7,8 @@ import io
 import functools
 from utilities.emotes import emojis
 from typing import Literal, Optional, Union, List, Tuple, Any
-import logging
+from utilities.log import get_logger
+
 
 __all__ = ("Context",)
 
@@ -15,6 +16,8 @@ CONFIRM_REACTIONS = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
+logger = get_logger(__name__)
+
 
 class ConfirmationView(discord.ui.View):
     def __init__(
@@ -153,7 +156,7 @@ class Context(commands.Context):
                     "Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
-                pass
+                logger.trace(f"Can not send the warning to the user. As DM(s) are closed")
             return
 
         return await super().send(content, **kwargs)
@@ -169,7 +172,7 @@ class Context(commands.Context):
                     "Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
-                pass
+                logger.trace(f"Can not send the warning to the user. As DM(s) are closed")
             return
         try:
             await self.send(content, reference=self.message)
@@ -243,8 +246,8 @@ class Context(commands.Context):
         await view.wait()
         return view.value
 
-    async def release(self) -> None:
-        await asyncio.sleep(0)
+    async def release(self, *, _for: Optional[int]=None) -> None:
+        await asyncio.sleep(_for or 0)
 
     async def safe_send(
         self, content, *, escape_mentions=True, **kwargs
@@ -257,7 +260,7 @@ class Context(commands.Context):
             kwargs.pop("file", None)
             return await self.send(
                 file=discord.File(fp, filename="message_too_long.txt"), **kwargs
-            )
+            )  # must have `Attach Files` permissions
         return await self.send(content)
 
     async def bulk_add_reactions(

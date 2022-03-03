@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 from utilities.config import my_secret
 import motor.motor_asyncio
+
+from .log import get_logger
+
+logger = get_logger(__name__)
 
 cluster = motor.motor_asyncio.AsyncIOMotorClient(
     f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -18,8 +24,10 @@ async def cmd_increment(cmd: str) -> None:
 
     if _ := await collection.find_one({"_id": cmd}):
         await collection.update_one({"_id": cmd}, {"$inc": {"count": 1}})
+        logger.trace(f"Update 'parrot_db.cmd_count'. Increased 'count' by 1 to '_id': '{cmd}'")
     else:
         await collection.insert_one({"_id": cmd, "count": 1})
+        logger.trace(f"Insert 'parrot_db.cmd_count'. Set 'count' to 1 to '_id': '{cmd}'")
 
 
 async def gchat_update(guild_id: int, post: dict) -> None:
@@ -27,29 +35,32 @@ async def gchat_update(guild_id: int, post: dict) -> None:
 
     if _ := await collection.find_one({"_id": guild_id}):
         await collection.update_one({"_id": guild_id}, {"$set": post})
+        logger.trace(f"Update 'parrot_db.global_chat'. Set '{post}' to '_id': '{guild_id}'")
     else:
-        await collection.insert_one({"_id": guild_id})
-        await collection.update_one({"_id": guild_id}, {"$set": post})
+        await collection.insert_one({"_id": guild_id, **post})
+        logger.trace(f"Insert 'parrot_db.global_chat'. Set '{post}' to '_id': '{guild_id}'")
 
 
 async def telephone_update(guild_id: int, event: str, value) -> None:
     collection = parrot_db["telephone"]
-    if data := await collection.find_one({"_id": guild_id}):
-        return await collection.update_one({"_id": guild_id}, {"$set": {event: value}})
+    if _ := await collection.find_one({"_id": guild_id}):
+        await collection.update_one({"_id": guild_id}, {"$set": {event: value}})
+        logger.trace(f"Update 'parrot_db.telephone'. Set '{event}' '{value}' to '_id': '{guild_id}'")
+        return
 
-    await collection.insert_one(
-        {
-            "_id": guild_id,
-            "channel": None,
-            "pingrole": None,
-            "is_line_busy": False,
-            "memberping": None,
-            "blocked": [],
-        }
-    )
+    post = {
+        "_id": guild_id,
+        "channel": None,
+        "pingrole": None,
+        "is_line_busy": False,
+        "memberping": None,
+        "blocked": [],
+    }
+    await collection.insert_one(post)
+    logger.trace(f"Insert 'parrot_db.telephone'. Set '{post}' to '_id': '{guild_id}'")
 
 
-async def ticket_update(guild_id: int, post):
+async def ticket_update(guild_id: int, post: dict):
     collection = parrot_db["ticket"]
     data = await collection.find_one({"_id": guild_id})
     if not data:
@@ -69,6 +80,7 @@ async def ticket_update(guild_id: int, post):
         )
 
     await collection.update_one({"_id": guild_id}, {"$set": post})
+    logger.trace(f"Insert 'parrot_db.ticket'. Set '{post}' to '_id': '{guild_id}'")
 
 
 async def guild_update(guild_id: int, post: dict):
@@ -87,6 +99,7 @@ async def guild_update(guild_id: int, post: dict):
         )
 
     await collection.update_one({"_id": guild_id}, {"$set": post})
+    logger.trace(f"Insert 'parrot_db.server_config'. Set '{post}' to '_id': '{guild_id}'")
 
 
 async def guild_join(guild_id: int):
@@ -100,6 +113,8 @@ async def guild_join(guild_id: int):
         "warn_count": 0,
     }
     await collection.insert_one(post)
+    logger.trace(f"Insert 'parrot_db.server_config'. Set '{post}' to '_id': '{guild_id}'")
+
     collection = parrot_db["global_chat"]
     post = {
         "_id": guild_id,
@@ -108,8 +123,9 @@ async def guild_join(guild_id: int):
         "ignore-role": None,
     }
     await collection.insert_one(post)
-    collection = parrot_db["telephone"]
+    logger.trace(f"Insert 'parrot_db.global_chat'. Set '{post}' to '_id': '{guild_id}'")
 
+    collection = parrot_db["telephone"]
     post = {
         "_id": guild_id,
         "channel": None,
@@ -118,8 +134,9 @@ async def guild_join(guild_id: int):
         "memberping": None,
         "blocked": [],
     }
-
     await collection.insert_one(post)
+    logger.trace(f"Insert 'parrot_db.telphone'. Set '{post}' to '_id': '{guild_id}'")
+
     collection = parrot_db["ticket"]
     post = {
         "_id": guild_id,
@@ -133,30 +150,43 @@ async def guild_join(guild_id: int):
         "category": None,
         "channel_id": None,
     }
-
     await collection.insert_one(post)
+    logger.trace(f"Insert 'parrot_db.ticket'. Set '{post}' to '_id': '{guild_id}'")
 
 
 async def guild_remove(guild_id: int):
     collection = parrot_db["server_config"]
     await collection.delete_one({"_id": guild_id})
+    logger.info(f"Delete 'parrot_db.server_config'. Of '_id': '{guild_id}'")
+
     collection = parrot_db[f"{guild_id}"]
     await collection.drop()
+    logger.info(f"Drop 'parrot_db.{guild_id}'")
+
     collection = parrot_db["global_chat"]
     await collection.delete_one({"_id": guild_id})
+    logger.info(f"Delete 'parrot_db.global_chat'. Of '_id': '{guild_id}'")
+
     collection = parrot_db["telephone"]
     await collection.delete_one({"_id": guild_id})
+    logger.info(f"Delete 'parrot_db.telephone'. Of '_id': '{guild_id}'")
+
     collection = parrot_db["ticket"]
     await collection.delete_one({"_id": guild_id})
+    logger.info(f"Delete 'parrot_db.ticket'. Of '_id': '{guild_id}'")
+
     collection = enable_disable[f"{guild_id}"]
     await collection.drop()
+    logger.info(f"Drop 'enable_disable.{guild_id}'")
 
 
 async def ban(user_id: int, **kw):
     collection = parrot_db["banned_users"]
     await collection.insert_one({"_id": user_id, **kw})
+    logger.info(f"Banned user: '{user_id}'. Insert 'parrot_db.banned_users'. Set '{kw}' to '_id': '{user_id}'")
 
 
 async def unban(user_id: int, **kw):
     collection = parrot_db["banned_users"]
     await collection.delete_one({"_id": user_id,})
+    logger.info(f"Unbanned user: '{user_id}'. Delete 'parrot_db.banned_users'. Of '_id': '{user_id}'")

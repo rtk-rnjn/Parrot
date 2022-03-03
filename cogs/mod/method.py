@@ -640,12 +640,10 @@ async def _unblock(
 
 async def _text_lock(guild, command_name, ctx, destination, channel):
     try:
-        overwrite = channel.overwrites_for(guild.default_role)
-        overwrite.send_messages = False
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
-            overwrite=overwrite,
+            send_messages=False,
         )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
@@ -659,12 +657,10 @@ async def _vc_lock(guild, command_name, ctx, destination, channel):
     if not channel:
         return
     try:
-        overwrite = channel.overwrites_for(guild.default_role)
-        overwrite.connect = False
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
-            overwrite=overwrite,
+            connect=False
         )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
@@ -925,12 +921,10 @@ async def _voice_unban(
     guild, command_name, ctx, destination, member, channel, reason
 ):
     try:
-        overwrite = channel.overwrites_for(member)
-        overwrite.connect = None
         await channel.set_permissions(
             member,
-            overwrite=overwrite,
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            connect=None
         )
         await destination.send(f"{ctx.author.mention} voice unbanned **{member}**")
     except Exception as e:

@@ -1,5 +1,4 @@
 git+https://github.com/Pycord-Development/pycord
-git+https://github.com/ssut/py-googletrans@master
 aiohttp
 markdownify
 psutil

@@ -16,14 +16,12 @@ import aiohttp
 import asyncio
 import math
 from aiohttp import request
-from discord.ext.commands import command
 from discord.ext import commands, tasks
 from discord import Embed
 from PIL import Image, ImageColor
 import rapidfuzz
 import colorsys
 
-import googletrans
 from pathlib import Path
 from random import choice, randint
 from typing import Callable, Optional, Union, TypeVar, List, Tuple, Dict
@@ -471,8 +469,6 @@ class Fun(Cog):
 
         self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.get_latest_comic_info.start()
-
-        self.trans = googletrans.Translator()
 
         self.categories = {
             "general": "Test your general knowledge.",
@@ -1429,7 +1425,7 @@ class Fun(Cog):
         ) + f"\nRemaining questions: {q_left}"
         await channel.send(embed=embed)
 
-    @command(name="8ball")
+    @commands.command(name="8ball")
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question: commands.clean_content):
@@ -1902,29 +1898,20 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def translate(self, ctx: Context, *, message: commands.clean_content = None):
-        """Translates a message to English (default) using Google translate"""
-        loop = self.bot.loop
-        if message is None:
-            ref = ctx.message.reference
-            if ref and isinstance(ref.resolved, discord.Message):
-                message = ref.resolved.content
-            else:
-                return await ctx.reply(
-                    f"{ctx.author.mention} you must provide the message reference or message for translation"
-                )
+    async def translate(self, ctx: Context, to: str, *, message: str):
+        """Translates a message to English (default). using My Memory"""
+        url = f"https://api.mymemory.translated.net/get?q={message}&langpair=en|{to}"
+        
+        resp = await ctx.session.get(url)
+        data = await resp.json()
 
-        try:
-            ret = await loop.run_in_executor(None, self.trans.translate, message)
-        except Exception as e:
-            return await ctx.send(f"An error occurred: {e.__class__.__name__}: {e}")
-
-        embed = discord.Embed(title="Translated", colour=self.bot.color)
-        src = googletrans.LANGUAGES.get(ret.src, "(auto-detected)").title()
-        dest = googletrans.LANGUAGES.get(ret.dest, "Unknown").title()
-        embed.add_field(name=f"From {src}", value=ret.origin, inline=False)
-        embed.add_field(name=f"To {dest}", value=ret.text, inline=False)
-        await ctx.send(embed=embed)
+        return await ctx.send(
+            embed=discord.Embed(
+                description = data['responseData']['translatedText']
+            ).set_footer(
+                text="This command is work in progress"
+            )
+        )
 
     @commands.command(aliases=["triggered"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from utilities.config import my_secret
 import motor.motor_asyncio
 
-from .log import get_logger
+from utilities.log import get_logger
 
 logger = get_logger(__name__)
 

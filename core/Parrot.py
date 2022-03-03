@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 
 import os
-from typing import Any, Callable, Optional, Dict, Union, List
+from typing import TYPE_CHECKING, Any, Callable, Optional, Dict, Union, List, cast
 from async_property import async_property
 import jishaku
 import datetime
@@ -36,6 +36,7 @@ from utilities.config import (
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client
+from utilities.log import get_logger
 
 from time import time
 
@@ -56,18 +57,8 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-
-
+logger = get_logger(__name__)
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
@@ -266,8 +257,10 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.is_ws_ratelimited():
+            logger.info(f"Can not process command of message {message}. Ratelimited")
             return
         if not self.is_ready():
+            logger.info(f"Can not process command of message {message}. Bot isn't ready yet")
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -277,6 +270,7 @@ class Parrot(commands.AutoShardedBot):
         if retry_after:
             self._auto_spam_count[author_id] += 1
             if self._auto_spam_count[author_id] >= 3:
+                logger.info(f"Stops the command process of message {message}. Spam")
                 return
         else:
             self._auto_spam_count.pop(author_id, None)
@@ -291,6 +285,7 @@ class Parrot(commands.AutoShardedBot):
             else:
                 true = self.banned_users[ctx.author.id].get("command")
                 if true:
+                    logger.info(f"Stops the command process of message {message}. User banned")
                     return
 
             _true = await _can_run(ctx)
@@ -300,6 +295,7 @@ class Parrot(commands.AutoShardedBot):
                     f"**{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
+                logger.info(f"")
                 return
 
         await self.invoke(ctx)
@@ -457,11 +453,13 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
+            logger.trace("Fetching from database.")
             if data := await collection.find_one(
                 {"_id": message.guild.id}
             ):
                 prefix = data["prefix"]
                 post = data
+                logger.trace(f"Recieved payload: {data}")
             else:
                 post = {
                     "_id": message.guild.id,
@@ -471,6 +469,7 @@ class Parrot(commands.AutoShardedBot):
                     "mute_role": None,
                 }
                 prefix = "$"  # default prefix
+                logger.info(f"No record with {message.guild.id}. Inserting to database...")
                 await collection.insert_one(post)
             self.server_config[message.guild.id] = post
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
@@ -493,6 +492,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             something = get_function(_id)
             if something is None:
+                logger.trace(f"Can not get '{_id}' from cache. Fetching...")
                 return await fetch_function(_id)
             return something
         except Exception as e:

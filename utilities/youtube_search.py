@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import aiohttp
 import urllib.parse
 import json
@@ -74,10 +76,10 @@ class YoutubeSearch:
                 results.append(res)
         return results
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         result = await self._search()
         return result
 
-    async def to_json(self):
+    async def to_json(self) -> str:
         result = json.dumps({"videos": await self._search()})
         return result

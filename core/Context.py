@@ -175,9 +175,9 @@ class Context(commands.Context):
                 logger.trace(f"Can not send the warning to the user. As DM(s) are closed")
             return
         try:
-            await self.send(content, reference=self.message)
+            return await self.send(content, reference=self.message)
         except discord.HTTPException:  # message deleted
-            await self.send(content, **kwargs)
+            return await self.send(content, **kwargs)
 
         # return await super().reply(content, **kwargs)
 

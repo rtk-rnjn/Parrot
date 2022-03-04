@@ -36,7 +36,7 @@ from utilities.config import (
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client
-from utilities.log import get_logger
+from utilities import log
 
 from time import time
 
@@ -56,7 +56,9 @@ intents.members = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-logger = get_logger(__name__)
+
+log.setup()
+logger = log.get_logger(__name__)
 
 
 class Parrot(commands.AutoShardedBot):

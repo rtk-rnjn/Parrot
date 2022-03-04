@@ -3,11 +3,11 @@ from pathlib import Path
 
 
 from typing import TYPE_CHECKING, Optional, cast
+from logging import Logger, handlers
 import logging
 
-
 if TYPE_CHECKING:
-    LoggerClass = logging.Logger
+    LoggerClass = Logger
 else:
     LoggerClass = logging.getLoggerClass()
 
@@ -44,7 +44,7 @@ def setup() -> None:
     root_log.setLevel(logging.INFO)
     log_file = Path("temp", "bot.log")
     log_file.parent.mkdir(exist_ok=True)
-    file_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=5242880, backupCount=7, encoding="utf8")
+    file_handler = handlers.RotatingFileHandler(log_file, maxBytes=5242880, backupCount=7, encoding="utf8")
     file_handler.setFormatter(log_format)
     root_log.addHandler(file_handler)
     

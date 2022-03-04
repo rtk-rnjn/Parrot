@@ -6,10 +6,11 @@ import random
 import os
 from discord.ext import commands
 
+from core import Parrot, Context, Cog
+
+from utilities.log import get_logger
 from utilities.exceptions import ParrotCheckFailure
 from utilities.database import parrot_db, cmd_increment
-
-from core import Parrot, Context, Cog
 
 with open("extra/quote.txt") as f:
     quote = f.read()
@@ -18,6 +19,8 @@ quote = quote.split("\n")
 QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 CHANNEL_TOKEN_2 = 924513442273054730
 TOKEN_2 = os.environ["CHANNEL_TOKEN2"]
+
+log = get_logger(__name__)
 
 
 class ErrorView(discord.ui.View):
@@ -291,10 +294,13 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         ERROR_EMBED.title = (
             f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
         )
-        return await ctx.reply(
+        await ctx.reply(
             random.choice(quote),
             embed=ERROR_EMBED,
             view=ErrorView(ctx.author.id, ctx=ctx, error=error),
+        )
+        log.exception(
+            "Something fucked up while processing '{ctx.command.qualified_name}' in '#{ctx.channel.name}' '({ctx.channel.id})'"
         )
 
 

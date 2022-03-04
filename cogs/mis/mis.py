@@ -1,5 +1,6 @@
 from __future__ import annotations
 import hashlib
+from typing import BinaryIO, Iterable, List, Optional, Union
 
 from cogs.meta.robopage import SimplePages
 
@@ -11,7 +12,6 @@ import aiohttp
 import discord
 import re
 import datetime
-import typing
 import os
 import inspect
 import json
@@ -99,7 +99,7 @@ with open("extra/country.json") as f:
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
-    ints: convert_bool = False
+    # ints: convert_bool = False
     ascending: convert_bool = True
     table_format: str = "psql"
     align: str = "center"
@@ -119,7 +119,7 @@ def _prepare_input(text: str) -> str:
     return text
 
 
-def _process_image(data: bytes, out_file: typing.BinaryIO) -> None:
+def _process_image(data: bytes, out_file: BinaryIO) -> None:
     image = Image.open(io.BytesIO(data)).convert("RGBA")
     width, height = image.size
     background = Image.new("RGBA", (width + 2 * PAD, height + 2 * PAD), "WHITE")
@@ -139,9 +139,9 @@ class InvalidLatexError(Exception):
 def _create_qr(
     text: str,
     *,
-    version: typing.Optional[int] = 1,
-    board_size: typing.Optional[int] = 10,
-    border: typing.Optional[int] = 4,
+    version: Optional[int] = 1,
+    board_size: Optional[int] = 10,
+    border: Optional[int] = 4,
     **kw,
 ) -> str:
     qr = qrcode.QRCode(
@@ -161,10 +161,10 @@ def _create_qr(
 class QRCodeFlags(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
-    board_size: typing.Optional[int] = 10
-    border: typing.Optional[int] = 4
-    module_drawer: typing.Optional[str] = None
-    color_mask: typing.Optional[str] = None
+    board_size: Optional[int] = 10
+    border: Optional[int] = 4
+    module_drawer: Optional[str] = None
+    color_mask: Optional[str] = None
 
 
 qr_modular = {
@@ -211,7 +211,7 @@ class Misc(Cog):
 
     async def wiki_request(
         self, channel: discord.TextChannel, search: str
-    ) -> typing.List[str]:
+    ) -> List[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
         params = {**WIKI_PARAMS, **{"srlimit": 10, "srsearch": search}}
         async with self.bot.http_session.get(url=SEARCH_API, params=params) as resp:
@@ -245,7 +245,7 @@ class Misc(Cog):
         string = re.sub(invitere2, "[INVITE REDACTED]", string)
         return string
 
-    async def _generate_image(self, query: str, out_file: typing.BinaryIO) -> None:
+    async def _generate_image(self, query: str, out_file: BinaryIO) -> None:
         """Make an API request and save the generated image to cache."""
         payload = {"code": query, "format": "png"}
         async with self.bot.http_session.post(
@@ -261,7 +261,7 @@ class Misc(Cog):
 
     async def _upload_to_pastebin(
         self, text: str, lang: str = "txt"
-    ) -> typing.Optional[str]:
+    ) -> Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
         async with aiohttp.ClientSession() as aioclient:
             post = await aioclient.post("https://hastebin.com/documents", data=text)
@@ -501,7 +501,7 @@ class Misc(Cog):
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
         # there's gonna be a snipe after this point
         emb = discord.Embed()
-        if isinstance(snipe, typing.Iterable):  # edit snipe
+        if isinstance(snipe, Iterable):  # edit snipe
             emb.set_author(
                 name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url
             )
@@ -650,7 +650,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def youtube(
-        self, ctx: Context, limit: typing.Optional[int] = None, *, query: str
+        self, ctx: Context, limit: Optional[int] = None, *, query: str
     ):
         """Search for videos on YouTube"""
         results = await YoutubeSearch(query, max_results=limit or 5).to_json()
@@ -697,9 +697,9 @@ class Misc(Cog):
     async def embed(
         self,
         ctx: Context,
-        channel: typing.Optional[discord.TextChannel] = None,
+        channel: Optional[discord.TextChannel] = None,
         *,
-        data: typing.Union[dict, str] = None,
+        data: Union[dict, str] = None,
     ):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in.
         You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
@@ -727,7 +727,7 @@ class Misc(Cog):
         self,
         ctx: Context,
         *,
-        target: typing.Union[
+        target: Union[
             discord.User,
             discord.Member,
             discord.Role,
@@ -957,7 +957,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def mine_server_status(
-        self, ctx: Context, address: str, bedrock: typing.Optional[convert_bool] = False
+        self, ctx: Context, address: str, bedrock: Optional[convert_bool] = False
     ):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
         if bedrock:

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pathlib import Path
 
 
 from typing import TYPE_CHECKING, Optional, cast
@@ -41,7 +42,12 @@ def setup() -> None:
     format_string = "%(asctime)s | %(name)s | %(levelname)s | %(funcName)s | %(message)s"
     log_format = logging.Formatter(format_string)
     root_log.setLevel(logging.INFO)
-
+    log_file = Path("temp", "bot.log")
+    log_file.parent.mkdir(exist_ok=True)
+    file_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=5242880, backupCount=7, encoding="utf8")
+    file_handler.setFormatter(log_format)
+    root_log.addHandler(file_handler)
+    
     get_logger("discord").setLevel(logging.WARNING)
     get_logger("websockets").setLevel(logging.WARNING)
     get_logger("chardet").setLevel(logging.WARNING)

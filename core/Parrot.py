@@ -210,11 +210,11 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
-        print(f"[{self.user.name.title()}] Received a vote:\n{data}")
+        logger.alert(f"[{self.user.name.title()}] Received a vote:\n{data}")
 
     async def on_autopost_success(self) -> None:
         st = f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
-        print(st)
+        logger.alert(st)
 
     def run(self) -> None:
         """To run connect and login into discord"""
@@ -224,8 +224,8 @@ class Parrot(commands.AutoShardedBot):
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
-        print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
-        print(
+        logger.alert(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
+        logger.alert(
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__ }"
         )
 
@@ -233,15 +233,15 @@ class Parrot(commands.AutoShardedBot):
         self.afk = set(ls)
 
     async def on_connect(self) -> None:
-        print(f"[{self.user.name.title()}] Logged in")
+        logger.alert(f"[{self.user.name.title()}] Logged in")
         return
 
     async def on_disconnect(self) -> None:
-        print(f"[{self.user.name.title()}] disconnect from discord")
+        logger.alert(f"[{self.user.name.title()}] disconnect from discord")
         return
 
     async def on_shard_resumed(self, shard_id) -> None:
-        print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
+        logger.alert(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:

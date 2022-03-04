@@ -300,7 +300,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             view=ErrorView(ctx.author.id, ctx=ctx, error=error),
         )
         log.exception(
-            "Something fucked up while processing '{ctx.command.qualified_name}' in '#{ctx.channel.name}' '({ctx.channel.id})'"
+            f"Something fucked up while processing '{ctx.command.qualified_name}' in '#{ctx.channel.name}' '({ctx.channel.id})'. Error: {error}"
         )
 
 

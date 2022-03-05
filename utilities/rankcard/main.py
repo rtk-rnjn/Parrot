@@ -31,16 +31,12 @@ class Rankcard:
         mask = mask.resize(img_avatar.size)
         img_avatar.putalpha(mask)
 
-
         img_avatar = img_avatar.resize((170, 170))
-        
 
         img.paste(img_avatar, (50, 50))
         d = ImageDraw.Draw(img)
         d = self.drawProgressBar(d, 260, 180, 575, 40, current_xp/next_level_xp, bg="#484B4E", fg = xp_color) # create progress bar
         print(str(os.getcwd()))
-
-
 
         font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=50)
         font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)

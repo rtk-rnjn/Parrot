@@ -5,7 +5,7 @@ import random
 
 from core import Parrot, Cog
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import aiohttp
 import asyncio
@@ -19,7 +19,7 @@ from aiohttp import ClientResponseError
 from urllib.parse import quote_plus
 
 import typing as tp
-from pymongo import InsertOne, DeleteMany, ReplaceOne, UpdateOne
+from pymongo import UpdateOne
 
 from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
@@ -112,6 +112,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.message_cooldown = commands.CooldownMapping.from_cooldown(
             1, 10, commands.BucketType.member, 
         )
+        self.on_bulk_task.start()
+        self.LOCK = asyncio.Lock()
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -374,6 +376,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message(self, message):
         await self.bot.wait_until_ready()
+        await self._on_message_leveling(message)
         if not message.guild:
             return
         if message.guild.me.id == message.author.id:
@@ -634,7 +637,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def __add_roles(self, member, role: tp.Union[discord.Roles, discord.Object], reason: tp.Optional[str]=None):
         try:
             await member.add_roles(role, reason=reason)
-        except discord.Forbidden:
+        except (discord.Forbidden, discord.HTTPException):
             pass
     
     async def _on_message_passive(self, message: discord.Message):
@@ -737,6 +740,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     file=discord.File(fp, filename="content.txt"),
                 )
 
+    def cog_unload(self):
+        self.on_bulk_task.cancel()
 
-def setup(bot):
+    @tasks.loop(seconds=30)
+    async def on_bulk_task(self):
+        async with self.LOCK:
+            collection = self.bot.mongo.msg_db.counter
+            await collection.bulk_write(self.message_append)
+            self.message_append.clear()
+
+def setup(bot: Parrot):
     bot.add_cog(OnMsg(bot))

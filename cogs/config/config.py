@@ -288,6 +288,84 @@ class BotConfig(Cog):
                 f"{ctx.author.mention} counting channel for the server is not removed"
             )
 
+    @config.group(invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling(self, ctx: Context,):
+        """To configure leveling"""
+        await self.bot.invoke_help_command(ctx)
+
+    @leveling.command(name="channel")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_channel(self, ctx: Context, *, channel: discord.TextChannel=None):
+        """To configure leveling channel"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"leveling.channel": channel.id if channel else None}}
+        )
+        if channel:
+            await ctx.reply(
+                f"{ctx.author.mention} all leveling like annoucement will posted in {channel.mention}"
+            )
+            return
+        await ctx.reply(
+            f"{ctx.author.mention} reset annoucement channel for the leveling"
+        )
+
+    @leveling.command(name="ignore", aliases=["ignorerole", "ignore-role"])
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_ignore(self, ctx: Context, *, role: discord.Role=None):
+        """To configure leveling channel"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"leveling.ignore_role": role.id if role else None}}
+        )
+        if role:
+            await ctx.reply(
+                f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**"
+            )
+            return
+        await ctx.reply(
+            f"{ctx.author.mention} ignored role reset"
+        )
+    
+    @leveling.command(name="addreward")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def level_reward_add(self, ctx: Context, level: int, *, role: discord.Role = None):
+        """To add the level reward"""
+        if _ := await csc.find_one({"_id": ctx.guild.id, "leveling.reward": level}):
+            return await ctx.send(
+                f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{_['role']}**"
+            )
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"leveling.reward": {"lvl": level, "role": role.id if role else None}}}
+        )
+        if not role:
+            await ctx.reply(
+                f"{ctx.author.mention} reset the role on level **{level}**"
+            )
+            return
+        await ctx.reply(
+            f"{ctx.author.mention} set role {role.name} at level **{level}**"
+        )
+
+    @leveling.command(name="removereward")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def level_reward_remove(self, ctx: Context, level: int):
+        """To remove the level reward"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$pull": {"leveling.reward": {"lvl": level}}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} updated/removed reward at level: **{level}**"
+        )
+
     @config.command()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)

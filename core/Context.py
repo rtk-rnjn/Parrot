@@ -173,11 +173,9 @@ class Context(commands.Context):
                 pass
             return
         try:
-            return await self.send(content, reference=kwargs.get("referenve") or self.message, **kwargs)
+            return await self.send(content, reference=kwargs.get("reference") or self.message, **kwargs)
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
-
-        # return await super().reply(content, **kwargs)
 
     async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)

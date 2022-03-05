@@ -756,7 +756,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @on_bulk_task.after_loop
     async def on_bulk_task_after(self):
-        if self.bulker.is_being_cancelled() and len(self._batch) != 0:
+        if self.on_bulk_task.is_being_cancelled() and len(self.message_append) != 0:
             await self.bulker()
 
 def setup(bot: Parrot):

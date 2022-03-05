@@ -41,10 +41,7 @@ class Rankcard:
         d.text((650, 50), f"LEVEL {level}", xp_color, font=font)
         d.text((260, 50), f"RANK #{rank}", (255,255,255), font=font2)
 
-        # save image
-        loc = f"temp/{self.member.id}.jpg"
-        img.save(loc)
-        return loc
+        return img
 
     def drawProgressBar(self, d: ImageDraw, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
         # draw background

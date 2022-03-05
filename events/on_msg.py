@@ -743,12 +743,21 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def cog_unload(self):
         self.on_bulk_task.cancel()
 
+    async def bulker(self):
+        collection = self.bot.mongo.msg_db.counter
+        await collection.bulk_write(self.message_append)
+        self.message_append.clear()
+
     @tasks.loop(seconds=30)
     async def on_bulk_task(self):
         async with self.LOCK:
-            collection = self.bot.mongo.msg_db.counter
-            await collection.bulk_write(self.message_append)
-            self.message_append.clear()
+            await self.bulker()
+            return
+
+    @on_bulk_task.after_loop
+    async def on_bulk_task_after(self):
+        if self.bulker.is_being_cancelled() and len(self._batch) != 0:
+            await self.bulker()
 
 def setup(bot: Parrot):
     bot.add_cog(OnMsg(bot))

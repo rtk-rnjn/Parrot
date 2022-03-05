@@ -173,7 +173,7 @@ class Context(commands.Context):
                 pass
             return
         try:
-            return await self.send(content, reference=self.message)
+            return await self.send(content, reference=kwargs.get("referenve") or self.message, **kwargs)
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 

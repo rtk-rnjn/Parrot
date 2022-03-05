@@ -503,7 +503,7 @@ class Utils(Cog):
 
     @commands.command(aliases=['level'])
     @commands.bot_has_permissions(attach_files=True)
-    async def rank(self, ctx: Context, *, member: discord.Member):
+    async def rank(self, ctx: Context, *, member: discord.Member=None):
         """To get the level of the user"""
         try:
             self.bot.server_config[ctx.guild.id]["leveling"]["enabled"]

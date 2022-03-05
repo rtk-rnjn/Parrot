@@ -13,6 +13,7 @@ import asyncio
 from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
 from utilities.converters import convert_bool
+from utilities.rankcard import rank_card
 
 afk = parrot_db["afk"]
 
@@ -501,6 +502,7 @@ class Utils(Cog):
 
 
     @commands.command(aliases=['level'])
+    @commands.bot_has_permissions(attach_file=True)
     async def rank(self, ctx: Context, *, member: discord.Member):
         """To get the level of the user"""
         try:
@@ -508,4 +510,19 @@ class Utils(Cog):
         except KeyError:
             return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
         else:
-            ...
+            collection = self.bot.mongo.leveling[f"{member.guild.id}"]
+            data = await collection.find_one_and_update({"_id": member.id})
+            level = int((data["xp"]//42) ** 0.55)
+            xp = self.__get_required_xp(level + 1)
+            file = await rank_card(
+                level, 1, member, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
+            )
+            await ctx.reply(file=file)
+    
+    def __get_required_xp(self, level: int) -> int:
+        xp = 0
+        while True:
+            xp += 12
+            lvl = int((xp//42)**0.55)
+            if lvl == level:
+                return int(xp)

@@ -746,15 +746,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def bulker(self):
         collection = self.bot.mongo.msg_db.counter
-        await collection.bulk_write(self.message_append)
+        ls = self.message_append
+        await collection.bulk_write(ls)
         self.message_append = []
 
     @tasks.loop(seconds=30)
     async def on_bulk_task(self):
-        async with self.LOCK:
-            await self.bulker()
-            self.countr += 1
-            return
+        await self.bulker()
+        self.countr += 1
+        return
 
     @on_bulk_task.after_loop
     async def on_bulk_task_after(self):

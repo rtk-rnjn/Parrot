@@ -15,24 +15,31 @@ class Rankcard:
 
     def rank_card(
         self, level: int, rank: int, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
-    ) -> str:
+    ):
         # create backdrop
-        img = Image.new('RGB', (934, 282), color = custom_background) 
+        print(0)
+        img = Image.new('RGB', (934, 282), color = custom_background)
+        print(1)
         response = requests.get(self.member.display_avatar.url) # get avatar picture
+        print(2)
         img_avatar = Image.open(BytesIO(response.content)).convert("RGBA")
+        print(3)
         # create circle mask
         bigsize = (img_avatar.size[0] * 3, img_avatar.size[1] * 3)
+        print(4)
         mask = Image.new('L', bigsize, 0)
-        draw = ImageDraw.Draw(mask) 
+        print(5)
+        draw = ImageDraw.Draw(mask)
+        print(6)
         draw.ellipse((0, 0) + bigsize, fill=255)
         mask = mask.resize(img_avatar.size)
         img_avatar.putalpha(mask)
         img_avatar = img_avatar.resize((170, 170))
-
+        print(7)
         img.paste(img_avatar, (50, 50))
         d = ImageDraw.Draw(img)
         d = self.drawProgressBar(d, 260, 180, 575, 40, current_xp/next_level_xp, bg="#484B4E", fg = xp_color) # create progress bar
-
+        print(8)
         font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=50)
         font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)
 
@@ -43,7 +50,7 @@ class Rankcard:
 
         return img
 
-    def drawProgressBar(self, d: ImageDraw, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
+    def drawProgressBar(self, d, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
         # draw background
         d.ellipse((x+w, y, x+h+w, y+h), fill=bg)
         d.ellipse((x, y, x+h, y+h), fill=bg)

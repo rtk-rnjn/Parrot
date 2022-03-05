@@ -1,1 +1,1 @@
-from .main import Rankcard
+from .main import rank_card

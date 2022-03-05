@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import requests
-import os
 from PIL import Image, ImageFont, ImageOps, ImageDraw
 from io import BytesIO
 import discord
@@ -33,7 +32,6 @@ class Rankcard:
         img.paste(img_avatar, (50, 50))
         d = ImageDraw.Draw(img)
         d = self.drawProgressBar(d, 260, 180, 575, 40, current_xp/next_level_xp, bg="#484B4E", fg = xp_color) # create progress bar
-        print(str(os.getcwd()))
 
         font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=50)
         font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)

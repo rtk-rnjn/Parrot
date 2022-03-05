@@ -114,6 +114,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
         self.on_bulk_task.start()
         self.LOCK = asyncio.Lock()
+        self.countr = 0
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -746,12 +747,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def bulker(self):
         collection = self.bot.mongo.msg_db.counter
         await collection.bulk_write(self.message_append)
-        self.message_append.clear()
+        self.message_append = []
 
     @tasks.loop(seconds=30)
     async def on_bulk_task(self):
         async with self.LOCK:
             await self.bulker()
+            self.countr += 1
             return
 
     @on_bulk_task.after_loop

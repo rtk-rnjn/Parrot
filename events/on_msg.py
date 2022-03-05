@@ -588,7 +588,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if message.author.bot:
             return
 
-        self.message_append.append(UpdateOne({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True))
+        # self.message_append.append(UpdateOne({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True))
+        await self.bot.mongo.msg_db.counter.update_one({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True)
 
         bucket = self.message_cooldown.get_bucket(message)
         retry_after = bucket.update_rate_limit()
@@ -745,10 +746,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.on_bulk_task.cancel()
 
     async def bulker(self):
-        collection = self.bot.mongo.msg_db.counter
-        ls = self.message_append
-        await collection.bulk_write(ls)
-        self.message_append = []
+        # collection = self.bot.mongo.msg_db.counter
+        # ls = self.message_append
+        # await collection.bulk_write(ls)
+        # self.message_append = []
+        pass
 
     @tasks.loop(seconds=30)
     async def on_bulk_task(self):

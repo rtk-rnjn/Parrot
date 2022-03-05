@@ -502,7 +502,7 @@ class Utils(Cog):
 
 
     @commands.command(aliases=['level'])
-    @commands.bot_has_permissions(attach_file=True)
+    @commands.bot_has_permissions(attach_files=True)
     async def rank(self, ctx: Context, *, member: discord.Member):
         """To get the level of the user"""
         try:

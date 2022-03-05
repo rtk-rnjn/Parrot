@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+import random
 
 from core import Parrot, Cog
 
@@ -18,6 +19,7 @@ from aiohttp import ClientResponseError
 from urllib.parse import quote_plus
 
 import typing as tp
+from pymongo import InsertOne, DeleteMany, ReplaceOne, UpdateOne
 
 from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
@@ -106,6 +108,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             (GITLAB_RE, self._fetch_gitlab_snippet),
             (BITBUCKET_RE, self._fetch_bitbucket_snippet),
         ]
+        self.message_append = []
+        self.message_cooldown = commands.CooldownMapping.from_cooldown(
+            1, 10, commands.BucketType.member, 
+        )
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -572,6 +578,65 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if before.content != after.content:
             await self._on_message_passive(after)
 
+    async def _on_message_leveling(self, message: discord.Message):
+        if not message.guild:
+            return
+        if message.author.bot:
+            return
+
+        self.message_append.append(UpdateOne({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True))
+
+        bucket = self.message_cooldown.get_bucket(message)
+        retry_after = bucket.update_rate_limit()
+
+        if retry_after:
+            return
+
+        try:
+            enable = self.bot.server_config[message.guild.id]["leveling"]["enable"]
+        except KeyError:
+            return
+
+        try:
+            role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or 0
+        except KeyError:
+            role = 0
+
+        if message.author._roles.has(role):
+            return
+
+        if enable:
+            await self.__add_xp(member=message.author, xp=12, msg=message)
+
+        try:
+            channel = self.bot.server_config[message.guild.id]["leveling"]["channel"]
+        except KeyError:
+            return
+        else:
+            pass
+
+    async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
+        collection = self.bot.mongo.leveling[f"{member.guild.id}"]
+        data = await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": xp}})
+        level = int((data["xp"]//42) ** 0.55)
+        await self.__add_role__xp(msg.guild.id, level, msg)
+
+    async def __add_role__xp(self, guild_id: int, level: int, msg: discord.Message):
+        try:
+            ls = self.bot.server_config[guild_id]["leveling"]["reward"]
+        except KeyError:
+            return
+        
+        for reward in ls:
+            if reward['lvl'] <= level:
+                await self.__add_roles(msg.author, discord.Object(id=reward["role"]), reason=f"Level Up role! On reaching: {level}")
+
+    async def __add_roles(self, member, role: tp.Union[discord.Roles, discord.Object], reason: tp.Optional[str]=None):
+        try:
+            await member.add_roles(role, reason=reason)
+        except discord.Forbidden:
+            pass
+    
     async def _on_message_passive(self, message: discord.Message):
         if not message.guild:
             return

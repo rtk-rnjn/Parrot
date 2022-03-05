@@ -4,62 +4,54 @@ import requests
 from PIL import Image, ImageFont, ImageOps, ImageDraw
 from io import BytesIO
 import discord
+from utilities.converters import ToAsync
 
-from core import Parrot
 
+@ToAsync()
+def rank_card(
+    level: int, rank: int, member: discord.Member, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
+):
+    # create backdrop
 
-class Rankcard:
-    def __init__(self, bot: Parrot, *, member: discord.Member) -> None:
-        self.bot = bot
-        self.member = member
+    img = Image.new('RGB', (934, 282), color = custom_background)
 
-    def rank_card(
-        self, level: int, rank: int, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
-    ):
-        # create backdrop
-        print(0)
-        img = Image.new('RGB', (934, 282), color = custom_background)
-        print(1)
-        response = requests.get(self.member.display_avatar.url) # get avatar picture
-        print(2)
-        img_avatar = Image.open(BytesIO(response.content)).convert("RGBA")
-        print(3)
-        # create circle mask
-        bigsize = (img_avatar.size[0] * 3, img_avatar.size[1] * 3)
-        print(4)
-        mask = Image.new('L', bigsize, 0)
-        print(5)
-        draw = ImageDraw.Draw(mask)
-        print(6)
-        draw.ellipse((0, 0) + bigsize, fill=255)
-        mask = mask.resize(img_avatar.size)
-        img_avatar.putalpha(mask)
-        img_avatar = img_avatar.resize((170, 170))
-        print(7)
-        img.paste(img_avatar, (50, 50))
-        d = ImageDraw.Draw(img)
-        d = self.drawProgressBar(d, 260, 180, 575, 40, current_xp/next_level_xp, bg="#484B4E", fg = xp_color) # create progress bar
-        print(8)
-        font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=50)
-        font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)
+    response = requests.get(member.display_avatar.url) # get avatar picture
+    img_avatar = Image.open(BytesIO(response.content)).convert("RGBA")
 
-        d.text((260, 100), str(self.member), (255, 255, 255), font=font)
-        d.text((740, 130), f"{current_xp}/{next_level_xp} XP", (255, 255, 255), font=font2)
-        d.text((650, 50), f"LEVEL {level}", xp_color, font=font)
-        d.text((260, 50), f"RANK #{rank}", (255,255,255), font=font2)
+    # create circle mask
+    bigsize = (img_avatar.size[0] * 3, img_avatar.size[1] * 3)
+    mask = Image.new('L', bigsize, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + bigsize, fill=255)
+    mask = mask.resize(img_avatar.size)
+    img_avatar.putalpha(mask)
+    img_avatar = img_avatar.resize((170, 170))
+    img.paste(img_avatar, (50, 50))
+    d = ImageDraw.Draw(img)
+    
+    # create progress bar
+    x, y, w, h, = 260, 180, 575, 40
+    bg="#484B4E"
+    progress = current_xp/next_level_xp
+    d.ellipse((x+w, y, x+h+w, y+h), fill=bg)
+    d.ellipse((x, y, x+h, y+h), fill=bg)
+    d.rectangle((x+(h/2), y, x+w+(h/2), y+h), fill=bg)
 
-        return img
+    # draw progress bar
+    w *= progress
+    d.ellipse((x+w, y, x+h+w, y+h),fill=xp_color)
+    d.ellipse((x, y, x+h, y+h),fill=xp_color)
+    d.rectangle((x+(h/2), y, x+w+(h/2), y+h),fill=xp_color)
 
-    def drawProgressBar(self, d, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
-        # draw background
-        d.ellipse((x+w, y, x+h+w, y+h), fill=bg)
-        d.ellipse((x, y, x+h, y+h), fill=bg)
-        d.rectangle((x+(h/2), y, x+w+(h/2), y+h), fill=bg)
+    font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=40)
+    font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)
 
-        # draw progress bar
-        w *= progress
-        d.ellipse((x+w, y, x+h+w, y+h),fill=fg)
-        d.ellipse((x, y, x+h, y+h),fill=fg)
-        d.rectangle((x+(h/2), y, x+w+(h/2), y+h),fill=fg)
+    d.text((260, 100), member.name, (255, 255, 255), font=font)
+    d.text((740, 130), f"{current_xp}/{next_level_xp} XP", (255, 255, 255), font=font2)
+    d.text((650, 50), f"LEVEL {level}", xp_color, font=font)
+    d.text((260, 50), f"RANK #{rank}", (255,255,255), font=font2)
 
-        return d
+    bufferIO = BytesIO()
+    img.save(bufferIO, format="PNG")
+    bufferIO.seek(0)
+    return discord.File(bufferIO, filename="image.png")

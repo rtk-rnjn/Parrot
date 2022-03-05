@@ -498,3 +498,14 @@ class Utils(Cog):
     @reminder_task.before_loop
     async def before_reminder_task(self):
         await self.bot.wait_until_ready()
+
+
+    @commands.command(aliases=['level'])
+    async def rank(self, ctx: Context, *, member: discord.Member):
+        """To get the level of the user"""
+        try:
+            self.bot.server_config[ctx.guild.id]["leveling"]["enabled"]
+        except KeyError:
+            return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
+        else:
+            ...

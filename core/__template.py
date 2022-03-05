@@ -10,7 +10,15 @@ post = {
     "warn_count": 0,
     "suggestion_channel": None,
     "vc": None,
-    "leveling": [],
+    "leveling": {
+        "enable": False,
+        "channel": None,
+        "reward": [
+            # "role": ROLE_ID,
+            # "lvl": LEVEL
+        ],
+        "ignore_role": None
+    },
     "automod": {
         "spam": {
             "enable": False,

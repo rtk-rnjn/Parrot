@@ -37,7 +37,7 @@ from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client
 from utilities import log
-from .__template import post
+from .__template import post as POST
 
 from time import time
 
@@ -454,11 +454,12 @@ class Parrot(commands.AutoShardedBot):
             ):
                 prefix = data["prefix"]
                 post = data
+                self.server_config[message.guild.id] = post
             else:
-                post["_id"] = message.guild.id
+                POST["_id"] = message.guild.id
                 prefix = "$"  # default prefix
-                await collection.insert_one(post)
-            self.server_config[message.guild.id] = post
+                await collection.insert_one(POST)
+                self.server_config[message.guild.id] = POST
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
         if match is not None:

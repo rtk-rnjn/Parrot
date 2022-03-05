@@ -9,7 +9,7 @@ from utilities.converters import ToAsync
 
 @ToAsync()
 async def rank_card(
-    self, level: int, rank: int, member: discord.Member, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
+    level: int, rank: int, member: discord.Member, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
 ):
     # create backdrop
 
@@ -44,7 +44,7 @@ async def rank_card(
 
 
 @ToAsync()
-def drawProgressBar(self, d, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
+def drawProgressBar(d, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
     # draw background
     d.ellipse((x+w, y, x+h+w, y+h), fill=bg)
     d.ellipse((x, y, x+h, y+h), fill=bg)

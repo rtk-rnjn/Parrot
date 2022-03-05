@@ -58,9 +58,6 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 
-log.setup()
-logger = log.get_logger(__name__)
-
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -118,9 +115,8 @@ class Parrot(commands.AutoShardedBot):
         for ext in EXTENSIONS:
             try:
                 self.load_extension(ext)
-                logger.info(f"Successfully loaded {ext}")
             except Exception as e:
-                logger.exception("Something fucked up while adding {ext}. {e}")
+                raise
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -211,11 +207,11 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
-        logger.alert(f"[{self.user.name.title()}] Received a vote:\n{data}")
+        ...
 
     async def on_autopost_success(self) -> None:
         st = f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
-        logger.alert(st)
+        print(st)
 
     def run(self) -> None:
         """To run connect and login into discord"""
@@ -225,8 +221,8 @@ class Parrot(commands.AutoShardedBot):
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
-        logger.alert(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
-        logger.alert(
+        print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
+        print(
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__ }"
         )
 
@@ -234,15 +230,15 @@ class Parrot(commands.AutoShardedBot):
         self.afk = set(ls)
 
     async def on_connect(self) -> None:
-        logger.alert(f"[{self.user.name.title()}] Logged in")
+        print(f"[{self.user.name.title()}] Logged in")
         return
 
     async def on_disconnect(self) -> None:
-        logger.alert(f"[{self.user.name.title()}] disconnect from discord")
+        print(f"[{self.user.name.title()}] disconnect from discord")
         return
 
     async def on_shard_resumed(self, shard_id) -> None:
-        logger.alert(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
+        print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:
@@ -258,10 +254,10 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.is_ws_ratelimited():
-            logger.info(f"Can not process command of message {message}. Ratelimited")
+            print(f"Can not process command of message {message}. Ratelimited")
             return
         if not self.is_ready():
-            logger.info(f"Can not process command of message {message}. Bot isn't ready yet")
+            print(f"Can not process command of message {message}. Bot isn't ready yet")
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -271,7 +267,7 @@ class Parrot(commands.AutoShardedBot):
         if retry_after:
             self._auto_spam_count[author_id] += 1
             if self._auto_spam_count[author_id] >= 3:
-                logger.info(f"Stops the command process of message {message}. Spam")
+                print(f"Stops the command process of message {message}. Spam")
                 return
         else:
             self._auto_spam_count.pop(author_id, None)
@@ -286,7 +282,7 @@ class Parrot(commands.AutoShardedBot):
             else:
                 true = self.banned_users[ctx.author.id].get("command")
                 if true:
-                    logger.info(f"Stops the command process of message {message}. User banned")
+                    print(f"Stops the command process of message {message}. User banned")
                     return
 
             _true = await _can_run(ctx)
@@ -296,7 +292,6 @@ class Parrot(commands.AutoShardedBot):
                     f"**{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
-                logger.trace(f"Can not process command of message {message}. Command disabled")
                 return
 
         await self.invoke(ctx)
@@ -454,17 +449,14 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            logger.trace(f"Fetching prefix from database. Of message {message}")
             if data := await collection.find_one(
                 {"_id": message.guild.id}
             ):
                 prefix = data["prefix"]
                 post = data
-                logger.trace(f"Recieved payload: {data}")
             else:
                 post["_id"] = message.guild.id
                 prefix = "$"  # default prefix
-                logger.info(f"No record with {message.guild.id}. Inserting to database...")
                 await collection.insert_one(post)
             self.server_config[message.guild.id] = post
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
@@ -487,11 +479,9 @@ class Parrot(commands.AutoShardedBot):
         try:
             something = get_function(_id)
             if something is None:
-                logger.trace(f"Can not get '{_id}' from cache. Fetching...")
                 return await fetch_function(_id)
             return something
         except Exception as e:
-            logger.exception(f"Something fucked up while getting or fetching {_id}. {e}")
             return None
 
     @tasks.loop(count=1)

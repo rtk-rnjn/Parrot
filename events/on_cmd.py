@@ -20,7 +20,6 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 CHANNEL_TOKEN_2 = 924513442273054730
 TOKEN_2 = os.environ["CHANNEL_TOKEN2"]
 
-log = get_logger(__name__)
 
 
 class ErrorView(discord.ui.View):
@@ -299,10 +298,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             embed=ERROR_EMBED,
             view=ErrorView(ctx.author.id, ctx=ctx, error=error),
         )
-        log.exception(
-            f"Something fucked up while processing '{ctx.command.qualified_name}' in '#{ctx.channel.name}' '({ctx.channel.id})'. Error: {error}"
-        )
-
+        
 
 def setup(bot):
     bot.add_cog(Cmd(bot))

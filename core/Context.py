@@ -16,8 +16,6 @@ CONFIRM_REACTIONS = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
-logger = get_logger(__name__)
-
 
 class ConfirmationView(discord.ui.View):
     def __init__(
@@ -156,7 +154,7 @@ class Context(commands.Context):
                     "Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
-                logger.trace(f"Can not send the warning to the user. As DM(s) are closed")
+                pass
             return
 
         return await super().send(content, **kwargs)
@@ -172,7 +170,7 @@ class Context(commands.Context):
                     "Please give sufficient permissions to the bot."
                 )
             except discord.Forbidden as e:
-                logger.trace(f"Can not send the warning to the user. As DM(s) are closed")
+                pass
             return
         try:
             return await self.send(content, reference=self.message)

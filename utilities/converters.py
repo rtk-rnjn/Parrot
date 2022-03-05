@@ -13,7 +13,6 @@ from core import Context
 
 from .log import get_logger
 
-logger = get_logger(__name__)
 
 
 def convert_bool(text: Union[str, bool]) -> bool:
@@ -44,7 +43,6 @@ class ToAsync:
                 self.executor = ThreadPoolExecutor()
 
             func = partial(blocking, *args, **kwargs)
-            logger.trace(f"Running {blocking}. With Argument: {args} and Keyword Argument: {kwargs}")
 
             return await loop.run_in_executor(self.executor, func)
 

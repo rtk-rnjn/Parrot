@@ -8,8 +8,8 @@ from utilities.converters import ToAsync
 
 
 @ToAsync()
-def rank_card(
-    level: int, rank: int, member: discord.Member, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
+async def rank_card(
+    self, level: int, rank: int, member: discord.Member, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
 ):
     # create backdrop
 
@@ -28,21 +28,7 @@ def rank_card(
     img_avatar = img_avatar.resize((170, 170))
     img.paste(img_avatar, (50, 50))
     d = ImageDraw.Draw(img)
-    
-    # create progress bar
-    x, y, w, h, = 260, 180, 575, 40
-    bg="#484B4E"
-    progress = current_xp/next_level_xp
-    d.ellipse((x+w, y, x+h+w, y+h), fill=bg)
-    d.ellipse((x, y, x+h, y+h), fill=bg)
-    d.rectangle((x+(h/2), y, x+w+(h/2), y+h), fill=bg)
-
-    # draw progress bar
-    w *= progress
-    d.ellipse((x+w, y, x+h+w, y+h),fill=xp_color)
-    d.ellipse((x, y, x+h, y+h),fill=xp_color)
-    d.rectangle((x+(h/2), y, x+w+(h/2), y+h),fill=xp_color)
-
+    d = await drawProgressBar(d, 260, 180, 575, 40, current_xp/next_level_xp, bg="#484B4E", fg = xp_color) # create progress bar
     font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=40)
     font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)
 
@@ -55,3 +41,19 @@ def rank_card(
     img.save(bufferIO, format="PNG")
     bufferIO.seek(0)
     return discord.File(bufferIO, filename="image.png")
+
+
+@ToAsync()
+def drawProgressBar(self, d, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
+    # draw background
+    d.ellipse((x+w, y, x+h+w, y+h), fill=bg)
+    d.ellipse((x, y, x+h, y+h), fill=bg)
+    d.rectangle((x+(h/2), y, x+w+(h/2), y+h), fill=bg)
+
+    # draw progress bar
+    w *= progress
+    d.ellipse((x+w, y, x+h+w, y+h),fill=fg)
+    d.ellipse((x, y, x+h, y+h),fill=fg)
+    d.rectangle((x+(h/2), y, x+w+(h/2), y+h),fill=fg)
+
+    return d

@@ -79,24 +79,15 @@ async def _can_run(ctx):
     if ctx.guild is not None:
         roles = set(ctx.author.roles)
         collection = enable_disable[f"{ctx.guild.id}"]
-        if ctx.command:
-            if data := await collection.find_one({"_id": ctx.command.qualified_name}):
-                if ctx.channel.id in data["channel_in"]:
-                    return True
-                if any(role.id in data["role_in"] for role in roles):
-                    return True
-                if any(role.id in data["role_out"] for role in roles):
-                    return False
-                if ctx.channel.id in data["channel_out"]:
-                    return False
-                if data["server"]:
-                    return False
-                if not data["server"]:
-                    return True
-        if ctx.command.cog:
-            # Incase I made a command from jsk and its might be obv that cog is None
+        if ctx.command and ctx.command.cog:
             if data := await collection.find_one(
-                {"_id": ctx.command.cog.qualified_name}
+                {
+                    "$or": [
+                        {"_id": ctx.command.qualified_name},
+                        {"_id": ctx.command.cog.qualified_name},
+                        {"_id": "all"}
+                    ]
+                }
             ):
                 if ctx.channel.id in data["channel_in"]:
                     return True
@@ -110,19 +101,6 @@ async def _can_run(ctx):
                     return False
                 if not data["server"]:
                     return True
-        if data := await collection.find_one({"_id": "all"}):
-            if ctx.channel.id in data["channel_in"]:
-                return True
-            if any(role.id in data["role_in"] for role in roles):
-                return True
-            if any(role.id in data["role_out"] for role in roles):
-                return False
-            if ctx.channel.id in data["channel_out"]:
-                return False
-            if data["server"]:
-                return False
-            if not data["server"]:
-                return True
         return True
     return False
 

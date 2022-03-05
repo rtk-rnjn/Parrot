@@ -5,6 +5,7 @@ from typing import Optional, Union
 
 from datetime import datetime
 from tabulate import tabulate
+from pymongo import ReturnDocument
 
 from utilities.database import warn_db, parrot_db
 
@@ -12,15 +13,10 @@ collection_config = parrot_db["server_config"]
 
 
 async def get_warn_count(guild: discord.Guild) -> Optional[int]:
-    if data := await collection_config.find_one(
-        {"_id": guild.id, "warn_count": {"$exists": True}}
-    ):
-        await collection_config.update_one(
-            {"_id": guild.id}, {"$inc": {"warn_count": 1}}
-        )
-        return data["warn_count"]
-    await collection_config.update_one({"_id": guild.id}, {"$set": {"warn_count": 1}})
-    return 1
+    data = await collection_config.find_one_and_update(
+        {"_id": guild.id}, {"$inc": {"warn_count": 1}}, upsert=True, return_document=ReturnDocument.AFTER
+    )
+    return data["warn_count"]
 
 
 async def warn(

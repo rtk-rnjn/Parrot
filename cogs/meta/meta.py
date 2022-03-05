@@ -958,7 +958,7 @@ class Meta(Cog):
         await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type

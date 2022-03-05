@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 
 import requests
 import os
@@ -6,18 +6,17 @@ from PIL import Image, ImageFont, ImageOps, ImageDraw
 from io import BytesIO
 import discord
 
-
 from core import Parrot
 
 
 class Rankcard:
-    def __init__(self, bot: Parrot, *, member: discord.Member):
+    def __init__(self, bot: Parrot, *, member: discord.Member) -> None:
         self.bot = bot
         self.member = member
 
     def rank_card(
         self, level: int, rank: int, *, current_xp: int, custom_background: str, xp_color: str, next_level_xp: int
-    ):
+    ) -> str:
         
         # create backdrop
         img = Image.new('RGB', (934, 282), color = custom_background) 
@@ -43,11 +42,11 @@ class Rankcard:
 
 
 
-        font = ImageFont.truetype(font=r"extra/fonts/regular.ttf", size=50)
-        font2 = ImageFont.truetype(font=r"extra/fonts/regular.ttf", size=25)
+        font = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=50)
+        font2 = ImageFont.truetype(font=r"extra/fonts/Montserrat-Regular.ttf", size=25)
 
         # add text
-        d.text((260, 100), self.member.name, (255, 255, 255), font=font)
+        d.text((260, 100), str(self.member), (255, 255, 255), font=font)
         d.text((740, 130), f"{current_xp}/{next_level_xp} XP", (255, 255, 255), font=font2)
         d.text((650, 50), f"LEVEL {level}", xp_color, font=font)
         d.text((260, 50), f"RANK #{rank}", (255,255,255), font=font2)
@@ -57,7 +56,7 @@ class Rankcard:
         loc = f"temp/{self.member.id}.jpg"
         img.save(loc)
         return loc
-    
+
     def drawProgressBar(self, d: ImageDraw, x, y, w, h, progress, bg="black", fg="red") -> ImageDraw:
         # draw background
         d.ellipse((x+w, y, x+h+w, y+h), fill=bg)

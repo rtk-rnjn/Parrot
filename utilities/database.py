@@ -21,24 +21,8 @@ warn_db = cluster["warn_db"]
 
 async def cmd_increment(cmd: str) -> None:
     collection = parrot_db["cmd_count"]
-
-    if _ := await collection.find_one({"_id": cmd}):
-        await collection.update_one({"_id": cmd}, {"$inc": {"count": 1}})
-        logger.trace(f"Update 'parrot_db.cmd_count'. Increased 'count' by 1 to '_id': '{cmd}'")
-    else:
-        await collection.insert_one({"_id": cmd, "count": 1})
-        logger.trace(f"Insert 'parrot_db.cmd_count'. Set 'count' to 1 to '_id': '{cmd}'")
-
-
-async def gchat_update(guild_id: int, post: dict) -> None:
-    collection = parrot_db["global_chat"]
-
-    if _ := await collection.find_one({"_id": guild_id}):
-        await collection.update_one({"_id": guild_id}, {"$set": post})
-        logger.trace(f"Update 'parrot_db.global_chat'. Set '{post}' to '_id': '{guild_id}'")
-    else:
-        await collection.insert_one({"_id": guild_id, **post})
-        logger.trace(f"Insert 'parrot_db.global_chat'. Set '{post}' to '_id': '{guild_id}'")
+    await collection.update_one({"_id": cmd}, {"$inc": {"count": 1}}, upsert=True)
+    logger.trace(f"Update 'parrot_db.cmd_count'. Increased 'count' by 1 to '_id': '{cmd}'")
 
 
 async def telephone_update(guild_id: int, event: str, value) -> None:
@@ -81,25 +65,6 @@ async def ticket_update(guild_id: int, post: dict):
 
     await collection.update_one({"_id": guild_id}, {"$set": post})
     logger.trace(f"Insert 'parrot_db.ticket'. Set '{post}' to '_id': '{guild_id}'")
-
-
-async def guild_update(guild_id: int, post: dict):
-    collection = parrot_db["server_config"]
-    data = await collection.find_one({"_id": guild_id})
-    if not data:
-        await collection.insert_one(
-            {
-                "_id": guild_id,
-                "prefix": "$",
-                "mod_role": None,
-                "action_log": None,
-                "mute_role": None,
-                "warn_count": 0,
-            }
-        )
-
-    await collection.update_one({"_id": guild_id}, {"$set": post})
-    logger.trace(f"Insert 'parrot_db.server_config'. Set '{post}' to '_id': '{guild_id}'")
 
 
 async def guild_join(guild_id: int):

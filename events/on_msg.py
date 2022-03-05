@@ -357,7 +357,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = io.BytesIO("NOTHING HERE".ecnode())
+                    fp = io.BytesIO("NOTHING HERE".encode())
                 await webhook.send(
                     content=content,
                     avatar_url=self.bot.user.avatar.url,
@@ -510,8 +510,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         return
                     content = msg.content
                 else:
-                    message_author = None
-                    content = None
+                    return
 
                 main_content = f"""**Message Delete Event**
 
@@ -525,7 +524,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = io.BytesIO("NOTHING HERE".ecnode())
+                    fp = io.BytesIO("NOTHING HERE".encode())
                 await webhook.send(
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
@@ -665,7 +664,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = io.BytesIO("NOTHING HERE".ecnode())
+                    fp = io.BytesIO("NOTHING HERE".encode())
                 await webhook.send(
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,

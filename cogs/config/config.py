@@ -12,14 +12,12 @@ import json
 
 from core import Parrot, Context, Cog
 
-from utilities.database import guild_update, gchat_update, parrot_db, telephone_update
+from utilities.database import parrot_db, telephone_update
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime
 
 from .flags import AutoWarn, warnConfig
-
-from pymongo.errors import DuplicateKeyError as DPError
 
 
 with open(r"cogs/config/events.json") as f:
@@ -37,12 +35,6 @@ class BotConfig(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def log_in(self, guild: int):
-        try:
-            await logs.insert_one({"_id": guild})
-        except DPError:
-            pass
-
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{GEAR}")
@@ -54,10 +46,8 @@ class BotConfig(Cog):
     @Context.with_type
     async def config(self, ctx: Context):
         """To config the bot, mod role, prefix, or you can disable the commands and cogs."""
-        data = await csc.find_one({"_id": ctx.guild.id})
         if not ctx.invoked_subcommand:
-            data = await csc.find_one({"_id": ctx.guild.id})
-            if data:
+            if data := await csc.find_one({"_id": ctx.guild.id}):
                 role = ctx.guild.get_role(data.get("mod_role"))
                 mod_log = ctx.guild.get_channel(data.get("action_log"))
                 await ctx.reply(
@@ -76,7 +66,6 @@ class BotConfig(Cog):
         self, ctx: Context, event: str, *, channel: discord.TextChannel = None
     ):
         """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
-        await self.log_in(ctx.guild.id)
         channel = channel or ctx.channel
         if event not in events:
             return await ctx.reply(
@@ -88,7 +77,7 @@ class BotConfig(Cog):
                 if hook.user.id == self.bot.user.id:  # bot created that
                     webhook = hook
                     post = {str(event): str(webhook.url)}
-                    await logs.update_one({"_id": ctx.guild.id}, {"$set": post})
+                    await logs.update_one({"_id": ctx.guild.id}, {"$set": post}, upsert=True)
                     break
             else:
                 return await ctx.reply(
@@ -100,7 +89,7 @@ class BotConfig(Cog):
                 reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
             )
             await logs.update_one(
-                {"_id": ctx.guild.id}, {"$set": {str(event): str(webhook.url)}}
+                {"_id": ctx.guild.id}, {"$set": {str(event): str(webhook.url)}}, upsert=True
             )
         await ctx.reply(
             f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}"
@@ -116,7 +105,7 @@ class BotConfig(Cog):
                 f"{ctx.author.mention} length of prefix can not be more than 6 characters."
             )
         post = {"prefix": arg}
-        await guild_update(ctx.guild.id, post)
+        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
 
         await ctx.reply(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
@@ -193,7 +182,7 @@ class BotConfig(Cog):
     async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """To set the mute role of the server. By default role with name `Muted` is consider as mute role."""
         post = {"mute_role": role.id if role else None}
-        await guild_update(ctx.guild.id, post)
+        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
             return await ctx.reply(
                 f"{ctx.author.mention} mute role reseted! or removed"
@@ -208,7 +197,7 @@ class BotConfig(Cog):
     async def modrole(self, ctx: Context, *, role: discord.Role = None):
         """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission"""
         post = {"mod_role": role.id if role else None}
-        await guild_update(ctx.guild.id, post)
+        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
             return await ctx.reply(f"{ctx.author.mention} mod role reseted! or removed")
         await ctx.reply(
@@ -221,7 +210,7 @@ class BotConfig(Cog):
     async def actionlog(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To set the action log, basically the mod log."""
         post = {"action_log": channel.id if channel else None}
-        await guild_update(ctx.guild.id, post)
+        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not channel:
             return await ctx.reply(
                 f"{ctx.author.mention} action log reseted! or removed"
@@ -244,7 +233,7 @@ class BotConfig(Cog):
         role: typing.Optional[discord.Role] = None,
     ):
         """This command will connect your server with other servers which then connected to #global-chat must try this once"""
-        c = parrot_db["global_chat"]
+        c = self.bot.mongo.parrot_db.global_chat
         if not setting:
 
             overwrites = {
@@ -264,25 +253,15 @@ class BotConfig(Cog):
                 name="GlobalChat",
                 reason=f"Action requested by {ctx.author.name} ({ctx.author.id})",
             )
-            if data := await c.find_one({"_id": ctx.guild.id}):
-                await c.update_one(
-                    {"_id": ctx.guild.id},
-                    {"$set": {"channel_id": channel.id, "webhook": webhook.url}},
-                )
-            else:
-                await c.insert_one(
-                    {
-                        "_id": ctx.guild.id,
-                        "channel_id": channel.id,
-                        "webhook": webhook.url,
-                        "ignore-role": None,
-                    }
-                )
-            await ctx.reply(f"{channel.mention} created successfully.")
+            await c.update_one(
+                {"_id": ctx.guild.id},
+                {"$set": {"channel_id": channel.id, "webhook": webhook.url}},
+                upsert=True
+            )
             return
         if setting.lower() in ("ignore-role", "ignore_role", "ignorerole", "ignore"):
             post = {"ignore-role": role.id if role else None}
-            await gchat_update(ctx.guild.id, post)
+            await self.bot.mongo.parrot_db.global_chat.update_one({"_id": ctx.guild.id}, {"$set": post}, upsert=True)
             if not role:
                 return await ctx.reply(
                     f"{ctx.author.mention} ignore role reseted! or removed"
@@ -302,7 +281,7 @@ class BotConfig(Cog):
         )
         if channel:
             await ctx.reply(
-                f"{ctx.author.mention} counting channel for the server is set to **{channel.name}**"
+                f"{ctx.author.mention} counting channel for the server is set to **{channel.mention} ({channel.id})**"
             )
         else:
             await ctx.reply(
@@ -978,14 +957,12 @@ class BotConfig(Cog):
     async def autowarn(self, ctx: Context, action: str, *, flags: AutoWarn):
         """Autowarn management of the server"""
         PUNISH = [
-            "timeout",
-            "tempmute",
-            "mute",
-            "softban",
             "ban",
+            "tempban",
             "kick",
-            "removerole",
-            "addrole",
+            "timeout",
+            "mute",
+            "block",
         ]
         ACTIONS = ["antilinks", "profanity", "spam", "emoji", "caps"]
 
@@ -995,11 +972,11 @@ class BotConfig(Cog):
             )
             return
         data = {
-            "enabled": flags.enable,
-            "count": flags.count,  # NOTE: its just count
+            "enable": flags.enable,
+            "count": flags.count,
             "to_delete": flags.delete,
             "punish": {
-                "type": flags.punish if flags.punish in PUNISH else None,
+                "type": flags.punish.lower() if flags.punish.lower() in PUNISH else None,
                 "duration": flags.duration
                 if flags.punish not in ("kick", "addrole", "removerole")
                 else None,

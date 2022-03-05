@@ -37,6 +37,7 @@ from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client
 from utilities import log
+from .__template import post
 
 from time import time
 
@@ -461,13 +462,7 @@ class Parrot(commands.AutoShardedBot):
                 post = data
                 logger.trace(f"Recieved payload: {data}")
             else:
-                post = {
-                    "_id": message.guild.id,
-                    "prefix": "$",     # to make entry
-                    "mod_role": None,  # in database
-                    "action_log": None,
-                    "mute_role": None,
-                }
+                post["_id"] = message.guild.id
                 prefix = "$"  # default prefix
                 logger.info(f"No record with {message.guild.id}. Inserting to database...")
                 await collection.insert_one(post)

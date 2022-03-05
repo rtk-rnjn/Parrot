@@ -105,7 +105,7 @@ class BotConfig(Cog):
                 f"{ctx.author.mention} length of prefix can not be more than 6 characters."
             )
         post = {"prefix": arg}
-        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
 
         await ctx.reply(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
@@ -182,7 +182,7 @@ class BotConfig(Cog):
     async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """To set the mute role of the server. By default role with name `Muted` is consider as mute role."""
         post = {"mute_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
             return await ctx.reply(
                 f"{ctx.author.mention} mute role reseted! or removed"
@@ -197,7 +197,7 @@ class BotConfig(Cog):
     async def modrole(self, ctx: Context, *, role: discord.Role = None):
         """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission"""
         post = {"mod_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
             return await ctx.reply(f"{ctx.author.mention} mod role reseted! or removed")
         await ctx.reply(
@@ -210,7 +210,7 @@ class BotConfig(Cog):
     async def actionlog(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To set the action log, basically the mod log."""
         post = {"action_log": channel.id if channel else None}
-        await self.bot.mongo.parrot_db.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not channel:
             return await ctx.reply(
                 f"{ctx.author.mention} action log reseted! or removed"

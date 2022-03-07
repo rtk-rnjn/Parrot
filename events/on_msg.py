@@ -110,7 +110,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         ]
         self.message_append = []
         self.message_cooldown = commands.CooldownMapping.from_cooldown(
-            1, 10, commands.BucketType.member, 
+            1, 60, commands.BucketType.member, 
         )
         self.on_bulk_task.start()
         self.LOCK = asyncio.Lock()

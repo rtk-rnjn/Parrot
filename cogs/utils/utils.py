@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Optional, Tuple
 from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
@@ -14,6 +15,8 @@ from utilities.database import parrot_db, todo
 from utilities.time import ShortTime
 from utilities.converters import convert_bool
 from utilities.rankcard import rank_card
+
+from pymongo import ReturnDocument
 
 afk = parrot_db["afk"]
 
@@ -512,14 +515,30 @@ class Utils(Cog):
             return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
         else:
             collection = self.bot.mongo.leveling[f"{member.guild.id}"]
-            data = await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": 0}}, upsert=True)
-            level = int((data["xp"]//42) ** 0.55)
-            xp = self.__get_required_xp(level + 1)
-            file = await rank_card(
-                level, 1, member, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
-            )
-            await ctx.reply(file=file)
-    
+            if data := await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": 0}}, upsert=True, return_document=ReturnDocument.AFTER):
+                level = int((data["xp"]//42) ** 0.55)
+                xp = self.__get_required_xp(level + 1)
+                cur = collection.aggregate([{"$sort": {"xp": 1}}])
+                rank = await self.__get_rank(cur=cur, member=ctx.author)
+                file = await rank_card(
+                    level, rank, member, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
+                )
+                await ctx.reply(file=file)
+                return
+            if ctx.author.id == member.author.id:
+                return await ctx.reply(f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages")
+            return await ctx.reply(f"{ctx.author.mention} **{member}** don't have any xp yet.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def lb(self, ctx: Context, *, limit: Optional[int]=None):
+        """To display the Leaderboard"""
+        limit = limit or 10
+        collection = self.bot.mongo.leveling[f"{ctx.guild.id}"]
+        entries = await self.__get_entries(collection=collection, limit=limit, guild=ctx.guild)
+        pages = SimplePages(entries, ctx=ctx, per_page=10)
+        await pages.start()
+
     def __get_required_xp(self, level: int) -> int:
         xp = 0
         while True:
@@ -527,3 +546,19 @@ class Utils(Cog):
             lvl = int((xp//42)**0.55)
             if lvl == level:
                 return int(xp)
+    
+    async def __get_rank(self, *, cur, member: discord.Member):
+        countr = 0
+
+        # you can't use `enumerate`
+        async for data in cur:
+            countr += 1
+            if data['_id'] == member.id:
+                return countr
+
+    async def __get_entries(self, *, collection, limit: int, guild: discord.Guild):
+        ls = []
+        async for data in collection.find({}, limit=limit):
+            if member := await self.bot.get_or_fetch_member(guild, data['_id']):
+                ls.append(f"{member} (`{member.id}`)")
+        return ls

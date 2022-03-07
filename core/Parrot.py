@@ -108,7 +108,7 @@ class Parrot(commands.AutoShardedBot):
         self.mongo = cluster
 
         # caching variables
-        self.server_config = LRU(64)
+        self.server_config = LRU(128)
         self.message_cache: Dict[int, Any] = {}
         self.banned_users: Dict[int, Any] = {}
         self.afk = set()

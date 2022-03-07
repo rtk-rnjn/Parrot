@@ -512,7 +512,7 @@ class Utils(Cog):
             return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
         else:
             collection = self.bot.mongo.leveling[f"{member.guild.id}"]
-            data = await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": 12}}, upsert=True)
+            data = await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": 0}}, upsert=True)
             level = int((data["xp"]//42) ** 0.55)
             xp = self.__get_required_xp(level + 1)
             file = await rank_card(

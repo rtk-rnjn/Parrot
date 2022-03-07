@@ -558,7 +558,7 @@ class Utils(Cog):
 
     async def __get_entries(self, *, collection, limit: int, guild: discord.Guild):
         ls = []
-        async for data in collection.find({}, limit=limit):
+        async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
             if member := await self.bot.get_or_fetch_member(guild, data['_id']):
                 ls.append(f"{member} (`{member.id}`)")
         return ls

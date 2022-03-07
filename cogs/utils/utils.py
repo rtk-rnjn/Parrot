@@ -518,8 +518,7 @@ class Utils(Cog):
             if data := await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": 0}}, upsert=True, return_document=ReturnDocument.AFTER):
                 level = int((data["xp"]//42) ** 0.55)
                 xp = self.__get_required_xp(level + 1)
-                cur = collection.aggregate([{"$sort": {"xp": -1}}])
-                rank = await self.__get_rank(cur=cur, member=ctx.author)
+                rank = await self.__get_rank(collection=collection, member=ctx.author)
                 file = await rank_card(
                     level, rank, member, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
                 )
@@ -547,11 +546,11 @@ class Utils(Cog):
             if lvl == level:
                 return int(xp)
     
-    async def __get_rank(self, *, cur, member: discord.Member):
+    async def __get_rank(self, *, collection, member: discord.Member):
         countr = 0
 
         # you can't use `enumerate`
-        async for data in cur:
+        async for data in collection.find({}, sort=[("xp", -1)]):
             countr += 1
             if data['_id'] == member.id:
                 return countr

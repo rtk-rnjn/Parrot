@@ -1,4 +1,4 @@
-git+https://github.com/Pycord-Development/pycord
+https://github.com/Rapptz/discord.py
 aiohttp
 markdownify
 psutil

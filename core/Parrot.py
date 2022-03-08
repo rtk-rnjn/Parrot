@@ -41,7 +41,8 @@ from .__template import post as POST
 
 from time import time
 
-from .Context import Context
+if TYPE_CHECKING:
+    from .Context import Context
 
 collection = parrot_db["server_config"]
 collection_ban = parrot_db["banned_users"]
@@ -53,6 +54,7 @@ os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 
 dbl_token = os.environ["TOPGG"]
 

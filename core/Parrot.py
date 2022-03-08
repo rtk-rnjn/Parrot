@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 import os
-from typing import TYPE_CHECKING, Any, Callable, Optional, Dict, Union, List, cast
+from typing import Any, Callable, Optional, Dict, Union, List, cast
 from async_property import async_property
 import jishaku
 import datetime
@@ -43,8 +43,7 @@ from .__template import post as POST
 
 from time import time
 
-if TYPE_CHECKING:
-    from .Context import Context
+from .Context import Context
 
 collection = parrot_db["server_config"]
 collection_ban = parrot_db["banned_users"]

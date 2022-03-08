@@ -291,9 +291,17 @@ class BotConfig(Cog):
     @config.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling(self, ctx: Context,):
+    async def leveling(self, ctx: Context, toggle: convert_bool=True):
         """To configure leveling"""
-        await self.bot.invoke_help_command(ctx)
+        if not ctx.ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+            return
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"leveling.enable": not toggle}}
+        )
+        await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
+        return
 
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
@@ -394,11 +402,14 @@ class BotConfig(Cog):
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @automod.command()
+    @automod.group(name='spam', invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def antispam(self, ctx: Context, to_enable: convert_bool):
+    async def automod_spam(self, ctx: Context, to_enable: convert_bool):
         """To toggle the spam protection in the server"""
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
+            return 
         await csc.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
         )
@@ -408,10 +419,10 @@ class BotConfig(Cog):
             "Bot will be issuing warning if someone exceeds the limit."
         )
 
-    @automod.command()
+    @automod_spam.command(name='ignore')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def spamignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def spam_ignore(self, ctx: Context, *, channel: discord.TextChannel):
         """To whitelist the spam channel. Pass None to delete the setting"""
         await csc.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.spam.channel": channel.id}}
@@ -420,10 +431,10 @@ class BotConfig(Cog):
             f"{ctx.author.mention} spam protection won't be working in **{channel.name}**"
         )
 
-    @automod.command()
+    @automod_spam.command(name='remove')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def spamremove(self, ctx: Context, *, channel: discord.TextChannel):
+    async def spam_remove(self, ctx: Context, *, channel: discord.TextChannel):
         """To whitelist the spam channel. Pass None to delete the setting"""
         await csc.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.spam.channel": channel.id}}
@@ -432,10 +443,10 @@ class BotConfig(Cog):
             f"{ctx.author.mention} spam protection will be working in **{channel.name}**"
         )
 
-    @automod.command()
+    @automod.group(name='links')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def antilinks(self, ctx: Context, *, to_enable: convert_bool):
+    async def automod_links(self, ctx: Context, *, to_enable: convert_bool):
         """To toggle the invite protection in the server"""
         await csc.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.antilinks.enable": to_enable}}
@@ -444,10 +455,10 @@ class BotConfig(Cog):
             f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**"
         )
 
-    @automod.command()
+    @automod_links.command(name='ignore')
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def antilinksignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def antilinks_ignore(self, ctx: Context, *, channel: discord.TextChannel):
         """To whitelist the channel from anti links protection"""
         await csc.update_one(
             {"_id": ctx.guild.id},
@@ -457,7 +468,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection"
         )
 
-    @automod.command()
+    @automod_links.command(name='remove')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def antilinksremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -469,7 +480,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection"
         )
 
-    @automod.command()
+    @automod_links.command(name='whitelist')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def whitelistlink(self, ctx: Context, *, link: str):
@@ -485,7 +496,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} **<{link}>** added for the whitelist link"
         )
 
-    @automod.command()
+    @automod_links.command(name='blacklist')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def blacklistlink(self, ctx: Context, *, link: str):
@@ -497,28 +508,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} **<{link}>** removed for the whitelist link"
         )
 
-    @automod.command()
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def profanityadd(self, ctx: Context, *, word: str):
-        """To add profanity words. Can also work for regex. May take 1h to update"""
-        await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$addToSet": {"automod.profanity.words": word.lower()}},
-        )
-        await ctx.reply(f"{ctx.author.mention} **||{word}||** added in the list")
-
-    @automod.command()
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def profanitydel(self, ctx: Context, *, word: str):
-        """To remove profanity word from list. Can also work for regex"""
-        await csc.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"automod.profanity.words": word.lower()}}
-        )
-        await ctx.reply(f"{ctx.author.mention} **||{word}||** removed from the list")
-
-    @automod.command()
+    @automod.group(name='profanity', invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanity(self, ctx: Context, *, to_enable: convert_bool):
@@ -530,7 +520,28 @@ class BotConfig(Cog):
             f"{ctx.author.mention} profanity system in this server is set to **{to_enable}**"
         )
 
-    @automod.command()
+    @profanity.command(name='add')
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def profanityadd(self, ctx: Context, *, word: str):
+        """To add profanity words. Can also work for regex. May take 1h to update"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"automod.profanity.words": word.lower()}},
+        )
+        await ctx.reply(f"{ctx.author.mention} **||{word}||** added in the list")
+
+    @profanity.command(name='del', aliases=['delete'])
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def profanitydel(self, ctx: Context, *, word: str):
+        """To remove profanity word from list. Can also work for regex"""
+        await csc.update_one(
+            {"_id": ctx.guild.id}, {"$pull": {"automod.profanity.words": word.lower()}}
+        )
+        await ctx.reply(f"{ctx.author.mention} **||{word}||** removed from the list")
+
+    @profanity.command(name='ignore')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -543,7 +554,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for profanity protection"
         )
 
-    @automod.command()
+    @profanity.command(name='remove')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -555,7 +566,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for profanity protection"
         )
 
-    @automod.command()
+    @automod.group(name='caps', invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capsprotection(self, ctx: Context, *, to_enable: convert_bool):
@@ -567,7 +578,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} caps protection for this server is set to **{to_enable}**"
         )
 
-    @automod.command()
+    @capsprotection.command(name='limit')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capslimit(self, ctx: Context, *, limit: int):
@@ -580,7 +591,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} caps protection limit for this server is set to **{limit}**"
         )
 
-    @automod.command()
+    @capsprotection.command(name='ignore')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capsignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -592,7 +603,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for caps protection"
         )
 
-    @automod.command()
+    @capsprotection.command(name='remove')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capsremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -604,7 +615,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for caps protection"
         )
 
-    @automod.command()
+    @automod.group(name='emoji', invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojiprotection(self, ctx: Context, *, to_enable: convert_bool):
@@ -616,7 +627,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} emoji protection for this server is set to **{to_enable}**"
         )
 
-    @automod.command()
+    @emojiprotection.command(name='limit')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojilimit(self, ctx: Context, *, limit: int):
@@ -629,7 +640,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} emoji protection limit for this server is set to **{limit}**"
         )
 
-    @automod.command()
+    @emojiprotection.command(name='ignore')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojiignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -641,7 +652,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for emoji protection"
         )
 
-    @automod.command()
+    @emojiprotection.command(name='remove')
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojiremove(self, ctx: Context, *, channel: discord.TextChannel):

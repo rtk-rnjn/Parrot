@@ -29,7 +29,7 @@ ctt = parrot_db["ticket"]
 logs = parrot_db["logging"]
 
 
-class BotConfig(Cog):
+class Config(Cog):
     """To config the bot. In the server"""
 
     def __init__(self, bot: Parrot):
@@ -409,7 +409,7 @@ class BotConfig(Cog):
         """To toggle the spam protection in the server"""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
-            return 
+            return
         await csc.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
         )
@@ -664,10 +664,10 @@ class BotConfig(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for emoji protection"
         )
 
-    @commands.group(aliases=["telconfig"], invoke_without_command=True)
+    @config.group(aliases=["tel"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def telsetup(self, ctx: Context):
+    async def telephone(self, ctx: Context):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
         data = await ct.find_one({"_id": ctx.guild.id})
         if not data:
@@ -707,7 +707,7 @@ class BotConfig(Cog):
                     f"`Blocked   :` **{', '.join(data['blocked']) or None}**"
                 )
 
-    @telsetup.command(name="channel")
+    @telephone.command(name="channel")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_channel(
@@ -723,7 +723,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} success! **#{channel.name}** is now added to global telephone line."
         )
 
-    @telsetup.command(name="pingrole")
+    @telephone.command(name="pingrole")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_pingrole(self, ctx: Context, *, role: discord.Role = None):
@@ -737,7 +737,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} success! **@{role.name}** will be now pinged when someone calls your server."
         )
 
-    @telsetup.command(name="memberping")
+    @telephone.command(name="memberping")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_memberping(
@@ -755,7 +755,7 @@ class BotConfig(Cog):
             f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."
         )
 
-    @telsetup.command(name="block")
+    @telephone.command(name="block")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_block(self, ctx: Context, *, server: discord.Guild):
@@ -768,7 +768,7 @@ class BotConfig(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} success! blocked: **{server.name}**")
 
-    @telsetup.command(name="unblock")
+    @telephone.command(name="unblock")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_unblock(self, ctx: Context, *, server: discord.Guild):
@@ -946,7 +946,7 @@ class BotConfig(Cog):
         """This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""
         await mt._delpingedrole(ctx, role)
 
-    @commands.group(aliases=["cmdc", "configcmd"])
+    @config.group(name='command', aliases=["cmd",])
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def cmdconfig(self, ctx: Context):

@@ -114,6 +114,38 @@ class Config(Cog):
     @config.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
+    async def suggestchannel(self, ctx: Context, *, channel: discord.TextChannel=None):
+        """To configure the suggestion channel. If no channel is provided it will remove the channel"""
+        if channel:
+            await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}})
+            await ctx.reply(
+                f"{ctx.author.mention} set suggestion channel to {channel.mention}"
+            )
+            return
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}})
+        await ctx.reply(
+            f"{ctx.author.mention} removed suggestion channel"
+        )
+
+    @config.command(name='24/7', aliases=['vc247', '247vc'])
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def vc_247(self, ctx: Context, *, channel: typing.Optional[discord.VoiceChannel]=None):
+        """To set 24/7 VC"""
+        if channel:
+            await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"vc": channel.id}})
+            await ctx.reply(
+                f"{ctx.author.mention} set 24/7 vc channel to **{channel.name}**"
+            )
+            return
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"vc": None}})
+        await ctx.reply(
+            f"{ctx.author.mention} removed vc channel"
+        )
+
+    @config.command()
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
     async def warnadd(
         self, ctx: Context, count: int, action: str, duration: str = None
     ):

@@ -389,7 +389,7 @@ class Easter(Cog):
 
         del self.quiz_messages[msg.id]
 
-        msg = await self.bot.fetch_message_by_channel(msg.channel, msg.id)
+        msg = await self.bot.get_or_fetch_message(msg.channel, msg.id)
 
         total_no = sum([len(await r.users().flatten()) for r in msg.reactions]) - len(
             valid_emojis

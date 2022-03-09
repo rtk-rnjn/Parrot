@@ -54,7 +54,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         emoji = payload.emoji.name
 
         if message_id == data["message_id"] and channel_id == data["channel_id"]:
-            message = await self.bot.fetch_message_by_channel(channel, message_id)
+            message = await self.bot.get_or_fetch_message(channel, message_id)
         else:
             return
         if (message is not None) and (emoji == "\N{ENVELOPE}"):

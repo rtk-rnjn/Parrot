@@ -60,7 +60,7 @@ async def get_message(
     # message is None, means we have to fetch
 
     try:
-        return bot.fetch_message_by_channel(interaction.message.channel, ref.message_id)
+        return bot.get_or_fetch_message(interaction.message.channel, ref.message_id)
     except discord.errors.NotFound:
         # message deleted
         return None

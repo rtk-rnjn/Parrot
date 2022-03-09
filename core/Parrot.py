@@ -231,6 +231,13 @@ class Parrot(commands.AutoShardedBot):
 
         ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)
+        VCS = await self.mongo.parrot_db.server_config.distinct("vc")
+        for channel in VCS:
+            if channel:
+                try:
+                    await channel.connect()
+                except discord.ClientException:
+                    pass
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")
@@ -417,7 +424,7 @@ class Parrot(commands.AutoShardedBot):
             return None
         return members[0]
 
-    async def fetch_message_by_channel(
+    async def get_or_fetch_message(
         self, channel: discord.TextChannel, messageID: int
     ) -> Optional[discord.Message]:
         """|coro|
@@ -426,13 +433,13 @@ class Parrot(commands.AutoShardedBot):
 
         Parameters
         -----------
-        channel: Channel
+        channel: discord.TextChannel
             The channel to look in.
         messageID: int
             The message ID to search for.
         Returns
         ---------
-        Optional[Message]
+        Optional[discord.Message]
             The Message or None if not found.
         """
         try:

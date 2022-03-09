@@ -592,7 +592,7 @@ class Utils(Cog):
     
     async def __fetch_suggestion_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
         try:
-            ch_id: Optional[int] = self.bot.server_config[f"{guild.id}"]["suggestion_channel"]
+            ch_id: Optional[int] = self.bot.server_config[guild.id]["suggestion_channel"]
         except KeyError:
             raise commands.BadArgument(f"No suggestion channel is setup")
         else:

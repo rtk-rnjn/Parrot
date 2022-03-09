@@ -29,7 +29,7 @@ ctt = parrot_db["ticket"]
 logs = parrot_db["logging"]
 
 
-class Config(Cog):
+class Configuration(Cog):
     """To config the bot. In the server"""
 
     def __init__(self, bot: Parrot):
@@ -137,6 +137,10 @@ class Config(Cog):
             await ctx.reply(
                 f"{ctx.author.mention} set 24/7 vc channel to **{channel.name}**"
             )
+            try:
+                await channel.connect()
+            except Exception as e:
+                await ctx.send(f"{ctx.author.mention} something wrong: **{e}**")
             return
         await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"vc": None}})
         await ctx.reply(

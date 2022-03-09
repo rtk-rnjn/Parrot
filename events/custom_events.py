@@ -20,14 +20,14 @@ class EventCustom(Cog):
         if kw.get("mod_action"):
             return await self.mod_action_parser(**kw.get("mod_action"))
 
-        embed = discord.Embed.from_dict(kw.get("embed") or {})
+        # embed = discord.Embed.from_dict(kw.get("embed") or {})
         if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
             user = self.bot.get_user(kw["messageAuthor"])
             if user:
                 try:
                     await user.send(
                         content=f"{user.mention} this is reminder for: **{kw['content']}**\n>>> {kw['messageURL']}",
-                        embed=embed,
+                        # embed=embed,
                     )
                 except discord.Forbidden:
                     pass  # I don't know whytf user blocks the DM
@@ -37,7 +37,7 @@ class EventCustom(Cog):
                 try:
                     await channel.send(
                         content=f"<@{kw['messageAuthor']}> this is reminder for: **{kw['content']}**\n>>> {kw['messageURL']}",
-                        embed=embed,
+                        # embed=embed,
                     )
                 except discord.Forbidden:
                     # bot is not having permissions to send messages

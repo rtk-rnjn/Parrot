@@ -234,6 +234,7 @@ class Parrot(commands.AutoShardedBot):
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
         for channel in VCS:
             if channel:
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel)
                 try:
                     await channel.connect()
                 except discord.ClientException:

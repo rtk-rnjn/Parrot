@@ -519,18 +519,16 @@ class Utils(Cog):
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):
-        async with self.lock:
-            async for data in self.collection.find(
-                {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
-            ):
-                cog = self.bot.get_cog("EventCustom")
-                await self.collection.delete_one({"_id": data["_id"]})
-                await cog.on_timer_complete(**data)
+        async for data in self.collection.find(
+            {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
+        ):
+            cog = self.bot.get_cog("EventCustom")
+            await self.collection.delete_one({"_id": data["_id"]})
+            await cog.on_timer_complete(**data)
 
     @reminder_task.before_loop
     async def before_reminder_task(self):
         await self.bot.wait_until_ready()
-
 
     @commands.command(aliases=['level'])
     @commands.bot_has_permissions(attach_files=True)
@@ -737,11 +735,11 @@ class Utils(Cog):
         """To get the statistics os the suggestion"""
 
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
-        PAYLOAD: Dict[str, Any] = self.message[msg.id]
         if not msg:
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
+        PAYLOAD: Dict[str, Any] = self.message[msg.id]
         
         if msg.author.id != self.bot.user.id:
             return await ctx.send(

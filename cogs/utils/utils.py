@@ -863,12 +863,12 @@ class Utils(Cog):
         await ctx.send("Done", delete_after=5)
 
 
-    @commands.Cog.listener(name="on_raw_message_delete")
+    @Cog.listener(name="on_raw_message_delete")
     async def suggest_msg_delete(self, payload) -> None:
         if payload.message_id in self.message:
             del self.message[payload.message_id]
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
@@ -881,6 +881,32 @@ class Utils(Cog):
 
         context: Context = await self.bot.get_context(message, cls=Context)
         await self.suggest(context, suggestion=message.content)
+
+    @Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if payload.message_id not in self.message:
+            return
+
+        if str(payload.emoji) not in REACTION_EMOJI:
+            return
+
+        if str(payload.emoji) == "\N{UPWARDS BLACK ARROW}":
+            self.message[payload.message_id]["message_upvote"] += 1
+        if str(payload.emoji) == "\N{DOWNWARDS BLACK ARROW}":
+            self.message[payload.message_id]["message_downvote"] += 1
+
+    @Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if payload.message_id not in self.message:
+            return
+
+        if str(payload.emoji) not in REACTION_EMOJI:
+            return
+
+        if str(payload.emoji) == "\N{UPWARDS BLACK ARROW}":
+            self.message[payload.message_id]["message_upvote"] -= 1
+        if str(payload.emoji) == "\N{DOWNWARDS BLACK ARROW}":
+            self.message[payload.message_id]["message_downvote"] -= 1
 
     async def __parse_mod_action(self, message: discord.Message) -> None:
         if not self.__is_mod(message.author):

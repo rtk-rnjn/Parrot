@@ -877,7 +877,7 @@ class Meta(Cog):
             embed.set_thumbnail(url=ctx.guild.icon.url)
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["suggest"])
+    @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type

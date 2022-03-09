@@ -146,6 +146,18 @@ class Configuration(Cog):
         await ctx.reply(
             f"{ctx.author.mention} removed vc channel"
         )
+        if ctx.guild.me.voice:
+            await ctx.guild.me.edit(voice_channel=None)
+
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def disconnect(self, ctx: Context,):
+        """To disconnect from the channel"""
+        if ctx.guild.me.voice:
+            await ctx.guild.me.edit(voice_channel=None)
+        await ctx.send(
+            f"{ctx.author.mention} bot will reconnect after few hours, consider removing the vc channel if permanently removing the channel"
+        )
 
     @config.command()
     @commands.has_permissions(administrator=True)

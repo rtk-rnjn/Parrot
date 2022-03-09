@@ -12,6 +12,7 @@ import discord
 import datetime
 import asyncio
 
+from utilities.checks import is_mod
 from utilities.database import parrot_db, todo
 from utilities.formats import TabularData
 from utilities.time import ShortTime
@@ -680,7 +681,7 @@ class Utils(Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permssions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def suggest(self, ctx: Context, *, suggestion: commands.clean_content):
         """Suggest something. Abuse of the command may result in required mod actions"""
 
@@ -768,7 +769,7 @@ class Utils(Cog):
 
 
     @suggest.command(name="note", aliases=["remark"])
-    @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
+    @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, messageID: int, *, remark: str):
         """To add a note in suggestion embed"""
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
@@ -795,7 +796,7 @@ class Utils(Cog):
 
 
     @suggest.command(name="clear", aliases=["cls"])
-    @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
+    @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def clear_suggestion_embed(self, ctx: Context, messageID: int, *, remark: str):
         """To remove all kind of notes and extra reaction from suggestion embed"""
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
@@ -822,7 +823,7 @@ class Utils(Cog):
 
 
     @suggest.command(name="flag")
-    @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
+    @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def suggest_flag(self, ctx: Context, messageID: int, flag: str):
         """To flag the suggestion.
         
@@ -864,19 +865,16 @@ class Utils(Cog):
 
     @commands.Cog.listener(name="on_raw_message_delete")
     async def suggest_msg_delete(self, payload) -> None:
-        if self.suggestion_channel.id != payload.channel_id:
-            return
-
-        if payload.message_id in self.suggested_messages_id:
-            del self.suggested_messages_id[payload.message_id]
-
+        if payload.message_id in self.message:
+            del self.message[payload.message_id]
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
-        
-        if message.channel.id != self.suggestion_channel.id:
+
+        ls = await self.bot.mongo.parrot_db.server_config.distinct("suggestion_channel")
+        if message.channel.id not in ls:
             return
 
         await self.__parse_mod_action(message)

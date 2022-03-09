@@ -655,7 +655,7 @@ class Utils(Cog):
         jump_url: str = message.jump_url
         _id: int = message.id
         content = (
-            f"{ctx.author.mention} you suggestion being posted on {self.suggestion_channel.mention} ({self.suggestion_channel.id}).\n"
+            f"{ctx.author.mention} you suggestion being posted.\n"
             f"To delete the suggestion typing `{ctx.clean_prefix}suggest delete {_id}`\n"
             f"> {jump_url}"
         )

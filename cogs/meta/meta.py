@@ -815,7 +815,7 @@ class Meta(Cog):
             )
         if role.unicode_emoji:
             embed.set_thumbnail(
-                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(role.unicode_emoji):x}.png"
+                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png"
             )
         await ctx.reply(embed=embed)
 

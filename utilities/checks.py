@@ -88,7 +88,7 @@ def in_temp_channel():
             return True
 
         raise ex.InHubVoice()
-
+    return commands.check(predicate)
 
 async def _can_run(ctx):
     """Return True is the command is whitelisted in specific channel, also with specific role"""

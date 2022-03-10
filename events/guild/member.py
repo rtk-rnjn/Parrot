@@ -247,6 +247,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         return 1
 
     async def __on_voice_channel_join(self, channel, member):
+        print(channel, member)
         try:
             self.bot.server_config[member.guild.id]["hub"]
         except KeyError:
@@ -276,6 +277,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     )
     
     async def __on_voice_channel_remove(self, channel, member):
+        print(channel, member)
         if data := await parrot_db.server_config.find_one(
             {"_id": member.guild.id, "temp_channels.channel_id": channel.id, "temp_channels.author": member.id}
         ):

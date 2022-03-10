@@ -253,11 +253,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
         else:
             perms = member.guild.me.guild_permissions
-            if not all(perms.manage_permissions, perms.manage_channels, perms.move_members):
-                await self.__notify_member(
-                    f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
-                    member=member
-                )
+            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
+                # await self.__notify_member(
+                #     f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
+                #     member=member
+                # )
                 return
             if channel.id == self.bot.server_config[member.guild.id]["hub"]:
                 if channel.category:
@@ -280,11 +280,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             {"_id": member.guild.id, "temp_channels.channel_id": channel.id, "temp_channels.author": member.id}
         ):
             perms = member.guild.me.guild_permissions
-            if not all(perms.manage_permissions, perms.manage_channels, perms.move_members):
-                await self.__notify_member(
-                    f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
-                    member=member
-                )
+            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
+                # await self.__notify_member(
+                #     f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
+                #     member=member
+                # )
                 return
             for ch in data["temp_channels"]:
                 if ch["channel_id"] == channel.id:
@@ -303,7 +303,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
         if member.guild is None:
             return
-        
+        print("before", before.channel)
+        print("after", after.channel)
         if before and after:
             await self.__on_voice_channel_join(after.channel, member)
             await self.__on_voice_channel_remove(before.channel, member)
@@ -313,6 +314,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return await self.__on_voice_channel_join(after.channel, member)
         if after is None:
             return await self.__on_voice_channel_remove(before.channel, member)
+
     @Cog.listener()
     async def on_presence_update(self, before, after):
         pass  # nothing can be done, as discord dont gave use presence intent UwU

@@ -262,7 +262,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if channel.id == self.bot.server_config[member.guild.id]["hub"]:
                 if channel.category:
                     hub_channel = await member.guild.create_voice_channel(
-                        f"[#{await self._get_index(member.guild)}] {member.name}"
+                        f"[#{await self._get_index(member.guild)}] {member.name}",
+                        category=channel.category
                     )
                     await parrot_db.server_config.update_one(
                         {"_id": member.guild.id},

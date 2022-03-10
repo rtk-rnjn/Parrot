@@ -810,7 +810,10 @@ class Moderator(Cog):
 
         if channel is None:
             if voicestate := ctx.author.voice:
-                await voicestate.channel.connect()
+                if not ctx.guild.me.voice:
+                    await voicestate.channel.connect()
+                else:
+                    await ctx.guild.me.edit(voice_channel=voicestate.channel)
                 if not member:
                     member = voicestate.channel.members
             else:
@@ -827,10 +830,10 @@ class Moderator(Cog):
             else:
                 for mem in member:
                     await mem.edit(
-                        voice_channel=a,
+                        voice_channel=a.channel,
                         reason=f"Action Requested by {ctx.author.name} ({ctx.author.id}) | Reason: {reason}",
                     )
-        if channel:
+        else:
             if not member:
                 member = channel.members
 

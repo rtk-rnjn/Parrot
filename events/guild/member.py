@@ -246,35 +246,35 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         
         return 1
 
-    async def __on_voice_channel_join(self, channel, member):
-        print(channel, member)
-        try:
-            self.bot.server_config[member.guild.id]["hub"]
-        except KeyError:
+async def __on_voice_channel_join(self, channel, member):
+    print(channel, member)
+    try:
+        self.bot.server_config[member.guild.id]["hub"]
+    except KeyError:
+        return
+    else:
+        perms = member.guild.me.guild_permissions
+        if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
+            # await self.__notify_member(
+            #     f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
+            #     member=member
+            # )
             return
-        else:
-            perms = member.guild.me.guild_permissions
-            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
-                # await self.__notify_member(
-                #     f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
-                #     member=member
-                # )
-                return
-            if channel.id == self.bot.server_config[member.guild.id]["hub"]:
-                if channel.category:
-                    hub_channel = await member.guild.create_voice_channel(
-                        f"[#{self._get_index(member.guild)}] {member.name}"
-                    )
-                    await parrot_db.server_config.update_one(
-                        {"_id": member.guild.id},
-                        {"$addToSet": {"temp_channels": {"channel_id": hub_channel.id, "author": member.id}}}
-                    )
-                    await member.edit(voice_channel=hub_channel, reason=f"{member} ({member.id}) created their Hub")
-                else:
-                    await self.__notify_member(
-                        f"{member.mention} falied to create Hub for you. As the base Category is unreachable by the bot",
-                        member=member
-                    )
+        if channel.id == self.bot.server_config[member.guild.id]["hub"]:
+            if channel.category:
+                hub_channel = await member.guild.create_voice_channel(
+                    f"[#{self._get_index(member.guild)}] {member.name}"
+                )
+                await parrot_db.server_config.update_one(
+                    {"_id": member.guild.id},
+                    {"$addToSet": {"temp_channels": {"channel_id": hub_channel.id, "author": member.id}}}
+                )
+                await member.edit(voice_channel=hub_channel, reason=f"{member} ({member.id}) created their Hub")
+            else:
+                await self.__notify_member(
+                    f"{member.mention} falied to create Hub for you. As the base Category is unreachable by the bot",
+                    member=member
+                )
     
     async def __on_voice_channel_remove(self, channel, member):
         print(channel, member)
@@ -312,6 +312,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
 
         if before is None:
+            print(f"Before: {before.channel} | After: {after.channel}")
             return await self.__on_voice_channel_join(after.channel, member)
         if after is None:
             return await self.__on_voice_channel_remove(before.channel, member)

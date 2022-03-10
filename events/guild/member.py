@@ -301,27 +301,28 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener(name="on_voice_state_update")
     async def hub_on_voice_state_update(self, member, before, after):
         await self.bot.wait_until_ready()
-        print(member, before, after)
-        if member.bot:
-            print("bot")
-            return
-            
-        if member.guild is None:
-            print("guild is None")
-            return
+        if member.id == 741614468546560092:
+            print(member, before, after)
+            if member.bot:
+                print("bot")
+                return
+                
+            if member.guild is None:
+                print("guild is None")
+                return
 
-        if before and after:
-            print(f"Before: {before.channel} | After: {after.channel}")
-            await self.__on_voice_channel_join(after.channel, member)
-            await self.__on_voice_channel_remove(before.channel, member)
-            return
+            if before and after:
+                print(f"Before: {before.channel} | After: {after.channel}")
+                await self.__on_voice_channel_join(after.channel, member)
+                await self.__on_voice_channel_remove(before.channel, member)
+                return
 
-        if before is None:
-            print(f"Before: {before.channel} | After: {after.channel}")
-            return await self.__on_voice_channel_join(after.channel, member)
-        if after is None:
-            print(f"Before: {before.channel} | After: {after.channel}")
-            return await self.__on_voice_channel_remove(before.channel, member)
+            if before is None:
+                print(f"Before: {before.channel} | After: {after.channel}")
+                return await self.__on_voice_channel_join(after.channel, member)
+            if after is None:
+                print(f"Before: {before.channel} | After: {after.channel}")
+                return await self.__on_voice_channel_remove(before.channel, member)
 
     @Cog.listener()
     async def on_presence_update(self, before, after):

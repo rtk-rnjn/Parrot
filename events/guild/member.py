@@ -318,10 +318,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 return
 
             if before is None:
-                print(f"Before: {before.channel} | After: {after.channel}")
+                print(f"if before is None -> Before: {before.channel} | After: {after.channel}")
                 return await self.__on_voice_channel_join(after.channel, member)
             if after is None:
-                print(f"Before: {before.channel} | After: {after.channel}")
+                print(f"If after is None -> Before: {before.channel} | After: {after.channel}")
                 return await self.__on_voice_channel_remove(before.channel, member)
 
     @Cog.listener()

@@ -17,7 +17,8 @@ post = {
             # "role": ROLE_ID,
             # "lvl": LEVEL
         ],
-        "ignore_role": None
+        "ignore_role": [],
+        "ignore_channel": []
     },
     "automod": {
         "spam": {

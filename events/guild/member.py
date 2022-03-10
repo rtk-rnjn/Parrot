@@ -159,6 +159,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if member.bot:
             return
         if before is None:
+            await self.__on_voice_channel_join(after.channel, member)
+            # member joined VC
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
             ):
@@ -167,30 +169,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 )
                 if webhook:
                     content = f"""**On VC Join Event**
-
-`Member     :` **{member}** (`{member.id}`)
-`Channel    :` **{before.channel.mention}** (`{before.channel.id}`)
-`Server Mute:` **{before.mute}**
-`Server Deaf:` **{before.deaf}**
-`Self Mute  :` **{before.self_mute}**
-`Self Deaf  :` **{before.self_deaf}**
-"""
-                    await webhook.send(
-                        content=content,
-                        avatar_url=self.bot.user.avatar.url,
-                        username=self.bot.user.name,
-                    )
-                    return
-
-        if after is None:
-            if data := await log.find_one(
-                {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
-            ):
-                webhook = discord.Webhook.from_url(
-                    data["on_vc_leave"], session=self.bot.session
-                )
-                if webhook:
-                    content = f"""**On VC Leave Event**
 
 `Member     :` **{member}** (`{member.id}`)
 `Channel    :` **{after.channel.mention}** (`{after.channel.id}`)
@@ -206,7 +184,36 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     )
                     return
 
+        if after is None:
+            # Member left VC
+            await self.__on_voice_channel_remove(before.channel, member)
+            if data := await log.find_one(
+                {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
+            ):
+                webhook = discord.Webhook.from_url(
+                    data["on_vc_leave"], session=self.bot.session
+                )
+                if webhook:
+                    content = f"""**On VC Leave Event**
+
+`Member     :` **{member}** (`{member.id}`)
+`Channel    :` **{before.channel.mention}** (`{before.channel.id}`)
+`Server Mute:` **{before.mute}**
+`Server Deaf:` **{before.deaf}**
+`Self Mute  :` **{before.self_mute}**
+`Self Deaf  :` **{before.self_deaf}**
+"""
+                    await webhook.send(
+                        content=content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                    )
+                    return
+
         if before and after:
+            # Member moved
+            await self.__on_voice_channel_join(after.channel)
+            await self.__on_voice_channel_remove(before.channel)
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
             ):
@@ -229,6 +236,68 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         avatar_url=self.bot.user.avatar.url,
                         username=self.bot.user.name,
                     )
+                    return
+
+    async def __notify_member(self, error: str, *, member: discord.Member):
+        try:
+            await member.send(error)
+        except discord.Forbidden:
+            pass
+
+    async def _get_index(self, guild: discord.Guild) -> int:
+        if data := await parrot_db.server_config.find_one({"_id": guild.id, "temp_channels": {"$exists": True}}):
+            return len(data["temp_channels"]) + 1
+        
+        return 1
+
+    async def __on_voice_channel_join(self, channel, member):
+        try:
+            self.bot.server_config[member.guild.id]["hub"]
+        except KeyError:
+            return
+        else:
+            perms = member.guild.me.guild_permissions
+            if not all(perms.manage_permissions, perms.manage_channels, perms.move_members):
+                await self.__notify_member(
+                    f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
+                    member=member
+                )
+                return
+            if channel.id == self.bot.server_config[member.guild.id]["hub"]:
+                if channel.category:
+                    hub_channel = await member.guild.create_voice_channel(
+                        f"[#{self._get_index(member.guild)}] {member.name}"
+                    )
+                    await parrot_db.server_config.update_one(
+                        {"_id": member.guild.id},
+                        {"$addToSet": {"temp_channels": {"channel_id": hub_channel.id, "author": member.id}}}
+                    )
+                    await member.edit(voice_channel=hub_channel, reason=f"{member} ({member.id}) created their Hub")
+                else:
+                    await self.__notify_member(
+                        f"{member.mention} falied to create Hub for you. As the base Category is unreachable by the bot",
+                        member=member
+                    )
+    
+    async def __on_voice_channel_remove(self, channel, member):
+        if data := await parrot_db.server_config.find_one(
+            {"_id": member.guild.id, "temp_channels.channel_id": channel.id, "temp_channels.author": member.id}
+        ):
+            perms = member.guild.me.guild_permissions
+            if not all(perms.manage_permissions, perms.manage_channels, perms.move_members):
+                await self.__notify_member(
+                    f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
+                    member=member
+                )
+                return
+            for ch in data["temp_channels"]:
+                if ch["channel_id"] == channel.id:
+                    hub_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel.id)
+                    await parrot_db.server_config.update_one(
+                        {"_id": member.guild.id},
+                        {"$pull": {"temp_channels.channel_id": hub_channel.id, "temp_channels.author": member.id}}
+                    )
+                    await hub_channel.delete(reason=f"{member} ({member.id}) left their Hub")
                     return
 
     @Cog.listener()

@@ -14,7 +14,7 @@ from typing import Any, Iterable, List, Optional, Tuple, Union
 
 from core import Parrot, Context, Cog
 
-from utilities.checks import is_mod
+from utilities.checks import is_mod, in_temp_channel
 from utilities.converters import BannedMember, reason_convert
 from utilities.database import parrot_db, warn_db
 from utilities.time import ShortTime
@@ -658,6 +658,7 @@ class Moderator(Cog):
             deafen_members=True,
             move_members=True,
         ),
+        in_temp_channel()
     )
     @commands.bot_has_guild_permissions(
         mute_members=True,
@@ -673,7 +674,7 @@ class Moderator(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @voice.command(name="mute")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_mute(
@@ -687,7 +688,7 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="unmute")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_unmute(
@@ -704,6 +705,7 @@ class Moderator(Cog):
     @commands.check_any(
         is_mod(),
         commands.has_guild_permissions(manage_channels=True, manage_permissions=True),
+        in_temp_channel()
     )
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
@@ -727,6 +729,7 @@ class Moderator(Cog):
     @commands.check_any(
         is_mod(),
         commands.has_guild_permissions(manage_channels=True, manage_permissions=True),
+        in_temp_channel()
     )
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
@@ -747,7 +750,7 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="deafen")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_deafen(
@@ -761,7 +764,7 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="undeafen")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_undeafen(
@@ -775,7 +778,7 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="kick")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
+    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(move_members=True)
     @Context.with_type
     async def voice_kick(

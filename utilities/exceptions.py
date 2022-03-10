@@ -24,6 +24,13 @@ class NoVerifiedRoleTicket(ParrotCheckFailure):
         )
 
 
+class InHubVoice(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__(
+            "You must be in your own Hub channel to use this command"
+        )
+
+
 class NotGuildOwner(ParrotCheckFailure):
     def __init__(self):
         super().__init__("You must be the owner of the Server to use this command")

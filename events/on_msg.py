@@ -69,7 +69,7 @@ whitelist = [
     699839134709317642,  # `proguy914629.bot#5419`
     531179463673774080,  # `ROLEX#6596`
     857103603130302514,  # `Var_Monke#1354`
-    770646750804312105,  #  Nιgнт Fυяу ♪🤍#4371
+    770646750804312105,  # `Nιgнт Fυяу ♪🤍#4371`
 ]
 
 
@@ -603,15 +603,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or 0
+            role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"]
         except KeyError:
-            role = 0
+            role = []
 
-        if message.author._roles.has(role):
+        if any(message.author._roles.has(r) for r in role):
             return
 
         if enable:
-            await self.__add_xp(member=message.author, xp=12, msg=message)
+            await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
 
         try:
             channel = self.bot.server_config[message.guild.id]["leveling"]["channel"]

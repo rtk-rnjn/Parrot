@@ -57,6 +57,31 @@ class Configuration(Cog):
                     f"`MogLog :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
                 )
 
+    @config.group(name='hub', invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def setup_hub(self, ctx: Context,):
+        """To setup Hub like channel"""
+        overwrites = {
+            ctx.guild.default_role: discord.PermissionOverwrite(connect=True, read_messages=True),
+            ctx.guild.me: discord.PermissionOverwrite(connect=True, read_messages=True, manage_channels=True, manage_permissions=True),
+        }
+        cat = await ctx.guild.create_category_channel(
+            "The Hub", reason=f"Action requested by {ctx.author} ({ctx.author.id})", overwrites=overwrites
+        )
+
+        channel = await ctx.guild.create_voice_channel(
+            "Hub - Join to create", reason=f"Action requested by {ctx.author} ({ctx.author.id})", category=cat, user_limit=1
+        )
+
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"hub": channel.id}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} successfully created {channel.mention}! Enjoy"
+        )
+
     @config.command(aliases=["log"])
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(
@@ -369,24 +394,75 @@ class Configuration(Cog):
             f"{ctx.author.mention} reset annoucement channel for the leveling"
         )
 
-    @leveling.command(name="ignore", aliases=["ignorerole", "ignore-role"])
+    @leveling.group(name="ignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_ignore(self, ctx: Context, *, role: discord.Role=None):
-        """To configure leveling channel"""
+    async def leveling_ignore_set(self, ctx: Context,):
+        """To configure the ignoring system of leveling"""
+        if not ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+
+    @leveling_ignore_set.command(name="role",)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_ignore_role(self, ctx: Context, *, role: discord.Role):
+        """To configure leveling ignore role"""
         await csc.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"leveling.ignore_role": role.id if role else None}}
+            {"$addToSet": {"leveling.ignore_role": role.id}}
         )
-        if role:
-            await ctx.reply(
-                f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**"
-            )
-            return
         await ctx.reply(
-            f"{ctx.author.mention} ignored role reset"
+            f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**"
+        )
+        return
+
+    @leveling_ignore_set.command(name="channel",)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_ignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
+        """To configure leveling ignore channel"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"leveling.ignore_channel": channel.id}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} all leveling will be ignored in **{channel.mention}**"
+        )
+
+    @leveling.group(name='unignore', invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_unignore_set(self, ctx: Context, *, role: discord.Role):
+        """To configure the ignoring system of leveling"""
+        if not ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+    
+    @leveling_unignore_set.command(name="role",)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_unignore_role(self, ctx: Context, *, role: discord.Role):
+        """To configure leveling unignore role"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$pull": {"leveling.ignore_role": role.id}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} removed **{role.name}** from ignore list. (If existed)"
         )
     
+    @leveling_unignore_set.command(name="channel",)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_unignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
+        """To configure leveling ignore channel"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$pull": {"leveling.ignore_channel": channel.id}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} removed **{channel.mention}** from ignore list. (If existed)"
+        )
+
     @leveling.command(name="addreward")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -1061,13 +1137,13 @@ class Configuration(Cog):
         async for data in collection.find({}):
             main = f"> Command/Cog: {data['_id']}"
             if data.get("channel_in"):
-                main += f"\n`Channel In  :` <#{'>, <#'.join([(str(c) for c in data['channel_in'])])}>"
+                main += f"\n`Channel In :` <#{'>, <#'.join([(str(c) for c in data['channel_in'])])}>"
             if data.get("channel_out"):
-                main += f"\n`Channel Out :` <#{'>, <#'.join([(str(c) for c in data['channel_out'])])}>"
+                main += f"\n`Channel Out:` <#{'>, <#'.join([(str(c) for c in data['channel_out'])])}>"
             if data.get("role_in"):
-                main += f"\n`Role In     :` <@&{'>, <@&'.join([(str(c) for c in data['role_in'])])}>"
+                main += f"\n`Role In    :` <@&{'>, <@&'.join([(str(c) for c in data['role_in'])])}>"
             if data.get("role_out"):
-                main += f"\n`Role In     :` <@&{'>, <@&'.join([(str(c) for c in data['role_out'])])}>"
+                main += f"\n`Role In    :` <@&{'>, <@&'.join([(str(c) for c in data['role_out'])])}>"
             if data.get("server"):
                 main += f"`\nServer Wide?:` {data['server']}"
 

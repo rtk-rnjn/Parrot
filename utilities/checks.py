@@ -73,6 +73,22 @@ def is_mod():
 
     return commands.check(predicate)
 
+def in_temp_channel():
+    async def predicate(ctx):
+        data = await collection.find_one({"_id": ctx.guild.id})
+        if not data:
+            return False
+
+        if not ctx.author.voice:
+            return False
+
+        if data := await collection.find_one(
+            {"_id": ctx.guild.id, "temp_channels.channel_id": ctx.author.voice.channel.id, "temp_channels.author": ctx.author.id}
+        ):
+            return True
+
+        raise ex.InHubVoice()
+
 
 async def _can_run(ctx):
     """Return True is the command is whitelisted in specific channel, also with specific role"""

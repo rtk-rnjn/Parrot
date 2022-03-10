@@ -158,7 +158,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         await self.bot.wait_until_ready()
         if member.bot:
             return
-        if before is None:
+        if before.channel is None:
             # member joined VC
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
@@ -183,7 +183,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     )
                     return
 
-        if after is None:
+        if after.channel is None:
             # Member left VC
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
@@ -208,7 +208,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     )
                     return
 
-        if before and after:
+        if before.channel and after.channel:
             # Member moved
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
@@ -312,10 +312,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 await self.__on_voice_channel_remove(before.channel, member)
                 return
 
-            if before is None:
+            if before.channel is None:
                 print(f"if before is None -> Before: {before.channel} | After: {after.channel}")
                 return await self.__on_voice_channel_join(after.channel, member)
-            if after is None:
+            if after.channel is None:
                 print(f"If after is None -> Before: {before.channel} | After: {after.channel}")
                 return await self.__on_voice_channel_remove(before.channel, member)
 

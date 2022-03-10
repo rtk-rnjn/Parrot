@@ -878,7 +878,7 @@ class Utils(Cog):
         ls = await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": message.guild.id, "suggestion_channel": message.channel.id}
         )
-        if message.channel.id not in ls:
+        if message.channel.id != ls["suggestion_channel"]:
             return
 
         await self.__parse_mod_action(message)

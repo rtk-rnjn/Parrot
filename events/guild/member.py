@@ -247,7 +247,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         return 1
 
     async def __on_voice_channel_join(self, channel, member):
-        print(channel, member)
         try:
             self.bot.server_config[member.guild.id]["hub"]
         except KeyError:
@@ -277,7 +276,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     )
     
     async def __on_voice_channel_remove(self, channel, member):
-        print(channel, member)
         if data := await parrot_db.server_config.find_one(
             {"_id": member.guild.id, "temp_channels.channel_id": channel.id, "temp_channels.author": member.id}
         ):
@@ -302,13 +300,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     async def hub_on_voice_state_update(self, member, before, after):
         await self.bot.wait_until_ready()
         if member.id == 741614468546560092:
-            print(member, before, after)
             if member.bot:
-                print("bot")
                 return
                 
             if member.guild is None:
-                print("guild is None")
                 return
 
             if before and after:

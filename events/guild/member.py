@@ -301,6 +301,7 @@ async def __on_voice_channel_join(self, channel, member):
     @Cog.listener(name="on_voice_state_update")
     async def hub_on_voice_state_update(self, member, before, after):
         await self.bot.wait_until_ready()
+        print(member, before, after)
         if member.bot:
             print("bot")
             return

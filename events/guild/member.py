@@ -159,7 +159,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if member.bot:
             return
         if before is None:
-            await self.__on_voice_channel_join(after.channel, member)
             # member joined VC
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
@@ -186,7 +185,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         if after is None:
             # Member left VC
-            await self.__on_voice_channel_remove(before.channel, member)
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
             ):
@@ -212,8 +210,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         if before and after:
             # Member moved
-            await self.__on_voice_channel_join(after.channel)
-            await self.__on_voice_channel_remove(before.channel)
             if data := await log.find_one(
                 {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
             ):
@@ -300,6 +296,23 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     await hub_channel.delete(reason=f"{member} ({member.id}) left their Hub")
                     return
 
+    @Cog.listener(name="on_voice_state_update")
+    async def hub_on_voice_state_update(self, member, before, after):
+        await self.bot.wait_until_ready()
+        if member.bot:
+            return
+        if member.guild is None:
+            return
+        
+        if before and after:
+            await self.__on_voice_channel_join(after.channel, member)
+            await self.__on_voice_channel_remove(before.channel, member)
+            return
+
+        if before is None:
+            return await self.__on_voice_channel_join(after.channel, member)
+        if after is None:
+            return await self.__on_voice_channel_remove(before.channel, member)
     @Cog.listener()
     async def on_presence_update(self, before, after):
         pass  # nothing can be done, as discord dont gave use presence intent UwU

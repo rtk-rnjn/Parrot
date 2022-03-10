@@ -64,14 +64,14 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Deleted at:` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
 `Deleted by:` **{user}**
 """
+                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                            file=discord.File(fp, filename="overwrites.json"),
+                        )
                         break
-                fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="overwrites.json"),
-                )
 
     @Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
@@ -105,14 +105,14 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Entry ID  :` **{entryID if entryID else None}**
 `Deleted by:` **{user}**
 """
+                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                            file=discord.File(fp, filename="overwrites.json"),
+                        )
                         break
-                fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="overwrites.json"),
-                )
             if (
                 channel.permissions_for(channel.guild.me).manage_channels
                 and channel.permissions_for(channel.guild.default_role).send_messages
@@ -167,15 +167,14 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 **Change/Update (Before)**
 {ext}
 """
+                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                            file=discord.File(fp, filename="overwrites.json"),
+                        )
                         break
-
-                fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="overwrites.json"),
-                )
 
     def _channel_change(self, before, after, *, TYPE: str) -> List[Tuple[str, Any]]:
         ls = []
@@ -260,12 +259,12 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Entry ID :` **{entryID}**
 `Jump URL :` **<https://discord.com/channels/{channel.guild.id}/{channel.id}/{entry.extra.message_id}>**
 """
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                        )
                         break
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
 
         if data := await self.collection.find_one(
             {"_id": channel.guild.id, "on_message_unpin": {"$exists": True}}
@@ -290,12 +289,12 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Entry ID   :` **{entryID}**
 `Jump URL   :` **<https://discord.com/channels/{channel.guild.id}/{channel.id}/{entry.extra.message_id}>**
 """
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                        )
                         break
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                )
 
     @Cog.listener()
     async def on_guild_integrations_update(self, guild):

@@ -262,7 +262,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if channel.id == self.bot.server_config[member.guild.id]["hub"]:
                 if channel.category:
                     hub_channel = await member.guild.create_voice_channel(
-                        f"[#{self._get_index(member.guild)}] {member.name}"
+                        f"[#{await self._get_index(member.guild)}] {member.name}"
                     )
                     await parrot_db.server_config.update_one(
                         {"_id": member.guild.id},
@@ -287,37 +287,39 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 # )
                 return
             for ch in data["temp_channels"]:
-                if ch["channel_id"] == channel.id:
+                if ch["channel_id"] == channel.id and ch["author"] == member.id:
                     hub_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel.id)
                     await parrot_db.server_config.update_one(
                         {"_id": member.guild.id},
-                        {"$pull": {"temp_channels.channel_id": hub_channel.id, "temp_channels.author": member.id}}
-                    )
+                        {
+                            "$pull": {
+                                "temp_channels": {
+                                    "channel_id": hub_channel.id
+                                    }
+                                }
+                            }
+                        )
                     await hub_channel.delete(reason=f"{member} ({member.id}) left their Hub")
                     return
 
     @Cog.listener(name="on_voice_state_update")
     async def hub_on_voice_state_update(self, member, before, after):
         await self.bot.wait_until_ready()
-        if member.id == 741614468546560092:
-            if member.bot:
-                return
-                
-            if member.guild is None:
-                return
+        if member.bot:
+            return
+            
+        if member.guild is None:
+            return
 
-            if before.channel and after.channel:
-                print(f"Before: {before.channel} | After: {after.channel}")
-                await self.__on_voice_channel_join(after.channel, member)
-                await self.__on_voice_channel_remove(before.channel, member)
-                return
+        if before.channel and after.channel:
+            await self.__on_voice_channel_join(after.channel, member)
+            await self.__on_voice_channel_remove(before.channel, member)
+            return
 
-            if before.channel is None:
-                print(f"if before is None -> Before: {before.channel} | After: {after.channel}")
-                return await self.__on_voice_channel_join(after.channel, member)
-            if after.channel is None:
-                print(f"If after is None -> Before: {before.channel} | After: {after.channel}")
-                return await self.__on_voice_channel_remove(before.channel, member)
+        if before.channel is None:
+            return await self.__on_voice_channel_join(after.channel, member)
+        if after.channel is None:
+            return await self.__on_voice_channel_remove(before.channel, member)
 
     @Cog.listener()
     async def on_presence_update(self, before, after):

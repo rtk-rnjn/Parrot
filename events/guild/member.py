@@ -302,11 +302,15 @@ async def __on_voice_channel_join(self, channel, member):
     async def hub_on_voice_state_update(self, member, before, after):
         await self.bot.wait_until_ready()
         if member.bot:
+            print("bot")
             return
+            
         if member.guild is None:
+            print("guild is None")
             return
 
         if before and after:
+            print(f"Before: {before.channel} | After: {after.channel}")
             await self.__on_voice_channel_join(after.channel, member)
             await self.__on_voice_channel_remove(before.channel, member)
             return
@@ -315,6 +319,7 @@ async def __on_voice_channel_join(self, channel, member):
             print(f"Before: {before.channel} | After: {after.channel}")
             return await self.__on_voice_channel_join(after.channel, member)
         if after is None:
+            print(f"Before: {before.channel} | After: {after.channel}")
             return await self.__on_voice_channel_remove(before.channel, member)
 
     @Cog.listener()

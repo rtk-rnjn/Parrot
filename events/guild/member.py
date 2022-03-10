@@ -306,7 +306,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if member.guild is None:
                 return
 
-            if before and after:
+            if before.channel and after.channel:
                 print(f"Before: {before.channel} | After: {after.channel}")
                 await self.__on_voice_channel_join(after.channel, member)
                 await self.__on_voice_channel_remove(before.channel, member)

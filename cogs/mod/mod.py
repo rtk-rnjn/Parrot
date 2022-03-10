@@ -713,13 +713,15 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice ban"""
+        if not member.voice:
+            return await ctx.send(f"{ctx.author.mention} {member} not in voice channel")
         b = await mt._voice_ban(
             ctx.guild,
             ctx.command.name,
             ctx,
             ctx.channel,
             member,
-            ctx.author.voice.channel or member.voice.channel,
+            member.voice.channel,
             reason,
         )
         if b is not False:
@@ -737,13 +739,15 @@ class Moderator(Cog):
         self, ctx: Context, member: discord.Member, *, reason: reason_convert = None
     ):
         """To give the member voice unban"""
+        if not member.voice:
+            return await ctx.send(f"{ctx.author.mention} {member} not in voice channel")
         b = await mt._voice_unban(
             ctx.guild,
             ctx.command.name,
             ctx,
             ctx.channel,
             member,
-            ctx.author.voice.channel or member.voice.channel,
+            member.voice.channel,
             reason,
         )
         if b is not False:
@@ -790,6 +794,22 @@ class Moderator(Cog):
         )
         if b is not False:
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
+
+    @voice.command(name="limit")
+    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel())
+    @commands.bot_has_guild_permissions(move_members=True)
+    @Context.with_type
+    async def voice_limit(
+        self, ctx: Context, limit: Optional[int]=None, *, reason: reason_convert = None
+    ):
+        """To set the VC limit"""
+        if not ctx.author.voice:
+            return await ctx.send(f"{ctx.author.mention} you must be in voice channel to use the command")
+        await ctx.voice.channel.edit(user_limit=limit, reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}")
+        if limit:
+            await ctx.send(f"{ctx.author.mention} set limit to **{limit}**")
+            return
+        await ctx.send(f"{ctx.author.mention} removed the limit from {ctx.author.voice.channel.mention}")
 
     @voice.command(name="move")
     @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))

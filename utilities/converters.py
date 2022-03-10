@@ -26,7 +26,7 @@ def convert_bool(text: Union[str, bool]) -> bool:
 
 def reason_convert(text: commands.clean_content) -> str:
     """To strip the reason."""
-    return text[:450:]
+    return text[:450:] or "No reason provided"
 
 
 class ToAsync:

@@ -533,8 +533,12 @@ async def _make_giveaway(ctx: Context):
             payload["winners"] = winners
         if index == 5:
             await ctx.reply(embed=discord.Embed(description=question))
-            role = await commands.RoleConverter().convert(ctx, argument=(await __wait_for__message(ctx)))
-            payload["required_role"] = role.id
+            arg = await __wait_for__message(ctx)
+            if arg.lower() not in ("skip", "no", "none"):
+                role = await commands.RoleConverter().convert(ctx, argument=arg)
+                payload["required_role"] = role.id
+            else:
+                payload["required_role"] = None
         if index == 6:
             await ctx.reply(embed=discord.Embed(description=question))
             level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
@@ -554,10 +558,12 @@ Hosted by: {ctx.author.mention}
     await CHANNEL.send(embed=embed)
     return await _create_giveaway_post(message=ctx.message, **payload,)
 
-def __is_int(st: str, error: str) -> None:
+def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):
-        return
+        return None
     try:
-        int(st)
+        main = int(st)
     except ValueError:
         raise ParrotCheckFailure(error)
+    else:
+        return main

@@ -603,7 +603,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"]
+            role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or []
         except KeyError:
             role = []
 

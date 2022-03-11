@@ -75,10 +75,10 @@ class Utils(Cog):
     async def create_timer(
         self,
         *,
-        expires_at: float = None,
+        expires_at: float,
         created_at: float = None,
         content: str = None,
-        message: discord.Message = None,
+        message: discord.Message,
         dm_notify: bool = False,
         is_todo: bool = False,
         **kw,
@@ -102,14 +102,14 @@ class Utils(Cog):
         is_todo: :class:`bool`
             To provide whether the timer related to `TODO`
         """
-        embed: dict = kw.get("embed_like") or kw.get("embed")
-        mod_action: dict = kw.get("mod_action")
+        embed: Dict[str, Any] = kw.get("embed_like") or kw.get("embed")
+        mod_action: Dict[str, Any] = kw.get("mod_action")
         cmd_exec_str: str = kw.get("cmd_exec_str")
 
         post = {
             "_id": message.id,
             "expires_at": expires_at,
-            "created_at": created_at,
+            "created_at": created_at or message.created_at.timestamp(),
             "content": content,
             "embed": embed,
             "messageURL": message.jump_url,

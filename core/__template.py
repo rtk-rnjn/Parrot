@@ -10,6 +10,12 @@ post = {
     "warn_count": 0,
     "suggestion_channel": None,
     "vc": None,
+    "giveaway": [],
+    "starboard": {
+        "thresold": None,
+        "ignore_channel": [],
+        "ignore_role": [],
+    },
     "leveling": {
         "enable": False,
         "channel": None,

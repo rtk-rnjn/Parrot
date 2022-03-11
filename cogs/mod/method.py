@@ -390,6 +390,7 @@ async def _temp_ban(
             await cog.create_timer(
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
+                message=ctx.message,
                 mod_action=mod_action,
             )
         except Exception as e:

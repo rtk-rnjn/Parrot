@@ -18,26 +18,31 @@ class EventCustom(Cog):
     async def on_timer_complete(self, **kw) -> None:
         await self.bot.wait_until_ready()
         if kw.get("mod_action"):
-            return await self.mod_action_parser(**kw.get("mod_action"))
+            await self.mod_action_parser(**kw.get("mod_action"))
 
-        # embed = discord.Embed.from_dict(kw.get("embed") or {})
+        if kw.get("embed"):
+            embed = discord.Embed.from_dict(kw.get("embed"))
+        else:
+            embed = None
+
         if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
             user = self.bot.get_user(kw["messageAuthor"])
             if user:
                 try:
                     await user.send(
                         content=f"{user.mention} this is reminder for: **{kw['content']}**\n>>> {kw['messageURL']}",
-                        # embed=embed,
+                        embed=embed,
                     )
                 except discord.Forbidden:
                     pass  # I don't know whytf user blocks the DM
+
         elif kw.get("content"):
             channel = self.bot.get_channel(kw["messageChannel"])
             if channel:
                 try:
                     await channel.send(
                         content=f"<@{kw['messageAuthor']}> this is reminder for: **{kw['content']}**\n>>> {kw['messageURL']}",
-                        # embed=embed,
+                        embed=embed,
                     )
                 except discord.Forbidden:
                     # bot is not having permissions to send messages
@@ -69,17 +74,19 @@ class EventCustom(Cog):
                 pass
 
     async def extra_action_parser(self, name, **kw) -> None:
-        # incase the parser have the excellent connection to DB
-        # and the ``delete_one`` takes time
         if name.upper() == "REMOVE_AFK":
             await afk.delete_one(kw)
             self.bot.afk.remove(kw.get("messageAuthor"))
+
         if name.upper() == "SET_AFK":
             await afk.insert_one(kw)
             self.bot.afk.add(kw.get("messageAuthor"))
+
         if name.upper() == "SET_TIMER":
             await timers.insert_one(kw)
 
+        if name.upper() == "GIVEAWAY_END":
+            await self.__giveaway_parser(**kw)
 
 def setup(bot: Parrot) -> None:
     bot.add_cog(EventCustom(bot))

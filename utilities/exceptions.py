@@ -5,6 +5,13 @@ class ParrotCheckFailure(cmd.CheckFailure):
     pass
 
 
+class ParrotTimeoutError(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__(
+            "You did't responded on time!"
+        )
+
+
 class TimeError(ParrotCheckFailure):
     def __init__(self):
         super().__init__(

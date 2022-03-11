@@ -513,10 +513,10 @@ async def _make_giveaway(ctx: Context):
     
     payload = {}
     CHANNEL = None
-    for index, question in enumerate(quest):
+    for index, question in enumerate(quest, start=1):
         if index == 1:
             await ctx.reply(embed=discord.Embed(description=question))
-            channel = commands.TextChannelConverter.convert(ctx, await __wait_for__message(ctx))
+            channel = commands.TextChannelConverter.convert(ctx, (await __wait_for__message(ctx)))
             CHANNEL = channel
             payload["channel_id"] = channel.id
         if index == 2:
@@ -533,7 +533,7 @@ async def _make_giveaway(ctx: Context):
             payload["winners"] = winners
         if index == 5:
             await ctx.reply(embed=discord.Embed(description=question))
-            role = commands.RoleConverter.convert(ctx, await __wait_for__message(ctx))
+            role = commands.RoleConverter.convert(ctx, (await __wait_for__message(ctx)))
             payload["required_role"] = role.id
         if index == 6:
             await ctx.reply(embed=discord.Embed(description=question))

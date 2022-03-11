@@ -86,7 +86,8 @@ class EventCustom(Cog):
             await timers.insert_one(kw)
 
         if name.upper() == "GIVEAWAY_END":
-            await self.__giveaway_parser(**kw)
+            # await self.__giveaway_parser(**kw)
+            pass
 
 def setup(bot: Parrot) -> None:
     bot.add_cog(EventCustom(bot))

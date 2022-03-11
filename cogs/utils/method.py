@@ -374,7 +374,7 @@ async def _create_giveaway_post(
         "message_id": message.id,
         "author_id": message.author.id,
         "channel_id": message.channel.id,
-        "giveaway_channel": giveaway_channel,
+        "giveaway_channel": giveaway_channel.id,
         "guild_id": message.guild.id,
         "created_at": message.created_at,
         "prize": prize,
@@ -385,7 +385,7 @@ async def _create_giveaway_post(
     }
     post = {
         "message": message,
-        "created_at": message.created_at,
+        "created_at": message.created_at.timestamp(),
         "expires_at": endtime,
         "extra": {
             "name": "GIVEAWAY_END",
@@ -501,8 +501,7 @@ async def __wait_for__message(ctx: Context) -> Optional[str]:
     else:
         return msg.content
 
-
-async def _make_giveaway(ctx: Context):
+async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     quest = [
         "In what channel you want to host giveaway? (Channel ID, Channel Name, Channel Mention)",
         "Duration for the giveaway",
@@ -566,6 +565,33 @@ async def _make_giveaway(ctx: Context):
     await msg.add_reaction("\N{PARTY POPPER}")
 
     return await _create_giveaway_post(message=msg, **payload,)
+
+
+async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int, prize: str):
+    payload = {
+        "giveaway_channel": ctx.channel.id,
+        "endtime": duration.dt.timestamp(),
+        "winners": winners,
+        "prize": prize,
+        "required_role": None,
+        "required_level": None,
+        "required_guild": None
+    }
+
+    embed = discord.Embed(
+        title="\N{PARTY POPPER} Giveaway \N{PARTY POPPER}",
+        color=0xFFC0CB,
+        timestamp=ctx.message.created_at,
+        url=ctx.message.jump_url)
+    embed.description = f"""**React \N{PARTY POPPER} to win**
+
+> Prize: {payload['prize']}
+> Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
+"""
+    msg = await ctx.send(embed=embed)
+
+    return _create_giveaway_post(message=msg, **payload)
+
 
 def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):

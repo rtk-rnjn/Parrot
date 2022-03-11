@@ -2,6 +2,7 @@ from __future__ import annotations
 from itertools import zip_longest
 
 from typing import Any, Dict, Optional, Tuple, Union
+
 from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
 
@@ -945,3 +946,16 @@ class Utils(Cog):
             return member._roles.has(role_id)
         except KeyError:
             return False
+    
+    @commands.group(name="giveaway", aliases=["gw"], invoke_without_command=True)
+    async def giveaway(self, ctx: Context):
+        """To create giveaway"""
+        if not ctx.invoked_subcommand:
+            post = await mt._make_giveaway(ctx)
+            await self.create_timer(**post)
+    
+    @giveaway.command(name="drop")
+    async def giveaway_drop(self, ctx: Context, duration: ShortTime, winners: Optional[int]=1, *, prize: str=None):
+        """To create giveaway in quick format"""
+        post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
+        await self.create_timer(**post)

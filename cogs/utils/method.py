@@ -515,25 +515,32 @@ async def _make_giveaway(ctx: Context):
     CHANNEL = None
     for index, question in enumerate(quest):
         if index == 1:
-            channel = commands.TextChannelConverter.convert(await __wait_for__message(ctx))
+            await ctx.reply(embed=discord.Embed(description=question))
+            channel = commands.TextChannelConverter.convert(ctx, await __wait_for__message(ctx))
             CHANNEL = channel
             payload["channel_id"] = channel.id
         if index == 2:
+            await ctx.reply(embed=discord.Embed(description=question))
             duration = ShortTime(await __wait_for__message(ctx))
             payload["endtime"] = duration.dt.timestamp()
         if index == 3:
+            await ctx.reply(embed=discord.Embed(description=question))
             prize = await __wait_for__message(ctx)
             payload["prize"] = prize
         if index == 4:
+            await ctx.reply(embed=discord.Embed(description=question))
             winners = __is_int(await __wait_for__message(ctx), "Winner must be a whole number")
             payload["winners"] = winners
         if index == 5:
-            role = commands.RoleConverter.convert(await __wait_for__message(ctx))
+            await ctx.reply(embed=discord.Embed(description=question))
+            role = commands.RoleConverter.convert(ctx, await __wait_for__message(ctx))
             payload["required_role"] = role.id
         if index == 6:
+            await ctx.reply(embed=discord.Embed(description=question))
             level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
             payload["requied_level"] = level
         if index == 7:
+            await ctx.reply(embed=discord.Embed(description=question))
             server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
             payload["required_guild"] = server
 
@@ -545,7 +552,7 @@ Hosted by: {ctx.author.mention}
     embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     CHANNEL = CHANNEL or ctx.channel
     await CHANNEL.send(embed=embed)
-    await _create_giveaway_post(message=ctx.message, **payload,)
+    return await _create_giveaway_post(message=ctx.message, **payload,)
 
 def __is_int(st: str, error: str) -> None:
     if st.lower() in ("skip", "none", "no"):

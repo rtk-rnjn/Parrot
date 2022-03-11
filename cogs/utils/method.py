@@ -589,8 +589,8 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 """
     msg = await ctx.send(embed=embed)
-
-    return _create_giveaway_post(message=msg, **payload)
+    await msg.add_reaction("\N{PARTY POPPER}")
+    return await _create_giveaway_post(message=msg, **payload)
 
 
 def __is_int(st: str, error: str) -> Optional[int]:

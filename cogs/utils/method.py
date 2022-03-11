@@ -410,7 +410,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     )
 
     if data:
-        reactors = data["reactor"]
+        reactors = data["reactors"]
     else:
         for reaction in msg.reactions:
             if str(reaction.emoji) == "\N{PARTY POPPER}":
@@ -573,7 +573,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     main_post = await _create_giveaway_post(message=msg, **payload,)
 
     await bot.mongo.parrot_db.giveaway.insert_one(
-        main_post["extra"]["main"]
+        {**main_post["extra"]["main"], "reactors": []}
     )
     return main_post
 
@@ -605,7 +605,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
     main_post = await _create_giveaway_post(message=msg, **payload)
 
     await ctx.bot.mongo.parrot_db.giveaway.insert_one(
-        main_post["extra"]["main"]
+        {**main_post["extra"]["main"], "reactors": []}
     )
     return main_post
 

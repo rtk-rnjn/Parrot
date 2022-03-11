@@ -376,7 +376,7 @@ async def _create_giveaway_post(
         "channel_id": message.channel.id,
         "giveaway_channel": giveaway_channel,
         "guild_id": message.guild.id,
-        "created_at": message.created_at,
+        "created_at": message.created_at.timestamp(),
         "prize": prize,
         "winners": winners,
         "required_role": required_role,
@@ -402,7 +402,7 @@ async def __reroll_giveaway(bot: Parrot, **kw):
 
 
 async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
-    channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("channel_id"))
+    channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
     data = await bot.mongo.parrot_db.giveaway.find_one({"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id")})
     if data:
@@ -588,6 +588,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
 > Prize: {payload['prize']}
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 """
+    embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     return await _create_giveaway_post(message=msg, **payload)

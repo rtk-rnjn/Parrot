@@ -948,6 +948,7 @@ class Utils(Cog):
             return False
     
     @commands.group(name="giveaway", aliases=["gw"], invoke_without_command=True)
+    @commands.has_permissions(manage_guild=True)
     async def giveaway(self, ctx: Context):
         """To create giveaway"""
         if not ctx.invoked_subcommand:
@@ -955,6 +956,7 @@ class Utils(Cog):
             await self.create_timer(**post)
     
     @giveaway.command(name="drop")
+    @commands.has_permissions(manage_guild=True)
     async def giveaway_drop(self, ctx: Context, duration: ShortTime, winners: Optional[int]=1, *, prize: str=None):
         """To create giveaway in quick format"""
         post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)

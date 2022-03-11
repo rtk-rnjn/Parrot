@@ -362,6 +362,7 @@ async def _delete_todo(bot: Parrot, ctx: Context, name):
 async def _create_giveaway_post(
     *,
     message: discord.Message,
+    giveaway_channel: int,
     prize: str,
     winners: int,
     endtime: float,
@@ -373,6 +374,7 @@ async def _create_giveaway_post(
         "message_id": message.id,
         "author_id": message.author.id,
         "channel_id": message.channel.id,
+        "giveaway_channel": giveaway_channel,
         "guild_id": message.guild.id,
         "created_at": message.created_at,
         "prize": prize,
@@ -518,7 +520,7 @@ async def _make_giveaway(ctx: Context):
             await ctx.reply(embed=discord.Embed(description=question))
             channel = await commands.TextChannelConverter().convert(ctx, argument=(await __wait_for__message(ctx)))
             CHANNEL = channel
-            payload["channel_id"] = channel.id
+            payload["giveaway_channel"] = channel.id
         if index == 2:
             await ctx.reply(embed=discord.Embed(description=question))
             duration = ShortTime(await __wait_for__message(ctx))
@@ -548,14 +550,21 @@ async def _make_giveaway(ctx: Context):
             server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
             payload["required_guild"] = server
 
-    embed = discord.Embed(title="Giveaway", color=0xFFC0CB, timestamp=ctx.message.created_at, url=ctx.message.jump_url)
-    embed.description = f"""**React to \N{PARTY POPPER}**
-Prize: {payload['prize']}
-Hosted by: {ctx.author.mention}
+    embed = discord.Embed(
+        title="\N{PARTY POPPER} Giveaway \N{PARTY POPPER}",
+        color=0xFFC0CB,
+        timestamp=ctx.message.created_at,
+        url=ctx.message.jump_url)
+    embed.description = f"""**React \N{PARTY POPPER} to win**
+
+> Prize: {payload['prize']}
+> Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 """
     embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     CHANNEL = CHANNEL or ctx.channel
-    await CHANNEL.send(embed=embed)
+    msg = await CHANNEL.send(embed=embed)
+    await msg.add_reaction("\N{PARTY POPPER}")
+
     return await _create_giveaway_post(message=ctx.message, **payload,)
 
 def __is_int(st: str, error: str) -> Optional[int]:

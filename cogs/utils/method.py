@@ -576,7 +576,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     await bot.mongo.parrot_db.giveaway.insert_one(
         main_post["extra"]["main"]
     )
-    return main_post["extra"]["main"]
+    return main_post
 
 
 async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int, prize: str):
@@ -608,7 +608,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
     await ctx.bot.mongo.parrot_db.giveaway.insert_one(
         main_post["extra"]["main"]
     )
-    return main_post["extra"]["main"]
+    return main_post
 
 def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):
@@ -619,3 +619,20 @@ def __is_int(st: str, error: str) -> Optional[int]:
         raise ParrotCheckFailure(error)
     else:
         return main
+
+async def __add_reactor(bot: Parrot, payload):
+    if str(payload.emoji) != "\N{PARTY POPPER}":
+        return
+
+    await bot.mongo.parrot_db.giveaway.update_one(
+        {"message_id": payload.message_id}, {"$addToSer": {"reactors": payload.user_id}}
+    )
+
+async def __remove_reactor(bot: Parrot, payload):
+    if str(payload.emoji) != "\N{PARTY POPPER}":
+        return
+
+    await bot.mongo.parrot_db.giveaway.update_one(
+        {"message_id": payload.message_id}, {"$pull": {"reactors": payload.user_id}}
+    )
+

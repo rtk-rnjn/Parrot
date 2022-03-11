@@ -893,6 +893,8 @@ class Utils(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        await mt.__add_reactor(self.bot, payload)
+
         if payload.message_id not in self.message:
             return
 
@@ -906,6 +908,8 @@ class Utils(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        await mt.__remove_reactor(self.bot, payload)
+
         if payload.message_id not in self.message:
             return
 

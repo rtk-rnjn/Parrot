@@ -893,7 +893,7 @@ class Utils(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        await mt.__add_reactor(self.bot, payload)
+        await mt.add_reactor(self.bot, payload)
 
         if payload.message_id not in self.message:
             return
@@ -908,7 +908,7 @@ class Utils(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        await mt.__remove_reactor(self.bot, payload)
+        await mt.remove_reactor(self.bot, payload)
 
         if payload.message_id not in self.message:
             return
@@ -971,7 +971,7 @@ class Utils(Cog):
     async def giveaway_end(self, ctx: Context, messageID: int):
         """To end the giveaway"""
         if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
-            member_ids = await mt.__end_giveaway(self.bot, **data)
+            member_ids = await mt.end_giveaway(self.bot, **data)
             joiner = ">, <@".join(member_ids)
 
             await ctx.send(
@@ -984,7 +984,7 @@ class Utils(Cog):
     async def giveaway_reroll(self, ctx: Context, messageID: int, winner: int=1):
         """To end the giveaway"""
         if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
-            member_ids = await mt.__reroll_giveaway(self.bot, **data)
+            member_ids = await mt.reroll_giveaway(self.bot, **data)
             joiner = ">, <@".join(member_ids)
 
             await ctx.send(

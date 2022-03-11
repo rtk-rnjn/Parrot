@@ -394,13 +394,13 @@ async def _create_giveaway_post(
     }
     return post
 
-async def __reroll_giveaway(bot: Parrot, **kw):
+async def reroll_giveaway(bot: Parrot, **kw):
     post = kw
     post["winners"] = kw.pop("winners", 1)
-    await __end_giveaway(bot, **post)
+    await end_giveaway(bot, **post)
 
 
-async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
+async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
@@ -619,7 +619,7 @@ def __is_int(st: str, error: str) -> Optional[int]:
     else:
         return main
 
-async def __add_reactor(bot: Parrot, payload):
+async def add_reactor(bot: Parrot, payload):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 
@@ -627,7 +627,7 @@ async def __add_reactor(bot: Parrot, payload):
         {"message_id": payload.message_id}, {"$addToSer": {"reactors": payload.user_id}}
     )
 
-async def __remove_reactor(bot: Parrot, payload):
+async def remove_reactor(bot: Parrot, payload):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 

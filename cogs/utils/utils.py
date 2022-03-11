@@ -976,7 +976,7 @@ class Utils(Cog):
             if not member_ids:
                 return await ctx.send(f"{ctx.author.mention} no winners!")
 
-            joiner = ">, <@".join(member_ids)
+            joiner = ">, <@".join([str(i) for i in member_ids])
 
             await ctx.send(
                 f"Contragts <@{joiner}> you won {data.get('prize')}\n"
@@ -989,7 +989,7 @@ class Utils(Cog):
         """To end the giveaway"""
         if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
             member_ids = await mt.reroll_giveaway(self.bot, **data)
-            joiner = ">, <@".join(member_ids)
+            joiner = ">, <@".join([str(i) for i in member_ids])
 
             await ctx.send(
                 f"Contragts <@{joiner}> you won {data.get('prize')}\n"

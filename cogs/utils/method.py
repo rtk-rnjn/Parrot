@@ -374,7 +374,7 @@ async def _create_giveaway_post(
         "message_id": message.id,
         "author_id": message.author.id,
         "channel_id": message.channel.id,
-        "giveaway_channel": giveaway_channel.id,
+        "giveaway_channel": giveaway_channel,
         "guild_id": message.guild.id,
         "created_at": message.created_at,
         "prize": prize,

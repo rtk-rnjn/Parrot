@@ -544,7 +544,7 @@ async def _make_giveaway(ctx: Context):
         if index == 6:
             await ctx.reply(embed=discord.Embed(description=question))
             level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
-            payload["requied_level"] = level
+            payload["required_level"] = level
         if index == 7:
             await ctx.reply(embed=discord.Embed(description=question))
             server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
@@ -565,7 +565,7 @@ async def _make_giveaway(ctx: Context):
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
 
-    return await _create_giveaway_post(message=ctx.message, **payload,)
+    return await _create_giveaway_post(message=msg.id, **payload,)
 
 def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):

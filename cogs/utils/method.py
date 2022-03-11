@@ -488,7 +488,7 @@ def __item__remove(ls: List[Any], item: Any) -> Any:
     except (ValueError, KeyError):
         return ls
 
-async def __wait_for__message(ctx: Context) -> Optional[discord.Message]:
+async def __wait_for__message(ctx: Context) -> Optional[str]:
     def check(m: discord.Message) -> bool:
         return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
 

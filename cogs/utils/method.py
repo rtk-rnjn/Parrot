@@ -565,7 +565,7 @@ async def _make_giveaway(ctx: Context):
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
 
-    return await _create_giveaway_post(message=msg.id, **payload,)
+    return await _create_giveaway_post(message=msg, **payload,)
 
 def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):

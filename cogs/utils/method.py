@@ -395,9 +395,8 @@ async def _create_giveaway_post(
     return post
 
 async def __reroll_giveaway(bot: Parrot, **kw):
-    post = {
-        "winners": kw.pop("winners", 1)
-    }
+    post = kw
+    post["winners"] = kw.pop("winners", 1)
     await __end_giveaway(bot, **post)
 
 

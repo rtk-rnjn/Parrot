@@ -427,7 +427,7 @@ async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
     while True:
         if win_count > len(reactors):
             # more winner than the reactions
-            return
+            return real_winners
 
         winners = random.choices(reactors, k=win_count)
         kw["winners"] = winners
@@ -438,7 +438,7 @@ async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
 
         if not real_winners and not reactors:
             # requirement do not statisfied and we are out of reactors
-            return
+            return real_winners
 
         if real_winners:
             return real_winners

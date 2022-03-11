@@ -430,7 +430,7 @@ async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
             return
 
         winners = random.choices(reactors, k=win_count)
-        real_winners = await __check_requirements(winners, **kw)
+        real_winners = await __check_requirements(bot, winners, **kw)
 
         [__item__remove(reactors, i) for i in real_winners]  # type: ignore
         await __update_giveaway_reactors(bot=bot, reactors=reactors, message_id=kw.get("message_id"))

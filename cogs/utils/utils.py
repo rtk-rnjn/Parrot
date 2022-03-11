@@ -971,7 +971,11 @@ class Utils(Cog):
     async def giveaway_end(self, ctx: Context, messageID: int):
         """To end the giveaway"""
         if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
+
             member_ids = await mt.end_giveaway(self.bot, **data)
+            if not member_ids:
+                return await ctx.send(f"{ctx.author.mention} no winners!")
+
             joiner = ">, <@".join(member_ids)
 
             await ctx.send(

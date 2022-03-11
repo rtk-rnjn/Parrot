@@ -438,7 +438,9 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
         real_winners = await __check_requirements(bot, **kw)
 
         [__item__remove(reactors, i) for i in real_winners]  # type: ignore
-        await __update_giveaway_reactors(bot=bot, reactors=reactors, message_id=kw.get("message_id"))
+        await __update_giveaway_reactors(
+            bot=bot, reactors=reactors, message_id=kw.get("message_id")
+        )
 
         if not real_winners and not reactors:
             # requirement do not statisfied and we are out of reactors
@@ -624,7 +626,7 @@ async def add_reactor(bot: Parrot, payload):
         return
 
     await bot.mongo.parrot_db.giveaway.update_one(
-        {"message_id": payload.message_id}, {"$addToSer": {"reactors": payload.user_id}}
+        {"message_id": payload.message_id}, {"$addToSet": {"reactors": payload.user_id}}
     )
 
 async def remove_reactor(bot: Parrot, payload):

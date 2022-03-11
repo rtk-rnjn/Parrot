@@ -576,6 +576,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     await bot.mongo.parrot_db.giveaway.insert_one(
         main_post["extra"]["main"]
     )
+    return main_post["extra"]["main"]
 
 
 async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int, prize: str):
@@ -607,7 +608,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
     await ctx.bot.mongo.parrot_db.giveaway.insert_one(
         main_post["extra"]["main"]
     )
-
+    return main_post["extra"]["main"]
 
 def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):

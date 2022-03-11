@@ -977,7 +977,7 @@ class Utils(Cog):
 
     @giveaway.command(name="reroll")
     @commands.has_permissions(manage_guild=True)
-    async def giveaway_end(self, ctx: Context, messageID: int, winner: int=1):
+    async def giveaway_reroll(self, ctx: Context, messageID: int, winner: int=1):
         """To end the giveaway"""
         if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
             member_ids = await mt.__reroll_giveaway(self.bot, **data)

@@ -430,7 +430,8 @@ async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
             return
 
         winners = random.choices(reactors, k=win_count)
-        real_winners = await __check_requirements(bot, winners, **kw)
+        kw["winners"] = winners
+        real_winners = await __check_requirements(bot, **kw)
 
         [__item__remove(reactors, i) for i in real_winners]  # type: ignore
         await __update_giveaway_reactors(bot=bot, reactors=reactors, message_id=kw.get("message_id"))
@@ -444,16 +445,16 @@ async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
         win_count = win_count - len(real_winners)
 
 
-async def __check_requirements(bot: Parrot, winners: List[int], **kw) -> List[int]:
+async def __check_requirements(bot: Parrot, **kw) -> List[int]:
     # vars
-    real_winners = winners
+    real_winners = kw.get("winners")
 
     current_guild = bot.get_guild(kw.get("guild_id"))
     required_guild = bot.get_guild(kw.get("required_guild"))
     required_role = kw.get("required_role",)
     required_level = kw.get("required_level", 0)
 
-    for member in winners:
+    for member in kw.get("winners"):
         member = await bot.get_or_fetch_member(current_guild, member)
         if required_guild:
             is_member_none = await bot.get_or_fetch_member(required_guild, member.id)

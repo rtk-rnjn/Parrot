@@ -961,3 +961,29 @@ class Utils(Cog):
         """To create giveaway in quick format"""
         post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
         await self.create_timer(**post)
+    
+    @giveaway.command(name="end")
+    @commands.has_permissions(manage_guild=True)
+    async def giveaway_end(self, ctx: Context, messageID: int):
+        """To end the giveaway"""
+        if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
+            member_ids = await mt.__end_giveaway(self.bot, **data)
+            joiner = ">, <@".join(member_ids)
+
+            await ctx.send(
+                f"Contragts <@{joiner}> you won {data.get('prize')}\n"
+                f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
+            )
+
+    @giveaway.command(name="reroll")
+    @commands.has_permissions(manage_guild=True)
+    async def giveaway_end(self, ctx: Context, messageID: int, winner: int=1):
+        """To end the giveaway"""
+        if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
+            member_ids = await mt.__reroll_giveaway(self.bot, **data)
+            joiner = ">, <@".join(member_ids)
+
+            await ctx.send(
+                f"Contragts <@{joiner}> you won {data.get('prize')}\n"
+                f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
+            )

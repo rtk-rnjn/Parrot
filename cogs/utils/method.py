@@ -369,7 +369,7 @@ async def _create_giveaway_post(
     required_role: int=None,
     required_guild: int=None,
     required_level: int=None
-) -> Dict:
+) -> Dict[str, Any]:
     post_extra = {
         "message_id": message.id,
         "author_id": message.author.id,
@@ -403,8 +403,13 @@ async def __reroll_giveaway(bot: Parrot, **kw):
 
 async def __end_giveaway(bot: Parrot, **kw) -> List[int]:
     channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
+
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
-    data = await bot.mongo.parrot_db.giveaway.find_one({"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id")})
+
+    data = await bot.mongo.parrot_db.giveaway.find_one(
+        {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id")}
+    )
+
     if data:
         reactors = data["reactor"]
     else:
@@ -503,6 +508,7 @@ async def __wait_for__message(ctx: Context) -> Optional[str]:
         return msg.content
 
 async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
+    bot: Parrot = ctx.bot
     quest = [
         "In what channel you want to host giveaway? (Channel ID, Channel Name, Channel Mention)",
         "Duration for the giveaway",
@@ -564,8 +570,12 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     CHANNEL = CHANNEL or ctx.channel
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
+    bot.message_cache[msg.id] = msg
+    main_post = await _create_giveaway_post(message=msg, **payload,)
 
-    return await _create_giveaway_post(message=msg, **payload,)
+    await bot.mongo.parrot_db.giveaway.insert_one(
+        main_post["extra"]["main"]
+    )
 
 
 async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int, prize: str):
@@ -592,7 +602,11 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
     embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
-    return await _create_giveaway_post(message=msg, **payload)
+    main_post = await _create_giveaway_post(message=msg, **payload)
+
+    await ctx.bot.mongo.parrot_db.giveaway.insert_one(
+        main_post["extra"]["main"]
+    )
 
 
 def __is_int(st: str, error: str) -> Optional[int]:

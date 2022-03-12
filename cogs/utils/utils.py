@@ -994,7 +994,9 @@ class Utils(Cog):
             if data["status"] == "ONGOING":
                 return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
 
-            member_ids = await mt.reroll_giveaway(self.bot, winners=winners, **data)
+            data["winners"] = winners
+
+            member_ids = await mt.reroll_giveaway(self.bot, **data)
             joiner = ">, <@".join([str(i) for i in member_ids])
 
             await ctx.send(

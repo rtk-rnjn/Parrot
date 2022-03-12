@@ -3,6 +3,7 @@ from __future__ import annotations
 from core import Cog, Parrot
 
 from utilities.database import parrot_db
+from cogs.utils.method import end_giveaway
 
 import discord
 import asyncio
@@ -86,8 +87,24 @@ class EventCustom(Cog):
             await timers.insert_one(kw)
 
         if name.upper() == "GIVEAWAY_END":
-            # await self.__giveaway_parser(**kw)
             pass
+    
+    async def _parse_giveaway(self, **kw) -> None:
+        member_ids = await end_giveaway(self.bot, **kw)
+        channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel"))
+        await self.bot.mongo.parrot_db.giveaway.find_one_and_update(
+            {"message_id": kw.get('message_id'), "status": "ONGOING"}, {"$set": {"status": "END"}}
+        )
+        msg_link = f"https://discord.com/channels/{kw.get('guild_id')}/{kw.get('giveaway_channel')}/{kw.get('message_id')}"
+        if not member_ids:
+            return await channel.send(f"No winners!\n> {msg_link}")
+
+        joiner = ">, <@".join([str(i) for i in member_ids])
+
+        await channel.send(
+            f"Congrats <@{joiner}> you won {kw.get('prize')}\n"
+            f"> {msg_link}"
+        )
 
 def setup(bot: Parrot) -> None:
     bot.add_cog(EventCustom(bot))

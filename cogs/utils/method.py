@@ -406,7 +406,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
 
     data = await bot.mongo.parrot_db.giveaway.find_one(
-        {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id")}
+        {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id"), "status": "ONGOING"}
     )
 
     if data:
@@ -575,7 +575,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     main_post = await _create_giveaway_post(message=msg, **payload,)
 
     await bot.mongo.parrot_db.giveaway.insert_one(
-        {**main_post["extra"]["main"], "reactors": []}
+        {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
     )
     return main_post
 
@@ -607,7 +607,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
     main_post = await _create_giveaway_post(message=msg, **payload)
 
     await ctx.bot.mongo.parrot_db.giveaway.insert_one(
-        {**main_post["extra"]["main"], "reactors": []}
+        {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
     )
     return main_post
 
@@ -626,7 +626,7 @@ async def add_reactor(bot: Parrot, payload):
         return
 
     await bot.mongo.parrot_db.giveaway.update_one(
-        {"message_id": payload.message_id}, {"$addToSet": {"reactors": payload.user_id}}
+        {"message_id": payload.message_id, "status": "ONGOING"}, {"$addToSet": {"reactors": payload.user_id}}
     )
 
 async def remove_reactor(bot: Parrot, payload):
@@ -634,6 +634,6 @@ async def remove_reactor(bot: Parrot, payload):
         return
 
     await bot.mongo.parrot_db.giveaway.update_one(
-        {"message_id": payload.message_id}, {"$pull": {"reactors": payload.user_id}}
+        {"message_id": payload.message_id, "status": "ONGOING"}, {"$pull": {"reactors": payload.user_id}}
     )
 

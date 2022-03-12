@@ -395,22 +395,26 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To get the audit log of the server, in nice format"""
         ls = []
         guild = args.guild or ctx.guild
-        async for entry in guild.audit_logs(
-            limit=args.limit if args.limit else 100,
-            user=discord.Object(id=args.id)
-            if isinstance(args.user, (discord.User, discord.Member))
-            else None,
-            action=act.get(args.action.lower().replace(" ", "_"))
-            if args.action
-            else None,
-            before=discord.Object(id=int(args.before.dt.timestamp()))
-            if args.before
-            else None,
-            after=discord.Object(id=int(args.after.dt.timestamp()))
-            if args.after
-            else None,
-            oldest_first=args.oldest_first,
-        ):
+        
+        kwargs = {}
+
+        if args.user:
+            kwargs["user"] = args.user.id
+        
+        kwargs["limit"] = args.limit or 100
+        if args.action:
+            kwargs["action"] = args.action.get(args.action.lower().replace(" ", "_"))
+        
+        if args.before:
+            kwargs["before"] = args.before.dt
+        
+        if args.after:
+            kwargs["after"] = args.after.dt
+
+        if args.oldest_first:
+            kwargs["oldest_first"] = args.oldest_first
+
+        async for entry in guild.audit_logs(**kwargs):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
 `Responsible Moderator`: {'<@' + str(entry.user.id) + '>' if entry.user else 'Can not determine the Moderator'}

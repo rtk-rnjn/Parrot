@@ -3,7 +3,7 @@
 from __future__ import annotations
 import random
 
-from core import Parrot, Cog
+from core import Context, Parrot, Cog
 
 from discord.ext import commands, tasks
 
@@ -19,7 +19,7 @@ from aiohttp import ClientResponseError
 from urllib.parse import quote_plus
 
 import typing as tp
-from pymongo import UpdateOne
+from pymongo import UpdateOne, ReturnDocument
 
 from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
@@ -602,6 +602,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return
 
+        if not enable:
+            return
+
         try:
             role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or []
         except KeyError:
@@ -610,15 +613,36 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if any(message.author._roles.has(r) for r in role):
             return
 
-        if enable:
-            await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
+        try:
+            ignore_channel = self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"] or []
+        except KeyError:
+            ignore_channel = []
+        
+        if message.channel.id in ignore_channel:
+            return
+
+        await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
 
         try:
-            channel = self.bot.server_config[message.guild.id]["leveling"]["channel"]
+            announce_channel = self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
         except KeyError:
             return
         else:
-            pass
+            collection = self.bot.mongo.leveling[f"{message.guild.id}"]
+            ch = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, announce_channel, force_fetch=False)
+            if ch:
+                from utilities.rankcard import rank_card
+                if data := await collection.find_one_and_update(
+                    {"_id": message.author.id}, {"$inc": {"xp": 0}}, upsert=True, return_document=ReturnDocument.AFTER
+                ):
+                    cog = self.bot.get_cog("Utils")
+                    level = int((data["xp"]//42) ** 0.55)
+                    xp = cog._Utils__get_required_xp(level + 1)
+                    rank = await cog._Utils__get_rank(collection=collection, member=message.author)
+                    file = await rank_card(
+                        level, rank, message.author, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
+                    )
+                    await message.reply("GG! Level up!", file=file)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]

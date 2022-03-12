@@ -487,10 +487,12 @@ class Parrot(commands.AutoShardedBot):
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)
 
-    async def getch(self, get_function: Callable, fetch_function: Callable, _id: int) -> Any:
+    async def getch(
+        self, get_function: Callable, fetch_function: Callable, _id: Optional[int]=None, *, force_fetch: bool=True
+    ) -> Any:
         try:
             something = get_function(_id)
-            if something is None:
+            if something is None and force_fetch:
                 return await fetch_function(_id)
             return something
         except Exception as e:

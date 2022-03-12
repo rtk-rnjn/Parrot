@@ -33,7 +33,7 @@ from collections import defaultdict
 
 from utilities.paginator import PaginationView
 from utilities import spookifications
-from utilities.constants import Colours
+from utilities.constants import Colours, EmbeddedActivity
 
 from core import Parrot, Context, Cog
 
@@ -3176,6 +3176,34 @@ class Fun(Cog):
             )
 
             await ctx.send(file=file, embed=embed)
+
+    @commands.command(
+        name="activity"
+    )
+    @commands.bot_has_permissions(create_instant_invite=True, use_embedded_activities=True, move_members=True)
+    @commands.has_permissions(use_embedded_activities=True)
+    async def activity(self, ctx: Context, *, name: str):
+        """To create embed activity within your server"""
+        if not ctx.author.voice:
+            return await ctx.send(
+                f"{ctx.author.mention} you must be in the voice channel to use the activity"
+            )
+
+        INT = EmbeddedActivity.get(name.lower().replace(" ", "_"))
+        if INT is None:
+            return await ctx.send(f"{ctx.author.mention} no activity named {name}")
+        inv = await ctx.author.voice.channel.create_invite(
+            target_type=discord.InviteTarget.embedded_application, target_application_id=EmbeddedActivity, max_age=120
+        )
+        await ctx.send(
+            embed=discord.Embed(
+                title="Activity",
+                description=f"{ctx.author.metion} [Click Here]({inv})",
+                timestamp=ctx.message.created_at
+            ).set_footer(
+                text=f"Requested by: {ctx.author}"
+            )
+        )
 
     @commands.command(
         name="mosaic",

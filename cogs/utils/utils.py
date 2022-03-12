@@ -970,7 +970,9 @@ class Utils(Cog):
     @commands.has_permissions(manage_guild=True)
     async def giveaway_end(self, ctx: Context, messageID: int):
         """To end the giveaway"""
-        if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
+        if data := await self.bot.mongo.parrot_db.giveaway.find_one_and_update(
+            {"message_id": messageID, "status": "ONGOING"}, {"$set": {"status": "END"}}
+        ):
 
             member_ids = await mt.end_giveaway(self.bot, **data)
             if not member_ids:
@@ -979,19 +981,25 @@ class Utils(Cog):
             joiner = ">, <@".join([str(i) for i in member_ids])
 
             await ctx.send(
-                f"Contragts <@{joiner}> you won {data.get('prize')}\n"
+                f"Congrats <@{joiner}> you won {data.get('prize')}\n"
                 f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
             )
 
     @giveaway.command(name="reroll")
     @commands.has_permissions(manage_guild=True)
-    async def giveaway_reroll(self, ctx: Context, messageID: int, winner: int=1):
+    async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int=1):
         """To end the giveaway"""
         if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
-            member_ids = await mt.reroll_giveaway(self.bot, **data)
+
+            if data["status"] == "ONGOING":
+                return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
+
+            member_ids = await mt.reroll_giveaway(self.bot, winners=winners, **data)
             joiner = ">, <@".join([str(i) for i in member_ids])
 
             await ctx.send(
                 f"Contragts <@{joiner}> you won {data.get('prize')}\n"
                 f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
             )
+            return
+        await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`")

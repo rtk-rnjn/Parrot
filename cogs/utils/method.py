@@ -395,9 +395,7 @@ async def _create_giveaway_post(
     return post
 
 async def reroll_giveaway(bot: Parrot, **kw):
-    post = kw
-    post["winners"] = kw.pop("winners", 1)
-    await end_giveaway(bot, **post)
+    await end_giveaway(bot, **kw)
 
 
 async def end_giveaway(bot: Parrot, **kw) -> List[int]:
@@ -405,13 +403,12 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
 
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
 
-    data = await bot.mongo.parrot_db.giveaway.find_one(
-        {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id"), "status": "ONGOING"}
-    )
+    # data = await bot.mongo.parrot_db.giveaway.find_one(
+    #     {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id"), "status": "ONGOING"}
+    # )
 
-    if data:
-        reactors = data["reactors"]
-    else:
+    reactors = kw["reactors"]
+    if not reactors:
         for reaction in msg.reactions:
             if str(reaction.emoji) == "\N{PARTY POPPER}":
                 reactors: List[int] = [user.id async for user in reaction.users()]

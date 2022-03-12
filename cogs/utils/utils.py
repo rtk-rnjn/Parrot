@@ -998,7 +998,7 @@ class Utils(Cog):
 
             data["winners"] = winners
 
-            member_ids = await mt.reroll_giveaway(self.bot, **data)
+            member_ids = await mt.end_giveaway(self.bot, **data)
 
             if not member_ids:
                 return await ctx.send(f"{ctx.author.mention} no winners!")

@@ -394,9 +394,6 @@ async def _create_giveaway_post(
     }
     return post
 
-async def reroll_giveaway(bot: Parrot, **kw):
-    await end_giveaway(bot, **kw)
-
 
 async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
@@ -419,6 +416,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     __item__remove(reactors, bot.user.id)
 
     if not reactors:
+        print("1")
         return
 
     win_count = kw.get("winners", 1)

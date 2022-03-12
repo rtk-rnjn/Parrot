@@ -974,6 +974,8 @@ class Utils(Cog):
             {"message_id": messageID, "status": "ONGOING"}, {"$set": {"status": "END"}}
         ):
 
+            await self.collection.delete_one({"_id": messageID})
+
             member_ids = await mt.end_giveaway(self.bot, **data)
             if not member_ids:
                 return await ctx.send(f"{ctx.author.mention} no winners!")

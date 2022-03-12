@@ -3193,12 +3193,15 @@ class Fun(Cog):
         if INT is None:
             return await ctx.send(f"{ctx.author.mention} no activity named {name}")
         inv = await ctx.author.voice.channel.create_invite(
-            target_type=discord.InviteTarget.embedded_application, target_application_id=EmbeddedActivity, max_age=120
+            target_type=discord.InviteTarget.embedded_application,
+            target_application_id=INT,
+            max_age=120,
+            reason=f"Activity requested by: {ctx.author} ({ctx.author.id})"
         )
         await ctx.send(
             embed=discord.Embed(
                 title="Activity",
-                description=f"{ctx.author.metion} [Click Here]({inv})",
+                description=f"{ctx.author.mention} [Click Here]({inv})",
                 timestamp=ctx.message.created_at
             ).set_footer(
                 text=f"Requested by: {ctx.author}"

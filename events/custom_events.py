@@ -87,7 +87,7 @@ class EventCustom(Cog):
             await timers.insert_one(kw)
 
         if name.upper() == "GIVEAWAY_END":
-            await self._parse_giveaway(kw)
+            await self._parse_giveaway(**kw)
     
     async def _parse_giveaway(self, **kw) -> None:
         member_ids = await end_giveaway(self.bot, **kw)

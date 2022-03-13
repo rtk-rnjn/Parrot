@@ -78,9 +78,9 @@ async def star_post(
     embed = discord.Embed()
 
     embed.set_author(
-        name=str(msg.author),
-        icon_url=msg.author.display_avatar.url,
-        url=msg.jump_url
+        name=str(message.author),
+        icon_url=message.author.display_avatar.url,
+        url=message.jump_url
     )
     if message.content:
         embed.description = message.content

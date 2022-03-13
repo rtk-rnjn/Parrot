@@ -31,7 +31,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 msg_list = data["message_id"]
                 msg_list.remove(msg.id)
 
-                starboard_channel = self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
+                starboard_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
                 bot_msg = await self.bot.get_or_fetch_message(starboard_channel, msg_list[0])
                 await bot_msg.delete(delay=0)
 

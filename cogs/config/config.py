@@ -116,6 +116,18 @@ class Configuration(Cog):
         await ctx.reply(
             f"{ctx.author.mention} set starboard limit to **{limit}**"
         )
+    
+    @starboard.command(name="lock",)
+    @commands.has_permissions(administrator=True)
+    async def starboard_lock(self, ctx: Context, toggle: convert_bool=False):
+        """To lock the starboard channel"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"starboard.is_locked": toggle}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}"
+        )
 
     @config.command(aliases=["log"])
     @commands.has_permissions(administrator=True)

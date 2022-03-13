@@ -12,7 +12,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_remove(self, payload):
         data = self.bot.server_config
         ch = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_message, payload.channel_id
+            self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
         )
         msg = await self.bot.get_or_fetch_message(ch, payload.message_id)
         try:

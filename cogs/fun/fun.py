@@ -3180,7 +3180,7 @@ class Fun(Cog):
     @commands.command(
         name="activity"
     )
-    @commands.bot_has_permissions(create_instant_invite=True, use_embedded_activities=True,)
+    @commands.bot_has_guild_permissions(create_instant_invite=True, use_embedded_activities=True,)
     @commands.has_guild_permissions(use_embedded_activities=True)
     async def activity(self, ctx: Context, *, name: str):
         """To create embed activity within your server"""

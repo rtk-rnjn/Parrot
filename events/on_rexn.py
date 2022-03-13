@@ -91,6 +91,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
+        if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
+            await self.__on_star_reaction_remove(payload)
         await star_method._remove_reactor(self.bot, payload)
 
     @Cog.listener()

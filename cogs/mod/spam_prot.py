@@ -6,7 +6,6 @@ from discord.ext import commands
 import discord
 import random
 
-from utilities.database import parrot_db
 from utilities.infraction import warn
 
 with open("extra/duke_nekum.txt") as f:
@@ -16,11 +15,9 @@ with open("extra/duke_nekum.txt") as f:
 class SpamProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["server_config"]
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             5, 5, commands.BucketType.member
         )
-        self.data = {}
 
     async def delete(self, message: discord.Message) -> None:
         def check(m: discord.Message):
@@ -43,9 +40,7 @@ class SpamProt(Cog):
         bucket = self.cd_mapping.get_bucket(message)
         retry_after = bucket.update_rate_limit()
         if retry_after:
-            if data := await self.collection.find_one(
-                {"_id": message.guild.id, "automod.spam.enable": {"$exists": True}}
-            ):
+            if data := self.bot.server_config.get(message.guild.id):
                 if not data["automod"]["spam"]["enable"]:
                     return
                 try:

@@ -29,9 +29,7 @@ class LinkProt(Cog):
 
         if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
-        if data := await self.collection.find_one(
-            {"_id": message.guild.id, "automod.antilinks.enable": {"$exists": True}}
-        ):
+        if data := self.bot.server_config.get(message.guild.id):
             prot = data["automod"]["antilinks"]["enable"]
 
             if not prot:
@@ -80,7 +78,7 @@ class LinkProt(Cog):
 
             if has_links:
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] [Warning]**",
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
 

@@ -17,8 +17,6 @@ class MentionProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.collection = parrot_db["server_config"]
-        self.data = {}
-        self.clear_data.start()
 
     async def _on_message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
@@ -29,19 +27,9 @@ class MentionProt(Cog):
         if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
 
-        try:
-            data = self.data[message.guild.id]
-        except KeyError:
-            if data := await self.collection.find_one(
-                {"_id": message.guild.id, "automod.mention.enable": {"$exists": True}}
-            ):
-                self.data[message.guild.id] = data
-            else:
-                return
-
-        if self.data[message.guild.id]["automod"]["mention"]["enable"]:
+        if data := self.bot.server_config.get(message.guild.id):
             try:
-                ignore = self.data[message.guild.id]["automod"]["mention"]["channel"]
+                ignore = data[message.guild.id]["automod"]["mention"]["channel"]
             except KeyError:
                 ignore = []
 
@@ -49,7 +37,7 @@ class MentionProt(Cog):
                 return
 
             try:
-                count = self.data[message.guild.id]["automod"]["mention"]["count"]
+                count = data[message.guild.id]["automod"]["mention"]["count"]
             except KeyError:
                 count = None
 
@@ -95,9 +83,3 @@ class MentionProt(Cog):
         if before.content != after.content:
             await self._on_message_passive(after)
 
-    def cog_unload(self):
-        self.clear_data.cancel()
-
-    @tasks.loop(seconds=900)
-    async def clear_data(self):
-        self.data = {}

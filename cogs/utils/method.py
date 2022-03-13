@@ -399,6 +399,10 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
+    
+    embed = msg.embeds[0]
+    embed.color = 0xFF000
+    await msg.edit(embed=embed)
 
     # data = await bot.mongo.parrot_db.giveaway.find_one(
     #     {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id"), "status": "ONGOING"}
@@ -554,13 +558,14 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
 
     embed = discord.Embed(
         title="\N{PARTY POPPER} Giveaway \N{PARTY POPPER}",
-        color=0xFFC0CB,
+        color=ctx.bot.color,
         timestamp=ctx.message.created_at,
         url=ctx.message.jump_url)
     embed.description = f"""**React \N{PARTY POPPER} to win**
 
-> Prize: {payload['prize']}
+> Prize: **{payload['prize']}**
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
+> Ends in: <t:{int(payload['endtime'])}:R>
 """
     embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     CHANNEL = CHANNEL or ctx.channel
@@ -588,13 +593,14 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
 
     embed = discord.Embed(
         title="\N{PARTY POPPER} Giveaway \N{PARTY POPPER}",
-        color=0xFFC0CB,
+        color=ctx.bot.color,
         timestamp=ctx.message.created_at,
         url=ctx.message.jump_url)
     embed.description = f"""**React \N{PARTY POPPER} to win**
 
-> Prize: {payload['prize']}
+> Prize: **{payload['prize']}**
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
+> Ends in: <t:{int(payload['endtime'])}:R>
 """
     embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     msg = await ctx.send(embed=embed)

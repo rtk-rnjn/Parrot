@@ -45,9 +45,7 @@ class Profanity(Cog):
             return
         bad_words = await self.get_bad_words(message)
 
-        if data := await self.collection.find_one(
-            {"_id": message.guild.id, "automod.profanity.enable": {"$exists": True}}
-        ):
+        if data := self.bot.server_config.get(message.guild.id):
             try:
                 profanity = data["automod"]["profanity"]["enable"]
             except KeyError:

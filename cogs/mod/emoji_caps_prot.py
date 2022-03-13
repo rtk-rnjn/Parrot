@@ -1,7 +1,6 @@
 from __future__ import annotations
 import discord
 
-from utilities.database import parrot_db
 from utilities.infraction import warn
 import re
 import random
@@ -16,8 +15,6 @@ with open("extra/duke_nekum.txt") as f:
 class EmojiCapsProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.data = {}  # TODO: Make cache system
-        self.collection = parrot_db["server_config"]
 
     async def delete(self, message: discord.Message) -> None:
         await message.delete(delay=0)
@@ -39,9 +36,7 @@ class EmojiCapsProt(Cog):
     async def is_caps_infilterated(
         self, message: discord.Message
     ) -> typing.Optional[bool]:
-        if data_c := await self.collection.find_one(
-            {"_id": message.guild.id, "automod.caps.enable": {"$exists": True}}
-        ):
+        if data_c := self.bot.server_config.get(message.guild.id):
             if not data_c["automod"]["caps"]["enable"]:
                 return False
             try:
@@ -60,9 +55,7 @@ class EmojiCapsProt(Cog):
     async def is_emoji_infilterated(
         self, message: discord.Message
     ) -> typing.Optional[bool]:
-        if data_c := await self.collection.find_one(
-            {"_id": message.guild.id, "automod.emoji.enable": {"$exists": True}}
-        ):
+        if data_c := self.bot.server_config.get(message.guild.id):
             if not data_c["automod"]["emoji"]["enable"]:
                 return False
             try:
@@ -87,9 +80,7 @@ class EmojiCapsProt(Cog):
             return
         caps_ = await self.is_caps_infilterated(message)
         emoj_ = await self.is_emoji_infilterated(message)
-        if data := await self.collection.find_one(
-            {"_id": message.guild.id, "automod.emoji.enable": {"$exists": True}}
-        ):
+        if data := self.bot.server_config.get(message.guild.id):
             if emoj_:
                 try:
                     to_delete = data["automod"]["emoji"]["autowarn"]["to_delete"]
@@ -119,12 +110,10 @@ class EmojiCapsProt(Cog):
                     )
 
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] [Warning]**",
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
-        if data := await self.collection.find_one(
-            {"_id": message.guild.id, "automod.caps.enable": {"$exists": True}}
-        ):
+        if data := self.bot.server_config.get(message.guild.id):
             if caps_:
                 try:
                     to_delete = data["automod"]["caps"]["autowarn"]["to_delete"]
@@ -154,7 +143,7 @@ class EmojiCapsProt(Cog):
                     )
 
                 await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] [Warning]**",
+                    f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
 

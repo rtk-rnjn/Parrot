@@ -2424,7 +2424,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def clock(self, ctx: Context, *, member: discord.Member = None):
-        """TV image generation"""
+        """Clock image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
         r = await self.bot.session.get(

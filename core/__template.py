@@ -11,6 +11,7 @@ post = {
     "suggestion_channel": None,
     "vc": None,
     "giveaway": [],
+    "hub": None,
     "starboard": {
         "is_locked": False,
         "limit": None,

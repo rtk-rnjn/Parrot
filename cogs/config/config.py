@@ -82,6 +82,41 @@ class Configuration(Cog):
             f"{ctx.author.mention} successfully created {channel.mention}! Enjoy"
         )
 
+    @config.group(name='starboard', invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def starboard(self, ctx: Context,):
+        """To setup the starboard in your server"""
+        if not ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+    
+    @starboard.command(name="channel")
+    @commands.has_permissions(administrator=True)
+    async def starboard_channel(self, ctx: Context, *, channel: typing.Optional[discord.TextChannel]=None):
+        """To setup the channel"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"starboard.channel": channel.id if channel else None}}
+        )
+        if channel:
+            return await ctx.send(
+                f"{ctx.author.mention} set the starboard channel to {channel.mention}"
+            )
+        await ctx.send(
+            f"{ctx.author.mention} removed the starboard channel"
+        )
+    
+    @starboard.command(name="threshold", aliases=["limit"])
+    @commands.has_permissions(administrator=True)
+    async def starboard_limit(self, ctx: Context, limit: int=3):
+        """To set the starboard limit"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"starboard.limit": limit}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} set starboard limit to **{limit}**"
+        )
+
     @config.command(aliases=["log"])
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(

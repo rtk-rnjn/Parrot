@@ -12,9 +12,12 @@ post = {
     "vc": None,
     "giveaway": [],
     "starboard": {
-        "thresold": None,
+        "is_locked": False,
+        "limit": None,
         "ignore_channel": [],
         "ignore_role": [],
+        "max_duration": None,
+        "channel": None
     },
     "leveling": {
         "enable": False,

@@ -3,8 +3,6 @@ from __future__ import annotations
 from utilities.config import my_secret
 import motor.motor_asyncio
 
-from utilities.log import get_logger
-
 
 cluster = motor.motor_asyncio.AsyncIOMotorClient(
     f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"

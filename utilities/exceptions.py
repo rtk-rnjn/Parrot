@@ -12,6 +12,13 @@ class ParrotTimeoutError(ParrotCheckFailure):
         )
 
 
+class StarError(ParrotCheckFailure):
+    def __init__(self, error: str):
+        super().__init__(
+            error
+        )
+
+
 class TimeError(ParrotCheckFailure):
     def __init__(self):
         super().__init__(

@@ -9,7 +9,6 @@ from async_property import async_property
 import jishaku
 import datetime
 import asyncio
-import traceback
 import aiohttp
 import topgg
 import socket
@@ -38,7 +37,6 @@ from utilities.config import (
 from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client
-from utilities import log
 from .__template import post as POST
 
 from time import time
@@ -79,6 +77,7 @@ class Parrot(commands.AutoShardedBot):
             ),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=1,
+            max_messages=5000,
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
@@ -427,7 +426,7 @@ class Parrot(commands.AutoShardedBot):
         return members[0]
 
     async def get_or_fetch_message(
-        self, channel: discord.TextChannel, messageID: int
+        self, channel: discord.TextChannel, messageID: int, *, fetch: bool=True, cache: bool=True
     ) -> Optional[discord.Message]:
         """|coro|
         
@@ -439,22 +438,34 @@ class Parrot(commands.AutoShardedBot):
             The channel to look in.
         messageID: int
             The message ID to search for.
+        fetch: bool
+            To fetch the message from channel or not.
+        cache: bool
+            To get message from internal cache.
         Returns
         ---------
         Optional[discord.Message]
             The Message or None if not found.
         """
+        if cache:
+            cached_message = self._connection._messages
+            for msg in cached_message:
+                # looping the deque is O(n). I am ok with it!
+                if msg.id == messageID:
+                    return msg
+
         try:
             return self.message_cache[messageID]
         except KeyError:
-            async for msg in channel.history(
-                limit=1,
-                before=discord.Object(messageID + 1),
-                after=discord.Object(messageID - 1),
-            ):
-                if msg:
-                    self.message_cache[messageID] = msg
-                    return msg
+            if fetch:
+                async for msg in channel.history(
+                    limit=1,
+                    before=discord.Object(messageID + 1),
+                    after=discord.Object(messageID - 1),
+                ):
+                    if msg:
+                        self.message_cache[messageID] = msg
+                        return msg
 
     async def get_prefix(self, message: discord.Message) -> Union[str, List[str]]:
         """Dynamic prefixing"""

@@ -41,6 +41,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             )
             await bot_msg.delete(delay=0)
             return True
+        return False
 
     async def __on_star_reaction_add(self, payload) -> bool:
         data = self.bot.server_config
@@ -78,6 +79,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                     self.bot, starboard_channel=channel, message=msg
                 )
                 return True
+        return False
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -90,8 +92,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-            await self.__on_star_reaction_add(payload)
-            await star_method._add_reactor(self.bot, payload)
+            TRUE: bool = await self.__on_star_reaction_add(payload)
+            if not TRUE:
+                await star_method._add_reactor(self.bot, payload)
 
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -103,8 +106,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-            await star_method._remove_reactor(self.bot, payload)
-            await self.__on_star_reaction_remove(payload)
+            TRUE: bool = await self.__on_star_reaction_remove(payload)
+            if not TRUE:
+                await star_method._remove_reactor(self.bot, payload)
 
     @Cog.listener()
     async def on_reaction_clear(self, message, reactions):

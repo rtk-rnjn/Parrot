@@ -115,10 +115,24 @@ class Configuration(Cog):
             {"$set": {"starboard.channel": channel.id if channel else None}},
         )
         if channel:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} set the starboard channel to {channel.mention}"
             )
         await ctx.send(f"{ctx.author.mention} removed the starboard channel")
+
+    @starboard.command(name="maxage", aliases=["maxduration"])
+    @commands.has_permissions(administrator=True)
+    async def starboard_max_age(
+        self, ctx: Context, *, duration: ShortTime
+    ):
+        """To set the max duration"""
+        await csc.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"starboard.max_duration": ctx.message.created_at.timestamp() - duration.dt.timestamp()}},
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} set the max duration to **{ctx.message.created_at.timestamp() - duration.dt.timestamp()}** seconds"
+        )
 
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_permissions(administrator=True)

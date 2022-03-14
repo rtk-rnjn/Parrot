@@ -36,7 +36,8 @@ async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     )
 
 
-def __make_giveaway_post(
+async def __make_giveaway_post(
+    bot: Parrot,
     *,
     bot_message: discord.Message,
     message: discord.Message,
@@ -48,7 +49,7 @@ def __make_giveaway_post(
         "guild_id": message.guild.id,
         "created_at": message.created_at.timestamp(),
         "content": message.content,
-        "number_of_stars": get_star_count(message),
+        "number_of_stars": await get_star_count(bot, message, from_db=False),
     }
 
     if message.attachments:
@@ -64,7 +65,11 @@ def __make_giveaway_post(
     return post
 
 
-def get_star_count(message) -> Optional[int]:
+async def get_star_count(bot: Parrot, message: discord.Message, *, from_db: bool=True) -> Optional[int]:
+    if from_db:
+        if data := await bot.mongo.parrot_db.starboard.find_one({"message_id": message.id}):
+            return data["number_of_stars"]
+
     for reaction in message.reactions:
         if str(reaction.emoji) == "\N{WHITE MEDIUM STAR}":
             return reaction.count
@@ -100,5 +105,5 @@ async def star_post(
     bot.message_cache[msg.id] = msg
     bot.message_cache[message.id] = message
 
-    post = __make_giveaway_post(bot_message=msg, message=message)
+    post = await __make_giveaway_post(bot, bot_message=msg, message=message)
     await bot.mongo.parrot_db.starboard.insert_one(post)

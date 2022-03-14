@@ -508,6 +508,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_message_delete(self, payload):
         await self.bot.wait_until_ready()
+        await self.bot.mongo.parrot_db.starboard.delete_one(
+            {"$or": [{"message_id.bot": payload.message_id}, {"message_id.author": payload.message_id}]}
+        )
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
         ):
@@ -547,6 +550,19 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_bulk_message_delete(self, payload):
         await self.bot.wait_until_ready()
+        msg_ids = list(payload.message_ids)
+        await self.bot.mongo.parrot_db.starboard.delete_one(
+            {
+                "$or": [
+                    {
+                        "message_id.bot": {"$in": msg_ids}
+                    },
+                    {
+                        "message_id.author": {"$in": msg_ids}
+                    }
+                ]
+            }
+        )
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}
         ):
@@ -807,27 +823,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt"),
                 )
-
-    def cog_unload(self):
-        self.on_bulk_task.cancel()
-
-    async def bulker(self):
-        # collection = self.bot.mongo.msg_db.counter
-        # ls = self.message_append
-        # await collection.bulk_write(ls)
-        # self.message_append = []
-        pass
-
-    @tasks.loop(seconds=30)
-    async def on_bulk_task(self):
-        await self.bulker()
-        self.countr += 1
-        return
-
-    @on_bulk_task.after_loop
-    async def on_bulk_task_after(self):
-        if self.on_bulk_task.is_being_cancelled() and len(self.message_append) != 0:
-            await self.bulker()
 
 
 def setup(bot: Parrot):

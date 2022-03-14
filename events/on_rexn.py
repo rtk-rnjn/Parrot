@@ -20,8 +20,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return False
         count = await star_method.get_star_count(self.bot, msg, from_db=True)
-        print(f"{limit} > {count}")
-        if limit > count:
+        if limit > (count - 1):  # -1 because reaction was removed
             data = await self.bot.mongo.parrot_db.starboard.find_one_and_delete(
                 {"message_id": msg.id}
             )

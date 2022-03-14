@@ -22,18 +22,24 @@ import discord
 
 async def _add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     collection = bot.mongo.parrot_db.starboard
-    await collection.update_one(
+    data = await collection.find_one_and_update(
         {"message_id": payload.message_id},
         {"$addToSet": {"starrer": payload.user_id}, "$inc": {"number_of_stars": 1}},
+        return_document=True
     )
+    if data:
+        await edit_starbord_post(bot, payload, **data)
 
 
 async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     collection = bot.mongo.parrot_db.starboard
-    await collection.update_one(
+    data = await collection.find_one_and_update(
         {"message_id": payload.message_id},
         {"$pull": {"starrer": payload.user_id}, "$inc": {"number_of_stars": -1}},
+        return_document=True
     )
+    if data:
+        await edit_starbord_post(bot, payload, **data)
 
 
 async def __make_starboard_post(
@@ -134,28 +140,27 @@ async def star_post(
     await bot.mongo.parrot_db.starboard.insert_one(post)
 
 
-async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEvent) -> None:
-    if data := await bot.mongo.parrot_db.starboard.find_one({"message_id": payload.message_id}):
-        ch: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, data["channel_id"])
-        if ch is None:
-            return
+async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEvent, **data) -> None:
+    ch: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, data["channel_id"])
+    if ch is None:
+        return
 
-        if payload.user_id == bot.user.id:
-            # message was reacted on bot's message
-            bot_message_id = payload.message_id
-        else:
-            data["message_id"].remove(payload.message_id)
-            bot_message_id = data[0]
+    if payload.user_id == bot.user.id:
+        # message was reacted on bot's message
+        bot_message_id = payload.message_id
+    else:
+        data["message_id"].remove(payload.message_id)
+        bot_message_id = data[0]
 
-        msg: discord.Message = await bot.get_or_fetch_message(ch, bot_message_id)
-        
-        if not msg.embeds:
-            # moderators removed the embeds
-            return
+    msg: discord.Message = await bot.get_or_fetch_message(ch, bot_message_id)
+    
+    if not msg.embeds:
+        # moderators removed the embeds
+        return
 
-        embed: discord.Embed = msg.embeds[0]
+    embed: discord.Embed = msg.embeds[0]
 
-        count = await get_star_count(bot, msg, from_db=True)
-        embed.color = star_gradient_colour(count or 1)
+    count = await get_star_count(bot, msg, from_db=True)
+    embed.color = star_gradient_colour(count or 1)
 
-        await msg.edit(embed=embed, content=msg.content)
+    await msg.edit(embed=embed, content=msg.content)

@@ -426,8 +426,8 @@ class Parrot(commands.AutoShardedBot):
         return members[0]
 
     async def get_or_fetch_message(
-        self, channel: discord.TextChannel, messageID: int, *, fetch: bool=True, cache: bool=True
-    ) -> Optional[discord.Message]:
+        self, channel: discord.TextChannel, messageID: int, *, fetch: bool=True, cache: bool=True, partial: bool=False
+    ) -> Union[discord.Message, discord.PartialMessage]:
         """|coro|
 
         Get message from cache. Fetches if not found, and stored in cache
@@ -442,6 +442,8 @@ class Parrot(commands.AutoShardedBot):
             To fetch the message from channel or not.
         cache: bool
             To get message from internal cache.
+        partaial: bool
+            If found nothing from cache, it will give the discord.PartialMessage
         Returns
         ---------
         Optional[discord.Message]
@@ -452,7 +454,11 @@ class Parrot(commands.AutoShardedBot):
             for msg in cached_message:
                 # looping the deque is O(n). I am ok with it!
                 if msg.id == messageID:
+                    self.message_cache[msg.id] = msg
                     return msg
+
+        if partial:
+            return channel.get_partial_message(messageID)
 
         try:
             return self.message_cache[messageID]

@@ -617,7 +617,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             ignore_channel = self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"] or []
         except KeyError:
             ignore_channel = []
-        
+
         if message.channel.id in ignore_channel:
             return
 
@@ -655,7 +655,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             ls = self.bot.server_config[guild_id]["leveling"]["reward"]
         except KeyError:
             return
-        
+
         for reward in ls:
             if reward['lvl'] <= level:
                 await self.__add_roles(msg.author, discord.Object(id=reward["role"]), reason=f"Level Up role! On reaching: {level}")
@@ -665,7 +665,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             await member.add_roles(role, reason=reason)
         except (discord.Forbidden, discord.HTTPException):
             pass
-    
+
     async def _on_message_passive(self, message: discord.Message):
         if not message.guild:
             return

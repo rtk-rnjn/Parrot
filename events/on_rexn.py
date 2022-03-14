@@ -35,7 +35,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 bot_msg = await self.bot.get_or_fetch_message(starboard_channel, msg_list[0])
                 await bot_msg.delete(delay=0)
 
-        
+
     async def __on_star_reaction_add(self, payload):
         data = self.bot.server_config
 
@@ -43,7 +43,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             locked = data[payload.guild_id]["starboard"]["is_locked"]
         except KeyError:
             return
-        
+
         try:
             channel = data[payload.guild_id]["starboard"]["channel"]
         except KeyError:

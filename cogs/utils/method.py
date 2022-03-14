@@ -399,7 +399,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
     channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
-    
+
     embed = msg.embeds[0]
     embed.color = 0xFF000
     await msg.edit(embed=embed)
@@ -465,16 +465,16 @@ async def __check_requirements(bot: Parrot, **kw) -> List[int]:
             is_member_none = await bot.get_or_fetch_member(required_guild, member.id)
             if is_member_none is None:
                 __item__remove(real_winners, member)
-        
+
         if required_role:
             if not member._roles.has(required_role):
                 __item__remove(real_winners, member)
-        
+
         if required_level:
             level = await bot.mongo.leveling[f"{current_guild.id}"].find_one({"_id": member.id})
             if level < required_level:
                 __item__remove(real_winners, member)
-    
+
     return real_winners
 
 
@@ -518,7 +518,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
         "Requied Level? `skip`, `none`, `no` for no role requirement",
         "Required Server? (ID Only, bot must be in that server) `skip`, `none`, `no` for no role requirement"
     ]
-    
+
     payload = {}
     CHANNEL = None
     for index, question in enumerate(quest, start=1):

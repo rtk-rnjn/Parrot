@@ -157,12 +157,14 @@ async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEven
     
     if not msg.embeds:
         # moderators removed the embeds
-        return
+        return False
 
     embed: discord.Embed = msg.embeds[0]
 
     count = await get_star_count(bot, msg, from_db=True)
     embed.color = star_gradient_colour(count)
 
-    await msg.edit(embed=embed, content=msg.content)
+    await msg.edit(
+        embed=embed,
+        content=f"{star_emoji(count)} {count} | In: {msg.channel.mention} | Message ID: {msg.id}\n> {msg.jump_url}",)
     return True

@@ -17,19 +17,12 @@ with open("extra/duke_nekum.txt") as f:
 class Profanity(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.collection = parrot_db["server_config"]
-        self.data = {}
-        self.update_data.start()
-        self.lock = asyncio.Lock()
 
-    async def get_bad_words(self, message) -> Optional[List[str]]:
+    def get_bad_words(self, message) -> List[str]:
         try:
-            return self.data[message.guild.id]
+            return self.bot.server_config[message.guild.id]["automod"]["profanity"]["words"]
         except KeyError:
             return []
-
-    def cog_unload(self) -> None:
-        self.update_data.cancel()
 
     def isin(self, phrase: str, sentence: str) -> bool:
         word = re.escape(phrase)
@@ -39,23 +32,26 @@ class Profanity(Cog):
     async def _one_message_passive(self, message: discord.Message) -> Any:
         if message.author.bot or (not message.guild):
             return
+
         perms = message.author.guild_permissions
 
         if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
-        bad_words = await self.get_bad_words(message)
+
+        bad_words = self.get_bad_words(message)
 
         if data := self.bot.server_config.get(message.guild.id):
             try:
-                profanity = data["automod"]["profanity"]["enable"]
+                profanity: bool = data["automod"]["profanity"]["enable"]
             except KeyError:
-                return
-            try:
-                ignore = data["automod"]["profanity"]["channel"]
-            except KeyError:
-                ignore = []
+                profanity: bool = False
 
-            if ignore and (message.channel.id in ignore):
+            try:
+                ignore: List[int] = data["automod"]["profanity"]["channel"]
+            except KeyError:
+                ignore: List[int] = []
+
+            if message.channel.id in ignore:
                 return
 
             if (not bad_words) and profanity:
@@ -68,17 +64,17 @@ class Profanity(Cog):
                 return
 
             try:
-                to_delete = data["automod"]["profanity"]["autowarn"]["to_delete"]
+                to_delete: bool = data["automod"]["profanity"]["autowarn"]["to_delete"]
             except KeyError:
-                to_delete = True
+                to_delete: bool = True
 
             if to_delete:
                 await message.delete(delay=0)
 
             try:
-                to_warn = data["automod"]["profanity"]["autowarn"]["enable"]
+                to_warn: bool = data["automod"]["profanity"]["autowarn"]["enable"]
             except KeyError:
-                to_warn = False
+                to_warn: bool = False
 
             if to_warn:
                 await warn(
@@ -108,20 +104,3 @@ class Profanity(Cog):
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.content != after.content:
             await self._one_message_passive(after)
-
-    def cog_unload(self):
-        self.update_data.cancel()
-
-    @tasks.loop(seconds=15)
-    async def update_data(self):
-        async with self.lock:
-            async for data in self.collection.find({}):
-                try:
-                    bad_words = data["automod"]["profanity"]["words"]
-                except KeyError:
-                    return
-                self.data[data["_id"]] = bad_words
-
-    @update_data.before_loop
-    async def before_data_update(self):
-        await self.bot.wait_until_ready()

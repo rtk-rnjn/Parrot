@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List
 
 from core import Parrot, Cog, Context
 
@@ -20,7 +21,7 @@ class SpamProt(Cog):
         )
 
     async def delete(self, message: discord.Message) -> None:
-        def check(m: discord.Message):
+        def check(m: discord.Message) -> bool:
             return m.author.id == message.author.id
 
         try:
@@ -44,24 +45,24 @@ class SpamProt(Cog):
                 if not data["automod"]["spam"]["enable"]:
                     return
                 try:
-                    ignore = data["automod"]["spam"]["channel"]
+                    ignore: List[int] = data["automod"]["spam"]["channel"]
                 except KeyError:
-                    ignore = []
+                    ignore: List[int] = []
 
                 if message.channel.id in ignore:
                     return
                 try:
-                    to_delete = data["automod"]["spam"]["autowarn"]["to_delete"]
+                    to_delete: bool = data["automod"]["spam"]["autowarn"]["to_delete"]
                 except KeyError:
-                    to_delete = True
+                    to_delete: bool = True
 
                 if to_delete:
                     await self.delete(message)
 
                 try:
-                    to_warn = data["automod"]["spam"]["autowarn"]["enable"]
+                    to_warn: bool = data["automod"]["spam"]["autowarn"]["enable"]
                 except KeyError:
-                    to_warn = False
+                    to_warn: bool = False
 
                 if to_warn:
                     await warn(
@@ -72,7 +73,7 @@ class SpamProt(Cog):
                         message=message,
                         at=message.created_at,
                     )
-                    ctx = await self.bot.get_context(message, cls=Context)
+                    ctx: Context = await self.bot.get_context(message, cls=Context)
                     await self.bot.get_cog("Moderator").warn_task(
                         target=message.author, ctx=ctx
                     )

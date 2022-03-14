@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List, Optional
 
 from core import Parrot, Cog, Context
 
@@ -29,32 +30,32 @@ class MentionProt(Cog):
 
         if data := self.bot.server_config.get(message.guild.id):
             try:
-                ignore = data[message.guild.id]["automod"]["mention"]["channel"]
+                ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
             except KeyError:
-                ignore = []
+                ignore: List[int] = []
 
             if message.channel.id in ignore:
                 return
 
             try:
-                count = data[message.guild.id]["automod"]["mention"]["count"]
+                count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
             except KeyError:
                 count = None
 
             if not count:
                 return
             try:
-                to_delete = data["automod"]["mention"]["autowarn"]["to_delete"]
+                to_delete: bool = data["automod"]["mention"]["autowarn"]["to_delete"]
             except KeyError:
-                to_delete = True
+                to_delete: bool = True
 
             if to_delete:
                 await message.delete(delay=0)
 
             try:
-                to_warn = data["automod"]["mention"]["autowarn"]["enable"]
+                to_warn: bool = data["automod"]["mention"]["autowarn"]["enable"]
             except KeyError:
-                to_warn = False
+                to_warn: bool = False
 
             if to_warn:
                 await warn(
@@ -65,7 +66,7 @@ class MentionProt(Cog):
                     message=message,
                     at=message.created_at,
                 )
-                ctx = await self.bot.get_context(message, cls=Context)
+                ctx: Context = await self.bot.get_context(message, cls=Context)
                 await self.bot.get_cog("Moderator").warn_task(
                     target=message.author, ctx=ctx
                 )

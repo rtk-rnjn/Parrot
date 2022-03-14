@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List
 import discord
 import random
 
@@ -17,7 +18,7 @@ class LinkProt(Cog):
         self.bot = bot
         self.collection = parrot_db["server_config"]
 
-    async def has_links(self, message_content: str) -> bool:
+    def has_links(self, message_content: str) -> bool:
         url1 = LINKS_NO_PROTOCOLS.search(message_content)
         url2 = LINKS_RE.search(message_content)
         return bool(url1 or url2)
@@ -25,23 +26,24 @@ class LinkProt(Cog):
     async def _message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
+
         perms = message.author.guild_permissions
 
         if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
         if data := self.bot.server_config.get(message.guild.id):
-            prot = data["automod"]["antilinks"]["enable"]
+            prot: bool = data["automod"]["antilinks"]["enable"]
 
             if not prot:
                 return
 
             try:
-                whitelist = data["automod"]["antilinks"]["whitelist"]
+                whitelist: List[str] = data["automod"]["antilinks"]["whitelist"]
             except KeyError:
                 pass
 
             try:
-                ignore = data["automod"]["antilinks"]["channel"]
+                ignore: List[int] = data["automod"]["antilinks"]["channel"]
             except KeyError:
                 pass
 
@@ -51,17 +53,17 @@ class LinkProt(Cog):
             if any(temp in message.content for temp in whitelist):
                 return
             try:
-                to_delete = data["automod"]["antilinks"]["autowarn"]["to_delete"]
+                to_delete: bool = data["automod"]["antilinks"]["autowarn"]["to_delete"]
             except KeyError:
-                to_delete = True
+                to_delete: bool = True
 
             if to_delete:
                 await message.delete(delay=0)
 
             try:
-                to_warn = data["automod"]["antilinks"]["autowarn"]["enable"]
+                to_warn: bool = data["automod"]["antilinks"]["autowarn"]["enable"]
             except KeyError:
-                to_warn = False
+                to_warn: bool = False
 
             if to_warn:
                 await warn(
@@ -72,9 +74,9 @@ class LinkProt(Cog):
                     message=message,
                     at=message.created_at,
                 )
-                ctx = await self.bot.get_context(message, cls=Context)
-                await self.bot.get_cog("Moderator").warn(target=message.author, cls=ctx)
-            has_links = await self.has_links(message.content)
+                ctx: Context = await self.bot.get_context(message, cls=Context)
+                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+            has_links = self.has_links(message.content)
 
             if has_links:
                 await message.channel.send(

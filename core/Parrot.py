@@ -347,6 +347,7 @@ class Parrot(commands.AutoShardedBot):
             The guild to resolve from.
         member_ids: Iterable[int]
             An iterable of member IDs.
+
         Yields
         --------
         Member
@@ -406,6 +407,7 @@ class Parrot(commands.AutoShardedBot):
             The guild to look in.
         member_id: int
             The member ID to search for.
+
         Returns
         ---------
         Optional[Member]
@@ -454,6 +456,7 @@ class Parrot(commands.AutoShardedBot):
             To get message from internal cache.
         partaial: bool
             If found nothing from cache, it will give the discord.PartialMessage
+
         Returns
         ---------
         Optional[discord.Message]

@@ -1,10 +1,11 @@
 from __future__ import annotations
+from typing import List, Optional
 import discord
 
 from utilities.infraction import warn
 import re
 import random
-import typing
+
 import emojis
 from core import Parrot, Cog, Context
 
@@ -19,7 +20,7 @@ class EmojiCapsProt(Cog):
     async def delete(self, message: discord.Message) -> None:
         await message.delete(delay=0)
 
-    async def get_emoji_count(self, message_content: str) -> int:
+    def get_emoji_count(self, message_content: str) -> int:
         str_count = emojis.count(message_content)
         dis_count = len(
             re.findall(
@@ -29,46 +30,46 @@ class EmojiCapsProt(Cog):
         )
         return int(str_count + dis_count)
 
-    async def get_caps_count(self, message_content: str) -> int:
+    def get_caps_count(self, message_content: str) -> int:
         caps_count = len(re.findall(r"[A-Z]", message_content))
         return int(caps_count)
 
-    async def is_caps_infilterated(
+    def is_caps_infilterated(
         self, message: discord.Message
-    ) -> typing.Optional[bool]:
+    ) -> Optional[bool]:
         if data_c := self.bot.server_config.get(message.guild.id):
             if not data_c["automod"]["caps"]["enable"]:
                 return False
             try:
-                ignore = data_c["automod"]["caps"]["channel"]
+                ignore: List[int] = data_c["automod"]["caps"]["channel"]
             except KeyError:
                 ignore = []
             if message.channel.id in ignore:
                 return False
             try:
-                limit = data_c["automod"]["caps"]["limit"]
+                limit: int = data_c["automod"]["caps"]["limit"]
             except KeyError:
                 return False
-            if limit <= (await self.get_caps_count(message.content)):
+            if limit <= (self.get_caps_count(message.content)):
                 return True
 
-    async def is_emoji_infilterated(
+    def is_emoji_infilterated(
         self, message: discord.Message
-    ) -> typing.Optional[bool]:
+    ) -> Optional[bool]:
         if data_c := self.bot.server_config.get(message.guild.id):
             if not data_c["automod"]["emoji"]["enable"]:
                 return False
             try:
-                ignore = data_c["automod"]["emoji"]["channel"]
+                ignore: List[int] = data_c["automod"]["emoji"]["channel"]
             except KeyError:
                 ignore = []
             if message.channel.id in ignore:
                 return False
             try:
-                limit = data_c["automod"]["emoji"]["limit"]
+                limit: int = data_c["automod"]["emoji"]["limit"]
             except KeyError:
                 return False
-            if limit <= (await self.get_emoji_count(message.content)):
+            if limit <= (self.get_emoji_count(message.content)):
                 return True
 
     async def _on_message_passive(self, message: discord.Message):
@@ -78,22 +79,23 @@ class EmojiCapsProt(Cog):
 
         if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
-        caps_ = await self.is_caps_infilterated(message)
-        emoj_ = await self.is_emoji_infilterated(message)
+
+        caps_: bool = self.is_caps_infilterated(message)
+        emoj_: bool = self.is_emoji_infilterated(message)
         if data := self.bot.server_config.get(message.guild.id):
             if emoj_:
                 try:
-                    to_delete = data["automod"]["emoji"]["autowarn"]["to_delete"]
+                    to_delete: bool = data["automod"]["emoji"]["autowarn"]["to_delete"]
                 except KeyError:
-                    to_delete = True
+                    to_delete: bool = True
 
                 if to_delete:
                     await message.delete(delay=0)
 
                 try:
-                    to_warn = data["automod"]["emoji"]["autowarn"]["enable"]
+                    to_warn: bool = data["automod"]["emoji"]["autowarn"]["enable"]
                 except KeyError:
-                    to_warn = False
+                    to_warn: bool = False
 
                 if to_warn:
                     await warn(
@@ -105,8 +107,8 @@ class EmojiCapsProt(Cog):
                         at=message.created_at,
                     )
                     ctx = await self.bot.get_context(message, cls=Context)
-                    await self.bot.get_cog("Moderator").warn(
-                        target=message.author, cls=ctx
+                    await self.bot.get_cog("Moderator").warn_task(
+                        target=message.author, ctx=ctx
                     )
 
                 await message.channel.send(
@@ -116,9 +118,9 @@ class EmojiCapsProt(Cog):
         if data := self.bot.server_config.get(message.guild.id):
             if caps_:
                 try:
-                    to_delete = data["automod"]["caps"]["autowarn"]["to_delete"]
+                    to_delete: bool = data["automod"]["caps"]["autowarn"]["to_delete"]
                 except KeyError:
-                    to_delete = True
+                    to_delete: bool = True
 
                 if to_delete:
                     await message.delete(delay=0)
@@ -137,9 +139,9 @@ class EmojiCapsProt(Cog):
                         message=message,
                         at=message.created_at,
                     )
-                    ctx = await self.bot.get_context(message, cls=Context)
-                    await self.bot.get_cog("Moderator").warn(
-                        target=message.author, cls=ctx
+                    ctx: Context = await self.bot.get_context(message, cls=Context)
+                    await self.bot.get_cog("Moderator").warn_task(
+                        target=message.author, ctx=ctx
                     )
 
                 await message.channel.send(
@@ -148,10 +150,10 @@ class EmojiCapsProt(Cog):
                 )
 
     @Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         await self._on_message_passive(message)
 
     @Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if before.content != after.content:
             await self._on_message_passive(after)

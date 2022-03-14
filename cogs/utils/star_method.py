@@ -24,20 +24,15 @@ async def _add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     collection = bot.mongo.parrot_db.starboard
     await collection.update_one(
         {"message_id": payload.message_id},
-        {
-            "$addToSet": {"starrer": payload.user_id},
-            "$inc": {"number_of_stars": 1}
-        }
+        {"$addToSet": {"starrer": payload.user_id}, "$inc": {"number_of_stars": 1}},
     )
+
 
 async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     collection = bot.mongo.parrot_db.starboard
     await collection.update_one(
         {"_id": payload.message_id},
-        {
-            "$pull": {"starrer": payload.user_id},
-            "$inc": {"number_of_stars": -1}
-        }
+        {"$pull": {"starrer": payload.user_id}, "$inc": {"number_of_stars": -1}},
     )
 
 
@@ -53,11 +48,15 @@ def __make_giveaway_post(
         "guild_id": message.guild.id,
         "created_at": message.created_at.timestamp(),
         "content": message.content,
-        "number_of_stars": get_star_count(message)
+        "number_of_stars": get_star_count(message),
     }
 
     if message.attachments:
-        if message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+        if (
+            message.attachments[0]
+            .url.lower()
+            .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+        ):
             post["picture"] = message.attachments[0].url
         else:
             post["attachment"] = message.attachments[0].url
@@ -80,17 +79,21 @@ async def star_post(
     embed.set_author(
         name=str(message.author),
         icon_url=message.author.display_avatar.url,
-        url=message.jump_url
+        url=message.jump_url,
     )
     if message.content:
         embed.description = message.content
     if message.attachments:
-        if message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+        if (
+            message.attachments[0]
+            .url.lower()
+            .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+        ):
             embed.set_image(url=message.attachments[0].url)
         else:
             embed.add_field(
                 name="Attachment",
-                value=f"[{message.attachments[0].filename}]({message.attachments[0].url})"
+                value=f"[{message.attachments[0].filename}]({message.attachments[0].url})",
             )
     msg = await starboard_channel.send(embed=embed)
 

@@ -1907,10 +1907,8 @@ class Fun(Cog):
 
         return await ctx.send(
             embed=discord.Embed(
-                description = data['responseData']['translatedText']
-            ).set_footer(
-                text="This command is work in progress"
-            )
+                description=data["responseData"]["translatedText"]
+            ).set_footer(text="This command is work in progress")
         )
 
     @commands.command(aliases=["triggered"])
@@ -3177,10 +3175,11 @@ class Fun(Cog):
 
             await ctx.send(file=file, embed=embed)
 
-    @commands.command(
-        name="activity"
+    @commands.command(name="activity")
+    @commands.bot_has_guild_permissions(
+        create_instant_invite=True,
+        use_embedded_activities=True,
     )
-    @commands.bot_has_guild_permissions(create_instant_invite=True, use_embedded_activities=True,)
     @commands.has_guild_permissions(use_embedded_activities=True)
     async def activity(self, ctx: Context, *, name: str):
         """To create embed activity within your server"""
@@ -3196,16 +3195,14 @@ class Fun(Cog):
             target_type=discord.InviteTarget.embedded_application,
             target_application_id=INT,
             max_age=120,
-            reason=f"Activity requested by: {ctx.author} ({ctx.author.id})"
+            reason=f"Activity requested by: {ctx.author} ({ctx.author.id})",
         )
         await ctx.send(
             embed=discord.Embed(
                 title="Activity",
                 description=f"{ctx.author.mention} [Click Here]({inv})",
-                timestamp=ctx.message.created_at
-            ).set_footer(
-                text=f"Requested by: {ctx.author}"
-            )
+                timestamp=ctx.message.created_at,
+            ).set_footer(text=f"Requested by: {ctx.author}")
         )
 
     @commands.command(

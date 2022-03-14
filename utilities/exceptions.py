@@ -7,16 +7,12 @@ class ParrotCheckFailure(cmd.CheckFailure):
 
 class ParrotTimeoutError(ParrotCheckFailure):
     def __init__(self):
-        super().__init__(
-            "You did't responded on time!"
-        )
+        super().__init__("You did't responded on time!")
 
 
 class StarError(ParrotCheckFailure):
     def __init__(self, error: str):
-        super().__init__(
-            error
-        )
+        super().__init__(error)
 
 
 class TimeError(ParrotCheckFailure):
@@ -40,9 +36,7 @@ class NoVerifiedRoleTicket(ParrotCheckFailure):
 
 class InHubVoice(ParrotCheckFailure):
     def __init__(self):
-        super().__init__(
-            "You must be in your own Hub channel to use this command"
-        )
+        super().__init__("You must be in your own Hub channel to use this command")
 
 
 class NotGuildOwner(ParrotCheckFailure):

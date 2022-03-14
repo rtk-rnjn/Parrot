@@ -57,73 +57,86 @@ class Configuration(Cog):
                     f"`MogLog :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
                 )
 
-    @config.group(name='hub', invoke_without_command=True)
+    @config.group(name="hub", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True)
-    async def setup_hub(self, ctx: Context,):
+    async def setup_hub(
+        self,
+        ctx: Context,
+    ):
         """To setup Hub like channel"""
         overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(connect=True, read_messages=True),
-            ctx.guild.me: discord.PermissionOverwrite(connect=True, read_messages=True, manage_channels=True, manage_permissions=True),
+            ctx.guild.default_role: discord.PermissionOverwrite(
+                connect=True, read_messages=True
+            ),
+            ctx.guild.me: discord.PermissionOverwrite(
+                connect=True,
+                read_messages=True,
+                manage_channels=True,
+                manage_permissions=True,
+            ),
         }
         cat = await ctx.guild.create_category_channel(
-            "The Hub", reason=f"Action requested by {ctx.author} ({ctx.author.id})", overwrites=overwrites
+            "The Hub",
+            reason=f"Action requested by {ctx.author} ({ctx.author.id})",
+            overwrites=overwrites,
         )
 
         channel = await ctx.guild.create_voice_channel(
-            "Hub - Join to create", reason=f"Action requested by {ctx.author} ({ctx.author.id})", category=cat, user_limit=1
+            "Hub - Join to create",
+            reason=f"Action requested by {ctx.author} ({ctx.author.id})",
+            category=cat,
+            user_limit=1,
         )
 
-        await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {"hub": channel.id}}
-        )
+        await csc.update_one({"_id": ctx.guild.id}, {"$set": {"hub": channel.id}})
         await ctx.reply(
             f"{ctx.author.mention} successfully created {channel.mention}! Enjoy"
         )
 
-    @config.group(name='starboard', invoke_without_command=True)
+    @config.group(name="starboard", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    async def starboard(self, ctx: Context,):
+    async def starboard(
+        self,
+        ctx: Context,
+    ):
         """To setup the starboard in your server"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
-    async def starboard_channel(self, ctx: Context, *, channel: typing.Optional[discord.TextChannel]=None):
+    async def starboard_channel(
+        self, ctx: Context, *, channel: typing.Optional[discord.TextChannel] = None
+    ):
         """To setup the channel"""
         await csc.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"starboard.channel": channel.id if channel else None}}
+            {"$set": {"starboard.channel": channel.id if channel else None}},
         )
         if channel:
             return await ctx.send(
                 f"{ctx.author.mention} set the starboard channel to {channel.mention}"
             )
-        await ctx.send(
-            f"{ctx.author.mention} removed the starboard channel"
-        )
+        await ctx.send(f"{ctx.author.mention} removed the starboard channel")
 
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_permissions(administrator=True)
-    async def starboard_limit(self, ctx: Context, limit: int=3):
+    async def starboard_limit(self, ctx: Context, limit: int = 3):
         """To set the starboard limit"""
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {"starboard.limit": limit}}
+            {"_id": ctx.guild.id}, {"$set": {"starboard.limit": limit}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} set starboard limit to **{limit}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} set starboard limit to **{limit}**")
 
-    @starboard.command(name="lock",)
+    @starboard.command(
+        name="lock",
+    )
     @commands.has_permissions(administrator=True)
-    async def starboard_lock(self, ctx: Context, toggle: convert_bool=False):
+    async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
         """To lock the starboard channel"""
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {"starboard.is_locked": toggle}}
+            {"_id": ctx.guild.id}, {"$set": {"starboard.is_locked": toggle}}
         )
         await ctx.reply(
             f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}"
@@ -149,7 +162,9 @@ class Configuration(Cog):
                 if hook.user.id == self.bot.user.id:  # bot created that
                     webhook = hook
                     post = {str(event): str(webhook.url)}
-                    await logs.update_one({"_id": ctx.guild.id}, {"$set": post}, upsert=True)
+                    await logs.update_one(
+                        {"_id": ctx.guild.id}, {"$set": post}, upsert=True
+                    )
                     break
             else:
                 return await ctx.reply(
@@ -161,7 +176,9 @@ class Configuration(Cog):
                 reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
             )
             await logs.update_one(
-                {"_id": ctx.guild.id}, {"$set": {str(event): str(webhook.url)}}, upsert=True
+                {"_id": ctx.guild.id},
+                {"$set": {str(event): str(webhook.url)}},
+                upsert=True,
             )
         await ctx.reply(
             f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}"
@@ -177,7 +194,9 @@ class Configuration(Cog):
                 f"{ctx.author.mention} length of prefix can not be more than 6 characters."
             )
         post = {"prefix": arg}
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": post}
+        )
 
         await ctx.reply(
             f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
@@ -186,26 +205,34 @@ class Configuration(Cog):
     @config.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def suggestchannel(self, ctx: Context, *, channel: discord.TextChannel=None):
+    async def suggestchannel(
+        self, ctx: Context, *, channel: discord.TextChannel = None
+    ):
         """To configure the suggestion channel. If no channel is provided it will remove the channel"""
         if channel:
-            await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}})
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}}
+            )
             await ctx.reply(
                 f"{ctx.author.mention} set suggestion channel to {channel.mention}"
             )
             return
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}})
-        await ctx.reply(
-            f"{ctx.author.mention} removed suggestion channel"
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}}
         )
+        await ctx.reply(f"{ctx.author.mention} removed suggestion channel")
 
-    @config.command(name='24/7', aliases=['vc247', '247vc'])
+    @config.command(name="24/7", aliases=["vc247", "247vc"])
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def vc_247(self, ctx: Context, *, channel: typing.Optional[discord.VoiceChannel]=None):
+    async def vc_247(
+        self, ctx: Context, *, channel: typing.Optional[discord.VoiceChannel] = None
+    ):
         """To set 24/7 VC"""
         if channel:
-            await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"vc": channel.id}})
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$set": {"vc": channel.id}}
+            )
             await ctx.reply(
                 f"{ctx.author.mention} set 24/7 vc channel to **{channel.name}**"
             )
@@ -214,16 +241,19 @@ class Configuration(Cog):
             except Exception as e:
                 await ctx.send(f"{ctx.author.mention} something wrong: **{e}**")
             return
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"vc": None}})
-        await ctx.reply(
-            f"{ctx.author.mention} removed vc channel"
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"vc": None}}
         )
+        await ctx.reply(f"{ctx.author.mention} removed vc channel")
         if ctx.guild.me.voice:
             await ctx.guild.me.edit(voice_channel=None)
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
-    async def disconnect(self, ctx: Context,):
+    async def disconnect(
+        self,
+        ctx: Context,
+    ):
         """To disconnect from the channel"""
         if ctx.guild.me.voice:
             await ctx.guild.me.edit(voice_channel=None)
@@ -302,7 +332,9 @@ class Configuration(Cog):
     async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """To set the mute role of the server. By default role with name `Muted` is consider as mute role."""
         post = {"mute_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": post}
+        )
         if not role:
             return await ctx.reply(
                 f"{ctx.author.mention} mute role reseted! or removed"
@@ -317,7 +349,9 @@ class Configuration(Cog):
     async def modrole(self, ctx: Context, *, role: discord.Role = None):
         """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission"""
         post = {"mod_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": post}
+        )
         if not role:
             return await ctx.reply(f"{ctx.author.mention} mod role reseted! or removed")
         await ctx.reply(
@@ -330,7 +364,9 @@ class Configuration(Cog):
     async def actionlog(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To set the action log, basically the mod log."""
         post = {"action_log": channel.id if channel else None}
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": post}
+        )
         if not channel:
             return await ctx.reply(
                 f"{ctx.author.mention} action log reseted! or removed"
@@ -376,12 +412,14 @@ class Configuration(Cog):
             await c.update_one(
                 {"_id": ctx.guild.id},
                 {"$set": {"channel_id": channel.id, "webhook": webhook.url}},
-                upsert=True
+                upsert=True,
             )
             return
         if setting.lower() in ("ignore-role", "ignore_role", "ignorerole", "ignore"):
             post = {"ignore-role": role.id if role else None}
-            await self.bot.mongo.parrot_db.global_chat.update_one({"_id": ctx.guild.id}, {"$set": post}, upsert=True)
+            await self.bot.mongo.parrot_db.global_chat.update_one(
+                {"_id": ctx.guild.id}, {"$set": post}, upsert=True
+            )
             if not role:
                 return await ctx.reply(
                     f"{ctx.author.mention} ignore role reseted! or removed"
@@ -411,14 +449,13 @@ class Configuration(Cog):
     @config.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling(self, ctx: Context, toggle: convert_bool=True):
+    async def leveling(self, ctx: Context, toggle: convert_bool = True):
         """To configure leveling"""
         if not ctx.ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
             return
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {"leveling.enable": not toggle}}
+            {"_id": ctx.guild.id}, {"$set": {"leveling.enable": not toggle}}
         )
         await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
         return
@@ -426,11 +463,13 @@ class Configuration(Cog):
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_channel(self, ctx: Context, *, channel: discord.TextChannel=None):
+    async def leveling_channel(
+        self, ctx: Context, *, channel: discord.TextChannel = None
+    ):
         """To configure leveling channel"""
         await csc.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"leveling.channel": channel.id if channel else None}}
+            {"$set": {"leveling.channel": channel.id if channel else None}},
         )
         if channel:
             await ctx.reply(
@@ -444,39 +483,47 @@ class Configuration(Cog):
     @leveling.group(name="ignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_ignore_set(self, ctx: Context,):
+    async def leveling_ignore_set(
+        self,
+        ctx: Context,
+    ):
         """To configure the ignoring system of leveling"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
-    @leveling_ignore_set.command(name="role",)
+    @leveling_ignore_set.command(
+        name="role",
+    )
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_ignore_role(self, ctx: Context, *, role: discord.Role):
         """To configure leveling ignore role"""
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$addToSet": {"leveling.ignore_role": role.id}}
+            {"_id": ctx.guild.id}, {"$addToSet": {"leveling.ignore_role": role.id}}
         )
         await ctx.reply(
             f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**"
         )
         return
 
-    @leveling_ignore_set.command(name="channel",)
+    @leveling_ignore_set.command(
+        name="channel",
+    )
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_ignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
+    async def leveling_ignore_channel(
+        self, ctx: Context, *, channel: discord.TextChannel
+    ):
         """To configure leveling ignore channel"""
         await csc.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"leveling.ignore_channel": channel.id}}
+            {"$addToSet": {"leveling.ignore_channel": channel.id}},
         )
         await ctx.reply(
             f"{ctx.author.mention} all leveling will be ignored in **{channel.mention}**"
         )
 
-    @leveling.group(name='unignore', invoke_without_command=True)
+    @leveling.group(name="unignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_set(self, ctx: Context, *, role: discord.Role):
@@ -484,27 +531,31 @@ class Configuration(Cog):
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
-    @leveling_unignore_set.command(name="role",)
+    @leveling_unignore_set.command(
+        name="role",
+    )
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_role(self, ctx: Context, *, role: discord.Role):
         """To configure leveling unignore role"""
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$pull": {"leveling.ignore_role": role.id}}
+            {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_role": role.id}}
         )
         await ctx.reply(
             f"{ctx.author.mention} removed **{role.name}** from ignore list. (If existed)"
         )
 
-    @leveling_unignore_set.command(name="channel",)
+    @leveling_unignore_set.command(
+        name="channel",
+    )
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_unignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
+    async def leveling_unignore_channel(
+        self, ctx: Context, *, channel: discord.TextChannel
+    ):
         """To configure leveling ignore channel"""
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$pull": {"leveling.ignore_channel": channel.id}}
+            {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_channel": channel.id}}
         )
         await ctx.reply(
             f"{ctx.author.mention} removed **{channel.mention}** from ignore list. (If existed)"
@@ -513,7 +564,9 @@ class Configuration(Cog):
     @leveling.command(name="addreward")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def level_reward_add(self, ctx: Context, level: int, *, role: discord.Role = None):
+    async def level_reward_add(
+        self, ctx: Context, level: int, *, role: discord.Role = None
+    ):
         """To add the level reward"""
         if _ := await csc.find_one({"_id": ctx.guild.id, "leveling.reward": level}):
             return await ctx.send(
@@ -521,12 +574,14 @@ class Configuration(Cog):
             )
         await csc.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"leveling.reward": {"lvl": level, "role": role.id if role else None}}}
+            {
+                "$addToSet": {
+                    "leveling.reward": {"lvl": level, "role": role.id if role else None}
+                }
+            },
         )
         if not role:
-            await ctx.reply(
-                f"{ctx.author.mention} reset the role on level **{level}**"
-            )
+            await ctx.reply(f"{ctx.author.mention} reset the role on level **{level}**")
             return
         await ctx.reply(
             f"{ctx.author.mention} set role {role.name} at level **{level}**"
@@ -538,8 +593,7 @@ class Configuration(Cog):
     async def level_reward_remove(self, ctx: Context, level: int):
         """To remove the level reward"""
         await csc.update_one(
-            {"_id": ctx.guild.id},
-            {"$pull": {"leveling.reward": {"lvl": level}}}
+            {"_id": ctx.guild.id}, {"$pull": {"leveling.reward": {"lvl": level}}}
         )
         await ctx.reply(
             f"{ctx.author.mention} updated/removed reward at level: **{level}**"
@@ -573,7 +627,7 @@ class Configuration(Cog):
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @automod.group(name='spam', invoke_without_command=True)
+    @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def automod_spam(self, ctx: Context, to_enable: convert_bool):
@@ -590,7 +644,7 @@ class Configuration(Cog):
             "Bot will be issuing warning if someone exceeds the limit."
         )
 
-    @automod_spam.command(name='ignore')
+    @automod_spam.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def spam_ignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -602,7 +656,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} spam protection won't be working in **{channel.name}**"
         )
 
-    @automod_spam.command(name='remove')
+    @automod_spam.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def spam_remove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -614,7 +668,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} spam protection will be working in **{channel.name}**"
         )
 
-    @automod.group(name='links')
+    @automod.group(name="links")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def automod_links(self, ctx: Context, *, to_enable: convert_bool):
@@ -626,7 +680,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**"
         )
 
-    @automod_links.command(name='ignore')
+    @automod_links.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def antilinks_ignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -639,7 +693,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection"
         )
 
-    @automod_links.command(name='remove')
+    @automod_links.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def antilinksremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -651,7 +705,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection"
         )
 
-    @automod_links.command(name='whitelist')
+    @automod_links.command(name="whitelist")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def whitelistlink(self, ctx: Context, *, link: str):
@@ -667,7 +721,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} **<{link}>** added for the whitelist link"
         )
 
-    @automod_links.command(name='blacklist')
+    @automod_links.command(name="blacklist")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def blacklistlink(self, ctx: Context, *, link: str):
@@ -679,7 +733,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} **<{link}>** removed for the whitelist link"
         )
 
-    @automod.group(name='profanity', invoke_without_command=True)
+    @automod.group(name="profanity", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanity(self, ctx: Context, *, to_enable: convert_bool):
@@ -691,7 +745,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} profanity system in this server is set to **{to_enable}**"
         )
 
-    @profanity.command(name='add')
+    @profanity.command(name="add")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityadd(self, ctx: Context, *, word: str):
@@ -702,7 +756,7 @@ class Configuration(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} **||{word}||** added in the list")
 
-    @profanity.command(name='del', aliases=['delete'])
+    @profanity.command(name="del", aliases=["delete"])
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanitydel(self, ctx: Context, *, word: str):
@@ -712,7 +766,7 @@ class Configuration(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} **||{word}||** removed from the list")
 
-    @profanity.command(name='ignore')
+    @profanity.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -725,7 +779,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for profanity protection"
         )
 
-    @profanity.command(name='remove')
+    @profanity.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -737,7 +791,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for profanity protection"
         )
 
-    @automod.group(name='caps', invoke_without_command=True)
+    @automod.group(name="caps", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capsprotection(self, ctx: Context, *, to_enable: convert_bool):
@@ -749,7 +803,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} caps protection for this server is set to **{to_enable}**"
         )
 
-    @capsprotection.command(name='limit')
+    @capsprotection.command(name="limit")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capslimit(self, ctx: Context, *, limit: int):
@@ -762,7 +816,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} caps protection limit for this server is set to **{limit}**"
         )
 
-    @capsprotection.command(name='ignore')
+    @capsprotection.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capsignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -774,7 +828,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for caps protection"
         )
 
-    @capsprotection.command(name='remove')
+    @capsprotection.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def capsremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -786,7 +840,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} removed **{channel.name}** in whitelist, for caps protection"
         )
 
-    @automod.group(name='emoji', invoke_without_command=True)
+    @automod.group(name="emoji", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojiprotection(self, ctx: Context, *, to_enable: convert_bool):
@@ -798,7 +852,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} emoji protection for this server is set to **{to_enable}**"
         )
 
-    @emojiprotection.command(name='limit')
+    @emojiprotection.command(name="limit")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojilimit(self, ctx: Context, *, limit: int):
@@ -811,7 +865,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} emoji protection limit for this server is set to **{limit}**"
         )
 
-    @emojiprotection.command(name='ignore')
+    @emojiprotection.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojiignore(self, ctx: Context, *, channel: discord.TextChannel):
@@ -823,7 +877,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} added **{channel.name}** in whitelist, for emoji protection"
         )
 
-    @emojiprotection.command(name='remove')
+    @emojiprotection.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def emojiremove(self, ctx: Context, *, channel: discord.TextChannel):
@@ -1117,7 +1171,12 @@ class Configuration(Cog):
         """This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""
         await mt._delpingedrole(ctx, role)
 
-    @config.group(name='command', aliases=["cmd",])
+    @config.group(
+        name="command",
+        aliases=[
+            "cmd",
+        ],
+    )
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def cmdconfig(self, ctx: Context):
@@ -1236,7 +1295,9 @@ class Configuration(Cog):
             "count": flags.count,
             "to_delete": flags.delete,
             "punish": {
-                "type": flags.punish.lower() if flags.punish.lower() in PUNISH else None,
+                "type": flags.punish.lower()
+                if flags.punish.lower() in PUNISH
+                else None,
                 "duration": flags.duration
                 if flags.punish not in ("kick", "addrole", "removerole")
                 else None,

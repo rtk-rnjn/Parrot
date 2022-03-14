@@ -19,6 +19,7 @@ CONFIRM_REACTIONS = (
     "\N{THUMBS DOWN SIGN}",
 )
 
+
 class ConfirmationView(discord.ui.View):
     def __init__(
         self,
@@ -84,42 +85,58 @@ class Context(commands.Context):
     def session(self) -> Any:
         return self.bot.session
 
-    async def modlog(self, *, guild_id: int=None) -> Optional[discord.TextChannel]:
+    async def modlog(self, *, guild_id: int = None) -> Optional[discord.TextChannel]:
         guild_id = guild_id or self.guild.id
         try:
             return await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
-                self.bot.server_config[self.guild.id]["action_log"]
+                self.bot.server_config[self.guild.id]["action_log"],
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": guild_id}):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+                {"_id": guild_id}
+            ):
                 return await self.bot.getch(
                     self.bot.get_channel,
                     self.bot.fetch_channel,
-                    self.bot.server_config[self.guild.id]["action_log"]
+                    self.bot.server_config[self.guild.id]["action_log"],
                 )
 
-    async def muterole(self,) -> Optional[discord.Role]:
+    async def muterole(
+        self,
+    ) -> Optional[discord.Role]:
         try:
-            global_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.guild.roles)
-            author_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.author.roles)
-            return self.guild.get_role(
-                self.bot.server_config[self.guild.id]["mute_role"]
-            ) or global_muted or author_muted
+            global_muted = discord.utils.find(
+                lambda m: m.name.lower() == "muted", self.guild.roles
+            )
+            author_muted = discord.utils.find(
+                lambda m: m.name.lower() == "muted", self.author.roles
+            )
+            return (
+                self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"])
+                or global_muted
+                or author_muted
+            )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+                {"_id": self.guild.id}
+            ):
                 return self.guild.get_role(
                     self.bot.server_config[self.guild.id]["mute_role"]
                 )
 
-    async def modrole(self,) -> Optional[discord.Role]:
+    async def modrole(
+        self,
+    ) -> Optional[discord.Role]:
         try:
             return self.guild.get_role(
                 self.bot.server_config[self.guild.id]["mod_role"]
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+                {"_id": self.guild.id}
+            ):
                 return self.guild.get_role(
                     self.bot.server_config[self.guild.id]["mod_role"]
                 )
@@ -175,11 +192,15 @@ class Context(commands.Context):
                 pass
             return
         try:
-            return await self.send(content, reference=kwargs.get("reference") or self.message, **kwargs)
+            return await self.send(
+                content, reference=kwargs.get("reference") or self.message, **kwargs
+            )
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
-    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
+    async def entry_to_code(
+        self, entries: List[Tuple[Any, Any]]
+    ) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:
@@ -187,7 +208,9 @@ class Context(commands.Context):
         output.append("```")
         await self.send("\n".join(output))
 
-    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
+    async def indented_entry_to_code(
+        self, entries: List[Tuple[Any, Any]]
+    ) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:
@@ -244,7 +267,7 @@ class Context(commands.Context):
         await view.wait()
         return view.value
 
-    async def release(self, *, _for: Optional[int]=None) -> None:
+    async def release(self, *, _for: Optional[int] = None) -> None:
         await asyncio.sleep(_for or 0)
 
     async def safe_send(

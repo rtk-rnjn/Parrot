@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .fun import Fun
+
 # from .one_word_story import OneWordStory
 # from .counting import Counting
 

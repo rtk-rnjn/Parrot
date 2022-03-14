@@ -90,7 +90,9 @@ class Profanity(Cog):
                     at=message.created_at,
                 )
                 ctx: Context = await self.bot.get_context(message, cls=Context)
-                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+                await self.bot.get_cog("Moderator").warn_task(
+                    target=message.author, ctx=ctx
+                )
 
             if any(self.isin(word, message.content.lower()) for word in bad_words):
                 await message.channel.send(

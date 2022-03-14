@@ -259,9 +259,7 @@ class Misc(Cog):
         ) as response:
             _process_image(await response.read(), out_file)
 
-    async def _upload_to_pastebin(
-        self, text: str, lang: str = "txt"
-    ) -> Optional[str]:
+    async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
         async with aiohttp.ClientSession() as aioclient:
             post = await aioclient.post("https://hastebin.com/documents", data=text)
@@ -649,9 +647,7 @@ class Misc(Cog):
     @commands.is_nsfw()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def youtube(
-        self, ctx: Context, limit: Optional[int] = None, *, query: str
-    ):
+    async def youtube(self, ctx: Context, limit: Optional[int] = None, *, query: str):
         """Search for videos on YouTube"""
         results = await YoutubeSearch(query, max_results=limit or 5).to_json()
         main = json.loads(results)

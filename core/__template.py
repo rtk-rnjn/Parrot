@@ -18,7 +18,7 @@ post = {
         "ignore_channel": [],
         "ignore_role": [],
         "max_duration": None,
-        "channel": None
+        "channel": None,
     },
     "leveling": {
         "enable": False,
@@ -28,7 +28,7 @@ post = {
             # "lvl": LEVEL
         ],
         "ignore_role": [],
-        "ignore_channel": []
+        "ignore_channel": [],
     },
     "automod": {
         "spam": {
@@ -38,11 +38,8 @@ post = {
                 "enable": False,
                 "count": None,
                 "to_delete": False,
-                "punish": {
-                    "type": None,
-                    "duration": None
-                }
-            }
+                "punish": {"type": None, "duration": None},
+            },
         },
         "antilinks": {
             "enable": False,
@@ -52,11 +49,8 @@ post = {
                 "enable": False,
                 "count": None,
                 "to_delete": False,
-                "punish": {
-                    "type": None,
-                    "duration": None
-                }
-            }
+                "punish": {"type": None, "duration": None},
+            },
         },
         "profanity": {
             "enable": False,
@@ -66,11 +60,8 @@ post = {
                 "enable": False,
                 "count": None,
                 "to_delete": False,
-                "punish": {
-                    "type": None,
-                    "duration": None
-                }
-            }
+                "punish": {"type": None, "duration": None},
+            },
         },
         "caps": {
             "enable": False,
@@ -80,11 +71,8 @@ post = {
                 "enable": False,
                 "count": None,
                 "to_delete": False,
-                "punish": {
-                    "type": None,
-                    "duration": None
-                }
-            }
+                "punish": {"type": None, "duration": None},
+            },
         },
         "emoji": {
             "enable": False,
@@ -94,11 +82,8 @@ post = {
                 "enable": False,
                 "count": None,
                 "to_delete": False,
-                "punish": {
-                    "type": None,
-                    "duration": None
-                }
-            }
-        }
-    }
+                "punish": {"type": None, "duration": None},
+            },
+        },
+    },
 }

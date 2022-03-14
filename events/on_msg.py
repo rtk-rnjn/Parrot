@@ -110,7 +110,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         ]
         self.message_append = []
         self.message_cooldown = commands.CooldownMapping.from_cooldown(
-            1, 60, commands.BucketType.member, 
+            1,
+            60,
+            commands.BucketType.member,
         )
         self.on_bulk_task.start()
         self.LOCK = asyncio.Lock()
@@ -589,7 +591,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         # self.message_append.append(UpdateOne({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True))
-        await self.bot.mongo.msg_db.counter.update_one({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True)
+        await self.bot.mongo.msg_db.counter.update_one(
+            {"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True
+        )
 
         bucket = self.message_cooldown.get_bucket(message)
         retry_after = bucket.update_rate_limit()
@@ -606,7 +610,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            role = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or []
+            role = (
+                self.bot.server_config[message.guild.id]["leveling"]["ignore_role"]
+                or []
+            )
         except KeyError:
             role = []
 
@@ -614,40 +621,66 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            ignore_channel = self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"] or []
+            ignore_channel = (
+                self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"]
+                or []
+            )
         except KeyError:
             ignore_channel = []
 
         if message.channel.id in ignore_channel:
             return
 
-        await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
+        await self.__add_xp(
+            member=message.author, xp=random.randint(10, 15), msg=message
+        )
 
         try:
-            announce_channel = self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
+            announce_channel = (
+                self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
+            )
         except KeyError:
             return
         else:
             collection = self.bot.mongo.leveling[f"{message.guild.id}"]
-            ch = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, announce_channel, force_fetch=False)
+            ch = await self.bot.getch(
+                self.bot.get_channel,
+                self.bot.fetch_channel,
+                announce_channel,
+                force_fetch=False,
+            )
             if ch:
                 from utilities.rankcard import rank_card
+
                 if data := await collection.find_one_and_update(
-                    {"_id": message.author.id}, {"$inc": {"xp": 0}}, upsert=True, return_document=ReturnDocument.AFTER
+                    {"_id": message.author.id},
+                    {"$inc": {"xp": 0}},
+                    upsert=True,
+                    return_document=ReturnDocument.AFTER,
                 ):
                     cog = self.bot.get_cog("Utils")
-                    level = int((data["xp"]//42) ** 0.55)
+                    level = int((data["xp"] // 42) ** 0.55)
                     xp = cog._Utils__get_required_xp(level + 1)
-                    rank = await cog._Utils__get_rank(collection=collection, member=message.author)
+                    rank = await cog._Utils__get_rank(
+                        collection=collection, member=message.author
+                    )
                     file = await rank_card(
-                        level, rank, message.author, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
+                        level,
+                        rank,
+                        message.author,
+                        current_xp=data["xp"],
+                        custom_background="#000000",
+                        xp_color="#FFFFFF",
+                        next_level_xp=xp,
                     )
                     await message.reply("GG! Level up!", file=file)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]
-        data = await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": xp}}, upsert=True)
-        level = int((data["xp"]//42) ** 0.55)
+        data = await collection.find_one_and_update(
+            {"_id": member.id}, {"$inc": {"xp": xp}}, upsert=True
+        )
+        level = int((data["xp"] // 42) ** 0.55)
         await self.__add_role__xp(msg.guild.id, level, msg)
 
     async def __add_role__xp(self, guild_id: int, level: int, msg: discord.Message):
@@ -657,10 +690,19 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         for reward in ls:
-            if reward['lvl'] <= level:
-                await self.__add_roles(msg.author, discord.Object(id=reward["role"]), reason=f"Level Up role! On reaching: {level}")
+            if reward["lvl"] <= level:
+                await self.__add_roles(
+                    msg.author,
+                    discord.Object(id=reward["role"]),
+                    reason=f"Level Up role! On reaching: {level}",
+                )
 
-    async def __add_roles(self, member, role: tp.Union[discord.Roles, discord.Object], reason: tp.Optional[str]=None):
+    async def __add_roles(
+        self,
+        member,
+        role: tp.Union[discord.Roles, discord.Object],
+        reason: tp.Optional[str] = None,
+    ):
         try:
             await member.add_roles(role, reason=reason)
         except (discord.Forbidden, discord.HTTPException):
@@ -786,6 +828,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_bulk_task_after(self):
         if self.on_bulk_task.is_being_cancelled() and len(self.message_append) != 0:
             await self.bulker()
+
 
 def setup(bot: Parrot):
     bot.add_cog(OnMsg(bot))

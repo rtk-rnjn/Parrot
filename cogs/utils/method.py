@@ -88,7 +88,9 @@ async def _create_tag(bot: Parrot, ctx: Context, tag, text):
     if _ := await collection.find_one({"id": tag}):
         return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
 
-    val = await ctx.prompt(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels")
+    val = await ctx.prompt(
+        f"{ctx.author.mention} do you want to make the tag as NSFW marked channels"
+    )
     if val is None:
         return await ctx.reply(
             f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
@@ -359,6 +361,7 @@ async def _delete_todo(bot: Parrot, ctx: Context, name):
             f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
         )
 
+
 async def _create_giveaway_post(
     *,
     message: discord.Message,
@@ -366,9 +369,9 @@ async def _create_giveaway_post(
     prize: str,
     winners: int,
     endtime: float,
-    required_role: int=None,
-    required_guild: int=None,
-    required_level: int=None
+    required_role: int = None,
+    required_guild: int = None,
+    required_level: int = None,
 ) -> Dict[str, Any]:
     post_extra = {
         "message_id": message.id,
@@ -387,16 +390,15 @@ async def _create_giveaway_post(
         "message": message,
         "created_at": message.created_at.timestamp(),
         "expires_at": endtime,
-        "extra": {
-            "name": "GIVEAWAY_END",
-            "main": post_extra
-        }
+        "extra": {"name": "GIVEAWAY_END", "main": post_extra},
     }
     return post
 
 
 async def end_giveaway(bot: Parrot, **kw) -> List[int]:
-    channel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
+    channel = await bot.getch(
+        bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel")
+    )
 
     msg = await bot.get_or_fetch_message(channel, kw.get("message_id"))
 
@@ -456,7 +458,9 @@ async def __check_requirements(bot: Parrot, **kw) -> List[int]:
 
     current_guild = bot.get_guild(kw.get("guild_id"))
     required_guild = bot.get_guild(kw.get("required_guild"))
-    required_role = kw.get("required_role",)
+    required_role = kw.get(
+        "required_role",
+    )
     required_level = kw.get("required_level", 0)
 
     for member in kw.get("winners"):
@@ -471,22 +475,21 @@ async def __check_requirements(bot: Parrot, **kw) -> List[int]:
                 __item__remove(real_winners, member)
 
         if required_level:
-            level = await bot.mongo.leveling[f"{current_guild.id}"].find_one({"_id": member.id})
+            level = await bot.mongo.leveling[f"{current_guild.id}"].find_one(
+                {"_id": member.id}
+            )
             if level < required_level:
                 __item__remove(real_winners, member)
 
     return real_winners
 
 
-async def __update_giveaway_reactors(*, bot: Parrot, reactors: List[int], message_id: int):
+async def __update_giveaway_reactors(
+    *, bot: Parrot, reactors: List[int], message_id: int
+):
     collection = bot.mongo.parrot_db.giveaway
     await collection.update_one(
-        {"message_id": message_id},
-        {
-            "$set": {
-                "reactors": reactors
-            }
-        }
+        {"message_id": message_id}, {"$set": {"reactors": reactors}}
     )
 
 
@@ -495,6 +498,7 @@ def __item__remove(ls: List[Any], item: Any) -> Any:
         ls.remove(item)
     except (ValueError, KeyError):
         return ls
+
 
 async def __wait_for__message(ctx: Context) -> Optional[str]:
     def check(m: discord.Message) -> bool:
@@ -507,6 +511,7 @@ async def __wait_for__message(ctx: Context) -> Optional[str]:
     else:
         return msg.content
 
+
 async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     bot: Parrot = ctx.bot
     quest = [
@@ -516,7 +521,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
         "Number of winners?",
         "Required Role? (Role ID, Role Name, Role Mention) | `skip`, `none`, `no` for no role requirement",
         "Requied Level? `skip`, `none`, `no` for no role requirement",
-        "Required Server? (ID Only, bot must be in that server) `skip`, `none`, `no` for no role requirement"
+        "Required Server? (ID Only, bot must be in that server) `skip`, `none`, `no` for no role requirement",
     ]
 
     payload = {}
@@ -524,7 +529,9 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     for index, question in enumerate(quest, start=1):
         if index == 1:
             await ctx.reply(embed=discord.Embed(description=question))
-            channel = await commands.TextChannelConverter().convert(ctx, argument=(await __wait_for__message(ctx)))
+            channel = await commands.TextChannelConverter().convert(
+                ctx, argument=(await __wait_for__message(ctx))
+            )
             CHANNEL = channel
             payload["giveaway_channel"] = channel.id
         if index == 2:
@@ -537,7 +544,9 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
             payload["prize"] = prize
         if index == 4:
             await ctx.reply(embed=discord.Embed(description=question))
-            winners = __is_int(await __wait_for__message(ctx), "Winner must be a whole number")
+            winners = __is_int(
+                await __wait_for__message(ctx), "Winner must be a whole number"
+            )
             payload["winners"] = winners
         if index == 5:
             await ctx.reply(embed=discord.Embed(description=question))
@@ -549,30 +558,40 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
                 payload["required_role"] = None
         if index == 6:
             await ctx.reply(embed=discord.Embed(description=question))
-            level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
+            level = __is_int(
+                await __wait_for__message(ctx), "Level must be a whole number"
+            )
             payload["required_level"] = level
         if index == 7:
             await ctx.reply(embed=discord.Embed(description=question))
-            server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
+            server = __is_int(
+                await __wait_for__message(ctx), "Server must be a whole number"
+            )
             payload["required_guild"] = server
 
     embed = discord.Embed(
         title="\N{PARTY POPPER} Giveaway \N{PARTY POPPER}",
         color=ctx.bot.color,
         timestamp=ctx.message.created_at,
-        url=ctx.message.jump_url)
+        url=ctx.message.jump_url,
+    )
     embed.description = f"""**React \N{PARTY POPPER} to win**
 
 > Prize: **{payload['prize']}**
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 > Ends in: <t:{int(payload['endtime'])}:R>
 """
-    embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url
+    )
     CHANNEL = CHANNEL or ctx.channel
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     bot.message_cache[msg.id] = msg
-    main_post = await _create_giveaway_post(message=msg, **payload,)
+    main_post = await _create_giveaway_post(
+        message=msg,
+        **payload,
+    )
 
     await bot.mongo.parrot_db.giveaway.insert_one(
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
@@ -580,7 +599,9 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     return main_post
 
 
-async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int, prize: str):
+async def _make_giveaway_drop(
+    ctx: Context, *, duration: ShortTime, winners: int, prize: str
+):
     payload = {
         "giveaway_channel": ctx.channel.id,
         "endtime": duration.dt.timestamp(),
@@ -588,21 +609,24 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
         "prize": prize,
         "required_role": None,
         "required_level": None,
-        "required_guild": None
+        "required_guild": None,
     }
 
     embed = discord.Embed(
         title="\N{PARTY POPPER} Giveaway \N{PARTY POPPER}",
         color=ctx.bot.color,
         timestamp=ctx.message.created_at,
-        url=ctx.message.jump_url)
+        url=ctx.message.jump_url,
+    )
     embed.description = f"""**React \N{PARTY POPPER} to win**
 
 > Prize: **{payload['prize']}**
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 > Ends in: <t:{int(payload['endtime'])}:R>
 """
-    embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url
+    )
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     main_post = await _create_giveaway_post(message=msg, **payload)
@@ -611,6 +635,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
     )
     return main_post
+
 
 def __is_int(st: str, error: str) -> Optional[int]:
     if st.lower() in ("skip", "none", "no"):
@@ -622,19 +647,22 @@ def __is_int(st: str, error: str) -> Optional[int]:
     else:
         return main
 
+
 async def add_reactor(bot: Parrot, payload):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 
     await bot.mongo.parrot_db.giveaway.update_one(
-        {"message_id": payload.message_id, "status": "ONGOING"}, {"$addToSet": {"reactors": payload.user_id}}
+        {"message_id": payload.message_id, "status": "ONGOING"},
+        {"$addToSet": {"reactors": payload.user_id}},
     )
+
 
 async def remove_reactor(bot: Parrot, payload):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 
     await bot.mongo.parrot_db.giveaway.update_one(
-        {"message_id": payload.message_id, "status": "ONGOING"}, {"$pull": {"reactors": payload.user_id}}
+        {"message_id": payload.message_id, "status": "ONGOING"},
+        {"$pull": {"reactors": payload.user_id}},
     )
-

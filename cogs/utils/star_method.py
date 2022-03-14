@@ -150,7 +150,7 @@ async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEven
         bot_message_id = payload.message_id
     else:
         data["message_id"].remove(payload.message_id)
-        bot_message_id = data[0]
+        bot_message_id = data["message_id"][0]
 
     msg: discord.Message = await bot.get_or_fetch_message(ch, bot_message_id)
     

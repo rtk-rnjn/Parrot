@@ -161,6 +161,6 @@ async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEven
     embed: discord.Embed = msg.embeds[0]
 
     count = await get_star_count(bot, msg, from_db=True)
-    embed.color = star_gradient_colour(count or 1)
+    embed.color = star_gradient_colour(count)
 
     await msg.edit(embed=embed, content=msg.content)

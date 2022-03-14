@@ -167,7 +167,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             limit = server_config[payload.guild_id]["starboard"]["limit"]
         except KeyError:
             return False
-        count = await self.star_method.get_star_count(self.bot, msg, from_db=True)
+        count = await self.get_star_count(msg, from_db=True)
         if limit > count:
             data = await self.bot.mongo.parrot_db.starboard.find_one_and_delete(
                 {"message_id": msg.id}
@@ -224,7 +224,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
             if count >= limit:
                 await self.star_post(
-                    self.bot, starboard_channel=channel, message=msg
+                    starboard_channel=channel, message=msg
                 )
                 return True
         return False

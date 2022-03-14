@@ -44,7 +44,7 @@ class Moderator(Cog):
         """|coro|
 
         A simple and nerdy Logging System
-        
+
         Parameters
         -----------
         ctx: Context
@@ -1490,7 +1490,7 @@ class Moderator(Cog):
         target: Union[discord.Member, discord.User],
     ):
         """|coro|
-        
+
         Main system to warn
 
         Parameters

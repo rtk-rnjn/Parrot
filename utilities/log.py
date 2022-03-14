@@ -62,7 +62,7 @@ def setup() -> None:
     file_handler = handlers.RotatingFileHandler(log_file, maxBytes=5242880, backupCount=7, encoding="utf8")
     file_handler.setFormatter(log_format)
     root_log.addHandler(file_handler)
-    
+
     get_logger("discord").setLevel(logging.WARNING)
     get_logger("websockets").setLevel(logging.WARNING)
     get_logger("chardet").setLevel(logging.WARNING)

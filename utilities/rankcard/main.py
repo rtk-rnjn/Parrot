@@ -28,7 +28,7 @@ def rank_card(
     img_avatar = img_avatar.resize((170, 170))
     img.paste(img_avatar, (50, 50))
     d = ImageDraw.Draw(img)
-    
+
     x, y, w, h, progress = 260, 180, 575, 40, current_xp/next_level_xp
     bg="#484B4E"
     fg=xp_color

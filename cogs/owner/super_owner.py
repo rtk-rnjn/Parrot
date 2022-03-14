@@ -395,19 +395,19 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To get the audit log of the server, in nice format"""
         ls = []
         guild = args.guild or ctx.guild
-        
+
         kwargs = {}
 
         if args.user:
             kwargs["user"] = args.user.id
-        
+
         kwargs["limit"] = args.limit or 100
         if args.action:
             kwargs["action"] = args.action.get(args.action.lower().replace(" ", "_"))
-        
+
         if args.before:
             kwargs["before"] = args.before.dt
-        
+
         if args.after:
             kwargs["after"] = args.after.dt
 

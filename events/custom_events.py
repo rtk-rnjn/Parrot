@@ -88,7 +88,7 @@ class EventCustom(Cog):
 
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)
-    
+
     async def _parse_giveaway(self, **kw) -> None:
         member_ids = await end_giveaway(self.bot, **kw)
         channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel"))

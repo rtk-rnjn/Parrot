@@ -112,7 +112,7 @@ class Context(commands.Context):
                 return self.guild.get_role(
                     self.bot.server_config[self.guild.id]["mute_role"]
                 )
-    
+
     async def modrole(self,) -> Optional[discord.Role]:
         try:
             return self.guild.get_role(
@@ -280,7 +280,7 @@ class Context(commands.Context):
         **kwargs: Any,
     ) -> Optional[bool]:
         """|coro|
-        
+
         Reaction based Prompt
         Parameters
         -----------

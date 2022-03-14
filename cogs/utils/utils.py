@@ -576,7 +576,7 @@ class Utils(Cog):
             lvl = int((xp//42)**0.55)
             if lvl == level:
                 return int(xp)
-    
+
     async def __get_rank(self, *, collection, member: discord.Member):
         countr = 0
 
@@ -592,7 +592,7 @@ class Utils(Cog):
             if member := await self.bot.get_or_fetch_member(guild, data['_id']):
                 ls.append(f"{member} (`{member.id}`)")
         return ls
-    
+
     async def __fetch_suggestion_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
         try:
             ch_id: Optional[int] = self.bot.server_config[guild.id]["suggestion_channel"]
@@ -605,7 +605,7 @@ class Utils(Cog):
             if ch is None:
                 await self.bot.wait_until_ready()
                 ch: discord.TextChannel = await self.bot.fetch_channel(ch_id)
-        
+
             return ch
 
     async def get_or_fetch_message(self, msg_id: int, *, channel: discord.TextChannel=None) -> Optional[discord.Message]:
@@ -703,7 +703,7 @@ class Utils(Cog):
             msg = await self.__suggest(ctx=ctx, embed=embed)
             await self.__notify_on_suggestion(ctx, message=msg)
             await ctx.message.delete(delay=0)
-    
+
 
     @suggest.command(name="delete")
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -716,7 +716,7 @@ class Utils(Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-        
+
         if msg.author.id != self.bot.user.id:
             return await ctx.send(
                 f"Invalid `{messageID}`"
@@ -745,17 +745,17 @@ class Utils(Cog):
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
         PAYLOAD: Dict[str, Any] = self.message[msg.id]
-        
+
         if msg.author.id != self.bot.user.id:
             return await ctx.send(
                 f"Invalid `{messageID}`"
             )
-        
+
         table = TabularData()
 
         upvoter = [PAYLOAD["message_downvote"]]
         downvoter = [PAYLOAD["message_upvote"]]
-        
+
         table.set_columns(["Upvote", "Downvote"])
         ls = list(zip_longest(upvoter, downvoter, fillvalue=''))
         table.add_rows(ls)
@@ -780,12 +780,12 @@ class Utils(Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-        
+
         if msg.author.id != self.bot.user.id:
             return await ctx.send(
                 f"Invalid `{messageID}`"
             )
-        
+
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
         embed.add_field(name="Remark", value=remark[:250])
@@ -807,12 +807,12 @@ class Utils(Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-        
+
         if msg.author.id != self.bot.user.id:
             return await ctx.send(
                 f"Invalid `{messageID}`"
             )
-        
+
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
         embed.color = 0xADD8E6
@@ -829,7 +829,7 @@ class Utils(Cog):
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def suggest_flag(self, ctx: Context, messageID: int, flag: str):
         """To flag the suggestion.
-        
+
         Avalibale Flags :-
         - INVALID
         - ABUSE
@@ -842,12 +842,12 @@ class Utils(Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-        
+
         if msg.author.id != self.bot.user.id:
             return await ctx.send(
                 f"Invalid `{messageID}`"
             )
-        
+
         flag = flag.upper()
         try:
             payload: Dict[str, Union[int, str]] = OTHER_REACTION[flag]
@@ -950,7 +950,7 @@ class Utils(Cog):
             return member._roles.has(role_id)
         except KeyError:
             return False
-    
+
     @commands.group(name="giveaway", aliases=["gw"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     async def giveaway(self, ctx: Context):
@@ -958,14 +958,14 @@ class Utils(Cog):
         if not ctx.invoked_subcommand:
             post = await mt._make_giveaway(ctx)
             await self.create_timer(**post)
-    
+
     @giveaway.command(name="drop")
     @commands.has_permissions(manage_guild=True)
     async def giveaway_drop(self, ctx: Context, duration: ShortTime, winners: Optional[int]=1, *, prize: str=None):
         """To create giveaway in quick format"""
         post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
         await self.create_timer(**post)
-    
+
     @giveaway.command(name="end")
     @commands.has_permissions(manage_guild=True)
     async def giveaway_end(self, ctx: Context, messageID: int):

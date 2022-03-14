@@ -88,7 +88,7 @@ class Configuration(Cog):
         """To setup the starboard in your server"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
-    
+
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
     async def starboard_channel(self, ctx: Context, *, channel: typing.Optional[discord.TextChannel]=None):
@@ -104,7 +104,7 @@ class Configuration(Cog):
         await ctx.send(
             f"{ctx.author.mention} removed the starboard channel"
         )
-    
+
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_permissions(administrator=True)
     async def starboard_limit(self, ctx: Context, limit: int=3):
@@ -116,7 +116,7 @@ class Configuration(Cog):
         await ctx.reply(
             f"{ctx.author.mention} set starboard limit to **{limit}**"
         )
-    
+
     @starboard.command(name="lock",)
     @commands.has_permissions(administrator=True)
     async def starboard_lock(self, ctx: Context, toggle: convert_bool=False):
@@ -483,7 +483,7 @@ class Configuration(Cog):
         """To configure the ignoring system of leveling"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
-    
+
     @leveling_unignore_set.command(name="role",)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -496,7 +496,7 @@ class Configuration(Cog):
         await ctx.reply(
             f"{ctx.author.mention} removed **{role.name}** from ignore list. (If existed)"
         )
-    
+
     @leveling_unignore_set.command(name="channel",)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)

@@ -328,7 +328,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def resolve_member_ids(self, guild: discord.Guild, member_ids: list):
         """|coro|
-        
+
         Bulk resolves member IDs to member instances, if possible.
 
         Members that can't be resolved are discarded from the list.
@@ -393,7 +393,7 @@ class Parrot(commands.AutoShardedBot):
         self, guild: discord.Guild, member_id: int
     ) -> Optional[discord.Member]:
         """|coro|
-        
+
         Looks up a member in cache or fetches if not found.
 
         Parameters
@@ -429,7 +429,7 @@ class Parrot(commands.AutoShardedBot):
         self, channel: discord.TextChannel, messageID: int, *, fetch: bool=True, cache: bool=True
     ) -> Optional[discord.Message]:
         """|coro|
-        
+
         Get message from cache. Fetches if not found, and stored in cache
 
         Parameters

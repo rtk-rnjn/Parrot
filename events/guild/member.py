@@ -243,7 +243,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     async def _get_index(self, guild: discord.Guild) -> int:
         if data := await parrot_db.server_config.find_one({"_id": guild.id, "temp_channels": {"$exists": True}}):
             return len(data["temp_channels"]) + 1
-        
+
         return 1
 
     async def __on_voice_channel_join(self, channel, member):
@@ -275,7 +275,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         f"{member.mention} falied to create Hub for you. As the base Category is unreachable by the bot",
                         member=member
                     )
-    
+
     async def __on_voice_channel_remove(self, channel, member):
         if data := await parrot_db.server_config.find_one(
             {"_id": member.guild.id, "temp_channels.channel_id": channel.id, "temp_channels.author": member.id}
@@ -308,7 +308,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         await self.bot.wait_until_ready()
         if member.bot:
             return
-            
+
         if member.guild is None:
             return
 

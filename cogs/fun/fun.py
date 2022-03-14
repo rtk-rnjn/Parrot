@@ -1901,7 +1901,7 @@ class Fun(Cog):
     async def translate(self, ctx: Context, to: str, *, message: str):
         """Translates a message to English (default). using My Memory"""
         url = f"https://api.mymemory.translated.net/get?q={message}&langpair=en|{to}"
-        
+
         resp = await ctx.session.get(url)
         data = await resp.json()
 

@@ -514,7 +514,7 @@ class Menu(metaclass=_MenuMeta):
             self.__tasks.append(bot.loop.create_task(self._internal_loop()))
 
             async def add_reactions_task():
-                
+
                 for emoji in self.buttons:
                     await msg.add_reaction(emoji)
 

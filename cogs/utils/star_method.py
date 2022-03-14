@@ -129,7 +129,7 @@ async def star_post(
                 value=f"[{message.attachments[0].filename}]({message.attachments[0].url})",
             )
     msg = await starboard_channel.send(
-        f"{star_emoji(count)} | In: {message.channel.mention} | Message ID: {message.id}\n> {message.jump_url}",
+        f"{star_emoji(count)} {count} | In: {message.channel.mention} | Message ID: {message.id}\n> {message.jump_url}",
         embed=embed
     )
 

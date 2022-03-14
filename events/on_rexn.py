@@ -70,7 +70,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             msg: discord.Message = await self.bot.get_or_fetch_message(
                 ch, payload.message_id
             )
-            count = star_method.get_star_count(self.bot, msg)
+            count = await star_method.get_star_count(self.bot, msg)
 
             if count >= limit:
                 await star_method.star_post(

@@ -35,11 +35,7 @@ class Moderator(Cog):
         return discord.PartialEmoji(name="moderator", id=892424227007918121)
 
     async def log(
-        self,
-        ctx: Context,
-        cmd: str,
-        performed_on: Any,
-        reason: Optional[str] = None
+        self, ctx: Context, cmd: str, performed_on: Any, reason: Optional[str] = None
     ) -> Optional[discord.Message]:
         """|coro|
 
@@ -658,7 +654,7 @@ class Moderator(Cog):
             deafen_members=True,
             move_members=True,
         ),
-        in_temp_channel()
+        in_temp_channel(),
     )
     @commands.bot_has_guild_permissions(
         mute_members=True,
@@ -674,7 +670,9 @@ class Moderator(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @voice.command(name="mute")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel())
+    @commands.check_any(
+        is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel()
+    )
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_mute(
@@ -688,7 +686,9 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="unmute")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel())
+    @commands.check_any(
+        is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel()
+    )
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_unmute(
@@ -705,7 +705,7 @@ class Moderator(Cog):
     @commands.check_any(
         is_mod(),
         commands.has_guild_permissions(manage_channels=True, manage_permissions=True),
-        in_temp_channel()
+        in_temp_channel(),
     )
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
@@ -731,7 +731,7 @@ class Moderator(Cog):
     @commands.check_any(
         is_mod(),
         commands.has_guild_permissions(manage_channels=True, manage_permissions=True),
-        in_temp_channel()
+        in_temp_channel(),
     )
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
@@ -754,7 +754,9 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="deafen")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel())
+    @commands.check_any(
+        is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel()
+    )
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_deafen(
@@ -768,7 +770,9 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="undeafen")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel())
+    @commands.check_any(
+        is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel()
+    )
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_undeafen(
@@ -782,7 +786,9 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="kick")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel())
+    @commands.check_any(
+        is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel()
+    )
     @commands.bot_has_guild_permissions(move_members=True)
     @Context.with_type
     async def voice_kick(
@@ -796,20 +802,33 @@ class Moderator(Cog):
             await self.log(ctx, ctx.command.qualified_name, member, f"{reason}")
 
     @voice.command(name="limit")
-    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel())
+    @commands.check_any(
+        is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel()
+    )
     @commands.bot_has_guild_permissions(move_members=True)
     @Context.with_type
     async def voice_limit(
-        self, ctx: Context, limit: Optional[int]=None, *, reason: reason_convert = None
+        self,
+        ctx: Context,
+        limit: Optional[int] = None,
+        *,
+        reason: reason_convert = None,
     ):
         """To set the VC limit"""
         if not ctx.author.voice:
-            return await ctx.send(f"{ctx.author.mention} you must be in voice channel to use the command")
-        await ctx.voice.channel.edit(user_limit=limit, reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}")
+            return await ctx.send(
+                f"{ctx.author.mention} you must be in voice channel to use the command"
+            )
+        await ctx.voice.channel.edit(
+            user_limit=limit,
+            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+        )
         if limit:
             await ctx.send(f"{ctx.author.mention} set limit to **{limit}**")
             return
-        await ctx.send(f"{ctx.author.mention} removed the limit from {ctx.author.voice.channel.mention}")
+        await ctx.send(
+            f"{ctx.author.mention} removed the limit from {ctx.author.voice.channel.mention}"
+        )
 
     @voice.command(name="move")
     @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
@@ -1235,7 +1254,13 @@ class Moderator(Cog):
                 )
                 await self.log(ctx, "Text name changeded", target, reason)
 
-        if isinstance(target, (discord.VoiceChannel, discord.StageChannel,)):
+        if isinstance(
+            target,
+            (
+                discord.VoiceChannel,
+                discord.StageChannel,
+            ),
+        ):
             vc_embed = discord.Embed(
                 title="Mod Menu",
                 description=":lock: Lock\n"

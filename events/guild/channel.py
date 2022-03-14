@@ -64,7 +64,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Deleted at:` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
 `Deleted by:` **{user}**
 """
-                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        fp = io.BytesIO(
+                            self._overwrite_to_json(channel.overwrites).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.avatar.url,
@@ -105,7 +107,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Entry ID  :` **{entryID if entryID else None}**
 `Deleted by:` **{user}**
 """
-                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        fp = io.BytesIO(
+                            self._overwrite_to_json(channel.overwrites).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.avatar.url,
@@ -167,7 +171,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 **Change/Update (Before)**
 {ext}
 """
-                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        fp = io.BytesIO(
+                            self._overwrite_to_json(channel.overwrites).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.avatar.url,

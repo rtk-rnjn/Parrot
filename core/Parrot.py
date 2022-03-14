@@ -233,7 +233,9 @@ class Parrot(commands.AutoShardedBot):
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
         for channel in VCS:
             if channel:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=False)
+                channel = await self.getch(
+                    self.get_channel, self.fetch_channel, channel, force_fetch=False
+                )
                 try:
                     if channel:
                         await channel.connect()
@@ -293,7 +295,9 @@ class Parrot(commands.AutoShardedBot):
             else:
                 true = self.banned_users[ctx.author.id].get("command")
                 if true:
-                    print(f"Stops the command process of message {message}. User banned")
+                    print(
+                        f"Stops the command process of message {message}. User banned"
+                    )
                     return
 
             _true = await _can_run(ctx)
@@ -426,7 +430,13 @@ class Parrot(commands.AutoShardedBot):
         return members[0]
 
     async def get_or_fetch_message(
-        self, channel: discord.TextChannel, messageID: int, *, fetch: bool=True, cache: bool=True, partial: bool=False
+        self,
+        channel: discord.TextChannel,
+        messageID: int,
+        *,
+        fetch: bool = True,
+        cache: bool = True,
+        partial: bool = False,
     ) -> Union[discord.Message, discord.PartialMessage]:
         """|coro|
 
@@ -478,9 +488,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one(
-                {"_id": message.guild.id}
-            ):
+            if data := await collection.find_one({"_id": message.guild.id}):
                 prefix = data["prefix"]
                 post = data
                 self.server_config[message.guild.id] = post
@@ -506,7 +514,12 @@ class Parrot(commands.AutoShardedBot):
         return await ctx.send_help(ctx.command)
 
     async def getch(
-        self, get_function: Callable, fetch_function: Callable, _id: Optional[int]=None, *, force_fetch: bool=True
+        self,
+        get_function: Callable,
+        fetch_function: Callable,
+        _id: Optional[int] = None,
+        *,
+        force_fetch: bool = True,
     ) -> Any:
         try:
             something = get_function(_id)

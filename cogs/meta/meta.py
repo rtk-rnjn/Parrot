@@ -810,9 +810,7 @@ class Meta(Cog):
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         embed.set_footer(text=f"ID: {role.id}")
         if role.icon:
-            embed.set_thumbnail(
-                url=role.icon.url
-            )
+            embed.set_thumbnail(url=role.icon.url)
         if role.unicode_emoji:
             embed.set_thumbnail(
                 url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png"

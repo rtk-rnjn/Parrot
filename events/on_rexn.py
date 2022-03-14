@@ -21,7 +21,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
         count = star_method.get_star_count(msg)
         if limit < count:
-            data = await self.bot.mongo.parrot_db.starboard.find_one({"message_id": msg.id})
+            data = await self.bot.mongo.parrot_db.starboard.find_one(
+                {"message_id": msg.id}
+            )
             if not data:
                 return
             try:
@@ -31,10 +33,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             msg_list = data["message_id"]
             msg_list.remove(msg.id)
 
-            starboard_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
-            bot_msg = await self.bot.get_or_fetch_message(starboard_channel, msg_list[0], partial=True)
+            starboard_channel = await self.bot.getch(
+                self.bot.get_channel, self.bot.fetch_channel, channel
+            )
+            bot_msg = await self.bot.get_or_fetch_message(
+                starboard_channel, msg_list[0], partial=True
+            )
             await bot_msg.delete(delay=0)
-
 
     async def __on_star_reaction_add(self, payload):
         data = self.bot.server_config
@@ -62,11 +67,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ch = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
             )
-            msg: discord.Message = await self.bot.get_or_fetch_message(ch, payload.message_id)
+            msg: discord.Message = await self.bot.get_or_fetch_message(
+                ch, payload.message_id
+            )
             count = star_method.get_star_count(msg)
 
             if count >= limit:
-                await star_method.star_post(self.bot, starboard_channel=channel, message=msg)
+                await star_method.star_post(
+                    self.bot, starboard_channel=channel, message=msg
+                )
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):

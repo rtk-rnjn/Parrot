@@ -64,7 +64,6 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
         }
         await self.bot.session.post(self.url, json=data)
 
-
     @Cog.listener()
     async def on_guild_update(self, before, after):
         pass

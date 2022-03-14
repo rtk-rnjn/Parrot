@@ -21,7 +21,6 @@ CHANNEL_TOKEN_2 = 924513442273054730
 TOKEN_2 = os.environ["CHANNEL_TOKEN2"]
 
 
-
 class ErrorView(discord.ui.View):
     def __init__(self, author_id, *, ctx: Context = None, error=None):
         super().__init__(timeout=300.0)

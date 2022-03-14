@@ -14,6 +14,7 @@ else:
 TRACE_LEVEL = 5
 ALERT_LEVEL = 25
 
+
 class CustomLogger(LoggerClass):
     """Custom implementation of the `Logger` class with an added `trace` method."""
 
@@ -53,13 +54,17 @@ def setup() -> None:
 
     logging.setLoggerClass(CustomLogger)
     root_log = get_logger()
-    format_string = "%(asctime)s | %(name)s | %(levelname)s | %(funcName)s | %(message)s"
+    format_string = (
+        "%(asctime)s | %(name)s | %(levelname)s | %(funcName)s | %(message)s"
+    )
     log_format = logging.Formatter(format_string)
     root_log.setLevel(logging.INFO)
 
     log_file = Path("temp", "bot.log")
     log_file.parent.mkdir(exist_ok=True)
-    file_handler = handlers.RotatingFileHandler(log_file, maxBytes=5242880, backupCount=7, encoding="utf8")
+    file_handler = handlers.RotatingFileHandler(
+        log_file, maxBytes=5242880, backupCount=7, encoding="utf8"
+    )
     file_handler.setFormatter(log_format)
     root_log.addHandler(file_handler)
 

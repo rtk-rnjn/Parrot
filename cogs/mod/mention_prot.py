@@ -66,7 +66,9 @@ class MentionProt(Cog):
                     at=message.created_at,
                 )
                 ctx = await self.bot.get_context(message, cls=Context)
-                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+                await self.bot.get_cog("Moderator").warn_task(
+                    target=message.author, ctx=ctx
+                )
 
             if len(message.mentions) >= count:
                 await message.channel.send(
@@ -82,4 +84,3 @@ class MentionProt(Cog):
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.content != after.content:
             await self._on_message_passive(after)
-

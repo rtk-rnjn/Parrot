@@ -32,29 +32,15 @@ class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     text: Optional[str] = None
     after: Optional[ShortTime] = None
 
+
 REACTION_EMOJI = ["\N{UPWARDS BLACK ARROW}", "\N{DOWNWARDS BLACK ARROW}"]
 
 OTHER_REACTION = {
-    "INVALID": {
-        "emoji": "\N{WARNING SIGN}",
-        "color": 0xFFFFE0
-    },
-    "ABUSE": {
-        "emoji": "\N{DOUBLE EXCLAMATION MARK}",
-        "color": 0xFFA500
-    },
-    "INCOMPLETE": {
-        "emoji": "\N{WHITE QUESTION MARK ORNAMENT}",
-        "color": 0xFFFFFF
-    },
-    "DECLINE": {
-        "emoji": "\N{CROSS MARK}",
-        "color": 0xFF0000
-    },
-    "APPROVED": {
-        "emoji": "\N{WHITE HEAVY CHECK MARK}",
-        "color": 0x90EE90
-        }
+    "INVALID": {"emoji": "\N{WARNING SIGN}", "color": 0xFFFFE0},
+    "ABUSE": {"emoji": "\N{DOUBLE EXCLAMATION MARK}", "color": 0xFFA500},
+    "INCOMPLETE": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+    "DECLINE": {"emoji": "\N{CROSS MARK}", "color": 0xFF0000},
+    "APPROVED": {"emoji": "\N{WHITE HEAVY CHECK MARK}", "color": 0x90EE90},
 }
 
 
@@ -535,37 +521,56 @@ class Utils(Cog):
     async def before_reminder_task(self):
         await self.bot.wait_until_ready()
 
-    @commands.command(aliases=['level'])
+    @commands.command(aliases=["level"])
     @commands.bot_has_permissions(attach_files=True)
-    async def rank(self, ctx: Context, *, member: discord.Member=None):
+    async def rank(self, ctx: Context, *, member: discord.Member = None):
         """To get the level of the user"""
         member = member or ctx.author
         try:
             self.bot.server_config[ctx.guild.id]["leveling"]["enabled"]
         except KeyError:
-            return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
+            return await ctx.send(
+                f"{ctx.author.mention} leveling system is disabled in this server"
+            )
         else:
             collection = self.bot.mongo.leveling[f"{member.guild.id}"]
-            if data := await collection.find_one_and_update({"_id": member.id}, {"$inc": {"xp": 0}}, upsert=True, return_document=ReturnDocument.AFTER):
-                level = int((data["xp"]//42) ** 0.55)
+            if data := await collection.find_one_and_update(
+                {"_id": member.id},
+                {"$inc": {"xp": 0}},
+                upsert=True,
+                return_document=ReturnDocument.AFTER,
+            ):
+                level = int((data["xp"] // 42) ** 0.55)
                 xp = self.__get_required_xp(level + 1)
                 rank = await self.__get_rank(collection=collection, member=member)
                 file = await rank_card(
-                    level, rank, member, current_xp=data["xp"], custom_background="#000000", xp_color="#FFFFFF", next_level_xp=xp
+                    level,
+                    rank,
+                    member,
+                    current_xp=data["xp"],
+                    custom_background="#000000",
+                    xp_color="#FFFFFF",
+                    next_level_xp=xp,
                 )
                 await ctx.reply(file=file)
                 return
             if ctx.author.id == member.author.id:
-                return await ctx.reply(f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages")
-            return await ctx.reply(f"{ctx.author.mention} **{member}** don't have any xp yet.")
+                return await ctx.reply(
+                    f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages"
+                )
+            return await ctx.reply(
+                f"{ctx.author.mention} **{member}** don't have any xp yet."
+            )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def lb(self, ctx: Context, *, limit: Optional[int]=None):
+    async def lb(self, ctx: Context, *, limit: Optional[int] = None):
         """To display the Leaderboard"""
         limit = limit or 10
         collection = self.bot.mongo.leveling[f"{ctx.guild.id}"]
-        entries = await self.__get_entries(collection=collection, limit=limit, guild=ctx.guild)
+        entries = await self.__get_entries(
+            collection=collection, limit=limit, guild=ctx.guild
+        )
         pages = SimplePages(entries, ctx=ctx, per_page=10)
         await pages.start()
 
@@ -573,7 +578,7 @@ class Utils(Cog):
         xp = 0
         while True:
             xp += 12
-            lvl = int((xp//42)**0.55)
+            lvl = int((xp // 42) ** 0.55)
             if lvl == level:
                 return int(xp)
 
@@ -583,19 +588,23 @@ class Utils(Cog):
         # you can't use `enumerate`
         async for data in collection.find({}, sort=[("xp", -1)]):
             countr += 1
-            if data['_id'] == member.id:
+            if data["_id"] == member.id:
                 return countr
 
     async def __get_entries(self, *, collection, limit: int, guild: discord.Guild):
         ls = []
         async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
-            if member := await self.bot.get_or_fetch_member(guild, data['_id']):
+            if member := await self.bot.get_or_fetch_member(guild, data["_id"]):
                 ls.append(f"{member} (`{member.id}`)")
         return ls
 
-    async def __fetch_suggestion_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
+    async def __fetch_suggestion_channel(
+        self, guild: discord.Guild
+    ) -> Optional[discord.TextChannel]:
         try:
-            ch_id: Optional[int] = self.bot.server_config[guild.id]["suggestion_channel"]
+            ch_id: Optional[int] = self.bot.server_config[guild.id][
+                "suggestion_channel"
+            ]
         except KeyError:
             raise commands.BadArgument(f"No suggestion channel is setup")
         else:
@@ -608,7 +617,9 @@ class Utils(Cog):
 
             return ch
 
-    async def get_or_fetch_message(self, msg_id: int, *, channel: discord.TextChannel=None) -> Optional[discord.Message]:
+    async def get_or_fetch_message(
+        self, msg_id: int, *, channel: discord.TextChannel = None
+    ) -> Optional[discord.Message]:
         try:
             self.message[msg_id]
         except KeyError:
@@ -616,7 +627,9 @@ class Utils(Cog):
         else:
             return self.message[msg_id]["message"]
 
-    async def __fetch_message_from_channel(self, *, message: int, channel: discord.TextChannel):
+    async def __fetch_message_from_channel(
+        self, *, message: int, channel: discord.TextChannel
+    ):
         async for msg in channel.history(
             limit=1,
             before=discord.Object(message + 1),
@@ -626,18 +639,29 @@ class Utils(Cog):
                 payload = {
                     "message_author": msg.author,
                     "message": msg,
-                    "message_downvote": self.__get_emoji_count_from__msg(msg, "\N{DOWNWARDS BLACK ARROW}"),
-                    "message_upvote": self.__get_emoji_count_from__msg(msg, "\N{UPWARDS BLACK ARROW}")
+                    "message_downvote": self.__get_emoji_count_from__msg(
+                        msg, "\N{DOWNWARDS BLACK ARROW}"
+                    ),
+                    "message_upvote": self.__get_emoji_count_from__msg(
+                        msg, "\N{UPWARDS BLACK ARROW}"
+                    ),
                 }
                 self.message[message] = payload
                 return msg
 
-    def __get_emoji_count_from__msg(self, msg: discord.Message, *, emoji: Union[discord.Emoji, discord.PartialEmoji, str]):
+    def __get_emoji_count_from__msg(
+        self,
+        msg: discord.Message,
+        *,
+        emoji: Union[discord.Emoji, discord.PartialEmoji, str],
+    ):
         for reaction in msg.reactions:
             if str(reaction.emoji) == str(emoji):
                 return reaction.count
 
-    async def __suggest(self, content: Optional[str]=None, *, embed: discord.Embed, ctx: Context) -> discord.Message:
+    async def __suggest(
+        self, content: Optional[str] = None, *, embed: discord.Embed, ctx: Context
+    ) -> discord.Message:
 
         channel = await self.__fetch_suggestion_channel(ctx.guild)
         msg: discord.Message = await channel.send(content, embed=embed)
@@ -646,7 +670,7 @@ class Utils(Cog):
             "message_author": msg.author,
             "message_downvote": 0,
             "message_upvote": 0,
-            "message": msg
+            "message": msg,
         }
         self.message[msg.id] = payload
 
@@ -654,7 +678,9 @@ class Utils(Cog):
         await msg.create_thread(name=f"Suggestion {ctx.author}")
         return msg
 
-    async def __notify_on_suggestion(self, ctx: Context, *, message: discord.Message) -> None:
+    async def __notify_on_suggestion(
+        self, ctx: Context, *, message: discord.Message
+    ) -> None:
         jump_url: str = message.jump_url
         _id: int = message.id
         content = (
@@ -667,7 +693,14 @@ class Utils(Cog):
         except discord.Forbidden:
             pass
 
-    async def __notify_user(self, ctx: Context, user: discord.Member, *, message: discord.Message, remark: str) -> None:
+    async def __notify_user(
+        self,
+        ctx: Context,
+        user: discord.Member,
+        *,
+        message: discord.Message,
+        remark: str,
+    ) -> None:
         remark = remark or "No remark was given"
 
         content = (
@@ -681,7 +714,6 @@ class Utils(Cog):
         except discord.Forbidden:
             pass
 
-
     @commands.group(invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
@@ -693,17 +725,14 @@ class Utils(Cog):
                 description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6
             )
             embed.set_author(
-                name=str(ctx.author),
-                icon_url=ctx.author.display_avatar.url
+                name=str(ctx.author), icon_url=ctx.author.display_avatar.url
             )
             embed.set_footer(
-                text=f"Author ID: {ctx.author.id}",
-                icon_url=ctx.guild.icon.url
+                text=f"Author ID: {ctx.author.id}", icon_url=ctx.guild.icon.url
             )
             msg = await self.__suggest(ctx=ctx, embed=embed)
             await self.__notify_on_suggestion(ctx, message=msg)
             await ctx.message.delete(delay=0)
-
 
     @suggest.command(name="delete")
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -718,9 +747,7 @@ class Utils(Cog):
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(
-                f"Invalid `{messageID}`"
-            )
+            return await ctx.send(f"Invalid `{messageID}`")
 
         if ctx.channel.permissions_for(ctx.author).manage_messages:
             await msg.delete(delay=0)
@@ -732,7 +759,6 @@ class Utils(Cog):
 
         await msg.delete(delay=0)
         await ctx.send("Done", delete_after=5)
-
 
     @suggest.command(name="stats")
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -747,9 +773,7 @@ class Utils(Cog):
         PAYLOAD: Dict[str, Any] = self.message[msg.id]
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(
-                f"Invalid `{messageID}`"
-            )
+            return await ctx.send(f"Invalid `{messageID}`")
 
         table = TabularData()
 
@@ -757,7 +781,7 @@ class Utils(Cog):
         downvoter = [PAYLOAD["message_upvote"]]
 
         table.set_columns(["Upvote", "Downvote"])
-        ls = list(zip_longest(upvoter, downvoter, fillvalue=''))
+        ls = list(zip_longest(upvoter, downvoter, fillvalue=""))
         table.add_rows(ls)
 
         # conflict = [i for i in upvoter if i in downvoter]
@@ -770,7 +794,6 @@ class Utils(Cog):
             embed.add_field(name="Flagged", value=msg.content)
         await ctx.send(content=msg.jump_url, embed=embed)
 
-
     @suggest.command(name="note", aliases=["remark"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, messageID: int, *, remark: str):
@@ -782,9 +805,7 @@ class Utils(Cog):
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(
-                f"Invalid `{messageID}`"
-            )
+            return await ctx.send(f"Invalid `{messageID}`")
 
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
@@ -797,10 +818,11 @@ class Utils(Cog):
 
         await ctx.send("Done", delete_after=5)
 
-
     @suggest.command(name="clear", aliases=["cls"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
-    async def clear_suggestion_embed(self, ctx: Context, messageID: int, *, remark: str):
+    async def clear_suggestion_embed(
+        self, ctx: Context, messageID: int, *, remark: str
+    ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
         if not msg:
@@ -809,9 +831,7 @@ class Utils(Cog):
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(
-                f"Invalid `{messageID}`"
-            )
+            return await ctx.send(f"Invalid `{messageID}`")
 
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
@@ -823,7 +843,6 @@ class Utils(Cog):
                 await msg.clear_reaction(reaction.emoji)
 
         await ctx.send("Done", delete_after=5)
-
 
     @suggest.command(name="flag")
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
@@ -844,9 +863,7 @@ class Utils(Cog):
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(
-                f"Invalid `{messageID}`"
-            )
+            return await ctx.send(f"Invalid `{messageID}`")
 
         flag = flag.upper()
         try:
@@ -864,7 +881,6 @@ class Utils(Cog):
         content = f"Flagged: {flag} | {payload['emoji']}"
         await msg.edit(content=content, embed=embed)
         await ctx.send("Done", delete_after=5)
-
 
     @Cog.listener(name="on_raw_message_delete")
     async def suggest_msg_delete(self, payload) -> None:
@@ -929,7 +945,9 @@ class Utils(Cog):
             context: Context = await self.bot.get_context(message, cls=Context)
             # cmd: commands.Command = self.bot.get_command("suggest flag")
 
-            msg: Union[discord.Message, discord.DeletedReferencedMessage] = message.reference.resolved
+            msg: Union[
+                discord.Message, discord.DeletedReferencedMessage
+            ] = message.reference.resolved
 
             if not isinstance(msg, discord.discord.Message):
                 return
@@ -961,9 +979,18 @@ class Utils(Cog):
 
     @giveaway.command(name="drop")
     @commands.has_permissions(manage_guild=True)
-    async def giveaway_drop(self, ctx: Context, duration: ShortTime, winners: Optional[int]=1, *, prize: str=None):
+    async def giveaway_drop(
+        self,
+        ctx: Context,
+        duration: ShortTime,
+        winners: Optional[int] = 1,
+        *,
+        prize: str = None,
+    ):
         """To create giveaway in quick format"""
-        post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
+        post = await mt._make_giveaway_drop(
+            ctx, duration=duration, winners=winners, prize=prize
+        )
         await self.create_timer(**post)
 
     @giveaway.command(name="end")
@@ -989,12 +1016,16 @@ class Utils(Cog):
 
     @giveaway.command(name="reroll")
     @commands.has_permissions(manage_guild=True)
-    async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int=1):
+    async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int = 1):
         """To end the giveaway"""
-        if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
+        if data := await self.bot.mongo.parrot_db.giveaway.find_one(
+            {"message_id": messageID}
+        ):
 
             if data["status"] == "ONGOING":
-                return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
+                return await ctx.send(
+                    f"{ctx.author.mention} can not reroll the ongoing giveaway"
+                )
 
             data["winners"] = winners
 
@@ -1010,4 +1041,6 @@ class Utils(Cog):
                 f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
             )
             return
-        await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`")
+        await ctx.send(
+            f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`"
+        )

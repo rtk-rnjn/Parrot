@@ -32,7 +32,7 @@ async def _add_roles_bot(
     destination: discord.TextChannel,
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
-    reason: str
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -70,7 +70,7 @@ async def _add_roles_humans(
     destination: discord.TextChannel,
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
-    reason: str
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -102,7 +102,13 @@ async def _add_roles_humans(
 
 
 async def _add_roles(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, role: discord.Role, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    role: discord.Role,
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -133,7 +139,13 @@ async def _add_roles(
 
 
 async def _remove_roles(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, role: discord.Role, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    role: discord.Role,
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -164,7 +176,13 @@ async def _remove_roles(
 
 
 async def _role_hoist(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, role: discord.Role, _bool: bool, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    role: discord.Role,
+    _bool: bool,
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -195,7 +213,13 @@ async def _role_hoist(
 
 
 async def _change_role_name(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, role: discord.Role, text: str, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    role: discord.Role,
+    text: str,
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -226,7 +250,13 @@ async def _change_role_name(
 
 
 async def _change_role_color(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, role: discord.Role, int_: int, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    role: discord.Role,
+    int_: int,
+    reason: str,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -260,7 +290,14 @@ async def _change_role_color(
 
 
 async def _ban(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, days: int, reason: str, silent=False
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    days: int,
+    reason: str,
+    silent=False,
 ):
     if (
         isinstance(member, discord.Member)
@@ -291,7 +328,13 @@ async def _ban(
 
 
 async def _mass_ban(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, members: List[discord.Member], days: int, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    members: List[discord.Member],
+    days: int,
+    reason: str,
 ):
 
     for member in members:
@@ -322,7 +365,12 @@ async def _mass_ban(
 
 
 async def _softban(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, members: List[discord.Member], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    members: List[discord.Member],
+    reason: str,
 ):
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
@@ -402,7 +450,12 @@ async def _temp_ban(
 
 
 async def _unban(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
 ):
     try:
         await guild.unban(
@@ -459,7 +512,13 @@ async def _timeout(
 
 
 async def _mute(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str, silent=False
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
+    silent=False,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
@@ -501,12 +560,19 @@ async def _mute(
             return False
 
 
-async def _unmute(guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str):
+async def _unmute(
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
+):
     if member.timed_out_until:
         try:
             await member.edit(
                 timed_out_until=None,
-                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}"
+                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
             )
             await destination.send(
                 f"{ctx.author.mention} removed timeout from **{member}**"
@@ -519,7 +585,9 @@ async def _unmute(guild: discord.Guild, command_name: str, ctx: Context, destina
         return
     muted = await ctx.muterole()
     if not muted:
-        await destination.send(f"{ctx.author.mention} can not find Mute role in the server")
+        await destination.send(
+            f"{ctx.author.mention} can not find Mute role in the server"
+        )
         return False
     try:
         if muted in member.roles:
@@ -541,7 +609,13 @@ async def _unmute(guild: discord.Guild, command_name: str, ctx: Context, destina
 
 
 async def _kick(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str, silent=False
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
+    silent=False,
 ):
     try:
         if ctx.author.top_role.position < member.top_role.position and not silent:
@@ -569,7 +643,12 @@ async def _kick(
 
 
 async def _mass_kick(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, members: List[discord.Member], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    members: List[discord.Member],
+    reason: str,
 ):
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
@@ -600,7 +679,14 @@ async def _mass_kick(
 
 
 async def _block(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel, members: List[discord.Member], reason: str, silent=False
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
+    members: List[discord.Member],
+    reason: str,
+    silent=False,
 ):
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
@@ -632,7 +718,13 @@ async def _block(
 
 
 async def _unblock(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel, members: List[discord.Member], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
+    members: List[discord.Member],
+    reason: str,
 ):
     for member in members:
         try:
@@ -660,7 +752,13 @@ async def _unblock(
 # LOCK
 
 
-async def _text_lock(guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel):
+async def _text_lock(
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
+):
     try:
         await channel.set_permissions(
             guild.default_role,
@@ -676,7 +774,11 @@ async def _text_lock(guild: discord.Guild, command_name: str, ctx: Context, dest
 
 
 async def _vc_lock(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: Union[discord.VoiceChannel, discord.StageChannel]
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: Union[discord.VoiceChannel, discord.StageChannel],
 ):
     if not channel:
         return
@@ -684,7 +786,7 @@ async def _vc_lock(
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
-            connect=False
+            connect=False,
         )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
@@ -698,7 +800,11 @@ async def _vc_lock(
 
 
 async def _text_unlock(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
 ):
     try:
         await channel.set_permissions(
@@ -715,7 +821,11 @@ async def _text_unlock(
 
 
 async def _vc_unlock(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: Union[discord.VoiceChannel, discord.StageChannel]
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: Union[discord.VoiceChannel, discord.StageChannel],
 ):
     if not channel:
         return
@@ -737,7 +847,12 @@ async def _vc_unlock(
 
 
 async def _change_nickname(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, name: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    name: str,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -758,7 +873,12 @@ async def _change_nickname(
 
 
 async def _change_channel_topic(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel, text: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
+    text: str,
 ):
     try:
         await channel.edit(
@@ -776,7 +896,12 @@ async def _change_channel_topic(
 
 
 async def _change_channel_name(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel, text: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
+    text: str,
 ):
     try:
         await channel.edit(
@@ -793,7 +918,13 @@ async def _change_channel_name(
 
 
 async def _slowmode(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, seconds: int, channel: discord.TextChannel, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    seconds: int,
+    channel: discord.TextChannel,
+    reason: str,
 ):
     if seconds:
         try:
@@ -825,7 +956,14 @@ async def _slowmode(
             return False
 
 
-async def _clone(guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, channel: discord.TextChannel, reason: str):
+async def _clone(
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    channel: discord.TextChannel,
+    reason: str,
+):
     try:
         new_channel = await channel.clone(
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}"
@@ -845,7 +983,12 @@ async def _clone(guild: discord.Guild, command_name: str, ctx: Context, destinat
 
 
 async def _voice_mute(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -865,7 +1008,12 @@ async def _voice_mute(
 
 
 async def _voice_unmute(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
 ):
     try:
         await member.edit(
@@ -881,7 +1029,12 @@ async def _voice_unmute(
 
 
 async def _voice_deafen(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -901,7 +1054,12 @@ async def _voice_deafen(
 
 
 async def _voice_undeafen(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
 ):
     try:
         await member.edit(
@@ -917,7 +1075,12 @@ async def _voice_undeafen(
 
 
 async def _voice_kick(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    reason: str,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -937,7 +1100,13 @@ async def _voice_kick(
 
 
 async def _voice_ban(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, channel: Union[discord.VoiceChannel, discord.StageChannel], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    channel: Union[discord.VoiceChannel, discord.StageChannel],
+    reason: str,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -958,13 +1127,19 @@ async def _voice_ban(
 
 
 async def _voice_unban(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, member: discord.Member, channel: Union[discord.VoiceChannel, discord.StageChannel], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    channel: Union[discord.VoiceChannel, discord.StageChannel],
+    reason: str,
 ):
     try:
         await channel.set_permissions(
             member,
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
-            connect=None
+            connect=None,
         )
         await destination.send(f"{ctx.author.mention} voice unbanned **{member}**")
     except Exception as e:
@@ -975,7 +1150,12 @@ async def _voice_unban(
 
 
 async def _emoji_delete(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, emojis: List[Union[discord.Emoji, discord.PartialEmoji]], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
+    reason: str,
 ):
     for emoji in emojis:
         try:
@@ -992,7 +1172,12 @@ async def _emoji_delete(
 
 
 async def _emoji_add(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, emojis: List[Union[discord.Emoji, discord.PartialEmoji]], reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
+    reason: str,
 ):
     for emoji in emojis:
         try:
@@ -1013,7 +1198,13 @@ async def _emoji_add(
 
 
 async def _emoji_addurl(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, url: str, name: str, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    url: str,
+    name: str,
+    reason: str,
 ):
     try:
         async with aiohttp.ClientSession() as session:
@@ -1031,7 +1222,13 @@ async def _emoji_addurl(
 
 
 async def _emoji_rename(
-    guild: discord.Guild, command_name: str, ctx: Context, destination: discord.TextChannel, emoji: Union[discord.Emoji, discord.PartialEmoji], name: str, reason: str
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    emoji: Union[discord.Emoji, discord.PartialEmoji],
+    name: str,
+    reason: str,
 ):
     try:
         await emoji.edit(

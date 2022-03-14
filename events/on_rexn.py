@@ -20,7 +20,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return False
         count = await star_method.get_star_count(self.bot, msg, from_db=True)
-        if limit > (count - 1):  # -1 because reaction was removed
+        if limit > count:
             data = await self.bot.mongo.parrot_db.starboard.find_one_and_delete(
                 {"message_id": msg.id}
             )
@@ -92,9 +92,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-            TRUE: bool = await self.__on_star_reaction_add(payload)
+            TRUE: bool = await star_method._add_reactor(self.bot, payload)
             if not TRUE:
-                await star_method._add_reactor(self.bot, payload)
+                await self.__on_star_reaction_add(payload)
 
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -106,9 +106,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-            TRUE: bool = await self.__on_star_reaction_remove(payload)
+            TRUE: bool = await star_method._remove_reactor(self.bot, payload)
             if not TRUE:
-                await star_method._remove_reactor(self.bot, payload)
+                await self.__on_star_reaction_remove(payload)
 
     @Cog.listener()
     async def on_reaction_clear(self, message, reactions):

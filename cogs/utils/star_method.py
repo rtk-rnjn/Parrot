@@ -20,7 +20,7 @@ import discord
 # }
 
 
-async def _add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
+async def _add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent) -> bool:
     collection = bot.mongo.parrot_db.starboard
     data = await collection.find_one_and_update(
         {"message_id": payload.message_id},
@@ -28,10 +28,10 @@ async def _add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
         return_document=True
     )
     if data:
-        await edit_starbord_post(bot, payload, **data)
+        return await edit_starbord_post(bot, payload, **data)
+    return False
 
-
-async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
+async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent) -> bool:
     collection = bot.mongo.parrot_db.starboard
     data = await collection.find_one_and_update(
         {"message_id": payload.message_id},
@@ -39,7 +39,8 @@ async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
         return_document=True
     )
     if data:
-        await edit_starbord_post(bot, payload, **data)
+        return await edit_starbord_post(bot, payload, **data)
+    return False
 
 
 async def __make_starboard_post(
@@ -140,10 +141,10 @@ async def star_post(
     await bot.mongo.parrot_db.starboard.insert_one(post)
 
 
-async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEvent, **data) -> None:
+async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEvent, **data) -> bool:
     ch: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, data["channel_id"])
     if ch is None:
-        return
+        return False
 
     if payload.user_id == bot.user.id:
         # message was reacted on bot's message
@@ -164,3 +165,4 @@ async def edit_starbord_post(bot: Parrot, payload: discord.RawReactionActionEven
     embed.color = star_gradient_colour(count)
 
     await msg.edit(embed=embed, content=msg.content)
+    return True

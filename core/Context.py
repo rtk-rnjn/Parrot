@@ -7,9 +7,11 @@ import discord
 import asyncio
 import io
 import functools
+
 from utilities.emotes import emojis
+from utilities.database import cluster
+
 from typing import Literal, Optional, Union, List, Tuple, Any
-from utilities.log import get_logger
 
 
 __all__ = ("Context",)
@@ -76,6 +78,8 @@ class Context(commands.Context):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.starboard = cluster.parrot_db.starboard
+        self.giveaway = cluster.parrot_db.giveaway
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy

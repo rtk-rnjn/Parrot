@@ -29,9 +29,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return_document=True
         )
         if data:
-            return await self.edit_starbord_post(payload, **data)
-        else:
-            return await self.__on_star_reaction_remove(payload)
+            await self.edit_starbord_post(payload, **data)
+        return await self.__on_star_reaction_remove(payload)
 
     async def __make_starboard_post(self,
         *,

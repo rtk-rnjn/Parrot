@@ -19,21 +19,21 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             limit = data[payload.guild_id]["starboard"]["limit"]
         except KeyError:
             return
-        if count := star_method.get_star_count(msg):
-            if limit < count:
-                data = await self.bot.mongo.parrot_db.starboard.find_one({"message_id": msg.id})
-                if not data:
-                    return
-                try:
-                    channel = data[payload.guild_id]["starboard"]["channel"]
-                except KeyError:
-                    return
-                msg_list = data["message_id"]
-                msg_list.remove(msg.id)
+        count = star_method.get_star_count(msg)
+        if limit < count:
+            data = await self.bot.mongo.parrot_db.starboard.find_one({"message_id": msg.id})
+            if not data:
+                return
+            try:
+                channel = data[payload.guild_id]["starboard"]["channel"]
+            except KeyError:
+                return
+            msg_list = data["message_id"]
+            msg_list.remove(msg.id)
 
-                starboard_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
-                bot_msg = await self.bot.get_or_fetch_message(starboard_channel, msg_list[0])
-                await bot_msg.delete(delay=0)
+            starboard_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
+            bot_msg = await self.bot.get_or_fetch_message(starboard_channel, msg_list[0])
+            await bot_msg.delete(delay=0)
 
         
     async def __on_star_reaction_add(self, payload):

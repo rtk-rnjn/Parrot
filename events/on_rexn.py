@@ -9,7 +9,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def __on_star_reaction_remove(self, payload):
+    async def __on_star_reaction_remove(self, payload) -> bool:
         server_config = self.bot.server_config
         ch = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
@@ -18,18 +18,18 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         try:
             limit = server_config[payload.guild_id]["starboard"]["limit"]
         except KeyError:
-            return
+            return False
         count = await star_method.get_star_count(self.bot, msg, from_db=True)
         if limit > count:
             data = await self.bot.mongo.parrot_db.starboard.find_one(
                 {"message_id": msg.id}
             )
             if not data:
-                return
+                return False
             try:
                 channel = server_config[payload.guild_id]["starboard"]["channel"]
             except KeyError:
-                return
+                return False
             msg_list = data["message_id"]
             msg_list.remove(msg.id)
 
@@ -40,19 +40,20 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 starboard_channel, msg_list[0], partial=True
             )
             await bot_msg.delete(delay=0)
+            return True
 
-    async def __on_star_reaction_add(self, payload):
+    async def __on_star_reaction_add(self, payload) -> bool:
         data = self.bot.server_config
 
         try:
             locked = data[payload.guild_id]["starboard"]["is_locked"]
         except KeyError:
-            return
+            return False
 
         try:
             channel = data[payload.guild_id]["starboard"]["channel"]
         except KeyError:
-            return
+            return False
         else:
             channel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, channel
@@ -62,7 +63,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             try:
                 limit = data[payload.guild_id]["starboard"]["limit"]
             except KeyError:
-                return
+                return False
 
             ch = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
@@ -76,6 +77,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 await star_method.star_post(
                     self.bot, starboard_channel=channel, message=msg
                 )
+                return True
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):

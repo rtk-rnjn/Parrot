@@ -31,7 +31,7 @@ async def _add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
 async def _remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     collection = bot.mongo.parrot_db.starboard
     await collection.update_one(
-        {"_id": payload.message_id},
+        {"message_id": payload.message_id},
         {"$pull": {"starrer": payload.user_id}, "$inc": {"number_of_stars": -1}},
     )
 

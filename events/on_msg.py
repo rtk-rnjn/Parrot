@@ -25,9 +25,6 @@ from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 
 from time import time
 
-# collection = parrot_db["global_chat"]
-# afk = parrot_db["afk"]
-# timer = parrot_db["timers"]
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)

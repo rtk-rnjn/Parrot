@@ -168,6 +168,7 @@ class Parrot(commands.AutoShardedBot):
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
+                print(f"{ext} loaded successfully")
             except Exception as e:
                 raise
 

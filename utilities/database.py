@@ -61,17 +61,6 @@ async def ticket_update(guild_id: int, post: dict):
 
 
 async def guild_join(guild_id: int):
-    collection = parrot_db["server_config"]
-    post = {
-        "_id": guild_id,
-        "prefix": "$",
-        "mod_role": None,
-        "action_log": None,
-        "mute_role": None,
-        "warn_count": 0,
-    }
-    await collection.insert_one(post)
-
     collection = parrot_db["global_chat"]
     post = {
         "_id": guild_id,

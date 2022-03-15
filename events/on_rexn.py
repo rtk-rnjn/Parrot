@@ -17,6 +17,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
         CURRENT_TIME = time()
+        DATETIME: datetime.datetime = discord.utils.snowflake_time(
+            payload.message_id
+        )
         try:
             if (
                 payload.channel_id
@@ -32,9 +35,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             max_duration = self.bot.server_config[payload.guild_id]["starboard"][
                 "max_duration"
             ]
-            DATETIME: datetime.datetime = discord.utils.snowflake_time(
-                payload.message_id
-            )
         except KeyError:
             if (CURRENT_TIME - DATETIME.timestamp()) > TWO_WEEK:
                 return
@@ -60,6 +60,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
         CURRENT_TIME = time()
+        DATETIME: datetime.datetime = discord.utils.snowflake_time(
+            payload.message_id
+        )
         try:
             if (
                 payload.channel_id
@@ -75,9 +78,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             max_duration = self.bot.server_config[payload.guild_id]["starboard"][
                 "max_duration"
             ]
-            DATETIME: datetime.datetime = discord.utils.snowflake_time(
-                payload.message_id
-            )
         except KeyError:
             if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > TWO_WEEK:
                 return

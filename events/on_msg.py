@@ -114,9 +114,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             60,
             commands.BucketType.member,
         )
-        self.on_bulk_task.start()
-        self.LOCK = asyncio.Lock()
-        self.countr = 0
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""

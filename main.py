@@ -14,17 +14,15 @@ from utilities.config import TOKEN
 from utilities.config import my_secret
 
 
-cluster = motor.motor_asyncio.AsyncIOMotorClient(
-    f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-)
-
 bot = Parrot()
 
 async def main():
     async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as http_session:
         async with bot:
             bot.http_session = http_session
-            bot.mongo = cluster(io_loop=bot.loop)
+            bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(
+                f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", io_loop=bot.loop
+            )
             await bot.start(TOKEN)
 
 if __name__ == "__main__":

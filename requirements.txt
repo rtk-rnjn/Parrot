@@ -19,7 +19,6 @@ lru_dict
 python-dateutil
 click
 parsedatetime
-topggpy
 brotlipy
 aiodns
 orjson

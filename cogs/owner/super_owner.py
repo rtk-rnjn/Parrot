@@ -13,7 +13,6 @@ import os
 import traceback
 import typing
 
-from utilities.database import ban, unban, parrot_db
 import re
 import io
 import zlib
@@ -224,7 +223,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To ban the user"""
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
-        await ban(user.id, **payload)
+        await self.bot.mongo.parrot_db.banned_users.insert_one({"_id": user.id, **payload})
         await self.bot.update_banned_members.start()
         try:
             await user.send(
@@ -247,7 +246,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To ban the user"""
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
-        await unban(user.id, **payload)
+        await self.bot.mongo.parrot_db.banned_users.delete_one({"_id": user.id, **payload})
         await self.bot.update_banned_members.start()
         try:
             await user.send(
@@ -428,7 +427,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     async def announce_global(self, ctx: Context, *, announcement: str):
-        collection = parrot_db["global_chat"]
+        collection = self.bot.mongo.parrot_db["global_chat"]
         async for webhook in collection.find({}):
             hook = webhook["webhook"]
             if hook:

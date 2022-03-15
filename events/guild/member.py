@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from core import Cog, Parrot
-from utilities.database import parrot_db
 import discord
 import time
 
-collection = parrot_db["server_config"]
-log = parrot_db["logging"]
+# collection = parrot_db["server_config"]
+# log = parrot_db["logging"]
 
 
 class Member(Cog, command_attrs=dict(hidden=True)):
@@ -17,7 +16,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):
         await self.bot.wait_until_ready()
-        if data := await log.find_one(
+        if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": member.guild.id, "on_member_join": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
@@ -40,7 +39,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
-        data = await collection.find_one({"_id": member.guild.id})
+        data = await self.bot.mongo.parrot_db.server_config.find_one({"_id": member.guild.id})
         if data:
 
             muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
@@ -64,7 +63,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_member_remove(self, member):
         await self.bot.wait_until_ready()
-        if data := await log.find_one(
+        if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": member.guild.id, "on_member_leave": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
@@ -88,7 +87,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
-        if data := await collection.find_one({"_id": member.guild.id}):
+        if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": member.guild.id}):
             muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
                 member.guild.roles, name="Muted"
             )
@@ -126,7 +125,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_member_update(self, before, after):
         await self.bot.wait_until_ready()
-        if data := await log.find_one(
+        if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": after.guild.id, "on_member_update": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
@@ -160,7 +159,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
         if before.channel is None:
             # member joined VC
-            if data := await log.find_one(
+            if data := await self.bot.mongo.parrot_db.logging.find_one(
                 {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
@@ -185,7 +184,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         if after.channel is None:
             # Member left VC
-            if data := await log.find_one(
+            if data := await self.bot.mongo.parrot_db.logging.find_one(
                 {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
@@ -210,7 +209,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         if before.channel and after.channel:
             # Member moved
-            if data := await log.find_one(
+            if data := await self.bot.mongo.parrot_db.logging.find_one(
                 {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
@@ -241,7 +240,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             pass
 
     async def _get_index(self, guild: discord.Guild) -> int:
-        if data := await parrot_db.server_config.find_one(
+        if data := await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": guild.id, "temp_channels": {"$exists": True}}
         ):
             return len(data["temp_channels"]) + 1
@@ -269,7 +268,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         f"[#{await self._get_index(member.guild)}] {member.name}",
                         category=channel.category,
                     )
-                    await parrot_db.server_config.update_one(
+                    await self.bot.mongo.parrot_db.server_config.update_one(
                         {"_id": member.guild.id},
                         {
                             "$addToSet": {
@@ -291,7 +290,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     )
 
     async def __on_voice_channel_remove(self, channel, member):
-        if data := await parrot_db.server_config.find_one(
+        if data := await self.bot.mongo.parrot_db.server_config.find_one(
             {
                 "_id": member.guild.id,
                 "temp_channels.channel_id": channel.id,
@@ -312,7 +311,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     hub_channel = await self.bot.getch(
                         self.bot.get_channel, self.bot.fetch_channel, channel.id
                     )
-                    await parrot_db.server_config.update_one(
+                    await self.bot.mongo.parrot_db.server_config.update_one(
                         {"_id": member.guild.id},
                         {"$pull": {"temp_channels": {"channel_id": hub_channel.id}}},
                     )

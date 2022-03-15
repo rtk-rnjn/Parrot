@@ -9,7 +9,6 @@ from discord.ext import commands
 from datetime import datetime
 from time import time
 
-from utilities.database import tags, todo, parrot_db, cluster
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError
 from utilities.paginator import ParrotPaginator
 
@@ -39,7 +38,7 @@ IGNORE = [
 
 
 async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if not data["nsfw"]:
             if msg_ref is not None:
@@ -62,7 +61,7 @@ async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
 
 
 async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"_id": tag}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mention(first)
@@ -80,7 +79,7 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _create_tag(bot: Parrot, ctx: Context, tag, text):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if tag in IGNORE:
         return await ctx.reply(
             f"{ctx.author.mention} the name `{tag}` is reserved word."
@@ -110,7 +109,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag, text):
 
 
 async def _delete_tag(bot: Parrot, ctx: Context, tag):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
             await collection.delete_one({"id": tag})
@@ -122,7 +121,7 @@ async def _delete_tag(bot: Parrot, ctx: Context, tag):
 
 
 async def _name_edit(bot: Parrot, ctx: Context, tag, name):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if _ := await collection.find_one({"id": name}):
         await ctx.reply(
             f"{ctx.author.mention} that name already exists in the database"
@@ -138,7 +137,7 @@ async def _name_edit(bot: Parrot, ctx: Context, tag, name):
 
 
 async def _text_edit(bot: Parrot, ctx: Context, tag, text):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
             await collection.update_one({"id": tag}, {"$set": {"text": text}})
@@ -150,7 +149,7 @@ async def _text_edit(bot: Parrot, ctx: Context, tag, text):
 
 
 async def _claim_owner(bot: Parrot, ctx: Context, tag):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         member = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         if member:
@@ -164,7 +163,7 @@ async def _claim_owner(bot: Parrot, ctx: Context, tag):
 
 
 async def _transfer_owner(bot: Parrot, ctx: Context, tag, member):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
@@ -185,7 +184,7 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag, member):
 
 
 async def _toggle_nsfw(bot: Parrot, ctx: Context, tag):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
@@ -199,7 +198,7 @@ async def _toggle_nsfw(bot: Parrot, ctx: Context, tag):
 
 
 async def _show_tag_mine(bot: Parrot, ctx: Context):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     i = 1
     paginator = ParrotPaginator(ctx, title="Tags")
     async for data in collection.find({"owner": ctx.author.id}):
@@ -214,7 +213,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
 
 
 async def _show_all_tags(bot: Parrot, ctx: Context):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     i = 1
     paginator = ParrotPaginator(ctx, title="Tags", per_page=12)
     async for data in collection.find({}):
@@ -227,7 +226,7 @@ async def _show_all_tags(bot: Parrot, ctx: Context):
 
 
 async def _view_tag(bot: Parrot, ctx: Context, tag):
-    collection = tags[f"{ctx.guild.id}"]
+    collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         em = discord.Embed(
             title=f"Tag: {tag}", timestamp=datetime.utcnow(), color=ctx.author.color
@@ -249,7 +248,7 @@ async def _view_tag(bot: Parrot, ctx: Context, tag):
 
 
 async def _create_todo(bot: Parrot, ctx: Context, name, text):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
         await ctx.reply(
             f"{ctx.author.mention} `{name}` already exists as your TODO list"
@@ -268,7 +267,7 @@ async def _create_todo(bot: Parrot, ctx: Context, name, text):
 
 
 async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     if _ := await collection.find_one({"id": name}):
         post = {"deadline": timestamp}
         try:
@@ -296,7 +295,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
 
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     if _ := await collection.find_one({"id": name}):
         if _ := await collection.find_one({"id": new_name}):
             await ctx.reply(
@@ -314,7 +313,7 @@ async def _update_todo_name(bot: Parrot, ctx: Context, name, new_name):
 
 
 async def _update_todo_text(bot: Parrot, ctx: Context, name, text):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     if _ := await collection.find_one({"id": name}):
         await collection.update_one({"id": name}, {"$set": {"text": text}})
         await ctx.reply(
@@ -327,7 +326,7 @@ async def _update_todo_text(bot: Parrot, ctx: Context, name, text):
 
 
 async def _list_todo(bot: Parrot, ctx: Context):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     i = 1
     paginator = ParrotPaginator(ctx, title="Your Pending Tasks", per_page=12)
     async for data in collection.find({}):
@@ -340,7 +339,7 @@ async def _list_todo(bot: Parrot, ctx: Context):
 
 
 async def _show_todo(bot: Parrot, ctx: Context, name):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     if data := await collection.find_one({"id": name}):
         await ctx.reply(
             f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>"
@@ -352,7 +351,7 @@ async def _show_todo(bot: Parrot, ctx: Context, name):
 
 
 async def _delete_todo(bot: Parrot, ctx: Context, name):
-    collection = todo[f"{ctx.author.id}"]
+    collection = bot.mongo.todo[f"{ctx.author.id}"]
     if _ := await collection.find_one({"id": name}):
         await collection.delete_one({"id": name})
         await ctx.reply(f"{ctx.author.mention} delete `{name}` task")

@@ -8,9 +8,7 @@ from discord.ext import commands
 
 from core import Parrot, Context, Cog
 
-from utilities.log import get_logger
 from utilities.exceptions import ParrotCheckFailure
-from utilities.database import parrot_db, cmd_increment
 
 with open("extra/quote.txt") as f:
     quote = f.read()
@@ -48,14 +46,15 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["logging"]
+        self.collection = self.mongo.parrot_db["logging"]
 
     @Cog.listener()
     async def on_command(self, ctx: Context):
         """This event will be triggered when the command is being completed; triggered by [discord.User]!"""
         if ctx.author.bot:
             return
-        await cmd_increment(ctx.command.qualified_name)
+        collection = self.bot.mongo.parrot_db["cmd_count"]
+        await collection.update_one({"_id": ctx.command.qualified_name}, {"$inc": {"count": 1}}, upsert=True)
 
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):

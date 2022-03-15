@@ -14,15 +14,12 @@ import datetime
 import asyncio
 
 from utilities.checks import is_mod
-from utilities.database import parrot_db, todo
 from utilities.formats import TabularData
 from utilities.time import ShortTime
 from utilities.converters import convert_bool
 from utilities.rankcard import rank_card
 
 from pymongo import ReturnDocument
-
-afk = parrot_db["afk"]
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
@@ -49,8 +46,8 @@ class Utils(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.react_collection = parrot_db["reactions"]
-        self.collection = parrot_db["timers"]
+        self.react_collection = bot.mongo.parrot_db["reactions"]
+        self.collection = bot.mongo.parrot_db["timers"]
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
 
@@ -373,7 +370,7 @@ class Utils(Cog):
                 "ignoredChannel": [],
             }
             await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
-            await afk.insert_one({**post})
+            await self.bot.mongo.parrot_db.afk.insert_one({**post})
             self.bot.afk.add(ctx.author.id)
 
     @afk.command(name="global")
@@ -391,7 +388,7 @@ class Utils(Cog):
             "text": text or "AFK",
             "ignoredChannel": [],
         }
-        await afk.insert_one({**post})
+        await self.bot.mongo.parrot_db.afk.insert_one({**post})
         await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
         self.bot.afk.add(ctx.author.id)
 
@@ -414,7 +411,7 @@ class Utils(Cog):
             "text": text or "AFK",
             "ignoredChannel": [],
         }
-        await afk.insert_one({**post})
+        await self.bot.mongo.parrot_db.afk.insert_one({**post})
         self.bot.afk.add(ctx.author.id)
         await ctx.send(
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
@@ -496,13 +493,13 @@ class Utils(Cog):
                 extra={"name": "REMOVE_AFK", "main": {**payload}},
                 message=ctx.message,
             )
-            await afk.insert_one({**payload})
+            await self.bot.mongo.parrot_db.afk.insert_one({**payload})
             self.bot.afk.add(ctx.author.id)
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
             )
             return
-        await afk.insert_one({**payload})
+        await self.bot.mongo.parrot_db.afk.insert_one({**payload})
         self.bot.afk.add(ctx.author.id)
         await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 

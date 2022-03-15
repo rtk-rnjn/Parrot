@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from utilities.database import parrot_db, telephone_update
 
 import asyncio
 import discord
@@ -8,11 +7,27 @@ import random
 import time
 from discord.ext import commands
 
-collection = parrot_db["telephone"]
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 
 async def dial(bot, ctx, server, reverse=False):
+    collection = bot.mongo.parrot_db.telephone
+
+    async def telephone_update(guild_id: int, event: str, value) -> None:
+        if _ := await collection.find_one({"_id": guild_id}):
+            await collection.update_one({"_id": guild_id}, {"$set": {event: value}})
+            return
+
+        post = {
+            "_id": guild_id,
+            "channel": None,
+            "pingrole": None,
+            "is_line_busy": False,
+            "memberping": None,
+            "blocked": [],
+        }
+        await collection.insert_one(post)
+
     if server.id == ctx.guild.id:
         return await ctx.send("Can't make a self call")
     number = server.id

@@ -2,14 +2,9 @@ from __future__ import annotations
 
 from core import Cog, Parrot
 
-from utilities.database import parrot_db
 from cogs.utils.method import end_giveaway
 
 import discord
-import asyncio
-
-afk = parrot_db["afk"]
-timers = parrot_db["timers"]
 
 
 class EventCustom(Cog):
@@ -76,15 +71,15 @@ class EventCustom(Cog):
 
     async def extra_action_parser(self, name, **kw) -> None:
         if name.upper() == "REMOVE_AFK":
-            await afk.delete_one(kw)
+            await self.bot.mongo.parrot_db.afk.delete_one(kw)
             self.bot.afk.remove(kw.get("messageAuthor"))
 
         if name.upper() == "SET_AFK":
-            await afk.insert_one(kw)
+            await self.bot.mongo.parrot_db.afk.insert_one(kw)
             self.bot.afk.add(kw.get("messageAuthor"))
 
         if name.upper() == "SET_TIMER":
-            await timers.insert_one(kw)
+            await self.bot.mongo.parrot_db.timers.insert_one(kw)
 
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)

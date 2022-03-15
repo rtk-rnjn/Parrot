@@ -2,20 +2,16 @@ from __future__ import annotations
 from typing import Any, List, Tuple
 
 from core import Cog, Parrot
-from utilities.database import parrot_db
 
 import discord
 import io
 import json
 
-log = parrot_db["logging"]
-server_config = parrot_db["server_config"]
-
 
 class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = log
+        self.collection = bot.mongo.parrot_db["logging"]
 
     def _overwrite_to_json(self, overwrites) -> str:
         try:
@@ -122,7 +118,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 and channel.permissions_for(channel.guild.default_role).send_messages
                 and channel.permissions_for(channel.guild.me).manage_roles
             ):
-                if data := await server_config.find_one({"_id": channel.guild.id}):
+                if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": channel.guild.id}):
                     if data["muted_role"]:
                         if role := channel.guild.get_role(data["muted_role"]):
                             await channel.edit(

@@ -21,14 +21,13 @@ from urllib.parse import quote_plus
 import typing as tp
 from pymongo import UpdateOne, ReturnDocument
 
-from utilities.database import parrot_db
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 
 from time import time
 
-collection = parrot_db["global_chat"]
-afk = parrot_db["afk"]
-timer = parrot_db["timers"]
+# collection = parrot_db["global_chat"]
+# afk = parrot_db["afk"]
+# timer = parrot_db["timers"]
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -101,7 +100,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             3, 5, commands.BucketType.channel
         )
         self.collection = None
-        self.log_collection = parrot_db["logging"]
+        self.log_collection = bot.mongo.parrot_db["logging"]
         self.pattern_handlers = [
             (GITHUB_RE, self._fetch_github_snippet),
             (GITHUB_GIST_RE, self._fetch_github_gist_snippet),
@@ -399,7 +398,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         await self.quick_answer(message)
         await self._on_message_passive(message)
-        channel = await collection.find_one(
+        channel = await self.bot.mongo.parrot_db.global_chat.find_one(
             {"_id": message.guild.id, "channel_id": message.channel.id}
         )
         if links := INVITE_RE.findall(message.content):
@@ -474,7 +473,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     "Bot requires **Manage Messages** permission(s) to function properly."
                 )
 
-            async for webhook in collection.find({}, {"webhook": 1}):
+            async for webhook in self.bot.mongo.parrot_db.global_chat.find({}, {"webhook": 1}):
                 hook = webhook["webhook"]
                 if hook:
                     try:
@@ -488,7 +487,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                     allowed_mentions=discord.AllowedMentions.none(),
                                 )
                     except discord.NotFound:
-                        await collection.delete_one(
+                        await self.bot.mongo.parrot_db.global_chat.delete_one(
                             {"webhook": hook}
                         )  # all hooks are unique
                     except discord.HTTPException as e:
@@ -729,7 +728,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         # code: when the AFK user messages
         if message.author.id in self.bot.afk:
-            if data := await afk.find_one(
+            if data := await self.bot.mongo.parrot_db.afk.find_one(
                 {
                     "$or": [
                         {"messageAuthor": message.author.id, "guild": message.guild.id},
@@ -752,14 +751,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                             )
                 except discord.Forbidden:
                     pass
-                await afk.delete_one({"_id": data["_id"]})
-                await timer.delete_one({"_id": data["_id"]})
-                self.bot.afk = set(await afk.distinct("messageAuthor"))
+                await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
+                await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
+                self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
 
         # code from someone mentions the AFK user
         if message.mentions:
             for user in message.mentions:
-                if data := await afk.find_one(
+                if data := await self.bot.mongo.parrot_db.afk.find_one(
                     {
                         "$or": [
                             {"messageAuthor": user.id, "guild": user.guild.id},
@@ -774,7 +773,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         "channel": message.channel.id,
                         "messageURL": message.jump_url,
                     }
-                    afk.update_one({"_id": data["_id"]}, {"$addToSet": {"pings": post}})
+                    self.bot.mongo.parrot_db.afk.update_one({"_id": data["_id"]}, {"$addToSet": {"pings": post}})
                     await message.channel.send(
                         f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                     )

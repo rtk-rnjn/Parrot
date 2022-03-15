@@ -6,7 +6,6 @@ from discord.ext import tasks
 import discord
 import random
 import re
-from utilities.database import parrot_db
 from utilities.infraction import warn
 from core import Parrot, Cog, Context
 

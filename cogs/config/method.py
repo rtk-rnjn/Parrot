@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import discord
-from utilities.database import enable_disable
 
 
 async def _enable(bot, ctx, cmd_cog, target, force=None):
-    collection = enable_disable[f"{ctx.guild.id}"]
+    collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
     data = await collection.find_one({"_id": cmd_cog})
     if not data:
         await collection.insert_one(
@@ -69,7 +68,7 @@ async def _enable(bot, ctx, cmd_cog, target, force=None):
 
 
 async def _disable(bot, ctx, cmd_cog, target, force=None):
-    collection = enable_disable[f"{ctx.guild.id}"]
+    collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
     data = await collection.find_one({"_id": cmd_cog})
     if not data:
         await collection.insert_one(

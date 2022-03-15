@@ -5,11 +5,7 @@ from datetime import datetime
 
 from typing import Optional
 
-from utilities.database import parrot_db, ticket_update
-
 from core import Parrot, Cog
-
-collection = parrot_db["server_config"]
 
 
 class TicketReaction(Cog, command_attrs=dict(hidden=True)):
@@ -33,7 +29,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
         await self.bot.wait_until_ready()
-        collection = parrot_db["ticket"]
+        collection = self.bot.mongo.parrot_db["ticket"]
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
         data = await collection.find_one({"_id": guild_id})
@@ -136,7 +132,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 "ticket_counter": ticket_number,
                 "ticket_channel_ids": ticket_channel_ids,
             }
-            await ticket_update(guild.id, post)
+            await self.bot.mongo.parrot_db.ticket.update_one({"_id": guild.id}, {"$set": post})
 
             log_channel = guild.get_channel(data["log"])
             await self.log(

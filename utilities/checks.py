@@ -17,10 +17,6 @@ from discord.ext.commands import (
 
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
-from utilities.database import parrot_db, enable_disable
-
-collection = parrot_db["server_config"]
-c = parrot_db["ticket"]
 
 
 def is_guild_owner():
@@ -43,10 +39,10 @@ def is_me():
 
 def has_verified_role_ticket():
     async def predicate(ctx):
-        data = await c.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         if not data:
             return False
-        data = await c.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         roles = data["verified_roles"]
         if not roles:
             return False
@@ -61,7 +57,7 @@ def has_verified_role_ticket():
 
 def is_mod():
     async def predicate(ctx):
-        data = await collection.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
         if not data:
             return False
         role = ctx.guild.get_role(data["mod_role"])
@@ -76,14 +72,14 @@ def is_mod():
 
 def in_temp_channel():
     async def predicate(ctx):
-        data = await collection.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
         if not data:
             return False
 
         if not ctx.author.voice:
             return False
 
-        if data := await collection.find_one(
+        if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
             {
                 "_id": ctx.guild.id,
                 "temp_channels.channel_id": ctx.author.voice.channel.id,
@@ -101,7 +97,7 @@ async def _can_run(ctx):
     """Return True is the command is whitelisted in specific channel, also with specific role"""
     if ctx.guild is not None:
         roles = set(ctx.author.roles)
-        collection = enable_disable[f"{ctx.guild.id}"]
+        collection = ctx.bot.mongo.enable_disable[f"{ctx.guild.id}"]
         if ctx.command and ctx.command.cog:
             if data := await collection.find_one(
                 {

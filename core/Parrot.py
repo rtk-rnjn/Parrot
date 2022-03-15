@@ -29,7 +29,6 @@ from utilities.config import (
     SUPPORT_SERVER_ID,
 )
 
-from utilities.database import parrot_db, cluster
 from utilities.checks import _can_run
 from utilities.paste import Client
 from .__template import post as POST
@@ -37,9 +36,6 @@ from .__template import post as POST
 from time import time
 
 from .Context import Context
-
-collection = parrot_db["server_config"]
-collection_ban = parrot_db["banned_users"]
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -92,7 +88,6 @@ class Parrot(commands.AutoShardedBot):
         self._prev_events = deque(maxlen=10)
 
         self.mystbin = Client()
-        self.mongo = cluster
 
         # caching variables
         self.server_config = LRU(256)
@@ -160,7 +155,7 @@ class Parrot(commands.AutoShardedBot):
     @async_property
     async def db_latency(self) -> float:
         ini = time()
-        await collection.find_one({})
+        await self.mongo.parrot_db.server_config.find_one({})
         fin = time()
         return fin - ini
 
@@ -170,7 +165,7 @@ class Parrot(commands.AutoShardedBot):
                 await self.load_extension(ext)
                 print(f"{ext} loaded successfully")
             except Exception as e:
-                raise
+                print(f"{ext} failed to load. Error {e}")
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
@@ -193,7 +188,7 @@ class Parrot(commands.AutoShardedBot):
         await super().before_identify_hook(shard_id, initial=initial)
 
     async def db(self, db_name: str):
-        return cluster[db_name]
+        return self.mongo[db_name]
 
     async def on_dbl_vote(self, data) -> None:
         """An event that is called whenever someone votes for the bot on Top.gg."""
@@ -479,14 +474,14 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one({"_id": message.guild.id}):
+            if data := await self.mongo.parrot_db.server_config.find_one({"_id": message.guild.id}):
                 prefix = data["prefix"]
                 post = data
                 self.server_config[message.guild.id] = post
             else:
                 POST["_id"] = message.guild.id
                 prefix = "$"  # default prefix
-                await collection.insert_one(POST)
+                await self.mongo.parrot_db.server_config.insert_one(POST)
                 self.server_config[message.guild.id] = POST
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
@@ -498,7 +493,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await collection.find_one({"_id": guild.id}):
+            if data := await self.mongo.parrot_db.server_config.find_one({"_id": guild.id}):
                 return data.get("prefix")
 
     async def invoke_help_command(self, ctx: Context) -> None:
@@ -522,10 +517,10 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await collection.find_one({"_id": guild_id}):
+        if data := await self.mongo.parrot_db.server_config.find_one({"_id": guild_id}):
             self.server_config[guild_id] = data
 
     @tasks.loop(count=1)
     async def update_banned_members(self):
-        async for data in collection_ban.find({}):
+        async for data in self.mongo.parrot_db.banned_users.find({}):
             self.banned_users[data["_id"]] = data

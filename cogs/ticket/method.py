@@ -4,7 +4,6 @@ import discord
 import os
 from datetime import datetime
 
-from utilities.database import ticket_update, parrot_db
 from core import Context
 import asyncio
 
@@ -390,7 +389,7 @@ async def _auto(ctx, channel, message):
     message = await channel.send(embed=embed)
     await message.add_reaction("\N{ENVELOPE}")
     post = {"message_id": message.id, "channel_id": channel.id}
-    await ticket_update(ctx.guild.id, post)
+    await ctx.bot.mongo.parrot_db.ticket.update_one({"_id": ctx.guild.id}, {"$set": post})
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description="All set at {}".format(channel.name),

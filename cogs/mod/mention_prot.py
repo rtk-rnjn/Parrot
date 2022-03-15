@@ -3,7 +3,6 @@ from typing import List, Optional
 
 from core import Parrot, Cog, Context
 
-from utilities.database import parrot_db
 from utilities.infraction import warn
 
 from discord.ext import tasks
@@ -17,7 +16,7 @@ with open("extra/duke_nekum.txt") as f:
 class MentionProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["server_config"]
+        self.collection = bot.mongo.parrot_db["server_config"]
 
     async def _on_message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):

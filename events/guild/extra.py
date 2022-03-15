@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from utilities.database import parrot_db
 import discord
 
 from core import Cog, Parrot
-
-log = parrot_db["logging"]
 
 
 class Extra(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["logging"]
+        self.collection = bot.mongo.parrot_db["logging"]
 
     @Cog.listener()
     async def on_guild_available(self, guild):

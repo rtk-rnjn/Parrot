@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from core import Cog, Parrot
-from utilities.database import parrot_db
 import discord
 import io
 import json
@@ -10,7 +9,7 @@ import json
 class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["logging"]
+        self.collection = bot.mongo.parrot_db["logging"]
 
     def permissions_to_json(self, permissions) -> str:
         return json.dumps(dict(permissions), indent=4) if permissions else "{}"

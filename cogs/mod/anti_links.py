@@ -3,7 +3,6 @@ from typing import List
 import discord
 import random
 
-from utilities.database import parrot_db
 from utilities.infraction import warn
 from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE
 
@@ -16,7 +15,7 @@ with open("extra/duke_nekum.txt") as f:
 class LinkProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["server_config"]
+        self.collection = bot.mongo.parrot_db["server_config"]
 
     def has_links(self, message_content: str) -> bool:
         url1 = LINKS_NO_PROTOCOLS.search(message_content)

@@ -16,12 +16,10 @@ from core import Parrot, Context, Cog
 
 from utilities.checks import is_mod, in_temp_channel
 from utilities.converters import BannedMember, reason_convert
-from utilities.database import parrot_db, warn_db
 from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
 
-collection = parrot_db["server_config"]
 
 
 class Moderator(Cog):
@@ -1529,7 +1527,7 @@ class Moderator(Cog):
         col = warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
-        if data := await collection.find_one(
+        if data := await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
             for i in data["warn_auto"]:

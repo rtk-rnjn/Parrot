@@ -9,7 +9,6 @@ import io
 import functools
 
 from utilities.emotes import emojis
-from utilities.database import cluster
 
 from typing import Literal, Optional, Union, List, Tuple, Any
 
@@ -78,9 +77,6 @@ class Context(commands.Context):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.starboard = cluster.parrot_db.starboard
-        self.giveaway = cluster.parrot_db.giveaway
-        self.server_config = cluster.parrot_db.server_config
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy

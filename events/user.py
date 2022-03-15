@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from core import Cog, Parrot
-from utilities.database import parrot_db
 
 import discord
 
@@ -9,7 +8,7 @@ import discord
 class User(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = parrot_db["logging"]
+        self.collection = bot.mongo.parrot_db["logging"]
 
     @Cog.listener()
     async def on_member_ban(self, guild, user):

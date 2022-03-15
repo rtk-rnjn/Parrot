@@ -227,7 +227,9 @@ class RTFM(Cog):
 
         self.bot.languages = ()
         self.headers: Dict[str, str] = {}
-        self.fetch_readme.start()
+
+    async def setup_hook(self) -> None:
+        await self.fetch_readme.start()
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:

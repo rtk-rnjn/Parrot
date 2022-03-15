@@ -466,10 +466,7 @@ class Fun(Cog):
         self.game_player_scores = (
             {}
         )  # A variable to store temporary game player's scores.
-
         self.latest_comic_info: Dict[str, Union[int, str]] = {}
-        self.get_latest_comic_info.start()
-
         self.categories = {
             "general": "Test your general knowledge.",
             "retro": "Questions related to retro gaming.",
@@ -480,7 +477,9 @@ class Fun(Cog):
             "wikipedia": "Guess the title of random wikipedia passages.",
         }
 
+    async def setup_hook(self) -> None:
         self.get_wiki_questions.start()
+        self.get_latest_comic_info.start()
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]

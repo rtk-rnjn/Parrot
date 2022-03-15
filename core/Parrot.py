@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-import logging
 
 import os
 from typing import Any, Callable, Optional, Dict, Union, List, cast
@@ -9,14 +8,11 @@ from async_property import async_property
 import jishaku
 import datetime
 import asyncio
-import aiohttp
-import socket
 import re
-import logging
 from collections import Counter, deque, defaultdict
 import discord
-from discord.ext import commands, tasks, ipc
-from aiohttp import AsyncResolver, ClientSession, TCPConnector
+from discord.ext import commands, tasks
+
 from lru import LRU
 
 from utilities.config import (
@@ -95,9 +91,6 @@ class Parrot(commands.AutoShardedBot):
         self.identifies = defaultdict(list)
         self._prev_events = deque(maxlen=10)
 
-        self.http_session = ClientSession(
-            connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
-        )
         self.mystbin = Client()
         self.mongo = cluster
 

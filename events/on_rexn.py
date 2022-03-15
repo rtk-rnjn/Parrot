@@ -160,12 +160,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def star_emoji(self, stars) -> str:
         if 5 > stars >= 0:
             return "\N{WHITE MEDIUM STAR}"
-        elif 10 > stars >= 5:
+        if 10 > stars >= 5:
             return "\N{GLOWING STAR}"
-        elif 25 > stars >= 10:
+        if 25 > stars >= 10:
             return "\N{DIZZY SYMBOL}"
-        else:
-            return "\N{SPARKLES}"
+        return "\N{SPARKLES}"
 
     async def star_post(
         self, *, starboard_channel: discord.TextChannel, message: discord.Message

@@ -503,7 +503,7 @@ class Meta(Cog):
 
         fields = [
             ("Owner", ctx.guild.owner, True),
-            ("Region", str(ctx.guild.region).capitalize(), True),
+            ("Region", "Deprecated", True),
             ("Created at", f"<t:{int(ctx.guild.created_at.timestamp())}>", True),
             (
                 "Total Members",

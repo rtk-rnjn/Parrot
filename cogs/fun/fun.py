@@ -3199,7 +3199,7 @@ class Fun(Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="Activity",
-                description=f"{ctx.author.mention} [Click Here]({inv})",
+                description=f"{ctx.author.mention} [Click Here]({inv}). **The invite link will be expired in 120 seconds**",
                 timestamp=ctx.message.created_at,
             ).set_footer(text=f"Requested by: {ctx.author}")
         )

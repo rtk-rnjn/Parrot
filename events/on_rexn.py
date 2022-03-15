@@ -225,7 +225,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return False
         else:
             starchannel = await self.bot.getch(
-                self.get_channel, self.fetch_channel, starboard_channel
+                self.bot.get_channel, self.bot.fetch_channel, starboard_channel
             )
 
         msg: discord.Message = await self.bot.get_or_fetch_message(

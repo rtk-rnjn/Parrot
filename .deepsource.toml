@@ -9,4 +9,4 @@ enabled = true
 
 [[transformers]]
 name = "isort"
-enabled = false
+enabled = true

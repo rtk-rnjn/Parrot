@@ -10,8 +10,7 @@ import motor.motor_asyncio
 
 from core import Parrot
 
-from utilities.config import TOKEN
-from utilities.config import my_secret
+from utilities.config import TOKEN, my_secret
 
 
 bot = Parrot()

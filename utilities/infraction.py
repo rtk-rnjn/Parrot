@@ -1,4 +1,5 @@
 from __future__ import annotations
+from core import Context
 import discord
 
 from typing import Optional, Union
@@ -7,13 +8,9 @@ from datetime import datetime
 from tabulate import tabulate
 from pymongo import ReturnDocument
 
-from utilities.database import warn_db, parrot_db
 
-collection_config = parrot_db["server_config"]
-
-
-async def get_warn_count(guild: discord.Guild) -> Optional[int]:
-    data = await collection_config.find_one_and_update(
+async def get_warn_count(ctx: Context, guild: discord.Guild) -> Optional[int]:
+    data = await ctx.bot.parrot_db.server_config.find_one_and_update(
         {"_id": guild.id},
         {"$inc": {"warn_count": 1}},
         upsert=True,
@@ -28,6 +25,7 @@ async def warn(
     reason: str,
     *,
     moderator: discord.Member,
+    ctx: Context,
     expires_at: Optional[float] = None,
     message: Optional[discord.Message] = None,
     at: Optional[float] = None,
@@ -53,7 +51,7 @@ async def warn(
     at: Optional[float]
         Time ate which the warning is issued
     """
-    count = await get_warn_count(guild)
+    count = await get_warn_count(ctx, guild)
     post = {
         "warn_id": count,
         "target": user.id,
@@ -66,33 +64,33 @@ async def warn(
         "messageUrl": message.jump_url,
         "at": at,
     }
-    collection = warn_db[f"{guild.id}"]
+    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.insert_one(post)
     return post
 
 
-async def custom_delete_warn(guild: discord.Guild, **kwargs):
-    collection = warn_db[f"{guild.id}"]
+async def custom_delete_warn(ctx, guild: discord.Guild, **kwargs):
+    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     return await collection.delete_one(kwargs)
 
 
-async def delete_warn_by_message_id(guild: discord.Guild, *, messageID: int) -> None:
-    collection = warn_db[f"{guild.id}"]
+async def delete_warn_by_message_id(ctx, guild: discord.Guild, *, messageID: int) -> None:
+    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.delete_one({"message": messageID})
 
 
-async def delete_many_warn(guild: discord.Guild, **kw) -> None:
-    collection = warn_db[f"{guild.id}"]
+async def delete_many_warn(ctx, guild: discord.Guild, **kw) -> None:
+    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.delete_many(kw)
 
 
-async def edit_warn(guild: discord.Guild, **kw):
-    collection = warn_db[f"{guild.id}"]
+async def edit_warn(ctx, guild: discord.Guild, **kw):
+    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.update_one(kw)
 
 
-async def show_warn(guild: discord.Guild, **kw):
-    collection = warn_db[f"{guild.id}"]
+async def show_warn(ctx, guild: discord.Guild, **kw):
+    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     temp = {"User": [], "Reason": [], "At": []}
     async for data in collection.find({**kw}):
         temp["User"].append(data["target"])

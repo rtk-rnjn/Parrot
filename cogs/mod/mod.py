@@ -1446,6 +1446,7 @@ class Moderator(Cog):
                 moderator=ctx,
                 message=ctx.message,
                 at=ctx.message.created_at.timestamp(),
+                ctx=ctx
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
         finally:
@@ -1458,7 +1459,7 @@ class Moderator(Cog):
         """To delete warn of user by ID"""
         if not warn_id:
             return
-        somthing = await custom_delete_warn(ctx.guild, warn_id=warn_id)
+        somthing = await custom_delete_warn(ctx, ctx.guild, warn_id=warn_id)
         if somthing:
             await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
 
@@ -1479,7 +1480,7 @@ class Moderator(Cog):
         if flags.message:
             payload["warn_id"] = flags.warn_id
 
-        await delete_many_warn(ctx.guild, **payload)
+        await delete_many_warn(ctx, ctx.guild, **payload)
         await ctx.send(
             f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
         )
@@ -1502,7 +1503,7 @@ class Moderator(Cog):
             payload["channel"] = flags.channel.id
         if flags.message:
             payload["warn_id"] = flags.warn_id
-        data = await show_warn(ctx.guild, **payload)
+        data = await show_warn(ctx, ctx.guild, **payload)
         page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
         await page.start()
 
@@ -1524,7 +1525,7 @@ class Moderator(Cog):
             commands.Context instance
         """
         count = 0
-        col = warn_db[f"{ctx.guild.id}"]
+        col = self.bot.mongo.warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
         if data := await self.bot.mongo.parrot_db.server_config.find_one(

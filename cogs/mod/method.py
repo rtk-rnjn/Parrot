@@ -3,12 +3,10 @@ from typing import List, Literal, Union
 
 from core import Parrot, Context
 
-
 import discord
 import asyncio
 import aiohttp
 import datetime
-
 
 
 async def _add_roles_bot(

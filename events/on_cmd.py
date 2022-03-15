@@ -46,7 +46,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = self.mongo.parrot_db["logging"]
+        self.collection = bot.mongo.parrot_db["logging"]
 
     @Cog.listener()
     async def on_command(self, ctx: Context):

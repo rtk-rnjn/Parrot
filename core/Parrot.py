@@ -10,7 +10,6 @@ import jishaku
 import datetime
 import asyncio
 import aiohttp
-import topgg
 import socket
 import re
 import logging

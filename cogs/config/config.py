@@ -22,8 +22,6 @@ from .flags import AutoWarn, warnConfig
 with open(r"cogs/config/events.json") as f:
     events = json.load(f)
 
-ct = parrot_db["telephone"]
-
 
 class Configuration(Cog):
     """To config the bot. In the server"""
@@ -904,9 +902,9 @@ class Configuration(Cog):
     @Context.with_type
     async def telephone(self, ctx: Context):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
-        data = await ct.find_one({"_id": ctx.guild.id})
+        data = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
         if not data:
-            await ct.insert_one(
+            await self.bot.mongo.parrot_db.telephone.insert_one(
                 {
                     "_id": ctx.guild.id,
                     "channel": None,
@@ -917,7 +915,7 @@ class Configuration(Cog):
                 }
             )
         if not ctx.invoked_subcommand:
-            data = await ct.find_one({"_id": ctx.guild.id})
+            data = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
             if data:
                 role = (
                     ctx.guild.get_role(data["pingrole"]).name
@@ -1002,7 +1000,7 @@ class Configuration(Cog):
         if server is ctx.guild:
             return await ctx.reply(f"{ctx.author.mention} can't block your own server")
 
-        await ct.update_one(
+        await self.bot.mongo.parrot_db.telephone.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"blocked": server.id}}
         )
         await ctx.reply(f"{ctx.author.mention} success! blocked: **{server.name}**")
@@ -1016,7 +1014,7 @@ class Configuration(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} ok google, let the server admin get some rest"
             )
-        await ct.update_one({"_id": ctx.guild.id}, {"$pull": {"blocked": server.id}})
+        await self.bot.mongo.parrot_db.telephone.update_one({"_id": ctx.guild.id}, {"$pull": {"blocked": server.id}})
         await ctx.reply(f"{ctx.author.mention} Success! unblocked: {server.id}")
 
     @commands.group(aliases=["ticketsetup"], invoke_without_command=True)

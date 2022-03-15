@@ -3,26 +3,12 @@ from typing import List, Literal, Union
 
 from core import Parrot, Context
 
-from utilities.database import parrot_db
 
 import discord
 import asyncio
 import aiohttp
 import datetime
 
-collection = parrot_db["server_config"]
-ban_collection = parrot_db["banned_members"]
-
-
-async def is_role_mod(guild: discord.Guild, role: discord.Role) -> bool:
-    data = await collection.find_one({"_id": guild.id})
-    if not data:
-        return False
-    r = guild.get_role(data["mod_role"])
-    if not r:
-        return False
-    if role.id == r.id:
-        return True
 
 
 async def _add_roles_bot(
@@ -42,8 +28,9 @@ async def _add_roles_bot(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )
@@ -80,8 +67,8 @@ async def _add_roles_humans(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )
@@ -118,8 +105,8 @@ async def _add_roles(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )
@@ -155,8 +142,8 @@ async def _remove_roles(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )
@@ -192,8 +179,8 @@ async def _role_hoist(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )
@@ -229,8 +216,8 @@ async def _change_role_name(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )
@@ -266,8 +253,8 @@ async def _change_role_color(
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit admin role."
         )
-    is_mod = await is_role_mod(guild, role)
-    if is_mod:
+    is_mod = await ctx.modrole()
+    if is_mod and (is_mod.id == role.id):
         return await destination.send(
             f"{ctx.author.mention} can not assign/remove/edit mod role"
         )

@@ -114,11 +114,6 @@ class Parrot(commands.AutoShardedBot):
         self.message_cache: Dict[int, Any] = {}
         self.banned_users: Dict[int, Any] = {}
         self.afk = set()
-        for ext in EXTENSIONS:
-            try:
-                self.load_extension(ext)
-            except Exception as e:
-                raise
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -183,6 +178,13 @@ class Parrot(commands.AutoShardedBot):
         await collection.find_one({})
         fin = time()
         return fin - ini
+
+    async def setup_hook(self):
+        for ext in EXTENSIONS:
+            try:
+                await self.load_extension(ext)
+            except Exception as e:
+                raise
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)

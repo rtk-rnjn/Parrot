@@ -26,7 +26,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ):
                 return False
         except KeyError:
-            return False
+            pass
 
         try:
             max_duration = self.bot.server_config[payload.guild_id]["starboard"][
@@ -69,7 +69,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ):
                 return False
         except KeyError:
-            return False
+            pass
 
         try:
             max_duration = self.bot.server_config[payload.guild_id]["starboard"][

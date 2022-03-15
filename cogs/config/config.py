@@ -135,6 +135,38 @@ class Configuration(Cog):
             f"{ctx.author.mention} set the max duration to **{ctx.message.created_at.timestamp() - duration.dt.timestamp()}** seconds"
         )
 
+    @starboard.command(name="ignore", aliases=["ignorechannel"])
+    @commands.has_permissions(administrator=True)
+    async def starboard_add_ignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To add ignore list"""
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id},
+            {
+                "$addToSet": {
+                    "starboard.ignore_channel": channel.id
+                }
+            }
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} added {channel.mention} to the ignore list"
+        )
+
+    @starboard.command(name="unignore", aliases=["unignorechannel"])
+    @commands.has_permissions(administrator=True)
+    async def starboard_remove_ignore(self, ctx: Context, *, channel: discord.TextChannel):
+        """To remove the channel from ignore list"""
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id},
+            {
+                "$pull": {
+                    "starboard.ignore_channel": channel.id
+                }
+            }
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} removed {channel.mention} from the ignore list"
+        )
+
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_permissions(administrator=True)
     async def starboard_limit(self, ctx: Context, limit: int = 3):

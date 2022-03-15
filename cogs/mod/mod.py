@@ -802,7 +802,7 @@ class Moderator(Cog):
     @commands.check_any(
         is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel()
     )
-    @commands.bot_has_guild_permissions(move_members=True)
+    @commands.bot_has_guild_permissions(manage_channels=True)
     @Context.with_type
     async def voice_limit(
         self,

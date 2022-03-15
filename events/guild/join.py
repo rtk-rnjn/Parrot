@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from core import Parrot, Cog
+from core.__template import post as POST
+
 from utilities.config import JOIN_LEAVE_CHANNEL_ID
 
 import aiohttp
@@ -17,6 +19,14 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         self.url = BASE_URL + os.environ["CHANNEL_TOKEN1"]
         self.collection = bot.mongo.parrot_db["server_config"]
 
+    async def __check_guild_requirements(self, guild: discord.Guild):
+        bots = len([m for m in guild.members if m.bot])
+        humans = guild.member_count - bots
+        if bots > humans:
+            await guild.leave()
+        if guild.member_count < 30:
+            await guild.leave()
+
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         await self.bot.wait_until_ready()
@@ -31,16 +41,10 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
 """
         except AttributeError:
             return
-
+        await self.__check_guild_requirements(guild)
         async def guild_join(guild_id: int):
             collection = self.bot.mongo.parrot_db["global_chat"]
-            post = {
-                "_id": guild_id,
-                "channel_id": None,
-                "webhook": None,
-                "ignore-role": None,
-            }
-            await collection.insert_one(post)
+            await collection.insert_one(POST)
 
             collection = self.bot.mongo.parrot_db["telephone"]
             post = {
@@ -91,7 +95,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
 """
         except AttributeError:
             return
-
+        await self.__check_guild_requirements(guild)
         async def guild_remove(guild_id: int):
             collection = self.bot.mongo.parrot_db["server_config"]
             await collection.delete_one({"_id": guild_id})

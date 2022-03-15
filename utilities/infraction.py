@@ -74,7 +74,9 @@ async def custom_delete_warn(ctx, guild: discord.Guild, **kwargs):
     return await collection.delete_one(kwargs)
 
 
-async def delete_warn_by_message_id(ctx, guild: discord.Guild, *, messageID: int) -> None:
+async def delete_warn_by_message_id(
+    ctx, guild: discord.Guild, *, messageID: int
+) -> None:
     collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.delete_one({"message": messageID})
 

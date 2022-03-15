@@ -470,7 +470,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     "Bot requires **Manage Messages** permission(s) to function properly."
                 )
 
-            async for webhook in self.bot.mongo.parrot_db.global_chat.find({}, {"webhook": 1}):
+            async for webhook in self.bot.mongo.parrot_db.global_chat.find(
+                {}, {"webhook": 1}
+            ):
                 hook = webhook["webhook"]
                 if hook:
                     try:
@@ -502,7 +504,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_message_delete(self, payload):
         await self.bot.wait_until_ready()
         await self.bot.mongo.parrot_db.starboard.delete_one(
-            {"$or": [{"message_id.bot": payload.message_id}, {"message_id.author": payload.message_id}]}
+            {
+                "$or": [
+                    {"message_id.bot": payload.message_id},
+                    {"message_id.author": payload.message_id},
+                ]
+            }
         )
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
@@ -547,12 +554,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
-                    {
-                        "message_id.bot": {"$in": msg_ids}
-                    },
-                    {
-                        "message_id.author": {"$in": msg_ids}
-                    }
+                    {"message_id.bot": {"$in": msg_ids}},
+                    {"message_id.author": {"$in": msg_ids}},
                 ]
             }
         )
@@ -750,7 +753,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     pass
                 await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
                 await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
-                self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
+                self.bot.afk = set(
+                    await self.bot.mongo.parrot_db.afk.distinct("messageAuthor")
+                )
 
         # code from someone mentions the AFK user
         if message.mentions:
@@ -770,7 +775,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         "channel": message.channel.id,
                         "messageURL": message.jump_url,
                     }
-                    self.bot.mongo.parrot_db.afk.update_one({"_id": data["_id"]}, {"$addToSet": {"pings": post}})
+                    self.bot.mongo.parrot_db.afk.update_one(
+                        {"_id": data["_id"]}, {"$addToSet": {"pings": post}}
+                    )
                     await message.channel.send(
                         f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                     )

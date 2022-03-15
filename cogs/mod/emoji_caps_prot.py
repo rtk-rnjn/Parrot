@@ -34,9 +34,7 @@ class EmojiCapsProt(Cog):
         caps_count = len(re.findall(r"[A-Z]", message_content))
         return int(caps_count)
 
-    def is_caps_infilterated(
-        self, message: discord.Message
-    ) -> Optional[bool]:
+    def is_caps_infilterated(self, message: discord.Message) -> Optional[bool]:
         if data_c := self.bot.server_config.get(message.guild.id):
             if not data_c["automod"]["caps"]["enable"]:
                 return False
@@ -53,9 +51,7 @@ class EmojiCapsProt(Cog):
             if limit <= (self.get_caps_count(message.content)):
                 return True
 
-    def is_emoji_infilterated(
-        self, message: discord.Message
-    ) -> Optional[bool]:
+    def is_emoji_infilterated(self, message: discord.Message) -> Optional[bool]:
         if data_c := self.bot.server_config.get(message.guild.id):
             if not data_c["automod"]["emoji"]["enable"]:
                 return False
@@ -154,6 +150,8 @@ class EmojiCapsProt(Cog):
         await self._on_message_passive(message)
 
     @Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         if before.content != after.content:
             await self._on_message_passive(after)

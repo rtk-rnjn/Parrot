@@ -21,7 +21,6 @@ from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
 
 
-
 class Moderator(Cog):
     """A simple moderator's tool for managing the server."""
 
@@ -1446,7 +1445,7 @@ class Moderator(Cog):
                 moderator=ctx,
                 message=ctx.message,
                 at=ctx.message.created_at.timestamp(),
-                ctx=ctx
+                ctx=ctx,
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
         finally:

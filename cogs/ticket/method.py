@@ -61,7 +61,9 @@ async def _new(ctx: Context, args: str):
         message_content = "".join(args)
 
     data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
-    await ctx.bot.mongo.parrot_db.ticket.update_one({"_id": ctx.guild.id}, {"$inc": {"ticket_counter": 1}})
+    await ctx.bot.mongo.parrot_db.ticket.update_one(
+        {"_id": ctx.guild.id}, {"$inc": {"ticket_counter": 1}}
+    )
     cat = ctx.guild.get_channel(data["category"])
 
     ticket_channel = await ctx.guild.create_text_channel(
@@ -365,7 +367,9 @@ async def _setcategory(ctx, channel):
 
 async def _setlog(ctx, channel):
     await check_if_server(ctx, ctx.guild.id)
-    await ctx.bot.mongo.parrot_db.ticket.update_one({"_id": ctx.guild.id}, {"$set": {"log": channel.id}})
+    await ctx.bot.mongo.parrot_db.ticket.update_one(
+        {"_id": ctx.guild.id}, {"$set": {"log": channel.id}}
+    )
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description="You have successfully added `{}` where tickets action will be logged.".format(
@@ -387,7 +391,9 @@ async def _auto(ctx, channel, message):
     message = await channel.send(embed=embed)
     await message.add_reaction("\N{ENVELOPE}")
     post = {"message_id": message.id, "channel_id": channel.id}
-    await ctx.bot.mongo.parrot_db.ticket.update_one({"_id": ctx.guild.id}, {"$set": post})
+    await ctx.bot.mongo.parrot_db.ticket.update_one(
+        {"_id": ctx.guild.id}, {"$set": post}
+    )
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description="All set at {}".format(channel.name),

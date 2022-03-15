@@ -57,7 +57,9 @@ def has_verified_role_ticket():
 
 def is_mod():
     async def predicate(ctx):
-        data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id}
+        )
         if not data:
             return False
         role = ctx.guild.get_role(data["mod_role"])
@@ -72,7 +74,9 @@ def is_mod():
 
 def in_temp_channel():
     async def predicate(ctx):
-        data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id}
+        )
         if not data:
             return False
 

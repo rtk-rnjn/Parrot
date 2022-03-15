@@ -132,7 +132,9 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 "ticket_counter": ticket_number,
                 "ticket_channel_ids": ticket_channel_ids,
             }
-            await self.bot.mongo.parrot_db.ticket.update_one({"_id": guild.id}, {"$set": post})
+            await self.bot.mongo.parrot_db.ticket.update_one(
+                {"_id": guild.id}, {"$set": post}
+            )
 
             log_channel = guild.get_channel(data["log"])
             await self.log(

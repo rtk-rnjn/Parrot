@@ -474,7 +474,9 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await self.mongo.parrot_db.server_config.find_one({"_id": message.guild.id}):
+            if data := await self.mongo.parrot_db.server_config.find_one(
+                {"_id": message.guild.id}
+            ):
                 prefix = data["prefix"]
                 post = data
                 self.server_config[message.guild.id] = post
@@ -493,7 +495,9 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await self.mongo.parrot_db.server_config.find_one({"_id": guild.id}):
+            if data := await self.mongo.parrot_db.server_config.find_one(
+                {"_id": guild.id}
+            ):
                 return data.get("prefix")
 
     async def invoke_help_command(self, ctx: Context) -> None:

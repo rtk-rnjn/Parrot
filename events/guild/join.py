@@ -32,7 +32,6 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
         except AttributeError:
             return
 
-        
         async def guild_join(guild_id: int):
             collection = self.bot.mongo.parrot_db["global_chat"]
             post = {

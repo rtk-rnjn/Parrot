@@ -204,5 +204,5 @@ class OnThread(Cog):
                 )
 
 
-def setup(bot: Parrot):
-    bot.add_cog(OnThread(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(OnThread(bot))

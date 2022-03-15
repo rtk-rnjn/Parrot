@@ -4,5 +4,5 @@ from .config import Configuration
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Configuration(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Configuration(bot))

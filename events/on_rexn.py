@@ -27,10 +27,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             max_duration = self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
             DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         except KeyError:
-            if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > TWO_WEEK:
+            if (CURRENT_TIME - DATETIME.timestamp()) > TWO_WEEK:
                 return
         else:
-            if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
+            if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
                 return
     
         collection = self.bot.mongo.parrot_db.starboard
@@ -289,7 +289,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        pass
+        if (
+            str(reaction.emoji) == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
+            and user.id == self.bot.author_obj.id
+        ):
+            await self.bot.update_server_config_cache.start(user.guild.id)
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -302,7 +306,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
-        pass
+        if (
+            str(reaction.emoji) == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
+            and user.id == self.bot.author_obj.id
+        ):
+            await self.bot.update_server_config_cache.start(user.guild.id)
 
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -337,5 +345,5 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         # if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
         #     await self._remove_reactor(payload)
 
-def setup(bot):
-    bot.add_cog(OnReaction(bot))
+async def setup(bot):
+    await bot.add_cog(OnReaction(bot))

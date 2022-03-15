@@ -101,5 +101,5 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                         break
 
 
-def setup(bot):
-    bot.add_cog(Extra(bot))
+async def setup(bot):
+    await bot.add_cog(Extra(bot))

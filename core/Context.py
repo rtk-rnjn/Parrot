@@ -80,6 +80,7 @@ class Context(commands.Context):
         super().__init__(**kwargs)
         self.starboard = cluster.parrot_db.starboard
         self.giveaway = cluster.parrot_db.giveaway
+        self.server_config = cluster.parrot_db.server_config
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy

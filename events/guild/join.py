@@ -69,5 +69,5 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
         pass
 
 
-def setup(bot):
-    bot.add_cog(GuildJoin(bot))
+async def setup(bot):
+    await bot.add_cog(GuildJoin(bot))

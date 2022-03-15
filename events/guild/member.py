@@ -345,5 +345,5 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         pass  # nothing can be done, as discord dont gave use presence intent UwU
 
 
-def setup(bot):
-    bot.add_cog(Member(bot))
+async def setup(bot):
+    await bot.add_cog(Member(bot))

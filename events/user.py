@@ -76,5 +76,5 @@ class User(Cog, command_attrs=dict(hidden=True)):
         pass
 
 
-def setup(bot):
-    bot.add_cog(User(bot))
+async def setup(bot):
+    await bot.add_cog(User(bot))

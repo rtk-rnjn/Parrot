@@ -5,6 +5,6 @@ from core import Parrot
 from .super_owner import Owner, DiscordPy
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Owner(bot))
-    bot.add_cog(DiscordPy(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Owner(bot))
+    await bot.add_cog(DiscordPy(bot))

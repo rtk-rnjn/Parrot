@@ -4,5 +4,5 @@ from .actions import Actions
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Actions(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Actions(bot))

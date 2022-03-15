@@ -8,7 +8,7 @@ from .fun import Fun
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Fun(bot))
-    # bot.add_cog(OneWordStory(bot))
-    # bot.add_cog(Counting(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Fun(bot))
+    # await bot.add_cog(OneWordStory(bot))
+    # await bot.add_cog(Counting(bot))

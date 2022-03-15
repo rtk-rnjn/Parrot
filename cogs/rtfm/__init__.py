@@ -4,5 +4,5 @@ from .rtfm import RTFM
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(RTFM(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(RTFM(bot))

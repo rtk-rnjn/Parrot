@@ -10,10 +10,10 @@ from .mention_prot import MentionProt
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Moderator(bot))
-    bot.add_cog(Profanity(bot))
-    bot.add_cog(LinkProt(bot))
-    bot.add_cog(SpamProt(bot))
-    bot.add_cog(EmojiCapsProt(bot))
-    bot.add_cog(MentionProt(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Moderator(bot))
+    await bot.add_cog(Profanity(bot))
+    await bot.add_cog(LinkProt(bot))
+    await bot.add_cog(SpamProt(bot))
+    await bot.add_cog(EmojiCapsProt(bot))
+    await bot.add_cog(MentionProt(bot))

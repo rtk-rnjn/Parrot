@@ -4,5 +4,5 @@ from .method import Easter
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Easter(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Easter(bot))

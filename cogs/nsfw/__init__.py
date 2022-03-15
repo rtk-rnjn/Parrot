@@ -4,5 +4,5 @@ from core import Parrot
 from .nsfw import NSFW
 
 
-def setup(bot: Parrot):
-    bot.add_cog(NSFW(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(NSFW(bot))

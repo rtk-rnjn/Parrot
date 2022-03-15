@@ -4,5 +4,5 @@ from .wolfram import Wolfram
 from core import Parrot as Bot
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(Wolfram(bot))
+async def setup(bot: Bot) -> None:
+    await bot.add_cog(Wolfram(bot))

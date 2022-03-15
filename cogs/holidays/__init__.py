@@ -5,6 +5,6 @@ from .hanukkah import Hanukkah
 from core import Parrot
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Pride(bot))
-    bot.add_cog(Hanukkah(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Pride(bot))
+    await bot.add_cog(Hanukkah(bot))

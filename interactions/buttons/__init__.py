@@ -4,5 +4,5 @@ from core import Parrot
 from .games import Games
 
 
-def setup(bot: Parrot):
-    bot.add_cog(Games(bot))
+async def setup(bot: Parrot):
+    await bot.add_cog(Games(bot))

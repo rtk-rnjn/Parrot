@@ -285,5 +285,5 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             )
 
 
-def setup(bot):
-    bot.add_cog(GuildRoleEmoji(bot))
+async def setup(bot):
+    await bot.add_cog(GuildRoleEmoji(bot))

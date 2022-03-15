@@ -299,5 +299,5 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         )
 
 
-def setup(bot):
-    bot.add_cog(Cmd(bot))
+async def setup(bot):
+    await bot.add_cog(Cmd(bot))

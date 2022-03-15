@@ -85,12 +85,6 @@ class Parrot(commands.AutoShardedBot):
         self._change_log = None
         self._error_log_token = os.environ["CHANNEL_TOKEN1"]
         self.color = 0x87CEEB
-        # self.topggpy = topgg.DBLClient(
-        #     self, dbl_token, autopost=True, post_shard_count=False
-        # )
-        # self.topgg_webhook = topgg.WebhookManager(self).dbl_webhook(
-        #     "/dblwebhook", f"{os.environ['TOPGG_AUTH']}"
-        # )
         self.error_channel = None
         self.persistent_views_added = False
         self.spam_control = commands.CooldownMapping.from_cooldown(
@@ -101,7 +95,6 @@ class Parrot(commands.AutoShardedBot):
         self.identifies = defaultdict(list)
         self._prev_events = deque(maxlen=10)
 
-        self.session = aiohttp.ClientSession(loop=self.loop)
         self.http_session = ClientSession(
             connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)
         )

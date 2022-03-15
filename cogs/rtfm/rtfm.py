@@ -358,7 +358,7 @@ class RTFM(Cog):
 
     @property
     def session(self):
-        return self.bot.session
+        return self.bot.http_session
 
     @staticmethod
     def fmt_error_embed() -> discord.Embed:
@@ -627,7 +627,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
             url = get_raw(base_url)
 
-            async with self.bot.session.get(url) as response:
+            async with self.bot.http_session.get(url) as response:
                 if response.status == 404:
                     return await ctx.send("Nothing found. Check your link")
                 if response.status != 200:

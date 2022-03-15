@@ -296,7 +296,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def query_ddg(self, query: str) -> tp.Optional[str]:
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
         # saying `ok google`, and querying from ddg LOL.
-        res = await self.bot.session.get(link)
+        res = await self.bot.http_session.get(link)
         data = json.loads(await res.text())
         if data.get("Abstract"):
             return data.get("Abstract")
@@ -347,7 +347,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             {"_id": message.guild.id, "on_invite_post": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_invite_post"], session=self.bot.session
+                data["on_invite_post"], session=self.bot.http_session
             )
             if webhook:
                 content = f"""**Invite Link Posted**
@@ -512,7 +512,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_message_delete"], session=self.bot.session
+                data["on_message_delete"], session=self.bot.http_session
             )
             if webhook:
                 if payload.cached_message:
@@ -564,7 +564,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             {"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_bulk_message_delete"], session=self.bot.session
+                data["on_bulk_message_delete"], session=self.bot.http_session
             )
             main = ""
             if webhook:
@@ -786,7 +786,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_message_edit"], session=self.bot.session
+                data["on_message_edit"], session=self.bot.http_session
             )
             if webhook:
                 if payload.cached_message:

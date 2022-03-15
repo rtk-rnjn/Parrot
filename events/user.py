@@ -20,7 +20,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
             {"_id": guild.id, "on_member_ban": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_member_ban"], session=self.bot.session
+                data["on_member_ban"], session=self.bot.http_session
             )
             if webhook:
                 async for entry in guild.audit_logs(
@@ -50,7 +50,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
             {"_id": guild.id, "on_member_unban": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_member_unban"], session=self.bot.session
+                data["on_member_unban"], session=self.bot.http_session
             )
             if webhook:
                 async for entry in guild.audit_logs(

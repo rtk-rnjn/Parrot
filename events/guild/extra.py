@@ -32,7 +32,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
             {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_invite_create"], session=self.bot.session
+                data["on_invite_create"], session=self.bot.http_session
             )
             if webhook:
                 async for entry in invite.guild.audit_logs(
@@ -70,7 +70,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
             {"_id": invite.guild.id, "on_invite_create": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_invite_create"], session=self.bot.session
+                data["on_invite_create"], session=self.bot.http_session
             )
             if webhook:
                 async for entry in invite.guild.audit_logs(

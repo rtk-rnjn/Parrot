@@ -21,7 +21,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             {"_id": member.guild.id, "on_member_join": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_member_join"], session=self.bot.session
+                data["on_member_join"], session=self.bot.http_session
             )
             if webhook:
                 content = f"""**Member Joined Event**
@@ -68,7 +68,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             {"_id": member.guild.id, "on_member_leave": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_member_leave"], session=self.bot.session
+                data["on_member_leave"], session=self.bot.http_session
             )
             if webhook:
                 content = f"""**Member Joined Event**
@@ -130,7 +130,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             {"_id": after.guild.id, "on_member_update": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_member_update"], session=self.bot.session
+                data["on_member_update"], session=self.bot.http_session
             )
             ch = ""
             for i, j in self._member_change(before, after):
@@ -164,7 +164,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
-                    data["on_vc_join"], session=self.bot.session
+                    data["on_vc_join"], session=self.bot.http_session
                 )
                 if webhook:
                     content = f"""**On VC Join Event**
@@ -189,7 +189,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
-                    data["on_vc_leave"], session=self.bot.session
+                    data["on_vc_leave"], session=self.bot.http_session
                 )
                 if webhook:
                     content = f"""**On VC Leave Event**
@@ -214,7 +214,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
-                    data["on_vc_move"], session=self.bot.session
+                    data["on_vc_move"], session=self.bot.http_session
                 )
                 if webhook:
                     content = f"""**On VC Move Event**

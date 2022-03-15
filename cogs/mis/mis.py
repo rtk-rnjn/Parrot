@@ -416,7 +416,7 @@ class Misc(Cog):
                 f"{ctx.author.mention} **{nat}** is not a valid country code."
             )
         link = f"http://newsapi.org/v2/top-headlines?country={nat}&apiKey={NEWS_KEY}"
-        r = await self.bot.session.get(link)
+        r = await self.bot.http_session.get(link)
         res = await r.json()
 
         if res["status"].upper() != "OK":
@@ -464,7 +464,7 @@ class Misc(Cog):
             safe = "active"
         url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
 
-        response = await self.bot.session.get(url)
+        response = await self.bot.http_session.get(url)
         if response.status == 200:
             json_ = await response.json()
         else:
@@ -998,7 +998,7 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def currencies(self, ctx: Context):
         """To see the currencies notations with names"""
-        obj = await self.bot.session.get("https://api.coinbase.com/v2/currencies")
+        obj = await self.bot.http_session.get("https://api.coinbase.com/v2/currencies")
         data = await obj.json()
         entries = [f"`{temp['id']}` `{temp['name']}`" for temp in data["data"]]
         p = SimplePages(entries, ctx=ctx)
@@ -1012,7 +1012,7 @@ class Misc(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} please provide a **valid currency!**"
             )
-        obj = await self.bot.session.get(
+        obj = await self.bot.http_session.get(
             f"https://api.coinbase.com/v2/exchange-rates?currency={currency}"
         )
         data: dict = await obj.json()

@@ -2185,7 +2185,7 @@ class Fun(Cog):
         """Pat pat image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2201,7 +2201,7 @@ class Fun(Cog):
         """Burn image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2217,7 +2217,7 @@ class Fun(Cog):
         """Glitch image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url, "level": 2}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2233,7 +2233,7 @@ class Fun(Cog):
         """Bomb image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2249,7 +2249,7 @@ class Fun(Cog):
         """Bubble image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2265,7 +2265,7 @@ class Fun(Cog):
         """Explicit image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2281,7 +2281,7 @@ class Fun(Cog):
         """Lamp image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2297,7 +2297,7 @@ class Fun(Cog):
         """Rain image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2313,7 +2313,7 @@ class Fun(Cog):
         """Layers image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2329,7 +2329,7 @@ class Fun(Cog):
         """Blur image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2345,7 +2345,7 @@ class Fun(Cog):
         """Radiate image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2361,7 +2361,7 @@ class Fun(Cog):
         """Cartoon image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2377,7 +2377,7 @@ class Fun(Cog):
         """Shoot image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2393,7 +2393,7 @@ class Fun(Cog):
         """TV image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2409,7 +2409,7 @@ class Fun(Cog):
         """TV image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2425,7 +2425,7 @@ class Fun(Cog):
         """Clock image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2441,7 +2441,7 @@ class Fun(Cog):
         """Magnify image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2457,7 +2457,7 @@ class Fun(Cog):
         """Wrap image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2473,7 +2473,7 @@ class Fun(Cog):
         """Gallery image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2489,7 +2489,7 @@ class Fun(Cog):
         """Paparazzi image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2505,7 +2505,7 @@ class Fun(Cog):
         """Abstract image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2521,7 +2521,7 @@ class Fun(Cog):
         """Balls image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2537,7 +2537,7 @@ class Fun(Cog):
         """Shock image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2553,7 +2553,7 @@ class Fun(Cog):
         """curvy image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/wave", params=params
         )
         file_obj = discord.File(
@@ -2569,7 +2569,7 @@ class Fun(Cog):
         """Hearts image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2585,7 +2585,7 @@ class Fun(Cog):
         """Equation image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2601,7 +2601,7 @@ class Fun(Cog):
         """Boil image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2619,7 +2619,7 @@ class Fun(Cog):
         """Shear image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url, "axis": axis if axis else "X"}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2635,7 +2635,7 @@ class Fun(Cog):
         """Canny image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2651,7 +2651,7 @@ class Fun(Cog):
         """Emojify the image"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/text/{ctx.command.name}", params=params
         )
 
@@ -2669,7 +2669,7 @@ class Fun(Cog):
         """Half Invert image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2685,7 +2685,7 @@ class Fun(Cog):
         """Roll image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2701,7 +2701,7 @@ class Fun(Cog):
         """Optics image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2716,7 +2716,7 @@ class Fun(Cog):
     async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
         """ScrapBook Text image generation"""
         params = {"text": text[:20:]}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2732,7 +2732,7 @@ class Fun(Cog):
         """Earth Quack image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2748,7 +2748,7 @@ class Fun(Cog):
         """Bonks image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2764,7 +2764,7 @@ class Fun(Cog):
         """Infinity image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2780,7 +2780,7 @@ class Fun(Cog):
         """Sob sob sob sob image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2796,7 +2796,7 @@ class Fun(Cog):
         """Sensitive image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2812,7 +2812,7 @@ class Fun(Cog):
         """Ads image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2828,7 +2828,7 @@ class Fun(Cog):
         """Matrix image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(
@@ -2844,7 +2844,7 @@ class Fun(Cog):
         """Pattern image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await self.bot.session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
         file_obj = discord.File(

@@ -270,7 +270,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             "searchType": "image",
         }
         url = f"https://www.googleapis.com/customsearch/v1"
-        res = await self.bot.session.get(url, params=params)
+        res = await self.bot.http_session.get(url, params=params)
         data = await res.json()
         ls = []
         for i in data["items"]:
@@ -304,7 +304,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         guild = guild or ctx.guild
         channel_member = channel_member or "members"
         URL = f"https://discord.com/api/guilds/{guild.id if isinstance(guild, discord.Guild) else guild}/widget.json"
-        data = await self.bot.session.get(URL)
+        data = await self.bot.http_session.get(URL)
         json = await data.json()
         if "message" in json:
             return await ctx.reply(f"{ctx.author.mention} can not spy that server")
@@ -377,10 +377,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.is_owner()
     async def removebg(self, ctx: Context, *, url):
         """To remove the background from image"""
-        async with self.bot.session.get(url) as img:
+        async with self.bot.http_session.get(url) as img:
             imgdata = io.BytesIO(await img.read())
 
-        response = await self.bot.session.post(
+        response = await self.bot.http_session.post(
             "https://api.remove.bg/v1.0/removebg",
             data={"size": "auto", "image_file": imgdata},
             headers={"X-Api-Key": f'{os.environ["REMOVE_BG"]}'},

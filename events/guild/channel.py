@@ -36,7 +36,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             {"_id": channel.guild.id, "on_channel_delete": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_channel_delete"], session=self.bot.session
+                data["on_channel_delete"], session=self.bot.http_session
             )
             if webhook:
                 channel_type = str(channel.type)
@@ -84,7 +84,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             {"_id": channel.guild.id, "on_channel_create": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_channel_create"], session=self.bot.session
+                data["on_channel_create"], session=self.bot.http_session
             )
             if webhook:
                 channel_type = str(channel.type)
@@ -144,7 +144,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             {"_id": before.guild.id, "on_channel_update": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_channel_update"], session=self.bot.session
+                data["on_channel_update"], session=self.bot.http_session
             )
             if webhook:
                 channel_type = str(channel.type)
@@ -246,7 +246,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             {"_id": channel.guild.id, "on_message_pin": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_channel_pin"], session=self.bot.session
+                data["on_channel_pin"], session=self.bot.http_session
             )
             if webhook:
                 async for entry in channel.guild.audit_logs(
@@ -276,7 +276,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             {"_id": channel.guild.id, "on_message_unpin": {"$exists": True}}
         ):
             webhook = discord.Webhook.from_url(
-                data["on_channel_unpin"], session=self.bot.session
+                data["on_channel_unpin"], session=self.bot.http_session
             )
             if webhook:
                 async for entry in channel.guild.audit_logs(

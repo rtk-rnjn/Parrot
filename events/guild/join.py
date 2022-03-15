@@ -39,7 +39,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             "avatar_url": self.bot.user.display_avatar.url,
             "content": CONTENT,
         }
-        await self.bot.session.post(self.url, json=data)
+        await self.bot.http_session.post(self.url, json=data)
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
@@ -62,7 +62,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             "avatar_url": self.bot.user.display_avatar.url,
             "content": CONTENT,
         }
-        await self.bot.session.post(self.url, json=data)
+        await self.bot.http_session.post(self.url, json=data)
 
     @Cog.listener()
     async def on_guild_update(self, before, after):

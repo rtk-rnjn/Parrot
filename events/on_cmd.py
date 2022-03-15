@@ -67,7 +67,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 {"_id": ctx.guild.id, "on_mod_commands": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
-                    data["on_mod_commands"], session=self.bot.session
+                    data["on_mod_commands"], session=self.bot.http_session
                 )
                 if webhook:
                     main_content = f"""**On Moderator Command**
@@ -88,7 +88,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 {"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}
             ):
                 webhook = discord.Webhook.from_url(
-                    data["on_config_commands"], session=self.bot.session
+                    data["on_config_commands"], session=self.bot.http_session
                 )
                 if webhook:
                     main_content = f"""**On Config Command**

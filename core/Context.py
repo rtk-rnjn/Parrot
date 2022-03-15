@@ -88,7 +88,7 @@ class Context(commands.Context):
 
     @property
     def session(self) -> Any:
-        return self.bot.session
+        return self.bot.http_session
 
     async def modlog(self, *, guild_id: int = None) -> Optional[discord.TextChannel]:
         guild_id = guild_id or self.guild.id

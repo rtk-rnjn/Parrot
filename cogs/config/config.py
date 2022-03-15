@@ -500,7 +500,7 @@ class Configuration(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def leveling(self, ctx: Context, toggle: convert_bool = True):
         """To configure leveling"""
-        if not ctx.ctx.invoked_subcommand:
+        if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
             return
         await self.bot.mongo.parrot_db.server_config.update_one(

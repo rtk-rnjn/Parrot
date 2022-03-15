@@ -41,7 +41,9 @@ class Configuration(Cog):
     async def config(self, ctx: Context):
         """To config the bot, mod role, prefix, or you can disable the commands and cogs."""
         if not ctx.invoked_subcommand:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id}):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+                {"_id": ctx.guild.id}
+            ):
                 role = ctx.guild.get_role(data.get("mod_role"))
                 mod_log = ctx.guild.get_channel(data.get("action_log"))
                 await ctx.reply(
@@ -83,7 +85,9 @@ class Configuration(Cog):
             user_limit=1,
         )
 
-        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"hub": channel.id}})
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"hub": channel.id}}
+        )
         await ctx.reply(
             f"{ctx.author.mention} successfully created {channel.mention}! Enjoy"
         )
@@ -116,13 +120,16 @@ class Configuration(Cog):
 
     @starboard.command(name="maxage", aliases=["maxduration"])
     @commands.has_permissions(administrator=True)
-    async def starboard_max_age(
-        self, ctx: Context, *, duration: ShortTime
-    ):
+    async def starboard_max_age(self, ctx: Context, *, duration: ShortTime):
         """To set the max duration"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"starboard.max_duration": ctx.message.created_at.timestamp() - duration.dt.timestamp()}},
+            {
+                "$set": {
+                    "starboard.max_duration": ctx.message.created_at.timestamp()
+                    - duration.dt.timestamp()
+                }
+            },
         )
         await ctx.reply(
             f"{ctx.author.mention} set the max duration to **{ctx.message.created_at.timestamp() - duration.dt.timestamp()}** seconds"
@@ -289,7 +296,9 @@ class Configuration(Cog):
             )
         if duration:
             _ = ShortTime(duration)
-        if _ := await self.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id, "warn_auto.count": count}):
+        if _ := await self.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id, "warn_auto.count": count}
+        ):
             return await ctx.send(
                 f"{ctx.author.mention} warn count {count} already exists."
             )
@@ -576,7 +585,9 @@ class Configuration(Cog):
         self, ctx: Context, level: int, *, role: discord.Role = None
     ):
         """To add the level reward"""
-        if _ := await self.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id, "leveling.reward": level}):
+        if _ := await self.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id, "leveling.reward": level}
+        ):
             return await ctx.send(
                 f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{_['role']}**"
             )
@@ -915,7 +926,9 @@ class Configuration(Cog):
                 }
             )
         if not ctx.invoked_subcommand:
-            data = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
+            data = await self.bot.mongo.parrot_db.telephone.find_one(
+                {"_id": ctx.guild.id}
+            )
             if data:
                 role = (
                     ctx.guild.get_role(data["pingrole"]).name
@@ -1014,7 +1027,9 @@ class Configuration(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} ok google, let the server admin get some rest"
             )
-        await self.bot.mongo.parrot_db.telephone.update_one({"_id": ctx.guild.id}, {"$pull": {"blocked": server.id}})
+        await self.bot.mongo.parrot_db.telephone.update_one(
+            {"_id": ctx.guild.id}, {"$pull": {"blocked": server.id}}
+        )
         await ctx.reply(f"{ctx.author.mention} Success! unblocked: {server.id}")
 
     @commands.group(aliases=["ticketsetup"], invoke_without_command=True)

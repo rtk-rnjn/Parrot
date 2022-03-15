@@ -39,7 +39,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
-        data = await self.bot.mongo.parrot_db.server_config.find_one({"_id": member.guild.id})
+        data = await self.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": member.guild.id}
+        )
         if data:
 
             muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
@@ -87,7 +89,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
-        if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": member.guild.id}):
+        if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": member.guild.id}
+        ):
             muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
                 member.guild.roles, name="Muted"
             )

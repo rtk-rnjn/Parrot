@@ -54,7 +54,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         if ctx.author.bot:
             return
         collection = self.bot.mongo.parrot_db["cmd_count"]
-        await collection.update_one({"_id": ctx.command.qualified_name}, {"$inc": {"count": 1}}, upsert=True)
+        await collection.update_one(
+            {"_id": ctx.command.qualified_name}, {"$inc": {"count": 1}}, upsert=True
+        )
 
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):

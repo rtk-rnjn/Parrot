@@ -18,31 +18,40 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
         CURRENT_TIME = time()
         try:
-            if payload.channel_id in self.bot.server_config[payload.guild_id]["starboard"]["ignore_channel"]:
+            if (
+                payload.channel_id
+                in self.bot.server_config[payload.guild_id]["starboard"][
+                    "ignore_channel"
+                ]
+            ):
                 return False
         except KeyError:
             return False
 
         try:
-            max_duration = self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
-            DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
+            max_duration = self.bot.server_config[payload.guild_id]["starboard"][
+                "max_duration"
+            ]
+            DATETIME: datetime.datetime = discord.utils.snowflake_time(
+                payload.message_id
+            )
         except KeyError:
             if (CURRENT_TIME - DATETIME.timestamp()) > TWO_WEEK:
                 return
         else:
             if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
                 return
-    
+
         collection = self.bot.mongo.parrot_db.starboard
         data = await collection.find_one_and_update(
             {
                 "$or": [
                     {"message_id.bot": payload.message_id},
-                    {"message_id.author": payload.message_id}
+                    {"message_id.author": payload.message_id},
                 ]
             },
             {"$addToSet": {"starrer": payload.user_id}, "$inc": {"number_of_stars": 1}},
-            return_document=True
+            return_document=True,
         )
         if data:
             return await self.edit_starbord_post(payload, **data)
@@ -52,14 +61,23 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
         CURRENT_TIME = time()
         try:
-            if payload.channel_id in self.bot.server_config[payload.guild_id]["starboard"]["ignore_channel"]:
+            if (
+                payload.channel_id
+                in self.bot.server_config[payload.guild_id]["starboard"][
+                    "ignore_channel"
+                ]
+            ):
                 return False
         except KeyError:
             return False
 
         try:
-            max_duration = self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
-            DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
+            max_duration = self.bot.server_config[payload.guild_id]["starboard"][
+                "max_duration"
+            ]
+            DATETIME: datetime.datetime = discord.utils.snowflake_time(
+                payload.message_id
+            )
         except KeyError:
             if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > TWO_WEEK:
                 return
@@ -72,17 +90,18 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             {
                 "$or": [
                     {"message_id.bot": payload.message_id},
-                    {"message_id.author": payload.message_id}
+                    {"message_id.author": payload.message_id},
                 ]
             },
             {"$pull": {"starrer": payload.user_id}, "$inc": {"number_of_stars": -1}},
-            return_document=True
+            return_document=True,
         )
         if data:
             await self.edit_starbord_post(payload, **data)
         return await self.__on_star_reaction_remove(payload)
 
-    async def __make_starboard_post(self,
+    async def __make_starboard_post(
+        self,
         *,
         bot_message: discord.Message,
         message: discord.Message,
@@ -95,7 +114,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             "created_at": message.created_at.timestamp(),
             "content": message.content,
             "number_of_stars": await self.get_star_count(message, from_db=False),
-            "starrer": [message.author.id]
+            "starrer": [message.author.id],
         }
 
         if message.attachments:
@@ -110,11 +129,17 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         return post
 
-
-    async def get_star_count(self, message: discord.Message, *, from_db: bool=True) -> Optional[int]:
+    async def get_star_count(
+        self, message: discord.Message, *, from_db: bool = True
+    ) -> Optional[int]:
         if from_db:
             if data := await self.bot.mongo.parrot_db.starboard.find_one(
-                {"$or": [{"message_id.bot": message.id}, {"message_id.author": message.id}]}
+                {
+                    "$or": [
+                        {"message_id.bot": message.id},
+                        {"message_id.author": message.id},
+                    ]
+                }
             ):
                 return len(data["starrer"])
 
@@ -134,20 +159,20 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     def star_emoji(self, stars) -> str:
         if 5 > stars >= 0:
-            return '\N{WHITE MEDIUM STAR}'
+            return "\N{WHITE MEDIUM STAR}"
         elif 10 > stars >= 5:
-            return '\N{GLOWING STAR}'
+            return "\N{GLOWING STAR}"
         elif 25 > stars >= 10:
-            return '\N{DIZZY SYMBOL}'
+            return "\N{DIZZY SYMBOL}"
         else:
-            return '\N{SPARKLES}'
+            return "\N{SPARKLES}"
 
     async def star_post(
         self, *, starboard_channel: discord.TextChannel, message: discord.Message
     ) -> None:
         embed = discord.Embed(timestamp=message.created_at)
         embed.set_footer(text=f"ID: {message.author.id}")
-        
+
         count = await self.get_star_count(message, from_db=True)
         embed.color = self.star_gradient_colour(count)
 
@@ -172,7 +197,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 )
         msg = await starboard_channel.send(
             f"{self.star_emoji(count)} {count} | In: {message.channel.mention} | Message ID: {message.id}\n> {message.jump_url}",
-            embed=embed
+            embed=embed,
         )
 
         self.bot.message_cache[msg.id] = msg
@@ -181,22 +206,34 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         post = await self.__make_starboard_post(bot_message=msg, message=message)
         await self.bot.mongo.parrot_db.starboard.insert_one(post)
 
-    async def edit_starbord_post(self, payload: discord.RawReactionActionEvent, **data) -> bool:
-        ch: discord.TextChannel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, data["channel_id"])
+    async def edit_starbord_post(
+        self, payload: discord.RawReactionActionEvent, **data
+    ) -> bool:
+        ch: discord.TextChannel = await self.bot.getch(
+            self.bot.get_channel, self.bot.fetch_channel, data["channel_id"]
+        )
         if ch is None:
             return False
 
         bot_message_id = data["message_id"]["bot"]
         main_message = data["message_id"]["author"]
         try:
-            starboard_channel = self.bot.server_config[payload.guild_id]["starboard"]["channel"]
+            starboard_channel = self.bot.server_config[payload.guild_id]["starboard"][
+                "channel"
+            ]
         except KeyError:
             return False
         else:
-            starchannel = await self.bot.getch(self.get_channel, self.fetch_channel, starboard_channel)
+            starchannel = await self.bot.getch(
+                self.get_channel, self.fetch_channel, starboard_channel
+            )
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, bot_message_id)
-        main_message: discord.Message = await self.bot.get_or_fetch_message(ch, main_message)
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            starchannel, bot_message_id
+        )
+        main_message: discord.Message = await self.bot.get_or_fetch_message(
+            ch, main_message
+        )
         if not msg.embeds:
             # moderators removed the embeds
             return False
@@ -281,16 +318,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             count = await self.get_star_count(msg)
 
             if count >= limit:
-                await self.star_post(
-                    starboard_channel=channel, message=msg
-                )
+                await self.star_post(starboard_channel=channel, message=msg)
                 return True
         return False
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if (
-            str(reaction.emoji) == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
+            str(reaction.emoji)
+            == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
             and user.id == self.bot.author_obj.id
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
@@ -307,7 +343,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
         if (
-            str(reaction.emoji) == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
+            str(reaction.emoji)
+            == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
             and user.id == self.bot.author_obj.id
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
@@ -344,6 +381,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         # if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
         #     await self._remove_reactor(payload)
+
 
 async def setup(bot):
     await bot.add_cog(OnReaction(bot))

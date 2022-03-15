@@ -29,7 +29,9 @@ class MentionProt(Cog):
 
         if data := self.bot.server_config.get(message.guild.id):
             try:
-                ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
+                ignore: List[int] = data[message.guild.id]["automod"]["mention"][
+                    "channel"
+                ]
             except KeyError:
                 ignore: List[int] = []
 
@@ -37,7 +39,9 @@ class MentionProt(Cog):
                 return
 
             try:
-                count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
+                count: Optional[int] = data[message.guild.id]["automod"]["mention"][
+                    "count"
+                ]
             except KeyError:
                 count = None
 

@@ -118,7 +118,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 and channel.permissions_for(channel.guild.default_role).send_messages
                 and channel.permissions_for(channel.guild.me).manage_roles
             ):
-                if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": channel.guild.id}):
+                if data := await self.bot.mongo.parrot_db.server_config.find_one(
+                    {"_id": channel.guild.id}
+                ):
                     if data["muted_role"]:
                         if role := channel.guild.get_role(data["muted_role"]):
                             await channel.edit(

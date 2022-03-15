@@ -74,7 +74,9 @@ class LinkProt(Cog):
                     at=message.created_at,
                 )
                 ctx: Context = await self.bot.get_context(message, cls=Context)
-                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+                await self.bot.get_cog("Moderator").warn_task(
+                    target=message.author, ctx=ctx
+                )
             has_links = self.has_links(message.content)
 
             if has_links:

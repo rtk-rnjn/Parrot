@@ -90,7 +90,9 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         )
                         break
 
-        if data := await self.bot.mongo.parrot_db["server_config"].find_one({"_id": role.guild.id}):
+        if data := await self.bot.mongo.parrot_db["server_config"].find_one(
+            {"_id": role.guild.id}
+        ):
             if data["mod_role"] == role.id:
                 await self.bot.mongo.parrot_db["server_config"].update_one(
                     {"_id": role.guild.id}, {"$set": {"mod_role": None}}
@@ -100,19 +102,25 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                     {"_id": role.guild.id}, {"$set": {"mute_role": None}}
                 )
 
-        if data := await self.bot.mongo.parrot_db["global_chat"].find_one({"_id": role.guild.id}):
+        if data := await self.bot.mongo.parrot_db["global_chat"].find_one(
+            {"_id": role.guild.id}
+        ):
             if data["ignore-role"] == role.id:
                 await self.bot.mongo.parrot_db["global_chat"].update_one(
                     {"_id": role.guild.id}, {"$set": {"ignore_role": None}}
                 )
 
-        if data := await self.bot.mongo.parrot_db["telephone"].find_one({"_id": role.guild.id}):
+        if data := await self.bot.mongo.parrot_db["telephone"].find_one(
+            {"_id": role.guild.id}
+        ):
             if data["pingrole"] == role.id:
                 await self.bot.mongo.parrot_db["telephone"].update_one(
                     {"_id": role.guild.id}, {"$set": {"pingrole": None}}
                 )
 
-        if data := await self.bot.mongo.parrot_db["ticket"].find_one({"_id": role.guild.id}):
+        if data := await self.bot.mongo.parrot_db["ticket"].find_one(
+            {"_id": role.guild.id}
+        ):
             await self.bot.mongo.parrot_db["ticket"].update_one(
                 {"_id": role.guild.id},
                 {

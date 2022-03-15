@@ -19,7 +19,9 @@ class Profanity(Cog):
 
     def get_bad_words(self, message) -> List[str]:
         try:
-            return self.bot.server_config[message.guild.id]["automod"]["profanity"]["words"]
+            return self.bot.server_config[message.guild.id]["automod"]["profanity"][
+                "words"
+            ]
         except KeyError:
             return []
 

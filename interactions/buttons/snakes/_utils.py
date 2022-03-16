@@ -13,6 +13,7 @@ from PIL.ImageDraw import ImageDraw
 from discord import File, Member, Reaction, User
 
 from core import Cog, Context
+from discord.ext import commands
 
 SNAKE_RESOURCES = Path("extra/snakes").absolute()
 
@@ -408,7 +409,7 @@ class SnakeAndLaddersGame:
 
         # Check to see if the bot can remove reactions
         if not self.channel.permissions_for(self.ctx.guild.me).manage_messages:
-            return
+            return commands.BotMissingPermissions(["manage_messages"])
 
         await self._add_player(self.author)
         await self.channel.send(

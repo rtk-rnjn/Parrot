@@ -506,6 +506,7 @@ class Snakes(Cog):
 
     # region: Commands
     @group(name="snakes", aliases=("snake",), invoke_without_command=True)
+    @bot_has_permissions(manage_messages=True)
     async def snakes_group(self, ctx: Context) -> None:
         """Commands from our first code jam."""
         if not ctx.invoked_subcommand:

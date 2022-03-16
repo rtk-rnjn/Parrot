@@ -115,6 +115,7 @@ class EmojiCapsProt(Cog):
                         moderator=self.bot.user,
                         message=message,
                         at=message.created_at,
+                        ctx=ctx,
                     )
                     await self.bot.get_cog("Moderator").warn_task(
                         target=message.author, ctx=ctx
@@ -159,6 +160,7 @@ class EmojiCapsProt(Cog):
                         moderator=self.bot.user,
                         message=message,
                         at=message.created_at,
+                        ctx=ctx,
                     )
 
                     await self.bot.get_cog("Moderator").warn_task(
@@ -203,13 +205,13 @@ class EmojiCapsProt(Cog):
         
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason=f"Auto mod: Emoji/Caps protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason=f"Auto mod: Emoji/Caps protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
@@ -230,7 +232,7 @@ class EmojiCapsProt(Cog):
         if name == "kick":
             try:
                 await message.author.kick(
-                    reason="Auto mod: Spam protection"
+                    reason="Auto mod: Emoji/Caps protection"
                 )
             except (discord.Forbidden, discord.NotFound):
                 pass
@@ -240,7 +242,7 @@ class EmojiCapsProt(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Spam protection",
+                        reason=f"Auto mod: Emoji/Caps protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -248,7 +250,7 @@ class EmojiCapsProt(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Spam protection",
+                        reason=f"Auto mod: Emoji/Caps protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

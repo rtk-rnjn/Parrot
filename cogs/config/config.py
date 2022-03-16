@@ -1356,10 +1356,10 @@ class Configuration(Cog):
             "to_delete": flags.delete,
             "punish": {
                 "type": flags.punish.lower()
-                if flags.punish.lower() in PUNISH
+                if str(flags.punish).lower() in PUNISH
                 else None,
                 "duration": flags.duration
-                if flags.punish.lower() not in ("kick", "ban")
+                if str(flags.punish).lower() not in ("kick", "ban")
                 else None,
             },
         }

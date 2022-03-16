@@ -87,6 +87,7 @@ class SpamProt(Cog):
                         moderator=self.bot.user,
                         message=message,
                         at=message.created_at,
+                        ctx=ctx,
                     )
                     await self.bot.get_cog("Moderator").warn_task(
                         target=message.author, ctx=ctx

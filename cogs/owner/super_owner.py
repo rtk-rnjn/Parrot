@@ -402,7 +402,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         kwargs = {}
 
         if args.user:
-            kwargs["user"] = args.user.id
+            kwargs["user"] = args.user
 
         kwargs["limit"] = args.limit or 100
         if args.action:

@@ -83,7 +83,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                         username=self.bot.user.name,
                     )
 
-        if ctx.cog.qualified_name.lower() == "botconfig":
+        if ctx.cog.qualified_name.lower() == "configuration":
             await self.bot.update_server_config_cache(ctx.guild.id)
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}

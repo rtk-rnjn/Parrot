@@ -100,6 +100,7 @@ class Profanity(Cog):
                     moderator=self.bot.user,
                     message=message,
                     at=message.created_at,
+                    ctx=ctx,
                 )
 
                 await self.bot.get_cog("Moderator").warn_task(
@@ -143,13 +144,13 @@ class Profanity(Cog):
         
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason=f"Auto mod: Profanity protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason=f"Auto mod: Profanity protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
@@ -170,7 +171,7 @@ class Profanity(Cog):
         if name == "kick":
             try:
                 await message.author.kick(
-                    reason="Auto mod: Spam protection"
+                    reason="Auto mod: Profanity protection"
                 )
             except (discord.Forbidden, discord.NotFound):
                 pass
@@ -180,7 +181,7 @@ class Profanity(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Spam protection",
+                        reason=f"Auto mod: Profanity protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -188,7 +189,7 @@ class Profanity(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Spam protection",
+                        reason=f"Auto mod: Profanity protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

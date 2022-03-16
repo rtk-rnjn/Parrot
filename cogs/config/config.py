@@ -222,7 +222,7 @@ class Configuration(Cog):
                 name=self.bot.user.name,
                 reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
             )
-            await self.bot.parrot_db.logging.update_one(
+            await self.bot.mongo.parrot_db.logging.update_one(
                 {"_id": ctx.guild.id},
                 {"$set": {str(event): str(webhook.url)}},
                 upsert=True,

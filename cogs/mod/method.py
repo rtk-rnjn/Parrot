@@ -8,6 +8,8 @@ import asyncio
 import aiohttp
 import datetime
 
+from utilities.time import ShortTime
+
 
 async def _add_roles_bot(
     guild: discord.Guild,
@@ -393,7 +395,7 @@ async def _temp_ban(
     ctx: Context,
     destination: discord.TextChannel,
     members: List[discord.Member],
-    duration,
+    duration: ShortTime,
     reason: str,
     silent=True,
     *,

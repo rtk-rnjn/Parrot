@@ -1349,6 +1349,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**"
             )
             return
+        _ = ShortTime(flags.duration)  # type: ignore
         data = {
             "enable": flags.enable,
             "count": flags.count,
@@ -1358,7 +1359,7 @@ class Configuration(Cog):
                 if flags.punish.lower() in PUNISH
                 else None,
                 "duration": flags.duration
-                if flags.punish not in ("kick", "addrole", "removerole")
+                if flags.punish.lower() not in ("kick", "ban")
                 else None,
             },
         }

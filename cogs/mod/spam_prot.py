@@ -8,6 +8,7 @@ import discord
 import random
 
 from utilities.infraction import warn
+from utilities.time import ShortTime
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -33,10 +34,10 @@ class SpamProt(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        perms = message.author.guild_permissions
+        # perms = message.author.guild_permissions
 
-        if perms.administrator or perms.manage_messages or perms.manage_channels:
-            return
+        # if perms.administrator or perms.manage_messages or perms.manage_channels:
+        #     return
 
         bucket = self.cd_mapping.get_bucket(message)
         retry_after = bucket.update_rate_limit()
@@ -64,6 +65,20 @@ class SpamProt(Cog):
                 except KeyError:
                     to_warn: bool = False
 
+                ctx: Context = await self.bot.get_context(message, cls=Context)
+
+                try:
+                    instant_action: str = data["automod"]["spam"]["autowarn"]["punish"]["type"]
+                except KeyError:
+                    pass
+                else:
+                    await self.__instant_action_parser(
+                        name=instant_action,
+                        ctx=ctx,
+                        message=message,
+                        **data["automod"]["spam"]["autowarn"]["punish"]
+                    )
+
                 if to_warn:
                     await warn(
                         message.guild,
@@ -73,7 +88,6 @@ class SpamProt(Cog):
                         message=message,
                         at=message.created_at,
                     )
-                    ctx: Context = await self.bot.get_context(message, cls=Context)
                     await self.bot.get_cog("Moderator").warn_task(
                         target=message.author, ctx=ctx
                     )
@@ -82,3 +96,75 @@ class SpamProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
+
+    async def __instant_action_parser(self, *, name: str, ctx: Context, message: discord.Message, **kw):
+        PUNISH = [
+            "ban",
+            "tempban",
+            "kick",
+            "timeout",
+            "mute",
+        ]
+
+        if name not in PUNISH:
+            return
+
+        if kw.get("duration"):
+            try:
+                duration = ShortTime(kw["duration"])
+            except Exception:
+                duration = None
+        else:
+            duration = None
+        
+        if name == "ban":
+            try:
+                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+            except (discord.Forbidden, discord.NotFound):
+                pass
+
+        if name == "tempban":
+            try:
+                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+            except (discord.Forbidden, discord.NotFound):
+                pass
+            else:
+                mod_action = {
+                    "action": "UNBAN",
+                    "member": message.author.id,
+                    "reason": f"Auto mod: Automatic tempban action",
+                    "guild": ctx.guild.id,
+                }
+                cog = self.bot.get_cog("Utils")
+                await cog.create_timer(
+                    expires_at=duration.dt.timestamp(),
+                    created_at=discord.utils.utcnow().timestamp(),
+                    message=ctx.message,
+                    mod_action=mod_action,
+                )
+
+        if name == "kick":
+            try:
+                await message.author.kick(
+                    reason="Auto mod: Spam protection"
+                )
+            except (discord.Forbidden, discord.NotFound):
+                pass
+
+        if name in ("timeout", "mute"):
+            try:
+                if duration:
+                    await message.author.edit(
+                        timed_out_until=duration.dt,
+                        reason=f"Auto mod: Spam protection",
+                    )
+                else:
+                    muted = await ctx.muterole()
+                    if not muted:
+                        return
+                    await message.author.add_roles(
+                        muted,
+                        reason=f"Auto mod: Spam protection",
+                    )
+            except (discord.Forbidden, discord.NotFound):
+                pass

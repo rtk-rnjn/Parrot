@@ -209,7 +209,7 @@ class Configuration(Cog):
                 if hook.user.id == self.bot.user.id:  # bot created that
                     webhook = hook
                     post = {str(event): str(webhook.url)}
-                    await self.bot.parrot_db.logging.update_one(
+                    await self.bot.mongo.parrot_db.logging.update_one(
                         {"_id": ctx.guild.id}, {"$set": post}, upsert=True
                     )
                     break

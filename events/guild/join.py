@@ -27,6 +27,55 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         if guild.member_count < 30:
             await guild.leave()
 
+    async def guild_join(self, guild_id: int):
+        collection = self.bot.mongo.parrot_db["global_chat"]
+        await collection.insert_one(POST)
+
+        collection = self.bot.mongo.parrot_db["telephone"]
+        post = {
+            "_id": guild_id,
+            "channel": None,
+            "pingrole": None,
+            "is_line_busy": False,
+            "memberping": None,
+            "blocked": [],
+        }
+        await collection.insert_one(post)
+
+        collection = self.bot.mongo.parrot_db["ticket"]
+        post = {
+            "_id": guild_id,
+            "ticket_counter": 0,
+            "valid_roles": [],
+            "pinged_roles": [],
+            "ticket_channel_ids": [],
+            "verified_roles": [],
+            "message_id": None,
+            "log": None,
+            "category": None,
+            "channel_id": None,
+        }
+        await collection.insert_one(post)
+
+    async def guild_remove(self, guild_id: int):
+        collection = self.bot.mongo.parrot_db["server_config"]
+        await collection.delete_one({"_id": guild_id})
+
+        collection = self.bot.mongo.parrot_db[f"{guild_id}"]
+        await collection.drop()
+
+        collection = self.bot.mongo.parrot_db["global_chat"]
+        await collection.delete_one({"_id": guild_id})
+
+        collection = self.bot.mongo.parrot_db["telephone"]
+        await collection.delete_one({"_id": guild_id})
+
+        collection = self.bot.mongo.parrot_db["ticket"]
+        await collection.delete_one({"_id": guild_id})
+
+        collection = self.bot.mongo.enable_disable[f"{guild_id}"]
+        await collection.drop()
+
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         await self.bot.wait_until_ready()
@@ -35,44 +84,14 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 `Joined       `: {guild.name} (`{guild.id}`)
 `Total member `: {guild.member_count}
 `Server Owner `: `{guild.owner}` | {guild.owner.id}
-`Server Region`: {str(guild.region).replace('_', ' ').title()}.
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
         except AttributeError:
             return
         await self.__check_guild_requirements(guild)
-        async def guild_join(guild_id: int):
-            collection = self.bot.mongo.parrot_db["global_chat"]
-            await collection.insert_one(POST)
 
-            collection = self.bot.mongo.parrot_db["telephone"]
-            post = {
-                "_id": guild_id,
-                "channel": None,
-                "pingrole": None,
-                "is_line_busy": False,
-                "memberping": None,
-                "blocked": [],
-            }
-            await collection.insert_one(post)
-
-            collection = self.bot.mongo.parrot_db["ticket"]
-            post = {
-                "_id": guild_id,
-                "ticket_counter": 0,
-                "valid_roles": [],
-                "pinged_roles": [],
-                "ticket_channel_ids": [],
-                "verified_roles": [],
-                "message_id": None,
-                "log": None,
-                "category": None,
-                "channel_id": None,
-            }
-            await collection.insert_one(post)
-
-        await guild_join(guild.id)
+        await self.guild_join(guild.id)
 
         data = {
             "username": "Parrot",
@@ -89,33 +108,14 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
 `Removed      `: {guild.name} (`{guild.id}`)
 `Total member `: {guild.member_count}
 `Server Owner `: `{guild.owner}` | {guild.owner.id}
-`Server Region`: {str(guild.region).replace('_', ' ').title()}.
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
         except AttributeError:
             return
         await self.__check_guild_requirements(guild)
-        async def guild_remove(guild_id: int):
-            collection = self.bot.mongo.parrot_db["server_config"]
-            await collection.delete_one({"_id": guild_id})
 
-            collection = self.bot.mongo.parrot_db[f"{guild_id}"]
-            await collection.drop()
-
-            collection = self.bot.mongo.parrot_db["global_chat"]
-            await collection.delete_one({"_id": guild_id})
-
-            collection = self.bot.mongo.parrot_db["telephone"]
-            await collection.delete_one({"_id": guild_id})
-
-            collection = self.bot.mongo.parrot_db["ticket"]
-            await collection.delete_one({"_id": guild_id})
-
-            collection = self.bot.mongo.enable_disable[f"{guild_id}"]
-            await collection.drop()
-
-        await guild_remove(guild.id)
+        await self.guild_remove(guild.id)
         data = {
             "username": "Parrot",
             "avatar_url": self.bot.user.display_avatar.url,

@@ -365,7 +365,14 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
-        await self._remove_reactor(payload)
+        await self.bot.mongo.starboard.update_one(
+            {
+                "$or": [
+                    {"message_id.bot": payload.message_id},
+                    {"message_id.author": payload.message_id},
+                ]
+            }
+        )
 
     @Cog.listener()
     async def on_reaction_clear_emoji(self, reaction):

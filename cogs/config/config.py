@@ -141,11 +141,7 @@ class Configuration(Cog):
         """To add ignore list"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {
-                "$addToSet": {
-                    "starboard.ignore_channel": channel.id
-                }
-            }
+            {"$addToSet": {"starboard.ignore_channel": channel.id}},
         )
         await ctx.reply(
             f"{ctx.author.mention} added {channel.mention} to the ignore list"
@@ -153,15 +149,12 @@ class Configuration(Cog):
 
     @starboard.command(name="unignore", aliases=["unignorechannel"])
     @commands.has_permissions(administrator=True)
-    async def starboard_remove_ignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def starboard_remove_ignore(
+        self, ctx: Context, *, channel: discord.TextChannel
+    ):
         """To remove the channel from ignore list"""
         await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id},
-            {
-                "$pull": {
-                    "starboard.ignore_channel": channel.id
-                }
-            }
+            {"_id": ctx.guild.id}, {"$pull": {"starboard.ignore_channel": channel.id}}
         )
         await ctx.reply(
             f"{ctx.author.mention} removed {channel.mention} from the ignore list"

@@ -17,9 +17,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
         CURRENT_TIME = time()
-        DATETIME: datetime.datetime = discord.utils.snowflake_time(
-            payload.message_id
-        )
+        DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         try:
             if (
                 payload.channel_id
@@ -60,9 +58,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
         CURRENT_TIME = time()
-        DATETIME: datetime.datetime = discord.utils.snowflake_time(
-            payload.message_id
-        )
+        DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         try:
             if (
                 payload.channel_id

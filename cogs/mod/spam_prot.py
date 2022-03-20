@@ -124,20 +124,20 @@ class SpamProt(Cog):
 
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason="Auto mod: Spam protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason="Auto mod: Spam protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -159,7 +159,7 @@ class SpamProt(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Spam protection",
+                        reason="Auto mod: Spam protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -167,7 +167,7 @@ class SpamProt(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Spam protection",
+                        reason="Auto mod: Spam protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

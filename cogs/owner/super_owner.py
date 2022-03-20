@@ -272,7 +272,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             "q": text,
             "searchType": "image",
         }
-        url = f"https://www.googleapis.com/customsearch/v1"
+        url = "https://www.googleapis.com/customsearch/v1"
         res = await self.bot.http_session.get(url, params=params)
         data = await res.json()
         ls = []
@@ -441,7 +441,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                         if webhook:
                             await webhook.send(
                                 content=announcement,
-                                username=f"SERVER",
+                                username="SERVER",
                                 avatar_url=self.bot.user.display_avatar.url,
                                 allowed_mentions=discord.AllowedMentions.none(),
                             )

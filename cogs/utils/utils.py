@@ -605,10 +605,10 @@ class Utils(Cog):
                 "suggestion_channel"
             ]
         except KeyError:
-            raise commands.BadArgument(f"No suggestion channel is setup")
+            raise commands.BadArgument("No suggestion channel is setup")
         else:
             if not ch_id:
-                raise commands.BadArgument(f"No suggestion channel is setup")
+                raise commands.BadArgument("No suggestion channel is setup")
             ch: Optional[discord.TextChannel] = self.bot.get_channel(ch_id)
             if ch is None:
                 await self.bot.wait_until_ready()
@@ -754,7 +754,7 @@ class Utils(Cog):
             return
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send(f"You don't own that 'suggestion'")
+            return await ctx.send("You don't own that 'suggestion'")
 
         await msg.delete(delay=0)
         await ctx.send("Done", delete_after=5)

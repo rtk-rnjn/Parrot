@@ -133,7 +133,7 @@ class MentionProt(Cog):
         if name == "ban":
             try:
                 await ctx.guild.ban(
-                    message.author, reason=f"Auto mod: Mention protection"
+                    message.author, reason="Auto mod: Mention protection"
                 )
             except (discord.Forbidden, discord.NotFound):
                 pass
@@ -141,7 +141,7 @@ class MentionProt(Cog):
         if name == "tempban":
             try:
                 await ctx.guild.ban(
-                    message.author, reason=f"Auto mod: Mention protection"
+                    message.author, reason="Auto mod: Mention protection"
                 )
             except (discord.Forbidden, discord.NotFound):
                 pass
@@ -149,7 +149,7 @@ class MentionProt(Cog):
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -171,7 +171,7 @@ class MentionProt(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Mention protection",
+                        reason="Auto mod: Mention protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -179,7 +179,7 @@ class MentionProt(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Mention protection",
+                        reason="Auto mod: Mention protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

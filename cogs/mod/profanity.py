@@ -149,7 +149,7 @@ class Profanity(Cog):
         if name == "ban":
             try:
                 await ctx.guild.ban(
-                    message.author, reason=f"Auto mod: Profanity protection"
+                    message.author, reason="Auto mod: Profanity protection"
                 )
             except (discord.Forbidden, discord.NotFound):
                 pass
@@ -157,7 +157,7 @@ class Profanity(Cog):
         if name == "tempban":
             try:
                 await ctx.guild.ban(
-                    message.author, reason=f"Auto mod: Profanity protection"
+                    message.author, reason="Auto mod: Profanity protection"
                 )
             except (discord.Forbidden, discord.NotFound):
                 pass
@@ -165,7 +165,7 @@ class Profanity(Cog):
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -187,7 +187,7 @@ class Profanity(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Profanity protection",
+                        reason="Auto mod: Profanity protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -195,7 +195,7 @@ class Profanity(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Profanity protection",
+                        reason="Auto mod: Profanity protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

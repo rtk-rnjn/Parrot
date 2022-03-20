@@ -85,7 +85,10 @@ class EventCustom(Cog):
             await self._parse_giveaway(**kw)
 
     async def _parse_giveaway(self, **kw) -> None:
-        member_ids = await end_giveaway(self.bot, **kw)
+        data = await self.bot.mongo.parrot_db.giveaway.find_one(
+            {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id"), "status": "ONGOING"}
+        )
+        member_ids = await end_giveaway(self.bot, **data)
         channel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel")
         )

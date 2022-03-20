@@ -365,13 +365,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
-        await self.bot.mongo.parrot_db.starboard.update_one(
+        await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
                     {"message_id.bot": payload.message_id},
                     {"message_id.author": payload.message_id},
                 ]
-            }
+            },
         )
 
     @Cog.listener()

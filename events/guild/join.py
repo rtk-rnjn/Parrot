@@ -99,6 +99,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             "content": CONTENT,
         }
         await self.bot.http_session.post(self.url, json=data)
+        await self.bot.update_server_config_cache.start(guild.id)
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
@@ -113,7 +114,6 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
 """
         except AttributeError:
             return
-        await self.__check_guild_requirements(guild)
 
         await self.guild_remove(guild.id)
         data = {
@@ -122,6 +122,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             "content": CONTENT,
         }
         await self.bot.http_session.post(self.url, json=data)
+        await self.bot.update_server_config_cache.start(guild.id)
 
     @Cog.listener()
     async def on_guild_update(self, before, after):

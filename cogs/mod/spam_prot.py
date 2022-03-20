@@ -68,7 +68,9 @@ class SpamProt(Cog):
                 ctx: Context = await self.bot.get_context(message, cls=Context)
 
                 try:
-                    instant_action: str = data["automod"]["spam"]["autowarn"]["punish"]["type"]
+                    instant_action: str = data["automod"]["spam"]["autowarn"]["punish"][
+                        "type"
+                    ]
                 except KeyError:
                     pass
                 else:
@@ -76,7 +78,7 @@ class SpamProt(Cog):
                         name=instant_action,
                         ctx=ctx,
                         message=message,
-                        **data["automod"]["spam"]["autowarn"]["punish"]
+                        **data["automod"]["spam"]["autowarn"]["punish"],
                     )
 
                 if to_warn:
@@ -98,7 +100,9 @@ class SpamProt(Cog):
                     delete_after=10,
                 )
 
-    async def __instant_action_parser(self, *, name: str, ctx: Context, message: discord.Message, **kw):
+    async def __instant_action_parser(
+        self, *, name: str, ctx: Context, message: discord.Message, **kw
+    ):
         PUNISH = [
             "ban",
             "tempban",
@@ -117,23 +121,23 @@ class SpamProt(Cog):
                 duration = None
         else:
             duration = None
-        
+
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason="Auto mod: Spam protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Spam protection")
+                await ctx.guild.ban(message.author, reason="Auto mod: Spam protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -146,9 +150,7 @@ class SpamProt(Cog):
 
         if name == "kick":
             try:
-                await message.author.kick(
-                    reason="Auto mod: Spam protection"
-                )
+                await message.author.kick(reason="Auto mod: Spam protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
@@ -157,7 +159,7 @@ class SpamProt(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Spam protection",
+                        reason="Auto mod: Spam protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -165,7 +167,7 @@ class SpamProt(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Spam protection",
+                        reason="Auto mod: Spam protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

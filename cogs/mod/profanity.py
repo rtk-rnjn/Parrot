@@ -81,7 +81,9 @@ class Profanity(Cog):
             ctx: Context = await self.bot.get_context(message, cls=Context)
 
             try:
-                instant_action: str = data["automod"]["profanity"]["autowarn"]["punish"]["type"]
+                instant_action: str = data["automod"]["profanity"]["autowarn"][
+                    "punish"
+                ]["type"]
             except KeyError:
                 pass
             else:
@@ -89,9 +91,9 @@ class Profanity(Cog):
                     name=instant_action,
                     ctx=ctx,
                     message=message,
-                    **data["automod"]["profanity"]["autowarn"]["punish"]
+                    **data["automod"]["profanity"]["autowarn"]["punish"],
                 )
-            
+
             if to_warn:
                 await warn(
                     message.guild,
@@ -122,7 +124,9 @@ class Profanity(Cog):
         if before.content != after.content:
             await self._one_message_passive(after)
 
-    async def __instant_action_parser(self, *, name: str, ctx: Context, message: discord.Message, **kw):
+    async def __instant_action_parser(
+        self, *, name: str, ctx: Context, message: discord.Message, **kw
+    ):
         PUNISH = [
             "ban",
             "tempban",
@@ -141,23 +145,27 @@ class Profanity(Cog):
                 duration = None
         else:
             duration = None
-        
+
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Profanity protection")
+                await ctx.guild.ban(
+                    message.author, reason="Auto mod: Profanity protection"
+                )
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Profanity protection")
+                await ctx.guild.ban(
+                    message.author, reason="Auto mod: Profanity protection"
+                )
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -170,9 +178,7 @@ class Profanity(Cog):
 
         if name == "kick":
             try:
-                await message.author.kick(
-                    reason="Auto mod: Profanity protection"
-                )
+                await message.author.kick(reason="Auto mod: Profanity protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
@@ -181,7 +187,7 @@ class Profanity(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Profanity protection",
+                        reason="Auto mod: Profanity protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -189,7 +195,7 @@ class Profanity(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Profanity protection",
+                        reason="Auto mod: Profanity protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

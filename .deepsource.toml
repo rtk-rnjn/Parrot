@@ -8,5 +8,5 @@ enabled = true
   runtime_version = "3.x.x"
 
 [[transformers]]
-name = "isort"
+name = "black"
 enabled = false

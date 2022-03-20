@@ -96,7 +96,9 @@ class EmojiCapsProt(Cog):
                     to_warn: bool = False
 
                 try:
-                    instant_action: str = data["automod"]["emoji"]["autowarn"]["punish"]["type"]
+                    instant_action: str = data["automod"]["emoji"]["autowarn"][
+                        "punish"
+                    ]["type"]
                 except KeyError:
                     pass
                 else:
@@ -104,7 +106,7 @@ class EmojiCapsProt(Cog):
                         name=instant_action,
                         ctx=ctx,
                         message=message,
-                        **data["automod"]["emoji"]["autowarn"]["punish"]
+                        **data["automod"]["emoji"]["autowarn"]["punish"],
                     )
 
                 if to_warn:
@@ -141,7 +143,9 @@ class EmojiCapsProt(Cog):
                     to_warn = False
 
                 try:
-                    instant_action: str = data["automod"]["caps"]["autowarn"]["punish"]["type"]
+                    instant_action: str = data["automod"]["caps"]["autowarn"]["punish"][
+                        "type"
+                    ]
                 except KeyError:
                     pass
                 else:
@@ -149,7 +153,7 @@ class EmojiCapsProt(Cog):
                         name=instant_action,
                         ctx=ctx,
                         message=message,
-                        **data["automod"]["caps"]["autowarn"]["punish"]
+                        **data["automod"]["caps"]["autowarn"]["punish"],
                     )
 
                 if to_warn:
@@ -183,7 +187,9 @@ class EmojiCapsProt(Cog):
         if before.content != after.content:
             await self._on_message_passive(after)
 
-    async def __instant_action_parser(self, *, name: str, ctx: Context, message: discord.Message, **kw):
+    async def __instant_action_parser(
+        self, *, name: str, ctx: Context, message: discord.Message, **kw
+    ):
         PUNISH = [
             "ban",
             "tempban",
@@ -202,23 +208,27 @@ class EmojiCapsProt(Cog):
                 duration = None
         else:
             duration = None
-        
+
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Emoji/Caps protection")
+                await ctx.guild.ban(
+                    message.author, reason="Auto mod: Emoji/Caps protection"
+                )
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Emoji/Caps protection")
+                await ctx.guild.ban(
+                    message.author, reason="Auto mod: Emoji/Caps protection"
+                )
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -231,9 +241,7 @@ class EmojiCapsProt(Cog):
 
         if name == "kick":
             try:
-                await message.author.kick(
-                    reason="Auto mod: Emoji/Caps protection"
-                )
+                await message.author.kick(reason="Auto mod: Emoji/Caps protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
@@ -242,7 +250,7 @@ class EmojiCapsProt(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Emoji/Caps protection",
+                        reason="Auto mod: Emoji/Caps protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -250,7 +258,7 @@ class EmojiCapsProt(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Emoji/Caps protection",
+                        reason="Auto mod: Emoji/Caps protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

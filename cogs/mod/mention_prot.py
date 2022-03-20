@@ -65,7 +65,9 @@ class MentionProt(Cog):
             ctx: Context = await self.bot.get_context(message, cls=Context)
 
             try:
-                instant_action: str = data["automod"]["mention"]["autowarn"]["punish"]["type"]
+                instant_action: str = data["automod"]["mention"]["autowarn"]["punish"][
+                    "type"
+                ]
             except KeyError:
                 pass
             else:
@@ -73,7 +75,7 @@ class MentionProt(Cog):
                     name=instant_action,
                     ctx=ctx,
                     message=message,
-                    **data["automod"]["mention"]["autowarn"]["punish"]
+                    **data["automod"]["mention"]["autowarn"]["punish"],
                 )
 
             if to_warn:
@@ -106,7 +108,9 @@ class MentionProt(Cog):
         if before.content != after.content:
             await self._on_message_passive(after)
 
-    async def __instant_action_parser(self, *, name: str, ctx: Context, message: discord.Message, **kw):
+    async def __instant_action_parser(
+        self, *, name: str, ctx: Context, message: discord.Message, **kw
+    ):
         PUNISH = [
             "ban",
             "tempban",
@@ -125,23 +129,27 @@ class MentionProt(Cog):
                 duration = None
         else:
             duration = None
-        
+
         if name == "ban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Mention protection")
+                await ctx.guild.ban(
+                    message.author, reason="Auto mod: Mention protection"
+                )
             except (discord.Forbidden, discord.NotFound):
                 pass
 
         if name == "tempban":
             try:
-                await ctx.guild.ban(message.author, reason=f"Auto mod: Mention protection")
+                await ctx.guild.ban(
+                    message.author, reason="Auto mod: Mention protection"
+                )
             except (discord.Forbidden, discord.NotFound):
                 pass
             else:
                 mod_action = {
                     "action": "UNBAN",
                     "member": message.author.id,
-                    "reason": f"Auto mod: Automatic tempban action",
+                    "reason": "Auto mod: Automatic tempban action",
                     "guild": ctx.guild.id,
                 }
                 cog = self.bot.get_cog("Utils")
@@ -154,9 +162,7 @@ class MentionProt(Cog):
 
         if name == "kick":
             try:
-                await message.author.kick(
-                    reason="Auto mod: Mention protection"
-                )
+                await message.author.kick(reason="Auto mod: Mention protection")
             except (discord.Forbidden, discord.NotFound):
                 pass
 
@@ -165,7 +171,7 @@ class MentionProt(Cog):
                 if duration:
                     await message.author.edit(
                         timed_out_until=duration.dt,
-                        reason=f"Auto mod: Mention protection",
+                        reason="Auto mod: Mention protection",
                     )
                 else:
                     muted = await ctx.muterole()
@@ -173,7 +179,7 @@ class MentionProt(Cog):
                         return
                     await message.author.add_roles(
                         muted,
-                        reason=f"Auto mod: Mention protection",
+                        reason="Auto mod: Mention protection",
                     )
             except (discord.Forbidden, discord.NotFound):
                 pass

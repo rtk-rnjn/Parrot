@@ -589,7 +589,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     bot.message_cache[msg.id] = msg
     main_post = await _create_giveaway_post(
         message=msg,
-        **payload,
+        **payload  # type: ignore
     )
 
     await bot.mongo.parrot_db.giveaway.insert_one(

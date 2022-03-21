@@ -620,7 +620,7 @@ class Utils(Cog):
         try:
             self.message[msg_id]
         except KeyError:
-            return await self.__fetch_message_from_channel(channel=channel)
+            return await self.__fetch_message_from_channel(message=msg_id, channel=channel)
         else:
             return self.message[msg_id]["message"]
 
@@ -637,10 +637,10 @@ class Utils(Cog):
                     "message_author": msg.author,
                     "message": msg,
                     "message_downvote": self.__get_emoji_count_from__msg(
-                        msg, "\N{DOWNWARDS BLACK ARROW}"
+                        msg, emoji="\N{DOWNWARDS BLACK ARROW}"
                     ),
                     "message_upvote": self.__get_emoji_count_from__msg(
-                        msg, "\N{UPWARDS BLACK ARROW}"
+                        msg, emoji="\N{UPWARDS BLACK ARROW}"
                     ),
                 }
                 self.message[message] = payload

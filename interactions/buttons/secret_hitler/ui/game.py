@@ -212,7 +212,8 @@ class GameUI(discord.ui.View):
 
     @property
     def channel(self) -> discord.TextChannel:
-        return self.message.channel  # type: ignore
+        return self.message.channel  # flake8: noqa
+
 
     @classmethod
     async def start(

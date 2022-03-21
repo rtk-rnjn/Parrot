@@ -141,7 +141,8 @@ POWERS: Dict[PlayerCount, List[Optional[Power]]] = {
     9: [None, Power.Investigate, Power.Investigate, Power.Election],
 }
 
-[POWERS[k].extend([Power.Execution] * 2) for k in POWERS]
+[POWERS[k].extend([Power.Execution] * 2) for k in POWERS]  # flake8: noqa
+
 
 POWERS[6] = POWERS[5]
 POWERS[8] = POWERS[7]
@@ -688,8 +689,10 @@ class Game(Generic[T]):
         self.players: List[Player[T]] = [
             Player[T](identifier, role)
             for identifier, role in zip(identifiers, ROLES[len(identifiers)])
-        ]  # type: ignore
-        self.player_count: PlayerCount = len(self.players)  # type: ignore
+        ]  # flake8: noqa
+
+        self.player_count: PlayerCount = len(self.players)  # flake8: noqa
+
         random.shuffle(self.players)
         self.cycle = itertools.cycle(self.players)
 

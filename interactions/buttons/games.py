@@ -2247,7 +2247,8 @@ class GameTicTacToe(discord.ui.View):
             content = "Draw!"
 
         for child in self.children:
-            child.disabled = True  # type: ignore
+            child.disabled = True  # flake8: noqa
+
 
         self.stop()
         return await interaction.response.edit_message(content=content, view=self)
@@ -3271,7 +3272,8 @@ class Games(Cog):
 
         game = GameTicTacToe((ctx.author, opponent))
 
-        await ctx.send(f"{game.current_player.mention}'s (X) turn!", view=game)  # type: ignore
+        await ctx.send(f"{game.current_player.mention}'s (X) turn!", view=game)  # flake8: noqa
+
 
     @commands.group(name="minesweeper", aliases=["ms"], invoke_without_command=True)
     async def minesweeper(self, ctx):

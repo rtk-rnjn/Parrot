@@ -437,7 +437,8 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
         kw["winners"] = winners
         real_winners = await __check_requirements(bot, **kw)
 
-        [__item__remove(reactors, i) for i in real_winners]  # type: ignore
+        [__item__remove(reactors, i) for i in real_winners]  # flake8: noqa
+
         await __update_giveaway_reactors(
             bot=bot, reactors=reactors, message_id=kw.get("message_id")
         )
@@ -589,7 +590,8 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     bot.message_cache[msg.id] = msg
     main_post = await _create_giveaway_post(
         message=msg,
-        **payload  # type: ignore
+        **payload  # flake8: noqa
+
     )
 
     await bot.mongo.parrot_db.giveaway.insert_one(
@@ -628,7 +630,8 @@ async def _make_giveaway_drop(
     )
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
-    main_post = await _create_giveaway_post(message=msg, **payload)
+    main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
+
 
     await ctx.bot.mongo.parrot_db.giveaway.insert_one(
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}

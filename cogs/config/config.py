@@ -1342,7 +1342,8 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**"
             )
             return
-        _ = ShortTime(flags.duration)  # type: ignore
+        _ = ShortTime(flags.duration)  # flake8: noqa
+
         data = {
             "enable": flags.enable,
             "count": flags.count,

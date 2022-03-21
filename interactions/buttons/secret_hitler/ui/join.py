@@ -61,9 +61,11 @@ class JoinUI(discord.ui.View):
             await interaction.response.defer(ephemeral=True)
 
             if interaction.user in self.users:
-                del self.users[interaction.user]  # type: ignore
+                del self.users[interaction.user]  # flake8: noqa
+
             else:
-                self.users[interaction.user] = interaction  # type: ignore
+                self.users[interaction.user] = interaction  # flake8: noqa
+
 
         if len(self.users) >= 5:
             self.start_game.disabled = False

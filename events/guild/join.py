@@ -5,7 +5,6 @@ from core.__template import post as POST
 
 from utilities.config import JOIN_LEAVE_CHANNEL_ID
 
-import aiohttp
 import os
 import discord
 

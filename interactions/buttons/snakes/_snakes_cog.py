@@ -7,17 +7,15 @@ import random
 import re
 import string
 import textwrap
-from functools import partial, wraps
+from functools import partial
 from io import BytesIO
-from typing import Any, Optional, Callable, List, Dict
-from asyncio import Lock
+from typing import Any, Optional, List, Dict
 import async_timeout
 from PIL import Image, ImageDraw, ImageFont
 from discord import Colour, Embed, File, Member, Message, Reaction, PartialEmoji
 from discord.ext.commands import CommandError, bot_has_permissions, group
 from utilities.deco import locked
 from core import Parrot, Context, Cog
-from weakref import WeakValueDictionary
 
 from ._utils import (
     PerlinNoiseFactory,

@@ -1,30 +1,27 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-import random
 
-from core import Context, Parrot, Cog
-
-from discord.ext import commands, tasks
+import typing as tp
 
 import aiohttp
-import asyncio
 import discord
+import random
 import io
 import json
 from discord import Webhook
 import textwrap
 import re
 from aiohttp import ClientResponseError
-from urllib.parse import quote_plus
+from discord.ext import commands
 
-import typing as tp
-from pymongo import UpdateOne, ReturnDocument
+from time import time
+from urllib.parse import quote_plus
+from pymongo import ReturnDocument
 
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 
-from time import time
-
+from core import Parrot, Cog
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)

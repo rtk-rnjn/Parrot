@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Callable, Optional, Dict, Union, List, cast
+from typing import Any, Callable, Optional, Dict, Union, List
 from async_property import async_property
-import jishaku
+import jishaku  # noqa: F401
 import datetime
 import asyncio
 import re

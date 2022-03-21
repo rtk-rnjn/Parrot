@@ -10,7 +10,7 @@ import functools
 
 from utilities.emotes import emojis
 
-from typing import Literal, Optional, Union, List, Tuple, Any
+from typing import Optional, Union, List, Tuple, Any
 
 
 __all__ = ("Context",)
@@ -95,7 +95,7 @@ class Context(commands.Context):
                 self.bot.server_config[self.guild.id]["action_log"],
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            if await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": guild_id}
             ):
                 return await self.bot.getch(
@@ -120,7 +120,7 @@ class Context(commands.Context):
                 or author_muted
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            if await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(
@@ -135,7 +135,7 @@ class Context(commands.Context):
                 self.bot.server_config[self.guild.id]["mod_role"]
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            if await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(
@@ -173,7 +173,7 @@ class Context(commands.Context):
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden as e:
+            except discord.Forbidden:
                 pass
             return
 
@@ -189,7 +189,7 @@ class Context(commands.Context):
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden as e:
+            except discord.Forbidden:
                 pass
             return
         try:

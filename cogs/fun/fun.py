@@ -476,10 +476,12 @@ class Fun(Cog):
             "python": "Trivia on our amazing language, Python!",
             "wikipedia": "Guess the title of random wikipedia passages.",
         }
-
-    async def setup_hook(self) -> None:
-        self.get_wiki_questions.start()
         self.get_latest_comic_info.start()
+        self.get_wiki_questions.start()
+
+    # async def setup_hook(self) -> None:
+    #     self.get_wiki_questions.start()
+    #     self.get_latest_comic_info.start()
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]

@@ -7,8 +7,8 @@ import discord
 import random
 import re
 from utilities.infraction import warn
-from core import Parrot, Cog, Context
 from utilities.time import ShortTime
+from core import Parrot, Cog, Context
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")

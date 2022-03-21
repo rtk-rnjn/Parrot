@@ -11,9 +11,9 @@ from typing import Union, List, Tuple
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
 from discord import File, Member, Reaction, User
+from discord.ext import commands
 
 from core import Cog, Context
-from discord.ext import commands
 
 SNAKE_RESOURCES = Path("extra/snakes").absolute()
 

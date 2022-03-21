@@ -4,12 +4,11 @@ from typing import List, Optional
 from core import Parrot, Cog, Context
 
 from utilities.infraction import warn
+from utilities.time import ShortTime
 
 from discord.ext import tasks
 import discord
 import random
-
-from utilities.time import ShortTime
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")

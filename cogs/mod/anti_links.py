@@ -5,9 +5,9 @@ import random
 
 from utilities.infraction import warn
 from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE
+from utilities.time import ShortTime
 
 from core import Parrot, Cog, Context
-from utilities.time import ShortTime
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")

@@ -186,7 +186,6 @@ class Backup:
             "icon_url": str(self.guild.icon.url),
             "owner": str(self.guild.owner_id),
             "member_count": self.guild.member_count,
-            "region": str(self.guild.region),
             "system_channel": str(self.guild.system_channel),
             "afk_timeout": self.guild.afk_timeout,
             "afk_channel": None if self.guild.afk_channel is None else str(self.guild.afk_channel.id),

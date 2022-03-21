@@ -15,7 +15,7 @@ import async_timeout
 from PIL import Image, ImageDraw, ImageFont
 from discord import Colour, Embed, File, Member, Message, Reaction, PartialEmoji
 from discord.ext.commands import CommandError, bot_has_permissions, group
-
+from utilities.deco import locked
 from core import Parrot, Context, Cog
 from weakref import WeakValueDictionary
 
@@ -156,44 +156,9 @@ async def invoke_help_command(ctx: Context) -> None:
     await ctx.send_help(ctx.command)
 
 
-def locked() -> Optional[Callable]:
-    """
-    Allows the user to only run one instance of the decorated command at a time.
-    Subsequent calls to the command from the same author are ignored until the command has completed invocation.
-    This decorator has to go before (below) the `command` decorator.
-    """
-
-    def wrap(func: Callable) -> Optional[Callable]:
-        func.__locks = WeakValueDictionary()
-
-        @wraps(func)
-        async def inner(
-            self: Callable, ctx: Context, *args, **kwargs
-        ) -> Optional[Callable]:
-            lock = func.__locks.setdefault(ctx.author.id, Lock())
-            if lock.locked():
-                embed = Embed()
-                embed.colour = Colour.red()
-
-                embed.description = (
-                    "You're already using this command. Please wait until "
-                    "it is done before you use it again."
-                )
-                embed.title = random.choice(ERROR_REPLIES)
-                await ctx.send(embed=embed)
-                return
-
-            async with func.__locks.setdefault(ctx.author.id, Lock()):
-                return await func(self, ctx, *args, **kwargs)
-
-        return inner
-
-    return wrap
-
-
 class Snakes(Cog):
     """
-    Commands related to snakes, created by our community during the first code jam.
+    Commands related to snakes, created by Python-Discord community during the first code jam.
     More information can be found in the code-jam-1 repo.
     https://github.com/python-discord/code-jam-1
     """

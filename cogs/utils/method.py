@@ -11,9 +11,9 @@ from time import time
 
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError
 from utilities.paginator import ParrotPaginator
+from utilities.time import ShortTime
 
 from core import Parrot, Context
-from utilities.time import ShortTime
 
 IGNORE = [
     "all",

@@ -3,12 +3,12 @@ from typing import List, Optional
 import discord
 
 from utilities.infraction import warn
+from utilities.time import ShortTime
 import re
 import random
 
 import emojis
 from core import Parrot, Cog, Context
-from utilities.time import ShortTime
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")

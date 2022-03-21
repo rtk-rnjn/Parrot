@@ -204,6 +204,16 @@ class Backup:
             "premium_progress_bar_enabled": self.guild.premium_progress_bar_enabled
         }
 
+        execution_order = [self._save_roles, self._save_channels, self._save_members, self._save_bans]
+
+        for method in execution_order:
+            try:
+                await method()
+            except Exception:
+                pass
+
+        return self.data
+
 
 class BackupLoader:
     def __init__(self, bot, session, data):

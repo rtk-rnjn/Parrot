@@ -50,9 +50,10 @@ class Utils(Cog):
         self.collection = bot.mongo.parrot_db["timers"]
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
-
-    async def setup_hook(self) -> None:
         self.reminder_task.start()
+
+    # async def setup_hook(self) -> None:
+    #     self.reminder_task.start()
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

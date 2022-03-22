@@ -189,7 +189,7 @@ class Backup:
             "system_channel": str(self.guild.system_channel),
             "afk_timeout": self.guild.afk_timeout,
             "afk_channel": None if self.guild.afk_channel is None else str(self.guild.afk_channel.id),
-            "mfa_level": self.guild.mfa_level,
+            "mfa_level": str(self.guild.mfa_level.value),
             "verification_level": str(self.guild.verification_level),
             "explicit_content_filter": str(self.guild.explicit_content_filter),
             "large": self.guild.large,
@@ -216,8 +216,7 @@ class Backup:
 
 
 class BackupLoader:
-    def __init__(self, bot, session, data):
-        self.session = session
+    def __init__(self, bot: Parrot, data):
         self.data = data
         self.bot = bot
         self.id_translator = {}
@@ -331,6 +330,9 @@ class BackupLoader:
                         "permissions": discord.Permissions.none(),
                         "reason": self.reason
                     }
+
+                    if role["unicode_emoji"]:
+                        kwargs["unicode_emoji"] = role["unicode_emoji"]
 
                     if len(existing_roles) == 0:
                         try:

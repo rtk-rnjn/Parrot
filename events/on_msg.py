@@ -468,7 +468,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
             async for webhook in self.bot.mongo.parrot_db.global_chat.find(
-                {}, {"webhook": 1}
+                {"webhook": {"$exists": True}}, {"webhook": 1}
             ):
                 hook = webhook["webhook"]
                 if hook:

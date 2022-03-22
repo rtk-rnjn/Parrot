@@ -337,7 +337,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         await menu.start()
 
-    def common_command_formatting(self, embed_like, command):
+    def common_command_formatting(self, embed_like, command, *, message):
         embed_like.title = command.qualified_name.upper()
         if isinstance(embed_like, discord.Embed):
             syntax = self.get_command_signature(command)
@@ -353,6 +353,19 @@ class PaginatedHelpCommand(commands.HelpCommand):
                     value=f"`{', '.join(command.aliases)}`",
                     inline=False,
                 )
+            if command._buckets.valid:
+                embed_like.add_field(
+                    name="Cooldown",
+                    value=f"Rate: {command._buckets.get_bucket(message).rate} | Per: {command._buckets.get_bucket(message).per}",
+                    inline=False
+                )
+            if command._max_concurrency:
+                embed_like.add_field(
+                    name="Max Concurrenry",
+                    value=f"Rate: {command._max_concurrency.number} | Per: {command._max_concurrency.per.name.replace('guild', 'server').title()}",
+                    inline=False
+                )
+
         if command.description:
             embed_like.description = f"> {command.description}\n\n{command.help}"
         else:
@@ -369,7 +382,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             text=f"{self.context.author}",
             icon_url=self.context.author.display_avatar.url,
         )
-        self.common_command_formatting(embed, command)
+        self.common_command_formatting(embed, command, message=self.context.message)
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
@@ -388,7 +401,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             return await self.send_command_help(group)
 
         source = GroupHelpPageSource(group, entries, prefix=self.context.clean_prefix)
-        self.common_command_formatting(source, group)
+        self.common_command_formatting(source, group, message=self.context.message)
         menu = HelpMenu(source, ctx=self.context)
 
         await menu.start()

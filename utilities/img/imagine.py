@@ -63,7 +63,7 @@ def draw_text(
 
 
 @ToAsync()
-async def imagine(text: str) -> discord.File:
+def imagine(text: str) -> discord.File:
     image = Image.open(IMAGE)
     draw = cast(ImageDraw.ImageDraw, ImageDraw.Draw(image))
 

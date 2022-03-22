@@ -9,8 +9,8 @@ from discord.ext import commands
 from utilities.converters import ToAsync
 
 IMAGE = "extra/imagine.png"
-TITLE_FONT = "extra/GintoNord-Black.tff"
-BYLINE_FONT = "extra/roboto-bold.tff"
+TITLE_FONT = "extra/GintoNord-Black.ttf"
+BYLINE_FONT = "extra/roboto-bold.ttf"
 
 IMAGE_WIDTH = 2048
 IMAGE_HEIGHT = 1024

@@ -524,7 +524,11 @@ class Utils(Cog):
         """To get the level of the user"""
         member = member or ctx.author
         try:
-            self.bot.server_config[ctx.guild.id]["leveling"]["enabled"]
+            enable = self.bot.server_config[ctx.guild.id]["leveling"]["enable"]
+            if not enable:
+                return await ctx.send(
+                    f"{ctx.author.mention} leveling system is disabled in this server"
+                )
         except KeyError:
             return await ctx.send(
                 f"{ctx.author.mention} leveling system is disabled in this server"

@@ -495,7 +495,7 @@ class Configuration(Cog):
         """To configure leveling"""
         if not ctx.invoked_subcommand:
             await self.bot.mongo.parrot_db.server_config.update_one(
-                {"_id": ctx.guild.id}, {"$set": {"leveling.enable": not toggle}}
+                {"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}}
             )
             await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
         

@@ -241,7 +241,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         await msg.edit(
             embed=embed,
             content=(
-                f"{self.star_emoji(count)} {count} | In: {main_message.channel.mention} | Message ID: {main_message.id}"
+                f"{self.star_emoji(count)} {count} | In: {main_message.channel.mention} | Message ID: {main_message.id}\n"
                 f"> {main_message.jump_url}"
             ),
         )
@@ -252,6 +252,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         ch = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
         )
+
+        if not ch:
+            return False
+
         msg = await self.bot.get_or_fetch_message(ch, payload.message_id)
         try:
             limit = server_config[payload.guild_id]["starboard"]["limit"]
@@ -268,14 +272,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 channel = server_config[payload.guild_id]["starboard"]["channel"]
             except KeyError:
                 return False
-            msg_list = data["message_id"]
-            msg_list.remove(msg.id)
 
             starboard_channel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, channel
             )
             bot_msg = await self.bot.get_or_fetch_message(
-                starboard_channel, msg_list[0], partial=True
+                starboard_channel, data['message_id']['bot'], partial=True
             )
             await bot_msg.delete(delay=0)
             return True

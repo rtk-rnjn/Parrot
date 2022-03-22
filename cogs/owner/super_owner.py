@@ -406,7 +406,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         kwargs["limit"] = args.limit or 100
         if args.action:
-            kwargs["action"] = args.action.get(args.action.lower().replace(" ", "_"))
+            kwargs["action"] = act.get(args.action.lower().replace(" ", "_"))
 
         if args.before:
             kwargs["before"] = args.before.dt

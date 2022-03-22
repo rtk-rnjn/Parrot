@@ -34,6 +34,7 @@ from collections import defaultdict
 from utilities.paginator import PaginationView
 from utilities import spookifications
 from utilities.constants import Colours, EmbeddedActivity
+from utilities.img import timecard, imagine
 
 from core import Parrot, Context, Cog
 
@@ -3415,3 +3416,15 @@ class Fun(Cog):
         for i in ls:
             await msg.edit(content=i)
             await asyncio.sleep(1)
+
+    @commands.command(name="imagine")
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    async def _imagine_a_place(self, ctx: Context, *, text: commands.clean_content):
+        """Generates a Image in discord styling"""
+        await ctx.send(file=await imagine(text))
+
+    @commands.command(name="timecard")
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    async def _timecard_spn(self, ctx: Context, *, text: commands.clean_content):
+        """Generates a timecard"""
+        await ctx.send(file=await timecard(text))

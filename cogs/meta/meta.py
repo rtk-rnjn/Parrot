@@ -351,19 +351,19 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 embed_like.add_field(
                     name="Aliases",
                     value=f"`{', '.join(command.aliases)}`",
-                    inline=False,
+                    inline=True,
                 )
             if command._buckets.valid:
                 embed_like.add_field(
                     name="Cooldown",
-                    value=f"Rate: {command._buckets.get_bucket(message).rate} | Per: {command._buckets.get_bucket(message).per}",
+                    value=f"Rate: `{command._buckets.get_bucket(message).rate}`\nPer: `{command._buckets.get_bucket(message).per}`",
                     inline=False
                 )
             if command._max_concurrency:
                 embed_like.add_field(
                     name="Max Concurrenry",
-                    value=f"Rate: {command._max_concurrency.number} | Per: {command._max_concurrency.per.name.replace('guild', 'server').title()}",
-                    inline=False
+                    value=f"Rate: `{command._max_concurrency.number}`\nPer: `{command._max_concurrency.per.name.replace('guild', 'server').title()}`",
+                    inline=True
                 )
 
         if command.description:

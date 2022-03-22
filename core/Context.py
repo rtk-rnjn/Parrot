@@ -306,6 +306,7 @@ class Context(commands.Context):
         """|coro|
 
         Reaction based Prompt
+
         Parameters
         -----------
         channel: Channel
@@ -316,8 +317,9 @@ class Context(commands.Context):
             Whether to delete the confirmation message after we're done.
         user: Union[Member, User]
             The member who should respond to the prompt.
+
         Returns
-        --------
+        -----------
         Optional[bool]
             ``True`` if explicit confirm,
             ``None`` if deny due to timeout

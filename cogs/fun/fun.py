@@ -3285,7 +3285,7 @@ class Fun(Cog):
     　　|　　　　|／
     　　￣￣￣￣""",
         )
-        for i in range(3):
+        for _ in range(3):
             for cat in list:
                 await m.edit(content=cat)
                 await asyncio.sleep(1)

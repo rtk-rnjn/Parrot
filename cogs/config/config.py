@@ -494,14 +494,11 @@ class Configuration(Cog):
     async def leveling(self, ctx: Context, toggle: convert_bool = True):
         """To configure leveling"""
         if not ctx.invoked_subcommand:
-            await self.bot.invoke_help_command(ctx)
-            return
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"leveling.enable": not toggle}}
-        )
-        await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
-        return
-
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$set": {"leveling.enable": not toggle}}
+            )
+            await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
+        
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)

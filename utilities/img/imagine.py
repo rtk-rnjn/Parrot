@@ -23,7 +23,7 @@ BYLINE_BOUND = (IMAGE_WIDTH - (BYLINE_OFFSET[0] * 2), 192)
 
 WHITE = (255, 255, 255)
 
-@ToAsync()
+
 def draw_text(
     draw: ImageDraw.ImageDraw,
     text: str,
@@ -75,9 +75,9 @@ async def imagine(text: str) -> discord.File:
     title = f"IMAGINE\n{title.strip()}"
     byline = byline.strip()
 
-    await draw_text(draw, title, TITLE_FONT, WHITE, TITLE_BOUND, TITLE_OFFSET, 300, 0.95)
+    draw_text(draw, title, TITLE_FONT, WHITE, TITLE_BOUND, TITLE_OFFSET, 300, 0.95)
     if byline:
-        await draw_text(draw, byline, BYLINE_FONT, WHITE, BYLINE_BOUND, BYLINE_OFFSET, 100)
+        draw_text(draw, byline, BYLINE_FONT, WHITE, BYLINE_BOUND, BYLINE_OFFSET, 100)
 
     out_fp = io.BytesIO()
     image.save(out_fp, "PNG")

@@ -16,11 +16,11 @@ class BooleanArgs:
         for arg in args:
             arg = arg.lower()
 
-            if arg == "-" or arg == "!*":
+            if arg in ("-", "!*"):
                 self.all = False
                 self._args = {}
 
-            if arg == "+" or arg == "*":
+            if arg in ("+", "*"):
                 self.all = True
 
             if arg.startswith("!"):

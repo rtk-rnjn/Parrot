@@ -432,7 +432,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.is_owner()
     async def announce_global(self, ctx: Context, *, announcement: str):
         collection = self.bot.mongo.parrot_db["global_chat"]
-        async for webhook in collection.find({}):
+        async for webhook in collection.find({"webhook": {"$exists": True}}):
             hook = webhook["webhook"]
             if hook:
                 try:
@@ -603,7 +603,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
         e = discord.Embed(
-            title="Read the Fucking Manual", timestamp=datetime.datetime.utcnow()
+            title="Read the Fucking Documentation", timestamp=datetime.datetime.utcnow()
         )
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
@@ -614,7 +614,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
         e.set_footer(
-            text=f"Request by {ctx.author.name}#{ctx.author.discriminator}",
+            text=f"Request by {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
         await ctx.send(embed=e)

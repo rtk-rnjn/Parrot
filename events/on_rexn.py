@@ -323,7 +323,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_reaction_add(self, reaction, user):
         if (
             str(reaction.emoji)
-            == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
+            in ("\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}", "\N{FACE WITH PLEADING EYES}")
             and user.id == self.bot.author_obj.id
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
@@ -341,7 +341,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_reaction_remove(self, reaction, user):
         if (
             str(reaction.emoji)
-            == "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
+            in ("\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}", "\N{FACE WITH PLEADING EYES}")
             and user.id == self.bot.author_obj.id
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)

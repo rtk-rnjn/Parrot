@@ -1,4 +1,5 @@
 from __future__ import annotations
+import io
 from itertools import zip_longest
 
 from typing import Any, Dict, Optional, Tuple, Union
@@ -661,11 +662,11 @@ class Utils(Cog):
                 return reaction.count
 
     async def __suggest(
-        self, content: Optional[str] = None, *, embed: discord.Embed, ctx: Context
+        self, content: Optional[str] = None, *, embed: discord.Embed, ctx: Context, file: Optional[discord.File]=None
     ) -> discord.Message:
 
         channel = await self.__fetch_suggestion_channel(ctx.guild)
-        msg: discord.Message = await channel.send(content, embed=embed)
+        msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
         payload = {
             "message_author": msg.author,
@@ -731,7 +732,14 @@ class Utils(Cog):
             embed.set_footer(
                 text=f"Author ID: {ctx.author.id}", icon_url=ctx.guild.icon.url
             )
-            msg = await self.__suggest(ctx=ctx, embed=embed)
+
+            if ctx.message.attachments:
+                if ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+                    _bytes = await ctx.message.attachments[0].read(use_cached=True)
+                    file = discord.File(io.BytesIO(_bytes), "image.jpg")
+                    embed.set_image(url="attachment://image.jpg")
+
+            msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
             await self.__notify_on_suggestion(ctx, message=msg)
             await ctx.message.delete(delay=0)
 

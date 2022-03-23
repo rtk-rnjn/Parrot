@@ -64,7 +64,7 @@ class Backup:
                 )
             except Exception:
                 pass
-            
+
             await asyncio.sleep(0)
 
         for tchannel in self.guild.text_channels:
@@ -178,7 +178,7 @@ class Backup:
                 pass
 
             await asyncio.sleep(0)
-    
+
     async def save(self,):
         self.data = {
             "id": str(self.guild.id),

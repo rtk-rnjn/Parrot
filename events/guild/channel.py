@@ -113,24 +113,22 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                             file=discord.File(fp, filename="overwrites.json"),
                         )
                         break
+
             if (
                 channel.permissions_for(channel.guild.me).manage_channels
                 and channel.permissions_for(channel.guild.default_role).send_messages
                 and channel.permissions_for(channel.guild.me).manage_roles
             ):
-                if data := await self.bot.mongo.parrot_db.server_config.find_one(
-                    {"_id": channel.guild.id}
-                ):
-                    if data["muted_role"]:
-                        if role := channel.guild.get_role(data["muted_role"]):
-                            await channel.edit(
-                                role, send_messages=False, add_reactions=False
-                            )
-                    else:
-                        if role := discord.utils.get(channel.guild.roles, name="Muted"):
-                            await channel.edit(
-                                role, send_messages=False, add_reactions=False
-                            )
+                if role_id := self.bot.server_config[channel.guild.id]["mute_role"]:
+                    if role := channel.guild.get_role(role_id):
+                        await channel.edit(
+                            role, send_messages=False, add_reactions=False
+                        )
+                else:
+                    if role := discord.utils.get(channel.guild.roles, name="Muted"):
+                        await channel.edit(
+                            role, send_messages=False, add_reactions=False
+                        )
 
     @Cog.listener()
     async def on_guild_channel_update(self, before, after):

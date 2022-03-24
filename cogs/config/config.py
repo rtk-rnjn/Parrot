@@ -92,7 +92,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} successfully created {channel.mention}! Enjoy"
         )
 
-    @config.group(name="starboard", invoke_without_command=True)
+    @config.group(name="starboard", aliases=["star"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def starboard(
         self,
@@ -488,7 +488,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} counting channel for the server is not removed"
             )
 
-    @config.group(invoke_without_command=True)
+    @config.group(name="leveling", aliases=["lvl"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling(self, ctx: Context, toggle: convert_bool = True):
@@ -565,7 +565,7 @@ class Configuration(Cog):
     @leveling.group(name="unignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_unignore_set(self, ctx: Context, *, role: discord.Role):
+    async def leveling_unignore_set(self, ctx: Context,):
         """To configure the ignoring system of leveling"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)

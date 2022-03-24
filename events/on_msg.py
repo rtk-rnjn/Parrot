@@ -536,12 +536,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = io.BytesIO("NOTHING HERE".encode())
+                    fp = None
                 await webhook.send(
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt"),
+                    file=discord.File(fp, filename="content.txt") if fp is not None else None,
                 )
 
     @Cog.listener()
@@ -574,7 +574,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 if msgs:
                     fp = io.BytesIO(main.encode())
                 else:
-                    fp = io.BytesIO("NOTHING HERE", filename="content.txt")
+                    fp = None
                 main_content = f"""**Bulk Message Delete**
 
 `Total Messages:` **{len(msgs)}**
@@ -584,7 +584,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt"),
+                    file=discord.File(fp, filename="content.txt") if fp is not None else None,
                 )
 
     @Cog.listener()
@@ -772,7 +772,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         "channel": message.channel.id,
                         "messageURL": message.jump_url,
                     }
-                    self.bot.mongo.parrot_db.afk.update_one(
+                    await self.bot.mongo.parrot_db.afk.update_one(
                         {"_id": data["_id"]}, {"$addToSet": {"pings": post}}
                     )
                     await message.channel.send(
@@ -813,12 +813,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = io.BytesIO("NOTHING HERE".encode())
+                    fp = None
                 await webhook.send(
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt"),
+                    file=discord.File(fp, filename="content.txt") if fp is not None else None,
                 )
 
 

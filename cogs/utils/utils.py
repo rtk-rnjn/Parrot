@@ -1004,6 +1004,8 @@ class Utils(Cog):
         prize: str = None,
     ):
         """To create giveaway in quick format"""
+        if not prize:
+            return await ctx.send(f"{ctx.author.mention} you didn't give the prize argument")
         post = await mt._make_giveaway_drop(
             ctx, duration=duration, winners=winners, prize=prize
         )

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from asyncio.log import logger
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps, partial
@@ -10,8 +9,6 @@ import discord
 
 from typing import Any, Optional, Union
 from core import Context
-
-from .log import get_logger
 
 
 def convert_bool(text: Union[str, bool]) -> bool:

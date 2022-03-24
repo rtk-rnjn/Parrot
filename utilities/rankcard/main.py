@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import requests
-from PIL import Image, ImageFont, ImageOps, ImageDraw
+from PIL import Image, ImageFont, ImageDraw
 from io import BytesIO
 import discord
 from utilities.converters import ToAsync

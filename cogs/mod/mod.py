@@ -4,7 +4,7 @@ from cogs.mod.flags import purgeFlag, warnFlag
 from cogs.mod import method as mt
 from cogs.meta.robopage import TextPageSource, RoboPages
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 import discord
 import typing
 import re

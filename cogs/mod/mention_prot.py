@@ -5,8 +5,6 @@ from core import Parrot, Cog, Context
 
 from utilities.infraction import warn
 from utilities.time import ShortTime
-
-from discord.ext import tasks
 import discord
 import random
 

@@ -721,7 +721,7 @@ class Utils(Cog):
         except discord.Forbidden:
             pass
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(aliases=["suggestion"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     async def suggest(self, ctx: Context, *, suggestion: commands.clean_content):
@@ -774,7 +774,7 @@ class Utils(Cog):
         await msg.delete(delay=0)
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
-    @suggest.command(name="stats")
+    @suggest.command(name="stats", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_status(self, ctx: Context, *, messageID: int):
         """To get the statistics os the suggestion"""
@@ -835,7 +835,7 @@ class Utils(Cog):
     @suggest.command(name="clear", aliases=["cls"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def clear_suggestion_embed(
-        self, ctx: Context, messageID: int, *, remark: str
+        self, ctx: Context, messageID: int,
     ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
 

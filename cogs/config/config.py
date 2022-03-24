@@ -498,7 +498,7 @@ class Configuration(Cog):
                 {"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}}
             )
             await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
-        
+
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)

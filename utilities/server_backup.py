@@ -4,7 +4,6 @@ import asyncio
 from typing import Any, Dict
 
 import discord
-from discord.ext import commands
 
 from core import Parrot
 
@@ -16,11 +15,11 @@ class BooleanArgs:
         for arg in args:
             arg = arg.lower()
 
-            if arg == "-" or arg == "!*":
+            if arg in ("-", "!*"):
                 self.all = False
                 self._args = {}
 
-            if arg == "+" or arg == "*":
+            if arg in ("+", "*"):
                 self.all = True
 
             if arg.startswith("!"):
@@ -64,7 +63,7 @@ class Backup:
                 )
             except Exception:
                 pass
-            
+
             await asyncio.sleep(0)
 
         for tchannel in self.guild.text_channels:
@@ -178,7 +177,7 @@ class Backup:
                 pass
 
             await asyncio.sleep(0)
-    
+
     async def save(self,):
         self.data = {
             "id": str(self.guild.id),
@@ -423,7 +422,7 @@ class BackupLoader:
             roles = [
                 discord.Object(self.id_translator.get(role))
                 for role in member_data["roles"]
-                if role in self.id_translator.keys()
+                if role in self.id_translator
             ]
 
             if self.guild.me.top_role.position > member.top_role.position:

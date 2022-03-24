@@ -3330,15 +3330,15 @@ class Fun(Cog):
         ls = (
             f"`[▓▓▓                    ] / {virus}-virus.exe Packing files.`",
             f"`[▓▓▓▓▓▓▓                ] - {virus}-virus.exe Packing files..`",
-            f"`[▓▓▓▓▓▓▓▓▓▓▓▓           ] \ {virus}-virus.exe Packing files..`",
+            rf"`[▓▓▓▓▓▓▓▓▓▓▓▓           ] \ {virus}-virus.exe Packing files..`",
             f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓         ] | {virus}-virus.exe Packing files..`",
             f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓      ] / {virus}-virus.exe Packing files..`",
             f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   ] - {virus}-virus.exe Packing files..`",
-            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ ] \ {virus}-virus.exe Packing files..`",
+            rf"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ ] \ {virus}-virus.exe Packing files..`",
             f"`[Successfully downloaded] | {virus}-virus.exe`",
             "`[Injecting virus.       ] /`",
             "`[Injecting virus..      ] -`",
-            "`[Injecting virus...     ] \`",
+            r"`[Injecting virus...     ] \`",
             f"`Successfully Injected {virus}-virus.exe into {user.name}`",
         )
         for i in ls:

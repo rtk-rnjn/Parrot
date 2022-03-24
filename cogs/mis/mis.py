@@ -35,7 +35,6 @@ from qrcode.image.styles.colormasks import (
     SquareGradiantColorMask,
     HorizontalGradiantColorMask,
     VerticalGradiantColorMask,
-    ImageColorMask,
     SolidFillColorMask,
 )
 

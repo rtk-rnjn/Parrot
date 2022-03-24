@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from time import time
 
-from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY, MASTER_OWNER
+from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
 from utilities import time as Time
 from utilities.formats import get_cmd_signature
 

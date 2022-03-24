@@ -1,8 +1,5 @@
 from __future__ import annotations
-import asyncio
 from typing import Any, List, Optional
-
-from discord.ext import tasks
 import discord
 import random
 import re

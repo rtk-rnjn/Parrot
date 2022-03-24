@@ -1554,7 +1554,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         data = await res.json()
 
         def get_datetime(st: str) -> int:
-            return int(datetime.strptime(st, "%Y-%m-%dT%H:%M:%S.%LZ").timestamp())
+            return int(datetime.strptime(st, "%Y-%m-%dT%H:%M:%S.%fZ").timestamp())
         
         ls = []
 

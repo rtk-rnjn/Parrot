@@ -343,6 +343,14 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if member.bot:
             return
 
+        try:
+            self.bot.banned_users[payload.user_id]
+        except KeyError:
+            pass
+        else:
+            if self.bot.banned_users[payload.user_id].get("global"):
+                return
+
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
             await self._add_reactor(payload)
 
@@ -365,6 +373,14 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         if member.bot:
             return
+
+        try:
+            self.bot.banned_users[payload.user_id]
+        except KeyError:
+            pass
+        else:
+            if self.bot.banned_users[payload.user_id].get("global"):
+                return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
             await self._remove_reactor(payload)

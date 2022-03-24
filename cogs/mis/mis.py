@@ -144,7 +144,7 @@ def _create_qr(
     **kw,
 ) -> str:
     qr = qrcode.QRCode(
-        version=1,
+        version=version,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=board_size,
         border=border,
@@ -238,11 +238,11 @@ class Misc(Cog):
 
             return lines
 
-    def sanitise(self, string):
-        if len(string) > 1024:
-            string = string[0:1021] + "..."
-        string = re.sub(invitere2, "[INVITE REDACTED]", string)
-        return string
+    def sanitise(self, st: str) -> str:
+        if len(st) > 1024:
+            st = st[0:1021] + "..."
+        st = re.sub(invitere2, "[INVITE REDACTED]", st)
+        return st
 
     async def _generate_image(self, query: str, out_file: BinaryIO) -> None:
         """Make an API request and save the generated image to cache."""

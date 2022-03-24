@@ -4,6 +4,7 @@ import unicodedata
 import os
 import re
 import sys
+from cogs.meta.robopage import SimplePages
 import discord
 import aiohttp
 import hashlib
@@ -1542,3 +1543,28 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         wait_for_kata = await kata_view.wait()
         if wait_for_kata:
             await original_message.edit(embed=kata_embed, view=None)
+
+    @commands.command(name='kontests')
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def kontests(self, ctx: Context,):
+        """To get the list for all upcoming and ongoing competitive coding contests"""
+        url = "https://kontests.net/api/v1/all"
+        res = await self.bot.http_session.get(url)
+
+        data = await res.json()
+
+        def get_datetime(st: str) -> int:
+            return int(datetime.strptime("%Y-%m-%dT%H:%M:%S.%LZ", st).timestamp())
+        
+        ls = []
+
+        for i in data:
+            ls.append(f"""**Name:** {i['name']}
+**URL:** {i['url']}
+**Starts in:** <t:{get_datetime(i['start_time'])}:R>
+**Ends in:** <t:{get_datetime(i['end_time'])}:R>
+**Website:** {i['site']}
+**Status:** {i['status']}
+""")
+        p = SimplePages(ls, ctx=ctx, per_page=3)
+        await p.start()

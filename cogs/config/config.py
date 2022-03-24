@@ -170,7 +170,7 @@ class Configuration(Cog):
         await ctx.reply(f"{ctx.author.mention} set starboard limit to **{limit}**")
 
     @starboard.command(
-        name="lock",
+        name="lock", aliases=["locked"]
     )
     @commands.has_permissions(administrator=True)
     async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):

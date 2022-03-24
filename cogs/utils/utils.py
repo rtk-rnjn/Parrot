@@ -622,6 +622,11 @@ class Utils(Cog):
     async def get_or_fetch_message(
         self, msg_id: int, *, channel: discord.TextChannel = None
     ) -> Optional[discord.Message]:
+        for msg in self.bot.cached_messages:
+            if msg.id == msg_id:
+                self.message[msg.id] = msg
+                return msg
+        await asyncio.sleep(0)
         try:
             self.message[msg_id]
         except KeyError:
@@ -752,22 +757,22 @@ class Utils(Cog):
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
         if not msg:
             return await ctx.send(
-                f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"Invalid `{messageID}`")
+            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         if ctx.channel.permissions_for(ctx.author).manage_messages:
             await msg.delete(delay=0)
-            await ctx.send("Done", delete_after=5)
+            await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
             return
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send("You don't own that 'suggestion'")
+            return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
         await msg.delete(delay=0)
-        await ctx.send("Done", delete_after=5)
+        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @suggest.command(name="stats")
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -777,12 +782,12 @@ class Utils(Cog):
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
         if not msg:
             return await ctx.send(
-                f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
         PAYLOAD: Dict[str, Any] = self.message[msg.id]
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"Invalid `{messageID}`")
+            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         table = TabularData()
 
@@ -810,11 +815,11 @@ class Utils(Cog):
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
         if not msg:
             return await ctx.send(
-                f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"Invalid `{messageID}`")
+            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
@@ -825,7 +830,7 @@ class Utils(Cog):
         user = ctx.guild.get_member(user_id)
         await self.__notify_user(ctx, user, message=msg, remark=remark)
 
-        await ctx.send("Done", delete_after=5)
+        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @suggest.command(name="clear", aliases=["cls"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
@@ -833,14 +838,15 @@ class Utils(Cog):
         self, ctx: Context, messageID: int, *, remark: str
     ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
+
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
         if not msg:
             return await ctx.send(
-                f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"Invalid `{messageID}`")
+            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
@@ -851,7 +857,7 @@ class Utils(Cog):
             if str(reaction.emoji) not in REACTION_EMOJI:
                 await msg.clear_reaction(reaction.emoji)
 
-        await ctx.send("Done", delete_after=5)
+        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @suggest.command(name="flag")
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
@@ -865,31 +871,32 @@ class Utils(Cog):
         - DECLINE
         - APPROVED
         """
+
         msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID)
         if not msg:
             return await ctx.send(
-                f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"Invalid `{messageID}`")
+            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         flag = flag.upper()
         try:
             payload: Dict[str, Union[int, str]] = OTHER_REACTION[flag]
         except KeyError:
-            return await ctx.send("Invalid Flag")
+            return await ctx.send(f"{ctx.author.mention} Invalid Flag")
 
         embed: discord.Embed = msg.embeds[0]
         embed.color = payload["color"]
 
         user_id = int(embed.footer.text.split(":")[1])
-        user: discord.Member = ctx.guild.get_member(user_id)
+        user: Optional[discord.Member] = self.bot.get_or_fetch_member(ctx.guild, user_id)
         await self.__notify_user(ctx, user, message=msg, remark="")
 
         content = f"Flagged: {flag} | {payload['emoji']}"
         await msg.edit(content=content, embed=embed)
-        await ctx.send("Done", delete_after=5)
+        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @Cog.listener(name="on_raw_message_delete")
     async def suggest_msg_delete(self, payload) -> None:
@@ -1031,7 +1038,7 @@ class Utils(Cog):
             {"message_id": messageID}
         ):
 
-            if data["status"] == "ONGOING":
+            if data["status"].upper() == "ONGOING":
                 return await ctx.send(
                     f"{ctx.author.mention} can not reroll the ongoing giveaway"
                 )

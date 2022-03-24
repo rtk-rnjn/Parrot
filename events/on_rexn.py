@@ -312,6 +312,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             msg: discord.Message = await self.bot.get_or_fetch_message(
                 ch, payload.message_id
             )
+            if msg.author.bot:
+                return False
+
             count = await self.get_star_count(msg)
 
             if count >= limit:
@@ -334,6 +337,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
+        guild = self.bot.get_guild(payload.guild_id)
+        member = self.bot.get_or_fetch_member(guild, payload.user_id)
+
+        if member.bot:
+            return
+
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
             await self._add_reactor(payload)
 
@@ -349,6 +358,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload):
         if not payload.guild_id:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        member = self.bot.get_or_fetch_member(guild, payload.user_id)
+
+        if member.bot:
             return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":

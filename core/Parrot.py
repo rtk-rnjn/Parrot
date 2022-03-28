@@ -190,10 +190,6 @@ class Parrot(commands.AutoShardedBot):
     async def db(self, db_name: str):
         return self.mongo[db_name]
 
-    async def on_dbl_vote(self, data) -> None:
-        """An event that is called whenever someone votes for the bot on Top.gg."""
-        ...
-
     async def on_autopost_success(self) -> None:
         st = f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
         print(st)

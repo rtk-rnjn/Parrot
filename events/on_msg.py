@@ -687,7 +687,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
-            {"_id": member.id}, {"$inc": {"xp": xp}}, upsert=True
+            {"_id": member.id}, {"$inc": {"xp": xp}}, upsert=True, return_document=ReturnDocument.AFTER
         )
         level = int((data["xp"] // 42) ** 0.55)
         await self.__add_role__xp(msg.guild.id, level, msg)

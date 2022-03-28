@@ -371,6 +371,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         guild = self.bot.get_guild(payload.guild_id)
         member = await self.bot.get_or_fetch_member(guild, payload.user_id)
 
+        if member is None:
+            return
+
         if member.bot:
             return
 

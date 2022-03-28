@@ -260,33 +260,41 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except discord.Forbidden:
             await ctx.send("User unbanned, unable to DM as their DMs are locked")
 
-    @commands.command(name="image-search", aliases=["imagesearch", "imgs"], hidden=True)
+    @commands.group(
+        name="image-search", aliases=["imagesearch", "imgs"], hidden=True, invoke_without_command=True
+    )
     @commands.is_owner()
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
         """Image Search. Anything"""
-        text = urllib.parse.quote(text)
-        params = {
-            "key": os.environ["GOOGLE_KEY"],
-            "cx": os.environ["GOOGLE_CX"],
-            "q": text,
-            "searchType": "image",
-        }
-        url = "https://www.googleapis.com/customsearch/v1"
-        res = await self.bot.http_session.get(url, params=params)
-        data = await res.json()
-        ls = []
-        for i in data["items"]:
-            embed = discord.Embed(
-                title=i["title"],
-                description=f"```\n{i['snippet']}```",
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_footer(text=f"Requester: {ctx.author}")
-            embed.set_image(url=i["link"])
-            ls.append(embed)
-        page = PaginationView(embed_list=ls)
-        await page.start(ctx)
+        if ctx.invoked_subcommand is None:
+            text = urllib.parse.quote(text)
+            params = {
+                "key": os.environ["GOOGLE_KEY"],
+                "cx": os.environ["GOOGLE_CX"],
+                "q": text,
+                "searchType": "image",
+            }
+            url = "https://www.googleapis.com/customsearch/v1"
+            res = await self.bot.http_session.get(url, params=params)
+            data = await res.json()
+            ls = []
+            for i in data["items"]:
+                embed = discord.Embed(
+                    title=i["title"],
+                    description=f"```\n{i['snippet']}```",
+                    timestamp=datetime.datetime.utcnow(),
+                )
+                embed.set_footer(text=f"Requester: {ctx.author}")
+                embed.set_image(url=i["link"])
+                ls.append(embed)
+            page = PaginationView(embed_list=ls)
+            await page.start(ctx)
+
+    @imgsearch.command(name="custom")
+    @commands.is_owner()
+    async def imgsearch_custom(self, ctx: Context, *, text: str):
+        ...
 
     @commands.command()
     @commands.is_owner()

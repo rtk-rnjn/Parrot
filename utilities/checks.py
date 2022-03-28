@@ -18,9 +18,11 @@ from discord.ext.commands import (
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
 
+from core import Context
 
-def is_guild_owner():
-    async def predicate(ctx):
+
+def is_guild_owner() -> Callable:
+    async def predicate(ctx: Context) -> Optional[bool]:
         if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
             return True
         raise ex.NotGuildOwner()
@@ -28,8 +30,8 @@ def is_guild_owner():
     return commands.check(predicate)
 
 
-def is_me():
-    async def predicate(ctx):
+def is_me() -> Callable:
+    async def predicate(ctx: Context) -> Optional[bool]:
         if ctx.message.author.id == SUPER_USER:  # `!! Ritik Ranjan [*.*]#9230`
             return True
         raise ex.NotMe()
@@ -37,8 +39,8 @@ def is_me():
     return commands.check(predicate)
 
 
-def has_verified_role_ticket():
-    async def predicate(ctx):
+def has_verified_role_ticket() -> Callable:
+    async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         if not data:
             return False
@@ -55,8 +57,8 @@ def has_verified_role_ticket():
     return commands.check(predicate)
 
 
-def is_mod():
-    async def predicate(ctx):
+def is_mod() -> Callable:
+    async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id}
         )
@@ -72,8 +74,8 @@ def is_mod():
     return commands.check(predicate)
 
 
-def in_temp_channel():
-    async def predicate(ctx):
+def in_temp_channel() -> Callable:
+    async def predicate(ctx) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id}
         )
@@ -97,7 +99,7 @@ def in_temp_channel():
     return commands.check(predicate)
 
 
-async def _can_run(ctx):
+async def _can_run(ctx) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
     if ctx.guild is not None:
         roles = set(ctx.author.roles)

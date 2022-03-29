@@ -20,6 +20,7 @@ from urllib.parse import quote_plus
 from pymongo import ReturnDocument
 
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
+from utilities.rankcard import rank_card
 
 from core import Parrot, Cog
 
@@ -659,8 +660,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 force_fetch=False,
             )
             if ch:
-                from utilities.rankcard import rank_card
-
                 if data := await collection.find_one_and_update(
                     {"_id": message.author.id},
                     {"$inc": {"xp": 0}},

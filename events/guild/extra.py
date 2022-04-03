@@ -73,7 +73,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                 async for entry in invite.guild.audit_logs(
                     action=discord.AuditLogAction.invite_delete, limit=5
                 ):
-                    if entry.extra.id == invite.id:
+                    if entry.target.id == invite.id:
                         reason = entry.reason or None
                         user = entry.user or "UNKNOWN#0000"
 

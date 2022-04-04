@@ -33,7 +33,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
             )
             if webhook:
                 async for entry in invite.guild.audit_logs(
-                    action=discord.AuditLogAction.invite_delete, limit=5
+                    action=discord.AuditLogAction.invite_create, limit=5
                 ):
                     if entry.after.code == invite.code:
                         reason = entry.reason or None

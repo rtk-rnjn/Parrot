@@ -25,9 +25,10 @@ class Sports(Cog):
         self.annouce_task.start()
 
     def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
-        embed = discord.Embed(
-            title=data["title"], timestamp=datetime.utcnow()
-        )
+        if data.title:
+            embed = discord.Embed(
+                title=data["title"], timestamp=datetime.utcnow()
+            )
         embed.set_footer(text=data["status"])
 
         table1 = tabulate(data['batting'], headers="keys")
@@ -38,7 +39,8 @@ class Sports(Cog):
         if extra_ := data.get('extra'):
             for temp in extra_:
                 extra += "".join(temp) + "\n"
-        embed.description = f"""
+        if crr:
+            embed.description = f"""
 > `{data['team_one']} | {data['team_two']}`
 ```
 {crr}

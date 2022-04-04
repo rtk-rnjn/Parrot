@@ -10,7 +10,7 @@ from .mention_prot import MentionProt
 from core import Parrot
 
 
-async def setup(bot: Parrot):
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(Moderator(bot))
     await bot.add_cog(Profanity(bot))
     await bot.add_cog(LinkProt(bot))

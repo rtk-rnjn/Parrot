@@ -821,5 +821,5 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
 
-async def setup(bot: Parrot):
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

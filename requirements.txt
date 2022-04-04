@@ -35,3 +35,4 @@ pyparsing
 qrcode
 python-dotenv
 pygit2
+youtube_dl

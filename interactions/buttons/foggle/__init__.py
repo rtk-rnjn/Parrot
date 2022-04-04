@@ -604,5 +604,5 @@ class Foggle(Cog):
         await self.games[message.channel].check_message(message)
 
 
-async def setup(bot: Parrot):
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(Foggle(bot))

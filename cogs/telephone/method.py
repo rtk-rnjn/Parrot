@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-
+from typing import Any
 import asyncio
 import discord
 import random
@@ -10,10 +10,10 @@ from discord.ext import commands
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 
-async def dial(bot, ctx, server, reverse=False):
+async def dial(bot, ctx, server, reverse=False) -> None:
     collection = bot.mongo.parrot_db.telephone
 
-    async def telephone_update(guild_id: int, event: str, value) -> None:
+    async def telephone_update(guild_id: int, event: str, value: Any) -> None:
         if _ := await collection.find_one({"_id": guild_id}):
             await collection.update_one({"_id": guild_id}, {"$set": {event: value}})
             return
@@ -121,7 +121,7 @@ async def dial(bot, ctx, server, reverse=False):
         ini = time.time() + 120
         while True:
 
-            def check_in_channel(m: discord.Message):
+            def check_in_channel(m: discord.Message) -> bool:
                 if m.author.bot:
                     return False
                 return m.channel in (target_channel, channel)
@@ -146,6 +146,8 @@ async def dial(bot, ctx, server, reverse=False):
             bucket = cd_mapping.get_bucket(talk_message)
             retry_after = bucket.update_rate_limit()
             if retry_after:
+                await telephone_update(ctx.guild.id, "is_line_busy", False)
+                await telephone_update(number, "is_line_busy", False)
                 await target_channel.send("Disconnect due to channel spam")
                 await ctx.send("Disconnect due to channel spam")
                 return
@@ -164,12 +166,12 @@ async def dial(bot, ctx, server, reverse=False):
 
             if talk_message.channel == target_channel:
                 await channel.send(
-                    f"**{talk_message.author.name}#{talk_message.author.discriminator}** {TALK}"
+                    f"**{talk_message.author}** {TALK}"
                 )
 
             elif talk_message.channel == channel:
                 await target_channel.send(
-                    f"**{talk_message.author.name}#{talk_message.author.discriminator}** {TALK}"
+                    f"**{talk_message.author}** {TALK}"
                 )
             if ini - time.time() <= 60:
                 await channel.send(

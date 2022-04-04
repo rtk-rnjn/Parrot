@@ -7,7 +7,7 @@ import asyncio
 from discord.ext import commands
 import discord
 
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 from core import Context
 
 
@@ -15,8 +15,6 @@ def convert_bool(text: Union[str, bool]) -> bool:
     """True/False converter"""
     if str(text).lower() in ("yes", "y", "true", "t", "1", "enable", "on", "o"):
         return True
-    if str(text).lower() in ("no", "n", "false", "f", "0", "disable", "off", "x"):
-        return False
     return False
 
 
@@ -26,13 +24,13 @@ def reason_convert(text: commands.clean_content) -> str:
 
 
 class ToAsync:
-    def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None):
+    def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
 
         self.executor = executor
 
-    def __call__(self, blocking):
+    def __call__(self, blocking) -> Callable:
         @wraps(blocking)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs) -> Any:
 
             loop = asyncio.get_event_loop()
             if not self.executor:

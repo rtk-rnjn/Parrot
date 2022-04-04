@@ -2,7 +2,7 @@ from __future__ import annotations
 from core import Context
 import discord
 
-from typing import Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from datetime import datetime
 from tabulate import tabulate
@@ -29,7 +29,7 @@ async def warn(
     expires_at: Optional[float] = None,
     message: Optional[discord.Message] = None,
     at: Optional[float] = None,
-) -> dict:
+) -> Dict[str, Any]:
     """|coro|
 
     To warn the user.
@@ -86,12 +86,12 @@ async def delete_many_warn(ctx, guild: discord.Guild, **kw) -> None:
     await collection.delete_many(kw)
 
 
-async def edit_warn(ctx, guild: discord.Guild, **kw):
+async def edit_warn(ctx, guild: discord.Guild, **kw) -> None:
     collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.update_one(kw)
 
 
-async def show_warn(ctx, guild: discord.Guild, **kw):
+async def show_warn(ctx, guild: discord.Guild, **kw) -> str:
     collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     temp = {"User": [], "Reason": [], "At": []}
     async for data in collection.find({**kw}):

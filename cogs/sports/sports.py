@@ -25,7 +25,7 @@ class Sports(Cog):
         self.annouce_task.start()
 
     def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
-        if data.title:
+        if data['title']:
             embed = discord.Embed(
                 title=data["title"], timestamp=datetime.utcnow()
             )

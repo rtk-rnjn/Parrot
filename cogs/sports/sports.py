@@ -24,6 +24,8 @@ class Sports(Cog):
         self.channels = []
         self.annouce_task.start()
 
+        self.data = None
+
     def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
         if data['title']:
             embed = discord.Embed(
@@ -109,11 +111,12 @@ class Sports(Cog):
         self.channels.remove(channel)
         await ctx.send(f"{ctx.author.mention} Channel removed")
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=90)
     async def annouce_task(self,):
         if self.url is None:
             return
 
+            
         url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
         response = await self.bot.http_session.get(url)
 
@@ -121,7 +124,15 @@ class Sports(Cog):
             return
 
         data = await response.json()
+
+        if data == self.data:
+            return
+
+        if self.data is None:
+            self.data = data
+        
         embed = self.create_embed_ipl(data=data)
 
         for channel in self.channels:
             await channel.send(embed=embed)
+            self.data = data

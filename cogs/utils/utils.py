@@ -519,6 +519,9 @@ class Utils(Cog):
     async def before_reminder_task(self):
         await self.bot.wait_until_ready()
 
+    async def cog_unload(self):
+        self.reminder_task.cancel()
+
     @commands.command(aliases=["level"])
     @commands.bot_has_permissions(attach_files=True)
     async def rank(self, ctx: Context, *, member: discord.Member = None):

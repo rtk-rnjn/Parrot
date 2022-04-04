@@ -287,7 +287,7 @@ class Music(Cog):
 
         return state
 
-    def cog_unload(self):
+    async def cog_unload(self):
         for state in self.voice_states.values():
             self.bot.loop.create_task(state.stop())
 

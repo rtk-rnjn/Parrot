@@ -420,7 +420,7 @@ class Meta(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{WHITE QUESTION MARK ORNAMENT}")
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.bot.help_command = self.old_help_command
 
     @commands.command(name="ping")

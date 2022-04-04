@@ -1236,7 +1236,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             embed=embed,
         )
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         """Unload the cog and cancel the task."""
         self.fetch_readme.cancel()
 

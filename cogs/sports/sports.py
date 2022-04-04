@@ -116,7 +116,6 @@ class Sports(Cog):
         if self.url is None:
             return
 
-            
         url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
         response = await self.bot.http_session.get(url)
 
@@ -136,3 +135,6 @@ class Sports(Cog):
         for channel in self.channels:
             await channel.send(embed=embed)
             self.data = data
+    
+    async def cog_unload(self,):
+        self.annouce_task.cancel()

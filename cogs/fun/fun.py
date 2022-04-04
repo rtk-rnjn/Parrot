@@ -615,7 +615,7 @@ class Fun(Cog):
             return
         return f"#{self.colour_mapping[match]}"
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         """Cancel `get_wiki_questions` task when Cog will unload."""
         self.get_wiki_questions.cancel()
         self.get_latest_comic_info.cancel()

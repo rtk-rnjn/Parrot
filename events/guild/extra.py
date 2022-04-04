@@ -35,7 +35,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                 async for entry in invite.guild.audit_logs(
                     action=discord.AuditLogAction.invite_delete, limit=5
                 ):
-                    if entry.target.id == invite.id:
+                    if entry.after.code == invite.code:
                         reason = entry.reason or None
                         content = f"""**On Invite Create**
 
@@ -48,6 +48,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Link        :` **{invite.url}**
 `Inviter?    :` **{invite.inviter}**
 `Reason?     :` **{reason}**
+`Created By  :` **{entry.user}**
 """
                         await webhook.send(
                             content=content,
@@ -73,7 +74,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                 async for entry in invite.guild.audit_logs(
                     action=discord.AuditLogAction.invite_delete, limit=5
                 ):
-                    if entry.target.id == invite.id:
+                    if entry.after.code == invite.code:
                         reason = entry.reason or None
                         user = entry.user or "UNKNOWN#0000"
 

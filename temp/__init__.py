@@ -483,7 +483,7 @@ class Music(Cog):
         This command automatically searches from various sites if no URL is provided.
         A list of these sites can be found here: https://rg3.github.io/youtube-dl/supportedsites.html
         """
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.voice:
             await ctx.invoke(self._join)
 

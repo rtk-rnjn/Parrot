@@ -20,6 +20,9 @@ class Sports(Cog):
         # to my localhost to be honest.
         self.url = None
 
+        # list of channels
+        self.channels = []
+
     def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
         embed = discord.Embed(
             title=data["title"], timestamp=datetime.utcnow()
@@ -83,6 +86,26 @@ class Sports(Cog):
         self.url = url
         await ctx.send(f"Set IPL score page to <{url}>")
 
+    @ipl.command(name="add")
+    @commands.is_owner()
+    async def add_channel(self, ctx: Context, *, channel: discord.TextChannel):
+        """To add the channel to the list of channels to get IPL score"""
+        if channel.id in self.channels:
+            return await ctx.send(f"{ctx.author.mention} Channel already added")
+
+        self.channels.append(channel)
+        await ctx.send(f"{ctx.author.mention} Channel added")
+
+    @ipl.command(name="remove")
+    @commands.is_owner()
+    async def remove_channel(self, ctx: Context, *, channel: discord.TextChannel):
+        """To remove the channel from the list of channels to get IPL score"""
+        if channel.id not in self.channels:
+            return await ctx.send(f"{ctx.author.mention} Channel not added")
+
+        self.channels.remove(channel)
+        await ctx.send(f"{ctx.author.mention} Channel removed")
+
     @tasks.loop(seconds=60)
     async def annouce_task(self,):
         if self.url is None:
@@ -97,4 +120,5 @@ class Sports(Cog):
         data = await response.json()
         embed = self.create_embed_ipl(data=data)
 
-        pass
+        for channel in self.channels:
+            await channel.send(embed=embed)

@@ -35,6 +35,7 @@
       "cogs.actions",
       "cogs.telephone",
       "cogs.utils",
+      "cogs.sports",
       "interactions.buttons",
       "interactions.buttons.snakes",
       "interactions.buttons.foggle",

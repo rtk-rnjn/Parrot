@@ -22,6 +22,7 @@ class Sports(Cog):
 
         # list of channels
         self.channels = []
+        self.annouce_task.start()
 
     def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
         embed = discord.Embed(

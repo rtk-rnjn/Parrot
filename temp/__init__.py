@@ -303,7 +303,7 @@ class Music(Cog):
     @commands.command(name='join', invoke_without_subcommand=True)
     async def _join(self, ctx: Context):
         """Joins a voice channel."""
-
+        await self.cog_before_invoke(ctx)
         destination = ctx.author.voice.channel
         if ctx.voice_state.voice:
             await ctx.voice_state.voice.move_to(destination)
@@ -318,7 +318,7 @@ class Music(Cog):
 
         If no channel was specified, it joins your channel.
         """
-
+        await self.cog_before_invoke(ctx)
         if not channel and not ctx.author.voice:
             raise VoiceError('You are neither connected to a voice channel nor specified a channel to join.')
 
@@ -333,7 +333,7 @@ class Music(Cog):
     @commands.has_permissions(manage_guild=True)
     async def _leave(self, ctx: Context):
         """Clears the queue and leaves the voice channel."""
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.voice:
             return await ctx.send('Not connected to any voice channel.')
 
@@ -343,7 +343,7 @@ class Music(Cog):
     @commands.command(name='volume')
     async def _volume(self, ctx: Context, *, volume: int):
         """Sets the volume of the player."""
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.is_playing:
             return await ctx.send('Nothing being played at the moment.')
 
@@ -363,7 +363,7 @@ class Music(Cog):
     @commands.has_permissions(manage_guild=True)
     async def _pause(self, ctx: Context):
         """Pauses the currently playing song."""
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
             ctx.voice_state.voice.pause()
             await ctx.message.add_reaction('⏯')
@@ -372,7 +372,7 @@ class Music(Cog):
     @commands.has_permissions(manage_guild=True)
     async def _resume(self, ctx: Context):
         """Resumes a currently paused song."""
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
             ctx.voice_state.voice.resume()
             await ctx.message.add_reaction('⏯')
@@ -381,7 +381,7 @@ class Music(Cog):
     @commands.has_permissions(manage_guild=True)
     async def _stop(self, ctx: Context):
         """Stops playing song and clears the queue."""
-
+        await self.cog_before_invoke(ctx)
         ctx.voice_state.songs.clear()
 
         if not ctx.voice_state.is_playing:
@@ -393,7 +393,7 @@ class Music(Cog):
         """Vote to skip a song. The requester can automatically skip.
         3 skip votes are needed for the song to be skipped.
         """
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.is_playing:
             return await ctx.send('Not playing any music right now...')
 
@@ -421,7 +421,7 @@ class Music(Cog):
 
         You can optionally specify the page to show. Each page contains 10 elements.
         """
-
+        await self.cog_before_invoke(ctx)
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send('Empty queue.')
 
@@ -442,7 +442,7 @@ class Music(Cog):
     @commands.command(name='shuffle')
     async def _shuffle(self, ctx: Context):
         """Shuffles the queue."""
-
+        await self.cog_before_invoke(ctx)
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send('Empty queue.')
 
@@ -452,7 +452,7 @@ class Music(Cog):
     @commands.command(name='remove')
     async def _remove(self, ctx: Context, index: int):
         """Removes a song from the queue at a given index."""
-
+        await self.cog_before_invoke(ctx)
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send('Empty queue.')
 
@@ -465,7 +465,7 @@ class Music(Cog):
 
         Invoke this command again to unloop the song.
         """
-
+        await self.cog_before_invoke(ctx)
         if not ctx.voice_state.is_playing:
             return await ctx.send('Nothing being played at the moment.')
 

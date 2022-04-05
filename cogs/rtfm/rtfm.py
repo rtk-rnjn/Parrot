@@ -1321,7 +1321,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 return error_embed
 
             soup = BeautifulSoup(
-                await response.text(), features="html.parser"
+                await response.text(), features="lxml"
             )  # changed the parser
             first_kata_div = await _doc.get_ele(
                 soup.find_all, "div", class_="item-title px-0"

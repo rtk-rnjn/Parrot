@@ -35,7 +35,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
                 )
 
             soup = BeautifulSoup(
-                str(await response.text()), "html.parser"
+                str(await response.text()), "lxml"
             )  # icantinstalllxmlinheroku
 
             def soup_match(tag):
@@ -81,7 +81,7 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            soup = BeautifulSoup(await response.text(), "html.parser")
+            soup = BeautifulSoup(await response.text(), "lxml")
             uls = await get_ele(soup, "ul", class_="mw-search-results")
 
             if not uls:
@@ -131,7 +131,7 @@ async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            results = BeautifulSoup(await response.text(), "html.parser").find(
+            results = BeautifulSoup(await response.text(), "lxml").find(
                 "div", class_="searchresults"
             )
 

@@ -27,6 +27,7 @@ class Sports(Cog):
         self.data = None
 
     def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
+        """To create the embed for the ipl score. For more detailed information, see https://github.com/rtk-rnjn/cricbuzz_scraper"""
         if data['title']:
             embed = discord.Embed(
                 title=data["title"], timestamp=datetime.utcnow()
@@ -70,15 +71,16 @@ class Sports(Cog):
         if ctx.invoked_subcommand is None:
             if not self.url:
                 return await ctx.send(f"{ctx.author.mention} No IPL score page set | Ask for it in support server")
-
-            url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
-            response = await self.bot.http_session.get(url)
+            
+            if self.data is None:
+                url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
+                response = await self.bot.http_session.get(url)
+                self.data = await response.json()
 
             if response.status != 200:
                 return await ctx.send(f"{ctx.author.mention} Could not get IPL score | Ask for it in support server")
 
-            data = await response.json()
-            embed = self.create_embed_ipl(data=data)
+            embed = self.create_embed_ipl(data=self.data)
             await ctx.send(embed=embed)
 
     @with_role(*STAFF_ROLES)

@@ -36,7 +36,7 @@ class ErrorView(discord.ui.View):
 
     @discord.ui.button(label="Show full error", style=discord.ButtonStyle.green)
     async def show_full_traceback(
-        self, button: discord.ui.button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.send_message(str(self.error), ephemeral=True)
 

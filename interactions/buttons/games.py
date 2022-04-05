@@ -768,7 +768,7 @@ class SlidingPuzzleView(discord.ui.View):
         disabled=True,
     )
     async def null_button(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         return
 
@@ -778,7 +778,7 @@ class SlidingPuzzleView(discord.ui.View):
         style=discord.ButtonStyle.red,
         disabled=False,
     )
-    async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def upward(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_up()
 
         embed = (
@@ -802,7 +802,7 @@ class SlidingPuzzleView(discord.ui.View):
         disabled=False,
     )
     async def null_button2(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.message.delete()
         self.stop()
@@ -814,7 +814,7 @@ class SlidingPuzzleView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def left(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_left()
 
         embed = (
@@ -838,7 +838,7 @@ class SlidingPuzzleView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def down(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_down()
 
         embed = (
@@ -862,7 +862,7 @@ class SlidingPuzzleView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def right(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_right()
 
         embed = (
@@ -903,7 +903,7 @@ class ChessView(discord.ui.View):
         disabled=False,
     )
     async def show_moves(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         menu = ParrotPaginator(
             self.game.ctx,
@@ -925,7 +925,7 @@ class ChessView(discord.ui.View):
         disabled=False,
     )
     async def show_fen(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.send_message(
             f"**{interaction.user}** board FEN: `{self.game.board.board_fen()}`",
@@ -1243,7 +1243,7 @@ class Twenty48_Button(discord.ui.View):
         disabled=True,
     )
     async def null_button(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         return
 
@@ -1253,7 +1253,7 @@ class Twenty48_Button(discord.ui.View):
         style=discord.ButtonStyle.red,
         disabled=False,
     )
-    async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def upward(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.MoveUp()
 
         self.game.spawn_new()
@@ -1282,7 +1282,7 @@ class Twenty48_Button(discord.ui.View):
         disabled=False,
     )
     async def null_button2(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.message.delete()
         self.stop()
@@ -1294,7 +1294,7 @@ class Twenty48_Button(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def left(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.MoveLeft()
 
         self.game.spawn_new()
@@ -1324,7 +1324,7 @@ class Twenty48_Button(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def down(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def down(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.MoveDown()
 
         self.game.spawn_new()
@@ -1354,7 +1354,7 @@ class Twenty48_Button(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def right(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.MoveRight()
 
         self.game.spawn_new()
@@ -1570,14 +1570,14 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
     )
     async def null_button(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         return
 
     @discord.ui.button(
         emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False
     )
-    async def upward(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def upward(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_up()
         embed = (
             discord.Embed(
@@ -1606,7 +1606,7 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
     )
     async def null_button2(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.message.delete()
 
@@ -1617,7 +1617,7 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def left(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def left(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_left()
         embed = (
             discord.Embed(
@@ -1647,7 +1647,7 @@ class SokobanGameView(discord.ui.View):
         row=1,
     )
     async def downward(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.game.move_down()
         embed = (
@@ -1677,7 +1677,7 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def right(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def right(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.game.move_right()
         embed = (
             discord.Embed(

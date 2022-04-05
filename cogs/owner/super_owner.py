@@ -95,7 +95,7 @@ class nitro(discord.ui.View):
         label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
         style=discord.ButtonStyle.green,
     )
-    async def func(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         i = discord.Embed()
         i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")

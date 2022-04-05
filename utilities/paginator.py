@@ -192,7 +192,7 @@ class PaginatorView(discord.ui.View):
         custom_id="first",
         emoji=discord.PartialEmoji(name="\N{BLACK LEFT-POINTING DOUBLE TRIANGLE}"),
     )
-    async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def first(self, interaction: discord.Interaction, button: discord.ui.Button):
         page = self.pages.first_page
 
         self.update_embed(page)
@@ -208,7 +208,7 @@ class PaginatorView(discord.ui.View):
         emoji=discord.PartialEmoji(name="\N{BLACK LEFT-POINTING TRIANGLE}"),
     )
     async def previous(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         page = self.pages.previous_page
         self.update_embed(page)
@@ -221,7 +221,7 @@ class PaginatorView(discord.ui.View):
         emoji=discord.PartialEmoji(name="\N{BLACK SQUARE FOR STOP}"),
         disabled=True,
     )
-    async def _stop(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def _stop(self, interaction: discord.Interaction, button: discord.ui.Button):
         pass
 
     @discord.ui.button(
@@ -229,7 +229,7 @@ class PaginatorView(discord.ui.View):
         custom_id="next",
         emoji=discord.PartialEmoji(name="\N{BLACK RIGHT-POINTING TRIANGLE}"),
     )
-    async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         page = self.pages.next_page
         self.update_embed(page)
 
@@ -241,7 +241,7 @@ class PaginatorView(discord.ui.View):
         custom_id="last",
         emoji=discord.PartialEmoji(name="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}"),
     )
-    async def last(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def last(self, interaction: discord.Interaction, button: discord.ui.Button):
         page = self.pages.last_page
 
         self.update_embed(page)
@@ -267,7 +267,7 @@ class PaginationView(discord.ui.View):
         return False
 
     @discord.ui.button(label="First", style=discord.ButtonStyle.red, disabled=True)
-    async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def first(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current = 0
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
@@ -287,7 +287,7 @@ class PaginationView(discord.ui.View):
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.green, disabled=True)
     async def previous(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.current = self.current - 1
 
@@ -315,12 +315,12 @@ class PaginationView(discord.ui.View):
         )
 
     @discord.ui.button(style=discord.ButtonStyle.blurple)
-    async def count(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def count(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.message.delete()
         self.stop()
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.green, disabled=False)
-    async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current += 1
 
         if self.current >= len(self.embed_list) - 1:
@@ -341,7 +341,7 @@ class PaginationView(discord.ui.View):
         )
 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.red, disabled=False)
-    async def _last(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def _last(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current = len(self.embed_list) - 1
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 

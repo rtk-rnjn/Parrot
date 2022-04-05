@@ -82,7 +82,7 @@ class Delete(discord.ui.View):
 
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
     async def confirm(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.message.delete()
         self.stop()

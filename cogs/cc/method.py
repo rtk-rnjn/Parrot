@@ -140,14 +140,8 @@ class CustomTextChannel(CustomBase):
         self.position = channel.position
         self.is_news = channel.is_news()
         self.is_nsfw = channel.is_nsfw
-        self.guild = CustomGuild(channel.guild)
         self.created_at = channel.created_at
         self.members = [CustomMember(member) for member in channel.members]
-
-        if channel.last_message:
-            self.last_message = CustomMessage(channel.last_message)
-        else:
-            self.last_message = None
 
 
 class CustomVoiceChannel(CustomBase):

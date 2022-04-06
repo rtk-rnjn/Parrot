@@ -72,7 +72,6 @@ class CustomMessage(CustomBase):
         self.edited_at = message.edited_at
         self.tts = message.tts
         self.type = message.type
-        self.is_system = message.is_system()
 
 
 class CustomMember(CustomBase):
@@ -81,7 +80,6 @@ class CustomMember(CustomBase):
         self.name = member.name
         self.nick = member.nick
         self.discriminator = member.discriminator
-        self.avatar = member.avatar
         self.bot = member.bot
         self.guild = CustomGuild(member.guild)
         self.guild_permissions = member.guild_permissions
@@ -97,7 +95,7 @@ class CustomRole(CustomBase):
         self.name = role.name
         self.color = role.color
         self.is_default = role.is_default
-        self.is_hoisted = role.is_hoisted
+        self.hoist = role.hoist
         self.is_mentionable = role.is_mentionable
         self.managed = role.managed
         self.position = role.position
@@ -109,7 +107,6 @@ class CustomGuild(CustomBase):
     def __init__(self, guild: discord.Guild):
         self.id = guild.id
         self.name = guild.name
-        self.icon = guild.icon
 
         if guild.afk_channel:
             self.afk_channel = CustomVoiceChannel(guild.afk_channel)
@@ -132,7 +129,6 @@ class CustomGuild(CustomBase):
         self.premium_subscription_count = guild.premium_subscription_count
         self.preferred_locale = guild.preferred_locale
         self.description = guild.description
-        self.banner = guild.banner
         self.public_updates_channel = guild.public_updates_channel
         self.max_video_channel_users = guild.max_video_channel_users
 

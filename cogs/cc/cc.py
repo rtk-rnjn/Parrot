@@ -1,4 +1,5 @@
 from __future__ import annotations
+from cogs.cc.method import CustomCommandsExecutionOnMsg
 
 from core import Parrot, Context, Cog
 

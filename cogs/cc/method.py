@@ -8,10 +8,19 @@ from utilities.converters import ToAsync
 import re
 import time
 import random
-import json
 import datetime
+import asyncio
 
 from async_timeout import timeout
+
+from discord import (
+    File,
+    Embed,
+    Colour,
+    Permissions,
+    PermissionOverwrite,
+    Object
+)
 
 
 # Example
@@ -42,19 +51,27 @@ env["__all__"] = None
 env["__file__"] = None
 env["__cached__"] = None
 env["__docformat__"] = None
-env["re"] = re
-env["random"] = random
-env["datetime"] = datetime
-env["json"] = json
-env["time"] = time
+
+env["Re"] = re
+env["Random"] = random
+env["Datetime"] = datetime.datetime
+env["Time"] = time.time
+env["Sleep"] = asyncio.sleep
+
+env["Object"] = Object
+env["File"] = File
+env["Embed"] = Embed
+env["Colour"] = Colour
+env["Permissions"] = Permissions
+env["PermissionOverwrite"] = PermissionOverwrite
 
 
 class CustomBase:
     def __str__() -> None:
-        return None
+        return ""
 
     def __repr__(self) -> None:
-        return None
+        return ""
 
 
 class CustomMessage(CustomBase):
@@ -153,6 +170,15 @@ class CustomVoiceChannel(CustomBase):
         self.user_limit = channel.user_limit
         self.created_at = channel.created_at
         self.members = [member.id for member in channel.members]
+
+
+class CustomCategoryChannel(CustomBase):
+    def __init__(self, channel: discord.CategoryChannel):
+        self.id = channel.id
+        self.name = channel.name
+        self.position = channel.position
+        self.created_at = channel.created_at
+        self.channels = [channel.id for channel in channel.channels]
 
 
 class CustomCommandsExecutionOnMsg:
@@ -294,12 +320,14 @@ class CustomCommandsExecutionOnMsg:
     async def get_role(self, role_id: int) -> CustomRole:
         return CustomRole(self.message.guild.get_role(role_id))
     
-    async def get_channel(self, channel_id: int) -> Union[CustomTextChannel, CustomVoiceChannel]:
+    async def get_channel(self, channel_id: int) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
         channel = self.message.guild.get_channel(channel_id)
         if isinstance(channel, discord.TextChannel):
             return CustomTextChannel(channel)
         if isinstance(channel, discord.VoiceChannel):
             return CustomVoiceChannel(channel)
+        if isinstance(channel, discord.CategoryChannel):
+            return CustomCategoryChannel(channel)
 
     # database
 
@@ -319,12 +347,6 @@ class CustomCommandsExecutionOnMsg:
 
     async def execute(self, code: str,):
         async with timeout(10):
-            data = await execute(code, self.env)
+            data = await exec(compile(code, "<string>", "exec"), self.env)
 
         return await data["function"](CustomMessage(self.message))
-
-
-@ToAsync()
-def execute(code, env) -> Dict[str, Any]:
-    exec(code, env)
-    return env

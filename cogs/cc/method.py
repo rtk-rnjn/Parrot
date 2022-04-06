@@ -96,7 +96,6 @@ class CustomRole(CustomBase):
         self.color = role.color
         self.is_default = role.is_default
         self.hoist = role.hoist
-        self.is_mentionable = role.is_mentionable
         self.managed = role.managed
         self.position = role.position
         self.permissions = role.permissions

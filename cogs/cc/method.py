@@ -110,7 +110,6 @@ class CustomGuild(CustomBase):
         self.id = guild.id
         self.name = guild.name
         self.icon = guild.icon
-        self.owner = CustomMember(guild.owner)
 
         if guild.afk_channel:
             self.afk_channel = CustomVoiceChannel(guild.afk_channel)

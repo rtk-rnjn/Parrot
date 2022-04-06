@@ -67,11 +67,8 @@ env["PermissionOverwrite"] = PermissionOverwrite
 
 
 class CustomBase:
-    def __str__() -> None:
-        return ""
-
     def __repr__(self) -> None:
-        return ""
+        return f"<Object {self.__class__.__name__}>"
 
 
 class CustomMessage(CustomBase):
@@ -345,8 +342,9 @@ class CustomCommandsExecutionOnMsg:
 
     # Execution
 
-    async def execute(self, code: str,):
+    async def execute(self, code: str,) -> NoReturn:
         async with timeout(10):
-            data = await exec(compile(code, "<string>", "exec"), self.env)
+            exec(compile(code, "<string>", "exec"), self.env)
 
-        return await data["function"](CustomMessage(self.message))
+        await self.env["function"](CustomMessage(self.message))
+        return

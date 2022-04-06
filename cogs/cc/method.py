@@ -81,10 +81,9 @@ class CustomMember(CustomBase):
         self.nick = member.nick
         self.discriminator = member.discriminator
         self.bot = member.bot
-        self.guild = CustomGuild(member.guild)
         self.guild_permissions = member.guild_permissions
-        self.top_role = CustomRole(member.top_role)
-        self.roles = [CustomRole(role) for role in member.roles]
+        self.top_role = member.top_role.id
+        self.roles = [role.id for role in member.roles]
         self.created_at = member.created_at
         self.joined_at = member.joined_at
 
@@ -108,7 +107,7 @@ class CustomGuild(CustomBase):
         self.name = guild.name
 
         if guild.afk_channel:
-            self.afk_channel = CustomVoiceChannel(guild.afk_channel)
+            self.afk_channel = guild.afk_channel.id
             self.afk_timeout = guild.afk_timeout
         else:
             self.afk_channel = None
@@ -121,7 +120,7 @@ class CustomGuild(CustomBase):
         self.mfa_level = guild.mfa_level
         self.large = guild.large
         self.member_count = guild.member_count
-        self.roles = [CustomRole(role) for role in guild.roles]
+        self.roles = [role.id for role in guild.roles]
         self.features = guild.features
         self.approximate_member_count = guild.approximate_member_count
         self.premium_tier = guild.premium_tier
@@ -141,7 +140,7 @@ class CustomTextChannel(CustomBase):
         self.is_news = channel.is_news()
         self.is_nsfw = channel.is_nsfw
         self.created_at = channel.created_at
-        self.members = [CustomMember(member) for member in channel.members]
+        self.members = [member.id for member in channel.members]
 
 
 class CustomVoiceChannel(CustomBase):
@@ -153,7 +152,7 @@ class CustomVoiceChannel(CustomBase):
         self.bitrate = channel.bitrate
         self.user_limit = channel.user_limit
         self.created_at = channel.created_at
-        self.members = [CustomMember(member) for member in channel.members]
+        self.members = [member.id for member in channel.members]
 
 
 class CustomCommandsExecutionOnMsg:

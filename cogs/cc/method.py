@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import discord
 from core import Parrot
-from typing import Any, Awaitable, Callable, Dict, NoReturn, Optional, Union, List
+from typing import Any, Dict, NoReturn, Union, List
+from utilities.converters import ToAsync
 
 import re
 import time
-import asyncio
 import random
 import json
 import datetime
+
+from async_timeout import timeout
 
 
 # Example
@@ -108,7 +110,6 @@ class CustomGuild(CustomBase):
         self.id = guild.id
         self.name = guild.name
         self.icon = guild.icon
-        self.region = guild.region
         self.owner = CustomMember(guild.owner)
 
         if guild.afk_channel:
@@ -330,5 +331,13 @@ class CustomCommandsExecutionOnMsg:
     # Execution
 
     async def execute(self, code: str,):
-        exec(code, self.env)
-        return await locals()["function"](CustomMessage(self.message))
+        async with timeout(10):
+            data = await execute(code, self.env)
+
+        return await data["function"](CustomMessage(self.message))
+
+
+@ToAsync()
+def execute(code, env) -> Dict[str, Any]:
+    exec(code, env)
+    return env

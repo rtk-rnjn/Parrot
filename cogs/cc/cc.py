@@ -16,9 +16,7 @@ BUCKET = {
 }
 
 TEST_GUILD = [746337818388987967, 741614680652644382]
-
 MAGICAL_WORD_REGEX = r"(__)([a-z]+)(__)"
-
 TRIGGER_TYPE = [
     "command",
     "on_message",
@@ -52,8 +50,9 @@ class CCFlag(commands.FlagConverter):
 class CustomCommand(Cog):
     def __init__(self, bot: Parrot,):
         self.bot = bot
-        self.default_dict = defaultdict(0)
-    
+        def default_value(): return 0
+        self.default_dict = defaultdict(default_value)
+
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
     async def cc(self, ctx: Context):
         """

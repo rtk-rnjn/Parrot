@@ -298,6 +298,9 @@ class Parrot(commands.AutoShardedBot):
             # to prevent the usage of command in DMs
             return
 
+        if re.fullmatch(rf"<@!?{self.bot.user.id}>", message.content):
+            return await message.channel.send(f"Prefix: {await self.get_prefix(message)}")
+
         await self.process_commands(message)
 
     async def on_message_edit(

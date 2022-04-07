@@ -167,8 +167,6 @@ class CustomCommand(Cog):
         if data := await self.bot.mongo.cc.commands.find_one(
             {"_id": message.guild.id, "commands.trigger_type": "on_message", "commands.review_needed": False},
         ):
-            if self.default_dict[message.guild.id] > 3:
-                return
             commands = data.get("commands", [])
             for command in commands:
                 if (
@@ -179,9 +177,7 @@ class CustomCommand(Cog):
                 ):
 
                     CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                    self.default_dict[message.guild.id] += 1
                     await CC.execute(command.get("code"))
-                    self.default_dict[message.guild.id] -= 1
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -202,8 +198,7 @@ class CustomCommand(Cog):
         if data := await self.bot.mongo.cc.commands.find_one(
             {"_id": message.guild.id, "commands.trigger_type": "message_edit", "commands.review_needed": False},
         ):
-            if self.default_dict[message.guild.id] > 3:
-                return
+
             commands = data.get("commands", [])
             for command in commands:
                 if (
@@ -212,9 +207,7 @@ class CustomCommand(Cog):
                     )
                 ):
                     CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                    self.default_dict[message.guild.id] += 1
                     await CC.execute(command.get("code"))
-                    self.default_dict[message.guild.id] -= 1
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -237,8 +230,6 @@ class CustomCommand(Cog):
                 ]
             }
         ):
-            if self.default_dict[message.guild.id] > 3:
-                return
 
             commands = data.get("commands", [])
             for command in commands:
@@ -248,9 +239,7 @@ class CustomCommand(Cog):
                     )
                 ):
                     CC = CustomCommandsExecutionOnReaction(self.bot, message, user, reaction_type="add")
-                    self.default_dict[message.guild.id] += 1
                     await CC.execute(command.get("code"))
-                    self.default_dict[message.guild.id] -= 1
 
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -272,8 +261,6 @@ class CustomCommand(Cog):
                 ]
             }
         ):
-            if self.default_dict[message.guild.id] > 3:
-                return
             commands = data.get("commands", [])
             for command in commands:
                 if (
@@ -282,9 +269,7 @@ class CustomCommand(Cog):
                     )
                 ):
                     CC = CustomCommandsExecutionOnReaction(self.bot, message, user, reaction_type="remove")
-                    self.default_dict[message.guild.id] += 1
                     await CC.execute(command.get("code"))
-                    self.default_dict[message.guild.id] -= 1
     
     @Cog.listener()
     async def on_member_join(self, member):
@@ -294,8 +279,6 @@ class CustomCommand(Cog):
         if data := await self.bot.mongo.cc.commands.find_one(
             {"_id": member.guild.id, "commands.trigger_type": "member_join", "commands.review_needed": False},
         ):
-            if self.default_dict[member.guild.id] > 3:
-                return
             commands = data.get("commands", [])
             for command in commands:
                 if (
@@ -304,9 +287,7 @@ class CustomCommand(Cog):
                     )
                 ):
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
-                    self.default_dict[member.guild.id] += 1
                     await CC.execute(command.get("code"))
-                    self.default_dict[member.guild.id] -= 1
     
     def check_requirements(
         self,
@@ -329,3 +310,5 @@ class CustomCommand(Cog):
 
         if message.author._roles.has(required_role or 0):
             return True
+
+        return True

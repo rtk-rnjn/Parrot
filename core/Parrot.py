@@ -299,7 +299,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if re.fullmatch(rf"<@!?{self.bot.user.id}>", message.content):
-            return await message.channel.send(f"Prefix: {await self.get_prefix(message)}")
+            return await message.channel.send(f"Prefix: {await self.get_guild_prefixes(message.guild)}")
 
         await self.process_commands(message)
 

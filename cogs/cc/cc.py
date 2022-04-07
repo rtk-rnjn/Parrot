@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
 import re
-from cogs.cc.method import CustomCommandsExecutionOnJoin, CustomCommandsExecutionOnMsg
+from cogs.cc.method import CustomCommandsExecutionOnJoin, CustomCommandsExecutionOnMsg, CustomCommandsExecutionOnReaction
 
 from core import Parrot, Context, Cog
 
@@ -18,16 +18,24 @@ BUCKET = {
 TEST_GUILD = [746337818388987967, 741614680652644382]
 MAGICAL_WORD_REGEX = r"(__)([a-z]+)(__)"
 TRIGGER_TYPE = [
-    "command",
     "on_message",
-    "regex",
-    "bot_mention",
     "reaction_add",
     "reaction_remove",
     "reaction_add_or_remove",
     "message_edit",
     "member_join",
 ]
+
+ERROR_ON_MAX_CONCURRENCY = """
+```ini
+[Failed processing the command {} in the guild {} due to the max concurrency limit]
+```
+"""
+ERROR_ON_REVIEW_REQUIRED = """
+```ini
+[Failed processing the command {} in the guild {} due to the review required]
+```
+"""
 
 
 class CCFlag(
@@ -37,10 +45,6 @@ class CCFlag(
     name: str
     help: str
     trigger_type: str = "command"
-
-    cd_per: int = 0
-    cd_time: int = 0
-    cd_bucket: str = None
 
     requied_role: discord.Role = None
     ignored_role: discord.Role = None
@@ -103,9 +107,6 @@ class CustomCommand(Cog):
                         "help": help_,
                         "review_needed": review_needed,
                         "trigger_type": flags.trigger_type.lower(),
-                        "cd_per": flags.cd_per,
-                        "cd_time": flags.cd_time,
-                        "cd_bucket": flags.cd_bucket,
                         "requied_role": flags.requied_role.id if flags.requied_role else None,
                         "ignored_role": flags.ignored_role.id if flags.ignored_role else None,
                         "requied_channel": flags.requied_channel.id if flags.requied_channel else None,
@@ -130,7 +131,7 @@ class CustomCommand(Cog):
                 }
             }
         )
-        await ctx.send(f"{ctx.author.mention} Custom command `{name}` deleted.")
+        await ctx.send(f"{ctx.author.mention} Custom command of id `{name}` deleted.")
 
 
     @cc.command(name="list")
@@ -163,36 +164,14 @@ class CustomCommand(Cog):
         PREFIX = await self.bot.get_guild_prefixes(message.guild)
 
         if data := await self.bot.mongo.cc.commands.find_one(
-            {"_id": message.guild.id, "commands.trigger_type": "command", "commands.review_needed": False},
+            {"_id": message.guild.id, "commands.trigger_type": "on_message", "commands.review_needed": False},
         ):
             if self.default_dict[message.guild.id] > 3:
                 return
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command.get("trigger_type") == "command"
-                ) and (
-                    f'{PREFIX}{command.get("name")}'.split(' ')[0].casefold() == message.content.split(' ')[0].casefold()
-                ):
-                    CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                    self.default_dict[message.guild.id] += 1
-                    await CC.execute(command.get("code"))
-                    self.default_dict[message.guild.id] -= 1
-
-                elif (
-                    command.get("trigger_type") == "regex"
-                ) and (
-                    re.fullmatch(command.get("name"), message.content)
-                ):
-                    CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                    self.default_dict[message.guild.id] += 1
-                    await CC.execute(command.get("code"))
-                    self.default_dict[message.guild.id] -= 1
-
-                elif (
-                    command.get("trigger_type") == "on_message"
-                ) and (
-                    message.content.casefold() == command.get("name").casefold()
+                    command.get("trigger_type") == "on_message" and not command["review_needed"]
                 ):
                     CC = CustomCommandsExecutionOnMsg(self.bot, message,)
                     self.default_dict[message.guild.id] += 1
@@ -205,6 +184,7 @@ class CustomCommand(Cog):
 
         if message.author.bot:
             return
+
         if not message.guild:
             return
 
@@ -221,10 +201,13 @@ class CustomCommand(Cog):
                 return
             commands = data.get("commands", [])
             for command in commands:
-                CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                self.default_dict[message.guild.id] += 1
-                await CC.execute(command.get("code"))
-                self.default_dict[message.guild.id] -= 1
+                if (
+                    command["trigger_type"] == "on_message" and not command["review_needed"]
+                ):
+                    CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                    self.default_dict[message.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[message.guild.id] -= 1
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -251,13 +234,16 @@ class CustomCommand(Cog):
 
             commands = data.get("commands", [])
             for command in commands:
-                CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                self.default_dict[message.guild.id] += 1
-                await CC.execute(command.get("code"))
-                self.default_dict[message.guild.id] -= 1
+                if (
+                    command["trigger_type"] in {"reaction_add", "reaction_add_or_remove"} and not command["review_needed"]
+                ):
+                    CC = CustomCommandsExecutionOnReaction(self.bot, message, user, reaction_type="add")
+                    self.default_dict[message.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[message.guild.id] -= 1
 
     @Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_remove(self, reaction, user):
         message = reaction.message
 
         if message.author.bot:
@@ -280,10 +266,13 @@ class CustomCommand(Cog):
                 return
             commands = data.get("commands", [])
             for command in commands:
-                CC = CustomCommandsExecutionOnMsg(self.bot, message,)
-                self.default_dict[message.guild.id] += 1
-                await CC.execute(command.get("code"))
-                self.default_dict[message.guild.id] -= 1
+                if (
+                    command["trigger_type"] in {"reaction_remove", "reaction_add_or_remove"} and not command["review_needed"]
+                ):
+                    CC = CustomCommandsExecutionOnReaction(self.bot, message, user, reaction_type="remove")
+                    self.default_dict[message.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[message.guild.id] -= 1
     
     @Cog.listener()
     async def on_member_join(self, member):
@@ -297,7 +286,10 @@ class CustomCommand(Cog):
                 return
             commands = data.get("commands", [])
             for command in commands:
-                CC = CustomCommandsExecutionOnJoin(self.bot, member,)
-                self.default_dict[member.guild.id] += 1
-                await CC.execute(command.get("code"))
-                self.default_dict[member.guild.id] -= 1
+                if (
+                    command["trigger_type"] == "member_join" and not command["review_needed"]
+                ):
+                    CC = CustomCommandsExecutionOnJoin(self.bot, member)
+                    self.default_dict[member.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[member.guild.id] -= 1

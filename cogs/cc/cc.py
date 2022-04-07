@@ -1,13 +1,16 @@
 from __future__ import annotations
+
 from collections import defaultdict
 import re
 from cogs.cc.method import CustomCommandsExecutionOnJoin, CustomCommandsExecutionOnMsg, CustomCommandsExecutionOnReaction
+import importlib
 
 from core import Parrot, Context, Cog
 
 import discord
 from discord.ext import commands
-
+from cogs.cc import method
+importlib.reload(method)
 
 BUCKET = {
     "channel": commands.BucketType.channel,
@@ -161,8 +164,6 @@ class CustomCommand(Cog):
         if message.guild.id not in TEST_GUILD:
             return
 
-        PREFIX = await self.bot.get_guild_prefixes(message.guild)
-
         if data := await self.bot.mongo.cc.commands.find_one(
             {"_id": message.guild.id, "commands.trigger_type": "on_message", "commands.review_needed": False},
         ):
@@ -171,8 +172,12 @@ class CustomCommand(Cog):
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command.get("trigger_type") == "on_message" and not command["review_needed"]
+                    command.get("trigger_type") == "on_message" and not command["review_needed"] and (
+                            self.check_requirements(message=message, **command
+                        )
+                    )
                 ):
+
                     CC = CustomCommandsExecutionOnMsg(self.bot, message,)
                     self.default_dict[message.guild.id] += 1
                     await CC.execute(command.get("code"))
@@ -202,7 +207,9 @@ class CustomCommand(Cog):
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command["trigger_type"] == "on_message" and not command["review_needed"]
+                    command["trigger_type"] == "on_message" and not command["review_needed"] and (
+                        self.check_requirements(message=message, **command)
+                    )
                 ):
                     CC = CustomCommandsExecutionOnMsg(self.bot, message,)
                     self.default_dict[message.guild.id] += 1
@@ -215,6 +222,7 @@ class CustomCommand(Cog):
 
         if message.author.bot:
             return
+
         if not message.guild:
             return
 
@@ -235,7 +243,9 @@ class CustomCommand(Cog):
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command["trigger_type"] in {"reaction_add", "reaction_add_or_remove"} and not command["review_needed"]
+                    command["trigger_type"] in {"reaction_add", "reaction_add_or_remove"} and not command["review_needed"] and (
+                        self.check_requirements(message=message, **command)
+                    )
                 ):
                     CC = CustomCommandsExecutionOnReaction(self.bot, message, user, reaction_type="add")
                     self.default_dict[message.guild.id] += 1
@@ -267,7 +277,9 @@ class CustomCommand(Cog):
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command["trigger_type"] in {"reaction_remove", "reaction_add_or_remove"} and not command["review_needed"]
+                    command["trigger_type"] in {"reaction_remove", "reaction_add_or_remove"} and not command["review_needed"] and (
+                        self.check_requirements(message=message, **command)
+                    )
                 ):
                     CC = CustomCommandsExecutionOnReaction(self.bot, message, user, reaction_type="remove")
                     self.default_dict[message.guild.id] += 1
@@ -287,9 +299,33 @@ class CustomCommand(Cog):
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command["trigger_type"] == "member_join" and not command["review_needed"]
+                    command["trigger_type"] == "member_join" and not command["review_needed"] and (
+                        self.check_requirements(member=member, **command)
+                    )
                 ):
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
                     self.default_dict[member.guild.id] += 1
                     await CC.execute(command.get("code"))
                     self.default_dict[member.guild.id] -= 1
+    
+    def check_requirements(
+        self,
+        *,
+        message: discord.Message,
+        ignored_role: int=None,
+        required_role: int=None,
+        required_channel: int=None,
+        ignored_channel: int=None,
+        **kwargs,
+    ) -> bool:
+        if message.author._roles.has(ignored_role or 0):
+            return False
+
+        if message.channel.id == (ignored_channel or 0):
+            return False
+
+        if message.channel.id == (required_channel or 0):
+            return True
+
+        if message.author._roles.has(required_role or 0):
+            return True

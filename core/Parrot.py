@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import traceback
 from typing import Any, Callable, Optional, Dict, Union, List
 from async_property import async_property
 import jishaku  # noqa: F401
@@ -165,7 +166,7 @@ class Parrot(commands.AutoShardedBot):
                 await self.load_extension(ext)
                 print(f"{ext} loaded successfully")
             except Exception as e:
-                print(f"{ext} failed to load. Error {e}")
+                traceback.print_exc()
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)

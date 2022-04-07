@@ -30,7 +30,9 @@ TRIGGER_TYPE = [
 ]
 
 
-class CCFlag(commands.FlagConverter):
+class CCFlag(
+    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
+):
     code: str
     name: str
     help: str

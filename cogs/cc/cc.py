@@ -1,5 +1,7 @@
 from __future__ import annotations
-from cogs.cc.method import CustomCommandsExecutionOnMsg
+from collections import defaultdict
+import re
+from cogs.cc.method import CustomCommandsExecutionOnJoin, CustomCommandsExecutionOnMsg
 
 from core import Parrot, Context, Cog
 
@@ -13,10 +15,29 @@ BUCKET = {
     "member": commands.BucketType.member,
 }
 
+TEST_GUILD = [746337818388987967, 741614680652644382]
+
+MAGICAL_WORD_REGEX = r"(__)([a-z]+)(__)"
+
+TRIGGER_TYPE = [
+    "command",
+    "on_message",
+    "regex",
+    "bot_mention",
+    "reaction_add",
+    "reaction_remove",
+    "reaction_add_or_remove",
+    "message_edit",
+    "member_join",
+]
+
+
 class CCFlag(commands.FlagConverter):
     code: str
     name: str
     help: str
+    trigger_type: str = "command"
+
     cd_per: int = 0
     cd_time: int = 0
     cd_bucket: str = None
@@ -31,6 +52,7 @@ class CCFlag(commands.FlagConverter):
 class CustomCommand(Cog):
     def __init__(self, bot: Parrot,):
         self.bot = bot
+        self.default_dict = defaultdict(0)
     
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
     async def cc(self, ctx: Context):
@@ -50,18 +72,26 @@ class CustomCommand(Cog):
         else:
             code = flags.code
 
+        if re.findall(MAGICAL_WORD_REGEX, code):
+            review_needed = True
+        else:
+            review_needed = False
+
         if flags.name.startswith('`') and flags.name.endswith('`'):
             name = flags.name[1:-1]
         else:
             name = flags.name
 
         if flags.help.startswith('```') and flags.help.endswith('```'):
-            help = flags.help[3:-3]
+            help_ = flags.help[3:-3]
         elif flags.help.startswith('`') and flags.help.endswith('`'):
-            help = flags.help[1:-1]
+            help_ = flags.help[1:-1]
         else:
-            help = flags.help
-        
+            help_ = flags.help
+
+        if flags.trigger_type.lower() not in TRIGGER_TYPE:
+            raise commands.BadArgument(f"Trigger type must be one of {', '.join(TRIGGER_TYPE)}")
+
         await self.bot.mongo.cc.commands.update_one(
             {"_id": ctx.guild.id},
             {
@@ -69,7 +99,9 @@ class CustomCommand(Cog):
                     "commands": {
                         "code": code,
                         "name": name,
-                        "help": help,
+                        "help": help_,
+                        "review_needed": review_needed,
+                        "trigger_type": flags.trigger_type.lower(),
                         "cd_per": flags.cd_per,
                         "cd_time": flags.cd_time,
                         "cd_bucket": flags.cd_bucket,
@@ -119,4 +151,152 @@ class CustomCommand(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
-        CCExec = CustomCommandsExecutionOnMsg(self.bot, message)
+        if message.author.bot:
+            return
+        if not message.guild:
+            return
+
+        if message.guild.id not in TEST_GUILD:
+            return
+
+        PREFIX = await self.bot.get_guild_prefixes(message.guild)
+
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {"_id": message.guild.id, "commands.trigger_type": "command", "review_needed": False},
+        ):
+            if self.default_dict[message.guild.id] > 3:
+                return
+            commands = data.get("commands", [])
+            for command in commands:
+                if (
+                    command.get("trigger_type") == "command"
+                ) and (
+                    f'{PREFIX}{command.get("name")}'.split(' ')[0].casefold() == message.content.split(' ')[0].casefold()
+                ):
+                    CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                    self.default_dict[message.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[message.guild.id] -= 1
+
+                elif (
+                    command.get("trigger_type") == "regex"
+                ) and (
+                    re.fullmatch(command.get("name"), message.content)
+                ):
+                    CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                    self.default_dict[message.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[message.guild.id] -= 1
+
+                elif (
+                    command.get("trigger_type") == "on_message"
+                ) and (
+                    message.content.casefold() == command.get("name").casefold()
+                ):
+                    CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                    self.default_dict[message.guild.id] += 1
+                    await CC.execute(command.get("code"))
+                    self.default_dict[message.guild.id] -= 1
+
+    @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        message = after
+
+        if message.author.bot:
+            return
+        if not message.guild:
+            return
+
+        if before.content == after.content:
+            return
+
+        if message.guild.id not in TEST_GUILD:
+            return
+
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {"_id": message.guild.id, "commands.trigger_type": "message_edit", "review_needed": False},
+        ):
+            if self.default_dict[message.guild.id] > 3:
+                return
+            commands = data.get("commands", [])
+            for command in commands:
+                CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                self.default_dict[message.guild.id] += 1
+                await CC.execute(command.get("code"))
+                self.default_dict[message.guild.id] -= 1
+
+    @Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        message = reaction.message
+
+        if message.author.bot:
+            return
+        if not message.guild:
+            return
+
+        if message.guild.id not in TEST_GUILD:
+            return
+
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {
+                "$or": [
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add", "review_needed": False},
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add_or_remove", "review_needed": False}
+                ]
+            }
+        ):
+            if self.default_dict[message.guild.id] > 3:
+                return
+
+            commands = data.get("commands", [])
+            for command in commands:
+                CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                self.default_dict[message.guild.id] += 1
+                await CC.execute(command.get("code"))
+                self.default_dict[message.guild.id] -= 1
+
+    @Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        message = reaction.message
+
+        if message.author.bot:
+            return
+        if not message.guild:
+            return
+
+        if message.guild.id not in TEST_GUILD:
+            return
+
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {
+                "$or": [
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_remove", "review_needed": False},
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add_or_remove", "review_needed": False}
+                ]
+            }
+        ):
+            if self.default_dict[message.guild.id] > 3:
+                return
+            commands = data.get("commands", [])
+            for command in commands:
+                CC = CustomCommandsExecutionOnMsg(self.bot, message,)
+                self.default_dict[message.guild.id] += 1
+                await CC.execute(command.get("code"))
+                self.default_dict[message.guild.id] -= 1
+    
+    @Cog.listener()
+    async def on_member_join(self, member):
+        if member.guild.id not in TEST_GUILD:
+            return
+
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {"_id": member.guild.id, "commands.trigger_type": "member_join", "review_needed": False},
+        ):
+            if self.default_dict[member.guild.id] > 3:
+                return
+            commands = data.get("commands", [])
+            for command in commands:
+                CC = CustomCommandsExecutionOnJoin(self.bot, member,)
+                self.default_dict[member.guild.id] += 1
+                await CC.execute(command.get("code"))
+                self.default_dict[member.guild.id] -= 1

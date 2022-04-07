@@ -66,10 +66,10 @@ class CustomCommand(Cog):
     @commands.has_permissions(manage_guild=True)
     async def cc_create(self, ctx: Context, *, flags: CCFlag):
         """To create custom commands"""
-        if flags.code.startswith('```') and flags.code.endswith('```'):
-            code = flags.code[3:-3]
-        elif flags.code.startswith('```py') and flags.code.endswith('```'):
+        if flags.code.startswith('```py') and flags.code.endswith('```'):
             code = flags.code[5:-3]
+        elif flags.code.startswith('```') and flags.code.endswith('```'):
+            code = flags.code[3:-3]
         else:
             code = flags.code
 
@@ -163,7 +163,7 @@ class CustomCommand(Cog):
         PREFIX = await self.bot.get_guild_prefixes(message.guild)
 
         if data := await self.bot.mongo.cc.commands.find_one(
-            {"_id": message.guild.id, "commands.trigger_type": "command", "review_needed": False},
+            {"_id": message.guild.id, "commands.trigger_type": "command", "commands.review_needed": False},
         ):
             if self.default_dict[message.guild.id] > 3:
                 return
@@ -215,7 +215,7 @@ class CustomCommand(Cog):
             return
 
         if data := await self.bot.mongo.cc.commands.find_one(
-            {"_id": message.guild.id, "commands.trigger_type": "message_edit", "review_needed": False},
+            {"_id": message.guild.id, "commands.trigger_type": "message_edit", "commands.review_needed": False},
         ):
             if self.default_dict[message.guild.id] > 3:
                 return
@@ -241,8 +241,8 @@ class CustomCommand(Cog):
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "$or": [
-                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add", "review_needed": False},
-                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add_or_remove", "review_needed": False}
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add", "commands.review_needed": False},
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add_or_remove", "commands.review_needed": False}
                 ]
             }
         ):
@@ -271,8 +271,8 @@ class CustomCommand(Cog):
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "$or": [
-                    {"_id": message.guild.id, "commands.trigger_type": "reaction_remove", "review_needed": False},
-                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add_or_remove", "review_needed": False}
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_remove", "commands.review_needed": False},
+                    {"_id": message.guild.id, "commands.trigger_type": "reaction_add_or_remove", "commands.review_needed": False}
                 ]
             }
         ):
@@ -291,7 +291,7 @@ class CustomCommand(Cog):
             return
 
         if data := await self.bot.mongo.cc.commands.find_one(
-            {"_id": member.guild.id, "commands.trigger_type": "member_join", "review_needed": False},
+            {"_id": member.guild.id, "commands.trigger_type": "member_join", "commands.review_needed": False},
         ):
             if self.default_dict[member.guild.id] > 3:
                 return

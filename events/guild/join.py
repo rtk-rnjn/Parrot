@@ -83,6 +83,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 `Joined       `: {guild.name} (`{guild.id}`)
 `Total member `: {guild.member_count}
 `Server Owner `: `{guild.owner}` | {guild.owner.id}
+`Bots         `: {guild.member_count - len([m for m in guild.members if not m.bot])}
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
@@ -108,6 +109,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
 `Removed      `: {guild.name} (`{guild.id}`)
 `Total member `: {guild.member_count}
 `Server Owner `: `{guild.owner}` | {guild.owner.id}
+`Bots         `: {guild.member_count - len([m for m in guild.members if not m.bot])}
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """

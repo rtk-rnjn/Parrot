@@ -136,7 +136,6 @@ class CustomCommand(Cog):
         )
         await ctx.send(f"{ctx.author.mention} Custom command of id `{name}` deleted.")
 
-
     @cc.command(name="list")
     @commands.has_permissions(manage_guild=True)
     async def cc_list(self, ctx: Context):
@@ -152,7 +151,6 @@ class CustomCommand(Cog):
             description="\n".join([f"`{command.get('name')}`" for command in commands])
         )
         await ctx.send(embed=embed)
-
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

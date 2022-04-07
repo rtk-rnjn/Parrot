@@ -86,13 +86,20 @@ class CustomMessage(CustomBase):
         self.edited_at = message.edited_at
         self.tts = message.tts
         self.type = message.type
-        self.reactions = [CustomReaction(reaction) for reaction in message.reactions]
+        self.reactions = [CustomReactionPassive(reaction) for reaction in message.reactions]
+
+
+class CustomReactionPassive:
+    def __init__(self, reaction: discord.Reaction):
+        self.count = reaction.count
+        self.emoji = CustomEmoji(reaction.emoji)
 
 
 class CustomReaction:
     def __init__(self, reaction: discord.Reaction):
         self.count = reaction.count
         self.emoji = CustomEmoji(reaction.emoji)
+        self.message = CustomMessage(reaction.message)
 
 
 class CustomEmoji:
@@ -276,6 +283,11 @@ class CustomCommandsExecutionOnMsg:
     async def message_clear_reactions(self) -> NoReturn:
         await self.__message.clear_reactions()
         return
+
+    async def reactions_users(self, emoji: Any) -> List[CustomMember]:
+        for reaction in self.__message.reactions:
+            if str(reaction.emoji) == emoji:
+                return [CustomMember(member) async for member in reaction.users()]
 
     # channels
 
@@ -490,13 +502,15 @@ class CustomCommandsExecutionOnJoin:
 
 
 class CustomCommandsExecutionOnReaction:
-    def __init__(self, bot: Parrot, message: discord.Message, user: discord.User, **kwargs: Any):
+    def __init__(self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any):
         self.bot = bot
-        self.__message = message
+        self.__reaction = reaction
+        self.__user = user
+        self.__message = reaction.message
         self.env = env
         
-        self.env["guild"] = CustomGuild(message.guild)
-        self.env["user"] = CustomMember(user)
+        self.env["guild"] = CustomGuild(self.__message.guild)
+        self.env["user"] = CustomMember(self.__user)
         self.env["reaction_type"] = kwargs.pop("reaction_type", None)
 
         self.env["message_delete"] = self.message_delete
@@ -657,5 +671,5 @@ class CustomCommandsExecutionOnReaction:
         async with timeout(10):
             exec(compile(code, "<string>", "exec"), self.env)
 
-        await self.env["function"](CustomMessage(self.__message))
+        await self.env["function"](CustomReaction(self.__reaction), CustomMember(self.__user))
         return

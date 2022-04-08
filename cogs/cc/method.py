@@ -10,6 +10,7 @@ import time
 import random
 import datetime
 import asyncio
+import io
 
 from async_timeout import timeout
 
@@ -64,6 +65,7 @@ env["Embed"] = Embed
 env["Colour"] = Colour
 env["Permissions"] = Permissions
 env["PermissionOverwrite"] = PermissionOverwrite
+env["BytesIO"] = io.BytesIO
 
 
 class CustomBase:
@@ -234,6 +236,7 @@ class CustomCommandsExecutionOnMsg:
         self.env["get_member"] = self.get_member
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
+        self.env["get_channel_type"] = self.get_channel_type
 
         self.env["get_db"] = self.get_db
         self.env["edit_db"] = self.edit_db
@@ -339,10 +342,10 @@ class CustomCommandsExecutionOnMsg:
 
     async def get_member(self, member_id: int) -> CustomMember:
         return CustomMember(self.__message.guild.get_member(member_id))
-    
+
     async def get_role(self, role_id: int) -> CustomRole:
         return CustomRole(self.__message.guild.get_role(role_id))
-    
+
     async def get_channel(self, channel_id: int) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
         channel = self.__message.guild.get_channel(channel_id)
         if isinstance(channel, discord.TextChannel):
@@ -351,6 +354,20 @@ class CustomCommandsExecutionOnMsg:
             return CustomVoiceChannel(channel)
         if isinstance(channel, discord.CategoryChannel):
             return CustomCategoryChannel(channel)
+    
+    async def get_channel_type(self, channel: int) -> str:
+        channel = self.__message.guild.get_channel(channel)
+        if isinstance(channel, discord.TextChannel):
+            return 'TEXT'
+        if isinstance(channel, discord.VoiceChannel):
+            return 'VOICE'
+        if isinstance(channel, discord.CategoryChannel):
+            return 'CATEGORY'
+        if isinstance(channel, discord.Thread):
+            return 'THREAD'
+        if isinstance(channel, discord.StageChannel):
+            return 'STAGE'
+        return 'None'
 
     # database
 
@@ -484,8 +501,8 @@ class CustomCommandsExecutionOnJoin:
         return await self.bot.mongo.cc.storage.find_one({'_id': self.__member.guild.id}, projection or {})
 
     async def edit_db(self, **kwargs) -> NoReturn:
-        upsert = kwargs.pop('upsert', False)
-        await self.bot.mongo.cc.storage.update_one({'_id': self.__member.guild.id}, kwargs, upsert=upsert)
+        kwargs.pop('_id', None)
+        await self.bot.mongo.cc.storage.update_one({'_id': self.__member.guild.id}, kwargs, upsert=kwargs.pop('upsert', False))
 
     async def del_db(self, **kwargs) -> NoReturn:
         await self.bot.mongo.cc.storage.delete_one({'_id': self.__member.guild.id, **kwargs})
@@ -671,5 +688,7 @@ class CustomCommandsExecutionOnReaction:
         async with timeout(10):
             exec(compile(code, "<string>", "exec"), self.env)
 
-        await self.env["function"](CustomReaction(self.__reaction), CustomMember(self.__user))
-        return
+        try:
+            await self.env["function"](CustomReaction(self.__reaction), CustomMember(self.__user))
+        except Exception:
+            return

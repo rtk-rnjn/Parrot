@@ -443,7 +443,8 @@ class Configuration(Cog):
                 {"$set": {"channel_id": channel.id, "webhook": webhook.url}},
                 upsert=True,
             )
-            return
+            return await ctx.reply(f"{ctx.author.mention} success! Global chat is now setup {channel.mention}")
+
         if setting.lower() in ("ignore-role", "ignore_role", "ignorerole", "ignore"):
             post = {"ignore-role": role.id if role else None}
             await self.bot.mongo.parrot_db.global_chat.update_one(

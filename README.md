@@ -23,6 +23,9 @@ Invite bot with:-
 - Timers
 - Telephone
 - Memes and other utilities commands
+- Giveaway
+- Leveling
+- Dynamic Custom Commands
 
 ## Examples
 

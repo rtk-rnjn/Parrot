@@ -242,19 +242,15 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self,
         ctx: Context,
         user: discord.User,
-        *,
-        args: banFlag,
     ):
         """To ban the user"""
-        reason = args.reason or "No reason provided"
-        payload = {"reason": reason, "command": args.command, "global": args._global}
         await self.bot.mongo.parrot_db.banned_users.delete_one(
-            {"_id": user.id, **payload}
+            {"_id": user.id,}
         )
         await self.bot.update_banned_members.start()
         try:
             await user.send(
-                f"{user.mention} you are unbanned. You can now use Parrot bot. Reason: {reason}"
+                f"{user.mention} you are unbanned. You can now use Parrot bot."
             )
             await ctx.send("User unbanned and DM-ed")
         except discord.Forbidden:

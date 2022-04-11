@@ -297,6 +297,9 @@ class CustomCommand(Cog):
         ignored_channel: int=None,
         **kwargs,
     ) -> bool:
+        if message.author._roles.has(required_role or 0):
+            return True
+
         if message.author._roles.has(ignored_role or 0):
             return False
 
@@ -304,9 +307,6 @@ class CustomCommand(Cog):
             return False
 
         if message.channel.id == (required_channel or 0):
-            return True
-
-        if message.author._roles.has(required_role or 0):
             return True
 
         return True

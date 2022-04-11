@@ -498,14 +498,14 @@ class CustomCommandsExecutionOnJoin:
     # database
 
     async def get_db(self, projection: Dict[str, Any]=None) -> Dict[str, Any]:
-        return await self.bot.mongo.cc.storage.find_one({'_id': self.__member.guild.id}, projection or {})
+        return await self.__bot.mongo.cc.storage.find_one({'_id': self.__member.guild.id}, projection or {})
 
     async def edit_db(self, **kwargs) -> NoReturn:
         kwargs.pop('_id', None)
-        await self.bot.mongo.cc.storage.update_one({'_id': self.__member.guild.id}, kwargs, upsert=kwargs.pop('upsert', False))
+        await self.__bot.mongo.cc.storage.update_one({'_id': self.__member.guild.id}, kwargs, upsert=kwargs.pop('upsert', False))
 
     async def del_db(self, **kwargs) -> NoReturn:
-        await self.bot.mongo.cc.storage.delete_one({'_id': self.__member.guild.id, **kwargs})
+        await self.__bot.mongo.cc.storage.delete_one({'_id': self.__member.guild.id, **kwargs})
         return
 
     # Execution
@@ -520,7 +520,7 @@ class CustomCommandsExecutionOnJoin:
 
 class CustomCommandsExecutionOnReaction:
     def __init__(self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any):
-        self.bot = bot
+        self.__bot = bot
         self.__reaction = reaction
         self.__user = user
         self.__message = reaction.message
@@ -672,14 +672,14 @@ class CustomCommandsExecutionOnReaction:
 
     async def get_db(self, **kwargs) -> Dict[str, Any]:
         project = kwargs.pop('projection', {})
-        return await self.bot.mongo.cc.storage.find_one({'_id': self.__message.guild.id, **kwargs}, project)
+        return await self.__bot.mongo.cc.storage.find_one({'_id': self.__message.guild.id, **kwargs}, project)
 
     async def edit_db(self, **kwargs) -> NoReturn:
         upsert = kwargs.pop('upsert', False)
-        await self.bot.mongo.cc.storage.update_one({'_id': self.__message.guild.id}, kwargs, upsert=upsert)
+        await self.__bot.mongo.cc.storage.update_one({'_id': self.__message.guild.id}, kwargs, upsert=upsert)
 
     async def del_db(self, **kwargs) -> NoReturn:
-        await self.bot.mongo.cc.storage.delete_one({'_id': self.__message.guild.id, **kwargs})
+        await self.__bot.mongo.cc.storage.delete_one({'_id': self.__message.guild.id, **kwargs})
         return
 
     # Execution

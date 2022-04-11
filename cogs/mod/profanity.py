@@ -25,8 +25,7 @@ class Profanity(Cog):
 
     def isin(self, phrase: str, sentence: str) -> bool:
         word = re.escape(phrase)
-        pattern = rf"\b{word}\b"
-        return re.search(pattern, sentence) is not None
+        return re.search(rf"\b{word}\b", sentence) is not None
 
     async def _one_message_passive(self, message: discord.Message) -> Any:
         if message.author.bot or (not message.guild):

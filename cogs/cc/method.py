@@ -207,7 +207,7 @@ class CustomCategoryChannel(CustomBase):
 
 class CustomCommandsExecutionOnMsg:
     def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
-        self.bot = bot
+        self.__bot = bot
         self.__message = message
         self.env = env
         self.env["guild"] = CustomGuild(message.guild)
@@ -373,14 +373,14 @@ class CustomCommandsExecutionOnMsg:
 
     async def get_db(self, **kwargs) -> Dict[str, Any]:
         project = kwargs.pop('projection', {})
-        return await self.bot.mongo.cc.storage.find_one({'_id': self.__message.guild.id, **kwargs}, project)
+        return await self.__bot.mongo.cc.storage.find_one({'_id': self.__message.guild.id, **kwargs}, project)
 
     async def edit_db(self, **kwargs) -> NoReturn:
         upsert = kwargs.pop('upsert', False)
-        await self.bot.mongo.cc.storage.update_one({'_id': self.__message.guild.id}, kwargs, upsert=upsert)
+        await self.__bot.mongo.cc.storage.update_one({'_id': self.__message.guild.id}, kwargs, upsert=upsert)
 
     async def del_db(self, **kwargs) -> NoReturn:
-        await self.bot.mongo.cc.storage.delete_one({'_id': self.__message.guild.id, **kwargs})
+        await self.__bot.mongo.cc.storage.delete_one({'_id': self.__message.guild.id, **kwargs})
         return
 
     # Execution

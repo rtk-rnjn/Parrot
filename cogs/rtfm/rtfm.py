@@ -869,7 +869,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         async with self.bot.http_session.get(url) as r:
             return await r.json()
 
-    @commands.group(name="github", aliases=("gh", "git"))
+    @commands.group(name="github", aliases=("gh", "git", "g"))  # Thanks `will.#0021` (211756205721255947)
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def github_group(self, ctx: Context) -> None:

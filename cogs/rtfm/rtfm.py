@@ -877,7 +877,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @github_group.command(name="user", aliases=("userinfo",))
+    @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
     async def github_user_info(self, ctx: Context, username: str) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
@@ -957,7 +957,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         await ctx.send(embed=embed)
 
-    @github_group.command(name="repository", aliases=("repo",))
+    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks `will.#0021` (211756205721255947)
     async def github_repo_info(self, ctx: Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.

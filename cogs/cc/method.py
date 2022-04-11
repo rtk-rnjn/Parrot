@@ -3,7 +3,6 @@ from __future__ import annotations
 import discord
 from core import Parrot
 from typing import Any, Dict, NoReturn, Union, List
-from utilities.converters import ToAsync
 
 import re
 import time
@@ -35,6 +34,11 @@ async def function(message: Message):
     if message.author.id == 123456789:
         return await message_add_reaction("\N{THINKING FACE}")
 """
+
+ERROR_MESSAGE = """```
+Failed executing the command command template in channel at: {}
+Error: {}
+```"""
 
 
 env = {}
@@ -511,11 +515,18 @@ class CustomCommandsExecutionOnJoin:
     # Execution
 
     async def execute(self, code: str,) -> NoReturn:
-        async with timeout(10):
-            exec(compile(code, "<string>", "exec"), self.env)
+        try:
+            async with timeout(10):
+                exec(compile(code, "<string>", "exec"), self.env)
 
-        await self.env["function"](CustomMember(self.__member))
-        return
+            await self.env["function"](CustomMember(self.__member))
+        except Exception as e:
+            await self.__message.channel.send(
+                ERROR_MESSAGE.format(
+                    discord.utils.format_dt(self.__message.created_at), e
+                )
+            )
+            return
 
 
 class CustomCommandsExecutionOnReaction:
@@ -685,10 +696,15 @@ class CustomCommandsExecutionOnReaction:
     # Execution
 
     async def execute(self, code: str,) -> NoReturn:
-        async with timeout(10):
-            exec(compile(code, "<string>", "exec"), self.env)
-
         try:
+            async with timeout(10):
+                exec(compile(code, "<string>", "exec"), self.env)
+
             await self.env["function"](CustomReaction(self.__reaction), CustomMember(self.__user))
-        except Exception:
+        except Exception as e:
+            await self.__message.channel.send(
+                ERROR_MESSAGE.format(
+                    discord.utils.format_dt(self.__message.created_at), e
+                )
+            )
             return

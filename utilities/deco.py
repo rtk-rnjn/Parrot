@@ -296,11 +296,7 @@ def with_role(*role_ids: int) -> Callable:
         if not ctx.guild:  # Return False in a DM
             return False
 
-        for role in ctx.author.roles:
-            if role.id in role_ids:
-                return True
-
-        return False
+        return any(ctx.author._roles.has(role_id) for role_id in role_ids)
 
     return commands.check(predicate)
 

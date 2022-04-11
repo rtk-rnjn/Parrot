@@ -741,6 +741,8 @@ class Utils(Cog):
                 text=f"Author ID: {ctx.author.id}", icon_url=ctx.guild.icon.url
             )
 
+            file: Optional[discord.File] = None
+
             if ctx.message.attachments:
                 if ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
                     _bytes = await ctx.message.attachments[0].read(use_cached=True)

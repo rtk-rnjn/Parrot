@@ -14,7 +14,7 @@ import rapidfuzz
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
-from typing import Optional, Union, Tuple, Dict
+from typing import Any, Optional, Union, Tuple, Dict
 import asyncio
 import urllib.parse
 from urllib.parse import quote, quote_plus
@@ -864,7 +864,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
 
-    async def fetch_data(self, url: str) -> dict:
+    async def fetch_data(self, url: str) -> Dict[str, Any]:
         """Retrieve data as a dictionary."""
         async with self.bot.http_session.get(url) as r:
             return await r.json()
@@ -1305,7 +1305,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 
-    async def kata_id(self, search_link: str, params: dict) -> Union[str, Embed]:
+    async def kata_id(self, search_link: str, params: Dict[str, Any]) -> Union[str, Embed]:
         """
         Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
@@ -1342,7 +1342,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             first_kata_id = first_kata_div.a["href"].split("/")[-1]
             return first_kata_id
 
-    async def kata_information(self, kata_id: str) -> Union[dict, Embed]:
+    async def kata_information(self, kata_id: str) -> Union[Dict[str, Any], Embed]:
         """
         Returns the information about the Kata.
         Uses the codewars.com API to get information about the kata using `kata_id`.
@@ -1361,7 +1361,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             return await response.json()
 
     @staticmethod
-    def main_embed(kata_information: dict) -> Embed:
+    def main_embed(kata_information: Dict[str, Any]) -> Embed:
         """Creates the main embed which displays the name, difficulty and description of the kata."""
         kata_description = kata_information["description"]
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
@@ -1390,7 +1390,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         return kata_embed
 
     @staticmethod
-    def language_embed(kata_information: dict) -> Embed:
+    def language_embed(kata_information: Dict[str, Any]) -> Embed:
         """Creates the 'language embed' which displays all languages the kata supports."""
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
@@ -1403,7 +1403,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         return language_embed
 
     @staticmethod
-    def tags_embed(kata_information: dict) -> Embed:
+    def tags_embed(kata_information: Dict[str, Any]) -> Embed:
         """
         Creates the 'tags embed' which displays all the tags of the Kata.
         Tags explain what the kata is about, this is what codewars.com calls categories.

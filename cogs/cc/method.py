@@ -414,12 +414,23 @@ class CustomCommandsExecutionOnMsg:
         self,
         code: str,
     ) -> NoReturn:
-        async with timeout(10):
-            exec(compile(code, "<string>", "exec"), self.env)
+        try:
+            async with timeout(10):
+                exec(compile(code, "<string>", "exec"), self.env)
 
-        await self.env["function"](CustomMessage(self.__message))
-        return
+            try:
+                self.env["function"]
+            except KeyError:
+                return
 
+            await self.env["function"](CustomMessage(self.__message))
+        except Exception as e:
+            await self.__message.channel.send(
+                ERROR_MESSAGE.format(
+                    discord.utils.format_dt(self.__message.created_at), e
+                )
+            )
+            return
 
 class CustomCommandsExecutionOnJoin:
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
@@ -569,6 +580,11 @@ class CustomCommandsExecutionOnJoin:
         try:
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
+
+            try:
+                self.env["function"]
+            except KeyError:
+                return
 
             await self.env["function"](CustomMember(self.__member))
         except Exception as e:
@@ -781,6 +797,11 @@ class CustomCommandsExecutionOnReaction:
         try:
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
+            
+            try:
+                self.env["function"]
+            except KeyError:
+                return
 
             await self.env["function"](
                 CustomReaction(self.__reaction), CustomMember(self.__user)

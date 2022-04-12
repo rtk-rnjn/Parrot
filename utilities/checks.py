@@ -10,7 +10,6 @@ from discord.ext.commands import (
     Cog,
     Command,
     CommandOnCooldown,
-    Context,
     Cooldown,
     CooldownMapping,
 )

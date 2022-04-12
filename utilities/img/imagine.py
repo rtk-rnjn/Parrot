@@ -16,7 +16,10 @@ IMAGE_WIDTH = 2048
 IMAGE_HEIGHT = 1024
 
 TITLE_OFFSET = (128, 192)
-TITLE_BOUND = (IMAGE_WIDTH - (TITLE_OFFSET[0] * 2), IMAGE_HEIGHT - 224 - TITLE_OFFSET[1])
+TITLE_BOUND = (
+    IMAGE_WIDTH - (TITLE_OFFSET[0] * 2),
+    IMAGE_HEIGHT - 224 - TITLE_OFFSET[1],
+)
 
 BYLINE_OFFSET = (TITLE_OFFSET[0] * 2, TITLE_OFFSET[1] + TITLE_BOUND[1])
 BYLINE_BOUND = (IMAGE_WIDTH - (BYLINE_OFFSET[0] * 2), 192)
@@ -43,7 +46,9 @@ def draw_text(
     while True:
         font = ImageFont.truetype(font_name, font_size)
         text_width, _ = cast(Tuple[int, int], draw.textsize(text, font=font))
-        _, _line_height = cast(Tuple[int, int], draw.textsize("\N{FULL BLOCK}", font=font))
+        _, _line_height = cast(
+            Tuple[int, int], draw.textsize("\N{FULL BLOCK}", font=font)
+        )
         text_height = int(_line_height * line_height * len(lines))
 
         if text_width < bounds[0] and text_height < bounds[1]:

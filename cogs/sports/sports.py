@@ -26,20 +26,22 @@ class Sports(Cog):
 
         self.data = None
 
-    def create_embed_ipl(self, *, data: Dict[str, Any],) -> discord.Embed:
+    def create_embed_ipl(
+        self,
+        *,
+        data: Dict[str, Any],
+    ) -> discord.Embed:
         """To create the embed for the ipl score. For more detailed information, see https://github.com/rtk-rnjn/cricbuzz_scraper"""
-        if data['title']:
-            embed = discord.Embed(
-                title=data["title"], timestamp=datetime.utcnow()
-            )
+        if data["title"]:
+            embed = discord.Embed(title=data["title"], timestamp=datetime.utcnow())
         embed.set_footer(text=data["status"])
 
-        table1 = tabulate(data['batting'], headers="keys")
-        table2 = tabulate(data['bowling'], headers="keys")
+        table1 = tabulate(data["batting"], headers="keys")
+        table2 = tabulate(data["bowling"], headers="keys")
         crr = "\n".join(data["crr"])
 
         extra = ""
-        if extra_ := data.get('extra'):
+        if extra_ := data.get("extra"):
             for temp in extra_:
                 extra += "".join(temp) + "\n"
         if crr:
@@ -50,18 +52,20 @@ class Sports(Cog):
 ```
 {extra}
 """
-        if data.get('batting'):
+        if data.get("batting"):
             embed.add_field(
                 name="Batting - Stats", value=f"```\n{table1}```", inline=False
             )
 
-        if data.get('bowling'):
+        if data.get("bowling"):
             embed.add_field(
                 name="Bowling - Stats", value=f"```\n{table2}```", inline=False
             )
 
         embed.add_field(
-            name="Recent Commentry", value="- " + "\n - ".join(i for i in data["commentry"][:2] if i), inline=False
+            name="Recent Commentry",
+            value="- " + "\n - ".join(i for i in data["commentry"][:2] if i),
+            inline=False,
         )
         return embed
 
@@ -70,15 +74,19 @@ class Sports(Cog):
         """To get the IPL score"""
         if ctx.invoked_subcommand is None:
             if not self.url:
-                return await ctx.send(f"{ctx.author.mention} No IPL score page set | Ask for it in support server")
-            
+                return await ctx.send(
+                    f"{ctx.author.mention} No IPL score page set | Ask for it in support server"
+                )
+
             if self.data is None:
                 url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
                 response = await self.bot.http_session.get(url)
                 self.data = await response.json()
 
             if response.status != 200:
-                return await ctx.send(f"{ctx.author.mention} Could not get IPL score | Ask for it in support server")
+                return await ctx.send(
+                    f"{ctx.author.mention} Could not get IPL score | Ask for it in support server"
+                )
 
             embed = self.create_embed_ipl(data=self.data)
             await ctx.send(embed=embed)
@@ -87,7 +95,7 @@ class Sports(Cog):
     @ipl.command(name="set")
     async def set_ipl_url(self, ctx: Context, *, url: str) -> None:
         """Set the IPL score page url"""
-        if url.startswith(('<', '[')) and url.endswith(('>', ']')):
+        if url.startswith(("<", "[")) and url.endswith((">", "]")):
             url = url[1:-1]
 
         self.url = url
@@ -114,7 +122,9 @@ class Sports(Cog):
         await ctx.send(f"{ctx.author.mention} Channel removed")
 
     @tasks.loop(seconds=90)
-    async def annouce_task(self,):
+    async def annouce_task(
+        self,
+    ):
         if self.url is None:
             return
 
@@ -131,12 +141,14 @@ class Sports(Cog):
 
         if self.data is None:
             self.data = data
-        
+
         embed = self.create_embed_ipl(data=data)
 
         for channel in self.channels:
             await channel.send(embed=embed)
             self.data = data
-    
-    async def cog_unload(self,):
+
+    async def cog_unload(
+        self,
+    ):
         self.annouce_task.cancel()

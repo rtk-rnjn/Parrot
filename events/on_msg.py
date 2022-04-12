@@ -542,7 +542,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt") if fp is not None else None,
+                    file=discord.File(fp, filename="content.txt")
+                    if fp is not None
+                    else None,
                 )
 
     @Cog.listener()
@@ -585,7 +587,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt") if fp is not None else None,
+                    file=discord.File(fp, filename="content.txt")
+                    if fp is not None
+                    else None,
                 )
 
     @Cog.listener()
@@ -686,7 +690,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
-            {"_id": member.id}, {"$inc": {"xp": xp}}, upsert=True, return_document=ReturnDocument.AFTER
+            {"_id": member.id},
+            {"$inc": {"xp": xp}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
         )
         level = int((data["xp"] // 42) ** 0.55)
         await self.__add_role__xp(msg.guild.id, level, msg)
@@ -817,7 +824,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt") if fp is not None else None,
+                    file=discord.File(fp, filename="content.txt")
+                    if fp is not None
+                    else None,
                 )
 
 

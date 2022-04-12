@@ -169,9 +169,7 @@ class Configuration(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} set starboard limit to **{limit}**")
 
-    @starboard.command(
-        name="lock", aliases=["locked"]
-    )
+    @starboard.command(name="lock", aliases=["locked"])
     @commands.has_permissions(administrator=True)
     async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
         """To lock the starboard channel"""
@@ -443,7 +441,9 @@ class Configuration(Cog):
                 {"$set": {"channel_id": channel.id, "webhook": webhook.url}},
                 upsert=True,
             )
-            return await ctx.reply(f"{ctx.author.mention} success! Global chat is now setup {channel.mention}")
+            return await ctx.reply(
+                f"{ctx.author.mention} success! Global chat is now setup {channel.mention}"
+            )
 
         if setting.lower() in ("ignore-role", "ignore_role", "ignorerole", "ignore"):
             post = {"ignore-role": role.id if role else None}
@@ -485,7 +485,9 @@ class Configuration(Cog):
             await self.bot.mongo.parrot_db.server_config.update_one(
                 {"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}}
             )
-            await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
+            await ctx.reply(
+                f"{ctx.author.mention} set leveling system to: **{toggle}**"
+            )
 
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
@@ -553,7 +555,10 @@ class Configuration(Cog):
     @leveling.group(name="unignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_unignore_set(self, ctx: Context,):
+    async def leveling_unignore_set(
+        self,
+        ctx: Context,
+    ):
         """To configure the ignoring system of leveling"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)

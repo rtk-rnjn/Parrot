@@ -357,13 +357,13 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 embed_like.add_field(
                     name="Cooldown",
                     value=f"`Rate:` **{command._buckets.get_bucket(message).rate}**\n`Per :` **{command._buckets.get_bucket(message).per}**",
-                    inline=False
+                    inline=False,
                 )
             if command._max_concurrency:
                 embed_like.add_field(
                     name="Max Concurrenry",
                     value=f"`Rate:` **{command._max_concurrency.number}**\n`Per :` **{command._max_concurrency.per.name.replace('guild', 'server').title()}**",
-                    inline=False
+                    inline=False,
                 )
 
         if command.description:

@@ -214,7 +214,6 @@ class GameUI(discord.ui.View):
     def channel(self) -> discord.TextChannel:
         return self.message.channel  # flake8: noqa
 
-
     @classmethod
     async def start(
         cls,

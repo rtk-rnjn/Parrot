@@ -277,7 +277,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 self.bot.get_channel, self.bot.fetch_channel, channel
             )
             bot_msg = await self.bot.get_or_fetch_message(
-                starboard_channel, data['message_id']['bot'], partial=True
+                starboard_channel, data["message_id"]["bot"], partial=True
             )
             await bot_msg.delete(delay=0)
             return True
@@ -326,7 +326,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_reaction_add(self, reaction, user):
         if (
             str(reaction.emoji)
-            in ("\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}", "\N{FACE WITH PLEADING EYES}")
+            in (
+                "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
+                "\N{FACE WITH PLEADING EYES}",
+            )
             and user.id == self.bot.author_obj.id
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
@@ -358,7 +361,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_reaction_remove(self, reaction, user):
         if (
             str(reaction.emoji)
-            in ("\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}", "\N{FACE WITH PLEADING EYES}")
+            in (
+                "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
+                "\N{FACE WITH PLEADING EYES}",
+            )
             and user.id == self.bot.author_obj.id
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)

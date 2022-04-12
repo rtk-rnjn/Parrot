@@ -95,9 +95,7 @@ class Context(commands.Context):
                 self.bot.server_config[self.guild.id]["action_log"],
             )
         except KeyError:
-            if await self.bot.mongo.parrot_db.server_config.find_one(
-                {"_id": guild_id}
-            ):
+            if await self.bot.mongo.parrot_db.server_config.find_one({"_id": guild_id}):
                 return await self.bot.getch(
                     self.bot.get_channel,
                     self.bot.fetch_channel,

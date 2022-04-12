@@ -66,7 +66,6 @@ class JoinUI(discord.ui.View):
             else:
                 self.users[interaction.user] = interaction  # flake8: noqa
 
-
         if len(self.users) >= 5:
             self.start_game.disabled = False
             self.start_game.style = discord.ButtonStyle.success

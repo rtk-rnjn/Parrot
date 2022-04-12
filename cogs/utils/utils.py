@@ -633,7 +633,9 @@ class Utils(Cog):
         try:
             self.message[msg_id]
         except KeyError:
-            return await self.__fetch_message_from_channel(message=msg_id, channel=channel)
+            return await self.__fetch_message_from_channel(
+                message=msg_id, channel=channel
+            )
         else:
             return self.message[msg_id]["message"]
 
@@ -670,7 +672,12 @@ class Utils(Cog):
                 return reaction.count
 
     async def __suggest(
-        self, content: Optional[str] = None, *, embed: discord.Embed, ctx: Context, file: Optional[discord.File]=None
+        self,
+        content: Optional[str] = None,
+        *,
+        embed: discord.Embed,
+        ctx: Context,
+        file: Optional[discord.File] = None,
     ) -> discord.Message:
 
         channel = await self.__fetch_suggestion_channel(ctx.guild)
@@ -744,7 +751,11 @@ class Utils(Cog):
             file: Optional[discord.File] = None
 
             if ctx.message.attachments:
-                if ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+                if (
+                    ctx.message.attachments[0]
+                    .url.lower()
+                    .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+                ):
                     _bytes = await ctx.message.attachments[0].read(use_cached=True)
                     file = discord.File(io.BytesIO(_bytes), "image.jpg")
                     embed.set_image(url="attachment://image.jpg")
@@ -774,7 +785,9 @@ class Utils(Cog):
             return
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
+            return await ctx.send(
+                f"{ctx.author.mention} You don't own that 'suggestion'"
+            )
 
         await msg.delete(delay=0)
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
@@ -840,7 +853,9 @@ class Utils(Cog):
     @suggest.command(name="clear", aliases=["cls"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def clear_suggestion_embed(
-        self, ctx: Context, messageID: int,
+        self,
+        ctx: Context,
+        messageID: int,
     ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
 
@@ -896,7 +911,9 @@ class Utils(Cog):
         embed.color = payload["color"]
 
         user_id = int(embed.footer.text.split(":")[1])
-        user: Optional[discord.Member] = self.bot.get_or_fetch_member(ctx.guild, user_id)
+        user: Optional[discord.Member] = self.bot.get_or_fetch_member(
+            ctx.guild, user_id
+        )
         await self.__notify_user(ctx, user, message=msg, remark="")
 
         content = f"Flagged: {flag} | {payload['emoji']}"
@@ -1010,7 +1027,9 @@ class Utils(Cog):
     ):
         """To create giveaway in quick format"""
         if not prize:
-            return await ctx.send(f"{ctx.author.mention} you didn't give the prize argument")
+            return await ctx.send(
+                f"{ctx.author.mention} you didn't give the prize argument"
+            )
         post = await mt._make_giveaway_drop(
             ctx, duration=duration, winners=winners, prize=prize
         )

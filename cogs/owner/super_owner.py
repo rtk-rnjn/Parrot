@@ -245,7 +245,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     ):
         """To ban the user"""
         await self.bot.mongo.parrot_db.banned_users.delete_one(
-            {"_id": user.id,}
+            {
+                "_id": user.id,
+            }
         )
         await self.bot.update_banned_members.start()
         try:
@@ -257,7 +259,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await ctx.send("User unbanned, unable to DM as their DMs are locked")
 
     @commands.group(
-        name="image-search", aliases=["imagesearch", "imgs"], hidden=True, invoke_without_command=True
+        name="image-search",
+        aliases=["imagesearch", "imgs"],
+        hidden=True,
+        invoke_without_command=True,
     )
     @commands.is_owner()
     @Context.with_type

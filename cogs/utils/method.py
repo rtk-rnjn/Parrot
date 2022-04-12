@@ -588,11 +588,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     bot.message_cache[msg.id] = msg
-    main_post = await _create_giveaway_post(
-        message=msg,
-        **payload  # flake8: noqa
-
-    )
+    main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
 
     await bot.mongo.parrot_db.giveaway.insert_one(
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
@@ -631,7 +627,6 @@ async def _make_giveaway_drop(
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
-
 
     await ctx.bot.mongo.parrot_db.giveaway.insert_one(
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}

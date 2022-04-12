@@ -165,14 +165,10 @@ async def dial(bot, ctx, server, reverse=False) -> None:
                 )  # this is imp, cause people can bypass so i added discord.utils
 
             if talk_message.channel == target_channel:
-                await channel.send(
-                    f"**{talk_message.author}** {TALK}"
-                )
+                await channel.send(f"**{talk_message.author}** {TALK}")
 
             elif talk_message.channel == channel:
-                await target_channel.send(
-                    f"**{talk_message.author}** {TALK}"
-                )
+                await target_channel.send(f"**{talk_message.author}** {TALK}")
             if ini - time.time() <= 60:
                 await channel.send(
                     "Disconnected. Call duration reached its maximum limit"

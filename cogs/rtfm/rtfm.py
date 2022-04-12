@@ -869,7 +869,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         async with self.bot.http_session.get(url) as r:
             return await r.json()
 
-    @commands.group(name="github", aliases=("gh", "git", "g"))  # Thanks `will.#0021` (211756205721255947)
+    @commands.group(
+        name="github", aliases=("gh", "git", "g")
+    )  # Thanks `will.#0021` (211756205721255947)
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def github_group(self, ctx: Context) -> None:
@@ -877,7 +879,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(
+        name="user", aliases=("userinfo", "u")
+    )  # Thanks `will.#0021` (211756205721255947)
     async def github_user_info(self, ctx: Context, username: str) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
@@ -957,7 +961,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         await ctx.send(embed=embed)
 
-    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(
+        name="repository", aliases=("repo", "r")
+    )  # Thanks `will.#0021` (211756205721255947)
     async def github_repo_info(self, ctx: Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.
@@ -1305,7 +1311,9 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 
-    async def kata_id(self, search_link: str, params: Dict[str, Any]) -> Union[str, Embed]:
+    async def kata_id(
+        self, search_link: str, params: Dict[str, Any]
+    ) -> Union[str, Embed]:
         """
         Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
@@ -1544,9 +1552,12 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         if wait_for_kata:
             await original_message.edit(embed=kata_embed, view=None)
 
-    @commands.command(name='kontests')
+    @commands.command(name="kontests")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def kontests(self, ctx: Context,):
+    async def kontests(
+        self,
+        ctx: Context,
+    ):
         """To get the list for all upcoming and ongoing competitive coding contests"""
         url = "https://kontests.net/api/v1/all"
         res = await self.bot.http_session.get(url)
@@ -1558,16 +1569,18 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 return int(datetime.strptime(st, "%Y-%m-%dT%H:%M:%S.%fZ").timestamp())
             except ValueError:
                 return int(datetime.strptime(st, "%Y-%m-%d %H:%M:%S UTC").timestamp())
-        
+
         ls = []
 
         for i in data:
-            ls.append(f"""**Name:** {i['name']}
+            ls.append(
+                f"""**Name:** {i['name']}
 **URL:** {i['url']}
 **Starts in:** <t:{get_datetime(i['start_time'])}:R>
 **Ends in:** <t:{get_datetime(i['end_time'])}:R>
 **Website:** {i['site']}
 **Status:** {i['status']}
-""")
+"""
+            )
         p = SimplePages(ls, ctx=ctx, per_page=3)
         await p.start()

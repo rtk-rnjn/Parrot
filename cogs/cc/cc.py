@@ -80,10 +80,7 @@ class CustomCommand(Cog):
         else:
             code = flags.code
 
-        if re.findall(MAGICAL_WORD_REGEX, code):
-            review_needed = True
-        else:
-            review_needed = False
+        review_needed = bool(re.findall(MAGICAL_WORD_REGEX, code))
 
         if flags.name.startswith('`') and flags.name.endswith('`'):
             name = flags.name[1:-1]

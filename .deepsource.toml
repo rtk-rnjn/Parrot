@@ -9,4 +9,4 @@ enabled = true
 
 [[transformers]]
 name = "black"
-enabled = false
+enabled = true

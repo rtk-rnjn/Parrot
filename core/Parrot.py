@@ -81,7 +81,7 @@ class Parrot(commands.AutoShardedBot):
         self.error_channel = None
         self.persistent_views_added = False
         self.spam_control = commands.CooldownMapping.from_cooldown(
-            10, 12.0, commands.BucketType.user
+            3, 5, commands.BucketType.user
         )
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)

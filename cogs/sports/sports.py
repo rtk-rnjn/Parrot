@@ -83,10 +83,10 @@ class Sports(Cog):
                 response = await self.bot.http_session.get(url)
                 self.data = await response.json()
 
-            if response.status != 200:
-                return await ctx.send(
-                    f"{ctx.author.mention} Could not get IPL score | Ask for it in support server"
-                )
+                if response.status != 200:
+                    return await ctx.send(
+                        f"{ctx.author.mention} Could not get IPL score | Ask for it in support server"
+                    )
 
             embed = self.create_embed_ipl(data=self.data)
             await ctx.send(embed=embed)
@@ -146,7 +146,7 @@ class Sports(Cog):
 
         for channel in self.channels:
             await channel.send(embed=embed)
-            self.data = data
+        self.data = data
 
     async def cog_unload(
         self,

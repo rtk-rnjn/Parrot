@@ -47,11 +47,11 @@ class Telephone(Cog):
             f"`Call log saved? :` **False**\n"
         )
 
-    @commands.command(aliases=["recall"])
+    @commands.command(name="redial", aliases=["recall"])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @Context.with_type
-    async def redial(self, ctx: Context):
+    async def redial_call(self, ctx: Context):
         """To redial the recently called server, if any"""
         try:
             serverid = self.redial[ctx.guild.id]

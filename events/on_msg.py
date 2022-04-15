@@ -710,7 +710,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         if data["match"]:
             await message.channel.send(
-                f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(match_list)}`",
+                f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
             )
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):

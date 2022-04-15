@@ -198,8 +198,7 @@ class SongQueue(asyncio.Queue):
     def __getitem__(self, item):
         if isinstance(item, slice):
             return list(itertools.islice(self._queue, item.start, item.stop, item.step))
-        else:
-            return self._queue[item]
+        return self._queue[item]
 
     def __iter__(self):
         return self._queue.__iter__()

@@ -315,7 +315,7 @@ class CustomCommandsExecutionOnMsg:
         if channel_type.upper() == "TEXT":
             channel = await self.__message.guild.create_text_channel(name, **kwargs)
             return CustomTextChannel(channel)
-        elif channel_type.upper() == "VOICE":
+        if channel_type.upper() == "VOICE":
             channel = await self.__message.guild.create_voice_channel(name, **kwargs)
             return CustomVoiceChannel(channel)
 
@@ -493,7 +493,7 @@ class CustomCommandsExecutionOnJoin:
         if channel_type.upper() == "TEXT":
             channel = await self.__member.guild.create_text_channel(name, **kwargs)
             return CustomTextChannel(channel)
-        elif channel_type.upper() == "VOICE":
+        if channel_type.upper() == "VOICE":
             channel = await self.__member.guild.create_voice_channel(name, **kwargs)
             return CustomVoiceChannel(channel)
 
@@ -709,7 +709,7 @@ class CustomCommandsExecutionOnReaction:
         if channel_type.upper() == "TEXT":
             channel = await self.__message.guild.create_text_channel(name, **kwargs)
             return CustomTextChannel(channel)
-        elif channel_type.upper() == "VOICE":
+        if channel_type.upper() == "VOICE":
             channel = await self.__message.guild.create_voice_channel(name, **kwargs)
             return CustomVoiceChannel(channel)
 

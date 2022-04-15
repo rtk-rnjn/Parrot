@@ -34,7 +34,34 @@ Error: {}
 ```"""
 
 
-env = {"__import__": None, "__builtins__": None, "__name__": None, "globals": None, "locals": None, "__doc__": None, "__package__": None, "__loader__": None, "__spec__": None, "__annotations__": None, "__all__": None, "__file__": None, "__cached__": None, "__docformat__": None, "Re": re, "Random": random, "Datetime": datetime.datetime, "Time": time.time, "Sleep": asyncio.sleep, "Object": Object, "File": File, "Embed": Embed, "Colour": Colour, "Permissions": Permissions, "PermissionOverwrite": PermissionOverwrite, "BytesIO": io.BytesIO}
+env = {
+    "__import__": None,
+    "__builtins__": None,
+    "__name__": None,
+    "globals": None,
+    "locals": None,
+    "__doc__": None,
+    "__package__": None,
+    "__loader__": None,
+    "__spec__": None,
+    "__annotations__": None,
+    "__all__": None,
+    "__file__": None,
+    "__cached__": None,
+    "__docformat__": None,
+    "Re": re,
+    "Random": random,
+    "Datetime": datetime.datetime,
+    "Time": time.time,
+    "Sleep": asyncio.sleep,
+    "Object": Object,
+    "File": File,
+    "Embed": Embed,
+    "Colour": Colour,
+    "Permissions": Permissions,
+    "PermissionOverwrite": PermissionOverwrite,
+    "BytesIO": io.BytesIO,
+}
 
 
 class CustomBase:
@@ -404,6 +431,7 @@ class CustomCommandsExecutionOnMsg:
             )
             return
 
+
 class CustomCommandsExecutionOnJoin:
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
         self.bot = bot
@@ -769,7 +797,7 @@ class CustomCommandsExecutionOnReaction:
         try:
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
-            
+
             try:
                 self.env["function"]
             except KeyError:

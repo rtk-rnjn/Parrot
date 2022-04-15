@@ -691,16 +691,19 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _scam_detection(self, message: discord.Message):
         API = "https://anti-fish.bitflow.dev/check"
-        
+
         match_list = re.findall(
-            r"(?:[A-z0-9](?:[A-z0-9-]{0,61}[A-z0-9])?\.)+[A-z0-9][A-z0-9-]{0,61}[A-z0-9]", message.content
+            r"(?:[A-z0-9](?:[A-z0-9-]{0,61}[A-z0-9])?\.)+[A-z0-9][A-z0-9-]{0,61}[A-z0-9]",
+            message.content,
         )
 
         if not match_list:
             return
 
         response = await self.bot.http_session.post(
-            API, json={"message": message.content}, headers={"User-Agent": f"{self.bot.user.name} ({self.bot.github})"}
+            API,
+            json={"message": message.content},
+            headers={"User-Agent": f"{self.bot.user.name} ({self.bot.github})"},
         )
 
         if response.status != 200:

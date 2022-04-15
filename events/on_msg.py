@@ -371,6 +371,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_message(self, message):
         await self.bot.wait_until_ready()
         await self._on_message_leveling(message)
+        await self._scam_detection(message)
         if not message.guild:
             return
         if message.guild.me.id == message.author.id:
@@ -597,6 +598,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await self.bot.wait_until_ready()
         if before.content != after.content:
             await self._on_message_passive(after)
+            await self._scam_detection(after)
 
     async def _on_message_leveling(self, message: discord.Message):
         if not message.guild:
@@ -686,6 +688,30 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         next_level_xp=xp,
                     )
                     await message.reply("GG! Level up!", file=file)
+
+    async def _scam_detection(self, message: discord.Message):
+        API = "https://anti-fish.bitflow.dev/check"
+        
+        match_list = re.findall(
+            r"(?:[A-z0-9](?:[A-z0-9-]{0,61}[A-z0-9])?\.)+[A-z0-9][A-z0-9-]{0,61}[A-z0-9]", message.content
+        )
+
+        if not match_list:
+            return
+
+        response = await self.bot.http_session.post(
+            API, json={"message": message.content}, headers={"User-Agent": f"{self.bot.user.name} ({self.bot.github})"}
+        )
+
+        if response.status != 200:
+            return
+
+        data = await response.json()
+
+        if data["match"]:
+            await message.channel.send(
+                f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(match_list)}`",
+            )
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]

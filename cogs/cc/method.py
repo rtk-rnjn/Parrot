@@ -240,6 +240,25 @@ class CustomCommandsExecutionOnMsg:
         self.env["edit_db"] = self.edit_db
         self.env["del_db"] = self.del_db
 
+        self.env["wait_for_message"] = self.wait_for_message
+
+    # wait_for
+
+    async def wait_for_message(self, *, timeout: float, **kwargs):
+        def check_outer(**kwargs):
+            def check(message):
+                op = kwargs.get("op", "any")
+                if op == "any":
+                    return any([getattr(message, key) == value for key, value in kwargs.items()])
+                if op == "all":
+                    return all([getattr(message, key) == value for key, value in kwargs.items()])
+
+            return check
+        msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
+        if msg.guild != self.__message.guild:
+            return None
+        return msg
+
     # messages
 
     async def message_delete(message) -> NoReturn:
@@ -460,6 +479,25 @@ class CustomCommandsExecutionOnJoin:
         self.env["edit_db"] = self.edit_db
         self.env["del_db"] = self.del_db
 
+        self.env["wait_for_message"] = self.wait_for_message
+
+    # wait_for
+
+    async def wait_for_message(self, *, timeout: float, **kwargs):
+        def check_outer(**kwargs):
+            def check(message):
+                op = kwargs.get("op", "any")
+                if op == "any":
+                    return any([getattr(message, key) == value for key, value in kwargs.items()])
+                if op == "all":
+                    return all([getattr(message, key) == value for key, value in kwargs.items()])
+
+            return check
+        msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
+        if msg.guild != self.__member.guild:
+            return None
+        return msg
+
     # messages
 
     async def message_send(
@@ -639,6 +677,25 @@ class CustomCommandsExecutionOnReaction:
         self.env["get_db"] = self.get_db
         self.env["edit_db"] = self.edit_db
         self.env["del_db"] = self.del_db
+
+        self.env["wait_for_message"] = self.wait_for_message
+
+    # wait_for
+
+    async def wait_for_message(self, *, timeout: float, **kwargs):
+        def check_outer(**kwargs):
+            def check(message):
+                op = kwargs.get("op", "any")
+                if op == "any":
+                    return any([getattr(message, key) == value for key, value in kwargs.items()])
+                if op == "all":
+                    return all([getattr(message, key) == value for key, value in kwargs.items()])
+
+            return check
+        msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
+        if msg.guild != self.__member.guild:
+            return None
+        return msg
 
     # messages
 

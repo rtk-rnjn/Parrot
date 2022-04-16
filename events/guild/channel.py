@@ -121,12 +121,12 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             ):
                 if role_id := self.bot.server_config[channel.guild.id]["mute_role"]:
                     if role := channel.guild.get_role(role_id):
-                        await channel.edit(
+                        await channel.set_permissions(
                             role, send_messages=False, add_reactions=False
                         )
                 else:
                     if role := discord.utils.get(channel.guild.roles, name="Muted"):
-                        await channel.edit(
+                        await channel.set_permissions(
                             role, send_messages=False, add_reactions=False
                         )
 

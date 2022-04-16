@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+from pathlib import Path
 import random
 import re
 import itertools
@@ -15,6 +17,7 @@ from typing import (
     Iterator,
     Literal,
     Optional,
+    TypedDict,
     Union,
     overload,
     Dict,
@@ -147,6 +150,14 @@ class Position(NamedTuple):
 
 def ordinal(number: int, /) -> str:
     return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
+
+
+class MadlibsTemplate(TypedDict):
+    """Structure of a template in the madlibs JSON file."""
+
+    title: str
+    blanks: list[str]
+    value: list[str]
 
 
 class BoardBoogle:
@@ -2894,6 +2905,41 @@ class Games(Cog):
 
         self.max_board_size = 9
         self.min_board_size = 5
+        self.templates = self._load_templates()
+        self.edited_content = {}
+        self.checks = set()
+
+    @staticmethod
+    def _load_templates() -> list[MadlibsTemplate]:
+        madlibs_stories = Path("extra/madlibs_templates.json")
+
+        with open(madlibs_stories) as file:
+            return json.load(file)
+
+    @staticmethod
+    def madlibs_embed(part_of_speech: str, number_of_inputs: int) -> discord.Embed:
+        """Method to generate an embed with the game information."""
+        madlibs_embed = discord.Embed(title="Madlibs", color=Colours.python_blue)
+
+        madlibs_embed.add_field(
+            name="Enter a word that fits the given part of speech!",
+            value=f"Part of speech: {part_of_speech}\n\nMake sure not to spam, or you may get auto-muted!"
+        )
+
+        madlibs_embed.set_footer(text=f"Inputs remaining: {number_of_inputs}")
+
+        return madlibs_embed
+
+    @Cog.listener()
+    async def on_message_edit(self, _: discord.Message, after: discord.Message) -> None:
+        """A listener that checks for message edits from the user."""
+        for check in self.checks:
+            if check(after):
+                break
+        else:
+            return
+
+        self.edited_content[after.id] = after.content
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -3718,3 +3764,74 @@ class Games(Cog):
 
         self.games_hitler[ctx.channel.id] = MISSING
         await JoinUI.start(ctx, self.games_hitler)
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def madlibs(self, ctx: commands.Context) -> None:
+        """
+        Play Madlibs with the bot!
+        Madlibs is a game where the player is asked to enter a word that
+        fits a random part of speech (e.g. noun, adjective, verb, plural noun, etc.)
+        a random amount of times, depending on the story chosen by the bot at the beginning.
+        """
+        random_template = choice(self.templates)
+
+        def author_check(message: discord.Message) -> bool:
+            return message.channel.id == ctx.channel.id and message.author.id == ctx.author.id
+
+        self.checks.add(author_check)
+
+        loading_embed = discord.Embed(
+            title="Madlibs", description="Loading your Madlibs game...", color=Colours.python_blue
+        )
+        original_message = await ctx.send(embed=loading_embed)
+
+        submitted_words = {}
+
+        for i, part_of_speech in enumerate(random_template["blanks"]):
+            inputs_left = len(random_template["blanks"]) - i
+
+            madlibs_embed = self.madlibs_embed(part_of_speech, inputs_left)
+            await original_message.edit(embed=madlibs_embed)
+
+            try:
+                message = await self.bot.wait_for(event="message", check=author_check, timeout=60)
+            except TimeoutError:
+                timeout_embed = discord.Embed(
+                    description="Uh oh! You took too long to respond!",
+                    color=Colours.soft_red
+                )
+
+                await ctx.send(ctx.author.mention, embed=timeout_embed)
+
+                for msg_id in submitted_words:
+                    self.edited_content.pop(msg_id, submitted_words[msg_id])
+
+                self.checks.remove(author_check)
+
+                return
+
+            submitted_words[message.id] = message.content
+
+        blanks = [self.edited_content.pop(msg_id, submitted_words[msg_id]) for msg_id in submitted_words]
+
+        self.checks.remove(author_check)
+
+        story = []
+        for value, blank in zip(random_template["value"], blanks):
+            story.append(f"{value}__{blank}__")
+
+        # In each story template, there is always one more "value"
+        # (fragment from the story) than there are blanks (words that the player enters)
+        # so we need to compensate by appending the last line of the story again.
+        story.append(random_template["value"][-1])
+
+        story_embed = discord.Embed(
+            title=random_template["title"],
+            description="".join(story),
+            color=Colours.bright_green
+        )
+
+        story_embed.set_footer(text=f"Generated for {ctx.author}", icon_url=ctx.author.display_avatar.url)
+
+        await ctx.send(embed=story_embed)

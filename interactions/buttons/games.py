@@ -3795,7 +3795,7 @@ class Games(Cog):
             await original_message.edit(embed=madlibs_embed)
 
             try:
-                message = await self.bot.wait_for(event="message", check=author_check, timeout=60)
+                message = await self.bot.wait_for("message", check=author_check, timeout=60)
             except TimeoutError:
                 timeout_embed = discord.Embed(
                     description="Uh oh! You took too long to respond!",

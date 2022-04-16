@@ -3,8 +3,6 @@ from __future__ import annotations
 from core import Parrot, Context, Cog
 import discord
 from discord.ext import commands
-import aiohttp
-from datetime import datetime
 
 
 class Actions(Cog):
@@ -20,7 +18,7 @@ class Actions(Cog):
             name="Lights_Camera_Action__Emoticon__", id=892434144364220497
         )
 
-    async def send_message(self, ctx: Context, *, url: str=None):
+    async def send_message(self, ctx: Context, *, url: str=None) -> None:
         response = await self.bot.http_session.get(url or f"{self.url}/{ctx.command.name}")
         if response.status != 200:
             return
@@ -38,7 +36,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def waifu(self, ctx: Context, *, member: discord.Member = None):
+    async def waifu(self, ctx: Context,):
         """Waifu pics?"""
         await self.send_message(ctx)
 
@@ -47,7 +45,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def shinobu(self, ctx: Context, *, member: discord.Member = None):
+    async def shinobu(self, ctx: Context,):
         """Shinobu pics?"""
         await self.send_message(ctx)
 
@@ -56,7 +54,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def megumin(self, ctx: Context, *, member: discord.Member = None):
+    async def megumin(self, ctx: Context,):
         """Megumin pics?"""
         await self.send_message(ctx)
 
@@ -65,7 +63,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def bully(self, ctx: Context, *, member: discord.Member = None):
+    async def bully(self, ctx: Context,):
         """Bully pics?"""
         await self.send_message(ctx)
 
@@ -74,7 +72,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def cuddle(self, ctx: Context, *, member: discord.Member = None):
+    async def cuddle(self, ctx: Context,):
         """Cuddle pics?"""
         await self.send_message(ctx)
 
@@ -83,7 +81,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def weep(self, ctx: Context, *, member: discord.Member = None):
+    async def weep(self, ctx: Context,):
         """Cry pics?"""
         await self.send_message(ctx)
 
@@ -92,7 +90,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def hug(self, ctx: Context, *, member: discord.Member = None):
+    async def hug(self, ctx: Context,):
         """Hug pics?"""
         await self.send_message(ctx)
 
@@ -101,7 +99,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def awoo(self, ctx: Context, *, member: discord.Member = None):
+    async def awoo(self, ctx: Context,):
         """Awoo pics?"""
         await self.send_message(ctx)
 
@@ -110,7 +108,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def kiss(self, ctx: Context, *, member: discord.Member = None):
+    async def kiss(self, ctx: Context,):
         """Kiss pics?"""
         await self.send_message(ctx)
 
@@ -119,7 +117,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def lick(self, ctx: Context, *, member: discord.Member = None):
+    async def lick(self, ctx: Context,):
         """Lick pics?"""
         await self.send_message(ctx)
 
@@ -128,7 +126,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def pat(self, ctx: Context, *, member: discord.Member = None):
+    async def pat(self, ctx: Context,):
         """Pat pics?"""
         await self.send_message(ctx)
 
@@ -137,7 +135,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def smug(self, ctx: Context, *, member: discord.Member = None):
+    async def smug(self, ctx: Context,):
         """Smug pics?"""
         await self.send_message(ctx)
 
@@ -146,7 +144,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def bonk(self, ctx: Context, *, member: discord.Member = None):
+    async def bonk(self, ctx: Context,):
         """Bonk pics?"""
         await self.send_message(ctx)
 
@@ -155,7 +153,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def yeet(self, ctx: Context, *, member: discord.Member = None):
+    async def yeet(self, ctx: Context,):
         """Yeet pics?"""
         await self.send_message(ctx)
 
@@ -188,7 +186,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def wave(self, ctx: Context, *, member: discord.Member = None):
+    async def wave(self, ctx: Context,):
         """Wave pics?"""
         await self.send_message(ctx)
 
@@ -197,7 +195,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def highfive(self, ctx: Context, *, member: discord.Member = None):
+    async def highfive(self, ctx: Context,):
         """Highfive pics?"""
         await self.send_message(ctx)
 
@@ -206,7 +204,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def handhold(self, ctx: Context, *, member: discord.Member = None):
+    async def handhold(self, ctx: Context,):
         """Handhold pics?"""
         await self.send_message(ctx)
 
@@ -215,7 +213,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def nom(self, ctx: Context, *, member: discord.Member = None):
+    async def nom(self, ctx: Context,):
         """Nom pics?"""
         await self.send_message(ctx)
 
@@ -224,7 +222,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def bite(self, ctx: Context, *, member: discord.Member = None):
+    async def bite(self, ctx: Context,):
         """Bite pics?"""
         await self.send_message(ctx)
 
@@ -233,7 +231,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def glomp(self, ctx: Context, *, member: discord.Member = None):
+    async def glomp(self, ctx: Context,):
         """Glomp pics?"""
         await self.send_message(ctx)
 
@@ -257,7 +255,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def kill(self, ctx: Context, *, member: discord.Member = None):
+    async def kill(self, ctx: Context,):
         """Kill pics?"""
         await self.send_message(ctx)
 
@@ -266,7 +264,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def hit(self, ctx: Context, *, member: discord.Member = None):
+    async def hit(self, ctx: Context,):
         """Kick pics?"""
         await self.send_message(ctx)
 
@@ -275,7 +273,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def happy(self, ctx: Context, *, member: discord.Member = None):
+    async def happy(self, ctx: Context,):
         """Happy pics?"""
         await self.send_message(ctx)
 
@@ -284,7 +282,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def wink(self, ctx: Context, *, member: discord.Member = None):
+    async def wink(self, ctx: Context,):
         """Wink pics?"""
         await self.send_message(ctx)
 
@@ -293,7 +291,7 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def poke(self, ctx: Context, *, member: discord.Member = None):
+    async def poke(self, ctx: Context,):
         """Poke pics?"""
         await self.send_message(ctx)
 
@@ -311,6 +309,6 @@ class Actions(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def cringe(self, ctx: Context, *, member: discord.Member = None):
+    async def cringe(self, ctx: Context,):
         """Cringe pics?"""
         await self.send_message(ctx)

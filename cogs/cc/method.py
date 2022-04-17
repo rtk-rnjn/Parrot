@@ -247,7 +247,7 @@ class CustomCommandsExecutionOnMsg:
     async def wait_for_message(self, *, timeout: float, **kwargs):
         def check_outer(**kwargs):
             def check(message):
-                op = kwargs.get("op", "any")
+                op = kwargs.pop("op", "any")
                 if op == "any":
                     return any(getattr(message, key) == value for key, value in kwargs.items())
                 if op == "all":
@@ -486,7 +486,7 @@ class CustomCommandsExecutionOnJoin:
     async def wait_for_message(self, *, timeout: float, **kwargs):
         def check_outer(**kwargs):
             def check(message):
-                op = kwargs.get("op", "any")
+                op = kwargs.pop("op", "any")
                 if op == "any":
                     return any(getattr(message, key) == value for key, value in kwargs.items())
                 if op == "all":
@@ -685,7 +685,7 @@ class CustomCommandsExecutionOnReaction:
     async def wait_for_message(self, *, timeout: float, **kwargs):
         def check_outer(**kwargs):
             def check(message):
-                op = kwargs.get("op", "any")
+                op = kwargs.pop("op", "any")
                 if op == "any":
                     return any(getattr(message, key) == value for key, value in kwargs.items())
                 if op == "all":

@@ -249,9 +249,9 @@ class CustomCommandsExecutionOnMsg:
             def check(message):
                 op = kwargs.get("op", "any")
                 if op == "any":
-                    return any([getattr(message, key) == value for key, value in kwargs.items()])
+                    return any(getattr(message, key) == value for key, value in kwargs.items())
                 if op == "all":
-                    return all([getattr(message, key) == value for key, value in kwargs.items()])
+                    return all(getattr(message, key) == value for key, value in kwargs.items())
 
             return check
         msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
@@ -488,9 +488,9 @@ class CustomCommandsExecutionOnJoin:
             def check(message):
                 op = kwargs.get("op", "any")
                 if op == "any":
-                    return any([getattr(message, key) == value for key, value in kwargs.items()])
+                    return any(getattr(message, key) == value for key, value in kwargs.items())
                 if op == "all":
-                    return all([getattr(message, key) == value for key, value in kwargs.items()])
+                    return all(getattr(message, key) == value for key, value in kwargs.items())
 
             return check
         msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
@@ -687,9 +687,9 @@ class CustomCommandsExecutionOnReaction:
             def check(message):
                 op = kwargs.get("op", "any")
                 if op == "any":
-                    return any([getattr(message, key) == value for key, value in kwargs.items()])
+                    return any(getattr(message, key) == value for key, value in kwargs.items())
                 if op == "all":
-                    return all([getattr(message, key) == value for key, value in kwargs.items()])
+                    return all(getattr(message, key) == value for key, value in kwargs.items())
 
             return check
         msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)

@@ -19,7 +19,7 @@ class NSFW(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{NO ONE UNDER EIGHTEEN SYMBOL}")
 
-    async def get_embed(self, *, type_str: str) -> discord.Embed:
+    async def get_embed(self, type_str: str) -> discord.Embed:
         response = await self.bot.http_session.get(self.url, params={"type": type_str})
         if response.status != 200:
             return

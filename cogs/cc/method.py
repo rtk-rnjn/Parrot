@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import discord
 from core import Parrot
-from typing import Any, Dict, NoReturn, Union, List
+from typing import Any, Callable, Dict, NoReturn, Union, List
 
 import re
 import time
@@ -13,7 +13,14 @@ import io
 
 from async_timeout import timeout
 
-from discord import File, Embed, Colour, Permissions, PermissionOverwrite, Object
+from discord import (
+    File,
+    Embed,
+    Colour,
+    Permissions,
+    PermissionOverwrite,
+    Object
+)
 
 
 # Example
@@ -203,6 +210,154 @@ class CustomCategoryChannel(CustomBase):
         self.channels = [channel.id for channel in channel.channels]
 
 
+class CustomCommandsExecutionOngTimer:
+    def __init__(self, bot: Parrot, guild: discord.Guild, **kwargs):
+        self.__bot = bot
+        self.kwargs = kwargs
+        self.guild = CustomGuild(guild)
+        self.env["channel_create"] = self.channel_create
+        self.env["channel_delete"] = self.channel_delete
+        self.env["channel_edit"] = self.channel_edit
+
+        self.env["role_create"] = self.role_create
+        self.env["role_delete"] = self.role_delete
+        self.env["role_edit"] = self.role_edit
+
+        self.env["kick_member"] = self.kick_member
+        self.env["ban_member"] = self.ban_member
+        self.env["edit_member"] = self.edit_member
+
+        self.env["get_member"] = self.get_member
+        self.env["get_channel"] = self.get_channel
+        self.env["get_role"] = self.get_role
+        self.env["get_channel_type"] = self.get_channel_type
+
+        self.env["get_db"] = self.get_db
+        self.env["edit_db"] = self.edit_db
+        self.env["del_db"] = self.del_db
+
+        self.env["wait_for_message"] = self.wait_for_message
+
+        self.env["set_timer"] = self.set_timer
+
+    async def channel_create(
+        self, channel_type: str, name: str, **kwargs
+    ) -> Union[CustomTextChannel, CustomVoiceChannel]:
+        if channel_type.upper() == "TEXT":
+            channel = await self.__message.guild.create_text_channel(name, **kwargs)
+            return CustomTextChannel(channel)
+        if channel_type.upper() == "VOICE":
+            channel = await self.__message.guild.create_voice_channel(name, **kwargs)
+            return CustomVoiceChannel(channel)
+
+    async def channel_edit(self, channel_id: int, **kwargs) -> NoReturn:
+        await self.__message.guild.get_channel(channel_id).edit(**kwargs)
+        return
+
+    async def channel_delete(self, channel_id: int, **kwargs) -> NoReturn:
+        await self.__message.guild.get_channel(channel_id).delete(**kwargs)
+        return
+
+    # roles
+
+    async def role_create(self, name: str, **kwargs) -> CustomRole:
+        role = await self.__message.guild.create_role(name, **kwargs)
+        return CustomRole(role)
+
+    async def role_edit(self, role_id: int, **kwargs) -> NoReturn:
+        await self.__message.guild.get_role(role_id).edit(**kwargs)
+        return
+
+    async def role_delete(self, role_id: int, **kwargs) -> NoReturn:
+        await self.__message.guild.get_role(role_id).delete(**kwargs)
+        return
+
+    # mod actions
+
+    async def kick_member(self, member_id: int, reason: str) -> NoReturn:
+        await self.__message.guild.get_member(member_id).kick(reason)
+        return
+
+    async def ban_member(self, member_id: int, reason: str) -> NoReturn:
+        await self.__message.guild.get_member(member_id).ban(reason)
+        return
+
+    async def edit_member(self, member_id: int, **kwargs) -> NoReturn:
+        await self.__message.guild.get_member(member_id).edit(**kwargs)
+        return
+
+    # utils
+
+    async def get_member(self, member_id: int) -> CustomMember:
+        return CustomMember(self.__message.guild.get_member(member_id))
+
+    async def get_role(self, role_id: int) -> CustomRole:
+        return CustomRole(self.__message.guild.get_role(role_id))
+
+    async def get_channel(
+        self, channel_id: int
+    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
+        channel = self.__message.guild.get_channel(channel_id)
+        if isinstance(channel, discord.TextChannel):
+            return CustomTextChannel(channel)
+        if isinstance(channel, discord.VoiceChannel):
+            return CustomVoiceChannel(channel)
+        if isinstance(channel, discord.CategoryChannel):
+            return CustomCategoryChannel(channel)
+
+    async def get_channel_type(self, channel: int) -> str:
+        channel = self.__message.guild.get_channel(channel)
+        if isinstance(channel, discord.TextChannel):
+            return "TEXT"
+        if isinstance(channel, discord.VoiceChannel):
+            return "VOICE"
+        if isinstance(channel, discord.CategoryChannel):
+            return "CATEGORY"
+        if isinstance(channel, discord.Thread):
+            return "THREAD"
+        if isinstance(channel, discord.StageChannel):
+            return "STAGE"
+        return "None"
+
+    # database
+
+    async def get_db(self, **kwargs) -> Dict[str, Any]:
+        project = kwargs.pop("projection", {})
+        return await self.__bot.mongo.cc.storage.find_one(
+            {"_id": self.__message.guild.id, **kwargs}, project
+        )
+
+    async def edit_db(self, **kwargs) -> NoReturn:
+        upsert = kwargs.pop("upsert", False)
+        await self.__bot.mongo.cc.storage.update_one(
+            {"_id": self.__message.guild.id}, kwargs, upsert=upsert
+        )
+
+    async def del_db(self, **kwargs) -> NoReturn:
+        await self.__bot.mongo.cc.storage.delete_one(
+            {"_id": self.__message.guild.id, **kwargs}
+        )
+        return
+
+    # Execution
+
+    async def execute(
+        self,
+        code: str,
+    ) -> NoReturn:
+        try:
+            async with timeout(10):
+                exec(compile(code, "<string>", "exec"), self.env)
+
+            try:
+                self.env["function"]
+            except KeyError:
+                return
+
+            await self.env["function"](**self.kwargs)
+        except Exception as e:
+            return
+
 class CustomCommandsExecutionOnMsg:
     def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
         self.__bot = bot
@@ -242,11 +397,22 @@ class CustomCommandsExecutionOnMsg:
 
         self.env["wait_for_message"] = self.wait_for_message
 
+        self.env["set_timer"] = self.set_timer
+
+    async def set_timer(self, expires_at: float, **post: Any):
+        func = self.bot.get_cog("Utils").create_timer
+        main_post = {
+            "name": "custom_command_execution",
+            "main": post
+        }
+        post["__guild_id__"] = self.__message.guild.id
+        return await func(expires_at, message=self.__message.channel, post=main_post)
+
     # wait_for
 
     async def wait_for_message(self, *, timeout: float, **kwargs):
-        def check_outer(**kwargs):
-            def check(message):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
                 op = kwargs.pop("op", "any")
                 if op == "any":
                     return any(getattr(message, key) == value for key, value in kwargs.items())
@@ -481,6 +647,17 @@ class CustomCommandsExecutionOnJoin:
 
         self.env["wait_for_message"] = self.wait_for_message
 
+        self.env["set_timer"] = self.set_timer
+
+    async def set_timer(self, expires_at: float, **post: Any):
+        func = self.bot.get_cog("Utils").create_timer
+        main_post = {
+            "name": "custom_command_execution",
+            "main": post
+        }
+        post["__guild_id__"] = self.__member.guild.id
+        return await func(expires_at, message=self.__member.channel, post=main_post)
+
     # wait_for
 
     async def wait_for_message(self, *, timeout: float, **kwargs):
@@ -626,11 +803,6 @@ class CustomCommandsExecutionOnJoin:
 
             await self.env["function"](CustomMember(self.__member))
         except Exception as e:
-            await self.__message.channel.send(
-                ERROR_MESSAGE.format(
-                    discord.utils.format_dt(self.__message.created_at), e
-                )
-            )
             return
 
 
@@ -679,6 +851,17 @@ class CustomCommandsExecutionOnReaction:
         self.env["del_db"] = self.del_db
 
         self.env["wait_for_message"] = self.wait_for_message
+
+        self.env["set_timer"] = self.set_timer
+
+    async def set_timer(self, expires_at: float, **post: Any):
+        func = self.bot.get_cog("Utils").create_timer
+        main_post = {
+            "name": "custom_command_execution",
+            "main": post
+        }
+        post["__guild_id__"] = self.__message.guild.id
+        return await func(expires_at, message=self.__message.channel, post=main_post)
 
     # wait_for
 

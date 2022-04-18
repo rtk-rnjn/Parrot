@@ -1,4 +1,5 @@
 from __future__ import annotations
+from cogs.cc.method import CustomCommandsExecutionOngTimer
 
 from core import Cog, Parrot
 
@@ -83,6 +84,34 @@ class EventCustom(Cog):
 
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)
+
+    async def _parse_command_execution(self, **kw):
+        guild_id = kw['__guild_id__']
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {
+                "$or": [
+                    {
+                        "_id": guild_id,
+                        "commands.trigger_type": "timer_complete",
+                        "commands.review_needed": False,
+                    },
+                    {
+                        "_id": guild_id,
+                        "commands.trigger_type": "timer_complete",
+                        "commands.review_needed": False,
+                    },
+                ]
+            }
+        ):
+            commands = data.get("commands", [])
+            for command in commands:
+                if (
+                    command["trigger_type"]
+                    in {"timer_complete", "timer_complete"}
+                    and not command["review_needed"]
+                ):
+                    cc = CustomCommandsExecutionOngTimer(self.bot, self.bot.get_guild(guild_id), **kw)
+                    await cc.execute(command.get_code)
 
     async def _parse_giveaway(self, **kw) -> None:
         data = await self.bot.mongo.parrot_db.giveaway.find_one(

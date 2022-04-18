@@ -32,6 +32,7 @@ TRIGGER_TYPE = [
     "reaction_add_or_remove",
     "message_edit",
     "member_join",
+    "timer_complete",
 ]
 
 ERROR_ON_MAX_CONCURRENCY = """
@@ -50,7 +51,7 @@ class CCFlag(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefi
     code: str
     name: str
     help: str
-    trigger_type: str = "command"
+    trigger_type: str = "on_message"
 
     requied_role: discord.Role = None
     ignored_role: discord.Role = None
@@ -63,7 +64,7 @@ class CustomCommand(Cog):
     def __init__(
         self,
         bot: Parrot,
-    ):
+    ) -> None:
         self.bot = bot
 
         def default_value():

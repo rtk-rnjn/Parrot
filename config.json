@@ -42,7 +42,6 @@
       "jishaku",
       "cogs.holidays",
       "cogs.cc",
-      "cogs.music",
       "cogs.api",
       "events.custom_events"
   ],

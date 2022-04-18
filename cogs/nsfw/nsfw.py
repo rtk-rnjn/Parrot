@@ -24,7 +24,11 @@ class NSFW(Cog):
         if response.status != 200:
             return
         url = (await response.json())["message"]
-        embed = discord.Embed(title=f"{type_str.title()}", color=self.bot.color, timestamp=datetime.datetime.utcnow())
+        embed = discord.Embed(
+            title=f"{type_str.title()}",
+            color=self.bot.color,
+            timestamp=datetime.datetime.utcnow(),
+        )
         embed.set_image(url=url)
         return embed
 
@@ -289,7 +293,9 @@ class NSFW(Cog):
         """
         Best command I guess. It return random ^^
         """
-        r = await self.bot.http_session.get("https://scathach.redsplit.org/v3/nsfw/gif/")
+        r = await self.bot.http_session.get(
+            "https://scathach.redsplit.org/v3/nsfw/gif/"
+        )
         if r.status == 200:
             res = await r.json()
         else:

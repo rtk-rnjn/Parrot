@@ -2923,7 +2923,7 @@ class Games(Cog):
 
         madlibs_embed.add_field(
             name="Enter a word that fits the given part of speech!",
-            value=f"Part of speech: {part_of_speech}\n\nMake sure not to spam, or you may get auto-muted!"
+            value=f"Part of speech: {part_of_speech}\n\nMake sure not to spam, or you may get auto-muted!",
         )
 
         madlibs_embed.set_footer(text=f"Inputs remaining: {number_of_inputs}")
@@ -3777,12 +3777,17 @@ class Games(Cog):
         random_template = choice(self.templates)
 
         def author_check(message: discord.Message) -> bool:
-            return message.channel.id == ctx.channel.id and message.author.id == ctx.author.id
+            return (
+                message.channel.id == ctx.channel.id
+                and message.author.id == ctx.author.id
+            )
 
         self.checks.add(author_check)
 
         loading_embed = discord.Embed(
-            title="Madlibs", description="Loading your Madlibs game...", color=Colours.python_blue
+            title="Madlibs",
+            description="Loading your Madlibs game...",
+            color=Colours.python_blue,
         )
         original_message = await ctx.send(embed=loading_embed)
 
@@ -3795,11 +3800,13 @@ class Games(Cog):
             await original_message.edit(embed=madlibs_embed)
 
             try:
-                message = await self.bot.wait_for("message", check=author_check, timeout=60)
+                message = await self.bot.wait_for(
+                    "message", check=author_check, timeout=60
+                )
             except TimeoutError:
                 timeout_embed = discord.Embed(
                     description="Uh oh! You took too long to respond!",
-                    color=Colours.soft_red
+                    color=Colours.soft_red,
                 )
 
                 await ctx.send(ctx.author.mention, embed=timeout_embed)
@@ -3813,7 +3820,10 @@ class Games(Cog):
 
             submitted_words[message.id] = message.content
 
-        blanks = [self.edited_content.pop(msg_id, submitted_words[msg_id]) for msg_id in submitted_words]
+        blanks = [
+            self.edited_content.pop(msg_id, submitted_words[msg_id])
+            for msg_id in submitted_words
+        ]
 
         self.checks.remove(author_check)
 
@@ -3829,9 +3839,11 @@ class Games(Cog):
         story_embed = discord.Embed(
             title=random_template["title"],
             description="".join(story),
-            color=Colours.bright_green
+            color=Colours.bright_green,
         )
 
-        story_embed.set_footer(text=f"Generated for {ctx.author}", icon_url=ctx.author.display_avatar.url)
+        story_embed.set_footer(
+            text=f"Generated for {ctx.author}", icon_url=ctx.author.display_avatar.url
+        )
 
         await ctx.send(embed=story_embed)

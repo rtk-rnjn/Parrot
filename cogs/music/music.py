@@ -184,6 +184,9 @@ class SongQueue(asyncio.Queue):
             return list(itertools.islice(self._queue, item.start, item.stop, item.step))
         return self._queue[item]
 
+    def __repr__(self) -> str:
+        return "<SongQueue length: {0.qsize()}>".format(self)
+
     def __iter__(self):
         return self._queue.__iter__()
 
@@ -218,6 +221,9 @@ class VoiceState:
 
     def __del__(self):
         self.audio_player.cancel()
+
+    def __repr__(self) -> str:
+        return "<VoiceState loop: {0.loop} volume: {0.volume} current: {0.current} voice: {0.voice}>".format(self)
 
     @property
     def loop(self):

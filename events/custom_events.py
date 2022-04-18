@@ -1,5 +1,4 @@
 from __future__ import annotations
-from cogs.cc.method import CustomCommandsExecutionOngTimer
 
 from core import Cog, Parrot
 

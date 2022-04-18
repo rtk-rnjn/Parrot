@@ -358,6 +358,7 @@ class CustomCommandsExecutionOngTimer:
         except Exception as e:
             return
 
+
 class CustomCommandsExecutionOnMsg:
     def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
         self.__bot = bot

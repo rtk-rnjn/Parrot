@@ -80,6 +80,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     def __str__(self):
         return "**{0.title}** by **{0.uploader}**".format(self)
+    
+    def __repr__(self) -> str:
+        return f"<YTDLSource title: {self.title} stream_url: {self.stream_url}>"
 
     @classmethod
     async def create_source(
@@ -157,6 +160,9 @@ class Song:
     def __init__(self, source: YTDLSource):
         self.source = source
         self.requester = source.requester
+
+    def __repr__(self) -> str:
+        return "<Song: {0.source.title}>".format(self)
 
     def create_embed(self):
         embed = (
@@ -408,7 +414,7 @@ class Music(Cog):
 
         voter = ctx.message.author
         if voter == ctx.voice_state.current.requester:
-            await ctx.message.add_reaction("⏭")
+            await ctx.message.add_reaction("\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}")
             ctx.voice_state.skip()
 
         elif voter.id not in ctx.voice_state.skip_votes:
@@ -416,7 +422,7 @@ class Music(Cog):
             total_votes = len(ctx.voice_state.skip_votes)
 
             if total_votes >= 3:
-                await ctx.message.add_reaction("⏭")
+                await ctx.message.add_reaction("\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}")
                 ctx.voice_state.skip()
             else:
                 await ctx.send(

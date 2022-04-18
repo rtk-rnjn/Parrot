@@ -86,7 +86,7 @@ class EventCustom(Cog):
             await self._parse_giveaway(**kw)
 
     async def _parse_command_execution(self, **kw):
-        guild_id = kw['__guild_id__']
+        guild_id = kw["__guild_id__"]
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "$or": [
@@ -106,11 +106,12 @@ class EventCustom(Cog):
             commands = data.get("commands", [])
             for command in commands:
                 if (
-                    command["trigger_type"]
-                    in {"timer_complete", "timer_complete"}
+                    command["trigger_type"] in {"timer_complete", "timer_complete"}
                     and not command["review_needed"]
                 ):
-                    cc = CustomCommandsExecutionOngTimer(self.bot, self.bot.get_guild(guild_id), **kw)
+                    cc = CustomCommandsExecutionOngTimer(
+                        self.bot, self.bot.get_guild(guild_id), **kw
+                    )
                     await cc.execute(command.get_code)
 
     async def _parse_giveaway(self, **kw) -> None:

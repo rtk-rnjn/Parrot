@@ -13,14 +13,7 @@ import io
 
 from async_timeout import timeout
 
-from discord import (
-    File,
-    Embed,
-    Colour,
-    Permissions,
-    PermissionOverwrite,
-    Object
-)
+from discord import File, Embed, Colour, Permissions, PermissionOverwrite, Object
 
 
 # Example
@@ -402,10 +395,7 @@ class CustomCommandsExecutionOnMsg:
 
     async def set_timer(self, expires_at: float, **post: Any):
         func = self.bot.get_cog("Utils").create_timer
-        main_post = {
-            "name": "custom_command_execution",
-            "main": post
-        }
+        main_post = {"name": "custom_command_execution", "main": post}
         post["__guild_id__"] = self.__message.guild.id
         return await func(expires_at, message=self.__message.channel, post=main_post)
 
@@ -416,12 +406,19 @@ class CustomCommandsExecutionOnMsg:
             def check(message) -> bool:
                 op = kwargs.pop("op", "any")
                 if op == "any":
-                    return any(getattr(message, key) == value for key, value in kwargs.items())
+                    return any(
+                        getattr(message, key) == value for key, value in kwargs.items()
+                    )
                 if op == "all":
-                    return all(getattr(message, key) == value for key, value in kwargs.items())
+                    return all(
+                        getattr(message, key) == value for key, value in kwargs.items()
+                    )
 
             return check
-        msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
+
+        msg = await self.__bot.wait_for(
+            "message", check=check_outer(**kwargs), timeout=timeout
+        )
         if msg.guild != self.__message.guild:
             return None
         return msg
@@ -652,10 +649,7 @@ class CustomCommandsExecutionOnJoin:
 
     async def set_timer(self, expires_at: float, **post: Any):
         func = self.bot.get_cog("Utils").create_timer
-        main_post = {
-            "name": "custom_command_execution",
-            "main": post
-        }
+        main_post = {"name": "custom_command_execution", "main": post}
         post["__guild_id__"] = self.__member.guild.id
         return await func(expires_at, message=self.__member.channel, post=main_post)
 
@@ -666,12 +660,19 @@ class CustomCommandsExecutionOnJoin:
             def check(message):
                 op = kwargs.pop("op", "any")
                 if op == "any":
-                    return any(getattr(message, key) == value for key, value in kwargs.items())
+                    return any(
+                        getattr(message, key) == value for key, value in kwargs.items()
+                    )
                 if op == "all":
-                    return all(getattr(message, key) == value for key, value in kwargs.items())
+                    return all(
+                        getattr(message, key) == value for key, value in kwargs.items()
+                    )
 
             return check
-        msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
+
+        msg = await self.__bot.wait_for(
+            "message", check=check_outer(**kwargs), timeout=timeout
+        )
         if msg.guild != self.__member.guild:
             return None
         return msg
@@ -857,10 +858,7 @@ class CustomCommandsExecutionOnReaction:
 
     async def set_timer(self, expires_at: float, **post: Any):
         func = self.bot.get_cog("Utils").create_timer
-        main_post = {
-            "name": "custom_command_execution",
-            "main": post
-        }
+        main_post = {"name": "custom_command_execution", "main": post}
         post["__guild_id__"] = self.__message.guild.id
         return await func(expires_at, message=self.__message.channel, post=main_post)
 
@@ -871,12 +869,19 @@ class CustomCommandsExecutionOnReaction:
             def check(message):
                 op = kwargs.pop("op", "any")
                 if op == "any":
-                    return any(getattr(message, key) == value for key, value in kwargs.items())
+                    return any(
+                        getattr(message, key) == value for key, value in kwargs.items()
+                    )
                 if op == "all":
-                    return all(getattr(message, key) == value for key, value in kwargs.items())
+                    return all(
+                        getattr(message, key) == value for key, value in kwargs.items()
+                    )
 
             return check
-        msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=timeout)
+
+        msg = await self.__bot.wait_for(
+            "message", check=check_outer(**kwargs), timeout=timeout
+        )
         if msg.guild != self.__member.guild:
             return None
         return msg

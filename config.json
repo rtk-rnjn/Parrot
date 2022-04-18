@@ -42,6 +42,8 @@
       "jishaku",
       "cogs.holidays",
       "cogs.cc",
+      "cogs.music",
+      "cogs.api",
       "events.custom_events"
   ],
   "invite": "https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot",

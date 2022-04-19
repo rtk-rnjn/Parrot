@@ -81,12 +81,11 @@ class Sports(Cog):
             if self.data is None:
                 url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
                 response = await self.bot.http_session.get(url)
-                self.data = await response.json()
-
                 if response.status != 200:
                     return await ctx.send(
                         f"{ctx.author.mention} Could not get IPL score | Ask for it in support server"
                     )
+                self.data = await response.json()
 
             embed = self.create_embed_ipl(data=self.data)
             await ctx.send(embed=embed)

@@ -83,7 +83,7 @@ class Sports(Cog):
                 response = await self.bot.http_session.get(url)
                 if response.status != 200:
                     return await ctx.send(
-                        f"{ctx.author.mention} Could not get IPL score | Ask for it in support server"
+                        f"{ctx.author.mention} Could not get IPL score | Ask for it in support server | Status code: {response.status}"
                     )
                 self.data = await response.json()
 

@@ -219,7 +219,7 @@ class Parrot(commands.AutoShardedBot):
                 try:
                     if channel:
                         await channel.connect()
-                except discord.ClientException:
+                except (discord.HTTPException, asyncio.TimeoutError):
                     pass
 
     async def on_connect(self) -> None:

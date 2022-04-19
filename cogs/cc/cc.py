@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 from collections import defaultdict
 import re
@@ -193,6 +194,7 @@ class CustomCommand(Cog):
                         message,
                     )
                     await CC.execute(command.get("code"))
+                await asyncio.sleep(0)
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -230,6 +232,7 @@ class CustomCommand(Cog):
                         message,
                     )
                     await CC.execute(command.get("code"))
+                await asyncio.sleep(0)
 
     @Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -273,6 +276,7 @@ class CustomCommand(Cog):
                         self.bot, message, user, reaction_type="add"
                     )
                     await CC.execute(command.get("code"))
+                await asyncio.sleep(0)
 
     @Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -314,6 +318,7 @@ class CustomCommand(Cog):
                         self.bot, message, user, reaction_type="remove"
                     )
                     await CC.execute(command.get("code"))
+                await asyncio.sleep(0)
 
     @Cog.listener()
     async def on_member_join(self, member):
@@ -336,6 +341,7 @@ class CustomCommand(Cog):
                 ):
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
                     await CC.execute(command.get("code"))
+                await asyncio.sleep(0)
 
     def check_requirements(
         self,

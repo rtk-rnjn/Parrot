@@ -925,8 +925,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def _10s_task(self):
         temp = self.write_data
         self.write_data.clear()
-        async with self.lock:
-            await self.bot.mongo.msg_db.content.bulk_write(temp)
+        await self.bot.mongo.msg_db.content.bulk_write(temp)
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

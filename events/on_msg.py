@@ -492,6 +492,58 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     except discord.HTTPException as e:
                         pass
 
+    async def _add_record_message_to_database(self, message: discord.Message):
+        await self.bot.mongo.msg_db.content.update_one(
+            {"_id": message.channel.id,},
+            {
+                "$addToSet": {
+                    "messages": self._msg_raw(message)
+                }
+            },
+            {
+                "pull": {
+                    "messages": {
+                        "created_at": {
+                            "$lt": message.created_at.timestamp() - 43200
+                        }
+                    }
+                },
+            },
+            upsert=True
+        )
+    
+    async def _edit_record_message_to_database(self, message):
+        await self.bot.mongo.msg_db.content.update_one(
+            {"_id": message.channel.id, "messages.id": message.id},
+            {
+                "$set": {
+                    "messages.$": self._msg_raw(message)
+                }
+            },
+            {
+                "pull": {
+                    "messages": {
+                        "created_at": {
+                            "$lt": message.created_at.timestamp() - 43200
+                        }
+                    }
+                },
+            },
+            upsert=True
+        )
+
+    def _msg_raw(self, message):
+        return {
+            "id": message.id,
+            "author": message.author.id,
+            "channel": message.channel.id,
+            "guild": message.guild.id,
+            "content": message.content,
+            "timestamp": message.created_at.timestamp,
+            "attachments": [a.url for a in message.attachments],
+            "embeds": [e.to_dict() for e in message.embeds],
+        }
+
     @Cog.listener()
     async def on_message_delete(self, message):
         pass

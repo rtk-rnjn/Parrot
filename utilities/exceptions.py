@@ -54,9 +54,14 @@ class NotMe(ParrotCheckFailure):
 # command disabled
 
 
-class DisabledCommandChannel(ParrotCheckFailure):
+class CommandDisabledChannel(ParrotCheckFailure):
     def __init__(self):
         super().__init__("Command Disabled. This command is disabled in this channel")
+
+
+class CommandDisabledRole(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__("Command Disabled. This command is disabled for this role")
 
 
 class CommandDisabledCategory(ParrotCheckFailure):

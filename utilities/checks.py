@@ -100,35 +100,34 @@ def in_temp_channel() -> Callable:
 
 async def _can_run(ctx) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
-    if ctx.guild is not None:
+    if ctx.guild is not None and ctx.command and ctx.command.cog:
         roles = set(ctx.author.roles)
         collection = ctx.bot.mongo.enable_disable[f"{ctx.guild.id}"]
-        if ctx.command and ctx.command.cog:
-            if data := await collection.find_one(
-                {
-                    "$or": [
-                        {"_id": ctx.command.qualified_name},
-                        {"_id": ctx.command.cog.qualified_name},
-                        {"_id": "all"},
-                    ]
-                }
-            ):
-                if ctx.channel.id in data["channel_in"]:
-                    return True
-                if any(role.id in data["role_in"] for role in roles):
-                    return True
-                if any(role.id in data["role_out"] for role in roles):
-                    raise ex.CommandDisabledRole()
-                if ctx.channel.category and ctx.channel.category.id in data["channel_in"]:
-                    return True
-                if ctx.channel.category and ctx.channel.category.id not in data["channel_in"]:
-                    raise ex.CommandDisabledCategory()
-                if ctx.channel.id in data["channel_out"]:
-                    raise ex.CommandDisabledChannel()
-                if data["server"]:
-                    raise ex.CommandDisabledServer()
-                if not data["server"]:
-                    return True
+        if data := await collection.find_one(
+            {
+                "$or": [
+                    {"_id": ctx.command.qualified_name},
+                    {"_id": ctx.command.cog.qualified_name},
+                    {"_id": "all"},
+                ]
+            }
+        ):
+            if ctx.channel.id in data["channel_in"]:
+                return True
+            if any(role.id in data["role_in"] for role in roles):
+                return True
+            if any(role.id in data["role_out"] for role in roles):
+                raise ex.CommandDisabledRole()
+            if ctx.channel.category and ctx.channel.category.id in data["channel_in"]:
+                return True
+            if ctx.channel.category and ctx.channel.category.id not in data["channel_in"]:
+                raise ex.CommandDisabledCategory()
+            if ctx.channel.id in data["channel_out"]:
+                raise ex.CommandDisabledChannel()
+            if data["server"]:
+                raise ex.CommandDisabledServer()
+            if not data["server"]:
+                return True
         return True
     return False
 

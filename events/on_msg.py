@@ -109,6 +109,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             60,
             commands.BucketType.member,
         )
+        self._12h_task.start()
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -505,7 +506,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             },
             upsert=True
         )
-        await self._12h_task.start()
     
     async def _edit_record_message_to_database(self, message):
         await self.bot.mongo.msg_db.content.update_one(
@@ -516,7 +516,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 },
             },
         )
-        await self._12h_task.start()
 
     def _msg_raw(self, message):
         return {
@@ -898,7 +897,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     else None,
                 )
 
-    @tasks.loop()
+    @tasks.loop(seconds=43200)
     async def _12h_task(self):
         await self.bot.mongo.msg_db.content.update_many(
             {},

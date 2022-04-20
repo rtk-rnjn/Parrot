@@ -10,7 +10,7 @@ import random
 import io
 import json
 from discord import Webhook
-from discord.ext import commands
+from discord.ext import commands, tasks
 import textwrap
 import re
 from aiohttp import ClientResponseError
@@ -371,10 +371,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message(self, message):
         await self.bot.wait_until_ready()
-        await self._on_message_leveling(message)
-        await self._scam_detection(message)
         if not message.guild:
             return
+
+        await self._scam_detection(message)
+        await self._on_message_leveling(message)
+        await self._add_record_message_to_database(message)
+
         if message.guild.me.id == message.author.id:
             return
         message_to_send = await self._parse_snippets(message.content)
@@ -499,16 +502,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "$addToSet": {
                     "messages": self._msg_raw(message)
                 },
-                "$pull": {
-                    "messages": {
-                        "created_at": {
-                            "$lt": message.created_at.timestamp() - 43200
-                        }
-                    }
-                },
             },
             upsert=True
         )
+        await self._12h_task.start()
     
     async def _edit_record_message_to_database(self, message):
         await self.bot.mongo.msg_db.content.update_one(
@@ -517,16 +514,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "$set": {
                     "messages.$": self._msg_raw(message)
                 },
-                "$pull": {
-                    "messages": {
-                        "created_at": {
-                            "$lt": message.created_at.timestamp() - 43200
-                        }
-                    }
-                },
             },
-            upsert=True
         )
+        await self._12h_task.start()
 
     def _msg_raw(self, message):
         return {
@@ -648,6 +638,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if before.content != after.content:
             await self._on_message_passive(after)
             await self._scam_detection(after)
+            await self._edit_record_message_to_database(after)
 
     async def _on_message_leveling(self, message: discord.Message):
         if not message.guild:
@@ -907,6 +898,18 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     else None,
                 )
 
+    @tasks.loop()
+    async def _12h_task(self):
+        await self.bot.mongo.msg_db.content.update_many(
+            {},
+            {
+                "$pull": {
+                    "messages": {
+                        "timestamp": {"$lt": int(time()) - 43200}
+                    }
+                }
+            }
+        )
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

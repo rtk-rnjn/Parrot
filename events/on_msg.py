@@ -925,6 +925,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     
     @tasks.loop(seconds=10)
     async def _10s_task(self):
+        print(1)
         await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
         self.write_data.clear()
 

@@ -55,13 +55,6 @@ async def function(message):
         await message_send(f"<@{message.author.id}> Hi there")
     return
 ```
-```python
-MOD_ROLE = 123456789
-async def function(message):
-    if MOD_ROLE in message.author.roles and message.content.lower() == "!publish":
-        await message_publish()
-    return
-```
 
 ---
 
@@ -81,4 +74,154 @@ async def function(reaction, member):
     if reaction.emoji == "\N{REGIONAL INDICATOR SYMBOL LETTER F}":
         await message_send(f"<@{member.id}> paid respect! `F`")
     return
+```
+
+---
+
+## Functions
+
+---
+
+#### `message_send`
+
+To send message in the channel.
+
+```python
+await message_send(CHANNEL_ID, content, **kwargs)
+```
+
+#### `message_add_reaction`
+
+To add reaction on the message sent.
+
+```python
+await message_add_reaction(emoji):
+```
+
+#### `message_remove_reaction`
+
+To remove reaction on the message sent of the user.
+
+```python
+await message_remove_reaction(emoji, member)
+```
+
+#### `message_clear_reactions`
+
+To clear all the reactions from the message sent.
+
+```python
+await message_clear_reactions()
+```
+
+#### `reactions_users`
+
+To get the list of users who reacted to the message of the specified emoji.
+
+```python
+await reactions_users(emoji)
+```
+
+#### `channel_create`
+
+To create a channel in the guild.
+
+```python
+await channel_create(name, channel_type, **kwargs)
+```
+
+#### `channel_edit`
+
+To edit the channel.
+
+```python
+await channel_edit(channel_id, **kwargs)
+```
+
+#### `channel_delete`
+
+To delete a channel.
+
+```python
+await channel_delete(channel_id)
+```
+
+#### `role_create`
+
+To create a role in the channel.
+
+```python
+await role_create(name, **kwargs)
+```
+
+#### `role_edit`
+
+To edit a role 
+
+```python
+await role_edit(role_id, **kwargs)
+```
+
+#### `role_delete`
+
+To delete a role.
+
+```python
+await role_delete(role_id)
+```
+
+#### `kick_member`
+
+To kick a member from guild
+
+```python
+await kick_member(member_id, reason)
+```
+
+#### `ban_member`
+
+To ban member from the guild
+
+```python
+await ban_member(member_id, reason)
+```
+
+#### `edit_member`
+
+To edit member.
+
+```python
+await edit_member(member_id, **kwargs)
+```
+
+#### `get_channel`
+
+To get a channel of the guild.
+
+```python
+await get_channel(channel_id)
+```
+
+#### `get_db`
+
+To get the data of the guild.
+
+```python
+await get_db(projection)
+```
+
+#### `edit_db`
+
+To edit the data of the guild.
+
+```python
+await edit_db(**kwargs)
+```
+
+#### `del_db`
+
+To delete the data of the guild.
+
+```python
+await del_db()
 ```

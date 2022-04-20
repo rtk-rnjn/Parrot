@@ -209,7 +209,6 @@ class CustomCommandsExecutionOnMsg:
         self.__message = message
         self.env = env
         self.env["guild"] = CustomGuild(message.guild)
-        self.env["message_delete"] = self.message_delete
         self.env["message_send"] = self.message_send
         self.env["message_add_reaction"] = self.message_add_reaction
         self.env["message_remove_reaction"] = self.message_remove_reaction
@@ -260,17 +259,13 @@ class CustomCommandsExecutionOnMsg:
             return check
 
         msg = await self.__bot.wait_for(
-            "message", check=check_outer(**kwargs), timeout=timeout
+            "message", check=check_outer(**kwargs), timeout=10 if timeout > 10 else timeout
         )
         if msg.guild != self.__message.guild:
             return None
         return msg
 
     # messages
-
-    async def message_delete(message) -> NoReturn:
-        await message.delete(delay=0)
-        return
 
     async def message_send(
         self,
@@ -348,8 +343,8 @@ class CustomCommandsExecutionOnMsg:
         await self.__message.guild.get_channel(channel_id).edit(**kwargs)
         return
 
-    async def channel_delete(self, channel_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_channel(channel_id).delete(**kwargs)
+    async def channel_delete(self, channel_id: int) -> NoReturn:
+        await self.__message.guild.get_channel(channel_id).delete()
         return
 
     # roles
@@ -362,8 +357,8 @@ class CustomCommandsExecutionOnMsg:
         await self.__message.guild.get_role(role_id).edit(**kwargs)
         return
 
-    async def role_delete(self, role_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_role(role_id).delete(**kwargs)
+    async def role_delete(self, role_id: int,) -> NoReturn:
+        await self.__message.guild.get_role(role_id).delete()
         return
 
     # mod actions
@@ -427,9 +422,9 @@ class CustomCommandsExecutionOnMsg:
             {"_id": self.__message.guild.id}, kwargs, upsert=upsert
         )
 
-    async def del_db(self, **kwargs) -> NoReturn:
+    async def del_db(self,) -> NoReturn:
         await self.__bot.mongo.cc.storage.delete_one(
-            {"_id": self.__message.guild.id, **kwargs}
+            {"_id": self.__message.guild.id,}
         )
         return
 
@@ -506,7 +501,7 @@ class CustomCommandsExecutionOnJoin:
             return check
 
         msg = await self.__bot.wait_for(
-            "message", check=check_outer(**kwargs), timeout=timeout
+            "message", check=check_outer(**kwargs), timeout=10 if timeout > 10 else timeout
         )
         if msg.guild != self.__member.guild:
             return None
@@ -553,8 +548,8 @@ class CustomCommandsExecutionOnJoin:
         await self.__member.guild.get_channel(channel_id).edit(**kwargs)
         return
 
-    async def channel_delete(self, channel_id: int, **kwargs) -> NoReturn:
-        await self.__member.guild.get_channel(channel_id).delete(**kwargs)
+    async def channel_delete(self, channel_id: int) -> NoReturn:
+        await self.__member.guild.get_channel(channel_id).delete()
         return
 
     # roles
@@ -567,8 +562,8 @@ class CustomCommandsExecutionOnJoin:
         await self.__member.guild.get_role(role_id).edit(**kwargs)
         return
 
-    async def role_delete(self, role_id: int, **kwargs) -> NoReturn:
-        await self.__member.guild.get_role(role_id).delete(**kwargs)
+    async def role_delete(self, role_id: int,) -> NoReturn:
+        await self.__member.guild.get_role(role_id).delete()
         return
 
     # mod actions
@@ -617,9 +612,9 @@ class CustomCommandsExecutionOnJoin:
             {"_id": self.__member.guild.id}, kwargs, upsert=kwargs.pop("upsert", False)
         )
 
-    async def del_db(self, **kwargs) -> NoReturn:
+    async def del_db(self,) -> NoReturn:
         await self.__bot.mongo.cc.storage.delete_one(
-            {"_id": self.__member.guild.id, **kwargs}
+            {"_id": self.__member.guild.id,}
         )
         return
 
@@ -657,7 +652,6 @@ class CustomCommandsExecutionOnReaction:
         self.env["user"] = CustomMember(self.__user)
         self.env["reaction_type"] = kwargs.pop("reaction_type", None)
 
-        self.env["message_delete"] = self.message_delete
         self.env["message_send"] = self.message_send
         self.env["message_add_reaction"] = self.message_add_reaction
         self.env["message_remove_reaction"] = self.message_remove_reaction
@@ -707,17 +701,13 @@ class CustomCommandsExecutionOnReaction:
             return check
 
         msg = await self.__bot.wait_for(
-            "message", check=check_outer(**kwargs), timeout=timeout
+            "message", check=check_outer(**kwargs), timeout=10 if timeout > 10 else timeout
         )
         if msg.guild != self.__member.guild:
             return None
         return msg
 
     # messages
-
-    async def message_delete(message) -> NoReturn:
-        await message.delete(delay=0)
-        return
 
     async def message_send(
         self,
@@ -790,8 +780,8 @@ class CustomCommandsExecutionOnReaction:
         await self.__message.guild.get_channel(channel_id).edit(**kwargs)
         return
 
-    async def channel_delete(self, channel_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_channel(channel_id).delete(**kwargs)
+    async def channel_delete(self, channel_id: int) -> NoReturn:
+        await self.__message.guild.get_channel(channel_id).delete()
         return
 
     # roles
@@ -804,8 +794,8 @@ class CustomCommandsExecutionOnReaction:
         await self.__message.guild.get_role(role_id).edit(**kwargs)
         return
 
-    async def role_delete(self, role_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_role(role_id).delete(**kwargs)
+    async def role_delete(self, role_id: int,) -> NoReturn:
+        await self.__message.guild.get_role(role_id).delete()
         return
 
     # mod actions
@@ -855,9 +845,9 @@ class CustomCommandsExecutionOnReaction:
             {"_id": self.__message.guild.id}, kwargs, upsert=upsert
         )
 
-    async def del_db(self, **kwargs) -> NoReturn:
+    async def del_db(self,) -> NoReturn:
         await self.__bot.mongo.cc.storage.delete_one(
-            {"_id": self.__message.guild.id, **kwargs}
+            {"_id": self.__message.guild.id,}
         )
         return
 

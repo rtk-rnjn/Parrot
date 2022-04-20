@@ -912,9 +912,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @tasks.loop(seconds=43200)
     async def _12h_task(self):
-        await self.bot.mongo.msg_db.content.update_many(
-            {},
-            {
+        async with self.lock:    
+            await self.bot.mongo.msg_db.content.update_many(
+                {},
+                {
                 "$pull": {
                     "messages": {
                         "timestamp": {"$lt": int(time()) - 43200}
@@ -925,9 +926,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     
     @tasks.loop(seconds=10)
     async def _10s_task(self):
-        print(1)
-        await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
-        self.write_data.clear()
+        async with self.lock:    
+            print(1)
+            await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
+            self.write_data.clear()
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

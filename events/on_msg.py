@@ -535,7 +535,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             "channel": message.channel.id,
             "guild": message.guild.id,
             "content": message.content,
-            "timestamp": message.created_at.timestamp,
+            "timestamp": message.created_at.timestamp(),
             "attachments": [a.url for a in message.attachments],
             "embeds": [e.to_dict() for e in message.embeds],
         }

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+import asyncio
+from collections import defaultdict
 
 import typing as tp
 
@@ -23,6 +25,7 @@ from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from utilities.rankcard import rank_card
 
 from core import Parrot, Cog
+from pymongo import InsertOne, DeleteMany, ReplaceOne, UpdateOne
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -109,7 +112,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             60,
             commands.BucketType.member,
         )
+
+        self.write_data = []
+
         self._12h_task.start()
+        self._10s_task.start()
+
+        self.lock = asyncio.Lock()
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -497,7 +506,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         pass
 
     async def _add_record_message_to_database(self, message: discord.Message):
-        await self.bot.mongo.msg_db.content.update_one(
+        self.write_data.append(
             {"_id": message.channel.id,},
             {
                 "$addToSet": {
@@ -506,9 +515,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             },
             upsert=True
         )
+        await asyncio.sleep(0)
     
     async def _edit_record_message_to_database(self, message):
-        await self.bot.mongo.msg_db.content.update_one(
+        self.write_data.append(
             {"_id": message.channel.id, "messages.id": message.id},
             {
                 "$set": {
@@ -516,6 +526,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 },
             },
         )
+        await asyncio.sleep(0)
 
     def _msg_raw(self, message):
         return {
@@ -909,6 +920,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 }
             }
         )
+    
+    @tasks.loop(seconds=10)
+    async def _10s_task(self):
+        temp = self.write_data
+        self.write_data.clear()
+        async with self.lock:
+            await self.bot.mongo.msg_db.content.bulk_write(temp)
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

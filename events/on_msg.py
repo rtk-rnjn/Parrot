@@ -499,7 +499,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "$addToSet": {
                     "messages": self._msg_raw(message)
                 },
-                "pull": {
+                "$pull": {
                     "messages": {
                         "created_at": {
                             "$lt": message.created_at.timestamp() - 43200
@@ -517,7 +517,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "$set": {
                     "messages.$": self._msg_raw(message)
                 },
-                "pull": {
+                "$pull": {
                     "messages": {
                         "created_at": {
                             "$lt": message.created_at.timestamp() - 43200

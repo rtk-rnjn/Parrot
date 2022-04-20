@@ -507,24 +507,26 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(
-            {"_id": message.channel.id,},
-            {
-                "$addToSet": {
-                    "messages": self._msg_raw(message)
+            UpdateOne({"_id": message.channel.id,},
+                {
+                    "$addToSet": {
+                        "messages": self._msg_raw(message)
+                    },
                 },
-            },
-            upsert=True
+                upsert=True
+            )
         )
         await asyncio.sleep(0)
     
     async def _edit_record_message_to_database(self, message):
         self.write_data.append(
-            {"_id": message.channel.id, "messages.id": message.id},
-            {
-                "$set": {
-                    "messages.$": self._msg_raw(message)
+            UpdateOne({"_id": message.channel.id, "messages.id": message.id},
+                {
+                    "$set": {
+                        "messages.$": self._msg_raw(message)
+                    },
                 },
-            },
+            )
         )
         await asyncio.sleep(0)
 

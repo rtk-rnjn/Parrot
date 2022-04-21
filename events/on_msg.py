@@ -517,7 +517,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             )
         )
         await asyncio.sleep(0)
-    
+
     async def _edit_record_message_to_database(self, message):
         self.write_data.append(
             UpdateOne({"_id": message.channel.id, "messages.id": message.id},
@@ -927,7 +927,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 }
             }
         )
-    
+
     @tasks.loop(seconds=10)
     async def _10s_task(self):
         if not self.write_data:

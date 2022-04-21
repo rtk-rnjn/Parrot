@@ -470,9 +470,8 @@ async def __check_requirements(bot: Parrot, **kw) -> List[int]:
             if is_member_none is None:
                 __item__remove(real_winners, member)
 
-        if required_role:
-            if not member._roles.has(required_role):
-                __item__remove(real_winners, member)
+        if required_role and not member._roles.has(required_role):
+            __item__remove(real_winners, member)
 
         if required_level:
             level = await bot.mongo.leveling[f"{current_guild.id}"].find_one(

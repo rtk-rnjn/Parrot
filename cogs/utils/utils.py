@@ -750,15 +750,17 @@ class Utils(Cog):
 
             file: Optional[discord.File] = None
 
-            if ctx.message.attachments:
-                if (
-                    ctx.message.attachments[0]
-                    .url.lower()
-                    .endswith(("png", "jpeg", "jpg", "gif", "webp"))
-                ):
-                    _bytes = await ctx.message.attachments[0].read(use_cached=True)
-                    file = discord.File(io.BytesIO(_bytes), "image.jpg")
-                    embed.set_image(url="attachment://image.jpg")
+            if (
+                ctx.message.attachments
+                and (
+                ctx.message.attachments[0]
+                .url.lower()
+                .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+            )
+            ):
+                _bytes = await ctx.message.attachments[0].read(use_cached=True)
+                file = discord.File(io.BytesIO(_bytes), "image.jpg")
+                embed.set_image(url="attachment://image.jpg")
 
             msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
             await self.__notify_on_suggestion(ctx, message=msg)

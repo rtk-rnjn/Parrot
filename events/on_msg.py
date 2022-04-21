@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 import asyncio
-from collections import defaultdict
 
 import typing as tp
 
@@ -25,7 +24,7 @@ from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from utilities.rankcard import rank_card
 
 from core import Parrot, Cog
-from pymongo import InsertOne, DeleteMany, ReplaceOne, UpdateOne
+from pymongo import UpdateOne
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)

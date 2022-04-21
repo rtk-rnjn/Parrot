@@ -391,7 +391,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000 and (
-            message.guild.id != 336642139381301249 or message.author.id in self.whitelist
+            message.guild.id != 336642139381301249
+            or message.author.id in self.whitelist
         ):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
@@ -505,24 +506,24 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(
-            UpdateOne({"_id": message.channel.id,},
+            UpdateOne(
                 {
-                    "$addToSet": {
-                        "messages": self._msg_raw(message)
-                    },
+                    "_id": message.channel.id,
                 },
-                upsert=True
+                {
+                    "$addToSet": {"messages": self._msg_raw(message)},
+                },
+                upsert=True,
             )
         )
         await asyncio.sleep(0)
 
     async def _edit_record_message_to_database(self, message):
         self.write_data.append(
-            UpdateOne({"_id": message.channel.id, "messages.id": message.id},
+            UpdateOne(
+                {"_id": message.channel.id, "messages.id": message.id},
                 {
-                    "$set": {
-                        "messages.$": self._msg_raw(message)
-                    },
+                    "$set": {"messages.$": self._msg_raw(message)},
                 },
             )
         )
@@ -538,7 +539,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             "jump_url": message.jump_url,
             "type": str(message.type),
             "tts": message.tts,
-            "replied_reference": message.reference.resolved.id if isinstance(message.reference, discord.Message) else None,
+            "replied_reference": message.reference.resolved.id
+            if isinstance(message.reference, discord.Message)
+            else None,
             "timestamp": message.created_at.timestamp(),
             "attachments": [a.url for a in message.attachments],
             "embeds": [e.to_dict() for e in message.embeds],
@@ -914,29 +917,23 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @tasks.loop(seconds=10)
     async def _12h_task(self):
-        async with self.lock:    
+        async with self.lock:
             await self.bot.mongo.msg_db.content.update_many(
-                {},
-                {
-                "$pull": {
-                    "messages": {
-                        "timestamp": {"$lt": int(time()) - 18000}
-                    }
-                }
-            }
-        )
+                {}, {"$pull": {"messages": {"timestamp": {"$lt": int(time()) - 18000}}}}
+            )
 
     @tasks.loop(seconds=10)
     async def _10s_task(self):
         if not self.write_data:
             return
-        async with self.lock:    
+        async with self.lock:
             await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
             self.write_data.clear()
 
     async def cog_unload(self):
         self._10s_task.cancel()
         self._12h_task.cancel()
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

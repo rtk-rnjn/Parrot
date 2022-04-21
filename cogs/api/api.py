@@ -76,10 +76,9 @@ class Gist(Cog):
                     return await self.github_request(
                         method, url, params=params, data=data, headers=headers
                     )
-                elif 300 > r.status >= 200:
+                if 300 > r.status >= 200:
                     return js
-                else:
-                    raise commands.CommandError(js["message"])
+                raise commands.CommandError(js["message"])
         finally:
             if self._req_lock.locked():
                 self._req_lock.release()

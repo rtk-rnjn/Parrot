@@ -537,6 +537,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             "channel": message.channel.id,
             "guild": message.guild.id,
             "content": message.content,
+            "jump_url": message.jump_url,
+            "type": str(message.type),
+            "tts": message.tts,
+            "replied_reference": message.reference.resolved.id if isinstance(message.reference, discord.Message) else None,
             "timestamp": message.created_at.timestamp(),
             "attachments": [a.url for a in message.attachments],
             "embeds": [e.to_dict() for e in message.embeds],
@@ -910,7 +914,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     else None,
                 )
 
-    @tasks.loop(seconds=43200)
+    @tasks.loop(seconds=18000)
     async def _12h_task(self):
         async with self.lock:    
             await self.bot.mongo.msg_db.content.update_many(
@@ -918,7 +922,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 {
                 "$pull": {
                     "messages": {
-                        "timestamp": {"$lt": int(time()) - 43200}
+                        "timestamp": {"$lt": int(time()) - 18000}
                     }
                 }
             }
@@ -927,7 +931,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @tasks.loop(seconds=10)
     async def _10s_task(self):
         async with self.lock:    
-            print(1)
             await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
             self.write_data.clear()
 

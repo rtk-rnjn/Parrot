@@ -347,7 +347,6 @@ def create_snek_frame(
         )
     if text is not None:
         draw.multiline_text(text_position, text, fill=text_color)
-    del draw
     return image
 
 

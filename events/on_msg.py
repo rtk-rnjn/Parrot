@@ -57,17 +57,6 @@ BITBUCKET_RE = re.compile(
     r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)"
 )
 
-whitelist = [
-    615785223296253953,  # `Tari#2755`
-    741614468546560092,  # `!! Ritik Ranjan [*.*]#9230`
-    523452718413643788,  # `Hay#6433`
-    699839134709317642,  # `proguy914629.bot#5419`
-    531179463673774080,  # `ROLEX#6596`
-    857103603130302514,  # `Var_Monke#1354`
-    770646750804312105,  # `Nιgнт Fυяу ♪🤍#4371`
-    651454696208465941,  # `le ducki3#4987`
-]
-
 
 class Delete(discord.ui.View):
     def __init__(self, user):
@@ -117,6 +106,17 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self._10s_task.start()
 
         self.lock = asyncio.Lock()
+        self.whitelist = [
+            615785223296253953,  # Tari#2755
+            741614468546560092,  # !! Ritik Ranjan [*.*]#9230
+            523452718413643788,  # Hay#6433
+            699839134709317642,  # proguy914629.bot#5419
+            531179463673774080,  # ROLEX#6596
+            857103603130302514,  # Var_Monke#1354
+            770646750804312105,  # Nιgнт Fυяу ♪🤍#4371
+            651454696208465941,  # le ducki3#4987
+            412734157819609090,  # dank Had0cK#4673
+        ]
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -391,7 +391,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000 and (
-            message.guild.id != 336642139381301249 or message.author.id in whitelist
+            message.guild.id != 336642139381301249 or message.author.id in self.whitelist
         ):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:

@@ -8,13 +8,13 @@ from cogs.cc.method import (
     CustomCommandsExecutionOnMsg,
     CustomCommandsExecutionOnReaction,
 )
+from cogs.cc import method
 import importlib
 
 from core import Parrot, Context, Cog
 
 import discord
 from discord.ext import commands
-from cogs.cc import method
 
 importlib.reload(method)
 

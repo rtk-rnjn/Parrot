@@ -18,13 +18,12 @@ from aiohttp import ClientResponseError
 
 from time import time
 from urllib.parse import quote_plus
-from pymongo import ReturnDocument
+from pymongo import ReturnDocument, UpdateOne
 
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from utilities.rankcard import rank_card
 
 from core import Parrot, Cog
-from pymongo import UpdateOne
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)

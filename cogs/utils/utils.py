@@ -750,13 +750,10 @@ class Utils(Cog):
 
             file: Optional[discord.File] = None
 
-            if (
-                ctx.message.attachments
-                and (
+            if ctx.message.attachments and (
                 ctx.message.attachments[0]
                 .url.lower()
                 .endswith(("png", "jpeg", "jpg", "gif", "webp"))
-            )
             ):
                 _bytes = await ctx.message.attachments[0].read(use_cached=True)
                 file = discord.File(io.BytesIO(_bytes), "image.jpg")

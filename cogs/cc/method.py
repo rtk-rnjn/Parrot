@@ -259,7 +259,9 @@ class CustomCommandsExecutionOnMsg:
             return check
 
         msg = await self.__bot.wait_for(
-            "message", check=check_outer(**kwargs), timeout=10 if timeout > 10 else timeout
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
         )
         if msg.guild != self.__message.guild:
             return None
@@ -357,7 +359,10 @@ class CustomCommandsExecutionOnMsg:
         await self.__message.guild.get_role(role_id).edit(**kwargs)
         return
 
-    async def role_delete(self, role_id: int,) -> NoReturn:
+    async def role_delete(
+        self,
+        role_id: int,
+    ) -> NoReturn:
         await self.__message.guild.get_role(role_id).delete()
         return
 
@@ -422,9 +427,13 @@ class CustomCommandsExecutionOnMsg:
             {"_id": self.__message.guild.id}, kwargs, upsert=upsert
         )
 
-    async def del_db(self,) -> NoReturn:
+    async def del_db(
+        self,
+    ) -> NoReturn:
         await self.__bot.mongo.cc.storage.delete_one(
-            {"_id": self.__message.guild.id,}
+            {
+                "_id": self.__message.guild.id,
+            }
         )
         return
 
@@ -501,7 +510,9 @@ class CustomCommandsExecutionOnJoin:
             return check
 
         msg = await self.__bot.wait_for(
-            "message", check=check_outer(**kwargs), timeout=10 if timeout > 10 else timeout
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
         )
         if msg.guild != self.__member.guild:
             return None
@@ -562,7 +573,10 @@ class CustomCommandsExecutionOnJoin:
         await self.__member.guild.get_role(role_id).edit(**kwargs)
         return
 
-    async def role_delete(self, role_id: int,) -> NoReturn:
+    async def role_delete(
+        self,
+        role_id: int,
+    ) -> NoReturn:
         await self.__member.guild.get_role(role_id).delete()
         return
 
@@ -612,9 +626,13 @@ class CustomCommandsExecutionOnJoin:
             {"_id": self.__member.guild.id}, kwargs, upsert=kwargs.pop("upsert", False)
         )
 
-    async def del_db(self,) -> NoReturn:
+    async def del_db(
+        self,
+    ) -> NoReturn:
         await self.__bot.mongo.cc.storage.delete_one(
-            {"_id": self.__member.guild.id,}
+            {
+                "_id": self.__member.guild.id,
+            }
         )
         return
 
@@ -701,7 +719,9 @@ class CustomCommandsExecutionOnReaction:
             return check
 
         msg = await self.__bot.wait_for(
-            "message", check=check_outer(**kwargs), timeout=10 if timeout > 10 else timeout
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
         )
         if msg.guild != self.__member.guild:
             return None
@@ -794,7 +814,10 @@ class CustomCommandsExecutionOnReaction:
         await self.__message.guild.get_role(role_id).edit(**kwargs)
         return
 
-    async def role_delete(self, role_id: int,) -> NoReturn:
+    async def role_delete(
+        self,
+        role_id: int,
+    ) -> NoReturn:
         await self.__message.guild.get_role(role_id).delete()
         return
 
@@ -845,9 +868,13 @@ class CustomCommandsExecutionOnReaction:
             {"_id": self.__message.guild.id}, kwargs, upsert=upsert
         )
 
-    async def del_db(self,) -> NoReturn:
+    async def del_db(
+        self,
+    ) -> NoReturn:
         await self.__bot.mongo.cc.storage.delete_one(
-            {"_id": self.__message.guild.id,}
+            {
+                "_id": self.__message.guild.id,
+            }
         )
         return
 

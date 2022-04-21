@@ -1205,7 +1205,7 @@ class Twenty48:
         if self.has_empty:
             return
 
-        board = [[b for b in i] for i in self.board]
+        board = [list(i) for i in self.board]
         restore = lambda: setattr(self, "board", board)
 
         self.MoveUp()

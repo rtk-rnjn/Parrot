@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import traceback
 from typing import Any, Callable, Optional, Dict, Union, List
-from async_property import async_property
 import jishaku  # noqa: F401
 import datetime
 import asyncio
@@ -135,7 +134,6 @@ class Parrot(commands.AutoShardedBot):
     def support_server(self) -> str:
         return SUPPORT_SERVER
 
-    @async_property
     async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
         if self._change_log is None:
@@ -153,7 +151,6 @@ class Parrot(commands.AutoShardedBot):
     def author_name(self) -> str:
         return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}"  # cant join str and int, ofc
 
-    @async_property
     async def db_latency(self) -> float:
         ini = time()
         await self.mongo.parrot_db.server_config.find_one({})

@@ -432,7 +432,7 @@ class Meta(Cog):
         """
         start = time()
         message = await ctx.reply("Pinging...")
-        db = await self.bot.db_latency
+        db = await self.bot.db_latency()
         end = time()
         await message.edit(
             content=f"Pong! latency: {self.bot.latency*1000:,.0f} ms. Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f} ms."
@@ -955,7 +955,7 @@ class Meta(Cog):
             color=ctx.author.color,
         )
         embed.set_footer(text=f"{ctx.author}")
-        change_log = await self.bot.change_log
+        change_log = await self.bot.change_log()
         embed.description = f"Message at: <t:{int(change_log.created_at.timestamp())}>\n\n{change_log.content}"
         await ctx.reply(embed=embed)
 

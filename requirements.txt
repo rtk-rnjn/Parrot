@@ -13,7 +13,6 @@ pymongo
 dnspython
 motor
 aiofile
-async-property
 tabulate
 lru_dict
 python-dateutil

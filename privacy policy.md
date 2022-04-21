@@ -10,7 +10,7 @@ The terms used in this Privacy Policy have the same meanings as in our Terms and
 
 ### Information Collection and Use
 
-For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information, including but not limited to Server ID(s), Text and Voice Channel ID(s), Channel-Thread ID(s), Role ID(s), Message ID(s), Channel Webhooks. The information that I request will be retained on my database.
+For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information, including but not limited to Server ID(s), Text and Voice Channel ID(s), Channel-Thread ID(s), Role ID(s), Message ID(s), Message Content (under specific circumstances), Channel Webhooks. The information that I request will be retained on my database.
 
 ### Log Data
 

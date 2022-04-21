@@ -146,8 +146,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     def star_gradient_colour(self, stars) -> int:
         p = stars / 13
-        if p > 1.0:
-            p = 1.0
+        p = min(p, 1.0)
         red = 255
         green = int((194 * p) + (253 * (1 - p)))
         blue = int((12 * p) + (247 * (1 - p)))

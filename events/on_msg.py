@@ -912,7 +912,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     else None,
                 )
 
-    @tasks.loop(seconds=18000)
+    @tasks.loop(seconds=10)
     async def _12h_task(self):
         async with self.lock:    
             await self.bot.mongo.msg_db.content.update_many(

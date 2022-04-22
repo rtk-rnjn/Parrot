@@ -43,26 +43,29 @@ from ._effects import PfpEffects
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"
 
-with open("extra/truth.txt") as f:
+with open(Path("extra/truth.txt"), "r") as f:
     _truth = f.read()
 
-with open("extra/dare.txt") as g:
+with open(Path("extra/dare.txt"), "r") as g:
     _dare = g.read()
 
-with open("extra/lang.json") as lang:
+with open(Path("extra/lang.json"), "r") as lang:
     lg = json.load(lang)
 
-with open("extra/wyr.txt") as h:
+with open(Path("extra/wyr.txt"), "r") as h:
     _wyr = h.read()
 
-with open("extra/nhi.txt") as i:
+with open(Path("extra/nhi.txt"), "r") as i:
     _nhi = i.read()
 
-with open("extra/twister.txt") as t:
-    _twister = t.read()
+with open(Path("extra/twister.txt"), "r") as k:
+    _twister = k.read()
 
-with open(Path("extra/anagram.json"), "r") as f:
-    ANAGRAMS_ALL = json.load(f)
+with open(Path("extra/anagram.json"), "r") as l:
+    ANAGRAMS_ALL = json.load(l)
+
+with open(Path("extra/random_sentences.txt"), "r") as m:
+    _random_sentences = m.read().split("\n")
 
 _EXECUTOR = ThreadPoolExecutor(10)
 
@@ -3428,3 +3431,23 @@ class Fun(Cog):
     async def _timecard_spn(self, ctx: Context, *, text: commands.clean_content):
         """Generates a timecard"""
         await ctx.send(file=await timecard(text))
+
+    @commands.command(name="typingtest")
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True)
+    async def typing_test(self, ctx: Context,):
+        """Test your typing skills"""
+        line = random.choice(_random_sentences)
+
+        def check(m: discord.Message) -> bool:
+            return (
+                m.author == ctx.author
+                and m.channel == ctx.channel
+                and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 20
+            )
+
+        try:
+            msg = await self.bot.wait_for("message", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            return await ctx.message.add_reaction("\N{ALARM CLOCK")
+        else:
+            await ctx.send(f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(m.content, line)}%")

@@ -18,7 +18,7 @@ lru_dict
 python-dateutil
 click
 parsedatetime
-Brotli
+brotli
 aiodns
 orjson
 cchardet

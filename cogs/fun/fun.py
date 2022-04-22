@@ -3436,7 +3436,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def typing_test(self, ctx: Context,):
         """Test your typing skills"""
-        confirm = await ctx.send("{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")
+        confirm = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         
         def check(r: discord.Reaction, u: discord.User):
@@ -3449,7 +3449,7 @@ class Fun(Cog):
 
         line = random.choice(_random_sentences)
         main = '\u200b'.join(line)
-        await ctx.send(f"{ctx.author.mention} typing test started\n\n{main}")
+        await ctx.send(f"{ctx.author.mention} typing test started\n\n```ini\n[{main}]```")
 
         def check(m: discord.Message) -> bool:
             return (
@@ -3463,4 +3463,4 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         else:
-            await ctx.send(f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(m.content, line)}%")
+            await ctx.send(f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(msg.content, line)}%")

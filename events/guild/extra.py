@@ -83,7 +83,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Member Count?  :` **{invite.approximate_member_count}**
 `Presence Count?:` **{invite.approximate_presence_count}**
 `Channel     :` **<#{invite.channel.id}>**
-`Created At  :` **<t:{int(invite.created_at.timestamp())}>**
+`Created At  :` **{discord.utils.format_dt(invite.created_at)}**
 `Temporary?  :` **{invite.temporary}**
 `Uses        :` **{invite.uses}**
 `Link        :` **{invite.url}**

@@ -866,7 +866,7 @@ class Fun(Cog):
         )
 
         await ctx.send(embed=anagram_embed)
-        await asyncio.sleep(TIME_LIMIT)
+        await ctx.release(TIME_LIMIT)
 
         if game.winners:
             win_list = ", ".join(game.winners)
@@ -968,7 +968,7 @@ class Fun(Cog):
             start_embed = self.make_start_embed(category)
 
             await ctx.send(embed=start_embed)  # send an embed with the rules
-            await asyncio.sleep(5)
+            await ctx.release(5)
 
         done_questions = []
         hint_no = 0
@@ -1074,14 +1074,14 @@ class Fun(Cog):
                         question_dict,
                         self.question_limit - len(done_questions),
                     )
-                    await asyncio.sleep(1)
+                    await ctx.release(1)
 
                     hint_no = 0  # Reset the hint counter so that on the next round, it's in the initial state
 
                     await self.send_score(
                         ctx.channel, self.game_player_scores[ctx.channel.id]
                     )
-                    await asyncio.sleep(2)
+                    await ctx.release(2)
             else:
                 if self.game_status[ctx.channel.id] is False:
                     break
@@ -1115,7 +1115,7 @@ class Fun(Cog):
                     ctx.channel, self.game_player_scores[ctx.channel.id]
                 )
 
-                await asyncio.sleep(2)
+                await ctx.release(2)
 
     def make_start_embed(self, category: str) -> discord.Embed:
         """Generate a starting/introduction embed for the quiz."""
@@ -2884,7 +2884,7 @@ class Fun(Cog):
         msg = await ctx.send(
             f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
         )
-        await asyncio.sleep(1.5)
+        await ctx.release(1.5)
         await msg.edit(
             content=f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on **{random.choice(['HEADS', 'TAILS'])}**"
         )
@@ -2905,19 +2905,19 @@ class Fun(Cog):
             f"""{ctx.author.mention} your slots results:
 > <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>"""
         )
-        await asyncio.sleep(1.5)
+        await ctx.release(1.5)
         _ = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
 > {_} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>"""
         )
-        await asyncio.sleep(1.5)
+        await ctx.release(1.5)
         __ = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
 > {_} {__} <a:SlotsEmoji:923478531873325076>"""
         )
-        await asyncio.sleep(1.5)
+        await ctx.release(1.5)
         ___ = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
@@ -3288,7 +3288,7 @@ class Fun(Cog):
         for _ in range(3):
             for cat in list:
                 await m.edit(content=cat)
-                await asyncio.sleep(1)
+                await ctx.release(1)
 
     @commands.command(name="flop")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -3305,7 +3305,7 @@ class Fun(Cog):
         )
         for i in ls:
             await m.edit(content=i)
-            await asyncio.sleep(1.5)
+            await ctx.release(1.5)
 
     @commands.command(name="poof", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -3316,7 +3316,7 @@ class Fun(Cog):
         ls = ("(   ' - ')", "' - ')", "- ')", "')", ")", "*poofness*")
         for i in ls:
             await m.edit(content=i)
-            await asyncio.sleep(1.5)
+            await ctx.release(1.5)
 
     @commands.command(name="virus", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -3343,7 +3343,7 @@ class Fun(Cog):
         )
         for i in ls:
             await m.edit(content=i)
-            await asyncio.sleep(1)
+            await ctx.release(1)
 
     @commands.command(name="boom", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -3351,7 +3351,7 @@ class Fun(Cog):
     async def fun_animation_boom(self, ctx: Context):
         """Booms a message!"""
         m = await ctx.send("THIS MESSAGE WILL SELFDESTRUCT IN 5")
-        await asyncio.sleep(1)
+        await ctx.release(1)
         ls = (
             "THIS MESSAGE WILL SELFDESTRUCT IN 4",
             "THIS MESSAGE WILL SELFDESTRUCT IN 3",
@@ -3362,8 +3362,8 @@ class Fun(Cog):
             "\N{COLLISION SYMBOL}",
         )
         for i in ls:
-            await asyncio.sleep(1)
             await m.edit(content=i)
+            await ctx.release(1)
 
     @commands.command(name="table", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -3386,8 +3386,8 @@ class Fun(Cog):
         )
 
         for k in lst:
-            await asyncio.sleep(1)
             await m.edit(content=k)
+            await ctx.release(1)
 
     @commands.command(name="funwarn", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -3415,7 +3415,7 @@ class Fun(Cog):
 
         for i in ls:
             await msg.edit(content=i)
-            await asyncio.sleep(1)
+            await ctx.release(1)
 
     @commands.command(name="imagine")
     @commands.bot_has_permissions(embed_links=True, attach_files=True)

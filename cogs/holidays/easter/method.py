@@ -215,17 +215,17 @@ class Easter(Cog):
         )
 
         await ctx.send(embed=riddle_embed)
-        await asyncio.sleep(TIMELIMIT)
+        await ctx.release(TIMELIMIT)
 
         hint_embed = discord.Embed(title=f"Here's a hint: {hints[0]}!", colour=0xCF84E0)
 
         await ctx.send(embed=hint_embed)
-        await asyncio.sleep(TIMELIMIT)
+        await ctx.release(TIMELIMIT)
 
         hint_embed = discord.Embed(title=f"Here's a hint: {hints[1]}!", colour=0xCF84E0)
 
         await ctx.send(embed=hint_embed)
-        await asyncio.sleep(TIMELIMIT)
+        await ctx.release(TIMELIMIT)
 
         if self.winners:
             win_list = " ".join(self.winners)
@@ -385,7 +385,7 @@ class Easter(Cog):
 
         self.quiz_messages[msg.id] = valid_emojis
 
-        await asyncio.sleep(TIMELIMIT)
+        await ctx.release(TIMELIMIT)
 
         del self.quiz_messages[msg.id]
 

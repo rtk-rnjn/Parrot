@@ -21,24 +21,12 @@ import datetime
 import inspect
 import itertools
 import pygit2
-import asyncio
 
 from typing import Any, Dict, List, Optional, Union
 
 SUPPORT_SERVER_ID = 741614680652644382
 
 
-def format_dt(dt, style=None):
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=datetime.timezone.utc)
-
-    if style is None:
-        return f"<t:{int(dt.timestamp())}>"
-    return f"<t:{int(dt.timestamp())}:{style}>"
-
-
-def format_relative(dt):
-    return format_dt(dt, "R")
 
 
 class plural:
@@ -203,7 +191,7 @@ class FrontPageSource(menus.PageSource):
             inline=False,
         )
 
-        created_at = format_dt(menu.ctx.bot.user.created_at, "F")
+        created_at = discord.utils.format_dt(menu.ctx.bot.user.created_at, "F")
         if self.index == 0:
             embed.add_field(
                 name="Who are you?",
@@ -520,7 +508,7 @@ class Meta(Cog):
         fields = [
             ("Owner", ctx.guild.owner, True),
             ("Region", "Deprecated", True),
-            ("Created at", f"<t:{int(ctx.guild.created_at.timestamp())}>", True),
+            ("Created at", f"{discord.utils.format_dt(ctx.guild.created_at)}", True),
             (
                 "Total Members",
                 f"Members: {len(ctx.guild.members)}\nHumans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\nBots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))} ",
@@ -580,7 +568,7 @@ class Meta(Cog):
                 guild.members, key=lambda m: m.premium_since or guild.created_at
             )
             if last_boost.premium_since is not None:
-                boosts = f"{boosts}\nLast Boost: {last_boost} ({format_relative(last_boost.premium_since)})"
+                boosts = f"{boosts}\nLast Boost: {last_boost} ({discord.utils.format_dt(last_boost.premium_since, 'R')})"
             embed.add_field(name="Boosts", value=boosts, inline=True)
         else:
             embed.add_field(name="Boosts", value="Level 0", inline=True)
@@ -728,14 +716,14 @@ class Meta(Cog):
         embed.set_footer(text=f"ID: {target.id}")
         fields = [
             ("Name", str(target), True),
-            ("Created at", f"<t:{int(target.created_at.timestamp())}>", True),
+            ("Created at", f"{discord.utils.format_dt(target.created_at)}", True),
             ("Status", f"{str(target.status).title()} [Blame Discord]", True),
             (
                 "Activity",
                 f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''} [Blame Discord]",
                 True,
             ),
-            ("Joined at", f"<t:{int(target.joined_at.timestamp())}>", True),
+            ("Joined at", f"{discord.utils.format_dt(target.joined_at)}", True),
             ("Boosted", bool(target.premium_since), True),
             ("Bot?", target.bot, True),
             ("Nickname", target.display_name, True),
@@ -796,7 +784,7 @@ class Meta(Cog):
             timestamp=datetime.datetime.utcnow(),
         )
         data = [
-            ("Created At", f"<t:{int(role.created_at.timestamp())}>", True),
+            ("Created At", f"{discord.utils.format_dt(role.created_at)}", True),
             ("Is Hoisted?", role.hoist, True),
             ("Position", role.position, True),
             ("Managed", role.managed, True),
@@ -848,7 +836,7 @@ class Meta(Cog):
         data = [
             ("Name", emoji.name, True),
             ("Is Animated?", emoji.animated, True),
-            ("Created At", f"<t:{int(emoji.created_at.timestamp())}>", True),
+            ("Created At", f"{discord.utils.format_dt(emoji.created_at)}", True),
             ("Server Owned", emoji.guild.name, True),
             ("Server ID", emoji.guild_id, True),
             ("Created By", emoji.user if emoji.user else "User Not Found", True),
@@ -879,7 +867,7 @@ class Meta(Cog):
     ):
         channel = channel or ctx.channel
         id_ = channel.id
-        created_at = f"<t:{int(channel.created_at.timestamp())}>"
+        created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
         type_ = str(channel.type).capitalize()
@@ -942,7 +930,7 @@ class Meta(Cog):
         """pls no spam"""
         for i in range(3):
             await ctx.send(3 - i)
-            await asyncio.sleep(1)
+            await ctx.release(1)
 
         await ctx.send("go")
 
@@ -959,7 +947,7 @@ class Meta(Cog):
         )
         embed.set_footer(text=f"{ctx.author}")
         change_log = await self.bot.change_log()
-        embed.description = f"Message at: <t:{int(change_log.created_at.timestamp())}>\n\n{change_log.content}"
+        embed.description = f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
         await ctx.reply(embed=embed)
 
     @commands.command()

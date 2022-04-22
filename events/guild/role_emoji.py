@@ -174,7 +174,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         content = f"""**Role Update Event**
 
 `Name (ID) :` **{after.name} ({after.id})**
-`Created at:` **<t:{int(after.created_at.timestamp())}>**
+`Created at:` **{discord.utils.format_dt(after.created_at)}**
 `Reason    :` **{reason if reason else 'No reason provided'}**
 `Entry ID  :` **{entryID if entryID else None}**
 `Updated by:` **{user}**

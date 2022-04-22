@@ -52,7 +52,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         content = f"""**Channel Delete Event**
 
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
-`Created at:` **<t:{int(channel.created_at.timestamp())}>**
+`Created at:` **{discord.utils.format_dt(channel.created_at)}**
 `Position  :` **{channel.position}**
 `Category  :` **{channel.category.mention if channel.category else None}**
 `Caterogy Synced?:` **{channel.permissions_synced}**
@@ -95,7 +95,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         content = f"""**Channel Create Event**
 
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
-`Created at:` **<t:{int(channel.created_at.timestamp())}>**
+`Created at:` **{discord.utils.format_dt(channel.created_at)}**
 `Position  :` **{channel.position}**
 `Category  :` **{channel.category.mention if channel.category else None}**
 `Caterogy Synced?:` **{channel.permissions_synced}**
@@ -159,7 +159,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         content = f"""**Channel Update Event**
 
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
-`Created at:` **<t:{int(channel.created_at.timestamp())}>**
+`Created at:` **{discord.utils.format_dt(channel.created_at)}**
 `Reason    :` **{reason if reason else 'No reason provided'}**
 `Entry ID  :` **{entryID if entryID else None}**
 `Updated by:` **{user}**

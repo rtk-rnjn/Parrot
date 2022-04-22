@@ -233,7 +233,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def process_commands(self, message: discord.Message) -> None:
 
-        ctx = await self.get_context(message, cls=Context)
+        ctx: Context = await self.get_context(message, cls=Context)
 
         if ctx.command is None:
             # ignore if no command found
@@ -287,7 +287,7 @@ class Parrot(commands.AutoShardedBot):
                 return
 
         await self.invoke(ctx)
-        await asyncio.sleep(0)
+        await ctx.release(0)
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
@@ -451,6 +451,7 @@ class Parrot(commands.AutoShardedBot):
                 if msg.id == messageID:
                     self.message_cache[msg.id] = msg
                     return msg
+                await asyncio.sleep(0)
 
         if partial:
             return channel.get_partial_message(messageID)

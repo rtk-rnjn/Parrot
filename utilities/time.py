@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
-from .formats import plural, human_join, format_dt as format_dt
+from .formats import plural, human_join
 from discord.ext import commands
 import re
 
@@ -16,6 +16,9 @@ units["seconds"].append("secs")
 class ShortTime:
     compiled = re.compile(
         """
+            (?:(?P<years>[0-9])(?:years?|y))?             # e.g. 2y
+            (?:(?P<months>[0-9]{1,2})(?:months?|mo))?     # e.g. 2months
+            (?:(?P<weeks>[0-9]{1,4})(?:weeks?|w))?        # e.g. 10w
             (?:(?P<days>[0-9]{1,5})(?:days?|d))?          # e.g. 14d
             (?:(?P<hours>[0-9]{1,5})(?:hours?|h))?        # e.g. 12h
             (?:(?P<minutes>[0-9]{1,5})(?:minutes?|m))?    # e.g. 10m
@@ -280,7 +283,3 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
     if not brief:
         return human_join(output, final="and") + suffix
     return " ".join(output) + suffix
-
-
-def format_relative(dt):
-    return format_dt(dt, "R")

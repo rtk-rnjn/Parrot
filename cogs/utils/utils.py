@@ -125,7 +125,7 @@ class Utils(Cog):
         if not ctx.invoked_subcommand:
             seconds = age.dt.timestamp()
             text = (
-                f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}>**."
+                f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}:R>**."
                 f"To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
             )
             try:
@@ -170,7 +170,7 @@ class Utils(Cog):
         seconds = age.dt.timestamp()
         text = (
             f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
-            f"within **<t:{int(seconds)}>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
+            f"within **<t:{int(seconds)}:R>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
         )
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)

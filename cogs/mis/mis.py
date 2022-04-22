@@ -753,7 +753,7 @@ class Misc(Cog):
         )
         embed.add_field(
             name="Created At",
-            value=f"<t:{int(target.created_at.timestamp())}>",
+            value=f"{discord.utils.format_dt(target.created_at)}",
             inline=True,
         )
         embed.add_field(name="ID", value=f"`{target.id}`", inline=True)

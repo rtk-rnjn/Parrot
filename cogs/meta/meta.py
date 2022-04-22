@@ -27,8 +27,6 @@ from typing import Any, Dict, List, Optional, Union
 SUPPORT_SERVER_ID = 741614680652644382
 
 
-
-
 class plural:
     def __init__(self, value):
         self.value = value

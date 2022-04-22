@@ -19,13 +19,17 @@ EMOJIS = {
     "dollor": discord.PartialEmoji(name="dollor", id=892427274253631548),
     "channel_lk": discord.PartialEmoji(name="channel_locked", id=892432117764620289),
     "fun": discord.PartialEmoji(name="fun", id=892432619374014544),
-    "404parrot": discord.PartialEmoji("404parrot", id=892432991186464808, animated=True),
+    "404parrot": discord.PartialEmoji(
+        "404parrot", id=892432991186464808, animated=True
+    ),
     "channel_nf": discord.PartialEmoji(name="channel_nsfw", id=892433335274582026),
     "on": discord.PartialEmoji(name="on", id=892433654201061407),
     "off": discord.PartialEmoji(name="off", id=892433704444641290),
     "crown": discord.PartialEmoji(name="crown", id=892434461269061663, animated=True),
     "sparkles": discord.PartialEmoji(name="sparkles", id=892435276264259665),
-    "blocked": discord.PartialEmoji(name="blocked", id=892439366625001632, animated=True),
+    "blocked": discord.PartialEmoji(
+        name="blocked", id=892439366625001632, animated=True
+    ),
     "deafened": discord.PartialEmoji(name="deafened", id=892435492547743825),
     "telephone": discord.PartialEmoji(name="telephone", id=892435924238073878),
     "hangup": discord.PartialEmoji(name="hangup", id=892435951245217842),
@@ -42,15 +46,31 @@ EMOJIS = {
     "stage": discord.PartialEmoji(name="stage", id=912976329123721216),
     "unmuted": discord.PartialEmoji(name="unmuted", id=892434891113906247),
     "stage_lock": discord.PartialEmoji(name="stagelocked", id=912976463643410452),
-    "nsfw_static": discord.PartialEmoji(name="nsfw_892426918073368607", id=892426938134695998),
-    "announcement_channel": discord.PartialEmoji(name="announcement_channel", id=892433370708082739),
-    "early_verified_bot_developer": discord.PartialEmoji(name="early_verified_bot_developer", id=892433993537032262),
-    "Lights_Camera_Action": discord.PartialEmoji(name="Lights_Camera_Action__Emoticon__", id=892434144364220497),
-    "badge_undeafeaned": discord.PartialEmoji(name="badge_undeafeaned", id=892435342274211890),
-    "tt_telephone": discord.PartialEmoji(name="tt_telephone", id=892434529346809856, animated=True),
+    "nsfw_static": discord.PartialEmoji(
+        name="nsfw_892426918073368607", id=892426938134695998
+    ),
+    "announcement_channel": discord.PartialEmoji(
+        name="announcement_channel", id=892433370708082739
+    ),
+    "early_verified_bot_developer": discord.PartialEmoji(
+        name="early_verified_bot_developer", id=892433993537032262
+    ),
+    "Lights_Camera_Action": discord.PartialEmoji(
+        name="Lights_Camera_Action__Emoticon__", id=892434144364220497
+    ),
+    "badge_undeafeaned": discord.PartialEmoji(
+        name="badge_undeafeaned", id=892435342274211890
+    ),
+    "tt_telephone": discord.PartialEmoji(
+        name="tt_telephone", id=892434529346809856, animated=True
+    ),
     "badge_muted": discord.PartialEmoji(name="badge_muted", id=892434757588242472),
-    "badge_vchidden": discord.PartialEmoji(name="badge_vchidden", id=892437445344383076),
-    "announcement_channel_locked": discord.PartialEmoji(name="announcement_channel_locked", id=892438741111701544),
+    "badge_vchidden": discord.PartialEmoji(
+        name="badge_vchidden", id=892437445344383076
+    ),
+    "announcement_channel_locked": discord.PartialEmoji(
+        name="announcement_channel_locked", id=892438741111701544
+    ),
     "messageDelete": discord.PartialEmoji(name="messageDelete", id=892438822569267242),
     "messageUpdate": discord.PartialEmoji(name="messageUpdate", id=892438874641547326),
 }

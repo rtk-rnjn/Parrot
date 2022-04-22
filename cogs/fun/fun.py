@@ -4,6 +4,7 @@ import functools
 import random
 import io
 import datetime
+from time import time
 import urllib
 import re
 import json
@@ -3458,9 +3459,15 @@ class Fun(Cog):
                 and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 20
             )
 
+        ini = time()
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=300)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
-        else:
-            await ctx.send(f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(msg.content, line)}%")
+        fin = time()
+  
+        await ctx.send(
+            f"{ctx.author.mention} your accuracy is `{rapidfuzz.fuzz.partial_ratio(msg.content, line)}`%. "
+            f"You typed in `{round(fin - ini, 2)}` seconds. "
+            f"Words per minute: `{round(len(msg.content.split(' ')) / (fin - ini) * 60, 2)}`"
+        )

@@ -3458,7 +3458,7 @@ class Fun(Cog):
         line = random.choice(_random_sentences)
         main = "\u200b".join(line)
         await ctx.send(
-            f"{ctx.author.mention} typing test started\n\n```ini\n[{main}]```"
+            f"{ctx.author.mention} typing test started. Type the following phrase: ```ini\n[{main}]```"
         )
 
         def check(m: discord.Message) -> bool:
@@ -3467,16 +3467,18 @@ class Fun(Cog):
                 and m.channel == ctx.channel
                 and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 20
             )
-
         ini = time()
+
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=300)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         fin = time()
 
+        fakecontent = msg.content.replace(",", "").replace(".", "").replace("!", "")
+
         await ctx.send(
             f"{ctx.author.mention} your accuracy is `{rapidfuzz.fuzz.partial_ratio(msg.content, line)}`%. "
             f"You typed in `{round(fin - ini, 2)}` seconds. "
-            f"Words per minute: `{round(len(msg.content.split(' ')) / (fin - ini) * 60, 2)}`"
+            f"Words per minute: `{round(len(fakecontent.split(' ')) / (fin - ini) * 60, 2)}`"
         )

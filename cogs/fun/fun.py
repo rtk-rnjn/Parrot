@@ -3448,6 +3448,7 @@ class Fun(Cog):
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
         line = random.choice(_random_sentences)
+        await ctx.send(f"{ctx.author.mention} typing test started\n\n{'\u200b'.join(line)}")
 
         def check(m: discord.Message) -> bool:
             return (

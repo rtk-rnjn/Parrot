@@ -3461,6 +3461,6 @@ class Fun(Cog):
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=300)
         except asyncio.TimeoutError:
-            return await ctx.message.add_reaction("\N{ALARM CLOCK")
+            return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         else:
             await ctx.send(f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(m.content, line)}%")

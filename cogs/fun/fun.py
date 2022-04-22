@@ -3434,21 +3434,28 @@ class Fun(Cog):
 
     @commands.command(name="typingtest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
-    async def typing_test(self, ctx: Context,):
+    async def typing_test(
+        self,
+        ctx: Context,
+    ):
         """Test your typing skills"""
-        confirm = await ctx.send("{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")
+        confirm = await ctx.send(
+            "{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start"
+        )
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-        
+
         def check(r: discord.Reaction, u: discord.User):
-            return u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
-        
+            return (
+                u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+            )
+
         try:
             await ctx.bot.wait_for("reaction_add", check=check, timeout=60)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
         line = random.choice(_random_sentences)
-        main = '\u200b'.join(line)
+        main = "\u200b".join(line)
         await ctx.send(f"{ctx.author.mention} typing test started\n\n{main}")
 
         def check(m: discord.Message) -> bool:
@@ -3463,4 +3470,6 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         else:
-            await ctx.send(f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(m.content, line)}%")
+            await ctx.send(
+                f"{ctx.author.mention} your accuracy is {rapidfuzz.fuzz.partial_ratio(m.content, line)}%"
+            )

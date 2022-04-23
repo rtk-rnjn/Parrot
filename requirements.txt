@@ -1,5 +1,7 @@
 git+https://github.com/Rapptz/discord.py
 aiohttp
+pomice
+humanize
 markdownify
 psutil
 async_timeout

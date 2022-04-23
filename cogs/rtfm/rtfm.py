@@ -248,6 +248,12 @@ class RTFM(Cog):
             title=title,
             description=target_message.content,
         )
+        if (
+            target_message.attachments
+            and target_message.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp"))
+        ):
+            embed.set_image(url=target_message.attachments[0].url)
+
         embed.add_field(
             name="Wanna give it a visit?",
             value=f"[Visit original message]({target_message.jump_url})",

@@ -64,11 +64,6 @@ class CommandDisabledRole(ParrotCheckFailure):
         super().__init__("Command Disabled. This command is disabled for this role")
 
 
-class CommandDisabledCategory(ParrotCheckFailure):
-    def __init__(self):
-        super().__init__("Command Disabled. This command is disabled in this category")
-
-
 class CommandDisabledServer(ParrotCheckFailure):
     def __init__(self):
         super().__init__("Command Disabled. This command is disabled in this server")

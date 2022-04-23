@@ -215,7 +215,7 @@ class Context(commands.Context):
         await view.wait()
         return view.value
 
-    async def release(self, *, _for: Optional[int] = None) -> None:
+    async def release(self, _for: Optional[int] = None) -> None:
         await asyncio.sleep(_for or 0)
 
     async def safe_send(

@@ -15,12 +15,12 @@ EMOJIS = {
     "nasa": discord.PartialEmoji(name="nasa", id=892425662864982056),
     "ticket": discord.PartialEmoji(name="ticket", id=892425759287824415),
     "issue": discord.PartialEmoji(name="issue", id=892426388336955422),
-    "nsfw": discord.PartialEmoji("nsfw", id=892426918073368607, animated=True),
+    "nsfw": discord.PartialEmoji(name="nsfw", id=892426918073368607, animated=True),
     "dollor": discord.PartialEmoji(name="dollor", id=892427274253631548),
     "channel_lk": discord.PartialEmoji(name="channel_locked", id=892432117764620289),
     "fun": discord.PartialEmoji(name="fun", id=892432619374014544),
     "404parrot": discord.PartialEmoji(
-        "404parrot", id=892432991186464808, animated=True
+        name="404parrot", id=892432991186464808, animated=True
     ),
     "channel_nf": discord.PartialEmoji(name="channel_nsfw", id=892433335274582026),
     "on": discord.PartialEmoji(name="on", id=892433654201061407),

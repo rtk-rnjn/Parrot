@@ -682,7 +682,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def spam_ignore(self, ctx: Context, *, channel: discord.TextChannel):
-        """To whitelist the spam channel. Pass None to delete the setting"""
+        """To whitelist the spam channel."""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.spam.channel": channel.id}}
         )
@@ -694,7 +694,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def spam_remove(self, ctx: Context, *, channel: discord.TextChannel):
-        """To whitelist the spam channel. Pass None to delete the setting"""
+        """To whitelist the spam channel."""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.spam.channel": channel.id}}
         )

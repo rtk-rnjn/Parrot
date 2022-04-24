@@ -163,7 +163,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                 async for entry in after.guild.audit_logs(
                     action=discord.AuditLogAction.role_update, limit=5
                 ):
-                    if entry.extra.id == after.id:
+                    if entry.target.id == after.id:
                         reason = entry.reason or None
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id

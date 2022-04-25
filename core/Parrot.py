@@ -11,7 +11,9 @@ import asyncio
 import re
 from collections import Counter, deque, defaultdict
 import discord
-from discord.ext import commands, tasks, pomice
+from discord.ext import commands, tasks
+import pomice
+
 
 from lru import LRU
 

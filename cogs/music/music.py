@@ -7,7 +7,7 @@ from typing import Union
 from cogs.meta.robopage import SimplePages
 
 import discord
-from discord.ext import pomice
+import pomice
 from discord.ext import commands
 
 from core import Parrot, Cog, Context

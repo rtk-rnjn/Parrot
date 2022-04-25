@@ -18,8 +18,8 @@ SPOTIFY_URL_REGEX = re.compile(
 
 class Client:
     """The base client for the Spotify module of Pomice.
-       This class will do all the heavy lifting of getting all the metadata 
-       for any Spotify URL you throw at it.
+    This class will do all the heavy lifting of getting all the metadata
+    for any Spotify URL you throw at it.
     """
 
     def __init__(self, client_id: str, client_secret: str) -> None:
@@ -30,14 +30,18 @@ class Client:
 
         self._bearer_token: str = None
         self._expiry = 0
-        self._auth_token = b64encode(f"{self._client_id}:{self._client_secret}".encode())
+        self._auth_token = b64encode(
+            f"{self._client_id}:{self._client_secret}".encode()
+        )
         self._grant_headers = {"Authorization": f"Basic {self._auth_token.decode()}"}
         self._bearer_headers = None
 
     async def _fetch_bearer_token(self) -> None:
         _data = {"grant_type": "client_credentials"}
 
-        async with self.session.post(GRANT_URL, data=_data, headers=self._grant_headers) as resp:
+        async with self.session.post(
+            GRANT_URL, data=_data, headers=self._grant_headers
+        ) as resp:
             if resp.status != 200:
                 raise SpotifyRequestException(
                     f"Error fetching bearer token: {resp.status} {resp.reason}"
@@ -78,16 +82,21 @@ class Client:
 
             tracks = [
                 Track(track["track"])
-                for track in data["tracks"]["items"] if track["track"] is not None
+                for track in data["tracks"]["items"]
+                if track["track"] is not None
             ]
 
             if not len(tracks):
-                raise SpotifyRequestException("This playlist is empty and therefore cannot be queued.")
-                
+                raise SpotifyRequestException(
+                    "This playlist is empty and therefore cannot be queued."
+                )
+
             next_page_url = data["tracks"]["next"]
 
             while next_page_url is not None:
-                async with self.session.get(next_page_url, headers=self._bearer_headers) as resp:
+                async with self.session.get(
+                    next_page_url, headers=self._bearer_headers
+                ) as resp:
                     if resp.status != 200:
                         raise SpotifyRequestException(
                             f"Error while fetching results: {resp.status} {resp.reason}"
@@ -97,7 +106,8 @@ class Client:
 
                 tracks += [
                     Track(track["track"])
-                    for track in next_data["items"] if track["track"] is not None
+                    for track in next_data["items"]
+                    if track["track"] is not None
                 ]
                 next_page_url = next_data["next"]
 

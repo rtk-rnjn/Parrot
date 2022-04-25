@@ -12,7 +12,7 @@ SOUNDCLOUD_URL_REGEX = re.compile(
 
 class Track:
     """The base track object. Returns critical track information needed for parsing by Lavalink.
-       You can also pass in commands.Context to get a discord.py Context object in your track.
+    You can also pass in commands.Context to get a discord.py Context object in your track.
     """
 
     def __init__(
@@ -23,7 +23,7 @@ class Track:
         ctx: Optional[commands.Context] = None,
         spotify: bool = False,
         search_type: SearchType = SearchType.ytsearch,
-        spotify_track = None,
+        spotify_track=None,
     ):
         self.track_id = track_id
         self.info = info
@@ -38,15 +38,17 @@ class Track:
         self.uri = info.get("uri")
         self.identifier = info.get("identifier")
         self.isrc = info.get("isrc")
-        
+
         if info.get("thumbnail"):
-            self.thumbnail = info.get("thumbnail") 
+            self.thumbnail = info.get("thumbnail")
         elif SOUNDCLOUD_URL_REGEX.match(self.uri):
             # ok so theres no feasible way of getting a Soundcloud image URL
             # so we're just gonna leave it blank for brevity
             self.thumbnail = None
         else:
-            self.thumbnail = f"https://img.youtube.com/vi/{self.identifier}/mqdefault.jpg"
+            self.thumbnail = (
+                f"https://img.youtube.com/vi/{self.identifier}/mqdefault.jpg"
+            )
 
         self.length = info.get("length")
         self.ctx = ctx
@@ -60,7 +62,10 @@ class Track:
             return False
 
         if self.ctx and other.ctx:
-            return other.track_id == self.track_id and other.ctx.message.id == self.ctx.message.id
+            return (
+                other.track_id == self.track_id
+                and other.ctx.message.id == self.ctx.message.id
+            )
 
         return other.track_id == self.track_id
 
@@ -73,8 +78,8 @@ class Track:
 
 class Playlist:
     """The base playlist object.
-       Returns critical playlist information needed for parsing by Lavalink.
-       You can also pass in commands.Context to get a discord.py Context object in your tracks.
+    Returns critical playlist information needed for parsing by Lavalink.
+    You can also pass in commands.Context to get a discord.py Context object in your tracks.
     """
 
     def __init__(
@@ -84,7 +89,7 @@ class Playlist:
         tracks: list,
         ctx: Optional[commands.Context] = None,
         spotify: bool = False,
-        spotify_playlist = None
+        spotify_playlist=None,
     ):
         self.playlist_info = playlist_info
         self.tracks_raw = tracks
@@ -94,7 +99,7 @@ class Playlist:
 
         self._thumbnail = None
         self._uri = None
-        
+
         if self.spotify:
             self.tracks = tracks
             self._thumbnail = self.spotify_playlist.image

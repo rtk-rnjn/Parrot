@@ -248,9 +248,8 @@ class RTFM(Cog):
             title=title,
             description=target_message.content,
         )
-        if (
-            target_message.attachments
-            and target_message.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp"))
+        if target_message.attachments and target_message.attachments[0].url.endswith(
+            ("png", "jpeg", "jpg", "gif", "webp")
         ):
             embed.set_image(url=target_message.attachments[0].url)
 

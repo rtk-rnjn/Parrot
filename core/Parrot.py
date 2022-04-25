@@ -200,7 +200,11 @@ class Parrot(commands.AutoShardedBot):
 
     async def start_nodes(self):
         await self.pomice.create_node(
-            bot=self.bot, host='127.0.0.1', port='1728', password='MY_SUPER_SECRET_PASSWORD', identifier='MAIN'
+            bot=self.bot,
+            host="127.0.0.1",
+            port="1728",
+            password="MY_SUPER_SECRET_PASSWORD",
+            identifier="MAIN",
         )
 
     async def on_ready(self) -> None:

@@ -4,14 +4,15 @@ from .pool import NodePool
 
 
 class PomiceEvent:
-    """The base class for all events dispatched by a node. 
-       Every event must be formatted within your bot's code as a listener.
-       i.e: If you want to listen for when a track starts, the event would be:
-       ```py
-       @bot.listen
-       async def on_pomice_track_start(self, event):
-       ```
+    """The base class for all events dispatched by a node.
+    Every event must be formatted within your bot's code as a listener.
+    i.e: If you want to listen for when a track starts, the event would be:
+    ```py
+    @bot.listen
+    async def on_pomice_track_start(self, event):
+    ```
     """
+
     name = "event"
     handler_args = ()
 
@@ -21,8 +22,9 @@ class PomiceEvent:
 
 class TrackStartEvent(PomiceEvent):
     """Fired when a track has successfully started.
-       Returns the player associated with the event and the pomice.Track object.
+    Returns the player associated with the event and the pomice.Track object.
     """
+
     name = "track_start"
 
     def __init__(self, data: dict, player):
@@ -38,8 +40,9 @@ class TrackStartEvent(PomiceEvent):
 
 class TrackEndEvent(PomiceEvent):
     """Fired when a track has successfully ended.
-       Returns the player associated with the event along with the pomice.Track object and reason.
+    Returns the player associated with the event along with the pomice.Track object and reason.
     """
+
     name = "track_end"
 
     def __init__(self, data: dict, player):
@@ -59,9 +62,10 @@ class TrackEndEvent(PomiceEvent):
 
 class TrackStuckEvent(PomiceEvent):
     """Fired when a track is stuck and cannot be played. Returns the player
-       associated with the event along with the pomice.Track object
-       to be further parsed by the end user.
+    associated with the event along with the pomice.Track object
+    to be further parsed by the end user.
     """
+
     name = "track_stuck"
 
     def __init__(self, data: dict, player):
@@ -73,20 +77,23 @@ class TrackStuckEvent(PomiceEvent):
         self.handler_args = self.player, self.track, self.threshold
 
     def __repr__(self) -> str:
-        return f"<Pomice.TrackStuckEvent player={self.player!r} track={self.track!r} " \
-               f"threshold={self.threshold!r}>"
+        return (
+            f"<Pomice.TrackStuckEvent player={self.player!r} track={self.track!r} "
+            f"threshold={self.threshold!r}>"
+        )
 
 
 class TrackExceptionEvent(PomiceEvent):
     """Fired when a track error has occured.
-       Returns the player associated with the event along with the error code and exception.
+    Returns the player associated with the event along with the error code and exception.
     """
+
     name = "track_exception"
 
     def __init__(self, data: dict, player):
         self.player = player
         self.track = self.player._ending_track
-        if data.get('error'):
+        if data.get("error"):
             # User is running Lavalink <= 3.3
             self.exception: str = data["error"]
         else:
@@ -108,21 +115,24 @@ class WebSocketClosedPayload:
         self.by_remote: bool = data["byRemote"]
 
     def __repr__(self) -> str:
-        return f"<Pomice.WebSocketClosedPayload guild={self.guild!r} code={self.code!r} " \
-               f"reason={self.reason!r} by_remote={self.by_remote!r}>"
+        return (
+            f"<Pomice.WebSocketClosedPayload guild={self.guild!r} code={self.code!r} "
+            f"reason={self.reason!r} by_remote={self.by_remote!r}>"
+        )
 
 
 class WebSocketClosedEvent(PomiceEvent):
     """Fired when a websocket connection to a node has been closed.
-       Returns the reason and the error code.
+    Returns the reason and the error code.
     """
+
     name = "websocket_closed"
 
     def __init__(self, data: dict, _):
         self.payload = WebSocketClosedPayload(data)
 
         # on_pomice_websocket_closed(payload)
-        self.handler_args = self.payload,
+        self.handler_args = (self.payload,)
 
     def __repr__(self) -> str:
         return f"<Pomice.WebsocketClosedEvent payload={self.payload!r}>"
@@ -130,8 +140,9 @@ class WebSocketClosedEvent(PomiceEvent):
 
 class WebSocketOpenEvent(PomiceEvent):
     """Fired when a websocket connection to a node has been initiated.
-       Returns the target and the session SSRC.
+    Returns the target and the session SSRC.
     """
+
     name = "websocket_open"
 
     def __init__(self, data: dict, _):
@@ -143,4 +154,3 @@ class WebSocketOpenEvent(PomiceEvent):
 
     def __repr__(self) -> str:
         return f"<Pomice.WebsocketOpenEvent target={self.target!r} ssrc={self.ssrc!r}>"
-

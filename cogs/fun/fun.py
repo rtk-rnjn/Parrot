@@ -3467,6 +3467,7 @@ class Fun(Cog):
                 and m.channel == ctx.channel
                 and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 20
             )
+
         ini = time()
 
         try:

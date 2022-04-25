@@ -9,6 +9,7 @@ class Filter:
     installed. If you do not have the latest Lavalink version,
     these filters will not work.
     """
+
     def __init__(self):
         self.payload = None
 
@@ -48,18 +49,12 @@ class Equalizer(Filter):
 
 class Timescale(Filter):
     """Filter which changes the speed and pitch of a track.
-       You can make some very nice effects with this filter,
-       i.e: a vaporwave-esque filter which slows the track down
-       a certain amount to produce said effect.
+    You can make some very nice effects with this filter,
+    i.e: a vaporwave-esque filter which slows the track down
+    a certain amount to produce said effect.
     """
 
-    def __init__(
-        self, 
-        *, 
-        speed: float = 1.0, 
-        pitch: float = 1.0, 
-        rate: float = 1.0
-    ):
+    def __init__(self, *, speed: float = 1.0, pitch: float = 1.0, rate: float = 1.0):
         super().__init__()
 
         if speed < 0:
@@ -73,9 +68,9 @@ class Timescale(Filter):
         self.pitch = pitch
         self.rate = rate
 
-        self.payload = {"timescale": {"speed": self.speed,
-                                      "pitch": self.pitch,
-                                      "rate": self.rate}}
+        self.payload = {
+            "timescale": {"speed": self.speed, "pitch": self.pitch, "rate": self.rate}
+        }
 
     def __repr__(self):
         return f"<Pomice.TimescaleFilter speed={self.speed} pitch={self.pitch} rate={self.rate}>"
@@ -83,7 +78,7 @@ class Timescale(Filter):
 
 class Karaoke(Filter):
     """Filter which filters the vocal track from any song and leaves the instrumental.
-       Best for karaoke as the filter implies.
+    Best for karaoke as the filter implies.
     """
 
     def __init__(
@@ -92,7 +87,7 @@ class Karaoke(Filter):
         level: float = 1.0,
         mono_level: float = 1.0,
         filter_band: float = 220.0,
-        filter_width: float = 100.0
+        filter_width: float = 100.0,
     ):
         super().__init__()
 
@@ -101,10 +96,14 @@ class Karaoke(Filter):
         self.filter_band = filter_band
         self.filter_width = filter_width
 
-        self.payload = {"karaoke": {"level": self.level,
-                                    "monoLevel": self.mono_level,
-                                    "filterBand": self.filter_band,
-                                    "filterWidth": self.filter_width}}
+        self.payload = {
+            "karaoke": {
+                "level": self.level,
+                "monoLevel": self.mono_level,
+                "filterBand": self.filter_band,
+                "filterWidth": self.filter_width,
+            }
+        }
 
     def __repr__(self):
         return (
@@ -115,29 +114,21 @@ class Karaoke(Filter):
 
 class Tremolo(Filter):
     """Filter which produces a wavering tone in the music,
-       causing it to sound like the music is changing in volume rapidly.
+    causing it to sound like the music is changing in volume rapidly.
     """
 
-    def __init__(
-        self, 
-        *, 
-        frequency: float = 2.0, 
-        depth: float = 0.5
-    ):
+    def __init__(self, *, frequency: float = 2.0, depth: float = 0.5):
         super().__init__()
 
         if frequency < 0:
-            raise FilterInvalidArgument(
-                "Tremolo frequency must be more than 0.")
+            raise FilterInvalidArgument("Tremolo frequency must be more than 0.")
         if depth < 0 or depth > 1:
-            raise FilterInvalidArgument(
-                "Tremolo depth must be between 0 and 1.")
+            raise FilterInvalidArgument("Tremolo depth must be between 0 and 1.")
 
         self.frequency = frequency
         self.depth = depth
 
-        self.payload = {"tremolo": {"frequency": self.frequency,
-                                    "depth": self.depth}}
+        self.payload = {"tremolo": {"frequency": self.frequency, "depth": self.depth}}
 
     def __repr__(self):
         return f"<Pomice.TremoloFilter frequency={self.frequency} depth={self.depth}>"
@@ -145,30 +136,22 @@ class Tremolo(Filter):
 
 class Vibrato(Filter):
     """Filter which produces a wavering tone in the music, similar to the Tremolo filter,
-       but changes in pitch rather than volume.
+    but changes in pitch rather than volume.
     """
 
-    def __init__(
-        self, 
-        *, 
-        frequency: float = 2.0, 
-        depth: float = 0.5
-    ):
+    def __init__(self, *, frequency: float = 2.0, depth: float = 0.5):
 
         super().__init__()
         if frequency < 0 or frequency > 14:
-            raise FilterInvalidArgument(
-                "Vibrato frequency must be between 0 and 14.")
+            raise FilterInvalidArgument("Vibrato frequency must be between 0 and 14.")
         if depth < 0 or depth > 1:
-            raise FilterInvalidArgument(
-                "Vibrato depth must be between 0 and 1.")
+            raise FilterInvalidArgument("Vibrato depth must be between 0 and 1.")
 
         self.frequency = frequency
         self.depth = depth
 
-        self.payload = {"vibrato": {"frequency": self.frequency,
-                                    "depth": self.depth}}
-        
+        self.payload = {"vibrato": {"frequency": self.frequency, "depth": self.depth}}
+
     def __repr__(self):
         return f"<Pomice.VibratoFilter frequency={self.frequency} depth={self.depth}>"
 
@@ -199,57 +182,64 @@ class ChannelMix(Filter):
         left_to_left: float = 1,
         right_to_right: float = 1,
         left_to_right: float = 0,
-        right_to_left: float = 0
+        right_to_left: float = 0,
     ):
         super().__init__()
 
         if 0 > left_to_left > 1:
             raise ValueError(
-                "'left_to_left' value must be more than or equal to 0 or less than or equal to 1.")
+                "'left_to_left' value must be more than or equal to 0 or less than or equal to 1."
+            )
         if 0 > right_to_right > 1:
             raise ValueError(
-                "'right_to_right' value must be more than or equal to 0 or less than or equal to 1.")
+                "'right_to_right' value must be more than or equal to 0 or less than or equal to 1."
+            )
         if 0 > left_to_right > 1:
             raise ValueError(
-                "'left_to_right' value must be more than or equal to 0 or less than or equal to 1.")
+                "'left_to_right' value must be more than or equal to 0 or less than or equal to 1."
+            )
         if 0 > right_to_left > 1:
             raise ValueError(
-                "'right_to_left' value must be more than or equal to 0 or less than or equal to 1.")
+                "'right_to_left' value must be more than or equal to 0 or less than or equal to 1."
+            )
 
         self.left_to_left = left_to_left
         self.left_to_right = left_to_right
         self.right_to_left = right_to_left
         self.right_to_right = right_to_right
 
-        self.payload = {"channelMix": {"leftToLeft": self.left_to_left, 
-                                        "leftToRight": self.left_to_right, 
-                                        "rightToLeft": self.right_to_left, 
-                                        "rightToRight": self.right_to_right}
-                                        }
-
+        self.payload = {
+            "channelMix": {
+                "leftToLeft": self.left_to_left,
+                "leftToRight": self.left_to_right,
+                "rightToLeft": self.right_to_left,
+                "rightToRight": self.right_to_right,
+            }
+        }
 
     def __repr__(self) -> str:
-        return ( 
-        f"<Pomice.ChannelMix left_to_left={self.left_to_left} left_to_right={self.left_to_right} "
-        f"right_to_left={self.right_to_left} right_to_right={self.right_to_right}>" 
+        return (
+            f"<Pomice.ChannelMix left_to_left={self.left_to_left} left_to_right={self.left_to_right} "
+            f"right_to_left={self.right_to_left} right_to_right={self.right_to_right}>"
         )
+
 
 class Distortion(Filter):
     """Filter which generates a distortion effect. Useful for certain filter implementations where
-    distortion is needed. 
+    distortion is needed.
     """
 
     def __init__(
         self,
         *,
-        sin_offset: float =  0,
+        sin_offset: float = 0,
         sin_scale: float = 1,
         cos_offset: float = 0,
         cos_scale: float = 1,
         tan_offset: float = 0,
         tan_scale: float = 1,
         offset: float = 0,
-        scale: float = 1
+        scale: float = 1,
     ):
         super().__init__()
 
@@ -262,22 +252,24 @@ class Distortion(Filter):
         self.offset = offset
         self.scale = scale
 
-        self.payload = {"distortion": {
-            "sinOffset": self.sin_offset,
-            "sinScale": self.sin_scale,
-            "cosOffset": self.cos_offset,
-            "cosScale": self.cos_scale,
-            "tanOffset": self.tan_offset,
-            "tanScale": self.tan_scale,
-            "offset": self.offset,
-            "scale": self.scale
-        }}
+        self.payload = {
+            "distortion": {
+                "sinOffset": self.sin_offset,
+                "sinScale": self.sin_scale,
+                "cosOffset": self.cos_offset,
+                "cosScale": self.cos_scale,
+                "tanOffset": self.tan_offset,
+                "tanScale": self.tan_scale,
+                "offset": self.offset,
+                "scale": self.scale,
+            }
+        }
 
     def __repr__(self) -> str:
         return (
-        f"<Pomice.Distortion sin_offset={self.sin_offset} sin_scale={self.sin_scale}> "
-        f"cos_offset={self.cos_offset} cos_scale={self.cos_scale} tan_offset={self.tan_offset} "
-        f"tan_scale={self.tan_scale} offset={self.offset} scale={self.scale}"
+            f"<Pomice.Distortion sin_offset={self.sin_offset} sin_scale={self.sin_scale}> "
+            f"cos_offset={self.cos_offset} cos_scale={self.cos_scale} tan_offset={self.tan_offset} "
+            f"tan_scale={self.tan_scale} offset={self.offset} scale={self.scale}"
         )
 
 
@@ -294,5 +286,3 @@ class LowPass(Filter):
 
     def __repr__(self) -> str:
         return f"<Pomice.LowPass smoothing={self.smoothing}>"
-
-

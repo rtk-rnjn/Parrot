@@ -9,6 +9,7 @@ The modern Lavalink wrapper designed for discord.py.
 import discord
 
 if not discord.__version__.startswith("2.0"):
+
     class DiscordPyOutdated(Exception):
         pass
 

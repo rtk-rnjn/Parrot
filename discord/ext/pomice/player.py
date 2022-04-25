@@ -1,16 +1,7 @@
 import time
-from typing import (
-    Any,
-    Dict,
-    Optional
-)
+from typing import Any, Dict, Optional
 
-from discord import (
-    Client,
-    Guild,
-    VoiceChannel,
-    VoiceProtocol
-)
+from discord import Client, Guild, VoiceChannel, VoiceProtocol
 from discord.ext import commands
 
 from . import events
@@ -24,10 +15,10 @@ from .pool import Node, NodePool
 
 class Player(VoiceProtocol):
     """The base player class for Pomice.
-       In order to initiate a player, you must pass it in as a cls when you connect to a channel.
-       i.e: ```py
-       await ctx.author.voice.channel.connect(cls=pomice.Player)
-       ```
+    In order to initiate a player, you must pass it in as a cls when you connect to a channel.
+    i.e: ```py
+    await ctx.author.voice.channel.connect(cls=pomice.Player)
+    ```
     """
 
     def __call__(self, client: Client, channel: VoiceChannel):
@@ -38,11 +29,11 @@ class Player(VoiceProtocol):
         return self
 
     def __init__(
-        self, 
-        client: Optional[Client] = None, 
-        channel: Optional[VoiceChannel] = None, 
-        *, 
-        node: Node = None
+        self,
+        client: Optional[Client] = None,
+        channel: Optional[VoiceChannel] = None,
+        *,
+        node: Node = None,
     ):
         self.client = client
         self._bot = client
@@ -136,7 +127,7 @@ class Player(VoiceProtocol):
     @property
     def is_dead(self) -> bool:
         """Returns a bool representing whether the player is dead or not.
-           A player is considered dead if it has been destroyed and removed from stored players.
+        A player is considered dead if it has been destroyed and removed from stored players.
         """
         return self.guild.id not in self._node._players
 
@@ -151,9 +142,7 @@ class Player(VoiceProtocol):
             return
 
         await self._node.send(
-            op="voiceUpdate",
-            guildId=str(self.guild.id),
-            **voice_data
+            op="voiceUpdate", guildId=str(self.guild.id), **voice_data
         )
 
     async def on_voice_server_update(self, data: dict):
@@ -192,7 +181,7 @@ class Player(VoiceProtocol):
         query: str,
         *,
         ctx: Optional[commands.Context] = None,
-        search_type: SearchType = SearchType.ytsearch
+        search_type: SearchType = SearchType.ytsearch,
     ):
         """Fetches tracks from the node's REST api to parse into Lavalink.
 
@@ -205,8 +194,17 @@ class Player(VoiceProtocol):
         """
         return await self._node.get_tracks(query, ctx=ctx, search_type=search_type)
 
-    async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False):
-        await self.guild.change_voice_state(channel=self.channel, self_deaf=self_deaf, self_mute=self_mute)
+    async def connect(
+        self,
+        *,
+        timeout: float,
+        reconnect: bool,
+        self_deaf: bool = False,
+        self_mute: bool = False,
+    ):
+        await self.guild.change_voice_state(
+            channel=self.channel, self_deaf=self_deaf, self_mute=self_mute
+        )
         self._node._players[self.guild.id] = self
         self._is_connected = True
 
@@ -242,16 +240,18 @@ class Player(VoiceProtocol):
         *,
         start: int = 0,
         end: int = 0,
-        ignore_if_playing: bool = False
+        ignore_if_playing: bool = False,
     ) -> Track:
         """Plays a track. If a Spotify track is passed in, it will be handled accordingly."""
-        if track.spotify: 
-            search: Track = (await self._node.get_tracks(
-            f"{track._search_type}:{track.title} - {track.author}", ctx=track.ctx))[0]
-            if not search: 
-                raise TrackLoadError (
-                    "No equivalent track was able to be found."
+        if track.spotify:
+            search: Track = (
+                await self._node.get_tracks(
+                    f"{track._search_type}:{track.title} - {track.author}",
+                    ctx=track.ctx,
                 )
+            )[0]
+            if not search:
+                raise TrackLoadError("No equivalent track was able to be found.")
             track.original = search
 
             data = {
@@ -259,7 +259,7 @@ class Player(VoiceProtocol):
                 "guildId": str(self.guild.id),
                 "track": search.track_id,
                 "startTime": str(start),
-                "noReplace": ignore_if_playing
+                "noReplace": ignore_if_playing,
             }
         else:
             data = {
@@ -267,7 +267,7 @@ class Player(VoiceProtocol):
                 "guildId": str(self.guild.id),
                 "track": track.track_id,
                 "startTime": str(start),
-                "noReplace": ignore_if_playing
+                "noReplace": ignore_if_playing,
             }
 
         if end > 0:
@@ -302,10 +302,12 @@ class Player(VoiceProtocol):
 
     async def set_filter(self, filter: Filter, fast_apply=False) -> Filter:
         """Sets a filter of the player. Takes a pomice.Filter object.
-           This will only work if you are using a version of Lavalink that supports filters.
-           If you would like for the filter to apply instantly, set the `fast_apply` arg to `True`.
+        This will only work if you are using a version of Lavalink that supports filters.
+        If you would like for the filter to apply instantly, set the `fast_apply` arg to `True`.
         """
-        await self._node.send(op="filters", guildId=str(self.guild.id), **filter.payload)
+        await self._node.send(
+            op="filters", guildId=str(self.guild.id), **filter.payload
+        )
         if fast_apply:
             await self.seek(self.position)
         self._filter = filter
@@ -313,7 +315,7 @@ class Player(VoiceProtocol):
 
     async def reset_filter(self, fast_apply=False):
         """Resets a currently applied filter to its default parameters.
-            You must have a filter applied in order for this to work
+        You must have a filter applied in order for this to work
         """
 
         if not self._filter:
@@ -325,8 +327,3 @@ class Player(VoiceProtocol):
         if fast_apply:
             await self.seek(self.position)
         self._filter = None
-
-
-
-        
-        

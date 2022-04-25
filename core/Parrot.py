@@ -445,7 +445,7 @@ class Parrot(commands.AutoShardedBot):
             The Message or None if not found.
         """
         if cache:
-            cached_message = self._connection._messages
+            cached_message = set(self._connection._messages)
             for msg in cached_message:
                 # looping the deque is O(n). I am ok with it!
                 if msg.id == messageID:

@@ -159,7 +159,6 @@ class Parrot(commands.AutoShardedBot):
         return fin - ini
 
     async def setup_hook(self):
-        await self.start_nodes()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)

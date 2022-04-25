@@ -499,7 +499,3 @@ class Music(
                 )
             return await player.play(track=(await player.queue.get()))
         await player.play(track=player.loop)
-
-
-async def setup(bot):
-    await bot.add_cog(Music(bot))

@@ -8,10 +8,7 @@ from itertools import zip_longest
 from discord import AutoShardedClient, Client
 from discord.ext.commands import AutoShardedBot, Bot
 
-__all__ = [
-    "ExponentialBackoff",
-    "NodeStats"
-]
+__all__ = ["ExponentialBackoff", "NodeStats"]
 
 
 class ExponentialBackoff:
@@ -41,7 +38,7 @@ class ExponentialBackoff:
 
         self._exp = 0
         self._max = 10
-        self._reset_time = base * 2 ** 11
+        self._reset_time = base * 2**11
         self._last_invocation = time.monotonic()
 
         rand = random.Random()
@@ -59,12 +56,12 @@ class ExponentialBackoff:
             self._exp = 0
 
         self._exp = min(self._exp + 1, self._max)
-        return self._randfunc(0, self._base * 2 ** self._exp)
+        return self._randfunc(0, self._base * 2**self._exp)
 
 
 class NodeStats:
     """The base class for the node stats object.
-       Gives critical information on the node, which is updated every minute.
+    Gives critical information on the node, which is updated every minute.
     """
 
     def __init__(self, data: dict) -> None:
@@ -115,7 +112,6 @@ class Ping:
         def close(self):
             self._s.close()
 
-
     class Timer(object):
         def __init__(self):
             self._start = 0
@@ -143,11 +139,10 @@ class Ping:
 
     def get_ping(self):
         s = self._create_socket(socket.AF_INET, socket.SOCK_STREAM)
-     
+
         cost_time = self.timer.cost(
-            (s.connect, s.shutdown),
-            ((self._host, self._port), None))
+            (s.connect, s.shutdown), ((self._host, self._port), None)
+        )
         s_runtime = 1000 * (cost_time)
 
         return s_runtime
-

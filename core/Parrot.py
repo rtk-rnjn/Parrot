@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import os
 import traceback
-from typing import Any, Callable, Optional, Dict, Union, List
+from typing import Any, Awaitable, Callable, Optional, Dict, Union, List
 import jishaku  # noqa: F401
 import datetime
 import asyncio
 import re
 from collections import Counter, deque, defaultdict
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands, tasks, pomice
 
 from lru import LRU
 
@@ -88,6 +88,7 @@ class Parrot(commands.AutoShardedBot):
         self._prev_events = deque(maxlen=10)
 
         self.mystbin = Client()
+        self.pomice = pomice.NodePool()
 
         # caching variables
         self.server_config = LRU(256)
@@ -158,6 +159,7 @@ class Parrot(commands.AutoShardedBot):
         return fin - ini
 
     async def setup_hook(self):
+        await self.start_nodes()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
@@ -195,6 +197,11 @@ class Parrot(commands.AutoShardedBot):
     def run(self) -> None:
         """To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
+
+    async def start_nodes(self):
+        await self.pomice.create_node(
+            bot=self.bot, host='127.0.0.1', port='1728', password='MY_SUPER_SECRET_PASSWORD', identifier='MAIN'
+        )
 
     async def on_ready(self) -> None:
         if not hasattr(self, "uptime"):
@@ -448,6 +455,7 @@ class Parrot(commands.AutoShardedBot):
             cached_message = set(self._connection._messages)
             for msg in cached_message:
                 # looping the deque is O(n). I am ok with it!
+                # this may crash if, the deque mutated.
                 if msg.id == messageID:
                     self.message_cache[msg.id] = msg
                     return msg
@@ -485,6 +493,7 @@ class Parrot(commands.AutoShardedBot):
                 prefix = "$"  # default prefix
                 await self.mongo.parrot_db.server_config.insert_one(POST)
                 self.server_config[message.guild.id] = POST
+
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
         if match is not None:
@@ -505,19 +514,26 @@ class Parrot(commands.AutoShardedBot):
 
     async def getch(
         self,
-        get_function: Callable,
-        fetch_function: Callable,
+        get_function: Union[Callable, Any],
+        fetch_function: Union[Callable, Awaitable],
         _id: Optional[int] = None,
         *,
         force_fetch: bool = True,
     ) -> Any:
-        try:
-            something = get_function(_id)
-            if something is None and force_fetch:
-                return await fetch_function(_id)
+        if _id is None:
+            if get_function is not None:
+                something = get_function
+            if isinstance(fetch_function, Awaitable) and something is None:
+                return await fetch_function
             return something
-        except Exception as e:
-            return None
+        else:
+            try:
+                something = get_function(_id)
+                if something is None and force_fetch:
+                    return await fetch_function(_id)
+                return something
+            except Exception as e:
+                return None
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):

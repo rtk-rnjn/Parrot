@@ -155,12 +155,6 @@ class Parrot(commands.AutoShardedBot):
     def author_name(self) -> str:
         return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}"  # cant join str and int, ofc
 
-    async def db_latency(self) -> float:
-        ini = time()
-        await self.mongo.parrot_db.server_config.find_one({})
-        fin = time()
-        return fin - ini
-
     async def setup_hook(self):
         for ext in EXTENSIONS:
             try:
@@ -168,6 +162,13 @@ class Parrot(commands.AutoShardedBot):
                 print(f"{ext} loaded successfully")
             except Exception as e:
                 traceback.print_exc()
+        await self.start_nodes()
+
+    async def db_latency(self) -> float:
+        ini = time()
+        await self.mongo.parrot_db.server_config.find_one({})
+        fin = time()
+        return fin - ini
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
@@ -205,7 +206,7 @@ class Parrot(commands.AutoShardedBot):
             bot=self,
             host="127.0.0.1",
             port="1017",
-            password="passowrd",
+            password="password",
             identifier="parrot",
         )
 

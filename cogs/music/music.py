@@ -58,20 +58,13 @@ class ButtonLy(discord.ui.View):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-
-
-
 class Music(
     Cog,
 ):
     """Best Non-Stop Music Commands!"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
-
-    def bar(self, position, length, size=10):
-        done = int((position / length) * size)
-        return f"{'<:mid:920344819325349889>'*done}{'<:unfill:920345295550820383>'*(size-done)}"
 
     def bot_voice(ctx: Context):
         if ctx.voice_client:

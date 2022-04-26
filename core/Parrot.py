@@ -12,8 +12,6 @@ import re
 from collections import Counter, deque, defaultdict
 import discord
 from discord.ext import commands, tasks
-import pomice
-
 
 from lru import LRU
 
@@ -32,7 +30,6 @@ from utilities.config import (
 )
 
 from utilities.checks import _can_run
-from utilities.formats import Player
 from utilities.paste import Client
 from .__template import post as POST
 
@@ -91,7 +88,6 @@ class Parrot(commands.AutoShardedBot):
         self._prev_events = deque(maxlen=10)
 
         self.mystbin = Client()
-        self.pomice = pomice.NodePool()
 
         # caching variables
         self.server_config = LRU(256)
@@ -228,7 +224,7 @@ class Parrot(commands.AutoShardedBot):
                 )
                 try:
                     if channel:
-                        await channel.connect(cls=Player)
+                        await channel.connect()
                 except (discord.HTTPException, asyncio.TimeoutError):
                     pass
 

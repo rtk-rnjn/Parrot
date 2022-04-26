@@ -162,7 +162,6 @@ class Parrot(commands.AutoShardedBot):
                 print(f"{ext} loaded successfully")
             except Exception as e:
                 traceback.print_exc()
-        await self.start_nodes()
 
     async def db_latency(self) -> float:
         ini = time()

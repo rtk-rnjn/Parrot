@@ -87,6 +87,9 @@ class Music(
             raise commands.CheckFailure("You must be in voice channel")
         raise commands.CheckFailure("I'm not in a voice channel")
 
+    async def cog_load(self,):
+        await self.bot.loop.create_task(self.bot.start_nodes())
+
     @commands.command(aliases=["connect"])
     @commands.check(user_voice)
     async def join(self, ctx: Context, *, channel: discord.VoiceChannel = None):

@@ -5,6 +5,9 @@ import re
 from discord.ext import commands
 
 from typing import Union, Literal, Any
+import pomice
+import asyncio
+from core import Parrot, Context
 
 
 class plural:
@@ -191,3 +194,11 @@ def get_cmd_signature(cmd, *, default: bool = True):
             result.append(f"<{name}>")
 
     return " ".join(result)
+
+
+class Player(pomice.Player):
+    def __init__(self, bot: Parrot = None, channel=None, *, ctx: Context, node=None):
+        self.queue = asyncio.Queue()
+        self.loop = None
+        self.ctx = ctx
+        super().__init__(bot, channel, node=node)

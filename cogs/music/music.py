@@ -11,6 +11,7 @@ import pomice
 from discord.ext import commands
 
 from core import Parrot, Cog, Context
+from utilities.formats import Player
 
 HH_MM_SS_RE = re.compile(r"(?P<h>\d{1,2}):(?P<m>\d{1,2}):(?P<s>\d{1,2})")
 MM_SS_RE = re.compile(r"(?P<m>\d{1,2}):(?P<s>\d{1,2})")
@@ -57,12 +58,7 @@ class ButtonLy(discord.ui.View):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-class Player(pomice.Player):
-    def __init__(self, bot: Parrot = None, channel=None, *, ctx: Context, node=None):
-        self.queue = asyncio.Queue()
-        self.loop = None
-        self.ctx = ctx
-        super().__init__(bot, channel, node=node)
+
 
 
 class Music(

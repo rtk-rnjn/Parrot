@@ -32,6 +32,7 @@ from utilities.config import (
 )
 
 from utilities.checks import _can_run
+from utilities.formats import Player
 from utilities.paste import Client
 from .__template import post as POST
 
@@ -203,9 +204,9 @@ class Parrot(commands.AutoShardedBot):
         await self.pomice.create_node(
             bot=self,
             host="127.0.0.1",
-            port="1728",
-            password="MY_SUPER_SECRET_PASSWORD",
-            identifier="MAIN",
+            port="9276",
+            password="passowrd",
+            identifier="parrot",
         )
 
     async def on_ready(self) -> None:
@@ -227,7 +228,7 @@ class Parrot(commands.AutoShardedBot):
                 )
                 try:
                     if channel:
-                        await channel.connect()
+                        await channel.connect(cls=Player)
                 except (discord.HTTPException, asyncio.TimeoutError):
                     pass
 

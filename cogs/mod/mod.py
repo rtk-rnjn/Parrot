@@ -16,6 +16,7 @@ from core import Parrot, Context, Cog
 
 from utilities.checks import is_mod, in_temp_channel
 from utilities.converters import BannedMember, reason_convert
+from utilities.formats import Player
 from utilities.time import ShortTime
 from utilities.regex import LINKS_NO_PROTOCOLS
 from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
@@ -847,7 +848,7 @@ class Moderator(Cog):
         if channel is None:
             if voicestate := ctx.author.voice:
                 if not ctx.guild.me.voice:
-                    await voicestate.channel.connect()
+                    await voicestate.channel.connect(cls=Player)
                 else:
                     await ctx.guild.me.edit(voice_channel=voicestate.channel)
                 if not member:

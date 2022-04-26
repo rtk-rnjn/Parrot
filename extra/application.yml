@@ -1,5 +1,5 @@
 server:
-  port: 1017
+  port: 1018
   address: 127.0.0.1
 lavalink:
   server:

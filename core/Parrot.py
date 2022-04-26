@@ -204,7 +204,7 @@ class Parrot(commands.AutoShardedBot):
         await self.pomice.create_node(
             bot=self,
             host="127.0.0.1",
-            port="9276",
+            port="1017",
             password="passowrd",
             identifier="parrot",
         )

@@ -877,11 +877,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
     async def _what_is_this(self, message: tp.Union[discord.Message, str]):
-        for match in QUESTION_REGEX.findall(
+        if match := QUESTION_REGEX.fullmatch(
             message.content if isinstance(message, discord.Message) else message
         ):
             word = replace_many(
-                match,
+                match.string,
                 {"means": "", "is": "", "what": "", " ": "", "?": "", ".": ""},
                 ignore_case=True,
             )

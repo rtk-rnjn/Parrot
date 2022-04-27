@@ -6,6 +6,7 @@ import asyncio
 import typing as tp
 
 import aiohttp
+from cogs.fun.fun import replace_many
 import discord
 import random
 import io
@@ -55,6 +56,10 @@ GITLAB_RE = re.compile(
 BITBUCKET_RE = re.compile(
     r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)"
     r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)"
+)
+
+QUESTION_REGEX = re.compile(
+    r"(((what)\s(is)\s)(\w+)[\?|\.|\/|\,]?)|(((\w+)\s(means))[\?|\.|\/|\,]?)|(((what)\s(\w+)(is|means))[\?|\.|\/|\,]?)"
 )
 
 
@@ -870,6 +875,20 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     await message.channel.send(
                         f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                     )
+
+    async def _what_is_this(self, message: tp.Union[discord.Message, str]):
+        for match in QUESTION_REGEX.findall(
+            message.content if isinstance(message, discord.Message) else message
+        ):
+            word = replace_many(
+                match,
+                {"means": "", "is": "", "what": "", " ": "", "?": "", ".": ""},
+                ignore_case=True,
+            )
+            if data := await self.bot.mongo.extra.dictionary.find_one({"word": word}):
+                return await message.channel.send(
+                    f"{message.author.mention} {data['word']} means {data['meaning']}"
+                )
 
     @Cog.listener()
     async def on_raw_message_edit(self, payload):

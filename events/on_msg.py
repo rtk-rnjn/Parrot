@@ -881,7 +881,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                     )
 
-    async def _what_is_this(self, message: tp.Union[discord.Message, str]):
+    async def _what_is_this(
+        self,
+        message: tp.Union[discord.Message, str],
+        *,
+        channel: discord.TextChannel
+    ) -> None:
         if match := QUESTION_REGEX.fullmatch(
             message.content if isinstance(message, discord.Message) else message
         ):
@@ -891,7 +896,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 ignore_case=True,
             )
             if data := await self.bot.mongo.extra.dictionary.find_one({"word": word}):
-                return await message.channel.send(
+                return await channel.send(
                     f"{message.author.mention} {data['word']} means {data['meaning']}"
                 )
 

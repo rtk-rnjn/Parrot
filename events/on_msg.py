@@ -37,29 +37,34 @@ TRIGGER = (
 )
 GITHUB_RE = re.compile(
     r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
-    r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)"
+    r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
+    re.IGNORECASE
 )
 
 GITHUB_GIST_RE = re.compile(
     r"https://gist\.github\.com/([a-zA-Z0-9-]+)/(?P<gist_id>[a-zA-Z0-9]+)/*"
     r"(?P<revision>[a-zA-Z0-9]*)/*#file-(?P<file_path>[^#>]+?)(\?[^#>]+)?"
-    r"(-L(?P<start_line>\d+)([-~:]L(?P<end_line>\d+))?)"
+    r"(-L(?P<start_line>\d+)([-~:]L(?P<end_line>\d+))?)",
+    re.IGNORECASE
 )
 
 GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw"}
 
 GITLAB_RE = re.compile(
     r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)"
-    r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)"
+    r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)",
+    re.IGNORECASE
 )
 
 BITBUCKET_RE = re.compile(
     r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)"
-    r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)"
+    r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)",
+    re.IGNORECASE
 )
 
 QUESTION_REGEX = re.compile(
-    r"(((what)\s(is)\s)(\w+)[\?|\.|\/|\,]?)|(((\w+)\s(means))[\?|\.|\/|\,]?)|(((what)\s(\w+)(is|means))[\?|\.|\/|\,]?)"
+    r"(((what)\s(is)\s)(\w+)[\?|\.|\/|\,]?)|(((\w+)\s(means))[\?|\.|\/|\,]?)|(((what)\s(\w+)(is|means))[\?|\.|\/|\,]?)",
+    re.IGNORECASE,
 )
 
 
@@ -882,7 +887,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         ):
             word = replace_many(
                 match.string,
-                {"means": "", "is": "", "what": "", " ": "", "?": "", ".": ""},
+                {"means": "", "what is": "", " ": "", "?": "", ".": ""},
                 ignore_case=True,
             )
             if data := await self.bot.mongo.extra.dictionary.find_one({"word": word}):

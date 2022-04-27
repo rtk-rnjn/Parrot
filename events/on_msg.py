@@ -897,7 +897,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             )
             if data := await self.bot.mongo.extra.dictionary.find_one({"word": word}):
                 return await channel.send(
-                    f"{message.author.mention} {data['word']} means {data['meaning']}"
+                    f"**{data['word']}** means {data['meaning']}"
                 )
 
     @Cog.listener()

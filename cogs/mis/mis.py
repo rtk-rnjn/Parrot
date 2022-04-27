@@ -1027,7 +1027,7 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def whatis(self, ctx: Context, *, query: str):
         """To get the meaning of the word"""
-        if data := self.bot.mongo.extra.dictionary.find_one({"word": query}):
+        if data := await self.bot.mongo.extra.dictionary.find_one({"word": query}):
             return await ctx.channel.send(
                 f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
             )

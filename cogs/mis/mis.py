@@ -1022,3 +1022,15 @@ class Misc(Cog):
         entries = [f"`{i}` `{j}`" for i, j in data["data"]["rates"].items()]
         p = SimplePages(entries, ctx=ctx)
         await p.start()
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def whatis(self, ctx: Context, *, query: str):
+        """To get the meaning of the word"""
+        if data := self.bot.mongo.extra.dictionary.find_one({"word": query}):
+            return await ctx.channel.send(
+                f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
+            )
+        return await ctx.channel.send(
+            "No word found, if you think its a mistake then contact the owner."
+        )

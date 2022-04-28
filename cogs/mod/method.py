@@ -291,7 +291,7 @@ async def _ban(
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
-    days: int=0,
+    days: int = 0,
     reason: str,
     silent=False,
     **kwargs: Any,
@@ -330,7 +330,7 @@ async def _mass_ban(
     ctx: Context,
     destination: discord.TextChannel,
     members: List[discord.Member],
-    days: int=0,
+    days: int = 0,
     reason: str,
     **kwargs: Any,
 ):
@@ -383,9 +383,7 @@ async def _softban(
                     f"{ctx.author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            await member.ban(
-                reason=reason
-            )
+            await member.ban(reason=reason)
 
             banned_users = await guild.bans()
             member_n, member_d = member.name, member.discriminator
@@ -426,9 +424,7 @@ async def _temp_ban(
                     f"{ctx.author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            await member.ban(
-                reason=reason
-            )
+            await member.ban(reason=reason)
             mod_action = {
                 "action": "UNBAN",
                 "member": member.id,
@@ -437,7 +433,9 @@ async def _temp_ban(
             }
             cog = bot.get_cog("Utils")
             await cog.create_timer(
-                expires_at=duration.dt.timestamp() if isinstance(duration, ShortTime) else duration.timestamp(),
+                expires_at=duration.dt.timestamp()
+                if isinstance(duration, ShortTime)
+                else duration.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,
                 mod_action=mod_action,
@@ -633,9 +631,7 @@ async def _kick(
                 f"{ctx.author.mention} don't do that, Bot is only trying to help"
             )
             return
-        await member.kick(
-            reason=reason
-        )
+        await member.kick(reason=reason)
         if not silent:
             await destination.send(
                 f"{ctx.author.mention} **{member}** is kicked from the server!"
@@ -669,9 +665,7 @@ async def _mass_kick(
                     f"{ctx.author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            await member.kick(
-                reason=reason
-            )
+            await member.kick(reason=reason)
         except Exception as e:
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
@@ -771,14 +765,12 @@ async def _text_lock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    reason: str=None,
+    reason: str = None,
     **kwargs: Any,
 ):
     try:
         await channel.set_permissions(
-            guild.default_role,
-            send_messages=False,
-            reason=reason
+            guild.default_role, send_messages=False, reason=reason
         )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
@@ -794,17 +786,13 @@ async def _vc_lock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
-    reason: str=None,
+    reason: str = None,
     **kwargs: Any,
 ):
     if not channel:
         return
     try:
-        await channel.set_permissions(
-            guild.default_role,
-            connect=False,
-            reason=reason
-        )
+        await channel.set_permissions(guild.default_role, connect=False, reason=reason)
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
         await destination.send(
@@ -822,14 +810,12 @@ async def _text_unlock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    reason: str=None,
+    reason: str = None,
     **kwargs: Any,
 ):
     try:
         await channel.set_permissions(
-            guild.default_role,
-            send_messages=None,
-            reason=reason
+            guild.default_role, send_messages=None, reason=reason
         )
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
@@ -845,17 +831,13 @@ async def _vc_unlock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
-    reason: str=None,
+    reason: str = None,
     **kwargs: Any,
 ):
     if not channel:
         return
     try:
-        await channel.set_permissions(
-            guild.default_role,
-            connect=None,
-            reason=reason
-        )
+        await channel.set_permissions(guild.default_role, connect=None, reason=reason)
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
         await destination.send(

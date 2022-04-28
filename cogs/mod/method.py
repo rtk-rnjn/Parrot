@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections import Counter
-from typing import Any, Callable, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from core import Parrot, Context
 
@@ -13,6 +13,7 @@ from utilities.time import ShortTime
 
 
 async def _add_roles_bot(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -20,6 +21,7 @@ async def _add_roles_bot(
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -51,6 +53,7 @@ async def _add_roles_bot(
 
 
 async def _add_roles_humans(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -58,6 +61,7 @@ async def _add_roles_humans(
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -88,6 +92,7 @@ async def _add_roles_humans(
 
 
 async def _add_roles(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -95,6 +100,7 @@ async def _add_roles(
     member: discord.Member,
     role: discord.Role,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -112,7 +118,7 @@ async def _add_roles(
     try:
         await member.add_roles(
             role,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(
             f"{ctx.author.mention} given **{role.name} ({role.id})** to **{member.name}**"
@@ -124,6 +130,7 @@ async def _add_roles(
 
 
 async def _remove_roles(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -131,6 +138,7 @@ async def _remove_roles(
     member: discord.Member,
     role: discord.Role,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -148,7 +156,7 @@ async def _remove_roles(
     try:
         await member.remove_roles(
             role,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(
             f"{ctx.author.mention} removed **{role.name} ({role.id})** from **{member.name}**"
@@ -160,6 +168,7 @@ async def _remove_roles(
 
 
 async def _role_hoist(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -167,6 +176,7 @@ async def _role_hoist(
     role: discord.Role,
     _bool: bool,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -196,6 +206,7 @@ async def _role_hoist(
 
 
 async def _change_role_name(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -203,6 +214,7 @@ async def _change_role_name(
     role: discord.Role,
     text: str,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -232,6 +244,7 @@ async def _change_role_name(
 
 
 async def _change_role_color(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -239,6 +252,7 @@ async def _change_role_color(
     role: discord.Role,
     int_: int,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -271,14 +285,16 @@ async def _change_role_color(
 
 
 async def _ban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
-    days: int,
+    days: int=0,
     reason: str,
     silent=False,
+    **kwargs: Any,
 ):
     if (
         isinstance(member, discord.Member)
@@ -308,15 +324,17 @@ async def _ban(
 
 
 async def _mass_ban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     members: List[discord.Member],
-    days: int,
+    days: int=0,
     reason: str,
+    **kwargs: Any,
 ):
-
+    members = [members] if not isinstance(members, list) else members
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
@@ -344,13 +362,16 @@ async def _mass_ban(
 
 
 async def _softban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     members: List[discord.Member],
     reason: str,
+    **kwargs: Any,
 ):
+    members = [members] if not isinstance(members, list) else members
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
@@ -381,17 +402,19 @@ async def _softban(
 
 
 async def _temp_ban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     members: List[discord.Member],
-    duration: ShortTime,
+    duration: Union[ShortTime, datetime.datetime],
     reason: str,
     silent=True,
-    *,
     bot: Parrot = None,
+    **kwargs: Any,
 ):
+    members = [members] if not isinstance(members, list) else members
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
@@ -414,7 +437,7 @@ async def _temp_ban(
             }
             cog = bot.get_cog("Utils")
             await cog.create_timer(
-                expires_at=duration.dt.timestamp(),
+                expires_at=duration.dt.timestamp() if isinstance(duration, ShortTime) else duration.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,
                 mod_action=mod_action,
@@ -427,12 +450,14 @@ async def _temp_ban(
 
 
 async def _unban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     try:
         await guild.unban(
@@ -448,6 +473,7 @@ async def _unban(
 
 # MUTE
 async def _timeout(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -456,6 +482,7 @@ async def _timeout(
     _datetime: datetime.datetime,
     reason: str,
     silent=False,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
@@ -473,7 +500,7 @@ async def _timeout(
     try:
         await member.edit(
             timed_out_until=_datetime,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         if not silent:
             await destination.send(
@@ -487,6 +514,7 @@ async def _timeout(
 
 
 async def _mute(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -494,6 +522,7 @@ async def _mute(
     member: discord.Member,
     reason: str,
     silent=False,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
@@ -522,7 +551,7 @@ async def _mute(
     try:
         await member.add_roles(
             muted,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         if not silent:
             await destination.send(f"{ctx.author.mention} **{member}** is muted!")
@@ -535,12 +564,14 @@ async def _mute(
 
 
 async def _unmute(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     if member.timed_out_until:
         try:
@@ -582,6 +613,7 @@ async def _unmute(
 
 
 async def _kick(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -589,6 +621,7 @@ async def _kick(
     member: discord.Member,
     reason: str,
     silent=False,
+    **kwargs: Any,
 ):
     try:
         if ctx.author.top_role.position < member.top_role.position and not silent:
@@ -615,13 +648,16 @@ async def _kick(
 
 
 async def _mass_kick(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     members: List[discord.Member],
     reason: str,
+    **kwargs: Any,
 ):
+    members = [members] if not isinstance(members, list) else members
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
@@ -651,6 +687,7 @@ async def _mass_kick(
 
 
 async def _block(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -659,7 +696,9 @@ async def _block(
     members: List[discord.Member],
     reason: str,
     silent=False,
+    **kwargs: Any,
 ):
+    members = [members] if not isinstance(members, list) else members
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
@@ -675,7 +714,7 @@ async def _block(
                 member,
                 send_messages=False,
                 view_channel=False,
-                reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+                reason=reason,
             )
             if not silent:
                 await destination.send(
@@ -689,6 +728,7 @@ async def _block(
 
 
 async def _unblock(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -696,7 +736,9 @@ async def _unblock(
     channel: discord.TextChannel,
     members: List[discord.Member],
     reason: str,
+    **kwargs: Any,
 ):
+    members = [members] if not isinstance(members, list) else members
     for member in members:
         try:
             if channel.permissions_for(member).send_messages:
@@ -708,7 +750,7 @@ async def _unblock(
                     member,
                     send_messages=None,
                     view_channel=None,
-                    reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+                    reason=reason,
                 )
             await destination.send(
                 f"{ctx.author.mention} overwrite permission(s) for **{member}** has been deleted!"
@@ -723,17 +765,21 @@ async def _unblock(
 
 
 async def _text_lock(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
+    reason: str=None,
+    **kwargs: Any,
 ):
     try:
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             send_messages=False,
+            reason=reason
         )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
@@ -743,11 +789,14 @@ async def _text_lock(
 
 
 async def _vc_lock(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
+    reason: str=None,
+    **kwargs: Any,
 ):
     if not channel:
         return
@@ -756,6 +805,7 @@ async def _vc_lock(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             connect=False,
+            reason=reason
         )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
@@ -768,17 +818,21 @@ async def _vc_lock(
 
 
 async def _text_unlock(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
+    reason: str=None,
+    **kwargs: Any,
 ):
     try:
         await channel.set_permissions(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             send_messages=None,
+            reason=reason
         )
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
@@ -788,11 +842,14 @@ async def _text_unlock(
 
 
 async def _vc_unlock(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
+    reason: str=None,
+    **kwargs: Any,
 ):
     if not channel:
         return
@@ -801,6 +858,7 @@ async def _vc_unlock(
             guild.default_role,
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             connect=None,
+            reason=reason
         )
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
@@ -813,12 +871,14 @@ async def _vc_unlock(
 
 
 async def _change_nickname(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     name: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -838,12 +898,14 @@ async def _change_nickname(
 
 
 async def _change_channel_topic(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     text: str,
+    **kwargs: Any,
 ):
     try:
         await channel.edit(
@@ -860,12 +922,14 @@ async def _change_channel_topic(
 
 
 async def _change_channel_name(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     text: str,
+    **kwargs: Any,
 ):
     try:
         await channel.edit(
@@ -881,6 +945,7 @@ async def _change_channel_name(
 
 
 async def _slowmode(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -888,6 +953,7 @@ async def _slowmode(
     seconds: int,
     channel: discord.TextChannel,
     reason: str,
+    **kwargs: Any,
 ):
     if seconds:
         try:
@@ -919,12 +985,14 @@ async def _slowmode(
 
 
 async def _clone(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     reason: str,
+    **kwargs: Any,
 ):
     try:
         new_channel = await channel.clone(
@@ -944,12 +1012,14 @@ async def _clone(
 
 
 async def _voice_mute(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -958,7 +1028,7 @@ async def _voice_mute(
     try:
         await member.edit(
             mute=True,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} voice muted **{member}**")
     except Exception as e:
@@ -968,17 +1038,19 @@ async def _voice_mute(
 
 
 async def _voice_unmute(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     try:
         await member.edit(
             mute=False,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} voice unmuted **{member}**")
     except Exception as e:
@@ -988,12 +1060,14 @@ async def _voice_unmute(
 
 
 async def _voice_deafen(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1002,7 +1076,7 @@ async def _voice_deafen(
     try:
         await member.edit(
             deafen=True,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} voice deafened **{member}**")
     except Exception as e:
@@ -1012,17 +1086,19 @@ async def _voice_deafen(
 
 
 async def _voice_undeafen(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     try:
         await member.edit(
             deafen=False,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} voice undeafened **{member}**")
     except Exception as e:
@@ -1032,12 +1108,14 @@ async def _voice_undeafen(
 
 
 async def _voice_kick(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1046,7 +1124,7 @@ async def _voice_kick(
     try:
         await member.edit(
             voice_channel=None,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} voice kicked **{member}**")
     except Exception as e:
@@ -1056,6 +1134,7 @@ async def _voice_kick(
 
 
 async def _voice_ban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -1063,6 +1142,7 @@ async def _voice_ban(
     member: discord.Member,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
     reason: str,
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1072,7 +1152,7 @@ async def _voice_ban(
         await channel.set_permissions(
             member,
             connect=False,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} voice banned **{member}**")
     except Exception as e:
@@ -1082,6 +1162,7 @@ async def _voice_ban(
 
 
 async def _voice_unban(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -1089,11 +1170,12 @@ async def _voice_unban(
     member: discord.Member,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
     reason: str,
+    **kwargs: Any,
 ):
     try:
         await channel.set_permissions(
             member,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
             connect=None,
         )
         await destination.send(f"{ctx.author.mention} voice unbanned **{member}**")
@@ -1104,12 +1186,14 @@ async def _voice_unban(
 
 
 async def _emoji_delete(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
     reason: str,
+    **kwargs: Any,
 ):
     for emoji in emojis:
         try:
@@ -1125,12 +1209,14 @@ async def _emoji_delete(
 
 
 async def _emoji_add(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
     emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
     reason: str,
+    **kwargs: Any,
 ):
     for emoji in emojis:
         try:
@@ -1140,7 +1226,7 @@ async def _emoji_add(
             ej = await guild.create_custom_emoji(
                 name=emoji.name,
                 image=raw,
-                reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+                reason=reason,
             )
             await destination.send(f"{ctx.author.mention} emoji created {ej}")
         except Exception as e:
@@ -1150,6 +1236,7 @@ async def _emoji_add(
 
 
 async def _emoji_addurl(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -1157,6 +1244,7 @@ async def _emoji_addurl(
     url: str,
     name: str,
     reason: str,
+    **kwargs: Any,
 ):
     try:
         async with aiohttp.ClientSession() as session:
@@ -1165,7 +1253,7 @@ async def _emoji_addurl(
         emoji = await guild.create_custom_emoji(
             name=name,
             image=raw,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} emoji created {emoji}")
     except Exception as e:
@@ -1173,6 +1261,7 @@ async def _emoji_addurl(
 
 
 async def _emoji_rename(
+    *,
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
@@ -1180,11 +1269,12 @@ async def _emoji_rename(
     emoji: Union[discord.Emoji, discord.PartialEmoji],
     name: str,
     reason: str,
+    **kwargs: Any,
 ):
     try:
         await emoji.edit(
             name=name,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(
             f"{ctx.author.mention} {emoji} name edited to **{name}**"
@@ -1241,22 +1331,32 @@ async def do_removal(
         await ctx.send(to_send, delete_after=10)
 
 
-MEMBER_REACTION = [
-    "\N{HAMMER}",
-    "\N{WOMANS BOOTS}",
-    "\N{ZIPPER-MOUTH FACE}",
-    "\N{GRINNING FACE WITH SMILING EYES}",
-    "\N{CROSS MARK}",
-    "\N{HEAVY LARGE CIRCLE}",
-    "\N{UPWARDS BLACK ARROW}",
-    "\N{DOWNWARDS BLACK ARROW}",
-    "\N{LOWER LEFT FOUNTAIN PEN}",
-]
-TEXT_REACTION = ["\N{LOCK}", "\N{OPEN LOCK}", "\N{MEMO}", "\N{LOWER LEFT FOUNTAIN PEN}"]
-VC_REACTION = ["\N{LOCK}", "\N{OPEN LOCK}", "\N{LOWER LEFT FOUNTAIN PEN}"]
-ROLE_REACTION = [
-    "\N{LOCK}",
-    "\N{OPEN LOCK}",
-    "\N{RAINBOW}",
-    "\N{LOWER LEFT FOUNTAIN PEN}",
-]
+MEMBER_REACTION: Dict[str, Callable] = {
+    "\N{HAMMER}": _ban,
+    "\N{WOMANS BOOTS}": _kick,
+    "\N{ZIPPER-MOUTH FACE}": _mute,
+    "\N{GRINNING FACE WITH SMILING EYES}": _unmute,
+    "\N{CROSS MARK}": _block,
+    "\N{HEAVY LARGE CIRCLE}": _unblock,
+    "\N{UPWARDS BLACK ARROW}": _add_roles,
+    "\N{DOWNWARDS BLACK ARROW}": _remove_roles,
+    "\N{LOWER LEFT FOUNTAIN PEN}": _change_nickname,
+}
+TEXT_REACTION: Dict[str, Callable] = {
+    "\N{LOCK}": _text_lock,
+    "\N{OPEN LOCK}": _text_unlock,
+    "\N{MEMO}": _change_channel_topic,
+    "\N{LOWER LEFT FOUNTAIN PEN}": _change_channel_name,
+}
+
+VC_REACTION: Dict[str, Callable] = {
+    "\N{LOCK}": _vc_lock,
+    "\N{OPEN LOCK}": _vc_unlock,
+    "\N{LOWER LEFT FOUNTAIN PEN}": _change_channel_name,
+}
+ROLE_REACTION: Dict[str, Callable] = {
+    "\N{UPWARDS BLACK ARROW}": _role_hoist,
+    "\N{DOWNWARDS BLACK ARROW}": _role_hoist,
+    "\N{RAINBOW}": _change_role_color,
+    "\N{LOWER LEFT FOUNTAIN PEN}": _change_role_name,
+}

@@ -194,7 +194,7 @@ async def _role_hoist(
     try:
         await role.edit(
             hoist=_bool,
-            reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(
             f"{ctx.author.mention} **{role.name} ({role.id})** is now hoisted"
@@ -232,7 +232,7 @@ async def _change_role_name(
     try:
         await role.edit(
             name=text,
-            reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(
             f"{ctx.author.mention} role name changed to **{text} ({role.id})**"
@@ -270,7 +270,7 @@ async def _change_role_color(
     try:
         await role.edit(
             color=discord.Color.value(int(int_)),
-            reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(
             f"{ctx.author.mention} **{role.name} ({role.id})** color changed successfully"
@@ -311,7 +311,7 @@ async def _ban(
             return
         await guild.ban(
             discord.Object(member if isinstance(member, int) else member.id),
-            reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
             delete_message_days=days,
         )
         if not silent:
@@ -348,7 +348,7 @@ async def _mass_ban(
                 return
             await guild.ban(
                 member,
-                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+                reason=reason,
                 delete_message_days=days,
             )
         except Exception as e:
@@ -384,7 +384,7 @@ async def _softban(
                 )
                 return
             await member.ban(
-                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}"
+                reason=reason
             )
 
             banned_users = await guild.bans()
@@ -427,7 +427,7 @@ async def _temp_ban(
                 )
                 return
             await member.ban(
-                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}"
+                reason=reason
             )
             mod_action = {
                 "action": "UNBAN",
@@ -462,7 +462,7 @@ async def _unban(
     try:
         await guild.unban(
             member,
-            reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+            reason=reason,
         )
         await destination.send(f"{ctx.author.mention} **`{member}`** is unbanned!")
     except Exception as e:
@@ -577,7 +577,7 @@ async def _unmute(
         try:
             await member.edit(
                 timed_out_until=None,
-                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}",
+                reason=reason,
             )
             await destination.send(
                 f"{ctx.author.mention} removed timeout from **{member}**"
@@ -634,7 +634,7 @@ async def _kick(
             )
             return
         await member.kick(
-            reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}"
+            reason=reason
         )
         if not silent:
             await destination.send(
@@ -670,7 +670,7 @@ async def _mass_kick(
                 )
                 return
             await member.kick(
-                reason=f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: {reason}"
+                reason=reason
             )
         except Exception as e:
             await destination.send(
@@ -777,7 +777,6 @@ async def _text_lock(
     try:
         await channel.set_permissions(
             guild.default_role,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             send_messages=False,
             reason=reason
         )
@@ -803,7 +802,6 @@ async def _vc_lock(
     try:
         await channel.set_permissions(
             guild.default_role,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             connect=False,
             reason=reason
         )

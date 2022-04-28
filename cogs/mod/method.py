@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import List, Literal, Union
+from collections import Counter
+from typing import Any, Callable, List, Literal, Optional, Union
 
 from core import Parrot, Context
 
@@ -47,7 +48,7 @@ async def _add_roles_bot(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _add_roles_humans(
@@ -85,7 +86,7 @@ async def _add_roles_humans(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _add_roles(
@@ -122,7 +123,7 @@ async def _add_roles(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _remove_roles(
@@ -159,7 +160,7 @@ async def _remove_roles(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _role_hoist(
@@ -196,7 +197,7 @@ async def _role_hoist(
         await destination.send(
             f"Can not able to {command_name} **{role.name} ({role.id})**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _change_role_name(
@@ -233,7 +234,7 @@ async def _change_role_name(
         await destination.send(
             f"Can not able to {command_name} **{role.name} ({role.id})**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _change_role_color(
@@ -270,7 +271,7 @@ async def _change_role_color(
         await destination.send(
             f"Can not able to {command_name} **{role.name} ({role.id})**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 # BAN
@@ -311,7 +312,7 @@ async def _ban(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _mass_ban(
@@ -344,7 +345,7 @@ async def _mass_ban(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
     await destination.send(
         f"{ctx.author.mention} **{', '.join([str(member) for member in members])}** are banned!"
@@ -386,7 +387,7 @@ async def _softban(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _temp_ban(
@@ -433,7 +434,7 @@ async def _temp_ban(
                 await destination.send(
                     f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
                 )
-                return False
+                
 
 
 async def _unban(
@@ -454,7 +455,7 @@ async def _unban(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 # MUTE
@@ -495,7 +496,7 @@ async def _timeout(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _mute(
@@ -544,7 +545,7 @@ async def _mute(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _unmute(
@@ -568,14 +569,14 @@ async def _unmute(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
         return
     muted = await ctx.muterole()
     if not muted:
         await destination.send(
             f"{ctx.author.mention} can not find Mute role in the server"
         )
-        return False
+        
     try:
         if muted in member.roles:
             await member.remove_roles(
@@ -592,7 +593,7 @@ async def _unmute(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _kick(
@@ -626,7 +627,7 @@ async def _kick(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _mass_kick(
@@ -655,7 +656,7 @@ async def _mass_kick(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
         await asyncio.sleep(0.25)
     await destination.send(
         f"{ctx.author.mention} **{', '.join([str(member) for member in members])}** are kicked from the server!"
@@ -701,7 +702,7 @@ async def _block(
                 await destination.send(
                     f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
                 )
-                return False
+                
 
 
 async def _unblock(
@@ -733,7 +734,7 @@ async def _unblock(
             await destination.send(
                 f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 # LOCK
@@ -757,7 +758,7 @@ async def _text_lock(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _vc_lock(
@@ -780,7 +781,7 @@ async def _vc_lock(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 # UNLOCK
@@ -804,7 +805,7 @@ async def _text_unlock(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _vc_unlock(
@@ -827,7 +828,7 @@ async def _vc_unlock(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 # EXTRA
@@ -856,7 +857,7 @@ async def _change_nickname(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _change_channel_topic(
@@ -879,7 +880,7 @@ async def _change_channel_topic(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _change_channel_name(
@@ -901,7 +902,7 @@ async def _change_channel_name(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _slowmode(
@@ -940,7 +941,7 @@ async def _slowmode(
             await destination.send(
                 f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _clone(
@@ -963,7 +964,7 @@ async def _clone(
         await destination.send(
             f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 # VOICE MOD
@@ -991,7 +992,7 @@ async def _voice_mute(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _voice_unmute(
@@ -1012,7 +1013,7 @@ async def _voice_unmute(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _voice_deafen(
@@ -1037,7 +1038,7 @@ async def _voice_deafen(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _voice_undeafen(
@@ -1058,7 +1059,7 @@ async def _voice_undeafen(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _voice_kick(
@@ -1083,7 +1084,7 @@ async def _voice_kick(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _voice_ban(
@@ -1110,7 +1111,7 @@ async def _voice_ban(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _voice_unban(
@@ -1133,7 +1134,7 @@ async def _voice_unban(
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
         )
-        return False
+        
 
 
 async def _emoji_delete(
@@ -1155,7 +1156,7 @@ async def _emoji_delete(
             await destination.send(
                 f"Can not able to {command_name} **{emoji.name} ({emoji.id})**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _emoji_add(
@@ -1181,7 +1182,7 @@ async def _emoji_add(
             await destination.send(
                 f"Can not able to {command_name} **{emoji.name} ({emoji.id})**. Error raised: **{e}**"
             )
-            return False
+            
 
 
 async def _emoji_addurl(
@@ -1205,7 +1206,7 @@ async def _emoji_addurl(
         await destination.send(f"{ctx.author.mention} emoji created {emoji}")
     except Exception as e:
         await destination.send(f"Can not able to {command_name}. Error raised: **{e}**")
-        return False
+        
 
 
 async def _emoji_rename(
@@ -1229,7 +1230,50 @@ async def _emoji_rename(
         await destination.send(
             f"Can not able to {command_name} **{emoji.name} ({emoji.id})**. Error raised: **{e}**"
         )
-        return False
+
+
+async def do_removal(
+    ctx: Context,
+    limit: int,
+    predicate: Callable[[discord.Message], Any],
+    *,
+    before: Optional[int] = None,
+    after: Optional[int] = None,
+):
+    if limit > 2000:
+        return await ctx.send(f'Too many messages to search given ({limit}/2000)')
+
+    if before is None:
+        passed_before = ctx.message
+    else:
+        passed_before = discord.Object(id=before)
+
+    if after is not None:
+        passed_after = discord.Object(id=after)
+    else:
+        passed_after = None
+
+    try:
+        deleted = await ctx.channel.purge(limit=limit, before=passed_before, after=passed_after, check=predicate)
+    except discord.HTTPException as e:
+        return await ctx.send(
+            f'Can not able to {ctx.command.qualified_name}. Error raised: **{e}** (try a smaller search?)'
+        )
+
+    spammers = Counter(m.author.display_name for m in deleted)
+    deleted = len(deleted)
+    messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
+    if deleted:
+        messages.append('')
+        spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
+        messages.extend(f'**{name}**: {count}' for name, count in spammers)
+
+    to_send = '\n'.join(messages)
+
+    if len(to_send) > 2000:
+        await ctx.send(f'Successfully removed {deleted} messages.', delete_after=10)
+    else:
+        await ctx.send(to_send, delete_after=10)
 
 
 MEMBER_REACTION = [

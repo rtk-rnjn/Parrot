@@ -453,7 +453,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                             avatar_url=self.bot.user.display_avatar.url,
                             allowed_mentions=discord.AllowedMentions.none(),
                         )
-                
+
     @commands.command()
     async def python(self, ctx: Context, *, text: str):
         try:
@@ -464,7 +464,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception as e:
             return await ctx.send(e)
         await ctx.send(embed=discord.Embed(description=data))
-    
+
     @commands.command(hidden=True)
     @commands.is_owner()
     async def gateway(self, ctx: Context):
@@ -486,8 +486,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         total_identifies = sum(identifies.values())
 
         builder = [
-            f'Total RESUMEs: {sum(resumes.values())}',
-            f'Total IDENTIFYs: {total_identifies}',
+            f"Total RESUMEs: {sum(resumes.values())}",
+            f"Total IDENTIFYs: {total_identifies}",
         ]
 
         shard_count = len(self.bot.shards)
@@ -502,31 +502,31 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             # Shard Task failure
             # Shard Task complete (no failure)
             if shard.is_closed():
-                badge = '\N{MEDIUM BLACK CIRCLE}'
+                badge = "\N{MEDIUM BLACK CIRCLE}"
                 issues += 1
             elif shard._parent._task and shard._parent._task.done():
                 exc = shard._parent._task.exception()
                 if exc is not None:
-                    badge = '\N{FIRE}'
+                    badge = "\N{FIRE}"
                     issues += 1
                 else:
-                    badge = '\U0001f504'
+                    badge = "\U0001f504"
 
             if badge is None:
-                badge = '\N{LARGE GREEN CIRCLE}'
+                badge = "\N{LARGE GREEN CIRCLE}"
 
             stats = []
             identify = identifies.get(shard_id, 0)
             resume = resumes.get(shard_id, 0)
             if resume != 0:
-                stats.append(f'R: {resume}')
+                stats.append(f"R: {resume}")
             if identify != 0:
-                stats.append(f'ID: {identify}')
+                stats.append(f"ID: {identify}")
 
             if stats:
                 builder.append(f'Shard ID {shard_id}: {badge} ({", ".join(stats)})')
             else:
-                builder.append(f'Shard ID {shard_id}: {badge}')
+                builder.append(f"Shard ID {shard_id}: {badge}")
 
         if issues == 0:
             colour = 0x43B581
@@ -535,9 +535,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         else:
             colour = 0xF04947
 
-        embed = discord.Embed(colour=colour, title='Gateway (last 24 hours)')
-        embed.description = '\n'.join(builder)
-        embed.set_footer(text=f'{issues} warnings')
+        embed = discord.Embed(colour=colour, title="Gateway (last 24 hours)")
+        embed.description = "\n".join(builder)
+        embed.set_footer(text=f"{issues} warnings")
         await ctx.send(embed=embed)
 
 

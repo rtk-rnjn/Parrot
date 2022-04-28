@@ -1065,7 +1065,7 @@ class Moderator(Cog):
                 await temp.delete()
                 await func(
                     guild=ctx.guild,
-                    guild=ctx.command.name,
+                    command_name=ctx.command.name,
                     ctx=ctx,
                     destination=ctx.channel,
                     member=target,
@@ -1293,7 +1293,7 @@ class Moderator(Cog):
         except discord.Forbidden:
             pass
         else:
-            _ = await warn(
+            await warn(
                 ctx.guild,
                 user,
                 reason,

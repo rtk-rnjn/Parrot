@@ -1,4 +1,7 @@
-post = {
+from __future__ import annotations
+from typing import Any, Dict
+
+post: Dict[str, Any] = {
     "prefix": "$",
     "mute_role": None,
     "mod_role": None,

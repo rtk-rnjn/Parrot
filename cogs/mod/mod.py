@@ -1,7 +1,12 @@
 from __future__ import annotations
 import argparse
 import shlex
-from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_CHANNEL_EMBED
+from cogs.mod.embeds import (
+    MEMBER_EMBED,
+    ROLE_EMBED,
+    TEXT_CHANNEL_EMBED,
+    VOICE_CHANNEL_EMBED,
+)
 
 from cogs.mod.flags import warnFlag
 from cogs.mod import method as mt
@@ -60,7 +65,13 @@ class Moderator(Cog):
     ):
         """Gives a role to the all bots."""
         await mt._add_roles_bot(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, operator=operator, role=role, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            operator=operator,
+            role=role,
+            reason=reason,
         )
 
     @role.command(name="humans")
@@ -77,7 +88,13 @@ class Moderator(Cog):
     ):
         """Gives a role to the all humans."""
         await mt._add_roles_humans(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, operator=operator, role=role, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            operator=operator,
+            role=role,
+            reason=reason,
         )
 
     @role.command(name="add", aliases=["arole", "giverole", "grole"])
@@ -94,7 +111,13 @@ class Moderator(Cog):
     ):
         """Gives a role to the specified member(s)."""
         await mt._add_roles(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, role=role, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            role=role,
+            reason=reason,
         )
 
     @role.command(name="remove", aliases=["urole", "removerole", "rrole"])
@@ -111,7 +134,13 @@ class Moderator(Cog):
     ):
         """Remove the mentioned role from mentioned/id member"""
         await mt._remove_roles(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, role=role, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            role=role,
+            reason=reason,
         )
 
     @commands.command(aliases=["hackban"])
@@ -136,7 +165,14 @@ class Moderator(Cog):
         if days is None:
             days = 0
         await mt._ban(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, days=days, reason=reason, silent=False
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            days=days,
+            reason=reason,
+            silent=False,
         )
 
     @commands.command(name="massban")
@@ -161,7 +197,13 @@ class Moderator(Cog):
         if days is None:
             days = 0
         await mt._mass_ban(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, members=members, days=0, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            members=members,
+            days=0,
+            reason=reason,
         )
 
     @commands.command(aliases=["softkill"])
@@ -183,7 +225,12 @@ class Moderator(Cog):
         To use this command you must have Kick Members permissions
         """
         await mt._softban(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @commands.command()
@@ -209,7 +256,14 @@ class Moderator(Cog):
         In order for this to work, the bot must have Ban Member permissions.
         To use this command you must have Ban Members permission."""
         await mt._temp_ban(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason, duration=duration, silent=False
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
+            duration=duration,
+            silent=False,
         )
 
     @commands.command()
@@ -227,7 +281,13 @@ class Moderator(Cog):
     ):
         """Blocks a user from replying message in that channel."""
         await mt._block(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason, silent=False
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
+            silent=False,
         )
 
     @commands.command(aliases=["nuke"])
@@ -243,7 +303,12 @@ class Moderator(Cog):
     ):
         """To clone the channel or to nukes the channel (clones and delete)."""
         await mt._clone(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, channel=channel or ctx.channel
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            channel=channel or ctx.channel,
         )
 
     @commands.command()
@@ -259,7 +324,12 @@ class Moderator(Cog):
     ):
         """To kick a member from guild."""
         await mt._kick(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @commands.command(name="masskick")
@@ -275,7 +345,12 @@ class Moderator(Cog):
     ):
         """To kick a member from guild."""
         await mt._mass_kick(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, members=members, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            members=members,
+            reason=reason,
         )
 
     @commands.command()
@@ -298,11 +373,21 @@ class Moderator(Cog):
         for chn in channel:
             if isinstance(chn, discord.TextChannel):
                 await mt._text_lock(
-                    guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, channel=chn, reason=reason
+                    guild=ctx.guild,
+                    command_name=ctx.command.qualified_name,
+                    ctx=ctx,
+                    destination=ctx.channel,
+                    channel=chn,
+                    reason=reason,
                 )
             elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
                 await mt._vc_lock(
-                    guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, channel=chn, reason=reason
+                    guild=ctx.guild,
+                    command_name=ctx.command.qualified_name,
+                    ctx=ctx,
+                    destination=ctx.channel,
+                    channel=chn,
+                    reason=reason,
                 )
 
     @commands.command()
@@ -325,12 +410,22 @@ class Moderator(Cog):
         for chn in channel:
             if isinstance(chn, discord.TextChannel):
                 await mt._text_unlock(
-                    guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, channel=chn, reason=reason
+                    guild=ctx.guild,
+                    command_name=ctx.command.qualified_name,
+                    ctx=ctx,
+                    destination=ctx.channel,
+                    channel=chn,
+                    reason=reason,
                 )
 
             elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
                 await mt._vc_unlock(
-                    guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, channel=chn, reason=reason
+                    guild=ctx.guild,
+                    command_name=ctx.command.qualified_name,
+                    ctx=ctx,
+                    destination=ctx.channel,
+                    channel=chn,
+                    reason=reason,
                 )
 
     @commands.command(aliases=["mute"])
@@ -348,11 +443,22 @@ class Moderator(Cog):
         """To Timeout the member, from chat."""
         if duration:
             await mt._timeout(
-                guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, _datetime=duration.dt, reason=reason
+                guild=ctx.guild,
+                command_name=ctx.command.qualified_name,
+                ctx=ctx,
+                destination=ctx.channel,
+                member=member,
+                _datetime=duration.dt,
+                reason=reason,
             )
         else:
             await mt._mute(
-                guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+                guild=ctx.guild,
+                command_name=ctx.command.qualified_name,
+                ctx=ctx,
+                destination=ctx.channel,
+                member=member,
+                reason=reason,
             )
 
     @commands.command()
@@ -367,7 +473,14 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To allow a member to sending message in the Text Channels, if muted/timeouted."""
-        await mt._unmute(guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason)
+        await mt._unmute(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
+        )
 
     @commands.group(aliases=["purge"], invoke_without_command=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -620,7 +733,14 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To Unban a member from a guild"""
-        await mt._unban(guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason)
+        await mt._unban(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
+        )
 
     @commands.command()
     @commands.check_any(
@@ -662,7 +782,12 @@ class Moderator(Cog):
         To change the nickname of the specified member
         """
         await mt._change_nickname(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, name=name
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            name=name,
         )
 
     @commands.group()
@@ -705,7 +830,12 @@ class Moderator(Cog):
     ):
         """To give the member voice mute"""
         await mt._voice_mute(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @voice.command(name="unmute")
@@ -723,7 +853,12 @@ class Moderator(Cog):
     ):
         """To give the member voice unmute"""
         await mt._voice_unmute(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @voice.command(name="ban")
@@ -745,7 +880,13 @@ class Moderator(Cog):
         if not member.voice:
             return await ctx.send(f"{ctx.author.mention} {member} not in voice channel")
         await mt._voice_ban(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason, channel=member.voice.channel
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
+            channel=member.voice.channel,
         )
 
     @voice.command(name="unban")
@@ -767,7 +908,13 @@ class Moderator(Cog):
         if not member.voice:
             return await ctx.send(f"{ctx.author.mention} {member} not in voice channel")
         await mt._voice_unban(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason, channel=member.voice.channel
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
+            channel=member.voice.channel,
         )
 
     @voice.command(name="deafen")
@@ -785,7 +932,12 @@ class Moderator(Cog):
     ):
         """To give the member voice deafen"""
         await mt._voice_deafen(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @voice.command(name="undeafen")
@@ -803,7 +955,12 @@ class Moderator(Cog):
     ):
         """To give the member voice undeafen"""
         await mt._voice_undeafen(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @voice.command(name="kick")
@@ -821,7 +978,12 @@ class Moderator(Cog):
     ):
         """To give the member voice kick"""
         await mt._voice_kick(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, member=member, reason=reason
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            reason=reason,
         )
 
     @voice.command(name="limit")
@@ -929,7 +1091,12 @@ class Moderator(Cog):
         if not emoji:
             return
         await mt._emoji_delete(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, emoji=emoji
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            emoji=emoji,
         )
 
     @emoji.command(name="add")
@@ -964,7 +1131,13 @@ class Moderator(Cog):
     ):
         """To add the emoji from url"""
         await mt._emoji_addurl(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, url=url, name=name
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            url=url,
+            name=name,
         )
 
     @emoji.command(name="rename")
@@ -981,7 +1154,13 @@ class Moderator(Cog):
     ):
         """To rename the emoji"""
         await mt._emoji_rename(
-            guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, emoji=emoji, name=name
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            emoji=emoji,
+            name=name,
         )
 
     @commands.command()
@@ -1053,7 +1232,10 @@ class Moderator(Cog):
 
             func = mt.MEMBER_REACTION[str(reaction.emoji)]
 
-            if str(reaction.emoji) in {"\N{DOWNWARDS BLACK ARROW}", "\N{UPWARDS BLACK ARROW}"}:
+            if str(reaction.emoji) in {
+                "\N{DOWNWARDS BLACK ARROW}",
+                "\N{UPWARDS BLACK ARROW}",
+            }:
                 temp = await ctx.send(
                     f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]"
                 )
@@ -1096,7 +1278,13 @@ class Moderator(Cog):
                 return
 
             await func(
-                guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, member=target, members=target
+                guild=ctx.guild,
+                command_name=ctx.command.qualified_name,
+                ctx=ctx,
+                destination=ctx.channel,
+                reason=reason,
+                member=target,
+                members=target,
             )
 
         if isinstance(target, discord.TextChannel):
@@ -1128,8 +1316,10 @@ class Moderator(Cog):
 
             if str(reaction.emoji) in {"\N{MEMO}", "\N{LOWER LEFT FOUNTAIN PEN}"}:
                 await ctx.send(
-                    f"{ctx.author.mention} Enter the Channel Topic" if str(reaction.emoji) == "\N{MEMO}"
-                    else f"{ctx.author.mention} Enter the Channel Name", delete_after=60
+                    f"{ctx.author.mention} Enter the Channel Topic"
+                    if str(reaction.emoji) == "\N{MEMO}"
+                    else f"{ctx.author.mention} Enter the Channel Name",
+                    delete_after=60,
                 )
                 try:
                     m = await self.bot.wait_for("message", timeout=60, check=check_msg)
@@ -1147,7 +1337,13 @@ class Moderator(Cog):
                 return
 
             await func(
-                guild=ctx.guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, channel=target, channels=target
+                guild=ctx.guild,
+                command_name=ctx.command.qualified_name,
+                ctx=ctx,
+                destination=ctx.channel,
+                reason=reason,
+                channel=target,
+                channels=target,
             )
 
         if isinstance(
@@ -1198,7 +1394,13 @@ class Moderator(Cog):
                 )
                 return
             await func(
-                guild=guild, command_name=ctx.command.qualified_name, ctx=ctx, destination=ctx.channel, reason=reason, channel=target, channels=target
+                guild=guild,
+                command_name=ctx.command.qualified_name,
+                ctx=ctx,
+                destination=ctx.channel,
+                reason=reason,
+                channel=target,
+                channels=target,
             )
 
         if isinstance(target, discord.Role):
@@ -1275,7 +1477,9 @@ class Moderator(Cog):
                 ctx=ctx,
                 destination=ctx.channel,
                 role=target,
-                _bool=False if str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}" else True,
+                _bool=False
+                if str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}"
+                else True,
                 reason=reason,
             )
 

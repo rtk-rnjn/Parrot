@@ -386,23 +386,6 @@ class Configuration(Cog):
             f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
-    @config.command(aliases=["action-log", "modlog", "mod-log"])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def actionlog(self, ctx: Context, *, channel: discord.TextChannel = None):
-        """To set the action log, basically the mod log."""
-        post = {"action_log": channel.id if channel else None}
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": post}
-        )
-        if not channel:
-            return await ctx.reply(
-                f"{ctx.author.mention} action log reseted! or removed"
-            )
-        await ctx.reply(
-            f"{ctx.author.mention} success! Action log for **{ctx.guild.name}** is **{channel.name} ({channel.id})**"
-        )
-
     @config.command(aliases=["g-setup", "g_setup"])
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(

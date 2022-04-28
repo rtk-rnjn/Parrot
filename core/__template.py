@@ -2,7 +2,6 @@ post = {
     "prefix": "$",
     "mute_role": None,
     "mod_role": None,
-    "action_log": None,
     "warn_auto": [],
     "counting": None,
     "oneword": None,

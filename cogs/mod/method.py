@@ -828,7 +828,6 @@ async def _text_unlock(
     try:
         await channel.set_permissions(
             guild.default_role,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             send_messages=None,
             reason=reason
         )
@@ -854,7 +853,6 @@ async def _vc_unlock(
     try:
         await channel.set_permissions(
             guild.default_role,
-            reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             connect=None,
             reason=reason
         )

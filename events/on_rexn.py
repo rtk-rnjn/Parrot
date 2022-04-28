@@ -204,7 +204,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         self, payload: discord.RawReactionActionEvent, **data
     ) -> bool:
         ch: discord.TextChannel = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, data["channel_id"]
+            self.bot.get_channel, self.bot.fetch_channel, data["channel_id"],
         )
         if ch is None:
             return False

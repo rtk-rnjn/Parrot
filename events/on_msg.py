@@ -67,6 +67,8 @@ QUESTION_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+DISCORD_PY_ID = 336642139381301249
+
 
 class Delete(discord.ui.View):
     def __init__(self, user):
@@ -112,8 +114,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         self.write_data = []
 
-        self._12h_task.start()
-        self._10s_task.start()
+        self.msg_db_bulkdelete.start()
+        self.msg_db_bulkwrite.start()
 
         self.lock = asyncio.Lock()
         self.whitelist = [
@@ -138,7 +140,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if response_format == "json":
                 return await response.json()
 
-    def _find_ref(self, path: str, refs: tuple) -> tuple:
+    def _find_ref(self, path: str, refs: tp.Tuple) -> tp.Tuple:
         """Loops through all branches and tags to find the required ref."""
         # Base case: there is no slash in the branch name
         ref, file_path = path.split("/", 1)
@@ -375,7 +377,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 msg = message
                 if content:
                     fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                        f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
                     fp = io.BytesIO("NOTHING HERE".encode())
@@ -401,7 +403,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000 and (
-            message.guild.id != 336642139381301249
+            message.guild.id != DISCORD_PY_ID
             or message.author.id in self.whitelist
         ):
             await message.channel.send(message_to_send, view=Delete(message.author))
@@ -539,6 +541,21 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
         await asyncio.sleep(0)
 
+    async def _delete_record_message_to_database(
+        self, obj: tp.Union[discord.Message, int, tp.List[int], tp.Set[int]], *, channel: tp.Union[discord.TextChannel, discord.Object, int]
+    ):
+        if isinstance(obj, discord.Message):
+            obj = [obj.id]
+        elif isinstance(obj, int):
+            obj = [obj]
+        self.write_data.append(
+            UpdateOne(
+                {"_id": channel.id if isinstance(channel, (discord.TextChannel, discord.Object)) else channel},
+                {"$pull": {"messages": {"id": {"$in": [i for i in obj]}}}},
+            )
+        )
+        await asyncio.sleep(0)
+        
     def _msg_raw(self, message):
         return {
             "id": message.id,
@@ -568,6 +585,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_message_delete(self, payload):
         await self.bot.wait_until_ready()
+        await self._delete_record_message_to_database(payload.message_id, channel=payload.channel_id)
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
@@ -601,7 +619,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 """
                 if content:
                     fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                        f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
                     fp = None
@@ -618,6 +636,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_bulk_message_delete(self, payload):
         await self.bot.wait_until_ready()
         msg_ids = list(payload.message_ids)
+        await self._delete_record_message_to_database(msg_ids, channel=payload.channel_id)
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
@@ -640,7 +659,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     msgs = []
                 for msg in msgs:
                     if not msg.bot:
-                        main += f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
+                        main += f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
                 if msgs:
                     fp = io.BytesIO(main.encode())
                 else:
@@ -931,7 +950,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 """
                 if content:
                     fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                        f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
                     fp = None
@@ -945,14 +964,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @tasks.loop(seconds=10)
-    async def _12h_task(self):
+    async def msg_db_bulkdelete(self):
         async with self.lock:
             await self.bot.mongo.msg_db.content.update_many(
-                {}, {"$pull": {"messages": {"timestamp": {"$lt": int(time()) - 18000}}}}
+                {}, {"$pull": {"messages": {"timestamp": {"$lt": int(time()) - 43200}}}}
             )
 
     @tasks.loop(seconds=10)
-    async def _10s_task(self):
+    async def msg_db_bulkwrite(self):
         if not self.write_data:
             return
         async with self.lock:
@@ -960,8 +979,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             self.write_data.clear()
 
     async def cog_unload(self):
-        self._10s_task.cancel()
-        self._12h_task.cancel()
+        self.msg_db_bulkwrite.cancel()
+        self.msg_db_bulkdelete.cancel()
 
 
 async def setup(bot: Parrot) -> None:

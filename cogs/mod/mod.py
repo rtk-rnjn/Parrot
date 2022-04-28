@@ -16,7 +16,8 @@ from discord.ext import commands
 import discord
 import re
 import asyncio
-from typing import Annotated, Any, List, Optional, Union
+from typing import Any, List, Optional, Union
+from typing_extensions import Annotated
 
 from core import Parrot, Context, Cog
 

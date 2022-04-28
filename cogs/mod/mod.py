@@ -128,9 +128,9 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """Bans a member from the server.
-        
+
         You can also ban from ID to ban regardless whether they're in the server or not.
-        
+
         In order for this to work, the bot must have Ban Member permissions.
         To use this command you must have Ban Members permission.
         """
@@ -179,13 +179,11 @@ class Moderator(Cog):
         """Soft bans a member from the server.
 
         A softban is basically banning the member from the server but then unbanning the member as well. This allows you to essentially kick the member while removing their messages.
-        
+
         In order for this to work, the bot must have Ban Member permissions.
         To use this command you must have Kick Members permissions
         """
-        await mt._softban(
-            ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
-        )
+        await mt._softban(ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -200,11 +198,11 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """Temporarily bans a member for the specified duration.
-        
+
         The duration can be a a short time form, e.g. 30d or a more human duration such as "until thursday at 3PM" or a more concrete time such as "2024-12-31".
-        
+
         Note that times are in UTC.
-        
+
         You can also ban from ID to ban regardless whether they're in the server or not.
 
         In order for this to work, the bot must have Ban Member permissions.
@@ -271,12 +269,14 @@ class Moderator(Cog):
     @commands.bot_has_permissions(kick_members=True)
     @Context.with_type
     async def kick(
-        self, ctx: Context, member: discord.Member, *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To kick a member from guild."""
-        await mt._kick(
-            ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
-        )
+        await mt._kick(ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason)
 
     @commands.command(name="masskick")
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
@@ -304,9 +304,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         channel: commands.Greedy[
-            Union[
-                discord.TextChannel, discord.VoiceChannel, discord.StageChannel
-            ]
+            Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]
         ],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
@@ -315,13 +313,9 @@ class Moderator(Cog):
         channel = channel or [ctx.channel]
         for chn in channel:
             if isinstance(chn, discord.TextChannel):
-                await mt._text_lock(
-                    ctx.guild, ctx.command.name, ctx, ctx.channel, chn
-                )
+                await mt._text_lock(ctx.guild, ctx.command.name, ctx, ctx.channel, chn)
             elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
-                await mt._vc_lock(
-                    ctx.guild, ctx.command.name, ctx, ctx.channel, chn
-                )
+                await mt._vc_lock(ctx.guild, ctx.command.name, ctx, ctx.channel, chn)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -333,9 +327,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         channel: commands.Greedy[
-            Union[
-                discord.TextChannel, discord.VoiceChannel, discord.StageChannel
-            ]
+            Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]
         ],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
@@ -349,9 +341,7 @@ class Moderator(Cog):
                 )
 
             elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
-                await mt._vc_unlock(
-                    ctx.guild, ctx.command.name, ctx, ctx.channel, chn
-                )
+                await mt._vc_unlock(ctx.guild, ctx.command.name, ctx, ctx.channel, chn)
 
     @commands.command(aliases=["mute"])
     @commands.bot_has_permissions(moderate_members=True)
@@ -392,32 +382,38 @@ class Moderator(Cog):
     @commands.bot_has_permissions(manage_roles=True)
     @Context.with_type
     async def unmute(
-        self, ctx: Context, member: discord.Member, *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To allow a member to sending message in the Text Channels, if muted/timeouted."""
-        await mt._unmute(
-            ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
-        )
-
+        await mt._unmute(ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason)
 
     @commands.group(aliases=["purge"], invoke_without_command=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     @Context.with_type
-    async def clear(self, ctx: Context, num: int = 100,):
+    async def clear(
+        self,
+        ctx: Context,
+        num: int = 100,
+    ):
         """Removes messages that meet a criteria.
-        
+
         In order to use this command, you must have Manage Messages permissions.
-        
+
         Note that the bot needs Manage Messages as well. These commands cannot be used in a private message.
         When the command is done doing its work, you will get a message detailing which users got removed and how many messages got removed.
         """
         if ctx.invoked_subcommand is None:
+
             def check():
                 return True
 
             await mt.do_removal(ctx, num, check)
-    
+
     @clear.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
@@ -454,35 +450,37 @@ class Moderator(Cog):
         The substring must be at least 3 characters long.
         """
         if len(substr) < 3:
-            await ctx.send('The substring length must be at least 3 characters.')
+            await ctx.send("The substring length must be at least 3 characters.")
         else:
             await mt.do_removal(ctx, 100, lambda e: substr in e.content)
 
-    @clear.command(name='bot', aliases=['bots'])
+    @clear.command(name="bot", aliases=["bots"])
     async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: int = 100):
         """Removes a bot user's messages and messages with their optional prefix."""
 
         def predicate(m):
-            return (m.webhook_id is None and m.author.bot) or (prefix and m.content.startswith(prefix))
+            return (m.webhook_id is None and m.author.bot) or (
+                prefix and m.content.startswith(prefix)
+            )
 
         await mt.do_removal(ctx, search, predicate)
 
-    @clear.command(name='emoji', aliases=['emojis'])
+    @clear.command(name="emoji", aliases=["emojis"])
     async def _emoji(self, ctx: Context, search: int = 100):
         """Removes all messages containing custom emoji."""
-        custom_emoji = re.compile(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>')
+        custom_emoji = re.compile(r"<a?:[a-zA-Z0-9\_]+:([0-9]+)>")
 
         def predicate(m):
             return custom_emoji.search(m.content)
 
         await mt.do_removal(ctx, search, predicate)
 
-    @clear.command(name='reactions')
+    @clear.command(name="reactions")
     async def _reactions(self, ctx: Context, search: int = 100):
         """Removes all reactions from messages that have them."""
 
         if search > 2000:
-            return await ctx.send(f'Too many messages to search for ({search}/2000)')
+            return await ctx.send(f"Too many messages to search for ({search}/2000)")
 
         total_reactions = 0
         async for message in ctx.history(limit=search, before=ctx.message):
@@ -490,7 +488,7 @@ class Moderator(Cog):
                 total_reactions += sum(r.count for r in message.reactions)
                 await message.clear_reactions()
 
-        await ctx.send(f'Successfully removed {total_reactions} reactions.')
+        await ctx.send(f"Successfully removed {total_reactions} reactions.")
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
@@ -544,20 +542,26 @@ class Moderator(Cog):
         `--not`: Use logical NOT for all options.
         """
         parser = Arguments(add_help=False, allow_abbrev=False)
-        parser.add_argument('--user', nargs='+')
-        parser.add_argument('--contains', nargs='+')
-        parser.add_argument('--starts', nargs='+')
-        parser.add_argument('--ends', nargs='+')
-        parser.add_argument('--or', action='store_true', dest='_or')
-        parser.add_argument('--not', action='store_true', dest='_not')
-        parser.add_argument('--emoji', action='store_true')
-        parser.add_argument('--bot', action='store_const', const=lambda m: m.author.bot)
-        parser.add_argument('--embeds', action='store_const', const=lambda m: len(m.embeds))
-        parser.add_argument('--files', action='store_const', const=lambda m: len(m.attachments))
-        parser.add_argument('--reactions', action='store_const', const=lambda m: len(m.reactions))
-        parser.add_argument('--search', type=int)
-        parser.add_argument('--after', type=int)
-        parser.add_argument('--before', type=int)
+        parser.add_argument("--user", nargs="+")
+        parser.add_argument("--contains", nargs="+")
+        parser.add_argument("--starts", nargs="+")
+        parser.add_argument("--ends", nargs="+")
+        parser.add_argument("--or", action="store_true", dest="_or")
+        parser.add_argument("--not", action="store_true", dest="_not")
+        parser.add_argument("--emoji", action="store_true")
+        parser.add_argument("--bot", action="store_const", const=lambda m: m.author.bot)
+        parser.add_argument(
+            "--embeds", action="store_const", const=lambda m: len(m.embeds)
+        )
+        parser.add_argument(
+            "--files", action="store_const", const=lambda m: len(m.attachments)
+        )
+        parser.add_argument(
+            "--reactions", action="store_const", const=lambda m: len(m.reactions)
+        )
+        parser.add_argument("--search", type=int)
+        parser.add_argument("--after", type=int)
+        parser.add_argument("--before", type=int)
 
         try:
             args = parser.parse_args(shlex.split(arguments))
@@ -579,7 +583,7 @@ class Moderator(Cog):
             predicates.append(args.reactions)
 
         if args.emoji:
-            custom_emoji = re.compile(r'<:(\w+):(\d+)>')
+            custom_emoji = re.compile(r"<:(\w+):(\d+)>")
             predicates.append(lambda m: custom_emoji.search(m.content))
 
         if args.user:
@@ -599,7 +603,9 @@ class Moderator(Cog):
             predicates.append(lambda m: any(sub in m.content for sub in args.contains))
 
         if args.starts:
-            predicates.append(lambda m: any(m.content.startswith(s) for s in args.starts))
+            predicates.append(
+                lambda m: any(m.content.startswith(s) for s in args.starts)
+            )
 
         if args.ends:
             predicates.append(lambda m: any(m.content.endswith(s) for s in args.ends))
@@ -620,20 +626,23 @@ class Moderator(Cog):
             args.search = 100
 
         args.search = max(0, min(2000, args.search))  # clamp from 0-2000
-        await mt.do_removal(ctx, args.search, predicate, before=args.before, after=args.after)
+        await mt.do_removal(
+            ctx, args.search, predicate, before=args.before, after=args.after
+        )
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
     @commands.bot_has_permissions(ban_members=True)
     @Context.with_type
     async def unban(
-        self, ctx: Context, member: BannedMember, *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: BannedMember,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To Unban a member from a guild"""
-        await mt._unban(
-            ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
-        )
-            
+        await mt._unban(ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason)
 
     @commands.command()
     @commands.check_any(
@@ -717,13 +726,16 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_mute(
-        self, ctx: Context, member: discord.Member, *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice mute"""
         await mt._voice_mute(
             ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
         )
-        
 
     @voice.command(name="unmute")
     @commands.check_any(
@@ -732,13 +744,16 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_unmute(
-        self, ctx: Context, member: discord.Member, *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice unmute"""
         await mt._voice_unmute(
             ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
         )
-        
 
     @voice.command(name="ban")
     @commands.check_any(
@@ -749,7 +764,11 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
     async def voice_ban(
-        self, ctx: Context, member: discord.Member, *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice ban"""
         if not member.voice:
@@ -773,7 +792,11 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(manage_channels=True, manage_permissions=True)
     @Context.with_type
     async def voice_unban(
-        self, ctx: Context, member: Annotated[discord.abc.Snowflake, MemberID], *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: Annotated[discord.abc.Snowflake, MemberID],
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice unban"""
         if not member.voice:
@@ -795,7 +818,11 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_deafen(
-        self, ctx: Context, member: Annotated[discord.abc.Snowflake, MemberID], *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: Annotated[discord.abc.Snowflake, MemberID],
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice deafen"""
         await mt._voice_deafen(
@@ -809,13 +836,16 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_undeafen(
-        self, ctx: Context, member: Annotated[discord.abc.Snowflake, MemberID], *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: Annotated[discord.abc.Snowflake, MemberID],
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice undeafen"""
         await mt._voice_undeafen(
             ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
         )
-
 
     @voice.command(name="kick")
     @commands.check_any(
@@ -824,13 +854,16 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(move_members=True)
     @Context.with_type
     async def voice_kick(
-        self, ctx: Context, member: Annotated[discord.abc.Snowflake, MemberID], *, reason: Annotated[Optional[str], ActionReason] = None,
+        self,
+        ctx: Context,
+        member: Annotated[discord.abc.Snowflake, MemberID],
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice kick"""
         await mt._voice_kick(
             ctx.guild, ctx.command.name, ctx, ctx.channel, member, reason
         )
-       
 
     @voice.command(name="limit")
     @commands.check_any(
@@ -958,7 +991,6 @@ class Moderator(Cog):
             ctx.guild, ctx.command.name, ctx, ctx.channel, emoji, reason
         )
 
-
     @emoji.command(name="addurl")
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
     @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
@@ -1080,13 +1112,11 @@ class Moderator(Cog):
                     0,
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[1]:
                 await mt._kick(
                     ctx.guild, ctx.command.name, ctx, ctx.channel, target, reason
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[2]:
                 await mt._mute(
@@ -1098,13 +1128,11 @@ class Moderator(Cog):
                     None,
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[3]:
                 await mt._unmute(
                     ctx.guild, ctx.command.name, ctx, ctx.channel, target, reason
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[4]:
                 await mt._block(
@@ -1116,7 +1144,6 @@ class Moderator(Cog):
                     [target],
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[5]:
                 await mt._unblock(
@@ -1128,7 +1155,6 @@ class Moderator(Cog):
                     [target],
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[6]:
                 temp = await ctx.send(
@@ -1169,7 +1195,6 @@ class Moderator(Cog):
                     role,
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.MEMBER_REACTION[8]:
                 await ctx.send(
@@ -1189,7 +1214,6 @@ class Moderator(Cog):
                     target,
                     (m.content)[:32:],
                 )
-                
 
         if isinstance(target, discord.TextChannel):
             tc_embed = discord.Embed(
@@ -1228,13 +1252,11 @@ class Moderator(Cog):
                 await mt._text_lock(
                     ctx.guild, ctx.command.name, ctx, ctx.channel, target
                 )
-                
 
             if str(reaction.emoji) == mt.TEXT_REACTION[1]:
                 await mt._text_unlock(
                     ctx.guild, ctx.command.name, ctx, ctx.channel, target
                 )
-                
 
             if str(reaction.emoji) == mt.TEXT_REACTION[2]:
                 await ctx.send(
@@ -1252,7 +1274,6 @@ class Moderator(Cog):
                     target,
                     m.content,
                 )
-                
 
             if str(reaction.emoji) == mt.TEXT_REACTION[3]:
                 await ctx.send(
@@ -1270,7 +1291,6 @@ class Moderator(Cog):
                     ctx.channel,
                     m.content,
                 )
-                
 
         if isinstance(
             target,
@@ -1315,7 +1335,6 @@ class Moderator(Cog):
                     ctx.channel,
                     ctx.author.voice.channel or target,
                 )
-                
 
             if str(reaction.emoji) == mt.VC_REACTION[1]:
                 await mt._vc_unlock(
@@ -1325,7 +1344,6 @@ class Moderator(Cog):
                     ctx.channel,
                     ctx.author.voice.channel or target,
                 )
-                
 
             if str(reaction.emoji) == mt.VC_REACTION[2]:
                 await ctx.send(
@@ -1343,7 +1361,6 @@ class Moderator(Cog):
                     ctx.channel,
                     m.content,
                 )
-                
 
         if isinstance(target, discord.Role):
             role_embed = discord.Embed(
@@ -1385,7 +1402,6 @@ class Moderator(Cog):
                     True,
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.ROLE_REACTION[1]:
                 await mt._role_hoist(
@@ -1397,7 +1413,6 @@ class Moderator(Cog):
                     False,
                     reason,
                 )
-                
 
             if str(reaction.emoji) == mt.ROLE_REACTION[2]:
                 await ctx.send(
@@ -1422,7 +1437,6 @@ class Moderator(Cog):
                         color,
                         reason,
                     )
-                    
 
             if str(reaction.emoji) == mt.ROLE_REACTION[3]:
                 await ctx.send(
@@ -1441,16 +1455,13 @@ class Moderator(Cog):
                     m.content,
                     reason,
                 )
-                
 
         return await msg.delete(delay=0)
 
     @commands.command(name="warn")
     @commands.bot_has_permissions(embed_links=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warnuser(
-        self, ctx: Context, user: discord.Member, *, reason: str
-    ):
+    async def warnuser(self, ctx: Context, user: discord.Member, *, reason: str):
         """To warn the user"""
         try:
             await user.send(

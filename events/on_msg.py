@@ -38,14 +38,14 @@ TRIGGER = (
 GITHUB_RE = re.compile(
     r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
     r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 GITHUB_GIST_RE = re.compile(
     r"https://gist\.github\.com/([a-zA-Z0-9-]+)/(?P<gist_id>[a-zA-Z0-9]+)/*"
     r"(?P<revision>[a-zA-Z0-9]*)/*#file-(?P<file_path>[^#>]+?)(\?[^#>]+)?"
     r"(-L(?P<start_line>\d+)([-~:]L(?P<end_line>\d+))?)",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw"}
@@ -53,13 +53,13 @@ GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw"}
 GITLAB_RE = re.compile(
     r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)"
     r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 BITBUCKET_RE = re.compile(
     r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)"
     r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 QUESTION_REGEX = re.compile(
@@ -403,8 +403,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000 and (
-            message.guild.id != DISCORD_PY_ID
-            or message.author.id in self.whitelist
+            message.guild.id != DISCORD_PY_ID or message.author.id in self.whitelist
         ):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
@@ -542,7 +541,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await asyncio.sleep(0)
 
     async def _delete_record_message_to_database(
-        self, obj: tp.Union[discord.Message, int, tp.List[int], tp.Set[int]], *, channel: tp.Union[discord.TextChannel, discord.Object, int]
+        self,
+        obj: tp.Union[discord.Message, int, tp.List[int], tp.Set[int]],
+        *,
+        channel: tp.Union[discord.TextChannel, discord.Object, int],
     ):
         if isinstance(obj, discord.Message):
             obj = [obj.id]
@@ -550,12 +552,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             obj = [obj]
         self.write_data.append(
             UpdateOne(
-                {"_id": channel.id if isinstance(channel, (discord.TextChannel, discord.Object)) else channel},
+                {
+                    "_id": channel.id
+                    if isinstance(channel, (discord.TextChannel, discord.Object))
+                    else channel
+                },
                 {"$pull": {"messages": {"id": {"$in": [i for i in obj]}}}},
             )
         )
         await asyncio.sleep(0)
-        
+
     def _msg_raw(self, message):
         return {
             "id": message.id,
@@ -585,7 +591,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_message_delete(self, payload):
         await self.bot.wait_until_ready()
-        await self._delete_record_message_to_database(payload.message_id, channel=payload.channel_id)
+        await self._delete_record_message_to_database(
+            payload.message_id, channel=payload.channel_id
+        )
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
@@ -636,7 +644,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_bulk_message_delete(self, payload):
         await self.bot.wait_until_ready()
         msg_ids = list(payload.message_ids)
-        await self._delete_record_message_to_database(msg_ids, channel=payload.channel_id)
+        await self._delete_record_message_to_database(
+            msg_ids, channel=payload.channel_id
+        )
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
@@ -901,10 +911,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
     async def _what_is_this(
-        self,
-        message: tp.Union[discord.Message, str],
-        *,
-        channel: discord.TextChannel
+        self, message: tp.Union[discord.Message, str], *, channel: discord.TextChannel
     ) -> None:
         if match := QUESTION_REGEX.fullmatch(
             message.content if isinstance(message, discord.Message) else message

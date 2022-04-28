@@ -462,7 +462,7 @@ async def _unban(
             member,
             reason=reason,
         )
-        await destination.send(f"{ctx.author.mention} **`{member}`** is unbanned!")
+        await destination.send(f"{ctx.author.mention} **{member}** is unbanned!")
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"

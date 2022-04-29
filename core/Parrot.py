@@ -256,12 +256,6 @@ class Parrot(commands.AutoShardedBot):
             # no messages in discord.Thread
             return
 
-        if self.is_ws_ratelimited() and ctx.author.id not in self.owner_ids:
-            return
-
-        if not self.is_ready() and ctx.author.id not in self.owner_ids:
-            return
-
         bucket = self.spam_control.get_bucket(message)
         current = message.created_at.timestamp()
         retry_after = bucket.update_rate_limit(current)
@@ -552,7 +546,7 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_opt_in_out(self):
-        async for data in self.mongo.parrot_db.misc.find({}):
+        async for data in self.mongo.extra.misc.find({}):
             _id = data.pop("_id")
             self.opts[_id] = data
             await asyncio.sleep(0)

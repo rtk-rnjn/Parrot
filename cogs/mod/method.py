@@ -329,7 +329,7 @@ async def _mass_ban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: List[discord.Member],
+    members: Union[List[discord.Member], discord.Member],
     days: int = 0,
     reason: str,
     **kwargs: Any,
@@ -367,7 +367,7 @@ async def _softban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: List[discord.Member],
+    members: Union[List[discord.Member], discord.Member],
     reason: str,
     **kwargs: Any,
 ):
@@ -405,7 +405,7 @@ async def _temp_ban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: List[discord.Member],
+    members: Union[List[discord.Member], discord.Member],
     duration: Union[ShortTime, datetime.datetime],
     reason: str,
     silent=True,
@@ -491,9 +491,9 @@ async def _timeout(
             f"{ctx.author.mention} don't do that, Bot is only trying to help"
         )
         return
-    if member.timed_out_until:
+    if member.timed_out_until is not None and member.timed_out_until > datetime.datetime.utcnow():
         return await destination.send(
-            f"{ctx.author.mention} **{member}** is already on timeout **{discord.utils.format_dt(member.timed_out_until, 'R')}>**"
+            f"{ctx.author.mention} **{member}** is already on timeout **{discord.utils.format_dt(member.timed_out_until, 'R')}**"
         )
     try:
         await member.edit(
@@ -502,7 +502,7 @@ async def _timeout(
         )
         if not silent:
             await destination.send(
-                f"{ctx.author.mention} **{member}** is on timeout **{discord.utils.format_dt(_datetime, 'R')}>**"
+                f"{ctx.author.mention} **{member}** is on timeout **{discord.utils.format_dt(_datetime, 'R')}**"
             )
     except Exception as e:
         if not silent:
@@ -649,7 +649,7 @@ async def _mass_kick(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: List[discord.Member],
+    members: Union[List[discord.Member], discord.Member],
     reason: str,
     **kwargs: Any,
 ):
@@ -687,7 +687,7 @@ async def _block(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    members: List[discord.Member],
+    members: Union[List[discord.Member], discord.Member],
     reason: str,
     silent=False,
     **kwargs: Any,
@@ -728,7 +728,7 @@ async def _unblock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    members: List[discord.Member],
+    members: Union[List[discord.Member], discord.Member],
     reason: str,
     **kwargs: Any,
 ):

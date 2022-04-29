@@ -290,7 +290,6 @@ class Parrot(commands.AutoShardedBot):
 
         if guild := self.opts.get(ctx.guild.id):
             if ctx.author.id in guild.get("command", []):
-                print(1)
                 return
 
         await self.invoke(ctx)

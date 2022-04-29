@@ -1478,9 +1478,7 @@ class Moderator(Cog):
                 ctx=ctx,
                 destination=ctx.channel,
                 role=target,
-                _bool=False
-                if str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}"
-                else True,
+                _bool=str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}",
                 reason=reason,
             )
 

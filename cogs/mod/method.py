@@ -493,7 +493,7 @@ async def _timeout(
         return
     if (
         member.timed_out_until is not None
-        and member.timed_out_until > datetime.datetime.utcnow()
+        and member.timed_out_until > datetime.datetime.utcnow(datetime.timezone.utc)
     ):
         return await destination.send(
             f"{ctx.author.mention} **{member}** is already on timeout **{discord.utils.format_dt(member.timed_out_until, 'R')}**"

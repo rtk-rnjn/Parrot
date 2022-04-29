@@ -9,7 +9,7 @@ load_dotenv()
 dotenv_values(".env")
 
 with open("config.yml") as f:
-    data: Dict[str, Any] = yaml.load(f.read())
+    data: Dict[str, Any] = yaml.safe_load(f.read())
 
 VERSION = "v4.7.4-beta"
 

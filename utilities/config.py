@@ -8,7 +8,7 @@ from dotenv import load_dotenv, dotenv_values
 load_dotenv()
 dotenv_values(".env")
 
-with open("config.json") as f:
+with open("config.yml") as f:
     data: Dict[str, Any] = yaml.load(f.read())
 
 VERSION = "v4.7.4-beta"

@@ -19,7 +19,7 @@ def convert_bool(text: Union[str, bool]) -> bool:
 
 
 class ActionReason(commands.Converter):
-    async def convert(self, ctx: Context, argument: str=None) -> str:
+    async def convert(self, ctx: Context, argument: str = None) -> str:
         ret = f"{ctx.author} (ID: {ctx.author.id}): {argument or 'no reason provided'}"
 
         if len(ret) > 512:

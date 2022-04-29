@@ -496,7 +496,7 @@ async def _timeout(
         and member.timed_out_until > datetime.datetime.now(datetime.timezone.utc)
     ):
         return await destination.send(
-            f"{ctx.author.mention} **{member}** is already on timeout **{discord.utils.format_dt(member.timed_out_until, 'R')}**"
+            f"{ctx.author.mention} **{member}** is already on timeout. It will be removed **{discord.utils.format_dt(member.timed_out_until, 'R')}**"
         )
     try:
         await member.edit(
@@ -505,7 +505,7 @@ async def _timeout(
         )
         if not silent:
             await destination.send(
-                f"{ctx.author.mention} **{member}** is on timeout **{discord.utils.format_dt(_datetime, 'R')}**"
+                f"{ctx.author.mention} **{member}** is on timeout and will be removed **{discord.utils.format_dt(_datetime, 'R')}**"
             )
     except Exception as e:
         if not silent:

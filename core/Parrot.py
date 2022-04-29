@@ -256,10 +256,10 @@ class Parrot(commands.AutoShardedBot):
             # no messages in discord.Thread
             return
 
-        if self.is_ws_ratelimited():
+        if self.is_ws_ratelimited() and ctx.author.id not in self.owner_ids:
             return
 
-        if not self.is_ready():
+        if not self.is_ready() and ctx.author.id not in self.owner_ids:
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -295,7 +295,7 @@ class Parrot(commands.AutoShardedBot):
                 return
 
         if guild := self.opts.get(ctx.guild.id):
-            if ctx.author.id in guild.get("commands", []):
+            if ctx.author.id in guild.get("command", []):
                 return
 
         await self.invoke(ctx)

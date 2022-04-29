@@ -128,6 +128,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             770646750804312105,  # Nιgнт Fυяу ♪🤍#4371
             651454696208465941,  # le ducki3#4987
             412734157819609090,  # dank Had0cK#4673
+            261755551350784010,  # varus#1741
         ]
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:

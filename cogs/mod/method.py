@@ -293,7 +293,7 @@ async def _ban(
     member: discord.Member,
     days: int = 0,
     reason: str,
-    silent=False,
+    silent: bool=False,
     **kwargs: Any,
 ):
     if (
@@ -479,7 +479,7 @@ async def _timeout(
     member: discord.Member,
     _datetime: datetime.datetime,
     reason: str,
-    silent=False,
+    silent: bool=False,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
@@ -522,7 +522,7 @@ async def _mute(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    silent=False,
+    silent: bool=False,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
@@ -621,7 +621,7 @@ async def _kick(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    silent=False,
+    silent: bool=False,
     **kwargs: Any,
 ):
     try:
@@ -692,7 +692,7 @@ async def _block(
     channel: discord.TextChannel,
     members: Union[List[discord.Member], discord.Member],
     reason: str,
-    silent=False,
+    silent: bool=False,
     **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members

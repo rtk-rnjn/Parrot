@@ -528,14 +528,13 @@ class Parrot(commands.AutoShardedBot):
             if isinstance(fetch_function, Awaitable) and something is None:
                 return await fetch_function
             return something
-        else:
-            try:
-                something = get_function(_id)
-                if something is None and force_fetch:
-                    return await fetch_function(_id)
-                return something
-            except Exception as e:
-                return None
+        try:
+            something = get_function(_id)
+            if something is None and force_fetch:
+                return await fetch_function(_id)
+            return something
+        except Exception as e:
+            return None
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):

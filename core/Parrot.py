@@ -219,6 +219,7 @@ class Parrot(commands.AutoShardedBot):
         ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
+        await self.update_opt_in_out()
         for channel in VCS:
             if channel is not None:
                 channel = await self.getch(
@@ -229,6 +230,7 @@ class Parrot(commands.AutoShardedBot):
                         await channel.connect()
                 except (discord.HTTPException, asyncio.TimeoutError):
                     pass
+            await asyncio.sleep(0)
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")

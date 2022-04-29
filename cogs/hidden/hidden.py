@@ -84,3 +84,11 @@ class Hidden(Cog):
         await ctx.send(
             f"{ctx.author.mention} You have opted-in to the use of Parrot commands."
         )
+
+    @Cog.listener()
+    async def on_command_completion(self, ctx: Context):
+        """
+        This is called when a command is completed.
+        """
+        if ctx.command.cog.qualified_name.lower() == "hidden":
+            await self.bot.update_opt_in_out.start()

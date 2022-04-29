@@ -219,7 +219,7 @@ class Parrot(commands.AutoShardedBot):
         ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
-        await self.update_opt_in_out()
+        await self.update_opt_in_out.start()
         for channel in VCS:
             if channel is not None:
                 channel = await self.getch(

@@ -616,7 +616,9 @@ class Meta(Cog):
         )
 
         # [`hash`](url) message (offset)
-        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), 'R')
+        offset = discord.utils.format_dt(
+            commit_time.astimezone(datetime.timezone.utc), "R"
+        )
         return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})"
 
     def get_last_commits(self, count=3):

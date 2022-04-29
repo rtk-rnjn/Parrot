@@ -95,6 +95,8 @@ class Parrot(commands.AutoShardedBot):
         self.banned_users: Dict[int, Any] = {}
         self.afk = set()
 
+        self.opts: Dict[str, Any] = {}
+
     def __repr__(self):
         return f"<core.{self.user.name}>"
 
@@ -196,14 +198,14 @@ class Parrot(commands.AutoShardedBot):
         """To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
 
-    async def start_nodes(self):
-        await self.pomice.create_node(
-            bot=self,
-            host="127.0.0.1",
-            port="1018",
-            password="password",
-            identifier="parrot",
-        )
+    # async def start_nodes(self):
+    #     await self.pomice.create_node(
+    #         bot=self,
+    #         host="127.0.0.1",
+    #         port="1018",
+    #         password="password",
+    #         identifier="parrot",
+    #     )
 
     async def on_ready(self) -> None:
         if not hasattr(self, "uptime"):
@@ -211,19 +213,19 @@ class Parrot(commands.AutoShardedBot):
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
-            f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__ }"
+            f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
         )
 
         ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
         for channel in VCS:
-            if channel:
+            if channel is not None:
                 channel = await self.getch(
                     self.get_channel, self.fetch_channel, channel, force_fetch=False
                 )
                 try:
-                    if channel:
+                    if channel is not None:
                         await channel.connect()
                 except (discord.HTTPException, asyncio.TimeoutError):
                     pass
@@ -253,10 +255,9 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.is_ws_ratelimited():
-            print(f"Can not process command of message {message}. Ratelimited")
             return
+
         if not self.is_ready():
-            print(f"Can not process command of message {message}. Bot isn't ready yet")
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -266,7 +267,6 @@ class Parrot(commands.AutoShardedBot):
         if retry_after:
             self._auto_spam_count[author_id] += 1
             if self._auto_spam_count[author_id] >= 3:
-                print(f"Stops the command process of message {message}. Spam")
                 return
         else:
             self._auto_spam_count.pop(author_id, None)
@@ -281,9 +281,6 @@ class Parrot(commands.AutoShardedBot):
             else:
                 true = self.banned_users[ctx.author.id].get("command")
                 if true:
-                    print(
-                        f"Stops the command process of message {message}. User banned"
-                    )
                     return
 
             _true = await _can_run(ctx)
@@ -293,6 +290,10 @@ class Parrot(commands.AutoShardedBot):
                     f"**{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
+                return
+
+        if guild := self.opts.get(ctx.guild.id):
+            if ctx.author.id in guild.get("commands", []):
                 return
 
         await self.invoke(ctx)
@@ -545,3 +546,10 @@ class Parrot(commands.AutoShardedBot):
     async def update_banned_members(self):
         async for data in self.mongo.parrot_db.banned_users.find({}):
             self.banned_users[data["_id"]] = data
+
+    @tasks.loop(count=1)
+    async def update_opt_in_out(self):
+        async for data in self.mongo.parrot_db.misc.find({}):
+            _id = data.pop("_id")
+            self.opts[_id] = data
+            await asyncio.sleep(0)

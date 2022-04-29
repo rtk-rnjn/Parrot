@@ -1,4 +1,7 @@
-import json
+from __future__ import annotations
+
+from typing import Any, Dict
+import yaml
 import os
 from dotenv import load_dotenv, dotenv_values
 
@@ -6,9 +9,9 @@ load_dotenv()
 dotenv_values(".env")
 
 with open("config.json") as f:
-    data = json.load(f)
+    data: Dict[str, Any] = yaml.load(f.read())
 
-VERSION = "v4.7.0-stable"
+VERSION = "v4.7.4-beta"
 
 OWNER_IDS: list = data["owner_ids"]
 DEFAULT_PREFIX: str = data["prefix"]

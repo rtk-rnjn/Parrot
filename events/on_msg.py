@@ -118,18 +118,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.msg_db_bulkwrite.start()
 
         self.lock = asyncio.Lock()
-        self.whitelist = [
-            615785223296253953,  # Tari#2755
-            741614468546560092,  # !! Ritik Ranjan [*.*]#9230
-            523452718413643788,  # Hay#6433
-            699839134709317642,  # proguy914629.bot#5419
-            531179463673774080,  # ROLEX#6596
-            857103603130302514,  # Var_Monke#1354
-            770646750804312105,  # Nιgнт Fυяу ♪🤍#4371
-            651454696208465941,  # le ducki3#4987
-            412734157819609090,  # dank Had0cK#4673
-            261755551350784010,  # varus#1741
-        ]
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
         """Makes http requests using aiohttp."""
@@ -309,6 +297,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         # Sorts the list of snippets by their match index and joins them into a single message
         return "\n".join(map(lambda x: x[1], sorted(all_snippets)))
 
+    def _check_gitlink_req(self, message: discord.Message):
+        if guild := self.bot.opts.get(message.guild.id):
+            return message.author.id in self.bot.opts[message.guild.id].get("gitlink", [])
+
     async def query_ddg(self, query: str) -> tp.Optional[str]:
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
         # saying `ok google`, and querying from ddg LOL.
@@ -352,11 +344,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def is_banned(self, user) -> bool:
         # return True if member is banned else False
         try:
-            user = self.bot.banned_users[user.id]
+            return (user.id in self.bot.opts[user.guild.id]["global"]) or (self.bot.banned_users[user.id].get("global", False))
         except KeyError:
             return False
-        else:
-            return bool(self.bot.banned_users[user.id].get("global"))
 
     async def on_invite(self, message: discord.Message, invite_link: list):
         if data := await self.log_collection.find_one(
@@ -401,10 +391,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         if message.guild.me.id == message.author.id:
             return
+
         message_to_send = await self._parse_snippets(message.content)
 
         if 0 < len(message_to_send) <= 2000 and (
-            message.guild.id != DISCORD_PY_ID or message.author.id in self.whitelist
+            self._check_gitlink_req(message)
         ):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:

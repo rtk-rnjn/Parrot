@@ -19,7 +19,9 @@ class Hidden(Cog):
     async def optout_gitlink(self, ctx: Context):
         """Opt-out for gitlink to codeblock"""
         await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"gitlink": ctx.author.id}}, upsert=True
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"gitlink": ctx.author.id}},
+            upsert=True,
         )
         await ctx.send(
             f"{ctx.author.mention} You have opted-out to the use of gitlink in codeblocks."
@@ -39,7 +41,9 @@ class Hidden(Cog):
     async def optout_command(self, ctx: Context):
         """Opt-out for command usage"""
         await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"command": ctx.author.id}}, upsert=True
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"command": ctx.author.id}},
+            upsert=True,
         )
         await ctx.send(
             f"{ctx.author.mention} You have opted-out to the use of Parrot commands."

@@ -299,7 +299,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     def _check_gitlink_req(self, message: discord.Message):
         if guild := self.bot.opts.get(message.guild.id):
-            return message.author.id in self.bot.opts[message.guild.id].get("gitlink", [])
+            return message.author.id in self.bot.opts[message.guild.id].get(
+                "gitlink", []
+            )
 
     async def query_ddg(self, query: str) -> tp.Optional[str]:
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
@@ -344,7 +346,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def is_banned(self, user) -> bool:
         # return True if member is banned else False
         try:
-            return (user.id in self.bot.opts[user.guild.id]["global"]) or (self.bot.banned_users[user.id].get("global", False))
+            return (user.id in self.bot.opts[user.guild.id]["global"]) or (
+                self.bot.banned_users[user.id].get("global", False)
+            )
         except KeyError:
             return False
 
@@ -394,9 +398,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         message_to_send = await self._parse_snippets(message.content)
 
-        if 0 < len(message_to_send) <= 2000 and (
-            self._check_gitlink_req(message)
-        ):
+        if 0 < len(message_to_send) <= 2000 and (self._check_gitlink_req(message)):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
                 await message.edit(suppress=True)

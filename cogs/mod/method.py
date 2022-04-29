@@ -491,7 +491,10 @@ async def _timeout(
             f"{ctx.author.mention} don't do that, Bot is only trying to help"
         )
         return
-    if member.timed_out_until is not None and member.timed_out_until > datetime.datetime.utcnow():
+    if (
+        member.timed_out_until is not None
+        and member.timed_out_until > datetime.datetime.utcnow()
+    ):
         return await destination.send(
             f"{ctx.author.mention} **{member}** is already on timeout **{discord.utils.format_dt(member.timed_out_until, 'R')}**"
         )

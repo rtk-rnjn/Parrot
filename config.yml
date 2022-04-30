@@ -43,6 +43,7 @@ extensions:
   - cogs.cc
   - cogs.api
   - events.custom_events
+  - cogs.hidden
 invite: >-
   https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot
 dev_logo: >-

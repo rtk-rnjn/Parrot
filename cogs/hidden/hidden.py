@@ -20,7 +20,7 @@ class Hidden(Cog):
         """Opt-out for gitlink to codeblock"""
         await self.bot.mongo.extra.misc.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"gitlink": ctx.author.id}},
+            {"$pull": {"gitlink": ctx.author.id}},
             upsert=True,
         )
         await ctx.send(
@@ -59,7 +59,7 @@ class Hidden(Cog):
     async def optin_gitlink(self, ctx: Context):
         """Opt-in for gitlink to codeblock"""
         await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"gitlink": ctx.author.id}}, upsert=True
+            {"_id": ctx.guild.id}, {"$addToSet": {"gitlink": ctx.author.id}}, upsert=True
         )
         await ctx.send(
             f"{ctx.author.mention} You have opted-in to the use of gitlink in codeblocks."

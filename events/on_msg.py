@@ -551,7 +551,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     if isinstance(channel, (discord.TextChannel, discord.Object))
                     else channel
                 },
-                {"$pull": {"messages": {"id": {"$in": [i for i in obj]}}}},
+                {"$pull": {"messages": {"id": {"$in": list(obj)}}}},
             )
         )
         await asyncio.sleep(0)

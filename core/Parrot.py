@@ -107,26 +107,12 @@ class Parrot(commands.AutoShardedBot):
     @property
     def invite(self) -> str:
         clientID = self.user.id
-        perms = discord.Permissions.none()
-        perms.read_messages = True
-        perms.external_emojis = True
-        perms.moderate_members = True
-        perms.send_messages = True
-        perms.manage_roles = True
-        perms.manage_channels = True
-        perms.ban_members = True
-        perms.kick_members = True
-        perms.manage_messages = True
-        perms.embed_links = True
-        perms.read_message_history = True
-        perms.attach_files = True
-        perms.add_reactions = True
-
-        url = (
-            f"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={perms.value}"
-            f"&redirect_uri={SUPPORT_SERVER}&scope=bot%20applications.commands"
+        return discord.utils.oauth_url(
+            clientID,
+            permissions=discord.Permissions(1099780451414),
+            scopes=('bot', 'applications.commands'),
+            disable_guild_select=False
         )
-        return url
 
     @property
     def github(self) -> str:

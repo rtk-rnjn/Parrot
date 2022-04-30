@@ -25,7 +25,7 @@ class Context(commands.Context):
     """A custom implementation of commands.Context class."""
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy

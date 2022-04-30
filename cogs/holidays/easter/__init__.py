@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .method import Easter
+from .easter import Easter
 from core import Parrot
 
 

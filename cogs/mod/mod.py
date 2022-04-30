@@ -596,13 +596,13 @@ class Moderator(Cog):
     ):
         """To set slowmode in the specified channel"""
         await mt._slowmode(
-            ctx.guild,
-            ctx.command.name,
-            ctx,
-            ctx.channel,
-            seconds,
-            channel or ctx.channel,
-            reason,
+            guild=ctx.guild,
+            command_name=ctx.command.name,
+            ctx=ctx,
+            destination=ctx.channel,
+            seconds=seconds,
+            channel=channel or ctx.channel,
+            reason=reason,
         )
 
     @clear.command()
@@ -1115,7 +1115,12 @@ class Moderator(Cog):
         if not emoji:
             return
         await mt._emoji_add(
-            ctx.guild, ctx.command.name, ctx, ctx.channel, emoji, reason
+            guild=ctx.guild,
+            command_name=ctx.command.name,
+            ctx=ctx,
+            destination=ctx.channel,
+            emojis=emoji,
+            reason=reason
         )
 
     @emoji.command(name="addurl")

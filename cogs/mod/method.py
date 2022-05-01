@@ -408,16 +408,12 @@ async def _temp_ban(
     members: Union[List[discord.Member], discord.Member],
     duration: Union[ShortTime, datetime.datetime],
     reason: str,
-    silent=True,
+    silent: bool=True,
     bot: Parrot = None,
     **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members
     for member in members:
-        if ctx.author.top_role.position < member.top_role.position and not silent:
-            return await destination.send(
-                f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-            )
         try:
             if member.id in (ctx.author.id, guild.me.id) and not silent:
                 await destination.send(

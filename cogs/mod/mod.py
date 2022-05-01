@@ -261,7 +261,7 @@ class Moderator(Cog):
             command_name=ctx.command.qualified_name,
             ctx=ctx,
             destination=ctx.channel,
-            member=member,
+            members=member,
             reason=reason,
             duration=duration,
             silent=False,

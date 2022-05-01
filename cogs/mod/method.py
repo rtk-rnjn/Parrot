@@ -9,7 +9,7 @@ import asyncio
 import aiohttp
 import datetime
 
-from utilities.time import ShortTime
+from utilities.time import FutureTime, ShortTime
 
 
 async def _add_roles_bot(
@@ -406,7 +406,7 @@ async def _temp_ban(
     ctx: Context,
     destination: discord.TextChannel,
     members: Union[List[discord.Member], discord.Member],
-    duration: Union[ShortTime, datetime.datetime],
+    duration: Union[FutureTime, datetime.datetime],
     reason: str,
     silent: bool=True,
     bot: Parrot = None,
@@ -431,12 +431,16 @@ async def _temp_ban(
             cog = bot.get_cog("Utils")
             await cog.create_timer(
                 expires_at=duration.dt.timestamp()
-                if isinstance(duration, ShortTime)
+                if isinstance(duration, FutureTime)
                 else duration.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,
                 mod_action=mod_action,
             )
+            await destination.send(
+                f"{ctx.author.mention} **{member}** is banned for {duration}!"
+            )
+
         except Exception as e:
             if not silent:
                 await destination.send(

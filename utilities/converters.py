@@ -64,8 +64,7 @@ class BannedMember(commands.Converter):
                     "User Not Found! Probably this member has not been banned before."
                 ) from None
 
-        ban_list = await ctx.guild.bans()
-        for entry in ban_list:
+        async for entry in ctx.guild.bans():
             if argument in (entry.user.name, str(entry.user)):
                 return entry.user
             if str(entry.user) == argument:

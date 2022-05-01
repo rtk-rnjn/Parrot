@@ -430,15 +430,13 @@ async def _temp_ban(
             }
             cog = bot.get_cog("Utils")
             await cog.create_timer(
-                expires_at=duration.dt.timestamp()
-                if isinstance(duration, FutureTime)
-                else duration.timestamp(),
+                expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,
                 mod_action=mod_action,
             )
             await destination.send(
-                f"{ctx.author.mention} **{member}** is banned for {duration}!"
+                f"{ctx.author.mention} **{member}** will be unbanned {discord.utils.format_dt(duration.dt, 'R')}!"
             )
 
         except Exception as e:

@@ -412,6 +412,7 @@ async def _temp_ban(
     bot: Parrot = None,
     **kwargs: Any,
 ):
+    bot = bot or ctx.bot
     members = [members] if not isinstance(members, list) else members
     for member in members:
         try:
@@ -420,7 +421,7 @@ async def _temp_ban(
                     f"{ctx.author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            await member.ban(reason=reason)
+            await guild.ban(discord.Object(id=member.id), reason=reason)
             mod_action = {
                 "action": "UNBAN",
                 "member": member.id,

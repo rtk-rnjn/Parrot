@@ -167,7 +167,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         reason = entry.reason or None
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id
-                        ls = self._update_change(before, after)
+                        ls = self._update_role(before, after)
                         ext = ""
                         for i, j in ls:
                             ext += f"{i} **{j}**\n"

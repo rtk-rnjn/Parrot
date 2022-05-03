@@ -12,7 +12,7 @@ import re
 from core import Parrot, Cog
 
 TOKEN_REGEX = re.compile(r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}")
-
+DISCORD_PY_ID = 336642139381301249
 
 class GistContent:
     def __init__(self, argument: str):
@@ -101,11 +101,7 @@ class Gist(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
-        if not message.guild:
-            return
-
-        if message.guild.get_member(80528701850124288):
-            # R. Danny#6348
+        if not message.guild or message.guild.id == DISCORD_PY_ID:
             return
 
         tokens = [

@@ -289,7 +289,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         return get_cmd_signature(command, default=False)
 
     async def send_bot_help(self, mapping):
-        await self.context.trigger_typing()
+        await self.context.typing()
         bot = self.context.bot
 
         def key(command) -> str:
@@ -313,7 +313,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await menu.start()
 
     async def send_cog_help(self, cog):
-        await self.context.trigger_typing()
+        await self.context.typing()
         entries = await self.filter_commands(cog.get_commands(), sort=True)
         menu = HelpMenu(
             GroupHelpPageSource(cog, entries, prefix=self.context.clean_prefix),
@@ -357,7 +357,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             embed_like.description = f'> {command.help or "No help found..."}'
 
     async def send_command_help(self, command):
-        await self.context.trigger_typing()
+        await self.context.typing()
         # No pagination necessary for a single command.
         embed = discord.Embed(
             colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow()
@@ -372,7 +372,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     async def send_group_help(self, group):
         try:
-            await self.context.trigger_typing()
+            await self.context.typing()
         except discord.Forbidden:
             await self.context.reply(
                 f"{self.context.author.mention} preparing help menu..."

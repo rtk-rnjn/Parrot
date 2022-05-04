@@ -50,3 +50,11 @@ WEATHERID=""
 
 # https://github.com/
 GITHUB_TOKEN=""
+
+# Twitter
+# https://developer.twitter.com/
+API_KEY=""
+API_KEY_SECRET=""
+ACCESS_TOKEN=""
+ACCESS_TOKEN_SECRET=""
+BEARER=""

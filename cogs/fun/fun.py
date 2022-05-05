@@ -4,7 +4,7 @@ import functools
 import random
 import io
 import datetime
-from time import time
+import time
 import urllib
 import re
 import json
@@ -3468,13 +3468,13 @@ class Fun(Cog):
                 and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 20
             )
 
-        ini = time()
+        ini = time.perf_counter()
 
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=300)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
-        fin = time()
+        fin = time.perf_counter()
 
         fakecontent = msg.content.replace(",", "").replace(".", "").replace("!", "")
 
@@ -3483,3 +3483,44 @@ class Fun(Cog):
             f"You typed in `{round(fin - ini, 2)}` seconds. "
             f"Words per minute: `{round(len(fakecontent.split(' ')) / (fin - ini) * 60, 2)}`"
         )
+
+    @commands.command(name="reactiontest")
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True)
+    async def reaction_test(self, ctx: Context):
+        """Reaction test, REACT AS FAST AS POSSIBLE"""
+        EMOJIS = [
+            "\N{GRINNING FACE}",
+            "\N{SMILING FACE WITH OPEN MOUTH}"
+            "\N{FACE WITH TEARS OF JOY}"
+            "\N{SMILING FACE WITH HALO}"
+        ]
+        emoji = random.choice(EMOJIS)
+        confirm = await ctx.send(
+            f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start."
+        )
+        await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+        def check(r: discord.Reaction, u: discord.User):
+            return (
+                u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+            )
+
+        try:
+            await ctx.bot.wait_for("reaction_add", check=check, timeout=60)
+        except asyncio.TimeoutError:
+            return await ctx.message.add_reaction("\N{ALARM CLOCK}")
+
+        await confirm.add_reaction(emoji)
+        await ctx.release(random.uniform(0.5, 1.5))
+        await confirm.edit(
+            content=f"{ctx.author.mention} React as fast as possible on {emoji} **NOW**."
+        )
+
+        def check(reaction: discord.Reaction, user: discord.Member) -> bool:
+            return str(reaction.emoji) == emoji and reaction.message == confirm
+
+        start = time.perf_counter()
+        await ctx.bot.wait_for('reaction_add', check=check)
+        end = time.perf_counter()
+
+        return await confirm.edit(f"{ctx.author.mention} reacted on {end-start:.2f}s")

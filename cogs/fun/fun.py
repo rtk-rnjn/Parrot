@@ -3490,9 +3490,9 @@ class Fun(Cog):
         """Reaction test, REACT AS FAST AS POSSIBLE"""
         EMOJIS = [
             "\N{GRINNING FACE}",
-            "\N{SMILING FACE WITH OPEN MOUTH}"
-            "\N{FACE WITH TEARS OF JOY}"
-            "\N{SMILING FACE WITH HALO}"
+            "\N{SMILING FACE WITH OPEN MOUTH}",
+            "\N{FACE WITH TEARS OF JOY}",
+            "\N{SMILING FACE WITH HALO}",
         ]
         emoji = random.choice(EMOJIS)
         confirm = await ctx.send(

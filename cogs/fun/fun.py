@@ -3523,4 +3523,6 @@ class Fun(Cog):
         await ctx.bot.wait_for('reaction_add', check=check)
         end = time.perf_counter()
 
-        return await confirm.edit(f"{ctx.author.mention} reacted on {end-start:.2f}s")
+        return await confirm.edit(
+            content=f"{ctx.author.mention} reacted on {end-start:.2f}s"
+        )

@@ -1,19 +1,12 @@
 from __future__ import annotations
 
-from core import Parrot, Cog, Context
-from typing import Any, Optional, Union
+from core import Parrot, Cog
 
 import discord
 from discord.ext import commands
 
 import os
 import tweepy
-from utilities.converters import ToAsync
-
-
-@ToAsync()
-def func(obj: Any, *args: Any, **kwargs: Any) -> Any:
-    return obj(*args, **kwargs)
 
 
 class Twitter(Cog):

@@ -31,6 +31,8 @@ from utilities.config import (
 
 from utilities.checks import _can_run
 from utilities.paste import Client
+from utilities.converters import ToAsync
+
 from .__template import post as POST
 
 from time import time
@@ -49,6 +51,11 @@ intents.message_content = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
+
+
+@ToAsync()
+def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    return function(*args, **kwargs)
 
 
 class Parrot(commands.AutoShardedBot):
@@ -96,6 +103,7 @@ class Parrot(commands.AutoShardedBot):
         self.afk = set()
 
         self.opts: Dict[str, Any] = {}
+        self.func = func
 
     def __repr__(self):
         return f"<core.{self.user.name}>"

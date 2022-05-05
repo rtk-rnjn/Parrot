@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 from core import Parrot, Cog, Context
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import discord
 from discord.ext import commands
 
 import os
 import tweepy
+from utilities.converters import ToAsync
+
+
+@ToAsync()
+def func(obj: Any, *args: Any, **kwargs: Any) -> Any:
+    return obj(*args, **kwargs)
 
 
 class Twitter(Cog):
@@ -21,4 +27,6 @@ class Twitter(Cog):
             os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET']
         )
         self.api = tweepy.API(self.auth)
-
+        self.async_stream = tweepy.asynchronous.AsyncStream(
+            os.environ["API_KEY"], os.environ["API_KEY_SECRET"], os.environ["ACCESS_TOKEN"], os.environ["ACCESS_TOKEN_SECRET"]
+        )

@@ -27,6 +27,5 @@ class Twitter(Cog):
             os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET']
         )
         self.api = tweepy.API(self.auth)
-        self.async_stream = tweepy.asynchronous.AsyncStream(
-            os.environ["API_KEY"], os.environ["API_KEY_SECRET"], os.environ["ACCESS_TOKEN"], os.environ["ACCESS_TOKEN_SECRET"]
-        )
+        if not hasattr(bot, "twitter"):
+            bot.twitter = self.api

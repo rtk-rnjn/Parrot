@@ -974,13 +974,13 @@ class Chess:
 
         self.game_stop = False
 
-    def legal_moves(self) -> Optional[list]:
+    def legal_moves(self) -> List[str]:
         return [self.board.san(move) for move in self.board.legal_moves]
 
     async def wait_for_move(self) -> Optional[discord.Message]:
         LEGAL_MOVES = self.legal_moves()
 
-        def check(m):
+        def check(m) -> bool:
             if m.content.lower() in ("exit", "quit", "resign", "abort", "draw"):
                 return True
             return (
@@ -1010,13 +1010,15 @@ class Chess:
             return
 
     async def place_move(self, move: str) -> None:
+        st = "white" if self.alternate_turn == self.white else "black"
         move = self.board.push_san(move)
         content = f"{self.white.mention} VS {self.black.mention}"
         embed = discord.Embed(
             timestamp=discord.utils.utcnow(),
         )
         embed.set_image(
-            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true"
+            url=
+            f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true&orientation={st}"
         )
         embed.description = f"""```
 On Check?      : {self.board.is_check()}
@@ -1031,7 +1033,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 
     async def game_over(
         self,
-    ) -> Optional[bool]:
+    ) -> bool:
         if not self.game_stop:
             if self.board.is_checkmate():
                 await self.ctx.send(f"Game over! **{self.turn}** wins by check-mate")

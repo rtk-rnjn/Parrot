@@ -32,7 +32,7 @@ class Actions(Cog):
         )
         embed.set_image(url=data["url"])
         embed.set_footer(
-            text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url
+            text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url
         )
 
         await ctx.reply(embed=embed)

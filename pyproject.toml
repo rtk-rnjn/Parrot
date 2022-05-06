@@ -3,7 +3,7 @@ name = "Parrot-Discord-Bot"
 version = "4.7"
 description = ""
 authors = ["Ritik Ranjan <ritik0ranjan@gmail.com>"]
-license = "MIT"
+license = "Mozilla Public License 2.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"

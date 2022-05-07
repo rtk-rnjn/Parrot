@@ -14,7 +14,6 @@ from core import Parrot, Context, Cog
 
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
-from utilities.formats import Player
 from utilities.time import ShortTime
 
 from .flags import AutoWarn, warnConfig
@@ -276,7 +275,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} set 24/7 vc channel to **{channel.name}**"
             )
             try:
-                await channel.connect(cls=Player)
+                await channel.connect()
             except Exception as e:
                 await ctx.send(f"{ctx.author.mention} something wrong: **{e}**")
             return

@@ -939,7 +939,8 @@ class Utils(Cog):
         if message.channel.id != ls["suggestion_channel"]:
             return
 
-        await self.__parse_mod_action(message)
+        if _ := await self.__parse_mod_action(message):
+            return
 
         context: Context = await self.bot.get_context(message, cls=Context)
         await self.suggest(context, suggestion=message.content)
@@ -994,6 +995,7 @@ class Utils(Cog):
 
             # await context.invoke(cmd, msg.id, message.content.upper())
             await self.suggest_flag(context, msg.id, message.content.upper())
+            return True
 
     def __is_mod(self, member: discord.Member) -> bool:
         try:

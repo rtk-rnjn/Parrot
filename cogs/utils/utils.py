@@ -927,7 +927,7 @@ class Utils(Cog):
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
-        if message.author.bot and message.guild is None:
+        if message.author.bot or message.guild is None:
             return
 
         ls = await self.bot.mongo.parrot_db.server_config.find_one(

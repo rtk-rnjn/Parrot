@@ -910,7 +910,7 @@ class Utils(Cog):
         embed.color = payload["color"]
 
         user_id = int(embed.footer.text.split(":")[1])
-        user: Optional[discord.Member] = self.bot.get_or_fetch_member(
+        user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
             ctx.guild, user_id
         )
         await self.__notify_user(ctx, user, message=msg, remark="")
@@ -987,7 +987,7 @@ class Utils(Cog):
                 discord.Message, discord.DeletedReferencedMessage
             ] = message.reference.resolved
 
-            if not isinstance(msg, discord.discord.Message):
+            if not isinstance(msg, discord.Message):
                 return
 
             if msg.author.id != self.bot.user.id:

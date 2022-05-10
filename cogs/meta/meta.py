@@ -10,7 +10,6 @@ from discord.ext import commands
 from time import time
 
 from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
-from utilities.formats import get_cmd_signature
 
 from core import Parrot, Context, Cog
 from collections import Counter
@@ -276,17 +275,16 @@ class PaginatedHelpCommand(commands.HelpCommand):
             )
 
     def get_command_signature(self, command):
-        # parent = command.full_parent_name
-        # if len(command.aliases) > 0:
-        #     aliases = "|".join(command.aliases)
-        #     fmt = f"[{command.name}|{aliases}]"
-        #     if parent:
-        #         fmt = f"{parent} {fmt}"
-        #     alias = fmt
-        # else:
-        #     alias = command.name if not parent else f"{parent} {command.name}"
-        # return f"{alias} {command.signature}"
-        return get_cmd_signature(command, default=False)
+        parent = command.full_parent_name
+        if len(command.aliases) > 0:
+            aliases = "|".join(command.aliases)
+            fmt = f"[{command.name}|{aliases}]"
+            if parent:
+                fmt = f"{parent} {fmt}"
+            alias = fmt
+        else:
+            alias = command.name if not parent else f"{parent} {command.name}"
+        return f"{alias} {command.signature}"
 
     async def send_bot_help(self, mapping):
         await self.context.typing()

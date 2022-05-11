@@ -11,7 +11,6 @@ from core import Parrot, Cog, Context
 from discord.ext import commands, tasks
 import discord
 
-import datetime
 import asyncio
 
 from utilities.checks import is_mod
@@ -508,7 +507,7 @@ class Utils(Cog):
     @tasks.loop(seconds=3)
     async def reminder_task(self):
         async for data in self.collection.find(
-            {"expires_at": {"$lte": datetime.datetime.utcnow().timestamp()}}
+            {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
         ):
             cog = self.bot.get_cog("EventCustom")
             await self.collection.delete_one({"_id": data["_id"]})

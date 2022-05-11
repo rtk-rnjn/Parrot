@@ -345,7 +345,6 @@ class BackupLoader:
     async def _load_settings(self):
         await self.guild.edit(
             name=self.data["name"],
-            # region=discord.VoiceRegion(self.data["region"]),
             afk_channel=self.guild.get_channel(
                 self.id_translator.get(self.data["afk_channel"])
             ),

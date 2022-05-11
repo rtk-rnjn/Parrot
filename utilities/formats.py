@@ -5,7 +5,7 @@ import re
 from discord.ext import commands
 
 from typing import Union, Literal, Any
-import pomice
+# import pomice
 import asyncio
 from core import Parrot, Context
 
@@ -120,9 +120,9 @@ def get_flag(
             ls.append(f"[{pref}{flag.name}{'|'.join(list(alis))}{deli}]")
     return ls
 
-class Player(pomice.Player):
-    def __init__(self, bot: Parrot = None, channel=None, *, ctx: Context, node=None):
-        self.queue = asyncio.Queue()
-        self.loop = None
-        self.ctx = ctx
-        super().__init__(bot, channel, node=node)
+# class Player(pomice.Player):
+#     def __init__(self, bot: Parrot = None, channel=None, *, ctx: Context, node=None):
+#         self.queue = asyncio.Queue()
+#         self.loop = None
+#         self.ctx = ctx
+#         super().__init__(bot, channel, node=node)

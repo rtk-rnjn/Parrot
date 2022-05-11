@@ -1,6 +1,5 @@
 git+https://github.com/Rapptz/discord.py
 aiohttp
-pomice
 humanize
 markdownify
 psutil
@@ -38,3 +37,4 @@ python-dotenv
 pygit2
 youtube_dl
 tweepy
+prettytable

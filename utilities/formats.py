@@ -4,10 +4,8 @@ import datetime
 import re
 from discord.ext import commands
 
-from typing import Union, Literal, Any
+from typing import Any
 # import pomice
-import asyncio
-from core import Parrot, Context
 
 
 class plural:

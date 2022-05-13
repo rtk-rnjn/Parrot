@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import traceback
-from typing import Any, Awaitable, Callable, Optional, Dict, Union, List
+from typing import Any, Awaitable, Callable, Iterator, Optional, Dict, Union, List
 import jishaku  # noqa: F401
 import datetime
 import asyncio
@@ -173,10 +173,10 @@ class Parrot(commands.AutoShardedBot):
             for index in reversed(to_remove):
                 del dates[index]
 
-    async def on_socket_raw_receive(self, msg) -> None:
+    async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
 
-    async def before_identify_hook(self, shard_id, *, initial):
+    async def before_identify_hook(self, shard_id: int, *, initial: bool = False) -> None:
         self._clear_gateway_data()
         self.identifies[shard_id].append(discord.utils.utcnow())
         await super().before_identify_hook(shard_id, initial=initial)
@@ -234,7 +234,7 @@ class Parrot(commands.AutoShardedBot):
         print(f"[{self.user.name.title()}] disconnect from discord")
         return
 
-    async def on_shard_resumed(self, shard_id) -> None:
+    async def on_shard_resumed(self, shard_id: int) -> None:
         print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 
@@ -312,7 +312,9 @@ class Parrot(commands.AutoShardedBot):
         if before.content != after.content and before.author.id in OWNER_IDS:
             await self.process_commands(after)
 
-    async def resolve_member_ids(self, guild: discord.Guild, member_ids: list):
+    async def resolve_member_ids(
+        self, guild: discord.Guild, member_ids: List[int]
+    ) -> Iterator[Optional[discord.Member]]:
         """|coro|
 
         Bulk resolves member IDs to member instances, if possible.
@@ -514,7 +516,7 @@ class Parrot(commands.AutoShardedBot):
         force_fetch: bool = True,
     ) -> Any:
         if _id is None:
-            if get_function is not None:
+            if not isinstance(get_function, Callable):
                 something = get_function
             if isinstance(fetch_function, Awaitable) and something is None:
                 return await fetch_function
@@ -524,7 +526,7 @@ class Parrot(commands.AutoShardedBot):
             if something is None and force_fetch:
                 return await fetch_function(_id)
             return something
-        except Exception as e:
+        except discord.HTTPException:
             return None
 
     @tasks.loop(count=1)

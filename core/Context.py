@@ -15,7 +15,7 @@ from typing import Optional, Union, List, Tuple, Any
 
 __all__ = ("Context",)
 
-CONFIRM_REACTIONS = (
+CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
@@ -108,6 +108,10 @@ class Context(commands.Context):
                 pass
             return
 
+        embed = kwargs.get("embed",)
+        if isinstance(embed, discord.Embed) and not embed.color:
+            embed.color = self.bot.color
+
         return await super().send(content, **kwargs)
 
     async def reply(
@@ -123,6 +127,11 @@ class Context(commands.Context):
             except discord.Forbidden:
                 pass
             return
+
+        embed = kwargs.get("embed",)
+        if isinstance(embed, discord.Embed) and not embed.color:
+            embed.color = self.bot.color
+
         try:
             return await self.send(
                 content, reference=kwargs.get("reference") or self.message, **kwargs
@@ -203,7 +212,7 @@ class Context(commands.Context):
         await asyncio.sleep(_for or 0)
 
     async def safe_send(
-        self, content, *, escape_mentions=True, **kwargs
+        self, content: str, *, escape_mentions: bool=True, **kwargs: Any
     ) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
@@ -217,7 +226,7 @@ class Context(commands.Context):
         return await self.send(content)
 
     async def bulk_add_reactions(
-        self, message: discord.Message, *reactions: Union[discord.Emoji, str]
+        self, message: discord.Message, *reactions: Union[discord.Emoji, discord.PartialEmoji, str]
     ) -> None:
         coros = [
             asyncio.ensure_future(message.add_reaction(reaction))

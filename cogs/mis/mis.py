@@ -152,7 +152,7 @@ def _create_qr(
     qr.add_data(text)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white", **kw)
-    _timestamp = int(datetime.datetime.utcnow().timestamp())  # float float
+    _timestamp = int(discord.utils.utcnow().timestamp())  # float float
     img.save(f"temp/{_timestamp}.png")
     return f"temp/{_timestamp}.png"
 
@@ -335,7 +335,7 @@ class Misc(Cog):
         embed = discord.Embed(
             title="Calculated!!",
             description=f"```ini\n[Answer is: {res}]```",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.set_footer(text=f"{ctx.author.name}")
 
@@ -354,7 +354,7 @@ class Misc(Cog):
                     title=f"First message in {channel.name}",
                     url=msg.jump_url,
                     description=f"{msg.content}",  # fuck you pycord
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=discord.utils.utcnow(),
                 ).set_footer(text=f"Message sent by {msg.author}")
             )
 
@@ -397,7 +397,7 @@ class Misc(Cog):
         embed = discord.Embed(
             title="Calculated!!",
             description=f"```ini\n[Answer is: {result}]```",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         await ctx.reply(embed=embed)
 
@@ -440,7 +440,7 @@ class Misc(Cog):
             embed = Embed(
                 title=f"{title}",
                 description=f"{description}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             embed.add_field(name=f"{source}", value=f"{content}")
             embed.set_image(url=f"{img}")
@@ -604,7 +604,7 @@ class Misc(Cog):
         embed = discord.Embed(
             title=f"Weather Menu of: {location}",
             description=f"Weather: {weather}",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.add_field(name="Latitude", value=f"{lat} Deg", inline=True)
         embed.add_field(name="Longitude", value=f"{lon} Deg", inline=True)
@@ -636,7 +636,7 @@ class Misc(Cog):
         if contents:
             embed = Embed(title="Wikipedia Search Results", colour=ctx.author.color)
             embed.set_thumbnail(url=WIKI_THUMBNAIL)
-            embed.timestamp = datetime.datetime.utcnow()
+            embed.timestamp = discord.utils.utcnow()
             page = SimplePages(entries=contents, ctx=ctx, per_page=3)
             await page.start()
         else:
@@ -746,7 +746,7 @@ class Misc(Cog):
         embed = discord.Embed(
             title="Snowflake lookup",
             color=ctx.author.color,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.add_field(
             name="Type", value=f"`{target.__class__.__name__}`", inline=True
@@ -871,7 +871,7 @@ class Misc(Cog):
         embed = discord.Embed(
             title=data["content"]["poll"]["title"],
             description=f"Total Options: {len(data['content']['poll']['poll_answers'])} | Total Votes: {data['content']['poll']['total_votes']}",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=ctx.author.color,
         )
         for temp in data["content"]["poll"]["poll_answers"]:
@@ -925,7 +925,7 @@ class Misc(Cog):
             embed=discord.Embed(
                 description=msg,
                 color=ctx.author.color,
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             ).set_footer(text=f"{ctx.author}")
         )
 
@@ -982,7 +982,7 @@ class Misc(Cog):
         embed = discord.Embed(
             title="SERVER STATUS",
             description=f"IP: {ip}\n```\n{motd}\n```",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=ctx.author.color,
         )
         embed.add_field(name="Hostname", value=hostname, inline=True)

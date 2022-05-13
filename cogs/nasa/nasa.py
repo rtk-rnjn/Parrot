@@ -39,7 +39,7 @@ class NASA(Cog):
         link = f"https://api.nasa.gov/planetary/earth/imagery?lon={longitute}&lat={latitude}&date={date}&dim=0.15&api_key={NASA_KEY}"
 
         embed = discord.Embed(
-            title="Earth", colour=discord.Colour.blue(), timestamp=datetime.utcnow()
+            title="Earth", colour=discord.Colour.blue(), timestamp=discord.utils.utcnow()
         )
         embed.set_image(url=f"{link}")
         embed.set_thumbnail(
@@ -73,7 +73,7 @@ class NASA(Cog):
         embed = discord.Embed(
             title=f"Astronomy Picture of the Day: {title} | At: {date_}",
             description=f"{expln}",
-            timestamp=datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         if res["media_type"] == "image":
             image = res["url"]
@@ -110,7 +110,7 @@ class NASA(Cog):
                 title=f"{caption}",
                 colour=discord.Colour.blue(),
                 description=f"Lat: {lat} | Lon: {lon}",
-                timestamp=datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             embed.set_image(url=f"{link}")
             embed.set_footer(text=f"Page {index+1}/{len(res)} | {ctx.author.name}")
@@ -174,7 +174,7 @@ class NASA(Cog):
                     title=f"At: {date}",
                     description=f"Retriving data from {start} to {end}",
                     url=f"{link_self}",
-                    timestamp=datetime.utcnow(),
+                    timestamp=discord.utils.utcnow(),
                 )
                 embed.add_field(name="Asteroid Name:", value=f"{name_end}", inline=True)
                 embed.add_field(name="Asteroid ID:", value=f"{id_end}", inline=True)
@@ -276,7 +276,7 @@ class NASA(Cog):
             embed = discord.Embed(
                 title="Mars Rover Photos",
                 description=f"Status: {status} | Date of imagery: {date_}",
-                timestamp=datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             embed.set_image(url=f"{img}")
             embed.set_footer(
@@ -339,7 +339,7 @@ class NASA(Cog):
             embed = discord.Embed(
                 title=f"{title}",
                 description=f"{description}",
-                timestamp=datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             embed.set_image(url=f"{preview}")
             if img:

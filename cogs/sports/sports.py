@@ -32,7 +32,7 @@ class Sports(Cog):
     ) -> discord.Embed:
         """To create the embed for the ipl score. For more detailed information, see https://github.com/rtk-rnjn/cricbuzz_scraper"""
         if data["title"]:
-            embed = discord.Embed(title=data["title"], timestamp=datetime.utcnow())
+            embed = discord.Embed(title=data["title"], timestamp=discord.utils.utcnow())
         embed.set_footer(text=data["status"])
 
         table1 = tabulate(data["batting"], headers="keys")

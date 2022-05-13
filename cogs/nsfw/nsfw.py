@@ -27,7 +27,7 @@ class NSFW(Cog):
         embed = discord.Embed(
             title=f"{type_str.title()}",
             color=self.bot.color,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.set_image(url=url)
         return embed
@@ -279,7 +279,7 @@ class NSFW(Cog):
 
         img = res["image"]
 
-        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(timestamp=discord.utils.utcnow())
         em.set_footer(text=f"{ctx.author.name}")
         em.set_image(url=img)
 
@@ -303,7 +303,7 @@ class NSFW(Cog):
 
         img = res["url"]
 
-        em = discord.Embed(timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(timestamp=discord.utils.utcnow())
         em.set_footer(text=f"{ctx.author.name}")
         em.set_image(url=img)
 

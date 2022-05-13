@@ -50,25 +50,25 @@ class GroupHelpPageSource(menus.ListPageSource):
     def __init__(
         self,
         group: Union[commands.Group, Cog],
-        commands: List[commands.Command],
+        commands_list: List[commands.Command],
         *,
         prefix: str,
     ):
-        super().__init__(entries=commands, per_page=6)
+        super().__init__(entries=commands_list, per_page=6)
         self.group = group
         self.prefix = prefix
         self.title = f"{self.group.qualified_name} Commands"
         self.description = self.group.description
 
-    async def format_page(self, menu, commands):
+    async def format_page(self, menu, commands_list):
         embed = discord.Embed(
             title=self.title,
             description=self.description,
             colour=discord.Color.blue(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
 
-        for index, command in enumerate(commands):
+        for index, command in enumerate(commands_list):
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
                 name=f"\N{BULLET} {command.qualified_name}",
@@ -85,14 +85,14 @@ class GroupHelpPageSource(menus.ListPageSource):
 
 
 class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
-    def __init__(self, commands: Dict[Cog, List[commands.Command]], bot: Parrot):
+    def __init__(self, commands_list: Dict[Cog, List[commands.Command]], bot: Parrot):
         super().__init__(
             placeholder="Select a category...",
             min_values=1,
             max_values=1,
             row=0,
         )
-        self.commands = commands
+        self.commands = commands_list
         self.bot = bot
         self.__fill_options()
 
@@ -164,7 +164,7 @@ class FrontPageSource(menus.PageSource):
         embed = discord.Embed(
             title="Bot Help",
             colour=discord.Color.blue(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.description = inspect.cleandoc(
             f"""
@@ -232,9 +232,9 @@ class HelpMenu(RoboPages):
     def __init__(self, source: menus.PageSource, ctx: Context):
         super().__init__(source, ctx=ctx, compact=True)
 
-    def add_categories(self, commands: Dict[Cog, List[commands.Command]]) -> None:
+    def add_categories(self, commands_list: Dict[Cog, List[commands.Command]]) -> None:
         self.clear_items()
-        self.add_item(HelpSelectMenu(commands, self.ctx.bot))
+        self.add_item(HelpSelectMenu(commands_list, self.ctx.bot))
         self.fill_items()
 
     async def rebind(
@@ -358,7 +358,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await self.context.typing()
         # No pagination necessary for a single command.
         embed = discord.Embed(
-            colour=discord.Color.blue(), timestamp=datetime.datetime.utcnow()
+            colour=discord.Color.blue(), timestamp=discord.utils.utcnow()
         )
         embed.set_thumbnail(url=self.context.me.display_avatar.url)
         embed.set_footer(
@@ -433,7 +433,7 @@ class Meta(Cog):
         Get the avatar of the user. Make sure you don't misuse.
         """
         member = member or ctx.author
-        embed = discord.Embed(timestamp=datetime.datetime.utcnow())
+        embed = discord.Embed(timestamp=discord.utils.utcnow())
         # embed.add_field(
         #     name=member.name, value=f"[Download]({member.display_avatar.url})"
         # )
@@ -456,7 +456,7 @@ class Meta(Cog):
             embed=discord.Embed(
                 title="Owner Info",
                 description=r"This bot is being hosted and created by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
                 color=ctx.author.color,
                 url="https://discord.com/users/741614468546560092",
             )
@@ -471,7 +471,7 @@ class Meta(Cog):
         Get the freaking server icon
         """
         guild = server or ctx.guild
-        embed = discord.Embed(timestamp=datetime.datetime.utcnow())
+        embed = discord.Embed(timestamp=discord.utils.utcnow())
         embed.set_image(url=guild.icon.url)
         embed.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=embed)
@@ -488,7 +488,7 @@ class Meta(Cog):
         embed = discord.Embed(
             title=f"Server Info: {ctx.guild.name}",
             colour=ctx.guild.owner.colour,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
 
         embed.set_thumbnail(url=ctx.guild.icon.url)
@@ -640,7 +640,7 @@ class Meta(Cog):
         embed = discord.Embed(
             title="Official Bot Server Invite",
             colour=ctx.author.colour,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             description="Latest Changes:\n" + revision,
             url=SUPPORT_SERVER,
         )
@@ -706,7 +706,7 @@ class Meta(Cog):
         embed = discord.Embed(
             title="User information",
             colour=target.colour,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
 
         embed.set_thumbnail(url=target.display_avatar.url)
@@ -761,7 +761,7 @@ class Meta(Cog):
             title="Click here to add",
             description=f"```ini\n[Default Prefix: `@{self.bot.user}`]\n```\n**Bot Owned and created by `{self.bot.author_name}`**",
             url=url,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
 
         em.set_footer(text=f"{ctx.author}")
@@ -778,7 +778,7 @@ class Meta(Cog):
             title=f"Role Information: {role.name}",
             description=f"ID: `{role.id}`",
             color=role.color,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         data = [
             ("Created At", f"{discord.utils.format_dt(role.created_at)}", True),
@@ -827,7 +827,7 @@ class Meta(Cog):
         em = discord.Embed(
             title="Emoji Info",
             description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=ctx.author.color,
         )
         data = [
@@ -871,7 +871,7 @@ class Meta(Cog):
         embed = discord.Embed(
             title="Channel Info",
             color=ctx.author.color,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.add_field(name="Name", value=channel.name)
         embed.add_field(name="ID", value=f"{id_}")
@@ -939,7 +939,7 @@ class Meta(Cog):
         """To get the latest news from the support server | Change Log"""
         embed = discord.Embed(
             title="Announcement",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=ctx.author.color,
         )
         embed.set_footer(text=f"{ctx.author}")
@@ -957,7 +957,7 @@ class Meta(Cog):
             title="Click here to vote!",
             url=f"https://top.gg/bot/{self.bot.user.id}/vote",
             description=f"**{ctx.author}** thank you for using this command!\n\nYou can vote in every 12h",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=ctx.author.color,
         )
         embed.set_footer(text=f"{ctx.author}")
@@ -977,7 +977,7 @@ class Meta(Cog):
                 f"{ctx.author.mention} invalid invite or invite link is not of server"
             )
         embed = discord.Embed(
-            title=invite.url, timestamp=datetime.datetime.utcnow(), url=invite.url
+            title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url
         )
         embed.description = f"""`Member Count?  :` **{invite.approximate_member_count}**
 `Presence Count?:` **{invite.approximate_presence_count}**

@@ -26,15 +26,15 @@ ONE_DAY = 86400  # faster response time if in seconds
 
 
 def resolve_current_month() -> Month:
-    return Month(datetime.utcnow().month)
+    return Month(discord.utils.utcnow().month)
 
 
 def resolve_current_day() -> Day:
-    return Day(datetime.utcnow().day)
+    return Day(discord.utils.utcnow().day)
 
 
 def resolve_current_time(*, _time: datetime = None) -> datetime:
-    return _time or datetime.utcnow()
+    return _time or discord.utils.utcnow()
 
 
 def human_months(months: Iterable[Month]) -> str:
@@ -161,7 +161,7 @@ def in_time_listener(*, past: datetime, future: datetime) -> Callable:
         @functools.wraps(listener)
         async def guarded_listener(*args, **kwargs) -> None:
             """Wrapped listener will abort if not in allowed day."""
-            current_time = datetime.utcnow()
+            current_time = discord.utils.utcnow()
             if past < current_time < future:
                 # Propagate return value although it should always be None
                 return await listener(*args, **kwargs)

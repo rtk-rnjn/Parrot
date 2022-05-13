@@ -18,7 +18,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         await channel.send(
             embed=discord.Embed(
                 title="Parrot Ticket Bot",
-                timestamp=datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
                 description=f"{description}",
                 color=discord.Color.blue(),
             )

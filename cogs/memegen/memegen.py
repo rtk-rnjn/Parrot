@@ -38,7 +38,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -63,7 +63,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -90,7 +90,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -122,7 +122,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -146,7 +146,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -173,7 +173,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -197,7 +197,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -221,7 +221,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -245,7 +245,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -274,7 +274,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -298,7 +298,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -322,7 +322,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -346,7 +346,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -370,7 +370,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -392,7 +392,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -420,7 +420,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -446,7 +446,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -470,7 +470,7 @@ class Memegen(Cog):
                 else:
                     return
         img = res["message"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -512,7 +512,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -556,7 +556,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -600,7 +600,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -643,7 +643,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -686,7 +686,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -729,7 +729,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -773,7 +773,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -816,7 +816,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -862,7 +862,7 @@ class Memegen(Cog):
             return
 
         img = res["data"]["url"]
-        em = discord.Embed(title="", timestamp=datetime.utcnow())
+        em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
         em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)

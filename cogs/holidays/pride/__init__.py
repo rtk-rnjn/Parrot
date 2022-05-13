@@ -29,7 +29,7 @@ class Pride(Cog):
 
     async def send_random_fact(self, ctx: Context) -> None:
         """Provides a fact from any previous day, or today."""
-        now = datetime.utcnow()
+        now = discord.utils.utcnow()
         previous_years_facts = (y for x, y in FACTS.items() if int(x) < now.year)
         current_year_facts = FACTS.get(str(now.year), [])[: now.day]
         previous_facts = current_year_facts + [
@@ -44,7 +44,7 @@ class Pride(Cog):
         self, target: discord.abc.Messageable, _date: Union[str, datetime]
     ) -> None:
         """Provides the fact for the specified day, if the day is today, or is in the past."""
-        now = datetime.utcnow()
+        now = discord.utils.utcnow()
         if isinstance(_date, str):
             try:
                 date = dateutil.parser.parse(
@@ -78,7 +78,7 @@ class Pride(Cog):
         will be provided.
         """
         if not option:
-            await self.send_select_fact(ctx, datetime.utcnow())
+            await self.send_select_fact(ctx, discord.utils.utcnow())
         elif option.lower().startswith("rand"):
             await self.send_random_fact(ctx)
         else:

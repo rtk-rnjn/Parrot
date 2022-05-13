@@ -42,7 +42,7 @@ async def log(guild, channel, description, status):
     await channel.send(
         embed=discord.Embed(
             title="Parrot Ticket Bot",
-            timestamp=datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             description=f"{description}",
             color=discord.Color.blue(),
         )
@@ -257,7 +257,7 @@ async def _addaccess(ctx, role):
             role.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -274,7 +274,7 @@ async def _delaccess(ctx, role):
             role.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -291,7 +291,7 @@ async def _addadimrole(ctx, role):
             role.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -308,7 +308,7 @@ async def _addpingedrole(ctx, role):
             role.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -325,7 +325,7 @@ async def _deladminrole(ctx, role):
             role.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -342,7 +342,7 @@ async def _delpingedrole(ctx, role):
             role.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -359,7 +359,7 @@ async def _setcategory(ctx, channel):
             channel.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
@@ -376,7 +376,7 @@ async def _setlog(ctx, channel):
             channel.name
         ),
         color=discord.Color.blue(),
-        timestamp=datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
     )
     em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)

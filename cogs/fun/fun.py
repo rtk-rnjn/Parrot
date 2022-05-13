@@ -1579,7 +1579,7 @@ class Fun(Cog):
         embed = discord.Embed(
             title="Decoding...",
             colour=discord.Colour.red(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.add_field(
             name="Encoded text:", value=f"```\n{base64_string}\n```", inline=False
@@ -1610,7 +1610,7 @@ class Fun(Cog):
         embed = discord.Embed(
             title="Encoding...",
             colour=discord.Colour.red(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.add_field(
             name="Normal [string] text:",
@@ -1830,7 +1830,7 @@ class Fun(Cog):
         sub = res["subreddit"]
 
         embed = discord.Embed(
-            title=f"{title}", description=f"{sub}", timestamp=datetime.datetime.utcnow()
+            title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow()
         )
         embed.set_image(url=res["image"])
         embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}")
@@ -1865,7 +1865,7 @@ class Fun(Cog):
         em = discord.Embed(
             title=f"{name}",
             description=f"```\n{address} {cords}```",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         em.add_field(name="Timezone", value=f"{tz}", inline=False)
         em.add_field(
@@ -1983,7 +1983,7 @@ class Fun(Cog):
                 title=f"{word}",
                 description=f"{cleanup_definition(_def)}",
                 url=f"{_link}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             embed.add_field(name="Example", value=f"{example[:250:]}...")
             embed.set_author(name=f"Author: {author}")
@@ -2052,13 +2052,13 @@ class Fun(Cog):
             em = discord.Embed(
                 title="Dare",
                 description=f"{random.choice(dare)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
         else:
             em = discord.Embed(
                 title=f"{member.name} Dared",
                 description=f"{random.choice(dare)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
 
         em.set_footer(text=f"{ctx.author.name}")
@@ -2074,13 +2074,13 @@ class Fun(Cog):
             em = discord.Embed(
                 title="Would you Rather...?",
                 description=f"{random.choice(wyr)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
         else:
             em = discord.Embed(
                 title=f"{member.name} Would you Rather...?",
                 description=f"{random.choice(wyr)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
 
         em.set_footer(text=f"{ctx.author.name}")
@@ -2096,13 +2096,13 @@ class Fun(Cog):
             em = discord.Embed(
                 title="Never Have I ever...",
                 description=f"{random.choice(nhi)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
         else:
             em = discord.Embed(
                 title=f"{member.name} Never Have I ever...",
                 description=f"{random.choice(nhi)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
 
         em.set_footer(text=f"{ctx.author.name}")
@@ -2119,14 +2119,14 @@ class Fun(Cog):
             em = discord.Embed(
                 title="Truth",
                 description=f"{random.choice(t)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             em.set_footer(text=f"{ctx.author.name}")
         else:
             em = discord.Embed(
                 title=f"{member.name} reply!",
                 description=f"{random.choice(t)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
@@ -2142,14 +2142,14 @@ class Fun(Cog):
             em = discord.Embed(
                 title="Say",
                 description=f"{random.choice(t)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             em.set_footer(text=f"{ctx.author}")
         else:
             em = discord.Embed(
                 title=f"{member} reply!",
                 description=f"{random.choice(t)}",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             )
             em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)
@@ -2163,7 +2163,7 @@ class Fun(Cog):
         if not ctx.invoked_subcommand:
             await ctx.reply(
                 embed=discord.Embed(
-                    timestamp=datetime.datetime.utcnow(), color=ctx.author.color
+                    timestamp=discord.utils.utcnow(), color=ctx.author.color
                 )
                 .set_image(url=f"https://http.cat/{status_code}")
                 .set_footer(text=f"{ctx.author}")
@@ -2177,7 +2177,7 @@ class Fun(Cog):
         """To understand HTTP Errors, in dog format"""
         await ctx.reply(
             embed=discord.Embed(
-                timestamp=datetime.datetime.utcnow(), color=ctx.author.color
+                timestamp=discord.utils.utcnow(), color=ctx.author.color
             )
             .set_image(url=f"https://httpstatusdogs.com/img/{status_code}.jpg")
             .set_footer(text=f"{ctx.author}")
@@ -2663,7 +2663,7 @@ class Fun(Cog):
 
         embed = discord.Embed(
             description=f"{(await r.json())['text']}",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         ).set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 

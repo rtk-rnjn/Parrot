@@ -47,7 +47,7 @@ class HumanTime:
     calendar = pdt.Calendar(version=pdt.VERSION_CONTEXT_STYLE)
 
     def __init__(self, argument, *, now=None):
-        now = now or datetime.datetime.utcnow()
+        now = now or discord.utils.utcnow()
         dt, status = self.calendar.parseDT(argument, sourceTime=now)
         if not status.hasDateOrTime:
             raise commands.BadArgument(

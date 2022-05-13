@@ -56,7 +56,7 @@ class Hanukkah(Cog):
         embed = Embed(title="Hanukkah", colour=Colours.blue)
         if start_day <= today <= end_day:
             if start_day == today:
-                now = datetime.datetime.utcnow()
+                now = discord.utils.utcnow()
                 hours = now.hour + 4  # using only hours
                 hanukkah_start_hour = 18
                 if hours < hanukkah_start_hour:

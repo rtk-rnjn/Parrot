@@ -197,7 +197,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             embed=discord.Embed(
                 title="You've been gifted a subscription!",
                 description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             ).set_thumbnail(url="https://i.imgur.com/w9aiD6F.png"),
             view=nitro(ctx),
         )
@@ -284,7 +284,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 embed = discord.Embed(
                     title=i["title"],
                     description=f"```\n{i['snippet']}```",
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=discord.utils.utcnow(),
                 )
                 embed.set_footer(text=f"Requester: {ctx.author}")
                 embed.set_image(url=i["link"])
@@ -328,7 +328,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         embed_first = discord.Embed(
             title=name,
             color=ctx.author.color,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
         )
         if instant_invite:
             embed_first.url = instant_invite
@@ -341,7 +341,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 title=channel["name"],
                 description=f"**Position:** {channel['position']}",
                 color=ctx.author.color,
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
             ).set_footer(text=channel["id"])
 
             em_list.append(em_chan)
@@ -365,7 +365,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 discord.Embed(
                     title=f"Username: {username}#{discriminator}",
                     color=ctx.author.color,
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=discord.utils.utcnow(),
                 )
                 .set_footer(text=f"{id_}")
                 .set_thumbnail(url=avatar_url)
@@ -684,7 +684,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
         e = discord.Embed(
-            title="Read the Fucking Documentation", timestamp=datetime.datetime.utcnow()
+            title="Read the Fucking Documentation", timestamp=discord.utils.utcnow()
         )
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")

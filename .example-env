@@ -58,3 +58,8 @@ API_KEY_SECRET=""
 ACCESS_TOKEN=""
 ACCESS_TOKEN_SECRET=""
 BEARER=""
+
+# IBM Keys
+# https://cloud.ibm.com/apidocs
+IBM_KEY=""
+IBM_END_POINT=""

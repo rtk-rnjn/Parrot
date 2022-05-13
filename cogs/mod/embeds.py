@@ -1,5 +1,5 @@
 from discord import Embed
-from datetime import datetime
+import discord
 
 MEMBER_EMBED = Embed(title="Moderator Menu", timestamp=discord.utils.utcnow())
 MEMBER_EMBED.add_field(name="Ban \N{HAMMER}", value="To ban a member", inline=True)

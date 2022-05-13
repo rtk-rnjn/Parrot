@@ -118,8 +118,8 @@ class Parrot(commands.AutoShardedBot):
         return discord.utils.oauth_url(
             clientID,
             permissions=discord.Permissions(1099780451414),
-            scopes=('bot', 'applications.commands'),
-            disable_guild_select=False
+            scopes=("bot", "applications.commands"),
+            disable_guild_select=False,
         )
 
     @property
@@ -176,7 +176,9 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
 
-    async def before_identify_hook(self, shard_id: int, *, initial: bool = False) -> None:
+    async def before_identify_hook(
+        self, shard_id: int, *, initial: bool = False
+    ) -> None:
         self._clear_gateway_data()
         self.identifies[shard_id].append(discord.utils.utcnow())
         await super().before_identify_hook(shard_id, initial=initial)

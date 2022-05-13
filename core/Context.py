@@ -108,7 +108,9 @@ class Context(commands.Context):
                 pass
             return
 
-        embed = kwargs.get("embed",)
+        embed = kwargs.get(
+            "embed",
+        )
         if isinstance(embed, discord.Embed) and not embed.color:
             embed.color = self.bot.color
 
@@ -128,7 +130,9 @@ class Context(commands.Context):
                 pass
             return
 
-        embed = kwargs.get("embed",)
+        embed = kwargs.get(
+            "embed",
+        )
         if isinstance(embed, discord.Embed) and not embed.color:
             embed.color = self.bot.color
 
@@ -212,7 +216,7 @@ class Context(commands.Context):
         await asyncio.sleep(_for or 0)
 
     async def safe_send(
-        self, content: str, *, escape_mentions: bool=True, **kwargs: Any
+        self, content: str, *, escape_mentions: bool = True, **kwargs: Any
     ) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
@@ -226,7 +230,9 @@ class Context(commands.Context):
         return await self.send(content)
 
     async def bulk_add_reactions(
-        self, message: discord.Message, *reactions: Union[discord.Emoji, discord.PartialEmoji, str]
+        self,
+        message: discord.Message,
+        *reactions: Union[discord.Emoji, discord.PartialEmoji, str],
     ) -> None:
         coros = [
             asyncio.ensure_future(message.add_reaction(reaction))

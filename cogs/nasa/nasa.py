@@ -39,7 +39,9 @@ class NASA(Cog):
         link = f"https://api.nasa.gov/planetary/earth/imagery?lon={longitute}&lat={latitude}&date={date}&dim=0.15&api_key={NASA_KEY}"
 
         embed = discord.Embed(
-            title="Earth", colour=discord.Colour.blue(), timestamp=discord.utils.utcnow()
+            title="Earth",
+            colour=discord.Colour.blue(),
+            timestamp=discord.utils.utcnow(),
         )
         embed.set_image(url=f"{link}")
         embed.set_thumbnail(

@@ -1119,7 +1119,7 @@ class Moderator(Cog):
             ctx=ctx,
             destination=ctx.channel,
             emojis=emoji,
-            reason=reason
+            reason=reason,
         )
 
     @emoji.command(name="addurl")

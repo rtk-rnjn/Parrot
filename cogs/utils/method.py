@@ -229,7 +229,9 @@ async def _view_tag(bot: Parrot, ctx: Context, tag):
     collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         em = discord.Embed(
-            title=f"Tag: {tag}", timestamp=discord.utils.utcnow(), color=ctx.author.color
+            title=f"Tag: {tag}",
+            timestamp=discord.utils.utcnow(),
+            color=ctx.author.color,
         )
         text_len = len(data["text"])
         owner = await bot.get_or_fetch_member(ctx.guild, data["owner"])

@@ -3520,7 +3520,7 @@ class Fun(Cog):
             return str(reaction.emoji) == emoji and reaction.message == confirm
 
         start = time.perf_counter()
-        await ctx.bot.wait_for('reaction_add', check=check)
+        await ctx.bot.wait_for("reaction_add", check=check)
         end = time.perf_counter()
 
         return await confirm.edit(

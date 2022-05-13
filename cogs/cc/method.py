@@ -205,6 +205,7 @@ class CustomCategoryChannel(CustomBase):
 
 class CustomCommandsExecutionOnMsg:
     __class__ = None
+
     def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
         self.__bot = bot
         self.__message = message
@@ -465,6 +466,7 @@ class CustomCommandsExecutionOnMsg:
 
 class CustomCommandsExecutionOnJoin:
     __class__ = None
+
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
         self.bot = bot
         self.__member = member
@@ -660,6 +662,7 @@ class CustomCommandsExecutionOnJoin:
 
 class CustomCommandsExecutionOnReaction:
     __class__ = None
+
     def __init__(
         self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any
     ):

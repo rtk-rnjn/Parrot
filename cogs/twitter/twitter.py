@@ -12,12 +12,12 @@ import tweepy
 class Twitter(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        
+
         self.auth = tweepy.OAuthHandler(
-            os.environ['API_KEY'], os.environ['API_KEY_SECRET']
+            os.environ["API_KEY"], os.environ["API_KEY_SECRET"]
         )
         self.auth.set_access_token(
-            os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET']
+            os.environ["ACCESS_TOKEN"], os.environ["ACCESS_TOKEN_SECRET"]
         )
         self.api = tweepy.API(self.auth)
         if not hasattr(bot, "twitter"):

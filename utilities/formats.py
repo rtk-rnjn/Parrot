@@ -5,6 +5,7 @@ import re
 from discord.ext import commands
 
 from typing import Any
+
 # import pomice
 
 
@@ -117,6 +118,7 @@ def get_flag(
         else:
             ls.append(f"[{pref}{flag.name}{'|'.join(list(alis))}{deli}]")
     return ls
+
 
 # class Player(pomice.Player):
 #     def __init__(self, bot: Parrot = None, channel=None, *, ctx: Context, node=None):

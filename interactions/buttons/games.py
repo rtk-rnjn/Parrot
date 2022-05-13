@@ -1017,8 +1017,7 @@ class Chess:
             timestamp=discord.utils.utcnow(),
         )
         embed.set_image(
-            url=
-            f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true&orientation={st}"
+            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true&orientation={st}"
         )
         embed.description = f"""```
 On Check?      : {self.board.is_check()}

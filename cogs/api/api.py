@@ -14,6 +14,7 @@ from core import Parrot, Cog
 TOKEN_REGEX = re.compile(r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}")
 DISCORD_PY_ID = 336642139381301249
 
+
 class GistContent:
     def __init__(self, argument: str):
         try:

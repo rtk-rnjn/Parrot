@@ -408,7 +408,7 @@ async def _temp_ban(
     members: Union[List[discord.Member], discord.Member],
     duration: Union[FutureTime, datetime.datetime],
     reason: str,
-    silent: bool=True,
+    silent: bool = True,
     bot: Parrot = None,
     **kwargs: Any,
 ):

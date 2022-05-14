@@ -2459,8 +2459,8 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def wrap(self, ctx: Context, *, member: discord.Member = None):
-        """Wrap image generation"""
+    async def warp(self, ctx: Context, *, member: discord.Member = None):
+        """Warp image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
         r = await self.bot.http_session.get(

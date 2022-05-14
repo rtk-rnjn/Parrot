@@ -22,3 +22,6 @@ class Twitter(Cog):
         self.api = tweepy.API(self.auth)
         if not hasattr(bot, "twitter"):
             bot.twitter = self.api
+        self.client(
+            os.environ["BEARER"]
+        )

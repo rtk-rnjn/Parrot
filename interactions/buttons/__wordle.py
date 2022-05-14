@@ -1,9 +1,11 @@
 # https://github.com/Tom-the-Bomb/Discord-Games/blob/master/discord_games/wordle.py
 
 from __future__  import annotations
-from typing import Optional, TypeAlias, Union, List, Dict, Final
+from typing import Optional, Union, List, Dict, Final, TYPE_CHECKING
 
-import pathlib
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
 import random
 from io import BytesIO
 
@@ -12,6 +14,7 @@ from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
 
 from utilities.converters import ToAsync
+from core import Context
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
@@ -81,7 +84,7 @@ class Wordle:
         buf.seek(0)
         return buf
 
-    async def start(self, ctx: commands.Context, *, embed_color: DiscordColor = DEFAULT_COLOR) -> Optional[discord.Message]:
+    async def start(self, ctx: Context, *, embed_color: DiscordColor = DEFAULT_COLOR) -> Optional[discord.Message]:
 
         self.embed_color = embed_color
 

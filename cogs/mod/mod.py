@@ -229,7 +229,7 @@ class Moderator(Cog):
             command_name=ctx.command.qualified_name,
             ctx=ctx,
             destination=ctx.channel,
-            member=member,
+            members=member,
             reason=reason,
         )
 
@@ -285,7 +285,8 @@ class Moderator(Cog):
             command_name=ctx.command.qualified_name,
             ctx=ctx,
             destination=ctx.channel,
-            member=member,
+            channel=ctx.channel,
+            members=member,
             reason=reason,
             silent=False,
         )
@@ -762,13 +763,13 @@ class Moderator(Cog):
     ):
         """Unblocks a user from the text channel"""
         await mt._unblock(
-            ctx.guild,
-            ctx.command.name,
-            ctx,
-            ctx.channel,
-            ctx.channel,
-            member,
-            reason,
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=member,
+            channel=ctx.channel,
+            reason=reason,
         )
 
     @commands.command()
@@ -1650,7 +1651,7 @@ class Moderator(Cog):
                     destination=ctx.channel,
                     member=target,
                     members=target,
-                    duration=dt.dt,
+                    _datetime=dt.dt,
                     reason=f"Automod. {target} reached warncount threshold",
                     silent=True,
                 )

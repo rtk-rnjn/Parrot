@@ -99,12 +99,12 @@ _custom_emoji = re.compile(
 )
 
 
-def _cast_emoji(obj, *, _custom_emoji=_custom_emoji):
+def _cast_emoji(obj, *, __custom_emoji=_custom_emoji):
     if isinstance(obj, discord.PartialEmoji):
         return obj
 
     obj = str(obj)
-    match = _custom_emoji.match(obj)
+    match = __custom_emoji.match(obj)
     if match is not None:
         groups = match.groupdict()
         animated = bool(groups["animated"])
@@ -172,7 +172,7 @@ class Button:
         self._action = value
 
     def __call__(self, menu, payload):
-        if self.skip_if(menu):
+        if self.skip_if(menu):  # flake8: noqa
             return
         return self._action(menu, payload)
 
@@ -180,7 +180,7 @@ class Button:
         return str(self.emoji)
 
     def is_valid(self, menu):
-        return not self.skip_if(menu)
+        return not self.skip_if(menu)  # flake: noqa
 
 
 def button(emoji, **kwargs):

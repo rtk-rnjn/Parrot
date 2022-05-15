@@ -34,13 +34,16 @@ from discord.utils import MISSING
 from random import sample, choice
 
 from core import Cog, Parrot, Context
+
 import akinator
 from akinator.async_aki import Akinator
 import emojis
 import chess
 import tabulate
 from aiofile import async_open
+
 from interactions.buttons.secret_hitler.ui.join import JoinUI
+from interactions.buttons.__wordle import Wordle
 from utilities.paginator import ParrotPaginator
 from utilities.constants import Colours
 
@@ -3848,3 +3851,9 @@ class Games(Cog):
         )
 
         await ctx.send(embed=story_embed)
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def wordle(self, ctx: Context):
+        """To start wordle game"""
+        await Wordle().start(ctx)

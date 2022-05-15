@@ -486,10 +486,11 @@ class Parrot(commands.AutoShardedBot):
                 post = data
                 self.server_config[message.guild.id] = post
             else:
-                POST["_id"] = message.guild.id
+                FAKE_POST = POST
+                FAKE_POST["_id"] = message.guild.id
                 prefix = "$"  # default prefix
-                await self.mongo.parrot_db.server_config.insert_one(POST)
-                self.server_config[message.guild.id] = POST
+                await self.mongo.parrot_db.server_config.insert_one(FAKE_POST)
+                self.server_config[message.guild.id] = FAKE_POST
 
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)

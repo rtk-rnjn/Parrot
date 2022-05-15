@@ -1,7 +1,7 @@
 # https://github.com/Tom-the-Bomb/Discord-Games/blob/master/discord_games/wordle.py
 
 from __future__  import annotations
-from typing import Optional, Union, List, Dict, Final, TYPE_CHECKING
+from typing import Any, Optional, Union, List, Dict, Final, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -84,13 +84,14 @@ class Wordle:
         buf.seek(0)
         return buf
 
-    async def start(self, ctx: Context, *, embed_color: DiscordColor = DEFAULT_COLOR) -> Optional[discord.Message]:
+    async def start(self, ctx: Context, *, embed_color: DiscordColor = DEFAULT_COLOR, **kwargs: Any) -> Optional[discord.Message]:
 
         self.embed_color = embed_color
 
         buf = await self.render_image()
 
         embed = discord.Embed(title='Wordle!', color=self.embed_color)
+        embed.description = f"`QUIT` to end the game"
         embed.set_image(url='attachment://wordle.png')
 
         message = await ctx.send(embed=embed, file=discord.File(buf, 'wordle.png'))
@@ -100,18 +101,24 @@ class Wordle:
             def check(m):
                 return len(m.content) == 5 and m.author == ctx.author and m.channel == ctx.channel
             
-            guess: discord.Message = await ctx.bot.wait_for('message', check=check, timeout=300.0)
+            guess: discord.Message = await ctx.bot.wait_for('message', check=check)
             content = guess.content.lower()
 
+            if content.upper() == 'QUIT':
+                return
+
             if content not in self._valid_words:
-                await ctx.send('That is not a valid word!')
+                await ctx.send('That is not a valid word!',)
             else:
                 won = self.parse_guess(content)
                 buf = await self.render_image()
 
                 await message.delete()
 
-                embed = discord.Embed(title='Wordle!', color=self.embed_color)
+                embed = discord.Embed(
+                    title='Wordle!', color=self.embed_color, timestamp=ctx.message.created_at
+                )
+                embed.set_footer(text=f"{ctx.author}")
                 embed.set_image(url='attachment://wordle.png')
 
                 message = await ctx.send(embed=embed, file=discord.File(buf, 'wordle.png'))

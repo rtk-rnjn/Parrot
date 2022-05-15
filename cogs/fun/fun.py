@@ -494,6 +494,7 @@ class Fun(Cog):
             @commands.max_concurrency(1, per=commands.BucketType.user)
             async def callback(ctx: Context, *, member: discord.Member=None) -> None:
                 member = member or ctx.author
+                ctx.command.cog = self
                 params = {"image_url": member.display_avatar.url}
                 r = await self.bot.http_session.get(
                     f"https://api.jeyy.xyz/image/{end_point['end_point']}", params=params

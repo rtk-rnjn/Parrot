@@ -489,12 +489,11 @@ class Fun(Cog):
     def jeyy_command_adder(self,):
         from ._jeyy_api_endpoints import END_POINTS as end_points
         for end_point in end_points:
-            @commands.command(name=end_point["command"], help=f"{end_point} generation",)
+            @commands.command(name=end_point["command"], help=f"{end_point['command']} generation",)
             @commands.bot_has_permissions(embed_links=True, attach_files=True)
             @commands.max_concurrency(1, per=commands.BucketType.user)
             async def callback(ctx: Context, *, member: discord.Member=None) -> None:
                 member = member or ctx.author
-                ctx.command.cog = self
                 params = {"image_url": member.display_avatar.url}
                 r = await self.bot.http_session.get(
                     f"https://api.jeyy.xyz/image/{end_point['end_point']}", params=params
@@ -503,7 +502,7 @@ class Fun(Cog):
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
                 )
                 await ctx.reply(file=file)
-            self.bot.add_command(callback)
+            self.__cog_commands__ += (callback,)
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]

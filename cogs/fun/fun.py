@@ -493,7 +493,7 @@ class Fun(Cog):
             @commands.command(name=end_point["command"], help=f"{end_point['command']} generation",)
             @commands.bot_has_permissions(embed_links=True, attach_files=True)
             @commands.max_concurrency(1, per=commands.BucketType.user)
-            async def callback(self, ctx: Context, *, member: discord.Member=None) -> None:
+            async def callback(ctx: Context, *, member: discord.Member=None) -> None:
                 member = member or ctx.author
                 params = {"image_url": member.display_avatar.url}
                 r = await bot.http_session.get(
@@ -504,6 +504,8 @@ class Fun(Cog):
                 )
                 await ctx.reply(file=file)
             self.__cog_commands__ += (callback,)
+            callback.cog = self
+            bot.add_command(callback)
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]

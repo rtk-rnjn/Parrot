@@ -484,7 +484,6 @@ class Fun(Cog):
         self.get_latest_comic_info.start()
         self.get_wiki_questions.start()
 
-        self.jeyy_command_adder()
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]

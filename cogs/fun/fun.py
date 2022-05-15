@@ -489,7 +489,7 @@ class Fun(Cog):
     def jeyy_command_adder(self,):
         from ._jeyy_api_endpoints import END_POINTS as end_points
         for end_point in end_points:
-            @commands.command(name=end_point["command"], help=f"{end_point} generation", cls=self)
+            @commands.command(name=end_point["command"], help=f"{end_point} generation",)
             @commands.bot_has_permissions(embed_links=True, attach_files=True)
             @commands.max_concurrency(1, per=commands.BucketType.user)
             async def callback(ctx: Context, *, member: discord.Member=None) -> None:

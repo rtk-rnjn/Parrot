@@ -487,15 +487,16 @@ class Fun(Cog):
         self.jeyy_command_adder()
 
     def jeyy_command_adder(self,):
+        bot = self.bot
         from ._jeyy_api_endpoints import END_POINTS as end_points
         for end_point in end_points:
             @commands.command(name=end_point["command"], help=f"{end_point['command']} generation",)
             @commands.bot_has_permissions(embed_links=True, attach_files=True)
             @commands.max_concurrency(1, per=commands.BucketType.user)
-            async def callback(ctx: Context, *, member: discord.Member=None) -> None:
+            async def callback(self, ctx: Context, *, member: discord.Member=None) -> None:
                 member = member or ctx.author
                 params = {"image_url": member.display_avatar.url}
-                r = await self.bot.http_session.get(
+                r = await bot.http_session.get(
                     f"https://api.jeyy.xyz/image/{end_point['end_point']}", params=params
                 )
                 file = discord.File(

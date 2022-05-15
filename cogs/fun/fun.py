@@ -2882,3 +2882,17 @@ class Fun(Cog):
         return await confirm.edit(
             content=f"{ctx.author.mention} reacted on {end-start:.2f}s"
         )
+
+    @commands.command(name="imagegen", aliases=["imggen"])
+    @commands.bot_has_permissions(attach_files=True)
+    async def img_gen(self, ctx: Context, end_point: str, *, member: discord.Member=None):
+        """Jeyy API Image Generation"""
+        member = member or ctx.author
+        params = {"image_url": member.display_avatar.url}
+        r = await bot.http_session.get(
+            f"https://api.jeyy.xyz/image/{end_point}", params=params
+        )
+        file = discord.File(
+            io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
+        )
+        await ctx.reply(file=file)

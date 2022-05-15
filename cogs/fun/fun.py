@@ -504,7 +504,7 @@ class Fun(Cog):
                 )
                 await ctx.reply(file=file)
             bot.add_command(callback)
-            callback.cog = self
+
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]

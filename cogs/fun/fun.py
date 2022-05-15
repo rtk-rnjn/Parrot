@@ -2889,7 +2889,7 @@ class Fun(Cog):
         """Jeyy API Image Generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url}
-        r = await bot.http_session.get(
+        r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{end_point}", params=params
         )
         file = discord.File(

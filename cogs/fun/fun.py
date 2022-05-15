@@ -503,7 +503,7 @@ class Fun(Cog):
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
                 )
                 await ctx.reply(file=file)
-            self.__cog_commands__ += (callback,)
+            bot.add_command(callback)
             callback.cog = self
 
     async def send_colour_response(

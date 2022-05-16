@@ -24,7 +24,6 @@ BUCKET = {
     "member": commands.BucketType.member,
 }
 
-TEST_GUILD = [746337818388987967, 741614680652644382]
 MAGICAL_WORD_REGEX = r"(__)([a-z]+)(__)"
 TRIGGER_TYPE = [
     "on_message",
@@ -170,9 +169,6 @@ class CustomCommand(Cog):
         if not message.guild:
             return
 
-        if message.guild.id not in TEST_GUILD:
-            return
-
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "_id": message.guild.id,
@@ -208,9 +204,6 @@ class CustomCommand(Cog):
         if before.content == after.content:
             return
 
-        if message.guild.id not in TEST_GUILD:
-            return
-
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "_id": message.guild.id,
@@ -241,9 +234,6 @@ class CustomCommand(Cog):
             return
 
         if not message.guild:
-            return
-
-        if message.guild.id not in TEST_GUILD:
             return
 
         if data := await self.bot.mongo.cc.commands.find_one(
@@ -286,9 +276,6 @@ class CustomCommand(Cog):
         if not message.guild:
             return
 
-        if message.guild.id not in TEST_GUILD:
-            return
-
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "$or": [
@@ -321,9 +308,6 @@ class CustomCommand(Cog):
 
     @Cog.listener()
     async def on_member_join(self, member):
-        if member.guild.id not in TEST_GUILD:
-            return
-
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "_id": member.guild.id,

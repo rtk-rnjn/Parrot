@@ -51,7 +51,6 @@ ERROR_ON_REVIEW_REQUIRED = """
 class CCFlag(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     name: str
-    help: str
     trigger_type: str = "on_message"
 
     requied_role: discord.Role = None

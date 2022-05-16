@@ -337,7 +337,6 @@ class CustomCommand(Cog):
                 if (
                     command["trigger_type"] == "member_join"
                     and not command["review_needed"]
-                    and (self.check_requirements(member=member, **command))
                 ):
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
                     await CC.execute(command.get("code"))

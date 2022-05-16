@@ -9,7 +9,7 @@ Parrot give custom command privileges to members. Instead you think any of the c
 To create custom command you need to have a permission level of `MANAGE_GUILD`. Syntax as follows:
 
 ```
-$cc create --name <name> --code <code> --help <command help>
+$cc create --name <name> --code <code> --trigger_type <name>
 ```
 
 ---

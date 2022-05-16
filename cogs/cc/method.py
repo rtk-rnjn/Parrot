@@ -1,4 +1,5 @@
 from __future__ import annotations
+from operator import attrgetter
 
 import discord
 from core import Parrot
@@ -245,18 +246,13 @@ class CustomCommandsExecutionOnMsg:
 
     # wait_for
 
-    async def wait_for_message(self, *, timeout: float, **kwargs):
+    async def wait_for_message(self, timeout: float, **kwargs):
         def check_outer(**kwargs) -> Callable:
             def check(message) -> bool:
-                op = kwargs.pop("op", "any")
-                if op == "any":
-                    return any(
-                        getattr(message, key) == value for key, value in kwargs.items()
-                    )
-                if op == "all":
-                    return all(
-                        getattr(message, key) == value for key, value in kwargs.items()
-                    )
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
 
             return check
 
@@ -498,18 +494,13 @@ class CustomCommandsExecutionOnJoin:
 
     # wait_for
 
-    async def wait_for_message(self, *, timeout: float, **kwargs):
-        def check_outer(**kwargs):
-            def check(message):
-                op = kwargs.pop("op", "any")
-                if op == "any":
-                    return any(
-                        getattr(message, key) == value for key, value in kwargs.items()
-                    )
-                if op == "all":
-                    return all(
-                        getattr(message, key) == value for key, value in kwargs.items()
-                    )
+    async def wait_for_message(self, timeout: float, **kwargs):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
 
             return check
 
@@ -518,7 +509,7 @@ class CustomCommandsExecutionOnJoin:
             check=check_outer(**kwargs),
             timeout=10 if timeout > 10 else timeout,
         )
-        if msg.guild != self.__member.guild:
+        if msg.guild != self.__message.guild:
             return None
         return msg
 
@@ -709,18 +700,13 @@ class CustomCommandsExecutionOnReaction:
 
     # wait_for
 
-    async def wait_for_message(self, *, timeout: float, **kwargs):
-        def check_outer(**kwargs):
-            def check(message):
-                op = kwargs.pop("op", "any")
-                if op == "any":
-                    return any(
-                        getattr(message, key) == value for key, value in kwargs.items()
-                    )
-                if op == "all":
-                    return all(
-                        getattr(message, key) == value for key, value in kwargs.items()
-                    )
+    async def wait_for_message(self, timeout: float, **kwargs):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
 
             return check
 
@@ -729,7 +715,7 @@ class CustomCommandsExecutionOnReaction:
             check=check_outer(**kwargs),
             timeout=10 if timeout > 10 else timeout,
         )
-        if msg.guild != self.__member.guild:
+        if msg.guild != self.__message.guild:
             return None
         return msg
 

@@ -40,6 +40,7 @@ from utilities.img import timecard, imagine
 from core import Parrot, Context, Cog
 
 from ._effects import PfpEffects
+from ._jeyy_api_endpoints import END_POINTS
 
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"
@@ -2887,6 +2888,10 @@ class Fun(Cog):
     async def img_gen(self, ctx: Context, end_point: str, *, member: discord.Member=None):
         """Jeyy API Image Generation"""
         member = member or ctx.author
+        if end_point not in END_POINTS:
+            return await ctx.send(
+                f"{ctx.author.mention} Invalid endpoint. Valid endpoints are: {', '.join(END_POINTS)}"
+            )
         params = {"image_url": member.display_avatar.url}
         r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{end_point}", params=params

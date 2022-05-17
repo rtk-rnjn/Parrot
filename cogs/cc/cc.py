@@ -70,6 +70,11 @@ class CustomCommand(Cog):
             return 0
 
         self.default_dict = defaultdict(default_value)
+        self.data = {}
+
+    async def cog_load(self):
+        async for data in self.bot.mongo.cc.commands.find({}):
+            data[f"{data['_id']}"] = data
 
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
     async def cc(self, ctx: Context):

@@ -82,18 +82,16 @@ class CustomCommand(Cog):
         The feture is in Beta (still in Testing). May get bugs/errors.
         """
         if ctx.invoked_subcommand is None:
-            return await self.bot.invoke_help_command(ctx)
-        
-        if data := await self.bot.mongo.cc.commands.find_one(
-            {"commands.name": name},
-            {"_id": 0, "commands.$": 1},
-        ):
-            for command in data.get("commands", []):
-                if command.get("name") == name:
-                    embed = discord.Embed(
-                        title="Custom Command", color=self.bot.color, description=f"```python\n{command['code']}\n```"
-                    )
-                    return
+            if data := await self.bot.mongo.cc.commands.find_one(
+                {"commands.name": name},
+                {"_id": 0, "commands.$": 1},
+            ):
+                for command in data.get("commands", []):
+                    if command.get("name") == name:
+                        embed = discord.Embed(
+                            title="Custom Command", color=self.bot.color, description=f"```python\n{command['code']}\n```"
+                        )
+                        return await ctx.send(embed=embed)
 
     @cc.command(name="create")
     @commands.has_permissions(manage_guild=True)

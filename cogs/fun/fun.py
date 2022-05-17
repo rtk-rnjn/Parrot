@@ -1955,15 +1955,14 @@ class Fun(Cog):
             return ret
 
         # Thanks Danny
-        text = urllib.parse.quote(text)
-        link = "http://api.urbandictionary.com/v0/define?term=" + text
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as response:
-                if response.status == 200:
-                    res = await response.json()
-                else:
-                    return
+        response = await self.bot.http_session.get(
+            f"http://api.urbandictionary.com/v0/define?term={urllib.parse.quote(text)}"
+        )
+        if response.status == 200:
+            res = await response.json()
+        else:
+            return
         if not res["list"]:
             return await ctx.reply(
                 f"{ctx.author.mention} **{t}** means nothings. Try something else"
@@ -1990,8 +1989,6 @@ class Fun(Cog):
             )
             em_list.append(embed)
 
-        # paginator = Paginator(pages=em_list, timeout=60.0)
-        # await paginator.start(ctx)
         await PaginationView(em_list).start(ctx=ctx)
 
     @commands.command()

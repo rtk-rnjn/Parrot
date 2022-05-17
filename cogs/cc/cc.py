@@ -77,11 +77,23 @@ class CustomCommand(Cog):
             data[f"{data['_id']}"] = data
 
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
-    async def cc(self, ctx: Context):
+    async def cc(self, ctx: Context, *, name: str=None):
         """
         The feture is in Beta (still in Testing). May get bugs/errors.
         """
-        return await self.bot.invoke_help_command(ctx)
+        if ctx.invoked_subcommand is None:
+            return await self.bot.invoke_help_command(ctx)
+        
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {"commands.name": name},
+            {"_id": 0, "commands.$": 1},
+        ):
+            for command in data.get("commands", []):
+                if command.get("name") == name:
+                    embed = discord.Embed(
+                        title="Custom Command", color=self.bot.color, description=f"```python\n{command['code']}\n```"
+                    )
+                    return
 
     @cc.command(name="create")
     @commands.has_permissions(manage_guild=True)
@@ -101,13 +113,6 @@ class CustomCommand(Cog):
         else:
             name = flags.name
 
-        if flags.help.startswith("```") and flags.help.endswith("```"):
-            help_ = flags.help[3:-3]
-        elif flags.help.startswith("`") and flags.help.endswith("`"):
-            help_ = flags.help[1:-1]
-        else:
-            help_ = flags.help
-
         if flags.trigger_type.lower() not in TRIGGER_TYPE:
             raise commands.BadArgument(
                 f"Trigger type must be one of {', '.join(TRIGGER_TYPE)}"
@@ -120,7 +125,6 @@ class CustomCommand(Cog):
                     "commands": {
                         "code": code,
                         "name": name,
-                        "help": help_,
                         "review_needed": review_needed,
                         "trigger_type": flags.trigger_type.lower(),
                         "requied_role": flags.requied_role.id

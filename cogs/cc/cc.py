@@ -123,6 +123,7 @@ class CustomCommand(Cog):
                         )
                         return await ctx.send("Approved")
                     return await ctx.send("Rejected")
+        return await ctx.send(f"{ctx.author.mention} no codes to review at this time")
 
     @cc.command(name="create")
     @commands.has_permissions(manage_guild=True)

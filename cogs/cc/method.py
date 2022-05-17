@@ -263,7 +263,7 @@ class CustomCommandsExecutionOnMsg:
         )
         if msg.guild != self.__message.guild:
             return None
-        return msg
+        return CustomMessage(msg)
 
     # messages
 
@@ -511,7 +511,7 @@ class CustomCommandsExecutionOnJoin:
         )
         if msg.guild != self.__message.guild:
             return None
-        return msg
+        return CustomMessage(msg)
 
     # messages
 
@@ -717,7 +717,7 @@ class CustomCommandsExecutionOnReaction:
         )
         if msg.guild != self.__message.guild:
             return None
-        return msg
+        return CustomMessage(msg)
 
     # messages
 

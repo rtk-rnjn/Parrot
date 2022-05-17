@@ -419,7 +419,7 @@ class Meta(Cog):
         end = time()
         await message.edit(
             content=(
-                f"Pong! latency: {self.bot.latency*1000:,.0f} ms."
+                f"Pong! latency: {self.bot.latency*1000:,.0f} ms. "
                 f"Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f} ms."
             )
         )

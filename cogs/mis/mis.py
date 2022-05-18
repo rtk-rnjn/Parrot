@@ -549,7 +549,6 @@ class Misc(Cog):
         table = Truths(
             flags.var.replace(" ", "").split(","),
             flags.con.split(","),
-            ints=flags.ints,
             ascending=flags.ascending,
         )
         main = table.as_tabulate(

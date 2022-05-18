@@ -101,8 +101,9 @@ class CustomCommand(Cog):
         """To review the code"""
         guild = guild.id if isinstance(guild, discord.Guild) else guild
 
-        def check_reaction(reaction: discord.Reaction, user: discord.User) -> bool:
+        def check_reaction(reaction, user) -> bool:
             return user.id == ctx.author.id
+
         if data := await self.bot.mongo.cc.commands.find_one(
                 {"_id": guild, "commands.review_needed": True},
                 {"_id": 0, "commands.$": 1},

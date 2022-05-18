@@ -131,6 +131,8 @@ class CustomCommand(Cog):
         """To create custom commands"""
         if flags.code.startswith("```py") and flags.code.endswith("```"):
             code = flags.code[5:-3]
+        elif flags.code.startswith("```python") and flags.code.endswith("```"):
+            code = flags.code[9:-3]
         elif flags.code.startswith("```") and flags.code.endswith("```"):
             code = flags.code[3:-3]
         else:

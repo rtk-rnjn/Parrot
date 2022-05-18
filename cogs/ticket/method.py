@@ -1,14 +1,13 @@
 from __future__ import annotations
+from typing import Optional
 
 import discord
-import os
-from datetime import datetime
 
-from core import Context
+from core import Context, Parrot
 import asyncio
 
 
-async def check_if_server(ctx, guild_id):
+async def check_if_server(ctx: Context, guild_id: int) -> None:
     data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": guild_id})
     if not data:
         post = {
@@ -27,18 +26,19 @@ async def check_if_server(ctx, guild_id):
         await ctx.bot.mongo.parrot_db.ticket.insert_one(post)
 
 
-async def chat_exporter(channel, limit=None):
-    with open(f"extra/{channel.id}.txt", "w+") as f:
-        async for msg in channel.history(limit=limit, oldest_first=True):
-            f.write(
-                f"[{msg.created_at}] {msg.author.name}#{msg.author.discriminator} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
-            )
-    with open(f"extra/{channel.id}.txt", "rb") as fp:
-        await channel.send(file=discord.File(fp, "FILE.txt"))
-    os.remove(f"extra/{channel.id}.txt")
+async def chat_exporter(channel: discord.TextChannel, limit: Optional[int]=100) -> None:
+
+    st = ""
+    async for msg in channel.history(limit=limit, oldest_first=True):
+        st = st + (
+            f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''}"
+            f"{', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} "
+            f"{', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
+        )
+    return await channel.send(file=discord.File(st.encode(), "FILE.txt"))
 
 
-async def log(guild, channel, description, status):
+async def log(guild: discord.Guild, channel: discord.TextChannel, description: str, status: str) -> None:
     await channel.send(
         embed=discord.Embed(
             title="Parrot Ticket Bot",
@@ -51,7 +51,7 @@ async def log(guild, channel, description, status):
     )
 
 
-async def _new(ctx: Context, args: str):
+async def _new(ctx: Context, args: Optional[str]=None) -> None:
     await check_if_server(ctx, ctx.guild.id)
 
     if not args:
@@ -140,13 +140,13 @@ async def _new(ctx: Context, args: str):
     if data["pinged_roles"]:
         for role_id in data["pinged_roles"]:
             role = ctx.guild.get_role(role_id)
-            pinged_msg_content += role.mention
-            pinged_msg_content += " "
-            if role.mentionable:
-                pass
-            else:
+            if role:
+                pinged_msg_content += role.mention
+                pinged_msg_content += " "
+            if not role.mentionable:
                 await role.edit(mentionable=True)
                 non_mentionable_roles.append(role)
+
         await ticket_channel.send(pinged_msg_content)
         for role in non_mentionable_roles:
             await role.edit(mentionable=False)
@@ -172,7 +172,7 @@ async def _new(ctx: Context, args: str):
             )
 
 
-async def _close(ctx: Context, bot):
+async def _close(ctx: Context, bot: Parrot) -> None:
     await check_if_server(ctx, ctx.guild.id)
 
     if data := await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id}):
@@ -214,7 +214,7 @@ async def _close(ctx: Context, bot):
                 await ctx.reply(embed=em)
 
 
-async def _save(ctx: Context, bot):
+async def _save(ctx: Context, bot: Parrot) -> None:
     await check_if_server(ctx, ctx.guild.id)
 
     if data := await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id}):
@@ -245,7 +245,7 @@ async def _save(ctx: Context, bot):
 # CONFIG
 
 
-async def _addaccess(ctx, role):
+async def _addaccess(ctx: Context, role: discord.Role) -> None:
     await check_if_server(ctx, ctx.guild.id)
 
     await ctx.bot.mongo.parrot_db.ticket.update_one(
@@ -263,7 +263,7 @@ async def _addaccess(ctx, role):
     await ctx.reply(embed=em)
 
 
-async def _delaccess(ctx, role):
+async def _delaccess(ctx: Context, role: discord.Role) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}
@@ -280,7 +280,7 @@ async def _delaccess(ctx, role):
     await ctx.reply(embed=em)
 
 
-async def _addadimrole(ctx, role):
+async def _addadimrole(ctx: Context, role: discord.Role) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$addToSet": {"verified_roles": role.id}}
@@ -297,7 +297,7 @@ async def _addadimrole(ctx, role):
     await ctx.reply(embed=em)
 
 
-async def _addpingedrole(ctx, role):
+async def _addpingedrole(ctx: Context, role: discord.Role) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$addToSet": {"pinged_roles": role.id}}
@@ -314,7 +314,7 @@ async def _addpingedrole(ctx, role):
     await ctx.reply(embed=em)
 
 
-async def _deladminrole(ctx, role):
+async def _deladminrole(ctx: Context, role: discord.Role) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$pull": {"verified_roles": role.id}}
@@ -331,7 +331,7 @@ async def _deladminrole(ctx, role):
     await ctx.reply(embed=em)
 
 
-async def _delpingedrole(ctx, role):
+async def _delpingedrole(ctx: Context, role: discord.Role) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$pull": {"pinged_roles": role.id}}
@@ -348,7 +348,7 @@ async def _delpingedrole(ctx, role):
     await ctx.reply(embed=em)
 
 
-async def _setcategory(ctx, channel):
+async def _setcategory(ctx: Context, channel: discord.TextChannel) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$set": {"category": channel.id}}
@@ -365,7 +365,7 @@ async def _setcategory(ctx, channel):
     await ctx.reply(embed=em)
 
 
-async def _setlog(ctx, channel):
+async def _setlog(ctx: Context, channel: discord.TextChannel) -> None:
     await check_if_server(ctx, ctx.guild.id)
     await ctx.bot.mongo.parrot_db.ticket.update_one(
         {"_id": ctx.guild.id}, {"$set": {"log": channel.id}}
@@ -382,17 +382,17 @@ async def _setlog(ctx, channel):
     await ctx.reply(embed=em)
 
 
-async def _auto(ctx, channel, message):
+async def _auto(ctx: Context, channel: discord.TextChannel, message: str) -> None:
 
     embed = discord.Embed(
         title="Parrot Ticket Bot", description=message, color=discord.Color.blue()
-    )
-    embed.set_footer(text=f"{ctx.guild.name}")
+    ).set_footer(text=f"{ctx.guild.name}")
+    
     message = await channel.send(embed=embed)
     await message.add_reaction("\N{ENVELOPE}")
-    post = {"message_id": message.id, "channel_id": channel.id}
+
     await ctx.bot.mongo.parrot_db.ticket.update_one(
-        {"_id": ctx.guild.id}, {"$set": post}
+        {"_id": ctx.guild.id}, {"$set": {"message_id": message.id, "channel_id": channel.id}}
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",

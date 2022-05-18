@@ -11,7 +11,7 @@ from .method import dial
 class Telephone(Cog):
     """To Make calls"""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.redial = {}
         self.las_call_detail = {}

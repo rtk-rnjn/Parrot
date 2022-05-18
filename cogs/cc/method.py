@@ -465,6 +465,7 @@ class CustomCommandsExecutionOnJoin:
 
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
         self.bot = bot
+        self.__bot = bot
         self.__member = member
         self.env = env
         self.env["guild"] = CustomGuild(self.__member.guild)
@@ -620,6 +621,7 @@ class CustomCommandsExecutionOnJoin:
         await self.__bot.mongo.cc.storage.update_one(
             {"_id": self.__member.guild.id}, kwargs, upsert=kwargs.pop("upsert", False)
         )
+        return
 
     async def del_db(
         self,
@@ -647,6 +649,7 @@ class CustomCommandsExecutionOnJoin:
                 return
 
             await self.env["function"](CustomMember(self.__member))
+            return
         except Exception as e:
             return
 
@@ -859,6 +862,7 @@ class CustomCommandsExecutionOnReaction:
         await self.__bot.mongo.cc.storage.update_one(
             {"_id": self.__message.guild.id}, kwargs, upsert=upsert
         )
+        return
 
     async def del_db(
         self,
@@ -888,6 +892,7 @@ class CustomCommandsExecutionOnReaction:
             await self.env["function"](
                 CustomReaction(self.__reaction), CustomMember(self.__user)
             )
+            return
         except Exception as e:
             await self.__message.channel.send(
                 ERROR_MESSAGE.format(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 import asyncio
+from core import Context, Parrot
 import discord
 import random
 import time
@@ -10,7 +11,7 @@ from discord.ext import commands
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 
-async def dial(bot, ctx, server, reverse=False) -> None:
+async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool=False) -> None:
     collection = bot.mongo.parrot_db.telephone
 
     async def telephone_update(guild_id: int, event: str, value: Any) -> None:

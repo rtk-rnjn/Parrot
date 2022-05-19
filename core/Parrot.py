@@ -415,6 +415,7 @@ class Parrot(commands.AutoShardedBot):
         fetch: bool = True,
         cache: bool = True,
         partial: bool = False,
+        force_fetch: bool = False,
     ) -> Union[discord.Message, discord.PartialMessage]:
         """|coro|
 
@@ -438,7 +439,13 @@ class Parrot(commands.AutoShardedBot):
         Optional[discord.Message]
             The Message or None if not found.
         """
+        if force_fetch:
+            msg = await channel.fetch_message(messageID)
+            self.message_cache[messageID] = msg
+            return msg
+
         if cache and (msg := self._connection._get_message(messageID)):
+            self.message_cache[messageID] = msg
             return msg
 
         if partial:

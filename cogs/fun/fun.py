@@ -36,6 +36,7 @@ from utilities.paginator import PaginationView
 from utilities import spookifications
 from utilities.constants import Colours, EmbeddedActivity
 from utilities.img import timecard, imagine
+from utilities.regex import LINKS_RE
 
 from core import Parrot, Context, Cog
 
@@ -485,6 +486,7 @@ class Fun(Cog):
         self.get_latest_comic_info.start()
         self.get_wiki_questions.start()
 
+        self.jeyy_api_loader()
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]
@@ -2880,20 +2882,37 @@ class Fun(Cog):
             content=f"{ctx.author.mention} reacted on {end-start:.2f}s"
         )
 
-    @commands.command(name="imagegen", aliases=["imggen"])
-    @commands.bot_has_permissions(attach_files=True)
-    async def img_gen(self, ctx: Context, end_point: str, *, member: discord.Member=None):
-        """Jeyy API Image Generation"""
-        member = member or ctx.author
-        if end_point not in END_POINTS:
-            return await ctx.send(
-                f"{ctx.author.mention} Invalid endpoint. Valid endpoints are: {', '.join(END_POINTS)}"
-            )
-        params = {"image_url": member.display_avatar.url}
-        r = await self.bot.http_session.get(
-            f"https://api.jeyy.xyz/image/{end_point}", params=params
-        )
-        file = discord.File(
-            io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
-        )
-        await ctx.reply(file=file)
+    def jeyy_api_loader(self):
+
+        for end_point in END_POINTS:
+            @commands.command(name=end_point, help=f"{end_point} commnad Generation")
+            @commands.bot_has_permissions(attach_files=True)
+            async def callback(ctx: Context, *, target: Union[discord.Member, discord.Emoji, str, None]=None):
+                ref = ctx.message.reference
+                url = None
+                if ref and isinstance(ref.resolved, discord.Message):
+                    msg = ref.resolved
+                    if msg.attachments and msg.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                        url = msg.attachments[0].url
+                    elif msg.embeds and str(msg.embeds[0].image.url).endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                        url = ctx.replied_reference.embeds[0].image.url
+                
+                if isinstance(target, discord.Member):
+                    url = target.display_avatar.url
+                elif isinstance(target, discord.Emoji):
+                    url = target.url
+                elif isinstance(target, str):
+                    url = f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(target)[0]):x}.png"
+                elif LINKS_RE.fullmatch(target):
+                    url = target
+                
+                url = url or ctx.author.display_avatar.url
+                params = {"image_url": url}
+                r = await self.bot.http_session.get(
+                    f"https://api.jeyy.xyz/image/{end_point}", params=params
+                )
+                file = discord.File(
+                    io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
+                )
+                await ctx.reply(file=file)
+            self.bot.add_command(callback)

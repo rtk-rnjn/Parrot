@@ -114,9 +114,8 @@ class Parrot(commands.AutoShardedBot):
 
     @property
     def invite(self) -> str:
-        clientID = self.user.id
         return discord.utils.oauth_url(
-            clientID,
+            self.user.id,
             permissions=discord.Permissions(1099780451414),
             scopes=("bot", "applications.commands"),
             disable_guild_select=False,
@@ -193,15 +192,6 @@ class Parrot(commands.AutoShardedBot):
     def run(self) -> None:
         """To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
-
-    # async def start_nodes(self):
-    #     await self.pomice.create_node(
-    #         bot=self,
-    #         host="127.0.0.1",
-    #         port="1018",
-    #         password="password",
-    #         identifier="parrot",
-    #     )
 
     async def on_ready(self) -> None:
         if not hasattr(self, "uptime"):

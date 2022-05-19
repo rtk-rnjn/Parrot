@@ -17,7 +17,7 @@ from discord.ext.commands import (
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
 
-from core import Context
+from core import Context, Parrot
 
 
 def is_guild_owner() -> Callable:
@@ -47,9 +47,9 @@ def has_verified_role_ticket() -> Callable:
         roles = data["verified_roles"]
         if not roles:
             return False
-        for role in roles:
-            if ctx.guild.get_role(role) in ctx.author.roles:
-                return True
+        
+        if any(ctx.author._roles.has(role.id) for role in roles):
+            return True
 
         raise ex.NoVerifiedRoleTicket()
 
@@ -58,16 +58,21 @@ def has_verified_role_ticket() -> Callable:
 
 def is_mod() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
-        data = await ctx.bot.mongo.parrot_db.server_config.find_one(
+        bot: Parrot = ctx.bot
+        try:
+            role = bot.server_config[ctx.guild.id]["mod_role"] or 0  # role could be `None`
+            return ctx.author._roles.has(role)
+        except KeyError:
+            pass
+
+        if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id}
-        )
-        if not data:
-            return False
-        role = ctx.guild.get_role(data["mod_role"])
-        if not role:
-            return False
-        if role in ctx.author.roles:
-            return True
+        ):
+            role = ctx.guild.get_role(data["mod_role"])
+            if not role:
+                return False
+            if role in ctx.author.roles:
+                return True
         raise ex.NoModRole()
 
     return commands.check(predicate)
@@ -124,8 +129,8 @@ async def _can_run(ctx) -> Optional[bool]:
                 raise ex.CommandDisabledServer()
             if not data["server"]:
                 return True
-        return True
-    return False
+
+    return True
 
 
 def cooldown_with_role_bypass(

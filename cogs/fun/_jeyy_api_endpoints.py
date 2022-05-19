@@ -3,7 +3,6 @@ END_POINTS = [
     'boil',
     'earthquake',
     'hearts',
-    'wave',
     'patpat',
     'burn',
     'shock',

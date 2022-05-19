@@ -2883,7 +2883,6 @@ class Fun(Cog):
         )
 
     def jeyy_api_loader(self):
-
         for end_point in END_POINTS:
             @commands.command(name=end_point, help=f"{end_point} commnad Generation")
             @commands.bot_has_permissions(attach_files=True)

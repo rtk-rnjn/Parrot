@@ -448,15 +448,8 @@ class Parrot(commands.AutoShardedBot):
         Optional[discord.Message]
             The Message or None if not found.
         """
-        if cache:
-            cached_message = set(self._connection._messages)
-            for msg in cached_message:
-                # looping the deque is O(n). I am ok with it!
-                # this may crash if, the deque mutated.
-                if msg.id == messageID:
-                    self.message_cache[msg.id] = msg
-                    return msg
-                await asyncio.sleep(0)
+        if cache and (msg := self._connection._get_message(messageID)):
+            return msg
 
         if partial:
             return channel.get_partial_message(messageID)

@@ -25,6 +25,6 @@ class Twitter(Cog):
         self.client = tweepy.Client(
             os.environ["BEARER"]
         )
-        self.async_client = self.tweepy.asynchronous.AsyncClient(
+        self.async_client = tweepy.asynchronous.AsyncClient(
             os.environ["BEARER"]
         )

@@ -22,6 +22,9 @@ class Twitter(Cog):
         self.api = tweepy.API(self.auth)
         if not hasattr(bot, "twitter"):
             bot.twitter = self.api
-        self.client(
+        self.Client(
+            os.environ["BEARER"]
+        )
+        self.async_client = self.tweepy.asynchronous.AsyncClient(
             os.environ["BEARER"]
         )

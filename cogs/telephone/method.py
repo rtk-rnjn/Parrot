@@ -11,7 +11,9 @@ from discord.ext import commands
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 
-async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool=False) -> None:
+async def dial(
+    bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False
+) -> None:
     collection = bot.mongo.parrot_db.telephone
 
     async def telephone_update(guild_id: int, event: str, value: Any) -> None:

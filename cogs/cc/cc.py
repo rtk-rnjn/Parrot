@@ -78,7 +78,7 @@ class CustomCommand(Cog):
             data[f"{data['_id']}"] = data
 
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
-    async def cc(self, ctx: Context, *, name: str=None):
+    async def cc(self, ctx: Context, *, name: str = None):
         """
         The feture is in Beta (still in Testing). May get bugs/errors.
         """
@@ -90,14 +90,20 @@ class CustomCommand(Cog):
                 for command in data.get("commands", []):
                     if command.get("name") == name:
                         embed = discord.Embed(
-                            title="Custom Command", color=self.bot.color, description=f"```python\n{command['code']}\n```"
+                            title="Custom Command",
+                            color=self.bot.color,
+                            description=f"```python\n{command['code']}\n```",
                         )
-                        embed.set_footer(text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}")
+                        embed.set_footer(
+                            text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}"
+                        )
                         return await ctx.send(embed=embed)
 
     @cc.command(name="review", aliases=["approve"], hidden=True)
     @commands.is_owner()
-    async def cc_review(self, ctx: Context, name: str, guild: Union[discord.Guild, int]):
+    async def cc_review(
+        self, ctx: Context, name: str, guild: Union[discord.Guild, int]
+    ):
         """To review the code"""
         guild = guild.id if isinstance(guild, discord.Guild) else guild
 
@@ -105,17 +111,23 @@ class CustomCommand(Cog):
             return user.id == ctx.author.id
 
         if data := await self.bot.mongo.cc.commands.find_one(
-                {"_id": guild, "commands.review_needed": True},
-                {"_id": 0, "commands.$": 1},
-            ):
+            {"_id": guild, "commands.review_needed": True},
+            {"_id": 0, "commands.$": 1},
+        ):
             for command in data.get("commands", []):
                 if command.get("name") == name:
                     embed = discord.Embed(
-                        title="Custom Command", color=self.bot.color, description=f"```python\n{command['code']}\n```"
+                        title="Custom Command",
+                        color=self.bot.color,
+                        description=f"```python\n{command['code']}\n```",
                     )
-                    embed.set_footer(text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}")
+                    embed.set_footer(
+                        text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}"
+                    )
                     msg = await ctx.send(embed=embed)
-                    await ctx.bulk_add_reactions(msg, "\N{WHITE HEAVY CHECK MARK}", "\N{CROSS MARK}")
+                    await ctx.bulk_add_reactions(
+                        msg, "\N{WHITE HEAVY CHECK MARK}", "\N{CROSS MARK}"
+                    )
                     r, u = await self.bot.wait_for("reaction_add", check=check_reaction)
                     if r.emoji == "\N{WHITE HEAVY CHECK MARK}":
                         await self.bot.mongo.cc.commands.update_one(
@@ -150,7 +162,9 @@ class CustomCommand(Cog):
                     description=f"```py\n{code}\n```",
                 ),
             )
-            await ctx.send(f"{ctx.author.mention} your custom command code is under review.")
+            await ctx.send(
+                f"{ctx.author.mention} your custom command code is under review."
+            )
 
         if flags.name.startswith("`") and flags.name.endswith("`"):
             name = flags.name[1:-1]

@@ -2884,19 +2884,28 @@ class Fun(Cog):
 
     def jeyy_api_loader(self):
         for end_point in END_POINTS:
+
             @commands.command(name=end_point, help=f"{end_point} commnad Generation")
             @commands.bot_has_permissions(attach_files=True)
             @Context.with_type
-            async def callback(ctx: Context, *, target: Union[discord.Member, discord.Emoji, str, None]=None):
+            async def callback(
+                ctx: Context,
+                *,
+                target: Union[discord.Member, discord.Emoji, str, None] = None,
+            ):
                 ref = ctx.message.reference
                 url = None
                 if ref and isinstance(ref.resolved, discord.Message):
                     msg = ref.resolved
-                    if msg.attachments and msg.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                    if msg.attachments and msg.attachments[0].url.endswith(
+                        ("png", "jpeg", "jpg", "gif", "webp")
+                    ):
                         url = msg.attachments[0].url
-                    elif msg.embeds and str(msg.embeds[0].image.url).endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                    elif msg.embeds and str(msg.embeds[0].image.url).endswith(
+                        ("png", "jpeg", "jpg", "gif", "webp")
+                    ):
                         url = ctx.replied_reference.embeds[0].image.url
-                
+
                 elif isinstance(target, discord.Member):
                     url = target.display_avatar.url
                 elif isinstance(target, discord.Emoji):
@@ -2905,7 +2914,7 @@ class Fun(Cog):
                     url = f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(target)[0]):x}.png"
                 elif url is not None and LINKS_RE.fullmatch(target):
                     url = target
-                
+
                 url = url or ctx.author.display_avatar.url
                 params = {"image_url": url}
                 r = await self.bot.http_session.get(
@@ -2915,4 +2924,5 @@ class Fun(Cog):
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
                 )
                 await ctx.reply(file=file)
+
             self.bot.add_command(callback)

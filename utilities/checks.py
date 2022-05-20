@@ -47,7 +47,7 @@ def has_verified_role_ticket() -> Callable:
         roles = data["verified_roles"]
         if not roles:
             return False
-        
+
         if any(ctx.author._roles.has(role.id) for role in roles):
             return True
 
@@ -60,7 +60,9 @@ def is_mod() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
         bot: Parrot = ctx.bot
         try:
-            role = bot.server_config[ctx.guild.id]["mod_role"] or 0  # role could be `None`
+            role = (
+                bot.server_config[ctx.guild.id]["mod_role"] or 0
+            )  # role could be `None`
             return ctx.author._roles.has(role)
         except KeyError:
             pass

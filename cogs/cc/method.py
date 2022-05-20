@@ -204,13 +204,90 @@ class CustomCategoryChannel(CustomBase):
         self.channels = [channel.id for channel in channel.channels]
 
 
-class CustomCommandsExecutionOnMsg:
+class BaseCustomCommand:
+    __class__ = None
+    def __init__(self, bot: Parrot) -> None:
+        self.__bot = bot
+        self.env["get_db"] = self.get_db
+        self.env["edit_db"] = self.edit_db
+        self.env["del_db"] = self.del_db
+
+        self.env["wait_for_message"] = self.wait_for_message
+
+    async def wait_for_message(self, timeout: float, **kwargs):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
+
+            return check
+
+        msg = await self.__bot.wait_for(
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
+        )
+        if msg.guild != self.__message.guild:
+            return None
+        return CustomMessage(msg)
+
+    async def message_send(
+        self,
+        channel_id: int = None,
+        content=None,
+        *,
+        embed=None,
+        embeds=None,
+        file=None,
+        files=None,
+        delete_after=None,
+    ) -> CustomMessage:
+        allowed_mentions = discord.AllowedMentions.none()
+        msg = await self.__message.guild.get_channel(
+            channel_id or self.__message.channel.id
+        ).send(
+            content,
+            embed=embed,
+            embeds=embeds,
+            file=file,
+            files=files,
+            delete_after=delete_after,
+            allowed_mentions=allowed_mentions,
+        )
+        return CustomMessage(msg)
+
+    async def get_db(self, **kwargs) -> Dict[str, Any]:
+        project = kwargs.pop("projection", {})
+        return await self.__bot.mongo.cc.storage.find_one(
+            {"_id": self.__message.guild.id, **kwargs}, project
+        )
+
+    async def edit_db(self, **kwargs) -> NoReturn:
+        upsert = kwargs.pop("upsert", False)
+        await self.__bot.mongo.cc.storage.update_one(
+            {"_id": self.__message.guild.id}, kwargs, upsert=upsert
+        )
+        return
+
+    async def del_db(
+        self,
+    ) -> NoReturn:
+        await self.__bot.mongo.cc.storage.delete_one(
+            {
+                "_id": self.__message.guild.id,
+            }
+        )
+        return
+
+
+class CustomCommandsExecutionOnMsg(BaseCustomCommand):
     __class__ = None
 
     def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
-        self.__bot = bot
+        super().__init__(bot)
         self.__message = message
-        self.env = env
         self.env["guild"] = CustomGuild(message.guild)
         self.env["message_send"] = self.message_send
         self.env["message_add_reaction"] = self.message_add_reaction
@@ -237,60 +314,6 @@ class CustomCommandsExecutionOnMsg:
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
         self.env["get_channel_type"] = self.get_channel_type
-
-        self.env["get_db"] = self.get_db
-        self.env["edit_db"] = self.edit_db
-        self.env["del_db"] = self.del_db
-
-        self.env["wait_for_message"] = self.wait_for_message
-
-    # wait_for
-
-    async def wait_for_message(self, timeout: float, **kwargs):
-        def check_outer(**kwargs) -> Callable:
-            def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
-
-            return check
-
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
-        if msg.guild != self.__message.guild:
-            return None
-        return CustomMessage(msg)
-
-    # messages
-
-    async def message_send(
-        self,
-        channel_id: int = None,
-        content=None,
-        *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
-        allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__message.guild.get_channel(
-            channel_id or self.__message.channel.id
-        ).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
-        return CustomMessage(msg)
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()
@@ -411,32 +434,6 @@ class CustomCommandsExecutionOnMsg:
             return "STAGE"
         return "None"
 
-    # database
-
-    async def get_db(self, **kwargs) -> Dict[str, Any]:
-        project = kwargs.pop("projection", {})
-        return await self.__bot.mongo.cc.storage.find_one(
-            {"_id": self.__message.guild.id, **kwargs}, project
-        )
-
-    async def edit_db(self, **kwargs) -> NoReturn:
-        upsert = kwargs.pop("upsert", False)
-        await self.__bot.mongo.cc.storage.update_one(
-            {"_id": self.__message.guild.id}, kwargs, upsert=upsert
-        )
-
-    async def del_db(
-        self,
-    ) -> NoReturn:
-        await self.__bot.mongo.cc.storage.delete_one(
-            {
-                "_id": self.__message.guild.id,
-            }
-        )
-        return
-
-    # Execution
-
     async def execute(
         self,
         code: str,
@@ -460,14 +457,12 @@ class CustomCommandsExecutionOnMsg:
             return
 
 
-class CustomCommandsExecutionOnJoin:
+class CustomCommandsExecutionOnJoin(BaseCustomCommand):
     __class__ = None
 
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
-        self.bot = bot
-        self.__bot = bot
+        super().__init__(bot)
         self.__member = member
-        self.env = env
         self.env["guild"] = CustomGuild(self.__member.guild)
         self.env["message_send"] = self.message_send
 
@@ -486,60 +481,6 @@ class CustomCommandsExecutionOnJoin:
         self.env["get_member"] = self.get_member
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
-
-        self.env["get_db"] = self.get_db
-        self.env["edit_db"] = self.edit_db
-        self.env["del_db"] = self.del_db
-
-        self.env["wait_for_message"] = self.wait_for_message
-
-    # wait_for
-
-    async def wait_for_message(self, timeout: float, **kwargs):
-        def check_outer(**kwargs) -> Callable:
-            def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
-
-            return check
-
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
-        if msg.guild != self.__message.guild:
-            return None
-        return CustomMessage(msg)
-
-    # messages
-
-    async def message_send(
-        self,
-        channel_id: int = None,
-        content=None,
-        *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
-        allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__member.guild.get_channel(
-            channel_id or self.__member.channel.id
-        ).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
-        return CustomMessage(msg)
 
     async def channel_create(
         self, channel_type: str, name: str, **kwargs
@@ -609,30 +550,6 @@ class CustomCommandsExecutionOnJoin:
         if isinstance(channel, discord.CategoryChannel):
             return CustomCategoryChannel(channel)
 
-    # database
-
-    async def get_db(self, projection: Dict[str, Any] = None) -> Dict[str, Any]:
-        return await self.__bot.mongo.cc.storage.find_one(
-            {"_id": self.__member.guild.id}, projection or {}
-        )
-
-    async def edit_db(self, **kwargs) -> NoReturn:
-        kwargs.pop("_id", None)
-        await self.__bot.mongo.cc.storage.update_one(
-            {"_id": self.__member.guild.id}, kwargs, upsert=kwargs.pop("upsert", False)
-        )
-        return
-
-    async def del_db(
-        self,
-    ) -> NoReturn:
-        await self.__bot.mongo.cc.storage.delete_one(
-            {
-                "_id": self.__member.guild.id,
-            }
-        )
-        return
-
     # Execution
 
     async def execute(
@@ -654,17 +571,16 @@ class CustomCommandsExecutionOnJoin:
             return
 
 
-class CustomCommandsExecutionOnReaction:
+class CustomCommandsExecutionOnReaction(BaseCustomCommand):
     __class__ = None
 
     def __init__(
         self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any
     ):
-        self.__bot = bot
+        super().__init__(bot)
         self.__reaction = reaction
         self.__user = user
         self.__message = reaction.message
-        self.env = env
 
         self.env["guild"] = CustomGuild(self.__message.guild)
         self.env["user"] = CustomMember(self.__user)
@@ -694,60 +610,6 @@ class CustomCommandsExecutionOnReaction:
         self.env["get_member"] = self.get_member
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
-
-        self.env["get_db"] = self.get_db
-        self.env["edit_db"] = self.edit_db
-        self.env["del_db"] = self.del_db
-
-        self.env["wait_for_message"] = self.wait_for_message
-
-    # wait_for
-
-    async def wait_for_message(self, timeout: float, **kwargs):
-        def check_outer(**kwargs) -> Callable:
-            def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
-
-            return check
-
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
-        if msg.guild != self.__message.guild:
-            return None
-        return CustomMessage(msg)
-
-    # messages
-
-    async def message_send(
-        self,
-        channel_id: int = None,
-        content=None,
-        *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
-        allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__message.guild.get_channel(
-            channel_id or self.__message.channel.id
-        ).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
-        return CustomMessage(msg)
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()
@@ -848,31 +710,6 @@ class CustomCommandsExecutionOnReaction:
             return CustomVoiceChannel(channel)
         if isinstance(channel, discord.CategoryChannel):
             return CustomCategoryChannel(channel)
-
-    # database
-
-    async def get_db(self, **kwargs) -> Dict[str, Any]:
-        project = kwargs.pop("projection", {})
-        return await self.__bot.mongo.cc.storage.find_one(
-            {"_id": self.__message.guild.id, **kwargs}, project
-        )
-
-    async def edit_db(self, **kwargs) -> NoReturn:
-        upsert = kwargs.pop("upsert", False)
-        await self.__bot.mongo.cc.storage.update_one(
-            {"_id": self.__message.guild.id}, kwargs, upsert=upsert
-        )
-        return
-
-    async def del_db(
-        self,
-    ) -> NoReturn:
-        await self.__bot.mongo.cc.storage.delete_one(
-            {
-                "_id": self.__message.guild.id,
-            }
-        )
-        return
 
     # Execution
 

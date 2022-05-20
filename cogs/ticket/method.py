@@ -26,7 +26,9 @@ async def check_if_server(ctx: Context, guild_id: int) -> None:
         await ctx.bot.mongo.parrot_db.ticket.insert_one(post)
 
 
-async def chat_exporter(channel: discord.TextChannel, limit: Optional[int]=100) -> None:
+async def chat_exporter(
+    channel: discord.TextChannel, limit: Optional[int] = 100
+) -> None:
 
     st = ""
     async for msg in channel.history(limit=limit, oldest_first=True):
@@ -38,7 +40,9 @@ async def chat_exporter(channel: discord.TextChannel, limit: Optional[int]=100) 
     return await channel.send(file=discord.File(st.encode(), "FILE.txt"))
 
 
-async def log(guild: discord.Guild, channel: discord.TextChannel, description: str, status: str) -> None:
+async def log(
+    guild: discord.Guild, channel: discord.TextChannel, description: str, status: str
+) -> None:
     await channel.send(
         embed=discord.Embed(
             title="Parrot Ticket Bot",
@@ -51,7 +55,7 @@ async def log(guild: discord.Guild, channel: discord.TextChannel, description: s
     )
 
 
-async def _new(ctx: Context, args: Optional[str]=None) -> None:
+async def _new(ctx: Context, args: Optional[str] = None) -> None:
     await check_if_server(ctx, ctx.guild.id)
 
     if not args:
@@ -387,12 +391,13 @@ async def _auto(ctx: Context, channel: discord.TextChannel, message: str) -> Non
     embed = discord.Embed(
         title="Parrot Ticket Bot", description=message, color=discord.Color.blue()
     ).set_footer(text=f"{ctx.guild.name}")
-    
+
     message = await channel.send(embed=embed)
     await message.add_reaction("\N{ENVELOPE}")
 
     await ctx.bot.mongo.parrot_db.ticket.update_one(
-        {"_id": ctx.guild.id}, {"$set": {"message_id": message.id, "channel_id": channel.id}}
+        {"_id": ctx.guild.id},
+        {"$set": {"message_id": message.id, "channel_id": channel.id}},
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",

@@ -206,6 +206,7 @@ class CustomCategoryChannel(CustomBase):
 
 class BaseCustomCommand:
     __class__ = None
+
     def __init__(self, bot: Parrot, *, guild: discord.Guild, **kwargs: Any) -> None:
         self.__bot = bot
         self.__guild = guild
@@ -235,10 +236,10 @@ class BaseCustomCommand:
     async def wait_for_message(self, timeout: float, **kwargs):
         def check_outer(**kwargs) -> Callable:
             def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
+                converted_pred = [
+                    (attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()
+                ]
+                return all(pred(message) == value for pred, value in converted_pred)
 
             return check
 
@@ -263,9 +264,7 @@ class BaseCustomCommand:
         delete_after=None,
     ) -> CustomMessage:
         allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__guild.get_channel(
-            channel_id
-        ).send(
+        msg = await self.__guild.get_channel(channel_id).send(
             content,
             embed=embed,
             embeds=embeds,
@@ -389,7 +388,7 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
         super().__init__(bot, guild=message.guild, **kwargs)
         self.__message = message
         self.env["guild"] = CustomGuild(message.guild)
-        
+
         self.env["message_add_reaction"] = self.message_add_reaction
         self.env["message_remove_reaction"] = self.message_remove_reaction
         self.env["message_clear_reactions"] = self.message_clear_reactions

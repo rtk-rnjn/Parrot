@@ -129,9 +129,11 @@ class Gist(Cog):
     async def gist_create(self, ctx: Context, *, content: str):
         """Create a gist from the given content"""
         content = GistContent(content)
-        url = await self.create_gist(content.source,)
+        url = await self.create_gist(
+            content.source,
+        )
         await ctx.send(f"Created gist at <{url}>")
-    
+
     @gist.command(name="delete")
     @commands.is_owner()
     async def gist_delete(self, ctx: Context, gist_id: str):

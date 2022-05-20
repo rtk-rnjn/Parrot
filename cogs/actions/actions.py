@@ -40,6 +40,7 @@ class Actions(Cog):
         await ctx.reply(embed=embed)
 
     async def command_loader(self):
+        method = self.send_message
         for end_point in ENDPOINTS:
 
             @commands.command(name=end_point)
@@ -48,9 +49,8 @@ class Actions(Cog):
             @commands.max_concurrency(1, per=commands.BucketType.user)
             @Context.with_type
             async def callback(
-                self,
                 ctx: Context,
             ):
-                await self.send_message(ctx)
+                await method(ctx)
 
             self.bot.add_command(callback)

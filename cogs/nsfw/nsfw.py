@@ -40,7 +40,7 @@ class NSFW(Cog):
             @commands.is_nsfw()
             @commands.bot_has_permissions(embed_links=True)
             @Context.with_type
-            async def callback(self, ctx: Context):
+            async def callback(ctx: Context):
                 await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
 
             self.bot.add_command(callback)

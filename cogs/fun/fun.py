@@ -2886,6 +2886,7 @@ class Fun(Cog):
         for end_point in END_POINTS:
             @commands.command(name=end_point, help=f"{end_point} commnad Generation")
             @commands.bot_has_permissions(attach_files=True)
+            @Context.with_type
             async def callback(ctx: Context, *, target: Union[discord.Member, discord.Emoji, str, None]=None):
                 ref = ctx.message.reference
                 url = None
@@ -2896,7 +2897,7 @@ class Fun(Cog):
                     elif msg.embeds and str(msg.embeds[0].image.url).endswith(("png", "jpeg", "jpg", "gif", "webp")):
                         url = ctx.replied_reference.embeds[0].image.url
                 
-                if isinstance(target, discord.Member):
+                elif isinstance(target, discord.Member):
                     url = target.display_avatar.url
                 elif isinstance(target, discord.Emoji):
                     url = target.url

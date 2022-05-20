@@ -83,7 +83,6 @@ class Context(commands.Context):
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
-            await func(*args, **kwargs)
 
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             try:

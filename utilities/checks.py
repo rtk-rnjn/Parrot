@@ -107,7 +107,7 @@ def in_temp_channel() -> Callable:
 
 async def _can_run(ctx) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
-    if ctx.guild is not None and ctx.command and ctx.command.cog:
+    if ctx.guild is not None and ctx.command:
         roles = set(ctx.author.roles)
         collection = ctx.bot.mongo.enable_disable[f"{ctx.guild.id}"]
         if data := await collection.find_one(

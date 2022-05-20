@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import discord
-import datetime
 import time
 from discord.ext import commands
 
 from core import Parrot, Context, Cog
+from ._nsfw import ENDPOINTS
 
 
 class NSFW(Cog):
@@ -14,6 +14,7 @@ class NSFW(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
+        self.command_loader()
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -32,229 +33,15 @@ class NSFW(Cog):
         embed.set_image(url=url)
         return embed
 
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def anal(self, ctx: Context):
-        """To get Random Anal"""
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def gonewild(self, ctx: Context):
-        """
-        To get Random GoneWild
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hanal(self, ctx: Context):
-        """To get Random Hentai Anal"""
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hentai(self, ctx: Context):
-        """To get Random Hentai"""
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def holo(self, ctx: Context):
-        """
-        To get Random Holo
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def neko(self, ctx: Context):
-        """
-        To get Random Neko
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hneko(self, ctx: Context):
-        """
-        To get Random Hneko
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hkitsune(self, ctx: Context):
-        """
-        To get Random Hkitsune
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def kemonomimi(self, ctx: Context):
-        """
-        To get Random Kemonomimi
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def pgif(self, ctx: Context):
-        """
-        To get Random PornGif
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command(name="4k")
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def _4k(self, ctx: Context):
-        """
-        To get Random 4k
-        """
-        await ctx.reply(embed=await self.get_embed("4k"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def kanna(self, ctx: Context):
-        """
-        To get Random Kanna
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def ass(self, ctx: Context):
-        """
-        To get Random Ass
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def pussy(self, ctx: Context):
-        """
-        To get Random Pussy
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def thigh(self, ctx: Context):
-        """
-        To get Random Thigh
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hthigh(self, ctx: Context):
-        """
-        To get Random Hentai Thigh
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def paizuri(self, ctx: Context):
-        """
-        To get Random Paizuri
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def tentacle(self, ctx: Context):
-        """
-        To get Random Tentacle Porn
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def boobs(self, ctx: Context):
-        """
-        To get Random Boobs
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hboobs(self, ctx: Context):
-        """
-        To get Random Hentai Boobs
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def yaoi(self, ctx: Context):
-        """
-        To get Random Yaoi
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hmidriff(self, ctx: Context):
-        """
-        To get Random Hmidriff
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
-
-    @commands.command()
-    @commands.is_nsfw()
-    @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
-    async def hass(self, ctx: Context):
-        """
-        To get Random Hentai Ass
-        """
-        await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
+    def command_loader(self):
+        for end_point in ENDPOINTS:
+            @commands.command(name=end_point)
+            @commands.is_nsfw()
+            @commands.bot_has_permissions(embed_links=True)
+            @Context.with_type
+            async def callback(self, ctx: Context):
+                await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
+            self.bot.add_command(callback)
 
     @commands.command(aliases=["randnsfw"])
     @commands.is_nsfw()

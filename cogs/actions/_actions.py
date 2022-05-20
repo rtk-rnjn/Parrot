@@ -1,0 +1,1 @@
+ENDPOINTS = ['weep', 'bully', 'cuddle', 'kill', 'hit', 'happy', 'wink', 'cringe', 'poke', 'dance', 'waifu', 'megumin', 'shinobu', 'nom', 'awoo', 'hug', 'kiss', 'lick', 'pat', 'smug', 'bonk', 'yeet', 'blush', 'smile', 'wave', 'highfive', 'handhold', 'slap', 'bite', 'glomp']

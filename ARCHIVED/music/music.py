@@ -114,8 +114,7 @@ class Music(
             )
             await ctx.send(f"Connected to {vc.channel.mention}.")
             return vc
-        else:
-            raise commands.CheckFailure()
+        raise commands.CheckFailure()
 
     # Disconnect
     @commands.command(

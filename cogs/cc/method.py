@@ -3,7 +3,7 @@ from operator import attrgetter
 
 import discord
 from core import Parrot
-from typing import Any, Callable, Dict, NoReturn, Union, List
+from typing import Any, Callable, Dict, NoReturn, Optional, Union, List
 
 import re
 import time
@@ -206,53 +206,13 @@ class CustomCategoryChannel(CustomBase):
 
 class BaseCustomCommand:
     __class__ = None
-    def __init__(self, bot: Parrot) -> None:
+    def __init__(self, bot: Parrot, *, guild: discord.Guild, **kwargs: Any) -> None:
         self.__bot = bot
+        self.__guild = guild
         self.env = env
         self.env["get_db"] = self.get_db
         self.env["edit_db"] = self.edit_db
         self.env["del_db"] = self.del_db
-
-    async def get_db(self, **kwargs) -> Dict[str, Any]:
-        project = kwargs.pop("projection", {})
-        return await self.__bot.mongo.cc.storage.find_one(
-            {"_id": self.__message.guild.id, **kwargs}, project
-        )
-
-    async def edit_db(self, **kwargs) -> NoReturn:
-        upsert = kwargs.pop("upsert", False)
-        await self.__bot.mongo.cc.storage.update_one(
-            {"_id": self.__message.guild.id}, kwargs, upsert=upsert
-        )
-        return
-
-    async def del_db(
-        self,
-    ) -> NoReturn:
-        await self.__bot.mongo.cc.storage.delete_one(
-            {
-                "_id": self.__message.guild.id,
-            }
-        )
-        return
-
-
-class CustomCommandsExecutionOnMsg(BaseCustomCommand):
-    __class__ = None
-
-    def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
-        super().__init__(bot)
-        self.__message = message
-        self.env["guild"] = CustomGuild(message.guild)
-        self.env["message_send"] = self.message_send
-        self.env["message_add_reaction"] = self.message_add_reaction
-        self.env["message_remove_reaction"] = self.message_remove_reaction
-        self.env["message_clear_reactions"] = self.message_clear_reactions
-        self.env["message_pin"] = self.message_pin
-        self.env["message_unpin"] = self.message_unpin
-        self.env["message_publish"] = self.message_publish
-        self.env["message_create_thread"] = self.message_create_thread
-
         self.env["channel_create"] = self.channel_create
         self.env["channel_delete"] = self.channel_delete
         self.env["channel_edit"] = self.channel_edit
@@ -269,8 +229,8 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
         self.env["get_channel_type"] = self.get_channel_type
-
         self.env["wait_for_message"] = self.wait_for_message
+        self.env["message_send"] = self.message_send
 
     async def wait_for_message(self, timeout: float, **kwargs):
         def check_outer(**kwargs) -> Callable:
@@ -287,13 +247,13 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
             check=check_outer(**kwargs),
             timeout=10 if timeout > 10 else timeout,
         )
-        if msg.guild != self.__message.guild:
+        if msg.guild != self.__guild:
             return None
         return CustomMessage(msg)
 
     async def message_send(
         self,
-        channel_id: int = None,
+        channel_id: int,
         content=None,
         *,
         embed=None,
@@ -303,8 +263,8 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
         delete_after=None,
     ) -> CustomMessage:
         allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__message.guild.get_channel(
-            channel_id or self.__message.channel.id
+        msg = await self.__guild.get_channel(
+            channel_id
         ).send(
             content,
             embed=embed,
@@ -315,6 +275,128 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
             allowed_mentions=allowed_mentions,
         )
         return CustomMessage(msg)
+
+    async def channel_create(
+        self, channel_type: str, name: str, **kwargs
+    ) -> Union[CustomTextChannel, CustomVoiceChannel]:
+        if channel_type.upper() == "TEXT":
+            channel = await self.__guild.create_text_channel(name, **kwargs)
+            return CustomTextChannel(channel)
+        if channel_type.upper() == "VOICE":
+            channel = await self.__guild.create_voice_channel(name, **kwargs)
+            return CustomVoiceChannel(channel)
+
+    async def channel_edit(self, channel_id: int, **kwargs) -> NoReturn:
+        await self.__guild.get_channel(channel_id).edit(**kwargs)
+        return
+
+    async def channel_delete(self, channel_id: int) -> NoReturn:
+        await self.__guild.get_channel(channel_id).delete()
+        return
+
+    # roles
+
+    async def role_create(self, name: str, **kwargs) -> CustomRole:
+        role = await self.__guild.create_role(name, **kwargs)
+        return CustomRole(role)
+
+    async def role_edit(self, role_id: int, **kwargs) -> NoReturn:
+        await self.__guild.get_role(role_id).edit(**kwargs)
+        return
+
+    async def role_delete(
+        self,
+        role_id: int,
+    ) -> NoReturn:
+        await self.__guild.get_role(role_id).delete()
+        return
+
+    # mod actions
+
+    async def kick_member(self, member_id: int, reason: str) -> NoReturn:
+        await self.__guild.get_member(member_id).kick(reason)
+        return
+
+    async def ban_member(self, member_id: int, reason: str) -> NoReturn:
+        await self.__guild.get_member(member_id).ban(reason)
+        return
+
+    async def edit_member(self, member_id: int, **kwargs) -> NoReturn:
+        await self.__guild.get_member(member_id).edit(**kwargs)
+        return
+
+    # utils
+
+    async def get_member(self, member_id: int) -> CustomMember:
+        return CustomMember(self.__message.guild.get_member(member_id))
+
+    async def get_role(self, role_id: int) -> CustomRole:
+        return CustomRole(self.__guild.get_role(role_id))
+
+    async def get_channel(
+        self, channel_id: int
+    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
+        channel = self.__guild.get_channel(channel_id)
+        if isinstance(channel, discord.TextChannel):
+            return CustomTextChannel(channel)
+        if isinstance(channel, discord.VoiceChannel):
+            return CustomVoiceChannel(channel)
+        if isinstance(channel, discord.CategoryChannel):
+            return CustomCategoryChannel(channel)
+
+    async def get_channel_type(self, channel: int) -> Optional[str]:
+        channel = self.__guild.get_channel(channel)
+        if isinstance(channel, discord.TextChannel):
+            return "TEXT"
+        if isinstance(channel, discord.VoiceChannel):
+            return "VOICE"
+        if isinstance(channel, discord.CategoryChannel):
+            return "CATEGORY"
+        if isinstance(channel, discord.Thread):
+            return "THREAD"
+        if isinstance(channel, discord.StageChannel):
+            return "STAGE"
+        return None
+
+    async def get_db(self, **kwargs) -> Dict[str, Any]:
+        project = kwargs.pop("projection", {})
+        return await self.__bot.mongo.cc.storage.find_one(
+            {"_id": self.__guild.id, **kwargs}, project
+        )
+
+    async def edit_db(self, **kwargs) -> NoReturn:
+        upsert = kwargs.pop("upsert", False)
+        await self.__bot.mongo.cc.storage.update_one(
+            {"_id": self.__guild.id}, kwargs, upsert=upsert
+        )
+        return
+
+    async def del_db(
+        self,
+    ) -> NoReturn:
+        await self.__bot.mongo.cc.storage.delete_one(
+            {
+                "_id": self.__guild.id,
+            }
+        )
+        return
+
+
+class CustomCommandsExecutionOnMsg(BaseCustomCommand):
+    __class__ = None
+
+    def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
+        super().__init__(bot, guild=message.guild, **kwargs)
+        self.__message = message
+        self.env["guild"] = CustomGuild(message.guild)
+        
+        self.env["message_add_reaction"] = self.message_add_reaction
+        self.env["message_remove_reaction"] = self.message_remove_reaction
+        self.env["message_clear_reactions"] = self.message_clear_reactions
+        self.env["message_pin"] = self.message_pin
+        self.env["message_unpin"] = self.message_unpin
+        self.env["message_publish"] = self.message_publish
+        self.env["message_create_thread"] = self.message_create_thread
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()
@@ -351,90 +433,6 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
             if str(reaction.emoji) == emoji:
                 return [CustomMember(member) async for member in reaction.users()]
 
-    # channels
-
-    async def channel_create(
-        self, channel_type: str, name: str, **kwargs
-    ) -> Union[CustomTextChannel, CustomVoiceChannel]:
-        if channel_type.upper() == "TEXT":
-            channel = await self.__message.guild.create_text_channel(name, **kwargs)
-            return CustomTextChannel(channel)
-        if channel_type.upper() == "VOICE":
-            channel = await self.__message.guild.create_voice_channel(name, **kwargs)
-            return CustomVoiceChannel(channel)
-
-    async def channel_edit(self, channel_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_channel(channel_id).edit(**kwargs)
-        return
-
-    async def channel_delete(self, channel_id: int) -> NoReturn:
-        await self.__message.guild.get_channel(channel_id).delete()
-        return
-
-    # roles
-
-    async def role_create(self, name: str, **kwargs) -> CustomRole:
-        role = await self.__message.guild.create_role(name, **kwargs)
-        return CustomRole(role)
-
-    async def role_edit(self, role_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_role(role_id).edit(**kwargs)
-        return
-
-    async def role_delete(
-        self,
-        role_id: int,
-    ) -> NoReturn:
-        await self.__message.guild.get_role(role_id).delete()
-        return
-
-    # mod actions
-
-    async def kick_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__message.guild.get_member(member_id).kick(reason)
-        return
-
-    async def ban_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__message.guild.get_member(member_id).ban(reason)
-        return
-
-    async def edit_member(self, member_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_member(member_id).edit(**kwargs)
-        return
-
-    # utils
-
-    async def get_member(self, member_id: int) -> CustomMember:
-        return CustomMember(self.__message.guild.get_member(member_id))
-
-    async def get_role(self, role_id: int) -> CustomRole:
-        return CustomRole(self.__message.guild.get_role(role_id))
-
-    async def get_channel(
-        self, channel_id: int
-    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
-        channel = self.__message.guild.get_channel(channel_id)
-        if isinstance(channel, discord.TextChannel):
-            return CustomTextChannel(channel)
-        if isinstance(channel, discord.VoiceChannel):
-            return CustomVoiceChannel(channel)
-        if isinstance(channel, discord.CategoryChannel):
-            return CustomCategoryChannel(channel)
-
-    async def get_channel_type(self, channel: int) -> str:
-        channel = self.__message.guild.get_channel(channel)
-        if isinstance(channel, discord.TextChannel):
-            return "TEXT"
-        if isinstance(channel, discord.VoiceChannel):
-            return "VOICE"
-        if isinstance(channel, discord.CategoryChannel):
-            return "CATEGORY"
-        if isinstance(channel, discord.Thread):
-            return "THREAD"
-        if isinstance(channel, discord.StageChannel):
-            return "STAGE"
-        return "None"
-
     async def execute(
         self,
         code: str,
@@ -462,142 +460,9 @@ class CustomCommandsExecutionOnJoin(BaseCustomCommand):
     __class__ = None
 
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
-        super().__init__(bot)
+        super().__init__(bot, guild=member.guild, **kwargs)
         self.__member = member
         self.env["guild"] = CustomGuild(self.__member.guild)
-        self.env["message_send"] = self.message_send
-
-        self.env["channel_create"] = self.channel_create
-        self.env["channel_delete"] = self.channel_delete
-        self.env["channel_edit"] = self.channel_edit
-
-        self.env["role_create"] = self.role_create
-        self.env["role_delete"] = self.role_delete
-        self.env["role_edit"] = self.role_edit
-
-        self.env["kick_member"] = self.kick_member
-        self.env["ban_member"] = self.ban_member
-        self.env["edit_member"] = self.edit_member
-
-        self.env["get_member"] = self.get_member
-        self.env["get_channel"] = self.get_channel
-        self.env["get_role"] = self.get_role
-
-        self.env["wait_for_message"] = self.wait_for_message
-
-    async def wait_for_message(self, timeout: float, **kwargs):
-        def check_outer(**kwargs) -> Callable:
-            def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
-
-            return check
-
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
-        if msg.guild != self.__message.guild:
-            return None
-        return CustomMessage(msg)
-
-    async def message_send(
-        self,
-        channel_id: int = None,
-        content=None,
-        *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
-        allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__message.guild.get_channel(
-            channel_id or self.__message.channel.id
-        ).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
-        return CustomMessage(msg)
-
-    async def channel_create(
-        self, channel_type: str, name: str, **kwargs
-    ) -> Union[CustomTextChannel, CustomVoiceChannel]:
-        if channel_type.upper() == "TEXT":
-            channel = await self.__member.guild.create_text_channel(name, **kwargs)
-            return CustomTextChannel(channel)
-        if channel_type.upper() == "VOICE":
-            channel = await self.__member.guild.create_voice_channel(name, **kwargs)
-            return CustomVoiceChannel(channel)
-
-    async def channel_edit(self, channel_id: int, **kwargs) -> NoReturn:
-        await self.__member.guild.get_channel(channel_id).edit(**kwargs)
-        return
-
-    async def channel_delete(self, channel_id: int) -> NoReturn:
-        await self.__member.guild.get_channel(channel_id).delete()
-        return
-
-    # roles
-
-    async def role_create(self, name: str, **kwargs) -> CustomRole:
-        role = await self.__member.guild.create_role(name, **kwargs)
-        return CustomRole(role)
-
-    async def role_edit(self, role_id: int, **kwargs) -> NoReturn:
-        await self.__member.guild.get_role(role_id).edit(**kwargs)
-        return
-
-    async def role_delete(
-        self,
-        role_id: int,
-    ) -> NoReturn:
-        await self.__member.guild.get_role(role_id).delete()
-        return
-
-    # mod actions
-
-    async def kick_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__member.guild.get_member(member_id).kick(reason)
-        return
-
-    async def ban_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__member.guild.get_member(member_id).ban(reason)
-        return
-
-    async def edit_member(self, member_id: int, **kwargs) -> NoReturn:
-        await self.__member.guild.get_member(member_id).edit(**kwargs)
-        return
-
-    # utils
-
-    async def get_member(self, member_id: int) -> CustomMember:
-        return CustomMember(self.__member.guild.get_member(member_id))
-
-    async def get_role(self, role_id: int) -> CustomRole:
-        return CustomRole(self.__member.guild.get_role(role_id))
-
-    async def get_channel(
-        self, channel_id: int
-    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
-        channel = self.__member.guild.get_channel(channel_id)
-        if isinstance(channel, discord.TextChannel):
-            return CustomTextChannel(channel)
-        if isinstance(channel, discord.VoiceChannel):
-            return CustomVoiceChannel(channel)
-        if isinstance(channel, discord.CategoryChannel):
-            return CustomCategoryChannel(channel)
-
-    # Execution
 
     async def execute(
         self,
@@ -624,7 +489,7 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommand):
     def __init__(
         self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any
     ):
-        super().__init__(bot)
+        super().__init__(bot, guild=reaction.message.guild, **kwargs)
         self.__reaction = reaction
         self.__user = user
         self.__message = reaction.message
@@ -641,68 +506,6 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommand):
         self.env["message_unpin"] = self.message_unpin
         self.env["message_publish"] = self.message_publish
         self.env["message_create_thread"] = self.message_create_thread
-
-        self.env["channel_create"] = self.channel_create
-        self.env["channel_delete"] = self.channel_delete
-        self.env["channel_edit"] = self.channel_edit
-
-        self.env["role_create"] = self.role_create
-        self.env["role_delete"] = self.role_delete
-        self.env["role_edit"] = self.role_edit
-
-        self.env["kick_member"] = self.kick_member
-        self.env["ban_member"] = self.ban_member
-        self.env["edit_member"] = self.edit_member
-
-        self.env["get_member"] = self.get_member
-        self.env["get_channel"] = self.get_channel
-        self.env["get_role"] = self.get_role
-
-        self.env["wait_for_message"] = self.wait_for_message
-
-    async def wait_for_message(self, timeout: float, **kwargs):
-        def check_outer(**kwargs) -> Callable:
-            def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
-
-            return check
-
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
-        if msg.guild != self.__message.guild:
-            return None
-        return CustomMessage(msg)
-
-    async def message_send(
-        self,
-        channel_id: int = None,
-        content=None,
-        *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
-        allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__message.guild.get_channel(
-            channel_id or self.__message.channel.id
-        ).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
-        return CustomMessage(msg)
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()
@@ -733,78 +536,6 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommand):
     async def message_clear_reactions(self) -> NoReturn:
         await self.__message.clear_reactions()
         return
-
-    # channels
-
-    async def channel_create(
-        self, channel_type: str, name: str, **kwargs
-    ) -> Union[CustomTextChannel, CustomVoiceChannel]:
-        if channel_type.upper() == "TEXT":
-            channel = await self.__message.guild.create_text_channel(name, **kwargs)
-            return CustomTextChannel(channel)
-        if channel_type.upper() == "VOICE":
-            channel = await self.__message.guild.create_voice_channel(name, **kwargs)
-            return CustomVoiceChannel(channel)
-
-    async def channel_edit(self, channel_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_channel(channel_id).edit(**kwargs)
-        return
-
-    async def channel_delete(self, channel_id: int) -> NoReturn:
-        await self.__message.guild.get_channel(channel_id).delete()
-        return
-
-    # roles
-
-    async def role_create(self, name: str, **kwargs) -> CustomRole:
-        role = await self.__message.guild.create_role(name, **kwargs)
-        return CustomRole(role)
-
-    async def role_edit(self, role_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_role(role_id).edit(**kwargs)
-        return
-
-    async def role_delete(
-        self,
-        role_id: int,
-    ) -> NoReturn:
-        await self.__message.guild.get_role(role_id).delete()
-        return
-
-    # mod actions
-
-    async def kick_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__message.guild.get_member(member_id).kick(reason)
-        return
-
-    async def ban_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__message.guild.get_member(member_id).ban(reason)
-        return
-
-    async def edit_member(self, member_id: int, **kwargs) -> NoReturn:
-        await self.__message.guild.get_member(member_id).edit(**kwargs)
-        return
-
-    # utils
-
-    async def get_member(self, member_id: int) -> CustomMember:
-        return CustomMember(self.__message.guild.get_member(member_id))
-
-    async def get_role(self, role_id: int) -> CustomRole:
-        return CustomRole(self.__message.guild.get_role(role_id))
-
-    async def get_channel(
-        self, channel_id: int
-    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
-        channel = self.__message.guild.get_channel(channel_id)
-        if isinstance(channel, discord.TextChannel):
-            return CustomTextChannel(channel)
-        if isinstance(channel, discord.VoiceChannel):
-            return CustomVoiceChannel(channel)
-        if isinstance(channel, discord.CategoryChannel):
-            return CustomCategoryChannel(channel)
-
-    # Execution
 
     async def execute(
         self,

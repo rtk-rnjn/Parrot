@@ -208,55 +208,10 @@ class BaseCustomCommand:
     __class__ = None
     def __init__(self, bot: Parrot) -> None:
         self.__bot = bot
+        self.env = env
         self.env["get_db"] = self.get_db
         self.env["edit_db"] = self.edit_db
         self.env["del_db"] = self.del_db
-
-        self.env["wait_for_message"] = self.wait_for_message
-
-    async def wait_for_message(self, timeout: float, **kwargs):
-        def check_outer(**kwargs) -> Callable:
-            def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(
-                    pred(message) == value for pred, value in converted_pred
-                )
-
-            return check
-
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
-        if msg.guild != self.__message.guild:
-            return None
-        return CustomMessage(msg)
-
-    async def message_send(
-        self,
-        channel_id: int = None,
-        content=None,
-        *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
-        allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__message.guild.get_channel(
-            channel_id or self.__message.channel.id
-        ).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
-        return CustomMessage(msg)
 
     async def get_db(self, **kwargs) -> Dict[str, Any]:
         project = kwargs.pop("projection", {})
@@ -314,6 +269,52 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
         self.env["get_channel_type"] = self.get_channel_type
+
+        self.env["wait_for_message"] = self.wait_for_message
+
+    async def wait_for_message(self, timeout: float, **kwargs):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
+
+            return check
+
+        msg = await self.__bot.wait_for(
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
+        )
+        if msg.guild != self.__message.guild:
+            return None
+        return CustomMessage(msg)
+
+    async def message_send(
+        self,
+        channel_id: int = None,
+        content=None,
+        *,
+        embed=None,
+        embeds=None,
+        file=None,
+        files=None,
+        delete_after=None,
+    ) -> CustomMessage:
+        allowed_mentions = discord.AllowedMentions.none()
+        msg = await self.__message.guild.get_channel(
+            channel_id or self.__message.channel.id
+        ).send(
+            content,
+            embed=embed,
+            embeds=embeds,
+            file=file,
+            files=files,
+            delete_after=delete_after,
+            allowed_mentions=allowed_mentions,
+        )
+        return CustomMessage(msg)
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()
@@ -482,6 +483,52 @@ class CustomCommandsExecutionOnJoin(BaseCustomCommand):
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
 
+        self.env["wait_for_message"] = self.wait_for_message
+
+    async def wait_for_message(self, timeout: float, **kwargs):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
+
+            return check
+
+        msg = await self.__bot.wait_for(
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
+        )
+        if msg.guild != self.__message.guild:
+            return None
+        return CustomMessage(msg)
+
+    async def message_send(
+        self,
+        channel_id: int = None,
+        content=None,
+        *,
+        embed=None,
+        embeds=None,
+        file=None,
+        files=None,
+        delete_after=None,
+    ) -> CustomMessage:
+        allowed_mentions = discord.AllowedMentions.none()
+        msg = await self.__message.guild.get_channel(
+            channel_id or self.__message.channel.id
+        ).send(
+            content,
+            embed=embed,
+            embeds=embeds,
+            file=file,
+            files=files,
+            delete_after=delete_after,
+            allowed_mentions=allowed_mentions,
+        )
+        return CustomMessage(msg)
+
     async def channel_create(
         self, channel_type: str, name: str, **kwargs
     ) -> Union[CustomTextChannel, CustomVoiceChannel]:
@@ -610,6 +657,52 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommand):
         self.env["get_member"] = self.get_member
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
+
+        self.env["wait_for_message"] = self.wait_for_message
+
+    async def wait_for_message(self, timeout: float, **kwargs):
+        def check_outer(**kwargs) -> Callable:
+            def check(message) -> bool:
+                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
+                return all(
+                    pred(message) == value for pred, value in converted_pred
+                )
+
+            return check
+
+        msg = await self.__bot.wait_for(
+            "message",
+            check=check_outer(**kwargs),
+            timeout=10 if timeout > 10 else timeout,
+        )
+        if msg.guild != self.__message.guild:
+            return None
+        return CustomMessage(msg)
+
+    async def message_send(
+        self,
+        channel_id: int = None,
+        content=None,
+        *,
+        embed=None,
+        embeds=None,
+        file=None,
+        files=None,
+        delete_after=None,
+    ) -> CustomMessage:
+        allowed_mentions = discord.AllowedMentions.none()
+        msg = await self.__message.guild.get_channel(
+            channel_id or self.__message.channel.id
+        ).send(
+            content,
+            embed=embed,
+            embeds=embeds,
+            file=file,
+            files=files,
+            delete_after=delete_after,
+            allowed_mentions=allowed_mentions,
+        )
+        return CustomMessage(msg)
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()

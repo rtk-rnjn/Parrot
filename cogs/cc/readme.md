@@ -33,7 +33,7 @@ $cc create --name <name> --code <code> --trigger_type <name>
     - `Time`       : `time.time` function
     - `Sleep`      : `asyncio.sleep` function
     - `Datetime`   : `datetime.datetime` class
-    - `Random`     : `random` module
+    - `Random`     : `random.randint` function
     - `Object`     : `discord.Object` class
     - `File`       : `discord.File` class
     - `Embed`      : `discord.Embed` class

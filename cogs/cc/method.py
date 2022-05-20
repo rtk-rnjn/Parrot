@@ -51,7 +51,7 @@ env = {
     "__cached__": None,
     "__docformat__": None,
     "Re": re,
-    "Random": random,
+    "Random": random.randint,
     "Datetime": datetime.datetime,
     "Time": time.time,
     "Sleep": asyncio.sleep,
@@ -104,7 +104,7 @@ class CustomReaction:
 
 
 class CustomEmoji:
-    def __init__(self, emoji: Union[discord.PartialEmoji, str]):
+    def __init__(self, emoji: Union[discord.Emoji, discord.PartialEmoji, str]):
         if isinstance(emoji, (discord.PartialEmoji, discord.Emoji)):
             self.id = emoji.id
             self.name = emoji.name

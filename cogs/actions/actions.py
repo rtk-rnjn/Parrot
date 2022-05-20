@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from ._actions import ENDPOINTS
 
+
 class Actions(Cog):
     """Action commands like hug and kiss"""
 
@@ -40,11 +41,16 @@ class Actions(Cog):
 
     async def command_loader(self):
         for end_point in ENDPOINTS:
+
             @commands.command(name=end_point)
             @commands.bot_has_permissions(embed_links=True)
             @commands.cooldown(1, 5, commands.BucketType.member)
             @commands.max_concurrency(1, per=commands.BucketType.user)
             @Context.with_type
-            async def callback(self, ctx: Context,):
+            async def callback(
+                self,
+                ctx: Context,
+            ):
                 await self.send_message(ctx)
+
             self.bot.add_command(callback)

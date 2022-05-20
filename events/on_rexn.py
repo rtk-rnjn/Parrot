@@ -331,10 +331,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
             )
-            and user.id in (
-                self.bot.author_obj.id,
-                self.bot.user.id
-            )
+            and user.id in self.bot.owner_ids
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
 
@@ -369,10 +366,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
             )
-            and user.id in (
-                self.bot.author_obj.id,
-                self.bot.user.id
-            )
+            and user.id in self.bot.owner_ids
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
 

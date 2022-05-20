@@ -2908,7 +2908,7 @@ class Fun(Cog):
                 url = url or ctx.author.display_avatar.url
                 params = {"image_url": url}
                 r = await self.bot.http_session.get(
-                    f"https://api.jeyy.xyz/image/{end_point}", params=params
+                    f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
                 )
                 file = discord.File(
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"

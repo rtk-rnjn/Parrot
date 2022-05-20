@@ -114,7 +114,7 @@ async def _can_run(ctx) -> Optional[bool]:
             {
                 "$or": [
                     {"_id": ctx.command.qualified_name},
-                    {"_id": ctx.command.cog.qualified_name},
+                    {"_id": getattr(ctx.command.cog, "qualified_name", None)},
                     {"_id": "all"},
                 ]
             }

@@ -1,2 +1,2 @@
-from .imagine import imagine  # noqa: F401
-from .timecard import timecard  # noqa: F401
+from .imagine import imagine as imagine  # noqa: F401
+from .timecard import timecard as timecard  # noqa: F401

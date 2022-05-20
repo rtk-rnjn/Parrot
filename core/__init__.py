@@ -1,3 +1,3 @@
-from .Parrot import Parrot  # noqa: F401
-from .Cog import Cog  # noqa: F401
-from .Context import Context  # noqa: F401
+from .Parrot import Parrot as Parrot  # noqa: F401
+from .Cog import Cog as Cog  # noqa: F401
+from .Context import Context as Context  # noqa: F401

@@ -35,12 +35,14 @@ class NSFW(Cog):
 
     def command_loader(self):
         for end_point in ENDPOINTS:
+
             @commands.command(name=end_point)
             @commands.is_nsfw()
             @commands.bot_has_permissions(embed_links=True)
             @Context.with_type
             async def callback(self, ctx: Context):
                 await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
+
             self.bot.add_command(callback)
 
     @commands.command(aliases=["randnsfw"])

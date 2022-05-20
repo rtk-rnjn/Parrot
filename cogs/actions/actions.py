@@ -39,7 +39,7 @@ class Actions(Cog):
 
         await ctx.reply(embed=embed)
 
-    async def command_loader(self):
+    def command_loader(self):
         method = self.send_message
         for end_point in ENDPOINTS:
 

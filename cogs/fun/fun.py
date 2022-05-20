@@ -2902,7 +2902,7 @@ class Fun(Cog):
                     url = target.url
                 elif isinstance(target, str):
                     url = f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(target)[0]):x}.png"
-                elif LINKS_RE.fullmatch(target):
+                elif url is not None and LINKS_RE.fullmatch(target):
                     url = target
                 
                 url = url or ctx.author.display_avatar.url

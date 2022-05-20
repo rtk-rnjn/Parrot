@@ -9,7 +9,8 @@ import discord
 from discord.ext import commands
 import re
 
-from core import Parrot, Cog
+from core import Parrot, Cog, Context
+
 
 TOKEN_REGEX = re.compile(r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}")
 DISCORD_PY_ID = 336642139381301249
@@ -116,3 +117,32 @@ class Gist(Cog):
             )
             msg = f"{message.author.mention}, I have found tokens and sent them to <{url}> to be invalidated for you."
             return await message.channel.send(msg)
+
+    @commands.group(name="gist")
+    @commands.is_owner()
+    async def gist(self, ctx: Context):
+        """Gist related commands"""
+        pass
+
+    @gist.command(name="create")
+    @commands.is_owner()
+    async def gist_create(self, ctx: Context, *, content: str):
+        """Create a gist from the given content"""
+        content = GistContent(content)
+        url = await self.create_gist(content.source,)
+        await ctx.send(f"Created gist at <{url}>")
+    
+    @gist.command(name="delete")
+    @commands.is_owner()
+    async def gist_delete(self, ctx: Context, gist_id: str):
+        """Delete a gist"""
+        if gist_id.startswith("<") and gist_id.endswith(">"):
+            gist_id = gist_id[1:-1]
+
+        if not gist_id.startswith("https://gist.github.com/"):
+            await ctx.send("Invalid gist ID")
+            return
+
+        gist_id = gist_id.split("/")[-1]
+        await self.github_request("DELETE", f"gists/{gist_id}")
+        await ctx.send(f"Deleted gist <{gist_id}>")

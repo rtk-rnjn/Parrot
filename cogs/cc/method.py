@@ -10,6 +10,7 @@ import time
 import random
 import datetime
 import asyncio
+import textwrap
 import io
 
 from async_timeout import timeout
@@ -33,6 +34,26 @@ ERROR_MESSAGE = """```
 Failed executing the command command template in channel at: {}
 Error: {}
 ```"""
+
+BASE_FUNCTIONS = {
+    "MESSAGE": """
+async def function(message):
+{}
+""",
+    "REACTION": """
+async def function(reaction, user):
+{}
+""",
+    "MEMBER": """
+async def function(member):
+{}
+""",
+}
+
+
+def indent(code: str, base_function: str) -> str:
+    code = textwrap(code.replace("\t", "    "), "    ")
+    return BASE_FUNCTIONS[base_function.upper()].format(code)
 
 
 env = {
@@ -188,7 +209,6 @@ class CustomVoiceChannel(CustomBase):
         self.id = channel.id
         self.name = channel.name
         self.position = channel.position
-        self.guild = CustomGuild(channel.guild)
         self.bitrate = channel.bitrate
         self.user_limit = channel.user_limit
         self.created_at = channel.created_at
@@ -381,13 +401,11 @@ class BaseCustomCommand:
         return
 
 
-class CustomCommandsExecutionOnMsg(BaseCustomCommand):
+class BaseCustomCommandOnMsg(BaseCustomCommand):
     __class__ = None
-
-    def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
-        super().__init__(bot, guild=message.guild, **kwargs)
+    def __init__(self, bot: Parrot, *, guild: discord.Guild, message: discord.Message):
+        super().__init__(bot, guild=guild)
         self.__message = message
-        self.env["guild"] = CustomGuild(message.guild)
 
         self.env["message_add_reaction"] = self.message_add_reaction
         self.env["message_remove_reaction"] = self.message_remove_reaction
@@ -396,6 +414,7 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
         self.env["message_unpin"] = self.message_unpin
         self.env["message_publish"] = self.message_publish
         self.env["message_create_thread"] = self.message_create_thread
+        self.env["reactions_users"] = self.reactions_users
 
     async def message_pin(self) -> NoReturn:
         await self.__message.pin()
@@ -432,6 +451,14 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
             if str(reaction.emoji) == emoji:
                 return [CustomMember(member) async for member in reaction.users()]
 
+
+class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
+    __class__ = None
+
+    def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
+        super().__init__(bot, guild=message.guild, **kwargs)
+        self.__message = message
+
     async def execute(
         self,
         code: str,
@@ -455,7 +482,7 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommand):
             return
 
 
-class CustomCommandsExecutionOnJoin(BaseCustomCommand):
+class _CustomCommandsExecutionOnMember(BaseCustomCommand):
     __class__ = None
 
     def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
@@ -482,7 +509,17 @@ class CustomCommandsExecutionOnJoin(BaseCustomCommand):
             return
 
 
-class CustomCommandsExecutionOnReaction(BaseCustomCommand):
+class CustomCommandsExecutionOnJoin(_CustomCommandsExecutionOnMember):
+    __class__ = None
+    ...
+
+
+class CustomCommandsExecutionOnRemove(_CustomCommandsExecutionOnMember):
+    __class__ = None
+    ...
+
+
+class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
     __class__ = None
 
     def __init__(
@@ -493,48 +530,8 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommand):
         self.__user = user
         self.__message = reaction.message
 
-        self.env["guild"] = CustomGuild(self.__message.guild)
         self.env["user"] = CustomMember(self.__user)
         self.env["reaction_type"] = kwargs.pop("reaction_type", None)
-
-        self.env["message_send"] = self.message_send
-        self.env["message_add_reaction"] = self.message_add_reaction
-        self.env["message_remove_reaction"] = self.message_remove_reaction
-        self.env["message_clear_reactions"] = self.message_clear_reactions
-        self.env["message_pin"] = self.message_pin
-        self.env["message_unpin"] = self.message_unpin
-        self.env["message_publish"] = self.message_publish
-        self.env["message_create_thread"] = self.message_create_thread
-
-    async def message_pin(self) -> NoReturn:
-        await self.__message.pin()
-        return
-
-    async def message_unpin(self) -> NoReturn:
-        await self.__message.unpin()
-        return
-
-    async def message_publish(self) -> NoReturn:
-        await self.__message.publish()
-        return
-
-    async def message_create_thread(self) -> NoReturn:
-        await self.__message.create_thread()
-        return
-
-    async def message_add_reaction(self, emoji: str) -> NoReturn:
-        await self.__message.add_reaction(emoji)
-        return
-
-    async def message_remove_reaction(
-        self, emoji: str, member: CustomMember
-    ) -> NoReturn:
-        await self.__message.remove_reaction(emoji, discord.Object(id=member.id))
-        return
-
-    async def message_clear_reactions(self) -> NoReturn:
-        await self.__message.clear_reactions()
-        return
 
     async def execute(
         self,

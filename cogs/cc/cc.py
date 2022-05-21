@@ -8,6 +8,8 @@ from cogs.cc.method import (
     CustomCommandsExecutionOnJoin,
     CustomCommandsExecutionOnMsg,
     CustomCommandsExecutionOnReaction,
+    CustomCommandsExecutionOnRemove,
+    indent,
 )
 from cogs.cc import method
 import importlib
@@ -33,7 +35,7 @@ TRIGGER_TYPE = [
     "reaction_add_or_remove",
     "message_edit",
     "member_join",
-    "timer_complete",
+    "member_remove"
 ]
 
 ERROR_ON_MAX_CONCURRENCY = """
@@ -176,6 +178,13 @@ class CustomCommand(Cog):
                 f"Trigger type must be one of {', '.join(TRIGGER_TYPE)}"
             )
 
+        if flags.trigger_type.lower() in ("on_message", "on_message_edit"):
+            code = indent(code, "MESSAGE")
+        elif flags.trigger_type.lower() in ("reaction_add_or_remove", "reaction_add", "reaction_remove"):
+            code = indent(code, "REACTION")
+        elif flags.trigger_type.lower() in ("member_join", "member_remove"):
+            code = indent(code, "MEMBER")
+
         await self.bot.mongo.cc.commands.update_one(
             {"_id": ctx.guild.id},
             {
@@ -185,22 +194,13 @@ class CustomCommand(Cog):
                         "name": name,
                         "review_needed": review_needed,
                         "trigger_type": flags.trigger_type.lower(),
-                        "requied_role": flags.requied_role.id
-                        if flags.requied_role
-                        else None,
-                        "ignored_role": flags.ignored_role.id
-                        if flags.ignored_role
-                        else None,
-                        "requied_channel": flags.requied_channel.id
-                        if flags.requied_channel
-                        else None,
-                        "ignored_channel": flags.ignored_channel.id
-                        if flags.ignored_channel
-                        else None,
+                        "requied_role": flags.requied_role.id if flags.requied_role else None,
+                        "ignored_role": flags.ignored_role.id if flags.ignored_role else None,
+                        "requied_channel": flags.requied_channel.id if flags.requied_channel else None,
+                        "ignored_channel": flags.ignored_channel.id if flags.ignored_channel else None,
                     }
                 }
             },
-            upsert=True,
         )
         await ctx.send(f"{ctx.author.mention} Custom command `{name}` created.")
 
@@ -389,6 +389,25 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                 ):
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
+                    await CC.execute(command.get("code"))
+                await asyncio.sleep(0)
+
+    @Cog.listener()
+    async def on_member_remove(self, member):
+        if data := await self.bot.mongo.cc.commands.find_one(
+            {
+                "_id": member.guild.id,
+                "commands.trigger_type": "member_remove",
+                "commands.review_needed": False,
+            },
+        ):
+            commands = data.get("commands", [])
+            for command in commands:
+                if (
+                    command["trigger_type"] == "member_remove"
+                    and not command["review_needed"]
+                ):
+                    CC = CustomCommandsExecutionOnRemove(self.bot, member)
                     await CC.execute(command.get("code"))
                 await asyncio.sleep(0)
 

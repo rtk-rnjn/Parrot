@@ -16,7 +16,7 @@ $cc create --name <name> --code <code> --trigger_type <name>
 
 ## Few things to note
 
-- Your code must have an asyncronous function named `function`, which takes `message` as argument, in on_message case, or takes `reaction` and `member` in on_reaction_x case.
+- You are given `message` as instance of CustomMessage, in on_message case, or `reaction` in on_reaction_x case and `member` in on_member_x case.
 - Your code must have a `return` statement at the end, and try to return `None`.
 - Your code must be a valid python code.
 - Every custom command must have a unique name.

@@ -13,7 +13,6 @@ from typing import (
     Dict,
     Union,
     List,
-    TYPE_CHECKING,
 )
 import jishaku as jishaku  # noqa: F401
 import datetime
@@ -45,7 +44,7 @@ from utilities.converters import ToAsync
 
 from .__template import post as POST
 
-from time import time
+from time import perf_counter
 
 from .Context import Context
 
@@ -165,9 +164,9 @@ class Parrot(commands.AutoShardedBot):
                 traceback.print_exc()
 
     async def db_latency(self) -> float:
-        ini = time()
+        ini = perf_counter()
         await self.mongo.parrot_db.server_config.find_one({})
-        fin = time()
+        fin = perf_counter()
         return fin - ini
 
     def _clear_gateway_data(self) -> None:

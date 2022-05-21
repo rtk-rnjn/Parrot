@@ -234,8 +234,8 @@ class CustomCommand(Cog):
 
     @cc.command(name="update")
     @commands.has_permissions(manage_guild=True)
-    async def cc_create(self, ctx: Context, name: str, *, flags: CCFlag):
-        """To create custom commands"""
+    async def cc_update(self, ctx: Context, name: str, *, flags: CCFlag):
+        """To update custom commands"""
         payload = {}
 
         if flags.trigger_type:
@@ -291,7 +291,7 @@ class CustomCommand(Cog):
 
         await self.bot.mongo.cc.commands.update_one(
             {"_id": ctx.guild.id, "commands.name": name},
-            {"$set": {"commands.$.name": {**payload}}},
+            {"$set": {"commands.$": {**payload}}},
         )
         await ctx.send(f"{ctx.author.mention} Custom command `{name}` updated.")
 

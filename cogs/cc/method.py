@@ -457,7 +457,7 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
     __class__ = None
 
     def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
-        super().__init__(bot, guild=message.guild, **kwargs)
+        super().__init__(bot, guild=message.guild, message=message, **kwargs)
         self.__message = message
 
     async def execute(
@@ -526,7 +526,7 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
     def __init__(
         self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any
     ):
-        super().__init__(bot, guild=reaction.message.guild, **kwargs)
+        super().__init__(bot, guild=reaction.message.guild, message=reaction.message, **kwargs)
         self.__reaction = reaction
         self.__user = user
         self.__message = reaction.message

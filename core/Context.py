@@ -10,7 +10,7 @@ import functools
 
 from utilities.emotes import emojis
 
-from typing import Optional, Union, List, Tuple, Any
+from typing import Optional, Union, List, Tuple, Any, TYPE_CHECKING
 
 
 __all__ = ("Context",)
@@ -20,8 +20,16 @@ CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS DOWN SIGN}",
 )
 
+if TYPE_CHECKING:
+    from .Parrot import Parrot
+
 
 class Context(commands.Context):
+    channel: Union[discord.VoiceChannel, discord.TextChannel, discord.Thread, discord.DMChannel]
+    prefix: str
+    command: commands.Command[Any, ..., Any]
+    bot: Parrot
+
     """A custom implementation of commands.Context class."""
 
     def __init__(self, *args, **kwargs) -> None:

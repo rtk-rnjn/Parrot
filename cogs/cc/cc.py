@@ -158,8 +158,12 @@ class CustomCommand(Cog):
 
     @cc.command(name="make")
     @commands.has_permissions(manage_guild=True)
-    async def cc_make(self, ctx: Context,):
+    async def cc_make(
+        self,
+        ctx: Context,
+    ):
         """To create custom commands in interactive format"""
+
         def check(msg: discord.Message) -> bool:
             return msg.author == ctx.author and msg.channel == ctx.channel
 
@@ -180,9 +184,7 @@ class CustomCommand(Cog):
         if trigger_type.content not in TRIGGER_TYPE:
             raise commands.BadArgument("Invalid trigger type")
 
-        await ctx.send(
-            f"{ctx.author.mention} Please enter the code of the command."
-        )
+        await ctx.send(f"{ctx.author.mention} Please enter the code of the command.")
         code = await wait_for(check=check)
         code = ContentCode(code.content)
         code = code.source
@@ -275,28 +277,22 @@ class CustomCommand(Cog):
                     f"{ctx.author.mention} your custom command code is under review."
                 )
                 payload["review_needed"] = review_needed
-        
+
         if flags.requied_role:
             payload["requied_role"] = flags.requied_role.id
-        
+
         if flags.ignored_role:
             payload["ignored_role"] = flags.ignored_role.id
-        
+
         if flags.requied_channel:
             payload["requied_channel"] = flags.requied_channel.id
-        
+
         if flags.ignored_channel:
             payload["ignored_channel"] = flags.ignored_channel.id
 
         await self.bot.mongo.cc.commands.update_one(
             {"_id": ctx.guild.id, "commands.name": name},
-            {
-                "$set": {
-                    "commands.$.name": {
-                        **payload
-                    }
-                }
-            },
+            {"$set": {"commands.$.name": {**payload}}},
         )
         await ctx.send(f"{ctx.author.mention} Custom command `{name}` updated.")
 

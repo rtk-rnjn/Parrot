@@ -52,7 +52,7 @@ async def function(member):
 
 
 def indent(code: str, base_function: str) -> str:
-    code = textwrap(code.replace("\t", "    "), "    ")
+    code = textwrap.indent(code.replace("\t", "    "), "    ")
     return BASE_FUNCTIONS[base_function.upper()].format(code)
 
 

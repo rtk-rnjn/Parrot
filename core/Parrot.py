@@ -4,7 +4,17 @@ from __future__ import annotations
 
 import os
 import traceback
-from typing import Any, Awaitable, Callable, Iterator, Optional, Dict, Union, List, TYPE_CHECKING
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Iterator,
+    Optional,
+    Dict,
+    Union,
+    List,
+    TYPE_CHECKING,
+)
 import jishaku as jishaku  # noqa: F401
 import datetime
 import asyncio

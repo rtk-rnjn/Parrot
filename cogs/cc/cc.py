@@ -209,7 +209,6 @@ class CustomCommand(Cog):
                         "trigger_type": trigger_type.content.lower(),
                         "code": code,
                         "review_needed": bool(re.findall(MAGICAL_WORD_REGEX, code)),
-                        "trigger_type": trigger_type.lower(),
                         "requied_role": None,
                         "ignored_role": None,
                         "requied_channel": None,

@@ -59,7 +59,7 @@ def indent(code: str, base_function: str) -> str:
 env = {
     "__import__": None,
     "__builtins__": None,
-    "__name__": None,
+    "__name__": "__custom_command__",
     "globals": None,
     "locals": None,
     "__doc__": None,

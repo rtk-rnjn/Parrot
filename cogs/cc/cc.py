@@ -3,7 +3,7 @@ import asyncio
 
 from collections import defaultdict
 import re
-from typing import Union
+from typing import Optional, Union
 from cogs.cc.method import (
     CustomCommandsExecutionOnJoin,
     CustomCommandsExecutionOnMsg,
@@ -50,9 +50,25 @@ ERROR_ON_REVIEW_REQUIRED = """
 """
 
 
+class ContentCode:
+    def __init__(self, argument: str):
+        try:
+            block, code = argument.split("\n", 1)
+        except ValueError:
+            self.source = argument
+            self.language = None
+        else:
+            if not block.startswith("```") and not code.endswith("```"):
+                self.source = argument
+                self.language = None
+            else:
+                self.language = block[3:]
+                self.source = code.rstrip("`").replace("```", "")
+
+
 class CCFlag(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
-    code: str
-    name: str
+    code: str = None
+    # name: str = None
     trigger_type: str = "on_message"
 
     requied_role: discord.Role = None
@@ -140,24 +156,70 @@ class CustomCommand(Cog):
                     return await ctx.send("Rejected")
         return await ctx.send(f"{ctx.author.mention} no codes to review at this time")
 
-    @cc.command(name="create")
+    @cc.command(name="make")
     @commands.has_permissions(manage_guild=True)
-    async def cc_create(self, ctx: Context, *, flags: CCFlag):
-        """To create custom commands"""
-        if flags.code.startswith("```py") and flags.code.endswith("```"):
-            code = flags.code[5:-3]
-        elif flags.code.startswith("```python") and flags.code.endswith("```"):
-            code = flags.code[9:-3]
-        elif flags.code.startswith("```") and flags.code.endswith("```"):
-            code = flags.code[3:-3]
-        else:
-            code = flags.code
+    async def cc_make(self, ctx: Context,):
+        """To create custom commands in interactive format"""
+        def check(msg: discord.Message) -> bool:
+            return msg.author == ctx.author and msg.channel == ctx.channel
 
-        review_needed = bool(re.findall(MAGICAL_WORD_REGEX, code))
+        async def wait_for(**kwargs) -> Optional[discord.Message]:
+            try:
+                return await self.bot.wait_for("message", **kwargs)
+            except asyncio.TimeoutError:
+                raise commands.BadArgument("Timed out waiting for input")
 
-        if review_needed:
+        await ctx.send(f"{ctx.author.mention} Please enter the name of the command")
+        name = await wait_for(check=check)
+
+        await ctx.send(
+            f"{ctx.author.mention} Please enter the trigger type."
+            f"\n(on_message, reaction_add, reaction_remove, reaction_add_or_remove, message_edit, member_join, member_remove)"
+        )
+        trigger_type = await wait_for(check=check)
+        if trigger_type.content not in TRIGGER_TYPE:
+            raise commands.BadArgument("Invalid trigger type")
+
+        await ctx.send(
+            f"{ctx.author.mention} Please enter the code of the command."
+        )
+        code = await wait_for(check=check)
+        code = ContentCode(code.content)
+        code = code.source
+
+        if trigger_type.content.lower() in ("on_message", "on_message_edit"):
+            code = indent(code, "MESSAGE")
+        elif trigger_type.content.lower() in (
+            "reaction_add_or_remove",
+            "reaction_add",
+            "reaction_remove",
+        ):
+            code = indent(code, "REACTION")
+        elif trigger_type.content.lower() in ("member_join", "member_remove"):
+            code = indent(code, "MEMBER")
+
+        await self.bot.mongo.cc.commands.update_one(
+            {"_id": ctx.guild.id, "commands.name": name.content},
+            {
+                "$addToSet": {
+                    "commands": {
+                        "name": name.content,
+                        "trigger_type": trigger_type.content.lower(),
+                        "code": code,
+                        "review_needed": bool(re.findall(MAGICAL_WORD_REGEX, code)),
+                        "trigger_type": trigger_type.lower(),
+                        "requied_role": None,
+                        "ignored_role": None,
+                        "requied_channel": None,
+                        "ignored_channel": None,
+                    }
+                }
+            },
+            upsert=True,
+        )
+        if bool(re.findall(MAGICAL_WORD_REGEX, code)):
             await self.bot.author_obj.send(
-                f"There is an request from `{ctx.author}` to create a custom command with the name `{flags.name}` in the guild {ctx.guild.name} (`{ctx.guild.id}`).\n"
+                f"There is an request from `{ctx.author}` to create a custom command with the name `{name}` in the guild {ctx.guild.name} (`{ctx.guild.id}`).\n"
                 f"Potential breach detected in the code. Please review the code and confirm the request.\n",
                 embed=discord.Embed(
                     title="Review needed",
@@ -167,54 +229,76 @@ class CustomCommand(Cog):
             await ctx.send(
                 f"{ctx.author.mention} your custom command code is under review."
             )
+        await ctx.send(f"{ctx.author.mention} Custom command `{name}` created.")
 
-        if flags.name.startswith("`") and flags.name.endswith("`"):
-            name = flags.name[1:-1]
-        else:
-            name = flags.name
+    @cc.command(name="update")
+    @commands.has_permissions(manage_guild=True)
+    async def cc_create(self, ctx: Context, name: str, *, flags: CCFlag):
+        """To create custom commands"""
+        payload = {}
 
-        if flags.trigger_type.lower() not in TRIGGER_TYPE:
-            raise commands.BadArgument(
-                f"Trigger type must be one of {', '.join(TRIGGER_TYPE)}"
-            )
+        if flags.trigger_type:
+            if flags.trigger_type.lower() not in TRIGGER_TYPE:
+                raise commands.BadArgument(
+                    f"Trigger type must be one of {', '.join(TRIGGER_TYPE)}"
+                )
+            payload["trigger_type"] = flags.trigger_type.lower()
 
-        if flags.trigger_type.lower() in ("on_message", "on_message_edit"):
-            code = indent(code, "MESSAGE")
-        elif flags.trigger_type.lower() in (
-            "reaction_add_or_remove",
-            "reaction_add",
-            "reaction_remove",
-        ):
-            code = indent(code, "REACTION")
-        elif flags.trigger_type.lower() in ("member_join", "member_remove"):
-            code = indent(code, "MEMBER")
+        if flags.code:
+            code = ContentCode(flags.code)
+            code = code.source
+
+            if flags.trigger_type.lower() in ("on_message", "on_message_edit"):
+                code = indent(code, "MESSAGE")
+            elif flags.trigger_type.lower() in (
+                "reaction_add_or_remove",
+                "reaction_add",
+                "reaction_remove",
+            ):
+                code = indent(code, "REACTION")
+            elif flags.trigger_type.lower() in ("member_join", "member_remove"):
+                code = indent(code, "MEMBER")
+            payload["code"] = code
+
+            review_needed = bool(re.findall(MAGICAL_WORD_REGEX, code))
+
+            if review_needed:
+                await self.bot.author_obj.send(
+                    f"There is an request from `{ctx.author}` to create a custom command with the name `{flags.name}` in the guild {ctx.guild.name} (`{ctx.guild.id}`).\n"
+                    f"Potential breach detected in the code. Please review the code and confirm the request.\n",
+                    embed=discord.Embed(
+                        title="Review needed",
+                        description=f"```py\n{code}\n```",
+                    ),
+                )
+                await ctx.send(
+                    f"{ctx.author.mention} your custom command code is under review."
+                )
+                payload["review_needed"] = review_needed
+        
+        if flags.requied_role:
+            payload["requied_role"] = flags.requied_role.id
+        
+        if flags.ignored_role:
+            payload["ignored_role"] = flags.ignored_role.id
+        
+        if flags.requied_channel:
+            payload["requied_channel"] = flags.requied_channel.id
+        
+        if flags.ignored_channel:
+            payload["ignored_channel"] = flags.ignored_channel.id
 
         await self.bot.mongo.cc.commands.update_one(
-            {"_id": ctx.guild.id},
+            {"_id": ctx.guild.id, "commands.name": name},
             {
-                "$addToSet": {
-                    "commands": {
-                        "code": code,
-                        "name": name,
-                        "review_needed": review_needed,
-                        "trigger_type": flags.trigger_type.lower(),
-                        "requied_role": flags.requied_role.id
-                        if flags.requied_role
-                        else None,
-                        "ignored_role": flags.ignored_role.id
-                        if flags.ignored_role
-                        else None,
-                        "requied_channel": flags.requied_channel.id
-                        if flags.requied_channel
-                        else None,
-                        "ignored_channel": flags.ignored_channel.id
-                        if flags.ignored_channel
-                        else None,
+                "$set": {
+                    "commands.$.name": {
+                        **payload
                     }
                 }
             },
         )
-        await ctx.send(f"{ctx.author.mention} Custom command `{name}` created.")
+        await ctx.send(f"{ctx.author.mention} Custom command `{name}` updated.")
 
     @cc.command(name="delete")
     @commands.has_permissions(manage_guild=True)

@@ -35,7 +35,7 @@ TRIGGER_TYPE = [
     "reaction_add_or_remove",
     "message_edit",
     "member_join",
-    "member_remove"
+    "member_remove",
 ]
 
 ERROR_ON_MAX_CONCURRENCY = """
@@ -180,7 +180,11 @@ class CustomCommand(Cog):
 
         if flags.trigger_type.lower() in ("on_message", "on_message_edit"):
             code = indent(code, "MESSAGE")
-        elif flags.trigger_type.lower() in ("reaction_add_or_remove", "reaction_add", "reaction_remove"):
+        elif flags.trigger_type.lower() in (
+            "reaction_add_or_remove",
+            "reaction_add",
+            "reaction_remove",
+        ):
             code = indent(code, "REACTION")
         elif flags.trigger_type.lower() in ("member_join", "member_remove"):
             code = indent(code, "MEMBER")
@@ -194,10 +198,18 @@ class CustomCommand(Cog):
                         "name": name,
                         "review_needed": review_needed,
                         "trigger_type": flags.trigger_type.lower(),
-                        "requied_role": flags.requied_role.id if flags.requied_role else None,
-                        "ignored_role": flags.ignored_role.id if flags.ignored_role else None,
-                        "requied_channel": flags.requied_channel.id if flags.requied_channel else None,
-                        "ignored_channel": flags.ignored_channel.id if flags.ignored_channel else None,
+                        "requied_role": flags.requied_role.id
+                        if flags.requied_role
+                        else None,
+                        "ignored_role": flags.ignored_role.id
+                        if flags.ignored_role
+                        else None,
+                        "requied_channel": flags.requied_channel.id
+                        if flags.requied_channel
+                        else None,
+                        "ignored_channel": flags.ignored_channel.id
+                        if flags.ignored_channel
+                        else None,
                     }
                 }
             },

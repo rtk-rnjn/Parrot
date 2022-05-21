@@ -403,6 +403,7 @@ class BaseCustomCommand:
 
 class BaseCustomCommandOnMsg(BaseCustomCommand):
     __class__ = None
+
     def __init__(self, bot: Parrot, *, guild: discord.Guild, message: discord.Message):
         super().__init__(bot, guild=guild)
         self.__message = message

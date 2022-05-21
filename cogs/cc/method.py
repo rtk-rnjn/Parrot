@@ -526,7 +526,9 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
     def __init__(
         self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any
     ):
-        super().__init__(bot, guild=reaction.message.guild, message=reaction.message, **kwargs)
+        super().__init__(
+            bot, guild=reaction.message.guild, message=reaction.message, **kwargs
+        )
         self.__reaction = reaction
         self.__user = user
         self.__message = reaction.message

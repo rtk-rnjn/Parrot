@@ -220,7 +220,7 @@ class CustomCommand(Cog):
         )
         if bool(re.findall(MAGICAL_WORD_REGEX, code)):
             await self.bot.author_obj.send(
-                f"There is an request from `{ctx.author}` to create a custom command with the name `{name}` in the guild {ctx.guild.name} (`{ctx.guild.id}`).\n"
+                f"There is an request from `{ctx.author}` to create a custom command with the name `{name.content}` in the guild {ctx.guild.name} (`{ctx.guild.id}`).\n"
                 f"Potential breach detected in the code. Please review the code and confirm the request.\n",
                 embed=discord.Embed(
                     title="Review needed",
@@ -230,7 +230,7 @@ class CustomCommand(Cog):
             await ctx.send(
                 f"{ctx.author.mention} your custom command code is under review."
             )
-        await ctx.send(f"{ctx.author.mention} Custom command `{name}` created.")
+        await ctx.send(f"{ctx.author.mention} Custom command `{name.content}` created.")
 
     @cc.command(name="update")
     @commands.has_permissions(manage_guild=True)

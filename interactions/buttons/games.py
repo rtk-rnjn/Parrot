@@ -666,8 +666,6 @@ _2048_GAME = a = {
 BoardState = List[List[Optional[bool]]]
 
 
-
-
 class ChessView(discord.ui.View):
     def __init__(
         self, *, game: Chess, ctx: Context = None, timeout: float = 300.0, **kwargs

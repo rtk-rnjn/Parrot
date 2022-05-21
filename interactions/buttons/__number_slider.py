@@ -13,7 +13,7 @@ from typing import (
     Set,
     Tuple,
     TypeVar,
-    Union
+    Union,
 )
 import random
 import asyncio
@@ -23,11 +23,11 @@ from core import Context, Parrot
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
-    
-    A = TypeVar('A', bool)
-    B = TypeVar('B', bool)
-    
-    Board: TypeAlias = List[List[Optional[int]]] 
+
+    A = TypeVar("A", bool)
+    B = TypeVar("B", bool)
+
+    Board: TypeAlias = List[List[Optional[int]]]
 
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
@@ -35,7 +35,7 @@ DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 
 def chunk(iterable: List[int], *, count: int) -> List[List[int]]:
-    return [iterable[i:i + count] for i in range(0, len(iterable), count)]
+    return [iterable[i : i + count] for i in range(0, len(iterable), count)]
 
 
 async def wait_for_delete(
@@ -45,7 +45,7 @@ async def wait_for_delete(
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
     bot: Optional[Parrot] = None,
     user: Optional[Union[discord.User, Tuple[discord.User, ...]]] = None,
-    timeout: Optional[float] = None, 
+    timeout: Optional[float] = None,
 ) -> bool:
 
     if not user:
@@ -64,12 +64,13 @@ async def wait_for_delete(
 
     bot: Parrot = bot or ctx.bot
     try:
-        await bot.wait_for('reaction_add', timeout=timeout, check=check)
+        await bot.wait_for("reaction_add", timeout=timeout, check=check)
     except asyncio.TimeoutError:
         return False
     else:
         await message.delete()
         return True
+
 
 async def double_wait(
     task1: Coroutine[Any, Any, A],
@@ -82,15 +83,12 @@ async def double_wait(
         loop = asyncio.get_event_loop()
 
     return await asyncio.wait(
-        [
-            loop.create_task(task1), 
-            loop.create_task(task2)
-        ],
+        [loop.create_task(task1), loop.create_task(task2)],
         return_when=asyncio.FIRST_COMPLETED,
     )
 
-class BaseView(discord.ui.View):
 
+class BaseView(discord.ui.View):
     def disable_all(self) -> None:
         for button in self.children:
             if isinstance(button, discord.ui.Button):
@@ -100,8 +98,7 @@ class BaseView(discord.ui.View):
         return self.stop()
 
 
-class SlideButton(discord.ui.Button['SlideView']):
-
+class SlideButton(discord.ui.Button["SlideView"]):
     def __init__(self, label: str, *, style: discord.ButtonStyle, row: int) -> None:
         super().__init__(
             label=label,
@@ -109,14 +106,16 @@ class SlideButton(discord.ui.Button['SlideView']):
             row=row,
         )
 
-        if label == '\u200b':
+        if label == "\u200b":
             self.disabled = True
 
     async def callback(self, interaction: discord.Interaction) -> None:
         game = self.view.game
 
         if interaction.user != game.player:
-            return await interaction.response.send_message('This is not your game!', ephemeral=True)
+            return await interaction.response.send_message(
+                "This is not your game!", ephemeral=True
+            )
         else:
             num = int(self.label)
 
@@ -126,22 +125,29 @@ class SlideButton(discord.ui.Button['SlideView']):
                 ix, iy = game.get_item(num)
                 nx, ny = game.get_item()
 
-                game.numbers[nx][ny], game.numbers[ix][iy] = game.numbers[ix][iy], game.numbers[nx][ny]
+                game.numbers[nx][ny], game.numbers[ix][iy] = (
+                    game.numbers[ix][iy],
+                    game.numbers[nx][ny],
+                )
 
                 self.view.update_board(clear=True)
 
                 game.moves += 1
-                game.embed.set_field_at(0, name='\u200b', value=f'Moves: `{game.moves}`')
+                game.embed.set_field_at(
+                    0, name="\u200b", value=f"Moves: `{game.moves}`"
+                )
 
                 if game.numbers == game.completed:
                     self.view.disable_all()
                     self.view.stop()
-                    game.embed.description = '**Congrats! You won!**'
-                        
-                return await interaction.response.edit_message(embed=game.embed, view=self.view)
-            
-class SlideView(BaseView):
+                    game.embed.description = "**Congrats! You won!**"
 
+                return await interaction.response.edit_message(
+                    embed=game.embed, view=self.view
+                )
+
+
+class SlideView(BaseView):
     def __init__(self, game: NumberSlider, *, timeout: float) -> None:
         super().__init__(timeout=timeout)
 
@@ -150,10 +156,10 @@ class SlideView(BaseView):
         self.update_board()
 
     def update_board(self, *, clear: bool = False) -> None:
-        
+
         if clear:
             self.clear_items()
-            
+
         for i, row in enumerate(self.game.numbers):
             for j, number in enumerate(row):
                 if number == self.game.completed[i][j]:
@@ -162,22 +168,24 @@ class SlideView(BaseView):
                     style = self.game.wrong_style
 
                 button = SlideButton(
-                    label=number or '\u200b', 
+                    label=number or "\u200b",
                     style=style,
                     row=i,
                 )
                 self.add_item(button)
-        
+
+
 class NumberSlider:
     """
     Number Slider Game
     """
+
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
 
         if count not in range(1, 6):
-            raise ValueError('Count must be an integer between 1 and 5')
+            raise ValueError("Count must be an integer between 1 and 5")
 
-        self.all_numbers = list(range(1, count ** 2))
+        self.all_numbers = list(range(1, count**2))
 
         self.player: Optional[discord.Member] = None
 
@@ -191,28 +199,32 @@ class NumberSlider:
 
     def get_item(self, obj: Optional[int] = None) -> Tuple[int, int]:
         return next(
-            (x, y) for x, row in enumerate(self.numbers) for y, item in enumerate(row) if item == obj
+            (x, y)
+            for x, row in enumerate(self.numbers)
+            for y, item in enumerate(row)
+            if item == obj
         )
 
     def beside_blank(self) -> List[int]:
         nx, ny = self.get_item()
 
         beside_item = [
-            (nx-1, ny), 
-            (nx, ny-1), 
-            (nx+1, ny), 
-            (nx, ny+1),
+            (nx - 1, ny),
+            (nx, ny - 1),
+            (nx + 1, ny),
+            (nx, ny + 1),
         ]
 
         data = [
-            self.numbers[i][j] for i, j in beside_item
+            self.numbers[i][j]
+            for i, j in beside_item
             if i in range(self.count) and j in range(self.count)
         ]
         return data
 
     async def start(
-        self, 
-        ctx: Context, 
+        self,
+        ctx: Context,
         *,
         wrong_style: discord.ButtonStyle = discord.ButtonStyle.gray,
         correct_style: discord.ButtonStyle = discord.ButtonStyle.green,
@@ -250,15 +262,17 @@ class NumberSlider:
         self.numbers = chunk(numbers, count=self.count)
 
         self.completed = chunk(self.all_numbers + [None], count=self.count)
-        
+
         self.view = SlideView(self, timeout=timeout)
-        self.embed = discord.Embed(description='Slide the tiles back in ascending order!', color=embed_color)
-        self.embed.add_field(name='\u200b', value='Moves: `0`')
+        self.embed = discord.Embed(
+            description="Slide the tiles back in ascending order!", color=embed_color
+        )
+        self.embed.add_field(name="\u200b", value="Moves: `0`")
 
         self.message = await ctx.send(embed=self.embed, view=self.view)
 
         await double_wait(
-            wait_for_delete(ctx, self.message), 
+            wait_for_delete(ctx, self.message),
             self.view.wait(),
         )
         return self.message

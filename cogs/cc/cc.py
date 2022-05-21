@@ -201,7 +201,9 @@ class CustomCommand(Cog):
             code = indent(code, "MEMBER")
 
         await self.bot.mongo.cc.commands.update_one(
-            {"_id": ctx.guild.id,},
+            {
+                "_id": ctx.guild.id,
+            },
             {
                 "$addToSet": {
                     "commands": {

@@ -25,7 +25,9 @@ if TYPE_CHECKING:
 
 
 class Context(commands.Context):
-    channel: Union[discord.VoiceChannel, discord.TextChannel, discord.Thread, discord.DMChannel]
+    channel: Union[
+        discord.VoiceChannel, discord.TextChannel, discord.Thread, discord.DMChannel
+    ]
     prefix: str
     command: commands.Command[Any, ..., Any]
     bot: Parrot

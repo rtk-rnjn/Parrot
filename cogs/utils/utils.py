@@ -623,16 +623,6 @@ class Utils(Cog):
     async def get_or_fetch_message(
         self, msg_id: int, *, channel: discord.TextChannel = None
     ) -> Optional[discord.Message]:
-        for msg in self.bot.cached_messages:
-            if msg.id == msg_id:
-                self.message[msg.id] = {
-                    "message_author": msg.author,
-                    "message_downvote": 0,
-                    "message_upvote": 0,
-                    "message": msg,
-                }
-                return msg
-        await asyncio.sleep(0)
         try:
             self.message[msg_id]
         except KeyError:

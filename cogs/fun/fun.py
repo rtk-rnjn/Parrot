@@ -487,6 +487,7 @@ class Fun(Cog):
         self.get_wiki_questions.start()
 
         self.jeyy_api_loader()
+        self.some_random_api_loader()
 
     async def send_colour_response(
         self, ctx: commands.Context, rgb: Tuple[int, int, int]
@@ -1676,68 +1677,6 @@ class Fun(Cog):
                     f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
                 )
 
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def gay(self, ctx: Context, *, member: discord.Member = None):
-        """Image Generator. Gay Pride."""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                "https://some-random-api.ml/canvas/gay?avatar={}".format(
-                    member.display_avatar.url
-                )
-            ) as wastedImage:
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "gay.png")
-                )  # replying the file
-
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def glass(self, ctx: Context, *, member: discord.Member = None):
-        """Provide a glass filter on your profile picture, try it!"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/glass?avatar={member.display_avatar.url}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "glass.png")
-                )  # replying the file
-
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def horny(self, ctx: Context, *, member: discord.Member = None):
-        """Image generator, Horny card generator."""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/horny?avatar={member.display_avatar.url}."
-            ) as wastedImage:
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "horny.png")
-                )  # replying the file
-
     @commands.command(aliases=["insult"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -1769,46 +1708,6 @@ class Fun(Cog):
 
                 await ctx.reply(
                     file=discord.File(imageData, "itssostupid.png")
-                )  # replying the file
-
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def jail(self, ctx: Context, *, member: discord.Member = None):
-        """Image generator. Makes you behind the bars. Haha"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/jail?avatar={member.display_avatar.url}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "jail.png")
-                )  # replying the file
-
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def lolice(self, ctx: Context, *, member: discord.Member = None):
-        """This command is not made by me. :|"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/lolice?avatar={member.display_avatar.url}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "lolice.png")
                 )  # replying the file
 
     @commands.command(name="meme")
@@ -1880,25 +1779,6 @@ class Fun(Cog):
 
         await ctx.reply(embed=em)
 
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def simpcard(self, ctx: Context, *, member: discord.Member = None):
-        """Good for those, who are hell simp! LOL"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/simpcard?avatar={member.display_avatar.url}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "simpcard.png")
-                )  # replying the file
 
     @commands.command(aliases=["trans"])
     @commands.bot_has_permissions(embed_links=True)
@@ -1916,26 +1796,6 @@ class Fun(Cog):
                 description=data["responseData"]["translatedText"]
             ).set_footer(text="This command is work in progress")
         )
-
-    @commands.command(aliases=["triggered"])
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def trigger(self, ctx: Context, *, member: discord.Member = None):
-        """User Triggered!"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/triggered?avatar={member.display_avatar.url}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "triggered.gif")
-                )  # replying the file
 
     @commands.command(aliases=["def", "urban"])
     @commands.bot_has_permissions(embed_links=True)
@@ -1992,26 +1852,6 @@ class Fun(Cog):
             em_list.append(embed)
 
         await PaginationView(em_list).start(ctx=ctx)
-
-    @commands.command()
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def wasted(self, ctx: Context, *, member: discord.Member = None):
-        """Overlay 'WASTED' on your profile picture, just like GTA:SA"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/wasted?avatar={member.display_avatar.url}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
-
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "wasted.png")
-                )  # replying the file
 
     @commands.command(aliases=["youtube-comment", "youtube_comment"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -2925,4 +2765,28 @@ class Fun(Cog):
                 )
                 await ctx.reply(file=file)
 
+            self.bot.add_command(callback)
+
+    def some_random_api_loader(self):
+        bot: Parrot = self.bot
+        for endpoint in ["gay", "glass", "horny", "jail", "lolice", "simpcard", "triggered", "wasted"]:
+
+            @commands.command(name=endpoint)
+            @commands.bot_has_permissions(attach_files=True, embed_links=True)
+            @commands.max_concurrency(1, per=commands.BucketType.user)
+            @Context.with_type
+            async def callback(ctx: Context, *, member: discord.Member = None) -> None:
+                member = member or ctx.author
+
+                response = await bot.http_session.get(
+                        "https://some-random-api.ml/canvas/{}?avatar={}".format(
+                            ctx.command.name, member.display_avatar.url
+                        )
+                    )
+                imageData = io.BytesIO(await response.read())  # read the image/bytes
+
+                await ctx.reply(
+                    file=discord.File(imageData, "gay.png")
+                )  # replying the file
+            
             self.bot.add_command(callback)

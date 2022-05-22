@@ -625,7 +625,12 @@ class Utils(Cog):
     ) -> Optional[discord.Message]:
         for msg in self.bot.cached_messages:
             if msg.id == msg_id:
-                self.message[msg.id] = msg
+                self.message[msg.id] = {
+                    "message_author": msg.author,
+                    "message_downvote": 0,
+                    "message_upvote": 0,
+                    "message": msg,
+                }
                 return msg
         await asyncio.sleep(0)
         try:

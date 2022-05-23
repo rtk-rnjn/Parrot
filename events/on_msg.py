@@ -412,6 +412,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         await self.quick_answer(message)
         await self._on_message_passive(message)
+
         channel = await self.bot.mongo.parrot_db.global_chat.find_one(
             {"_id": message.guild.id, "channel_id": message.channel.id}
         )

@@ -84,12 +84,20 @@ class CustomCommand(Cog):
         bot: Parrot,
     ) -> None:
         self.bot = bot
-
+        self.cd_mapping = commands.CooldownMapping.from_cooldown(
+            3, 1, commands.BucketType.guild
+        )
         def default_value():
             return 0
 
         self.default_dict = defaultdict(default_value)
         self.data = {}
+
+    def __is_ratelimited(self, message: discord.Message) -> bool:
+        if ratelimit := self.cd_mapping.get_bucket(message).update_rate_limit():
+            return True
+
+        return False
 
     async def cog_load(self):
         async for data in self.bot.mongo.cc.commands.find({}):
@@ -343,7 +351,10 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                     and (self.check_requirements(message=message, **command))
                 ):
-
+                    if self.__is_ratelimited(message):
+                        return await message.channel.send(
+                            ERROR_ON_MAX_CONCURRENCY.format(data.get("name"), message.guild.name)
+                        )
                     CC = CustomCommandsExecutionOnMsg(
                         self.bot,
                         message,
@@ -379,6 +390,10 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                     and (self.check_requirements(message=message, **command))
                 ):
+                    if self.__is_ratelimited(message):
+                        return await message.channel.send(
+                            ERROR_ON_MAX_CONCURRENCY.format(data.get("name"), message.guild.name)
+                        )
                     CC = CustomCommandsExecutionOnMsg(
                         self.bot,
                         message,
@@ -421,6 +436,10 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                     and (self.check_requirements(message=message, **command))
                 ):
+                    if self.__is_ratelimited(message):
+                        return await message.channel.send(
+                            ERROR_ON_MAX_CONCURRENCY.format(data.get("name"), message.guild.name)
+                        )
                     CC = CustomCommandsExecutionOnReaction(
                         self.bot, message, user, reaction_type="add"
                     )
@@ -460,6 +479,10 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                     and (self.check_requirements(message=message, **command))
                 ):
+                    if self.__is_ratelimited(message):
+                        return await message.channel.send(
+                            ERROR_ON_MAX_CONCURRENCY.format(data.get("name"), message.guild.name)
+                        )
                     CC = CustomCommandsExecutionOnReaction(
                         self.bot, message, user, reaction_type="remove"
                     )
@@ -481,6 +504,7 @@ class CustomCommand(Cog):
                     command["trigger_type"] == "member_join"
                     and not command["review_needed"]
                 ):
+                    
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
                     await CC.execute(command.get("code"))
                 await asyncio.sleep(0)

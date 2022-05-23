@@ -3,7 +3,6 @@ from typing import Any, Dict
 
 from core import Parrot, Cog, Context
 from tabulate import tabulate
-from datetime import datetime
 from discord.ext import commands, tasks
 import discord
 from utilities.deco import with_role

@@ -5,8 +5,6 @@ from typing import Any, Dict, List, Optional
 
 import discord
 from discord.ext import commands
-
-from datetime import datetime
 from time import time
 
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError

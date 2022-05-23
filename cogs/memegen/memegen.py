@@ -3,8 +3,6 @@ from __future__ import annotations
 import discord
 import aiohttp
 from discord.ext import commands
-
-from datetime import datetime
 from core import Parrot, Context, Cog
 
 from utilities.config import MEME_PASS as meme_pass

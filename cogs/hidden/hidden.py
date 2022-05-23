@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from core import Parrot, Cog, Context
 from discord.ext import commands
-import discord
 
 
 class Hidden(Cog):

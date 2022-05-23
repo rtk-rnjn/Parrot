@@ -1,5 +1,6 @@
 from __future__ import annotations
 from operator import attrgetter
+import traceback
 
 import discord
 from core import Parrot
@@ -30,10 +31,10 @@ async def function(message: Message):
         return await message_add_reaction("\N{THINKING FACE}")
 """
 
-ERROR_MESSAGE = """```
-Failed executing the command command template in channel at: {}
-Error: {}
-```"""
+ERROR_MESSAGE = """```ini
+[Failed executing the custom command template in {} at: {}]
+``````py
+{}```"""
 
 BASE_FUNCTIONS = {
     "MESSAGE": """
@@ -475,9 +476,11 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
 
             await self.env["function"](CustomMessage(self.__message))
         except Exception as e:
+            tb = traceback.format_exception(type(e), e, e.__traceback__)
+            tbe = "".join(tb) + ""
             await self.__message.channel.send(
                 ERROR_MESSAGE.format(
-                    discord.utils.format_dt(self.__message.created_at), e
+                    f"#{self.__message.channel.name}", self.__message.created_at, tbe
                 )
             )
             return
@@ -554,9 +557,11 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
             )
             return
         except Exception as e:
+            tb = traceback.format_exception(type(e), e, e.__traceback__)
+            tbe = "".join(tb) + ""
             await self.__message.channel.send(
                 ERROR_MESSAGE.format(
-                    discord.utils.format_dt(self.__message.created_at), e
+                    f"#{self.__message.channel.name}", self.__message.created_at, tbe
                 )
             )
             return

@@ -11,7 +11,6 @@ import urllib.parse
 import aiohttp
 import discord
 import re
-import datetime
 import os
 import inspect
 import json

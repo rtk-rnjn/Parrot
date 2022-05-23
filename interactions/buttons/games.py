@@ -39,7 +39,6 @@ import akinator
 from akinator.async_aki import Akinator
 import emojis
 import chess
-import tabulate
 from aiofile import async_open
 
 from interactions.buttons.secret_hitler.ui.join import JoinUI

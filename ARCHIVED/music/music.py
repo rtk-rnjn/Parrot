@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import asyncio
 import random
 import re
 from typing import Union

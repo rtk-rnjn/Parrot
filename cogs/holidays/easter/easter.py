@@ -3,7 +3,6 @@ import random
 from json import loads
 import re
 import discord
-import asyncio
 from discord.ext import commands
 
 from pathlib import Path

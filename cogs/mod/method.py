@@ -9,7 +9,7 @@ import asyncio
 import aiohttp
 import datetime
 
-from utilities.time import FutureTime, ShortTime
+from utilities.time import FutureTime
 
 
 async def _add_roles_bot(

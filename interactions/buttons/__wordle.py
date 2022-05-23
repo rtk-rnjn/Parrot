@@ -10,7 +10,6 @@ import random
 from io import BytesIO
 
 import discord
-from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
 
 from utilities.converters import ToAsync

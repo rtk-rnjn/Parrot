@@ -122,7 +122,6 @@ class Gist(Cog):
     @commands.is_owner()
     async def gist(self, ctx: Context):
         """Gist related commands"""
-        pass
 
     @gist.command(name="create")
     @commands.is_owner()

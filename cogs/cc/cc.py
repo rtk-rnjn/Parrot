@@ -402,7 +402,7 @@ class CustomCommand(Cog):
                 await asyncio.sleep(0)
 
     @Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         message = reaction.message
 
         if message.author.bot:
@@ -438,13 +438,13 @@ class CustomCommand(Cog):
                 ):
 
                     CC = CustomCommandsExecutionOnReaction(
-                        self.bot, message, user, reaction_type="add"
+                        self.bot, reaction, user, reaction_type="add"
                     )
                     await CC.execute(command.get("code"))
                 await asyncio.sleep(0)
 
     @Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
+    async def on_reaction_remove(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         message = reaction.message
 
         if message.author.bot:
@@ -483,7 +483,7 @@ class CustomCommand(Cog):
                 await asyncio.sleep(0)
 
     @Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "_id": member.guild.id,
@@ -503,7 +503,7 @@ class CustomCommand(Cog):
                 await asyncio.sleep(0)
 
     @Cog.listener()
-    async def on_member_remove(self, member):
+    async def on_member_remove(self, member: discord.Member):
         if data := await self.bot.mongo.cc.commands.find_one(
             {
                 "_id": member.guild.id,

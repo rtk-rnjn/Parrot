@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from core import Parrot, Cog
 
-import discord
-from discord.ext import commands
-
 import os
 import tweepy
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import io
 
 import psutil
 
@@ -437,12 +438,15 @@ class Meta(Cog):
         # embed.add_field(
         #     name=member.name, value=f"[Download]({member.display_avatar.url})"
         # )
-        embed.set_image(url=member.display_avatar.url)
+        response = await self.bot.http_session.get(member.display_avatar.url)
+        buffer = io.BytesIO(await response.read())
+        
+        embed.set_image(url="attachment://avatar.gif")
         embed.set_footer(
             text=f"Requested by {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
-        await ctx.reply(embed=embed)
+        await ctx.reply(embed=embed, file=discord.File(buffer, "avatar.gif"))
 
     @commands.command(name="owner")
     @commands.cooldown(1, 5, commands.BucketType.member)

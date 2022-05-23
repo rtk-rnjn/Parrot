@@ -13,7 +13,7 @@ from utilities.config import MEME_PASS as meme_pass
 class Memegen(Cog):
     """Be a memer, make memes using Parrot."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     @property

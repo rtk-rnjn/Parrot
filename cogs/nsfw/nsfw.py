@@ -33,7 +33,7 @@ class NSFW(Cog):
         embed.set_image(url=url)
         return embed
 
-    def command_loader(self):
+    def command_loader(self) -> None:
         for end_point in ENDPOINTS:
 
             @commands.command(name=end_point)
@@ -49,7 +49,7 @@ class NSFW(Cog):
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def randomnsfw(self, ctx: Context, *, subreddit: str = None):
+    async def randomnsfw(self, ctx: Context, *, subreddit: str = None) -> None:
         """
         To get Random NSFW from subreddit.
         """
@@ -78,7 +78,7 @@ class NSFW(Cog):
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def n(self, ctx: Context):
+    async def n(self, ctx: Context) -> None:
         """
         Best command I guess. It return random ^^
         """

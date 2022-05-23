@@ -226,11 +226,14 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def botprefix(self, ctx: Context, *, arg: str):
-        """To set the prefix of the bot. Whatever prefix you passed, will be case sensitive. It is advised to keep a symbol as a prefix. Must not greater than 6 chars"""
-        if len(arg) > 6:
-            return await ctx.reply(
-                f"{ctx.author.mention} length of prefix can not be more than 6 characters."
-            )
+        """
+        To set the prefix of the bot. Whatever prefix you passed, will be case sensitive.
+        It is advised to keep a symbol as a prefix. Must not greater than 6 chars
+        """
+        # if len(arg) > 6:
+        #     return await ctx.reply(
+        #         f"{ctx.author.mention} length of prefix can not be more than 6 characters."
+        #     )
         post = {"prefix": arg}
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": post}

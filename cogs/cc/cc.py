@@ -95,8 +95,8 @@ class CustomCommand(Cog):
         self.data = {}
 
     def __is_ratelimited(self, message: discord.Message) -> bool:
-        if ratelimit := self.cd_mapping.get_bucket(message).update_rate_limit():
-            return bool(ratelimit)
+        # if ratelimit := self.cd_mapping.get_bucket(message).update_rate_limit():
+        #     return bool(ratelimit)
 
         return False
 

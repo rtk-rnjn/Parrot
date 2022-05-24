@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 from typing import Any, List, Tuple
 
 from core import Cog, Parrot
@@ -34,7 +35,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_channel_delete"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 channel_type = str(channel.type)
                 TYPE = channel_type.replace("_", " ").title() + " Channel"
                 async for entry in channel.guild.audit_logs(
@@ -82,7 +83,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_channel_create"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 channel_type = str(channel.type)
                 TYPE = channel_type.replace("_", " ").title() + " Channel"
                 async for entry in channel.guild.audit_logs(
@@ -142,7 +143,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_channel_update"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 channel_type = str(channel.type)
                 TYPE = channel_type.replace("_", " ").title() + " Channel"
                 async for entry in channel.guild.audit_logs(
@@ -244,7 +245,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_channel_pin"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in channel.guild.audit_logs(
                     action=discord.AuditLogAction.message_pin, limit=5
                 ):
@@ -274,7 +275,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_channel_unpin"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in channel.guild.audit_logs(
                     action=discord.AuditLogAction.message_unpin, limit=5
                 ):

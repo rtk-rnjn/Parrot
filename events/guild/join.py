@@ -22,9 +22,9 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         bots = len([m for m in guild.members if m.bot])
         humans = guild.member_count - bots
         if bots > humans:
-            await guild.leave()
+            return await guild.leave()
         if guild.member_count < 30:
-            await guild.leave()
+            return await guild.leave()
 
     async def guild_join(self, guild_id: int):
         collection = self.bot.mongo.parrot_db["global_chat"]
@@ -81,9 +81,9 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         try:
             CONTENT = f"""
 `Joined       `: {guild.name} (`{guild.id}`)
-`Total member `: {guild.member_count}
+`Total member `: {len(guild.members)}
 `Server Owner `: `{guild.owner}` | {guild.owner.id}
-`Bots         `: {guild.member_count - len([m for m in guild.members if not m.bot])}
+`Bots         `: {len(guild.members) - len([m for m in guild.members if not m.bot])}
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
@@ -107,9 +107,9 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
         try:
             CONTENT = f"""
 `Removed      `: {guild.name} (`{guild.id}`)
-`Total member `: {guild.member_count}
+`Total member `: {len(guild.members)}
 `Server Owner `: `{guild.owner}` | {guild.owner.id}
-`Bots         `: {guild.member_count - len([m for m in guild.members if not m.bot])}
+`Bots         `: {len(guild.members) - len([m for m in guild.members if not m.bot])}
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
 """
@@ -130,5 +130,5 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
         pass
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(GuildJoin(bot))

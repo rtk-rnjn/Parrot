@@ -3,6 +3,7 @@ from __future__ import annotations
 from core import Cog, Parrot
 import discord
 import time
+from contextlib import suppress
 
 # collection = parrot_db["server_config"]
 # log = parrot_db["logging"]
@@ -22,7 +23,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_member_join"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 content = f"""**Member Joined Event**
 
 `Name (ID)  :` **{member} (`{member.id}`)**
@@ -71,7 +72,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_member_leave"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 content = f"""**Member Joined Event**
 
 `Name (ID)  :` **{member} (`{member.id}`)**
@@ -138,7 +139,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             ch = ""
             for i, j in self._member_change(before, after):
                 ch += f"{i} {j}\n"
-            if webhook:
+            with suppress(discord.HTTPException):
                 content = f"""**On Member Update**
 
 `Name       :` **{after.name} (`{after.id}`)**
@@ -169,7 +170,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 webhook = discord.Webhook.from_url(
                     data["on_vc_join"], session=self.bot.http_session
                 )
-                if webhook:
+                with suppress(discord.HTTPException):
                     content = f"""**On VC Join Event**
 
 `Member     :` **{member}** (`{member.id}`)
@@ -194,7 +195,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 webhook = discord.Webhook.from_url(
                     data["on_vc_leave"], session=self.bot.http_session
                 )
-                if webhook:
+                with suppress(discord.HTTPException):
                     content = f"""**On VC Leave Event**
 
 `Member     :` **{member}** (`{member.id}`)
@@ -219,7 +220,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 webhook = discord.Webhook.from_url(
                     data["on_vc_move"], session=self.bot.http_session
                 )
-                if webhook:
+                with suppress(discord.HTTPException):
                     content = f"""**On VC Move Event**
 
 `Member     :` **{member}** (`{member.id}`)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import asyncio
+from contextlib import suppress
 
 import typing as tp
 
@@ -359,7 +360,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_invite_post"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 content = f"""**Invite Link Posted**
 
 `Author (ID):` **{message.author} [`{message.author.id}`]**
@@ -496,7 +497,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     try:
                         async with aiohttp.ClientSession() as session:
                             webhook = Webhook.from_url(f"{hook}", session=session)
-                            if webhook:
+                            with suppress(discord.HTTPException):
                                 await webhook.send(
                                     content=message.content[:1990],
                                     username=f"{message.author}",
@@ -603,7 +604,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_message_delete"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 if payload.cached_message:
                     msg = payload.cached_message
                     message_author = msg.author
@@ -657,7 +658,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 data["on_bulk_message_delete"], session=self.bot.http_session
             )
             main = ""
-            if webhook:
+            with suppress(discord.HTTPException):
                 if payload.cached_messages:
                     msgs = payload.cached_messages
                 else:
@@ -930,7 +931,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_message_edit"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 if payload.cached_message:
                     msg = payload.cached_message
                     message_author = msg.author

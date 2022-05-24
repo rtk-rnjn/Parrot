@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 
 from core import Parrot, Cog
 
@@ -22,7 +23,7 @@ class OnThread(Cog):
             webhook = discord.Webhook.from_url(
                 data["on_thread_create"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in thread.guild.audit_logs(
                     action=discord.AuditLogAction.thread_create, limit=5
                 ):
@@ -59,7 +60,7 @@ class OnThread(Cog):
             webhook = discord.Webhook.from_url(
                 data["on_thread_remove"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 content = f"""**On Thread Remove**
 
 `Name      :` **{thread.name}** **(`{thread.id}`)**
@@ -84,7 +85,7 @@ class OnThread(Cog):
             webhook = discord.Webhook.from_url(
                 data["on_thread_delete"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in thread.guild.audit_logs(
                     action=discord.AuditLogAction.thread_delete, limit=5
                 ):
@@ -117,7 +118,7 @@ class OnThread(Cog):
             webhook = discord.Webhook.from_url(
                 data["on_member_join_thread"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 guild_member = await self.bot.get_or_fetch_member(
                     member.thread.guild, member.id
                 )
@@ -145,7 +146,7 @@ class OnThread(Cog):
             webhook = discord.Webhook.from_url(
                 data["on_member_leave_thread"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 guild_member = await self.bot.get_or_fetch_member(
                     member.thread.guild, member.id
                 )
@@ -184,7 +185,7 @@ class OnThread(Cog):
             webhook = discord.Webhook.from_url(
                 data["on_thread_update"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 change = "\n".join(self.difference_thread(before, after))
                 content = f"""**On Thread Update**
 

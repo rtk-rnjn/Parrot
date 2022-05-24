@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 
 from core import Cog, Parrot
 import discord
@@ -25,7 +26,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_role_create"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in role.guild.audit_logs(
                     action=discord.AuditLogAction.role_create, limit=5
                 ):
@@ -63,7 +64,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_role_delete"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in role.guild.audit_logs(
                     action=discord.AuditLogAction.role_create, limit=5
                 ):
@@ -159,7 +160,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_role_update"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in after.guild.audit_logs(
                     action=discord.AuditLogAction.role_update, limit=5
                 ):
@@ -202,7 +203,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_emoji_create"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in guild.audit_logs(
                     action=discord.AuditLogAction.emoji_create, limit=1
                 ):
@@ -235,7 +236,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_emoji_delete"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in guild.audit_logs(
                     action=discord.AuditLogAction.emoji_delete, limit=1
                 ):
@@ -266,7 +267,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_emoji_update"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in guild.audit_logs(
                     action=discord.AuditLogAction.emoji_update, limit=1
                 ):

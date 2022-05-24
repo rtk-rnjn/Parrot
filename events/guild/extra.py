@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 
 import discord
 
@@ -19,7 +20,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_invite_create(self, invite):
+    async def on_invite_create(self, invite: discord.Invite):
         await self.bot.wait_until_ready()
         if not invite.guild:
             return
@@ -31,7 +32,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_invite_create"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in invite.guild.audit_logs(
                     action=discord.AuditLogAction.invite_create, limit=5
                 ):
@@ -58,7 +59,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                         break
 
     @Cog.listener()
-    async def on_invite_delete(self, invite):
+    async def on_invite_delete(self, invite: discord.Invite):
         await self.bot.wait_until_ready()
         if not invite.guild:
             return
@@ -70,7 +71,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
             webhook = discord.Webhook.from_url(
                 data["on_invite_create"], session=self.bot.http_session
             )
-            if webhook:
+            with suppress(discord.HTTPException):
                 async for entry in invite.guild.audit_logs(
                     action=discord.AuditLogAction.invite_delete, limit=5
                 ):

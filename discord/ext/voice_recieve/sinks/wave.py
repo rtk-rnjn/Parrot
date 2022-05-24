@@ -7,8 +7,7 @@ from .errors import WaveSinkError
 
 
 class WaveSink(Sink):
-    """A special sink for .wav(wave) files.
-    """
+    """A special sink for .wav(wave) files."""
 
     def __init__(self, *, filters=None):
         if filters is None:
@@ -30,7 +29,9 @@ class WaveSink(Sink):
             Formatting the audio failed.
         """
         if self.vc.recording:
-            raise WaveSinkError("Audio may only be formatted after recording is finished.")
+            raise WaveSinkError(
+                "Audio may only be formatted after recording is finished."
+            )
         data = audio.file
 
         with wave.open(data, "wb") as f:

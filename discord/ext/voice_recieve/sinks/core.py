@@ -35,8 +35,7 @@ default_filters = {
 
 
 class Filters:
-    """Filters for :class:`~.Sink`
-    """
+    """Filters for :class:`~.Sink`"""
 
     def __init__(self, **kwargs):
         self.filtered_users = kwargs.get("users", default_filters["users"])
@@ -65,8 +64,7 @@ class Filters:
 
 
 class RawData:
-    """Handles raw data from Discord so that it can be decrypted and decoded to be used.
-    """
+    """Handles raw data from Discord so that it can be decrypted and decoded to be used."""
 
     def __init__(self, data, client):
         self.data = bytearray(data)
@@ -77,15 +75,16 @@ class RawData:
 
         unpacker = struct.Struct(">xxHII")
         self.sequence, self.timestamp, self.ssrc = unpacker.unpack_from(self.header)
-        self.decrypted_data = getattr(self.client, f"_decrypt_{self.client.mode}")(self.header, self.data)
+        self.decrypted_data = getattr(self.client, f"_decrypt_{self.client.mode}")(
+            self.header, self.data
+        )
         self.decoded_data = None
 
         self.user_id = None
 
 
 class AudioData:
-    """Handles data that's been completely decrypted and decoded and is ready to be saved to file.
-    """
+    """Handles data that's been completely decrypted and decoded and is ready to be saved to file."""
 
     def __init__(self, file):
         self.file = file

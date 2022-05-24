@@ -71,6 +71,7 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
+
     http_session: ClientSession
     mongo: AsyncIOMotorClient
 

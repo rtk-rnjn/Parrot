@@ -130,18 +130,14 @@ class SlideButton(discord.ui.Button["SlideView"]):
         self.view.update_board(clear=True)
 
         game.moves += 1
-        game.embed.set_field_at(
-            0, name="\u200b", value=f"Moves: `{game.moves}`"
-        )
+        game.embed.set_field_at(0, name="\u200b", value=f"Moves: `{game.moves}`")
 
         if game.numbers == game.completed:
             self.view.disable_all()
             self.view.stop()
             game.embed.description = "**Congrats! You won!**"
 
-        return await interaction.response.edit_message(
-            embed=game.embed, view=self.view
-        )
+        return await interaction.response.edit_message(embed=game.embed, view=self.view)
 
 
 class SlideView(BaseView):

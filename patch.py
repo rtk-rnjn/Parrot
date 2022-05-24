@@ -39,7 +39,9 @@ class DecodeManager(threading.Thread, opus._OpusStruct):
                 if data.decrypted_data is None:
                     continue
                 else:
-                    data.decoded_data = self.get_decoder(data.ssrc).decode(data.decrypted_data)
+                    data.decoded_data = self.get_decoder(data.ssrc).decode(
+                        data.decrypted_data
+                    )
             except opus.OpusError:
                 print("Error occurred while decoding opus frame.")
                 continue
@@ -65,6 +67,7 @@ class DecodeManager(threading.Thread, opus._OpusStruct):
     def decoding(self):
         return bool(self.decode_queue)
 
+
 class ParrotVoiceClient(VoiceClient):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,7 +78,7 @@ class ParrotVoiceClient(VoiceClient):
         self.sink = None
         self.starting_time = None
         self.stopping_time = None
-    
+
     @staticmethod
     def strip_header_ext(data):
         if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:
@@ -85,13 +88,15 @@ class ParrotVoiceClient(VoiceClient):
         return data
 
     def get_ssrc(self, user_id):
-        return {info["user_id"]: ssrc for ssrc, info in self.ws.ssrc_map.items()}[user_id]
+        return {info["user_id"]: ssrc for ssrc, info in self.ws.ssrc_map.items()}[
+            user_id
+        ]
 
     def unpack_audio(self, data):
         """Takes an audio packet received from Discord and decodes it into pcm audio data.
         If there are no users talking in the channel, `None` will be returned.
         You must be connected to receive audio.
-    
+
         Parameters
         ---------
         data: :class:`bytes`
@@ -221,7 +226,9 @@ class ParrotVoiceClient(VoiceClient):
 
         self.stopping_time = time.perf_counter()
         self.sink.cleanup()
-        callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
+        callback = asyncio.run_coroutine_threadsafe(
+            callback(self.sink, *args), self.loop
+        )
         result = callback.result()
 
         if result is not None:
@@ -236,7 +243,10 @@ class ParrotVoiceClient(VoiceClient):
             silence = data.timestamp - self.user_timestamps[data.ssrc] - 960
             self.user_timestamps[data.ssrc] = data.timestamp
 
-        data.decoded_data = struct.pack("<h", 0) * silence * opus._OpusStruct.CHANNELS + data.decoded_data
+        data.decoded_data = (
+            struct.pack("<h", 0) * silence * opus._OpusStruct.CHANNELS
+            + data.decoded_data
+        )
         while data.ssrc not in self.ws.ssrc_map:
             time.sleep(0.05)
         self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]["user_id"])

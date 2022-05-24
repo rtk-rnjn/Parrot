@@ -80,7 +80,6 @@ class ParrotVoiceClient(VoiceClient):
         self.starting_time = None
         self.stopping_time = None
 
-<<<<<<< HEAD
     def _decrypt_xsalsa20_poly1305(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
 
@@ -106,8 +105,6 @@ class ParrotVoiceClient(VoiceClient):
 
         return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
 
-=======
->>>>>>> 44483643a0f632be429a60c06687b5a13d167a24
     @staticmethod
     def strip_header_ext(data):
         if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:

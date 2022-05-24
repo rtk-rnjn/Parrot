@@ -254,7 +254,7 @@ class BaseCustomCommand:
         self.env["wait_for_message"] = self.wait_for_message
         self.env["message_send"] = self.message_send
 
-    async def wait_for_message(self, timeout: float, **kwargs):
+    async def wait_for_message(self, timeout: float, **kwargs: Any) -> Optional[CustomMessage]:
         def check_outer(**kwargs) -> Callable:
             def check(message) -> bool:
                 converted_pred = [
@@ -276,14 +276,14 @@ class BaseCustomCommand:
     async def message_send(
         self,
         channel_id: int,
-        content=None,
+        content: str=None,
         *,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        delete_after=None,
-    ) -> CustomMessage:
+        embed: discord.Embed=None,
+        embeds: List[discord.Embed]=None,
+        file: discord.File=None,
+        files: List[discord.File]=None,
+        delete_after: float=None,
+    ) -> Optional[CustomMessage]:
         allowed_mentions = discord.AllowedMentions.none()
         msg = await self.__guild.get_channel(channel_id).send(
             content,
@@ -297,7 +297,7 @@ class BaseCustomCommand:
         return CustomMessage(msg)
 
     async def channel_create(
-        self, channel_type: str, name: str, **kwargs
+        self, channel_type: str, name: str, **kwargs: Any
     ) -> Union[CustomTextChannel, CustomVoiceChannel]:
         if channel_type.upper() == "TEXT":
             channel = await self.__guild.create_text_channel(name, **kwargs)
@@ -306,7 +306,7 @@ class BaseCustomCommand:
             channel = await self.__guild.create_voice_channel(name, **kwargs)
             return CustomVoiceChannel(channel)
 
-    async def channel_edit(self, channel_id: int, **kwargs) -> NoReturn:
+    async def channel_edit(self, channel_id: int, **kwargs: Any) -> NoReturn:
         await self.__guild.get_channel(channel_id).edit(**kwargs)
         return
 
@@ -316,11 +316,11 @@ class BaseCustomCommand:
 
     # roles
 
-    async def role_create(self, name: str, **kwargs) -> CustomRole:
+    async def role_create(self, name: str, **kwargs: Any) -> CustomRole:
         role = await self.__guild.create_role(name, **kwargs)
         return CustomRole(role)
 
-    async def role_edit(self, role_id: int, **kwargs) -> NoReturn:
+    async def role_edit(self, role_id: int, **kwargs: Any) -> NoReturn:
         await self.__guild.get_role(role_id).edit(**kwargs)
         return
 
@@ -341,7 +341,7 @@ class BaseCustomCommand:
         await self.__guild.get_member(member_id).ban(reason)
         return
 
-    async def edit_member(self, member_id: int, **kwargs) -> NoReturn:
+    async def edit_member(self, member_id: int, **kwargs: Any) -> NoReturn:
         await self.__guild.get_member(member_id).edit(**kwargs)
         return
 
@@ -378,13 +378,13 @@ class BaseCustomCommand:
             return "STAGE"
         return None
 
-    async def get_db(self, **kwargs) -> Dict[str, Any]:
+    async def get_db(self, **kwargs: Any) -> Dict[str, Any]:
         project = kwargs.pop("projection", {})
         return await self.__bot.mongo.cc.storage.find_one(
             {"_id": self.__guild.id, **kwargs}, project
         )
 
-    async def edit_db(self, **kwargs) -> NoReturn:
+    async def edit_db(self, **kwargs: Any) -> NoReturn:
         upsert = kwargs.pop("upsert", False)
         await self.__bot.mongo.cc.storage.update_one(
             {"_id": self.__guild.id}, kwargs, upsert=upsert
@@ -469,12 +469,12 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
 
-            try:
-                self.env["function"]
-            except KeyError:
-                return
+                try:
+                    self.env["function"]
+                except KeyError:
+                    return
 
-            await self.env["function"](CustomMessage(self.__message))
+                await self.env["function"](CustomMessage(self.__message))
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
@@ -502,13 +502,13 @@ class _CustomCommandsExecutionOnMember(BaseCustomCommand):
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
 
-            try:
-                self.env["function"]
-            except KeyError:
-                return
+                try:
+                    self.env["function"]
+                except KeyError:
+                    return
 
-            await self.env["function"](CustomMember(self.__member))
-            return
+                await self.env["function"](CustomMember(self.__member))
+                return
         except Exception as e:
             return
 
@@ -547,15 +547,15 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
 
-            try:
-                self.env["function"]
-            except KeyError:
-                return
+                try:
+                    self.env["function"]
+                except KeyError:
+                    return
 
-            await self.env["function"](
-                CustomReaction(self.__reaction), CustomMember(self.__user)
-            )
-            return
+                await self.env["function"](
+                    CustomReaction(self.__reaction), CustomMember(self.__user)
+                )
+                return
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""

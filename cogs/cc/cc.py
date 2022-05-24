@@ -85,7 +85,7 @@ class CustomCommand(Cog):
     ) -> None:
         self.bot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            3, 1, commands.BucketType.guild
+            1, 3, commands.BucketType.guild
         )
         def default_value():
             return 0
@@ -405,9 +405,6 @@ class CustomCommand(Cog):
     async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         message = reaction.message
 
-        if message.author.bot:
-            return
-
         if not message.guild:
             return
 
@@ -447,8 +444,6 @@ class CustomCommand(Cog):
     async def on_reaction_remove(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         message = reaction.message
 
-        if message.author.bot:
-            return
         if not message.guild:
             return
 

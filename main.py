@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
-import motor.motor_asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
 from utilities.config import TOKEN, my_secret
 from core import Parrot
 
@@ -19,7 +19,7 @@ async def main() -> None:
     ) as http_session:
         async with bot:
             bot.http_session = http_session
-            bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(
+            bot.mongo = AsyncIOMotorClient(
                 f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
                 io_loop=bot.loop,
             )

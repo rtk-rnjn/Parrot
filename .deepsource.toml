@@ -13,5 +13,5 @@ dependency_file_paths = [
   skip_doc_coverage = ["module", "magic", "init"]
 
 [[transformers]]
-name = "black"
-enabled = false
+name = "isort"
+enabled = true

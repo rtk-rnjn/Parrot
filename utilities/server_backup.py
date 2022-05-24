@@ -265,7 +265,7 @@ class BackupLoader:
         overwrites = {}
         for union_id, overwrite in json.items():
             try:
-                union = await self.guild.fetch_member(int(union_id))
+                union = await self.bot.get_or_fetch_member(self.guild, int(union_id))
             except discord.NotFound:
                 roles = list(
                     filter(

@@ -18,11 +18,13 @@ import jishaku as jishaku  # noqa: F401
 import datetime
 import asyncio
 import re
-from collections import Counter, deque, defaultdict
 import discord
+from aiohttp import ClientSession
+from collections import Counter, deque, defaultdict
 from discord.ext import commands, tasks
 
 from lru import LRU
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from utilities.config import (
     EXTENSIONS,
@@ -69,6 +71,8 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
+    http_session: ClientSession
+    mongo: AsyncIOMotorClient
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(

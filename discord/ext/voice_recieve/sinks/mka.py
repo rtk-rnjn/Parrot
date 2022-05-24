@@ -9,8 +9,7 @@ from .errors import MKASinkError
 
 
 class MKASink(Sink):
-    """A special sink for .mka files.
-    """
+    """A special sink for .mka files."""
 
     def __init__(self, *, filters=None):
         if filters is None:
@@ -32,7 +31,9 @@ class MKASink(Sink):
             Formatting the audio failed.
         """
         if self.vc.recording:
-            raise MKASinkError("Audio may only be formatted after recording is finished.")
+            raise MKASinkError(
+                "Audio may only be formatted after recording is finished."
+            )
         args = [
             "ffmpeg",
             "-f",
@@ -57,7 +58,9 @@ class MKASink(Sink):
         except FileNotFoundError:
             raise MKASinkError("ffmpeg was not found.") from None
         except subprocess.SubprocessError as exc:
-            raise MKASinkError("Popen failed: {0.__class__.__name__}: {0}".format(exc)) from exc
+            raise MKASinkError(
+                "Popen failed: {0.__class__.__name__}: {0}".format(exc)
+            ) from exc
 
         out = process.communicate(audio.file.read())[0]
         out = io.BytesIO(out)

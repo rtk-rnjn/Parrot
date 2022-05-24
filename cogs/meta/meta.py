@@ -440,7 +440,7 @@ class Meta(Cog):
         # )
         response = await self.bot.http_session.get(member.display_avatar.url)
         buffer = io.BytesIO(await response.read())
-        
+
         embed.set_image(url="attachment://avatar.gif")
         embed.set_footer(
             text=f"Requested by {ctx.author}",

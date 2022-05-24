@@ -254,7 +254,9 @@ class BaseCustomCommand:
         self.env["wait_for_message"] = self.wait_for_message
         self.env["message_send"] = self.message_send
 
-    async def wait_for_message(self, timeout: float, **kwargs: Any) -> Optional[CustomMessage]:
+    async def wait_for_message(
+        self, timeout: float, **kwargs: Any
+    ) -> Optional[CustomMessage]:
         def check_outer(**kwargs) -> Callable:
             def check(message) -> bool:
                 converted_pred = [
@@ -276,13 +278,13 @@ class BaseCustomCommand:
     async def message_send(
         self,
         channel_id: int,
-        content: str=None,
+        content: str = None,
         *,
-        embed: discord.Embed=None,
-        embeds: List[discord.Embed]=None,
-        file: discord.File=None,
-        files: List[discord.File]=None,
-        delete_after: float=None,
+        embed: discord.Embed = None,
+        embeds: List[discord.Embed] = None,
+        file: discord.File = None,
+        files: List[discord.File] = None,
+        delete_after: float = None,
     ) -> Optional[CustomMessage]:
         allowed_mentions = discord.AllowedMentions.none()
         msg = await self.__guild.get_channel(channel_id).send(
@@ -530,7 +532,9 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
         self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Any
     ):
         super().__init__(
-            bot, guild=reaction.message.guild, message=reaction.message,
+            bot,
+            guild=reaction.message.guild,
+            message=reaction.message,
         )
         self.__reaction = reaction
         self.__user = user

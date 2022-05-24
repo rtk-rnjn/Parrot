@@ -1779,7 +1779,6 @@ class Fun(Cog):
 
         await ctx.reply(embed=em)
 
-
     @commands.command(aliases=["trans"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2769,7 +2768,16 @@ class Fun(Cog):
 
     def some_random_api_loader(self):
         bot: Parrot = self.bot
-        for endpoint in ["gay", "glass", "horny", "jail", "lolice", "simpcard", "triggered", "wasted"]:
+        for endpoint in [
+            "gay",
+            "glass",
+            "horny",
+            "jail",
+            "lolice",
+            "simpcard",
+            "triggered",
+            "wasted",
+        ]:
 
             @commands.command(name=endpoint)
             @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -2779,14 +2787,14 @@ class Fun(Cog):
                 member = member or ctx.author
 
                 response = await bot.http_session.get(
-                        "https://some-random-api.ml/canvas/{}?avatar={}".format(
-                            ctx.command.name, member.display_avatar.url
-                        )
+                    "https://some-random-api.ml/canvas/{}?avatar={}".format(
+                        ctx.command.name, member.display_avatar.url
                     )
+                )
                 imageData = io.BytesIO(await response.read())  # read the image/bytes
 
                 await ctx.reply(
                     file=discord.File(imageData, "gay.png")
                 )  # replying the file
-            
+
             self.bot.add_command(callback)

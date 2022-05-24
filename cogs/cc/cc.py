@@ -87,6 +87,7 @@ class CustomCommand(Cog):
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             1, 3, commands.BucketType.guild
         )
+
         def default_value():
             return 0
 
@@ -353,7 +354,9 @@ class CustomCommand(Cog):
                 ):
                     if self.__is_ratelimited(message):
                         return await message.channel.send(
-                            ERROR_ON_MAX_CONCURRENCY.format(data.get("name"), message.guild.name)
+                            ERROR_ON_MAX_CONCURRENCY.format(
+                                data.get("name"), message.guild.name
+                            )
                         )
                     CC = CustomCommandsExecutionOnMsg(
                         self.bot,
@@ -392,7 +395,9 @@ class CustomCommand(Cog):
                 ):
                     if self.__is_ratelimited(message):
                         return await message.channel.send(
-                            ERROR_ON_MAX_CONCURRENCY.format(data.get("name"), message.guild.name)
+                            ERROR_ON_MAX_CONCURRENCY.format(
+                                data.get("name"), message.guild.name
+                            )
                         )
                     CC = CustomCommandsExecutionOnMsg(
                         self.bot,
@@ -402,7 +407,9 @@ class CustomCommand(Cog):
                 await asyncio.sleep(0)
 
     @Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]
+    ):
         message = reaction.message
 
         if not message.guild:
@@ -441,7 +448,9 @@ class CustomCommand(Cog):
                 await asyncio.sleep(0)
 
     @Cog.listener()
-    async def on_reaction_remove(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
+    async def on_reaction_remove(
+        self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]
+    ):
         message = reaction.message
 
         if not message.guild:
@@ -492,7 +501,7 @@ class CustomCommand(Cog):
                     command["trigger_type"] == "member_join"
                     and not command["review_needed"]
                 ):
-                    
+
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
                     await CC.execute(command.get("code"))
                 await asyncio.sleep(0)

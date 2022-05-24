@@ -95,9 +95,6 @@ class CustomCommand(Cog):
         self.data = {}
 
     def __is_ratelimited(self, message: discord.Message) -> bool:
-        # if ratelimit := self.cd_mapping.get_bucket(message).update_rate_limit():
-        #     return bool(ratelimit)
-
         return False
 
     async def cog_load(self):
@@ -352,12 +349,7 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                     and (self.check_requirements(message=message, **command))
                 ):
-                    if self.__is_ratelimited(message):
-                        return await message.channel.send(
-                            ERROR_ON_MAX_CONCURRENCY.format(
-                                data.get("name"), message.guild.name
-                            )
-                        )
+
                     CC = CustomCommandsExecutionOnMsg(
                         self.bot,
                         message,
@@ -393,12 +385,7 @@ class CustomCommand(Cog):
                     and not command["review_needed"]
                     and (self.check_requirements(message=message, **command))
                 ):
-                    if self.__is_ratelimited(message):
-                        return await message.channel.send(
-                            ERROR_ON_MAX_CONCURRENCY.format(
-                                data.get("name"), message.guild.name
-                            )
-                        )
+
                     CC = CustomCommandsExecutionOnMsg(
                         self.bot,
                         message,

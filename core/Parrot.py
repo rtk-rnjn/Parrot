@@ -14,17 +14,17 @@ from typing import (
     Union,
     List,
 )
-import jishaku as jishaku  # noqa: F401
+import jishaku as jishaku  # type: ignore  # noqa: F401
 import datetime
 import asyncio
 import re
 import discord
-from aiohttp import ClientSession
+from aiohttp import ClientSession  # type: ignore
 from collections import Counter, deque, defaultdict
 from discord.ext import commands, tasks
 
 from lru import LRU
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 from utilities.config import (
     EXTENSIONS,

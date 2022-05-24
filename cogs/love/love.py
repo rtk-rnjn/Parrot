@@ -15,7 +15,7 @@ from datetime import datetime
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import clean_content
+from discord.ext.commands import clean_content  # type: ignore
 from discord import Member
 
 from utilities.deco import in_month

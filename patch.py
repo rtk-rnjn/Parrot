@@ -10,6 +10,7 @@ import time
 import asyncio
 import select
 import gc
+import nacl.secret  # type: ignore
 
 
 class DecodeManager(threading.Thread, opus._OpusStruct):
@@ -75,7 +76,32 @@ class ParrotVoiceClient(VoiceClient):
         self.sink = None
         self.starting_time = None
         self.stopping_time = None
-    
+
+    def _decrypt_xsalsa20_poly1305(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:12] = header
+
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
+
+    def _decrypt_xsalsa20_poly1305_suffix(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce_size = nacl.secret.SecretBox.NONCE_SIZE
+        nonce = data[-nonce_size:]
+
+        return self.strip_header_ext(box.decrypt(bytes(data[:-nonce_size]), nonce))
+
+    def _decrypt_xsalsa20_poly1305_lite(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:4] = data[-4:]
+        data = data[:-4]
+
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
+
     @staticmethod
     def strip_header_ext(data):
         if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:

@@ -14,7 +14,7 @@ import asyncio
 import textwrap
 import io
 
-from async_timeout import timeout
+from async_timeout import timeout  # type: ignore
 
 from discord import File, Embed, Colour, Permissions, PermissionOverwrite, Object
 

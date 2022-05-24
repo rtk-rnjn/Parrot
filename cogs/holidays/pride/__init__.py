@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import random
 import discord
@@ -6,7 +8,7 @@ from discord.ext import commands
 
 from pathlib import Path
 from datetime import datetime
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz  # type: ignore
 import dateutil.parser
 from typing import Optional, Union
 from utilities.constants import Colours

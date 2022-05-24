@@ -13,21 +13,20 @@ import string
 import operator
 import unicodedata
 import discord
-import aiohttp
+import aiohttp  # type: ignore
 import asyncio
 import math
-from aiohttp import request
+from aiohttp import request  # type: ignore
 from discord.ext import commands, tasks
 from discord import Embed
 from PIL import Image, ImageColor
-import rapidfuzz
+import rapidfuzz  # type: ignore
 import colorsys
 
 from pathlib import Path
 from random import choice, randint
 from typing import Callable, Optional, Union, TypeVar, List, Tuple, Dict
 from concurrent.futures import ThreadPoolExecutor
-from rapidfuzz import fuzz
 
 from dataclasses import dataclass
 from collections import defaultdict
@@ -1041,7 +1040,7 @@ class Fun(Cog):
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
-                    fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
+                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
                     for answer in quiz_entry.answers
                 )
 

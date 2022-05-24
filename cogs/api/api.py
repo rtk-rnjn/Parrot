@@ -3,7 +3,7 @@ import asyncio
 import base64
 import binascii
 import os
-import yarl
+import yarl  # type: ignore
 
 import discord
 from discord.ext import commands

@@ -502,7 +502,7 @@ class Moderator(Cog):
         """
         if ctx.invoked_subcommand is None:
 
-            def check():
+            def check(message: discord.Message) -> bool:
                 return True
 
             await mt.do_removal(ctx, num, check)

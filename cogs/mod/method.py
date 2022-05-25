@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from collections import Counter
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
@@ -6,7 +7,7 @@ from core import Parrot, Context
 
 import discord
 import asyncio
-import aiohttp
+import aiohttp  # type: ignore
 import datetime
 
 from utilities.time import FutureTime

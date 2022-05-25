@@ -3,7 +3,7 @@ from __future__ import annotations
 import zlib
 from functools import partial
 
-import aiohttp
+import aiohttp  # type: ignore
 
 to_bytes = partial(bytes, encoding="utf-8")
 

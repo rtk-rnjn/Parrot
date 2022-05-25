@@ -19,7 +19,7 @@ from .robopage import RoboPages
 import datetime
 import inspect
 import itertools
-import pygit2
+import pygit2  # type: ignore
 
 from typing import Any, Dict, List, Optional, Union
 

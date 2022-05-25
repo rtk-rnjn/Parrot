@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import argparse
 import shlex
 from cogs.mod.embeds import (

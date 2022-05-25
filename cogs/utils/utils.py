@@ -19,7 +19,7 @@ from utilities.time import ShortTime
 from utilities.converters import convert_bool
 from utilities.rankcard import rank_card
 
-from pymongo import ReturnDocument
+from pymongo import ReturnDocument  # type: ignore
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):

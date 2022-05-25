@@ -6,11 +6,11 @@ import re
 import sys
 from cogs.meta.robopage import SimplePages
 import discord
-import aiohttp
+import aiohttp  # type: ignore
 import hashlib
 
 from random import choice
-import rapidfuzz
+import rapidfuzz  # type: ignore
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape

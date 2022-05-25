@@ -4,11 +4,15 @@ from io import BytesIO
 from typing import Callable, Optional, List, Tuple
 from urllib.parse import urlencode
 import os
-import arrow
+import arrow  # type: ignore
 import discord
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import BucketType, check, group
+from discord.ext.commands import (
+    BucketType,
+    check,
+    group
+)
 
 from core import Parrot, Cog, Context
 from utilities.paginator import PaginationView

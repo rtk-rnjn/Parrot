@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from core import Parrot, Cog, Context
-from tabulate import tabulate
+from tabulate import tabulate  # type: ignore
 from discord.ext import commands, tasks
 import discord
 from utilities.deco import with_role

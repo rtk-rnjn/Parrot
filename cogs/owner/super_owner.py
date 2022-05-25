@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import urllib
 from core import Parrot, Context, Cog
-from aiofile import async_open
+from aiofile import async_open  # type: ignore
 
 from discord.ext import commands
 import discord
 
-import aiohttp
+import aiohttp  # type: ignore
 import datetime
 import os
 import traceback

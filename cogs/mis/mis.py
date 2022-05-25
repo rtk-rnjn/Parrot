@@ -8,7 +8,7 @@ from discord.ext import commands
 from discord import Embed
 
 import urllib.parse
-import aiohttp
+import aiohttp  # type: ignore
 import discord
 import re
 import os
@@ -19,9 +19,9 @@ import io
 import string
 from html import unescape
 
-import qrcode
-from qrcode.image.styledpil import StyledPilImage
-from qrcode.image.styles.moduledrawers import (
+import qrcode  # type: ignore
+from qrcode.image.styledpil import StyledPilImage  # type: ignore
+from qrcode.image.styles.moduledrawers import (  # type: ignore
     RoundedModuleDrawer,
     CircleModuleDrawer,
     GappedSquareModuleDrawer,
@@ -29,7 +29,7 @@ from qrcode.image.styles.moduledrawers import (
     SquareModuleDrawer,
     VerticalBarsDrawer,
 )
-from qrcode.image.styles.colormasks import (
+from qrcode.image.styles.colormasks import (  # type: ignore
     RadialGradiantColorMask,
     SquareGradiantColorMask,
     HorizontalGradiantColorMask,

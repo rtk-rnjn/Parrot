@@ -3,7 +3,7 @@ from __future__ import annotations
 from core import Parrot, Cog
 
 import os
-import tweepy
+import tweepy  # type: ignore
 
 
 class Twitter(Cog):

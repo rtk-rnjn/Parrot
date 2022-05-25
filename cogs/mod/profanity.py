@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, List, Optional
+
+from typing import Any, List
 import discord
 import random
 import re

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import discord
-import aiohttp
+import aiohttp  # type: ignore
 from discord.ext import commands
 
 from utilities.paginator import PaginationView

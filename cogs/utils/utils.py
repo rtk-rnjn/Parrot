@@ -198,6 +198,7 @@ class Utils(Cog):
         #     return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
 
         post = {
+            "_id": ctx.message.id,
             "expires_at": seconds,
             "created_at": ctx.message.created_at.timestamp(),
             "content": task or "...",

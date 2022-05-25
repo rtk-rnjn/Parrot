@@ -46,6 +46,9 @@ class ShortTime:
     def __str__(self) -> str:
         return str(self.argument)
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     @classmethod
     async def convert(cls, ctx, argument):
         return cls(argument, now=ctx.message.created_at)

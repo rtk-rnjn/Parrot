@@ -210,7 +210,7 @@ class Utils(Cog):
             "is_todo": False,
             "mod_action": None,
             "cmd_exec_str": None,
-            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}},
+            "age": str(age),
         }
         await self.create_timer(
             expires_at=seconds,
@@ -218,7 +218,7 @@ class Utils(Cog):
             content=task or "...",
             message=ctx.message,
             dm_notify=True,
-            extra={"name": "SET_TIMER", "main": post}
+            extra={"name": "SET_TIMER_LOOP", "main": post}
         )
         text = (
             f"{ctx.author.mention} Alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "

@@ -99,13 +99,12 @@ class EventCustom(Cog):
             await self._parse_giveaway(**kw)
 
     async def _parse_timer(self, **kw):
-        extra: Dict[str, Any] = kw.get["extra"]
-        age: str = extra.get("age")
+        age: str = kw.get("age")
         if age is None:
             return
         age: ShortTime = ShortTime(age)
         post = kw
-        post["extra"] = extra
+        post["extra"] = {"name": "SET_TIMER_LOOP", "main": post}
         post["expires_at"] = age.dt.timestamp()
         await self.bot.mongo.parrot_db.timers.insert_one(post)
 

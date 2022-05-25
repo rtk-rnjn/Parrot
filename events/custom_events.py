@@ -1,15 +1,26 @@
 from __future__ import annotations
+from typing import Any, Dict
 
 from core import Cog, Parrot
 
 from cogs.utils.method import end_giveaway
 
 import discord
+from utilities.time import ShortTime
+
+
+class FakeMessage:
+    def __init__(self, **kwargs):
+        [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
 
 class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        if self.bot.get_cog("Utils"):
+            self.create_timer = self.bot.get_cog("Utils").create_timer
+        else:
+            self.create_timer = None
 
     async def on_timer_complete(self, **kw) -> None:
         await self.bot.wait_until_ready()
@@ -81,8 +92,22 @@ class EventCustom(Cog):
         if name.upper() == "SET_TIMER":
             await self.bot.mongo.parrot_db.timers.insert_one(kw)
 
+        if name.upper() == "SET_TIMER_LOOP":
+            await self._parse_timer(**kw)
+
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)
+
+    async def _parse_timer(self, **kw):
+        extra: Dict[str, Any] = kw.get["extra"]
+        age: str = extra.get("age")
+        if age is None:
+            return
+        age: ShortTime = ShortTime(age)
+        post = kw
+        post["extra"] = extra
+        post["expires_at"] = age.dt.timestamp()
+        await self.bot.mongo.parrot_db.timers.insert_one(post)
 
     async def _parse_giveaway(self, **kw) -> None:
         data = await self.bot.mongo.parrot_db.giveaway.find_one(

@@ -183,6 +183,52 @@ class Utils(Cog):
             message=ctx.message,
             dm_notify=True,
         )
+    
+    @remindme.command(name="loop")
+    @Context.with_type
+    async def remindmeloop(self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None):
+        """Same as remind me but you will get reminder on every given time.
+        
+        `$remind loop 1d To vote the bot`
+        This will make a reminder for everyday `To vote the bot`
+        """
+        seconds = age.dt.timestamp()
+        now = discord.utils.utcnow().timestamp()
+        if seconds - now <= 300:
+            return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
+        
+        post = {
+            "expires_at": seconds,
+            "created_at": ctx.message.created_at.timestamp(),
+            "content": task or "...",
+            "dm_notify": True,
+            "embed": None,
+            "messageURL": ctx.message.jump_url,
+            "messageAuthor": ctx.message.author.id,
+            "messageChannel": ctx.message.channel.id,
+            "dm_notify": True,
+            "is_todo": False,
+            "mod_action": None,
+            "cmd_exec_str": None,
+            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}},
+        }
+        await self.create_timer(
+            expires_at=seconds,
+            created_at=ctx.message.created_at.timestamp(),
+            content=task or "...",
+            message=ctx.message,
+            dm_notify=True,
+            extra={"name": "SET_TIMER", "main": post}
+        )
+        text = (
+            f"{ctx.author.mention} Alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
+            f"within **<t:{int(seconds)}:R>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
+        )
+        try:
+            await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
+            await ctx.author.send(text)
+        except discord.Fobidden:
+            await ctx.reply(text)
 
     @commands.group(invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)

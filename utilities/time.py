@@ -31,7 +31,8 @@ class ShortTime:
         re.VERBOSE,
     )
 
-    def __init__(self, argument, *, now=None):
+    def __init__(self, argument: str, *, now=None):
+        self.argument = argument
         match = self.compiled.fullmatch(argument.lower())
         if match is None or not match.group(0):
             raise commands.BadArgument(
@@ -41,6 +42,9 @@ class ShortTime:
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
         now = now or datetime.datetime.now(datetime.timezone.utc)
         self.dt: datetime.datetime = now + relativedelta(**data)
+
+    def __str__(self) -> str:
+        return str(self.argument)
 
     @classmethod
     async def convert(cls, ctx, argument):

@@ -103,7 +103,9 @@ class EventCustom(Cog):
         if age is None:
             return
         age: ShortTime = ShortTime(age)
-        post = kw
+        print(kw)
+        post = kw.copy()
+        print(post)
         post["extra"] = {"name": "SET_TIMER_LOOP", "main": post}
         post["expires_at"] = age.dt.timestamp()
         await self.bot.mongo.parrot_db.timers.insert_one(post)

@@ -48,7 +48,9 @@ class DecodeManager(threading.Thread, opus._OpusStruct):
                 print("Error occurred while decoding opus frame.")
                 continue
 
-            asyncio.get_event_loop().run_until_complete(self.client.recv_decoded_audio(data))
+            asyncio.get_event_loop().run_until_complete(
+                self.client.recv_decoded_audio(data)
+            )
 
     def stop(self):
         while self.decoding:

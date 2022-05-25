@@ -194,8 +194,8 @@ class Utils(Cog):
         """
         seconds = age.dt.timestamp()
         now = discord.utils.utcnow().timestamp()
-        # if seconds - now <= 300:
-        #     return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
+        if seconds - now <= 300:
+            return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
 
         post = {
             "_id": ctx.message.id,

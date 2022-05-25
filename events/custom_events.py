@@ -101,7 +101,7 @@ class EventCustom(Cog):
             await self._parse_giveaway(**kw)
 
     async def _parse_timer(self, **kw):
-        age: str = kw["extra"].get("age")
+        age: str = kw["extra"]["main"].get("age")
         if age is None:
             return
         age: ShortTime = ShortTime(age)

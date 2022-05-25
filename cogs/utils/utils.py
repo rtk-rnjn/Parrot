@@ -211,7 +211,7 @@ class Utils(Cog):
             "is_todo": False,
             "mod_action": None,
             "cmd_exec_str": None,
-            "extra": {"name": "SET_TIMER_LOOP", "age": str(age)},
+            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}},
         }
         await self.collection.insert_one(post)
         text = (

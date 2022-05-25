@@ -57,6 +57,8 @@ class EventCustom(Cog):
 
         if kw.get("extra"):
             data = kw.get("extra")
+            if data.get("name") == "SET_TIMER_LOOP":
+                await self._parse_timer(**data)
             await self.extra_action_parser(data.get("name"), **data.get("main"))
 
     async def mod_action_parser(self, **kw) -> None:
@@ -99,7 +101,7 @@ class EventCustom(Cog):
             await self._parse_giveaway(**kw)
 
     async def _parse_timer(self, **kw):
-        age: str = kw.get("age")
+        age: str = kw["extra"].get("age")
         if age is None:
             return
         age: ShortTime = ShortTime(age)

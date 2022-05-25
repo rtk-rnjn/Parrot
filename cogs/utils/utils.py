@@ -194,9 +194,9 @@ class Utils(Cog):
         """
         seconds = age.dt.timestamp()
         now = discord.utils.utcnow().timestamp()
-        if seconds - now <= 300:
-            return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
-        
+        # if seconds - now <= 300:
+        #     return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
+
         post = {
             "expires_at": seconds,
             "created_at": ctx.message.created_at.timestamp(),
@@ -210,16 +210,9 @@ class Utils(Cog):
             "is_todo": False,
             "mod_action": None,
             "cmd_exec_str": None,
-            "age": str(age),
+            "extra": {"name": "SET_TIMER_LOOP", "age": str(age)},
         }
-        await self.create_timer(
-            expires_at=seconds,
-            created_at=ctx.message.created_at.timestamp(),
-            content=task or "...",
-            message=ctx.message,
-            dm_notify=True,
-            extra={"name": "SET_TIMER_LOOP", "main": post}
-        )
+        await self.collection.insert_one(post)
         text = (
             f"{ctx.author.mention} Alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
             f"within **<t:{int(seconds)}:R>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"

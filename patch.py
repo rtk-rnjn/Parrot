@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any, Callable
 
 from discord.sinks import RawData, RecordingException, Sink
 from discord import VoiceClient
@@ -47,11 +48,10 @@ class DecodeManager(threading.Thread, opus._OpusStruct):
                 print("Error occurred while decoding opus frame.")
                 continue
 
-            self.client.recv_decoded_audio(data)
+            asyncio.get_event_loop().run_until_complete(self.client.recv_decoded_audio(data))
 
     def stop(self):
         while self.decoding:
-            time.sleep(0.1)
             self.decoder = {}
             gc.collect()
             print("Decoder Process Killed")
@@ -144,7 +144,7 @@ class ParrotVoiceClient(VoiceClient):
 
         self.decoder.decode(data)
 
-    def start_recording(self, sink, callback, *args):
+    async def start_recording(self, sink: Sink, callback: Callable, *args: Any):
         """The bot will begin recording audio from the current voice channel it is in.
         This function uses a thread so the current code line will not be stopped.
         Must be in a voice channel to use.
@@ -182,15 +182,7 @@ class ParrotVoiceClient(VoiceClient):
         self.sink = sink
         sink.init(self)
 
-        t = threading.Thread(
-            target=self.recv_audio,
-            args=(
-                sink,
-                callback,
-                *args,
-            ),
-        )
-        t.start()
+        await self.recv_audio(callback, *args)
 
     def stop_recording(self):
         """Stops the recording.
@@ -228,7 +220,7 @@ class ParrotVoiceClient(VoiceClient):
             for s in ready:
                 s.recv(4096)
 
-    def recv_audio(self, sink, callback, *args):
+    async def recv_audio(self, callback: Callable, *args: Any):
         # Gets data from _recv_audio and sorts
         # it by user, handles pcm files and
         # silence that should be added.
@@ -252,15 +244,12 @@ class ParrotVoiceClient(VoiceClient):
 
         self.stopping_time = time.perf_counter()
         self.sink.cleanup()
-        callback = asyncio.run_coroutine_threadsafe(
-            callback(self.sink, *args), self.loop
-        )
-        result = callback.result()
+        result = await callback(*args)
 
         if result is not None:
             print(result)
 
-    def recv_decoded_audio(self, data):
+    async def recv_decoded_audio(self, data):
         if data.ssrc not in self.user_timestamps:
             self.user_timestamps.update({data.ssrc: data.timestamp})
             # Add silence when they were not being recorded.
@@ -274,5 +263,5 @@ class ParrotVoiceClient(VoiceClient):
             + data.decoded_data
         )
         while data.ssrc not in self.ws.ssrc_map:
-            time.sleep(0.05)
+            asyncio.sleep(0.05)
         self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]["user_id"])

@@ -202,7 +202,6 @@ class Utils(Cog):
             "expires_at": seconds,
             "created_at": ctx.message.created_at.timestamp(),
             "content": task or "...",
-            "dm_notify": True,
             "embed": None,
             "messageURL": ctx.message.jump_url,
             "messageAuthor": ctx.message.author.id,

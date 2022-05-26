@@ -39,10 +39,9 @@ class DecodeManager(threading.Thread, opus._OpusStruct):
             try:
                 if data.decrypted_data is None:
                     continue
-                else:
-                    data.decoded_data = self.get_decoder(data.ssrc).decode(
-                        data.decrypted_data
-                    )
+                data.decoded_data = self.get_decoder(data.ssrc).decode(
+                    data.decrypted_data
+                )
             except opus.OpusError:
                 print("Error occurred while decoding opus frame.")
                 continue

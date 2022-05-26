@@ -67,7 +67,7 @@ class DecodeManager(threading.Thread, opus._OpusStruct):
     @property
     def decoding(self):
         return bool(self.decode_queue)
-        
+
 
 class ParrotVoiceClient(VoiceClient):
     def __init__(self, *args, **kwargs):

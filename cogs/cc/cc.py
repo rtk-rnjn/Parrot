@@ -94,9 +94,6 @@ class CustomCommand(Cog):
         self.default_dict = defaultdict(default_value)
         self.data = {}
 
-    def __is_ratelimited(self, message: discord.Message) -> bool:
-        return False
-
     async def cog_load(self):
         async for data in self.bot.mongo.cc.commands.find({}):
             data[f"{data['_id']}"] = data

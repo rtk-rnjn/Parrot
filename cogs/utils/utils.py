@@ -183,12 +183,12 @@ class Utils(Cog):
             message=ctx.message,
             dm_notify=True,
         )
-    
+
     @remindme.command(name="loop")
     @Context.with_type
     async def remindmeloop(self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None):
         """Same as remind me but you will get reminder on every given time.
-        
+
         `$remind loop 1d To vote the bot`
         This will make a reminder for everyday `To vote the bot`
         """

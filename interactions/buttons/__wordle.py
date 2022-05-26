@@ -1,6 +1,7 @@
 # https://github.com/Tom-the-Bomb/Discord-Games/blob/master/discord_games/wordle.py
 
 from __future__ import annotations
+import asyncio
 from typing import Any, Optional, Union, List, Dict, Final, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -107,9 +108,13 @@ class Wordle:
                     len(m.content) == 5
                     and m.author == ctx.author
                     and m.channel == ctx.channel
+                ) or (
+                    m.content.lower() == "quit"
                 )
-
-            guess: discord.Message = await ctx.bot.wait_for("message", check=check)
+            try:
+                guess: discord.Message = await ctx.bot.wait_for("message", check=check, timeout=900)
+            except asyncio.TimeoutError:
+                return await ctx.send("You took too long to guess the word!")
             content = guess.content.lower()
 
             if content.upper() == "QUIT":
@@ -128,6 +133,7 @@ class Wordle:
                 embed = discord.Embed(
                     title="Wordle!",
                     color=self.embed_color,
+                    description=f"`QUIT` to end the game",
                     timestamp=ctx.message.created_at,
                 )
                 embed.set_footer(text=f"{ctx.author}")

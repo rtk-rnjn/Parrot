@@ -812,14 +812,18 @@ class Meta(Cog):
             perms.append("Role Manager")
         if role.permissions.moderate_members:
             perms.append("Can Timeout Members")
+        if role.permissions.manage_channels:
+            perms.append("Channel Manager")
+        if role.permissions.manage_emojis:
+            perms.append("Emoji Manager")
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         embed.set_footer(text=f"ID: {role.id}")
-        if role.icon:
-            embed.set_thumbnail(url=role.icon.url)
         if role.unicode_emoji:
             embed.set_thumbnail(
                 url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png"
             )
+        if role.icon:
+            embed.set_thumbnail(url=role.icon.url)
         await ctx.reply(embed=embed)
 
     @commands.command()

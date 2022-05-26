@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 from core import Cog, Parrot
 
@@ -22,18 +22,18 @@ class EventCustom(Cog):
         else:
             self.create_timer = None
 
-    async def on_timer_complete(self, **kw) -> None:
+    async def on_timer_complete(self, **kw: Any) -> None:
         await self.bot.wait_until_ready()
         if kw.get("mod_action"):
             await self.mod_action_parser(**kw.get("mod_action"))
 
         if kw.get("embed"):
-            embed = discord.Embed.from_dict(kw.get("embed"))
+            embed: discord.Embed = discord.Embed.from_dict(kw.get("embed"))
         else:
             embed = None
 
         if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
-            user = self.bot.get_user(kw["messageAuthor"])
+            user: discord.User = self.bot.get_user(kw["messageAuthor"])
             if user:
                 try:
                     await user.send(
@@ -44,7 +44,7 @@ class EventCustom(Cog):
                     pass  # I don't know whytf user blocks the DM
 
         elif kw.get("content"):
-            channel = self.bot.get_channel(kw["messageChannel"])
+            channel: discord.TextChannel = self.bot.get_channel(kw["messageChannel"])
             if channel:
                 try:
                     await channel.send(
@@ -61,9 +61,9 @@ class EventCustom(Cog):
                 return await self._parse_timer(**kw)
             await self.extra_action_parser(data.get("name"), **data.get("main"))
 
-    async def mod_action_parser(self, **kw) -> None:
+    async def mod_action_parser(self, **kw: Any) -> None:
         action: str = kw.get("action")
-        guild = self.bot.get_guild(kw.get("guild"))
+        guild: discord.Guild = self.bot.get_guild(kw.get("guild"))
         if guild is None:
             return
         target: int = kw.get("member") or kw.get("target")
@@ -82,7 +82,7 @@ class EventCustom(Cog):
                 # User not found, Bot Not having permissions, Other HTTP Error
                 pass
 
-    async def extra_action_parser(self, name, **kw) -> None:
+    async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "REMOVE_AFK":
             await self.bot.mongo.parrot_db.afk.delete_one(kw)
             self.bot.afk.remove(kw.get("messageAuthor"))
@@ -100,7 +100,7 @@ class EventCustom(Cog):
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)
 
-    async def _parse_timer(self, **kw):
+    async def _parse_timer(self, **kw: Any):
         age: str = kw["extra"]["main"].get("age")
         if age is None:
             return
@@ -111,15 +111,15 @@ class EventCustom(Cog):
         await self.bot.mongo.parrot_db.timers.insert_one(post)
 
     async def _parse_giveaway(self, **kw) -> None:
-        data = await self.bot.mongo.parrot_db.giveaway.find_one(
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.giveaway.find_one(
             {
                 "message_id": kw.get("message_id"),
                 "guild_id": kw.get("guild_id"),
                 "status": "ONGOING",
             }
         )
-        member_ids = await end_giveaway(self.bot, **data)
-        channel = await self.bot.getch(
+        member_ids: List[int] = await end_giveaway(self.bot, **data)
+        channel: Optional[discord.TextChannel] = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel")
         )
         await self.bot.mongo.parrot_db.giveaway.find_one_and_update(

@@ -414,14 +414,13 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
         for reaction in msg.reactions:
             if str(reaction.emoji) == "\N{PARTY POPPER}":
                 reactors: List[int] = [user.id async for user in reaction.users()]
+                break
             else:
                 reactors = []
-            break
 
     __item__remove(reactors, bot.user.id)
 
     if not reactors:
-        print("1")
         return
 
     win_count = kw.get("winners", 1)
@@ -452,7 +451,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
         win_count = win_count - len(real_winners)
 
 
-async def __check_requirements(bot: Parrot, **kw) -> List[int]:
+async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
     # vars
     real_winners = kw.get("winners")
 
@@ -485,14 +484,14 @@ async def __check_requirements(bot: Parrot, **kw) -> List[int]:
 
 async def __update_giveaway_reactors(
     *, bot: Parrot, reactors: List[int], message_id: int
-):
+) -> None:
     collection = bot.mongo.parrot_db.giveaway
     await collection.update_one(
         {"message_id": message_id}, {"$set": {"reactors": reactors}}
     )
 
 
-def __item__remove(ls: List[Any], item: Any) -> Any:
+def __item__remove(ls: List[Any], item: Any) -> Optional[List]:
     try:
         ls.remove(item)
     except (ValueError, KeyError):
@@ -525,6 +524,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
 
     payload = {}
     CHANNEL = None
+
     for index, question in enumerate(quest, start=1):
         if index == 1:
             await ctx.reply(embed=discord.Embed(description=question))
@@ -533,20 +533,24 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
             )
             CHANNEL = channel
             payload["giveaway_channel"] = channel.id
+
         if index == 2:
             await ctx.reply(embed=discord.Embed(description=question))
             duration = ShortTime(await __wait_for__message(ctx))
             payload["endtime"] = duration.dt.timestamp()
+
         if index == 3:
             await ctx.reply(embed=discord.Embed(description=question))
             prize = await __wait_for__message(ctx)
             payload["prize"] = prize
+
         if index == 4:
             await ctx.reply(embed=discord.Embed(description=question))
             winners = __is_int(
                 await __wait_for__message(ctx), "Winner must be a whole number"
             )
             payload["winners"] = winners
+
         if index == 5:
             await ctx.reply(embed=discord.Embed(description=question))
             arg = await __wait_for__message(ctx)
@@ -555,12 +559,14 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
                 payload["required_role"] = role.id
             else:
                 payload["required_role"] = None
+
         if index == 6:
             await ctx.reply(embed=discord.Embed(description=question))
             level = __is_int(
                 await __wait_for__message(ctx), "Level must be a whole number"
             )
             payload["required_level"] = level
+
         if index == 7:
             await ctx.reply(embed=discord.Embed(description=question))
             server = __is_int(

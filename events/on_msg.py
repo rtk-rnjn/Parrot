@@ -509,7 +509,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
             async for webhook in self.bot.mongo.parrot_db.global_chat.find(
-                {"webhook": {"$exists": True}}, {"webhook": 1}
+                {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
             ):
                 hook = webhook["webhook"]
                 if hook:
@@ -527,7 +527,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         await self.bot.mongo.parrot_db.global_chat.delete_one(
                             {"webhook": hook}
                         )  # all hooks are unique
-                    except discord.HTTPException as e:
+                    except discord.HTTPException:
                         pass
 
     async def _add_record_message_to_database(self, message: discord.Message):

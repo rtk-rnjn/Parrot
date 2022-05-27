@@ -21,7 +21,9 @@ import re
 import discord
 from aiohttp import ClientSession  # type: ignore
 from collections import Counter, deque, defaultdict
+
 from discord.ext import commands, tasks
+from discord import app_commands
 
 from lru import LRU
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore

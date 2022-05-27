@@ -415,8 +415,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
             if str(reaction.emoji) == "\N{PARTY POPPER}":
                 reactors: List[int] = [user.id async for user in reaction.users()]
                 break
-            else:
-                reactors = []
+            reactors = []
 
     __item__remove(reactors, bot.user.id)
 

@@ -140,34 +140,6 @@ class SlideButton(discord.ui.Button["SlideView"]):
         return await interaction.response.edit_message(embed=game.embed, view=self.view)
 
 
-class SlideView(BaseView):
-    def __init__(self, game: NumberSlider, *, timeout: float) -> None:
-        super().__init__(timeout=timeout)
-
-        self.game = game
-
-        self.update_board()
-
-    def update_board(self, *, clear: bool = False) -> None:
-
-        if clear:
-            self.clear_items()
-
-        for i, row in enumerate(self.game.numbers):
-            for j, number in enumerate(row):
-                if number == self.game.completed[i][j]:
-                    style = self.game.correct_style
-                else:
-                    style = self.game.wrong_style
-
-                button = SlideButton(
-                    label=number or "\u200b",
-                    style=style,
-                    row=i,
-                )
-                self.add_item(button)
-
-
 class NumberSlider:
     """
     Number Slider Game
@@ -269,3 +241,31 @@ class NumberSlider:
             self.view.wait(),
         )
         return self.message
+
+
+class SlideView(BaseView):
+    def __init__(self, game: NumberSlider, *, timeout: float) -> None:
+        super().__init__(timeout=timeout)
+
+        self.game = game
+
+        self.update_board()
+
+    def update_board(self, *, clear: bool = False) -> None:
+
+        if clear:
+            self.clear_items()
+
+        for i, row in enumerate(self.game.numbers):
+            for j, number in enumerate(row):
+                if number == self.game.completed[i][j]:
+                    style = self.game.correct_style
+                else:
+                    style = self.game.wrong_style
+
+                button = SlideButton(
+                    label=number or "\u200b",
+                    style=style,
+                    row=i,
+                )
+                self.add_item(button)

@@ -21,6 +21,7 @@ from aiohttp import ClientResponseError
 from time import time
 from urllib.parse import quote_plus
 from pymongo import ReturnDocument, UpdateOne
+import emojis
 
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
 from utilities.rankcard import rank_card
@@ -353,6 +354,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return False
 
+    def get_emoji_count(self, message_content: str) -> int:
+        str_count = emojis.count(message_content)
+        dis_count = len(
+            re.findall(
+                r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>",
+                message_content,
+            )
+        )
+        return int(str_count + dis_count)
+
     async def on_invite(self, message: discord.Message, invite_link: list):
         if data := await self.log_collection.find_one(
             {"_id": message.guild.id, "on_invite_post": {"$exists": True}}
@@ -488,6 +499,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return await message.channel.send(
                     "Bot requires **Manage Messages** permission(s) to function properly."
                 )
+
+            if emoji_count := self.get_emoji_count(message.content):
+                if emoji_count > 10:
+                    await message.delete(delay=0)
+                    return await message.channel.send(
+                        f"{message.author.mention} | Do not send message with more than 10 emoji.",
+                        delete_after=5,
+                    )
 
             async for webhook in self.bot.mongo.parrot_db.global_chat.find(
                 {"webhook": {"$exists": True}}, {"webhook": 1}

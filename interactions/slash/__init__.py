@@ -21,7 +21,7 @@ class ContextMenu(Cog):
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu)
     
-    async def ctx_menu(self, interaction: discord.Interaction) -> None:
+    async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         await interaction.response.send_message('hello...')
 
 

@@ -1,3 +1,6 @@
+# https://github.com/bijij/BotBot
+# https://github.com/python-discord/sir-lancebot
+
 from __future__ import annotations
 
 import asyncio

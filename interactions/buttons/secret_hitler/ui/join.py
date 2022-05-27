@@ -1,9 +1,11 @@
+# https://github.com/bijij/BotBot
+
 from __future__ import annotations
 
 import asyncio
 
 import discord
-from discord.utils import MISSING
+from discord.utils import MISSING  # type: ignore
 from discord import Member as User
 
 from core import Context

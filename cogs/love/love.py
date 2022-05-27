@@ -21,7 +21,7 @@ from discord import Member
 from utilities.deco import in_month
 from utilities.constants import Month
 
-from typing import Union, Coroutine, Optional, Callable, Tuple, List
+from typing import Union, Coroutine, Optional, Tuple, List
 
 FACTS = json.loads(Path(r"extra/valentines/valentine_facts.json").read_text("utf8"))
 

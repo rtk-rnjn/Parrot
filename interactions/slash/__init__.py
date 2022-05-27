@@ -13,14 +13,14 @@ class ContextMenu(Cog):
         self.ctx_menu = app_commands.ContextMenu(
             name="Interpret as command",
             # description="Interpret the message as a command.",
-            guild_ids=[guild.id for guild in bot.guilds],
+            guild_ids=[978694756022489098],
             callback=self.ctx_menu
         )
         self.bot.tree.add_command(self.ctx_menu)
-    
+
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu)
-    
+
     async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         await interaction.response.send_message('hello...')
 

@@ -96,7 +96,7 @@ class Wordle:
         buf = await self.render_image()
 
         embed = discord.Embed(title="Wordle!", color=self.embed_color)
-        embed.description = f"`QUIT` to end the game"
+        embed.description = "`QUIT` to end the game"
         embed.set_image(url="attachment://wordle.png")
 
         message = await ctx.send(embed=embed, file=discord.File(buf, "wordle.png"))
@@ -133,7 +133,7 @@ class Wordle:
                 embed = discord.Embed(
                     title="Wordle!",
                     color=self.embed_color,
-                    description=f"`QUIT` to end the game",
+                    description="`QUIT` to end the game",
                     timestamp=ctx.message.created_at,
                 )
                 embed.set_footer(text=f"{ctx.author}")

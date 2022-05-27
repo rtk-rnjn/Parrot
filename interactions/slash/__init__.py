@@ -12,7 +12,7 @@ class ContextMenu(Cog):
 
         self.ctx_menu = app_commands.ContextMenu(
             name="Interpret as command",
-            description="Interpret the message as a command.",
+            # description="Interpret the message as a command.",
             guild_ids=[guild.id for guild in bot.guilds],
             callback=self.ctx_menu
         )

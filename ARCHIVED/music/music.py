@@ -446,11 +446,9 @@ class Music(
                 await vc.set_volume(volume)
                 return await ctx.send(f"Volume has been changed to **{volume}%**")
 
-            if volume:
-
-                if not volume < 0 or not volume > 200:
-                    await vc.set_volume(volume)
-                    return await ctx.send(f"Volume has been changed to **{volume}%**")
+            if volume and not volume < 0 or not volume > 200:
+                await vc.set_volume(volume)
+                return await ctx.send(f"Volume has been changed to **{volume}%**")
 
             return await ctx.send(f"The volume is currently at **{vc.volume}%**")
 

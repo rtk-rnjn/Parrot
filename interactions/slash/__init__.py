@@ -1,10 +1,12 @@
 from __future__ import annotations
+from typing import Literal, Optional
 
-from core import Cog, Parrot
+from core import Cog, Parrot, Context
 
 from discord.ext import commands
 from discord import app_commands
 import discord
+
 
 class ContextMenu(Cog):
     def __init__(self, bot: Parrot):
@@ -22,7 +24,36 @@ class ContextMenu(Cog):
         self.bot.tree.remove_command(self.ctx_menu)
 
     async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
+        
         await interaction.response.send_message('hello...')
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def sync(self, ctx: Context, guilds: commands.Greedy[discord.Object], spec: Optional[Literal["~", "*"]] = None) -> None:
+        if not guilds:
+            if spec == "~":
+                fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+            elif spec == "*":
+                ctx.bot.tree.copy_global_to(guild=ctx.guild)
+                fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+            else:
+                fmt = await ctx.bot.tree.sync()
+
+            await ctx.send(
+                f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced {len(fmt)} commands {'globally' if spec is None else 'to the current guild.'}"
+            )
+            return
+
+        fmt = 0
+        for guild in guilds:
+            try:
+                await ctx.bot.tree.sync(guild=guild)
+            except discord.HTTPException:
+                pass
+            else:
+                fmt += 1
+
+        await ctx.send(f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds.")
 
 
 async def setup(bot: Parrot) -> None:

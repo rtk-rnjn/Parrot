@@ -246,7 +246,7 @@ class Parrot(commands.AutoShardedBot):
         print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 
-    async def process_commands(self, message: discord.Message) -> None:
+    async def process_commands(self, message: discord.Message) -> Optional[Context]:
 
         ctx: Context = await self.get_context(message, cls=Context)
 
@@ -295,7 +295,7 @@ class Parrot(commands.AutoShardedBot):
                 return
 
         await self.invoke(ctx)
-        await ctx.release(0)
+        return ctx
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1

@@ -97,7 +97,7 @@ class Context(commands.Context):
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             try:
                 async with context.typing():
-                    await func(*args, **kwargs)
+                    return await func(*args, **kwargs)
             except discord.Forbidden:
                 pass
 

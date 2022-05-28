@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 from typing import Literal, Optional
 
 from core import Cog, Parrot, Context
@@ -29,11 +30,16 @@ class ContextMenu(Cog):
         if prefix is not None and not message.content.startswith(prefix):
             message.content = f"{prefix}{message.content}"
             message.author = interaction.user if isinstance(interaction.user, discord.Member) else interaction.guild.get_member(interaction.user.id)
+            ini = time.perf_counter()
             await self.bot.process_commands(message)
-            return
-        return await interaction.response.send_message(
-            f"{message.author.mention} the command is already interpreted as command. Do you think it's an error? Please report it.", ephemeral=True
-        )
+            await interaction.response.send_message(
+                f"Processed command in {time.perf_counter() - ini:.2f}s", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"{message.author.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
+                ephemeral=True
+            )
 
     @commands.command(hidden=True)
     @commands.is_owner()

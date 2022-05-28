@@ -545,12 +545,13 @@ class Utils(Cog):
 
     @tasks.loop(seconds=3)
     async def reminder_task(self):
-        async for data in self.collection.find(
-            {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
-        ):
-            cog = self.bot.get_cog("EventCustom")
-            await self.collection.delete_one({"_id": data["_id"]})
-            await cog.on_timer_complete(**data)
+        async with self.lock:
+            async for data in self.collection.find(
+                {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
+            ):
+                cog = self.bot.get_cog("EventCustom")
+                await self.collection.delete_one({"_id": data["_id"]})
+                await cog.on_timer_complete(**data)
 
     @reminder_task.before_loop
     async def before_reminder_task(self):

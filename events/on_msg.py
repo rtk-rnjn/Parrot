@@ -624,36 +624,33 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 data["on_message_delete"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
-                if payload.cached_message:
+                if msg := payload.cached_message:
                     msg = payload.cached_message
-                    message_author = msg.author
-                    if (message_author.id == self.bot.user.id) or message_author.bot:
+                    if msg.author.bot:
                         return
                     content = msg.content
-                else:
-                    return
 
-                main_content = f"""**Message Delete Event**
+                    main_content = f"""**Message Delete Event**
 
-`ID      :` **{payload.message_id}**
-`Channel :` **<#{payload.channel_id}>**
-`Author  :` **{message_author}**
-`Deleted at:` **<t:{int(time())}>**
-"""
-                if content:
-                    fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+    `ID      :` **{payload.message_id}**
+    `Channel :` **<#{payload.channel_id}>**
+    `Author  :` **{msg.author}**
+    `Deleted at:` **<t:{int(time())}>**
+    """
+                    if any(content, msg.attachments, msg.embeds):
+                        fp = io.BytesIO(
+                            f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                        )
+                    else:
+                        fp = None
+                    await webhook.send(
+                        content=main_content,
+                        avatar_url=self.bot.user.avatar.url,
+                        username=self.bot.user.name,
+                        file=discord.File(fp, filename="content.txt")
+                        if fp is not None
+                        else None,
                     )
-                else:
-                    fp = None
-                await webhook.send(
-                    content=main_content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt")
-                    if fp is not None
-                    else None,
-                )
 
     @Cog.listener()
     async def on_raw_bulk_message_delete(self, payload):
@@ -970,7 +967,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 `Edited at:` **<t:{int(time())}>**
 `Jump URL :` **<https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id}>**
 """
-                if content:
+                if any(content, payload.cached_message.embeds, payload.cached_message.attachments):
                     fp = io.BytesIO(
                         f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )

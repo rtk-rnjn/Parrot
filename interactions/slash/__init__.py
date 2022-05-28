@@ -26,21 +26,19 @@ class ContextMenu(Cog):
 
     async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         # await interaction.response.defer(thinking=False)
+        
         await interaction.response.send_message(f"{message.author.mention} processing...", ephemeral=True)
         prefix = await self.bot.get_guild_prefixes(message.guild)
-        if prefix is not None and not message.content.startswith(prefix):
-            message.content = f"{prefix}{message.content}"
-            message.author = interaction.user
-            ini = time.perf_counter()
-            await self.bot.process_commands(message)
-            await interaction.response.send_message(
-                f"Processed command in {time.perf_counter() - ini:.2f}s", ephemeral=True
-            )
-        else:
+        if message.content.startswith(prefix):
             await interaction.response.send_message(
                 f"{message.author.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
                 ephemeral=True
             )
+            return
+
+        message.content = f"{prefix}{message.content}"
+        message.author = interaction.user
+        await self.bot.process_commands(message)
 
     @commands.command(hidden=True)
     @commands.is_owner()

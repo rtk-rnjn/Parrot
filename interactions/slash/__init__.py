@@ -30,7 +30,7 @@ class ContextMenu(Cog):
         await interaction.response.send_message(f"{message.author.mention} processing...", ephemeral=True)
         prefix = await self.bot.get_guild_prefixes(message.guild)
         if message.content.startswith(prefix):
-            await interaction.response.send_message(
+            await interaction.response.edit_message(
                 f"{message.author.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
                 ephemeral=True
             )

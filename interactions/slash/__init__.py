@@ -27,11 +27,11 @@ class ContextMenu(Cog):
     async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         # await interaction.response.defer(thinking=False)
         
-        await interaction.response.send_message(f"{message.author.mention} processing...", ephemeral=True)
+        await interaction.response.send_message(f"{interaction.user.mention} processing...", ephemeral=True)
         prefix = await self.bot.get_guild_prefixes(message.guild)
         if message.content.startswith(prefix):
             await interaction.edit_original_message(
-                content=f"{message.author.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
+                content=f"{interaction.user.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
             )
             return
 

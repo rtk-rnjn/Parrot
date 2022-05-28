@@ -26,11 +26,11 @@ class ContextMenu(Cog):
 
     async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         # await interaction.response.defer(thinking=False)
-        await interaction.response.send_message(f"{message.author.mention} processing...")
+        await interaction.response.send_message(f"{message.author.mention} processing...", ephemeral=True)
         prefix = await self.bot.get_guild_prefixes(message.guild)
         if prefix is not None and not message.content.startswith(prefix):
             message.content = f"{prefix}{message.content}"
-            message.author = interaction.user if isinstance(interaction.user, discord.Member) else interaction.guild.get_member(interaction.user.id)
+            message.author = interaction.user
             ini = time.perf_counter()
             await self.bot.process_commands(message)
             await interaction.response.send_message(

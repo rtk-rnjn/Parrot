@@ -26,6 +26,7 @@ class ContextMenu(Cog):
 
     async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         await interaction.response.defer(thinking=False)
+        await interaction.response.send_message(f"{message.author.mention} processing...")
         prefix = await self.bot.get_guild_prefixes(message.guild)
         if prefix is not None and not message.content.startswith(prefix):
             message.content = f"{prefix}{message.content}"

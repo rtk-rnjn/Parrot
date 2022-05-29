@@ -133,7 +133,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                 },
             )
 
-    async def _update_role(
+    def _update_role(
         self,
         before,
         after,

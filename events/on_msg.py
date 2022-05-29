@@ -6,7 +6,7 @@ from contextlib import suppress
 
 import typing as tp
 
-import aiohttp
+import aiohttp  # type: ignore
 from cogs.fun.fun import replace_many
 import discord
 import random
@@ -14,9 +14,10 @@ import io
 import json
 from discord import Webhook
 from discord.ext import commands, tasks
+from discord.utils import MISSING  # type: ignore
 import textwrap
 import re
-from aiohttp import ClientResponseError
+from aiohttp import ClientResponseError  # type: ignore
 
 from time import time
 from urllib.parse import quote_plus
@@ -387,7 +388,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = io.BytesIO("NOTHING HERE".encode())
+                    fp = MISSING
                 await webhook.send(
                     content=content,
                     avatar_url=self.bot.user.avatar.url,
@@ -637,12 +638,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     `Author  :` **{msg.author}**
     `Deleted at:` **<t:{int(time())}>**
     """
-                    if any(content, msg.attachments, msg.embeds):
+                    if any((content, msg.attachments, msg.embeds)):
                         fp = io.BytesIO(
                             f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                         )
                     else:
-                        fp = None
+                        fp = MISSING
                     await webhook.send(
                         content=main_content,
                         avatar_url=self.bot.user.avatar.url,
@@ -653,7 +654,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
     @Cog.listener()
-    async def on_raw_bulk_message_delete(self, payload):
+    async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
         await self.bot.wait_until_ready()
         msg_ids = list(payload.message_ids)
         await self._delete_record_message_to_database(
@@ -685,7 +686,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 if msgs:
                     fp = io.BytesIO(main.encode())
                 else:
-                    fp = None
+                    fp = MISSING
                 main_content = f"""**Bulk Message Delete**
 
 `Total Messages:` **{len(msgs)}**
@@ -967,12 +968,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 `Edited at:` **<t:{int(time())}>**
 `Jump URL :` **<https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id}>**
 """
-                if any(content, payload.cached_message.embeds, payload.cached_message.attachments):
+                if any((content, payload.cached_message.embeds, payload.cached_message.attachments)):
                     fp = io.BytesIO(
                         f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = None
+                    fp = MISSING
                 await webhook.send(
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,

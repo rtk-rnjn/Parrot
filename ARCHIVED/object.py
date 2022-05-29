@@ -281,7 +281,7 @@ def unobjectify(x):
 # Serialization
 
 try:
-    import orjson as json
+    import orjson as json  # type: ignore
 except ImportError:
     import json
 

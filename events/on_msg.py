@@ -388,12 +388,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = MISSING
+                    fp = None
                 await webhook.send(
                     content=content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt"),
+                    file=discord.File(fp, filename="content.txt") if fp is not None else MISSING,
                 )
 
     @Cog.listener()
@@ -643,14 +643,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                             f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                         )
                     else:
-                        fp = MISSING
+                        fp = None
                     await webhook.send(
                         content=main_content,
                         avatar_url=self.bot.user.avatar.url,
                         username=self.bot.user.name,
                         file=discord.File(fp, filename="content.txt")
                         if fp is not None
-                        else None,
+                        else MISSING,
                     )
 
     @Cog.listener()
@@ -686,7 +686,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 if msgs:
                     fp = io.BytesIO(main.encode())
                 else:
-                    fp = MISSING
+                    fp = None
                 main_content = f"""**Bulk Message Delete**
 
 `Total Messages:` **{len(msgs)}**
@@ -698,7 +698,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt")
                     if fp is not None
-                    else None,
+                    else MISSING,
                 )
 
     @Cog.listener()
@@ -973,14 +973,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
                 else:
-                    fp = MISSING
+                    fp = None
                 await webhook.send(
                     content=main_content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt")
                     if fp is not None
-                    else None,
+                    else MISSING,
                 )
 
     @tasks.loop(seconds=10)

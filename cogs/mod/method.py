@@ -707,12 +707,24 @@ async def _block(
                     f"{ctx.author.mention} don't do that, Bot is only trying to help"
                 )
                 return
-            await channel.set_permissions(
-                member,
-                send_messages=False,
-                view_channel=False,
-                reason=reason,
-            )
+            overwrite = channel.overwrites
+            if member_overwrite := overwrite.get(member):
+                member_overwrite.update(
+                    send_messages=False,
+                    view_channel=False,
+                )
+            else:
+                overwrite[member] = discord.PermissionOverwrite(
+                    send_messages=False,
+                    view_channel=False,
+                )
+            await channel.edit(overwrites=overwrite, reason=reason)
+            # await channel.set_permissions(
+            #     member,
+            #     send_messages=False,
+            #     view_channel=False,
+            #     reason=reason,
+            # )
             if not silent:
                 await destination.send(
                     f"{ctx.author.mention} overwrite permission(s) for **{member}** has been created! **View Channel, and Send Messages** is denied!"
@@ -743,12 +755,24 @@ async def _unblock(
                     f"{ctx.author.mention} {member.name} is already unblocked. They can send message"
                 )
             else:
-                await channel.set_permissions(
-                    member,
-                    send_messages=None,
-                    view_channel=None,
-                    reason=reason,
-                )
+                overwrite = channel.overwrites
+                if member_overwrite := overwrite.get(member):
+                    member_overwrite.update(
+                        send_messages=False,
+                        view_channel=False,
+                    )
+                else:
+                    overwrite[member] = discord.PermissionOverwrite(
+                        send_messages=False,
+                        view_channel=False,
+                    )
+                await channel.edit(overwrites=overwrite, reason=reason)
+                # await channel.set_permissions(
+                #     member,
+                #     send_messages=None,
+                #     view_channel=None,
+                #     reason=reason,
+                # )
             await destination.send(
                 f"{ctx.author.mention} overwrite permission(s) for **{member}** has been deleted!"
             )
@@ -772,9 +796,19 @@ async def _text_lock(
     **kwargs: Any,
 ):
     try:
-        await channel.set_permissions(
-            guild.default_role, send_messages=False, reason=reason
-        )
+        overwrite = channel.overwrites
+        if _overwrite := overwrite.get(guild.deafult_role):
+            _overwrite.update(
+                send_messages=False,
+            )
+        else:
+            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+                send_messages=False,
+            )
+        await channel.edit(overwrites=overwrite, reason=reason)
+        # await channel.set_permissions(
+        #     guild.default_role, send_messages=False, reason=reason
+        # )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
         await destination.send(
@@ -795,7 +829,17 @@ async def _vc_lock(
     if not channel:
         return
     try:
-        await channel.set_permissions(guild.default_role, connect=False, reason=reason)
+        overwrite = channel.overwrites
+        if _overwrite := overwrite.get(guild.deafult_role):
+            _overwrite.update(
+                connect=False
+            )
+        else:
+            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+                connect=False
+            )
+        await channel.edit(overwrites=overwrite, reason=reason)
+        # await channel.set_permissions(guild.default_role, connect=False, reason=reason)
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
         await destination.send(
@@ -817,9 +861,19 @@ async def _text_unlock(
     **kwargs: Any,
 ):
     try:
-        await channel.set_permissions(
-            guild.default_role, send_messages=None, reason=reason
-        )
+        overwrite = channel.overwrites
+        if _overwrite := overwrite.get(guild.deafult_role):
+            _overwrite.update(
+                send_messages=None,
+            )
+        else:
+            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+                send_messages=None,
+            )
+        await channel.edit(overwrites=overwrite, reason=reason)
+        # await channel.set_permissions(
+        #     guild.default_role, send_messages=None, reason=reason
+        # )
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
         await destination.send(
@@ -840,7 +894,17 @@ async def _vc_unlock(
     if not channel:
         return
     try:
-        await channel.set_permissions(guild.default_role, connect=None, reason=reason)
+        overwrite = channel.overwrites
+        if _overwrite := overwrite.get(guild.deafult_role):
+            _overwrite.update(
+                connect=None
+            )
+        else:
+            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+                connect=None
+            )
+        await channel.edit(overwrites=overwrite, reason=reason)
+        # await channel.set_permissions(guild.default_role, connect=None, reason=reason)
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
         await destination.send(
@@ -1130,11 +1194,21 @@ async def _voice_ban(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     try:
-        await channel.set_permissions(
-            member,
-            connect=False,
-            reason=reason,
-        )
+        overwrite = channel.overwrites
+        if member_overwrite := overwrite.get(member):
+            member_overwrite.update(
+                connect=False
+            )
+        else:
+            overwrite[member] = discord.PermissionOverwrite(
+                connect=False
+            )
+        await channel.edit(overwrites=overwrite, reason=reason)
+        # await channel.set_permissions(
+        #     member,
+        #     connect=False,
+        #     reason=reason,
+        # )
         await destination.send(f"{ctx.author.mention} voice banned **{member}**")
     except Exception as e:
         await destination.send(
@@ -1154,11 +1228,21 @@ async def _voice_unban(
     **kwargs: Any,
 ):
     try:
-        await channel.set_permissions(
-            member,
-            reason=reason,
-            connect=None,
-        )
+        overwrite = channel.overwrites
+        if member_overwrite := overwrite.get(member):
+            member_overwrite.update(
+                connect=False
+            )
+        else:
+            overwrite[member] = discord.PermissionOverwrite(
+                connect=False
+            )
+        await channel.edit(overwrites=overwrite, reason=reason)
+        # await channel.set_permissions(
+        #     member,
+        #     reason=reason,
+        #     connect=None,
+        # )
         await destination.send(f"{ctx.author.mention} voice unbanned **{member}**")
     except Exception as e:
         await destination.send(

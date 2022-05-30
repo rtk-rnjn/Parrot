@@ -5,7 +5,7 @@ from typing import Callable, Optional
 from collections.abc import Container, Iterable
 
 from discord.ext import commands
-from discord.ext.commands import (
+from discord.ext.commands import (  # type: ignore
     BucketType,
     Cog,
     Command,

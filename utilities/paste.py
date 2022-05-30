@@ -1,4 +1,6 @@
-import aiohttp
+from __future__ import annotations
+
+import aiohttp  # type: ignore
 import re
 from textwrap import dedent
 from typing import Any, Dict, Optional

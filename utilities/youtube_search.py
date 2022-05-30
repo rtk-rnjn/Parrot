@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import aiohttp
+import aiohttp  # type: ignore
 import urllib.parse
 import json
 

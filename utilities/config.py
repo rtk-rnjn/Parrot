@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict
 import yaml
 import os
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv, dotenv_values  # type: ignore
 
 load_dotenv()
 dotenv_values(".env")

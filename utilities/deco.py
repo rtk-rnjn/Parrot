@@ -12,7 +12,7 @@ from datetime import datetime
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import Command
+from discord.ext.commands import Command  # type: ignore
 from discord import Colour, Embed
 
 from .constants import ERROR_REPLIES, Month, Day

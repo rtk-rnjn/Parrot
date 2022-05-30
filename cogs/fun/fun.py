@@ -1040,7 +1040,8 @@ class Fun(Cog):
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
-                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
+                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower())
+                    > quiz_entry.var_tol
                     for answer in quiz_entry.answers
                 )
 

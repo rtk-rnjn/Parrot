@@ -3,7 +3,9 @@ from __future__ import annotations
 from discord import Embed
 import discord
 
-MEMBER_EMBED: discord.Embed = Embed(title="Moderator Menu", timestamp=discord.utils.utcnow())
+MEMBER_EMBED: discord.Embed = Embed(
+    title="Moderator Menu", timestamp=discord.utils.utcnow()
+)
 MEMBER_EMBED.add_field(name="Ban \N{HAMMER}", value="To ban a member", inline=True)
 MEMBER_EMBED.add_field(
     name="Kick \N{WOMANS BOOTS}", value="To kick a member", inline=True
@@ -39,7 +41,9 @@ MEMBER_EMBED.add_field(
 )
 
 
-TEXT_CHANNEL_EMBED: discord.Embed = Embed(title="Moderator Menu", timestamp=discord.utils.utcnow())
+TEXT_CHANNEL_EMBED: discord.Embed = Embed(
+    title="Moderator Menu", timestamp=discord.utils.utcnow()
+)
 TEXT_CHANNEL_EMBED.add_field(
     name="Lock \N{LOCK}", value="To lock a channel", inline=True
 )
@@ -56,7 +60,9 @@ TEXT_CHANNEL_EMBED.add_field(
 VOICE_CHANNEL_EMBED = TEXT_CHANNEL_EMBED.copy()
 
 
-ROLE_EMBED: discord.Embed = Embed(title="Moderator Menu", timestamp=discord.utils.utcnow())
+ROLE_EMBED: discord.Embed = Embed(
+    title="Moderator Menu", timestamp=discord.utils.utcnow()
+)
 ROLE_EMBED.add_field(
     name="Hoist \N{UPWARDS BLACK ARROW}", value="To hoist a role", inline=True
 )

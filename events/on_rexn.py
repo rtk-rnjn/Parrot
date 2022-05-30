@@ -249,7 +249,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         return True
 
-    async def __on_star_reaction_remove(self, payload: discord.RawReactionActionEvent) -> bool:
+    async def __on_star_reaction_remove(
+        self, payload: discord.RawReactionActionEvent
+    ) -> bool:
         server_config = self.bot.server_config
         ch = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
@@ -285,7 +287,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return True
         return False
 
-    async def __on_star_reaction_add(self, payload: discord.RawReactionActionEvent) -> bool:
+    async def __on_star_reaction_add(
+        self, payload: discord.RawReactionActionEvent
+    ) -> bool:
         data = self.bot.server_config
 
         try:
@@ -325,7 +329,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         return False
 
     @Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]):
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
+    ):
         if (
             str(reaction.emoji)
             in (
@@ -360,7 +366,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self._add_reactor(payload)
 
     @Cog.listener()
-    async def on_reaction_remove(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]):
+    async def on_reaction_remove(
+        self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
+    ):
         if (
             str(reaction.emoji)
             in (
@@ -397,7 +405,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self._remove_reactor(payload)
 
     @Cog.listener()
-    async def on_reaction_clear(self, message: discord.Message, reactions: List[discord.Reaction]):
+    async def on_reaction_clear(
+        self, message: discord.Message, reactions: List[discord.Reaction]
+    ):
         pass
 
     @Cog.listener()
@@ -419,7 +429,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_raw_reaction_clear_emoji(self, payload: discord.RawReactionClearEmojiEvent):
+    async def on_raw_reaction_clear_emoji(
+        self, payload: discord.RawReactionClearEmojiEvent
+    ):
         pass
 
         # if not payload.guild_id:

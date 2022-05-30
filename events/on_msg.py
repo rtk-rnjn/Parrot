@@ -393,7 +393,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     content=content,
                     avatar_url=self.bot.user.avatar.url,
                     username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt") if fp is not None else MISSING,
+                    file=discord.File(fp, filename="content.txt")
+                    if fp is not None
+                    else MISSING,
                 )
 
     @Cog.listener()
@@ -654,7 +656,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
     @Cog.listener()
-    async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
+    async def on_raw_bulk_message_delete(
+        self, payload: discord.RawBulkMessageDeleteEvent
+    ):
         await self.bot.wait_until_ready()
         msg_ids = list(payload.message_ids)
         await self._delete_record_message_to_database(
@@ -968,7 +972,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 `Edited at:` **<t:{int(time())}>**
 `Jump URL :` **<https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id}>**
 """
-                if any((content, payload.cached_message.embeds, payload.cached_message.attachments)):
+                if any(
+                    (
+                        content,
+                        payload.cached_message.embeds,
+                        payload.cached_message.attachments,
+                    )
+                ):
                     fp = io.BytesIO(
                         f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )

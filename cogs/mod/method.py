@@ -831,13 +831,9 @@ async def _vc_lock(
     try:
         overwrite = channel.overwrites
         if _overwrite := overwrite.get(guild.deafult_role):
-            _overwrite.update(
-                connect=False
-            )
+            _overwrite.update(connect=False)
         else:
-            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
-                connect=False
-            )
+            overwrite[guild.deafult_role] = discord.PermissionOverwrite(connect=False)
         await channel.edit(overwrites=overwrite, reason=reason)
         # await channel.set_permissions(guild.default_role, connect=False, reason=reason)
         await destination.send(f"{ctx.author.mention} channel locked.")
@@ -896,13 +892,9 @@ async def _vc_unlock(
     try:
         overwrite = channel.overwrites
         if _overwrite := overwrite.get(guild.deafult_role):
-            _overwrite.update(
-                connect=None
-            )
+            _overwrite.update(connect=None)
         else:
-            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
-                connect=None
-            )
+            overwrite[guild.deafult_role] = discord.PermissionOverwrite(connect=None)
         await channel.edit(overwrites=overwrite, reason=reason)
         # await channel.set_permissions(guild.default_role, connect=None, reason=reason)
         await destination.send(f"{ctx.author.mention} channel unlocked.")
@@ -1196,13 +1188,9 @@ async def _voice_ban(
     try:
         overwrite = channel.overwrites
         if member_overwrite := overwrite.get(member):
-            member_overwrite.update(
-                connect=False
-            )
+            member_overwrite.update(connect=False)
         else:
-            overwrite[member] = discord.PermissionOverwrite(
-                connect=False
-            )
+            overwrite[member] = discord.PermissionOverwrite(connect=False)
         await channel.edit(overwrites=overwrite, reason=reason)
         # await channel.set_permissions(
         #     member,
@@ -1230,13 +1218,9 @@ async def _voice_unban(
     try:
         overwrite = channel.overwrites
         if member_overwrite := overwrite.get(member):
-            member_overwrite.update(
-                connect=False
-            )
+            member_overwrite.update(connect=False)
         else:
-            overwrite[member] = discord.PermissionOverwrite(
-                connect=False
-            )
+            overwrite[member] = discord.PermissionOverwrite(connect=False)
         await channel.edit(overwrites=overwrite, reason=reason)
         # await channel.set_permissions(
         #     member,

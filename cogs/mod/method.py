@@ -797,12 +797,12 @@ async def _text_lock(
 ):
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.deafult_role):
+        if _overwrite := overwrite.get(guild.default_role):
             _overwrite.update(
                 send_messages=False,
             )
         else:
-            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+            overwrite[guild.default_role] = discord.PermissionOverwrite(
                 send_messages=False,
             )
         await channel.edit(overwrites=overwrite, reason=reason)
@@ -830,12 +830,12 @@ async def _vc_lock(
         return
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.deafult_role):
+        if _overwrite := overwrite.get(guild.default_role):
             _overwrite.update(
                 connect=False
             )
         else:
-            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+            overwrite[guild.default_role] = discord.PermissionOverwrite(
                 connect=False
             )
         await channel.edit(overwrites=overwrite, reason=reason)
@@ -862,12 +862,12 @@ async def _text_unlock(
 ):
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.deafult_role):
+        if _overwrite := overwrite.get(guild.default_role):
             _overwrite.update(
                 send_messages=None,
             )
         else:
-            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+            overwrite[guild.default_role] = discord.PermissionOverwrite(
                 send_messages=None,
             )
         await channel.edit(overwrites=overwrite, reason=reason)
@@ -895,12 +895,12 @@ async def _vc_unlock(
         return
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.deafult_role):
+        if _overwrite := overwrite.get(guild.default_role):
             _overwrite.update(
                 connect=None
             )
         else:
-            overwrite[guild.deafult_role] = discord.PermissionOverwrite(
+            overwrite[guild.default_role] = discord.PermissionOverwrite(
                 connect=None
             )
         await channel.edit(overwrites=overwrite, reason=reason)

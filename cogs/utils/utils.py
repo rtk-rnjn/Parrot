@@ -186,7 +186,9 @@ class Utils(Cog):
 
     @remindme.command(name="loop")
     @Context.with_type
-    async def remindmeloop(self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None):
+    async def remindmeloop(
+        self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
+    ):
         """Same as remind me but you will get reminder on every given time.
 
         `$remind loop 1d To vote the bot`
@@ -195,7 +197,9 @@ class Utils(Cog):
         seconds = age.dt.timestamp()
         now = discord.utils.utcnow().timestamp()
         if seconds - now <= 300:
-            return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
+            return await ctx.reply(
+                f"{ctx.author.mention} You can't set reminder for less than 5 minutes"
+            )
 
         post = {
             "_id": ctx.message.id,

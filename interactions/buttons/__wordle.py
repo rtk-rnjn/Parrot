@@ -108,11 +108,12 @@ class Wordle:
                     len(m.content) == 5
                     and m.author == ctx.author
                     and m.channel == ctx.channel
-                ) or (
-                    m.content.lower() == "quit"
-                )
+                ) or (m.content.lower() == "quit")
+
             try:
-                guess: discord.Message = await ctx.bot.wait_for("message", check=check, timeout=900)
+                guess: discord.Message = await ctx.bot.wait_for(
+                    "message", check=check, timeout=900
+                )
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long to guess the word!")
             content = guess.content.lower()

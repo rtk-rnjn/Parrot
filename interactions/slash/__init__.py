@@ -17,17 +17,21 @@ class ContextMenu(Cog):
             name="Interpret as command",
             # description="Interpret the message as a command.",
             guild_ids=[guild.id for guild in self.bot.guilds],
-            callback=self.ctx_menu
+            callback=self.ctx_menu,
         )
         self.bot.tree.add_command(self.ctx_menu)
 
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu)
 
-    async def ctx_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
+    async def ctx_menu(
+        self, interaction: discord.Interaction, message: discord.Message
+    ) -> None:
         # await interaction.response.defer(thinking=False)
-        
-        await interaction.response.send_message(f"{interaction.user.mention} processing...", ephemeral=True)
+
+        await interaction.response.send_message(
+            f"{interaction.user.mention} processing...", ephemeral=True
+        )
         prefix = await self.bot.get_guild_prefixes(message.guild)
         if message.content.startswith(prefix):
             await interaction.edit_original_message(
@@ -41,7 +45,12 @@ class ContextMenu(Cog):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def sync(self, ctx: Context, guilds: commands.Greedy[discord.Object], spec: Optional[Literal["~", "*"]] = None) -> None:
+    async def sync(
+        self,
+        ctx: Context,
+        guilds: commands.Greedy[discord.Object],
+        spec: Optional[Literal["~", "*"]] = None,
+    ) -> None:
         if not guilds:
             if spec == "~":
                 fmt = await ctx.bot.tree.sync(guild=ctx.guild)
@@ -65,7 +74,9 @@ class ContextMenu(Cog):
             else:
                 fmt += 1
 
-        await ctx.send(f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds.")
+        await ctx.send(
+            f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds."
+        )
 
 
 async def setup(bot: Parrot) -> None:

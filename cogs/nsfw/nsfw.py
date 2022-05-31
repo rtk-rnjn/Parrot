@@ -45,7 +45,7 @@ class NSFW(Cog):
 
             self.bot.add_command(callback)
 
-    @commands.command(aliases=["randnsfw"])
+    @commands.command(aliases=["randnsfw"], hidden=True)
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
@@ -74,7 +74,7 @@ class NSFW(Cog):
 
         await ctx.reply(embed=em)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type

@@ -23,7 +23,7 @@ PRIDE_RESOURCE = json.loads(Path(r"extra/pride/prideleader.json").read_text("utf
 MINIMUM_FUZZ_RATIO = 40
 
 
-class Pride(Cog):
+class Pride(Cog, command_attrs=dict(hidden=True)):
     """PRIDE PRIDE PRIDE!"""
 
     def __init__(self, bot: Parrot):

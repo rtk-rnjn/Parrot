@@ -54,3 +54,7 @@ async def cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         "batting": await get_batting(soup),
         "bowling": await get_bowling(soup),
     }
+
+
+def runner() -> None:
+    uvicorn.run(app, port=1729, debug=False)

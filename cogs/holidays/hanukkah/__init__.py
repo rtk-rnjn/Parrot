@@ -16,7 +16,7 @@ HEBCAL_URL = (
 )
 
 
-class Hanukkah(Cog):
+class Hanukkah(Cog, command_attrs=dict(hidden=True)):
     """A cog that returns information about Hanukkah festival."""
 
     def __init__(self, bot: Parrot):

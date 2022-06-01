@@ -83,7 +83,7 @@ def suppress_links(message: str) -> str:
     return message
 
 
-class Easter(Cog):
+class Easter(Cog, command_attrs=dict(hidden=True)):
     """A cog for April"""
 
     def __init__(self, bot: Parrot):

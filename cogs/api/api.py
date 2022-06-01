@@ -43,7 +43,7 @@ def validate_token(token: str) -> bool:
         return True
 
 
-class Gist(Cog):
+class Gist(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self._req_lock = asyncio.Lock(loop=self.bot.loop)

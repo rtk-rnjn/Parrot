@@ -22,7 +22,7 @@ import discord
 from aiohttp import ClientSession  # type: ignore
 from collections import Counter, deque, defaultdict
 
-from discord.ext import commands, tasks
+from discord.ext import commands, tasks, ipc
 from discord import app_commands
 
 from lru import LRU
@@ -119,7 +119,9 @@ class Parrot(commands.AutoShardedBot):
         self.afk = set()
 
         self.opts: Dict[str, Any] = {}
-        self.func = func
+        self.func: Callable = func
+
+        self.ipc = ipc.Server(self, "localhost", 1730, os.environ["IPC_KEY"], True)
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -163,10 +165,11 @@ class Parrot(commands.AutoShardedBot):
         return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}"  # cant join str and int, ofc
 
     async def setup_hook(self):
+        await self.ipc.start()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
-                print(f"{ext} loaded successfully")
+                print(f"[{self.user.name.title()}] {ext} loaded successfully")
             except Exception as e:
                 traceback.print_exc()
 

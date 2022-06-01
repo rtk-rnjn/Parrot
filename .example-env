@@ -63,3 +63,6 @@ BEARER=""
 # https://cloud.ibm.com/apidocs
 IBM_KEY=""
 IBM_END_POINT=""
+
+# Internal IPC
+IPC_KEY = ""

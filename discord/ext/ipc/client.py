@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 
-import aiohttp
+import aiohttp  # type: ignore
 from discord.ext.ipc.errors import NotConnected
 
 log = logging.getLogger(__name__)
@@ -21,8 +23,8 @@ class Client:
     """
 
     def __init__(
-        self, host="localhost", port=None, multicast_port=20000, secret_key=None
-    ):
+        self, host: str="localhost", port: int=1730, multicast_port: int=20000, secret_key: str=None
+    ) -> None:
         """Constructor"""
         self.loop = asyncio.get_event_loop()
 
@@ -39,7 +41,7 @@ class Client:
         self.multicast_port = multicast_port
 
     @property
-    def url(self):
+    def url(self) -> str:
         return "ws://{0.host}:{1}".format(
             self, self.port if self.port else self.multicast_port
         )

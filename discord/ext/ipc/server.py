@@ -1,12 +1,17 @@
-import logging
+from __future__ import annotations
 
-import aiohttp.web
+import logging
+from typing import Any, Callable, Dict, Optional
+
+import aiohttp.web  # type: ignore
 from discord.ext.ipc.errors import JSONEncodeError
+
+from core import Parrot
 
 log = logging.getLogger(__name__)
 
 
-def route(name=None):
+def route(name: Optional[str]=None) -> Callable:
     """
     Used to register a coroutine as an endpoint when you don't have
     access to an instance of :class:`.Server`
@@ -29,22 +34,49 @@ def route(name=None):
 
 
 class IpcServerResponse:
-    def __init__(self, data):
+    def __init__(self, data: Dict[str, Any]) -> None:
         self._json = data
         self.length = len(data)
 
         self.endpoint = data["endpoint"]
 
-        for key, value in data["data"].items():
-            setattr(self, key, value)
+        self.__refresh()
 
-    def to_json(self):
+    def __refresh(self) -> None:
+        for key, value in self._json["data"].items():
+            setattr(self, key, value)
+    
+    def __getitem__(self, key: Any) -> Any:
+        data = self._json.__getitem__(key)
+        self.__refresh()
+        return data
+
+    def __contains__(self, k: Any) -> bool:
+        return self._json.__contains__(k)
+
+    def __delitem__(self, k: Any):
+        self._json.__delitem__(k)
+        self.__refresh()
+    
+    def get(self, k: Any, default: Any=None) -> Any:
+        return self._json.get(k, default)
+    
+    def pop(self, k: Any, default: Any=None) -> Any:
+        data = self._json.pop(k, default)
+        self.__refresh()
+        return data
+
+    def __setitem__(self, k: Any, v: Any) -> None:
+        self._json(k, v)
+        self.__refresh()
+
+    def to_json(self) -> Dict[str, Any]:
         return self._json
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<IpcServerResponse length={0.length}>".format(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__repr__()
 
 
@@ -72,11 +104,11 @@ class Server:
 
     def __init__(
         self,
-        bot,
-        host="localhost",
-        port=8765,
-        secret_key=None,
-        do_multicast=True,
+        bot: Parrot,
+        host: str="localhost",
+        port: int=1730,
+        secret_key: Optional[str]=None,
+        do_multicast: bool=True,
         multicast_port=20000,
     ):
         self.bot = bot
@@ -93,7 +125,7 @@ class Server:
         self.do_multicast = do_multicast
         self.multicast_port = multicast_port
 
-        self.endpoints = {}
+        self.endpoints: Dict[str, Callable] = {}
 
     def route(self, name=None):
         """Used to register a coroutine as an endpoint when you have

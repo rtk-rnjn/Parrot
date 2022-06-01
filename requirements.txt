@@ -16,6 +16,9 @@ motor
 aiofile
 tabulate
 lru_dict
+fastapi
+uvicorn
+requests
 python-dateutil
 click
 parsedatetime

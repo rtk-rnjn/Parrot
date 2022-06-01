@@ -121,7 +121,9 @@ class Parrot(commands.AutoShardedBot):
         self.opts: Dict[str, Any] = {}
         self.func: Callable = func
 
+        # IPC
         self.ipc = ipc.Server(self, "localhost", 1730, os.environ["IPC_KEY"], True)
+        self.ipc_client = ipc.Client("localhost", 1730, os.environ["IPC_KEY"])
 
     def __repr__(self):
         return f"<core.{self.user.name}>"

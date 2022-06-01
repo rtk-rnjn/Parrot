@@ -45,6 +45,7 @@ extensions:
   - cogs.api
   - events.custom_events
   - cogs.hidden
+  - cogs.ipc
   - cogs.wolfram
 invite: >-
   https://discord.com/oauth2/authorize?client_id=800780974274248764&scope=bot+applications.commands&permissions=1099780451414

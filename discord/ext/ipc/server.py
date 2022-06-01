@@ -104,6 +104,7 @@ class Server:
 
     def __init__(
         self,
+        *,
         bot: Parrot,
         host: str = "localhost",
         port: int = 1730,

@@ -9,5 +9,5 @@ class IPCRoutes(Cog):
         self.bot = bot
 
     @server.route()
-    async def pint(self, data: server.IpcServerResponse) -> None:
+    async def ping(self, data: server.IpcServerResponse) -> None:
         return data

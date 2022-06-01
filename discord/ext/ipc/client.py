@@ -24,6 +24,7 @@ class Client:
 
     def __init__(
         self,
+        *,
         host: str = "localhost",
         port: int = 1730,
         multicast_port: int = 20000,

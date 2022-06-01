@@ -122,8 +122,17 @@ class Parrot(commands.AutoShardedBot):
         self.func: Callable = func
 
         # IPC
-        self.ipc = ipc.Server(self, "localhost", 1730, os.environ["IPC_KEY"], True)
-        self.ipc_client = ipc.Client("localhost", 1730, os.environ["IPC_KEY"])
+        self.ipc = ipc.Server(
+            bot=self,
+            host="localhost",
+            port=1730,
+            secret_key=os.environ["IPC_KEY"],
+        )
+        self.ipc_client = ipc.Client(
+            host="localhost",
+            port=1730,
+            secret_key=os.environ["IPC_KEY"],
+        )
 
     def __repr__(self):
         return f"<core.{self.user.name}>"

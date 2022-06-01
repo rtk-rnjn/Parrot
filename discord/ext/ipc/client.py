@@ -23,7 +23,11 @@ class Client:
     """
 
     def __init__(
-        self, host: str="localhost", port: int=1730, multicast_port: int=20000, secret_key: str=None
+        self,
+        host: str = "localhost",
+        port: int = 1730,
+        multicast_port: int = 20000,
+        secret_key: str = None,
     ) -> None:
         """Constructor"""
         self.loop = asyncio.get_event_loop()

@@ -11,7 +11,7 @@ from core import Parrot
 log = logging.getLogger(__name__)
 
 
-def route(name: Optional[str]=None) -> Callable:
+def route(name: Optional[str] = None) -> Callable:
     """
     Used to register a coroutine as an endpoint when you don't have
     access to an instance of :class:`.Server`
@@ -45,7 +45,7 @@ class IpcServerResponse:
     def __refresh(self) -> None:
         for key, value in self._json["data"].items():
             setattr(self, key, value)
-    
+
     def __getitem__(self, key: Any) -> Any:
         data = self._json.__getitem__(key)
         self.__refresh()
@@ -57,11 +57,11 @@ class IpcServerResponse:
     def __delitem__(self, k: Any):
         self._json.__delitem__(k)
         self.__refresh()
-    
-    def get(self, k: Any, default: Any=None) -> Any:
+
+    def get(self, k: Any, default: Any = None) -> Any:
         return self._json.get(k, default)
-    
-    def pop(self, k: Any, default: Any=None) -> Any:
+
+    def pop(self, k: Any, default: Any = None) -> Any:
         data = self._json.pop(k, default)
         self.__refresh()
         return data
@@ -105,10 +105,10 @@ class Server:
     def __init__(
         self,
         bot: Parrot,
-        host: str="localhost",
-        port: int=1730,
-        secret_key: Optional[str]=None,
-        do_multicast: bool=True,
+        host: str = "localhost",
+        port: int = 1730,
+        secret_key: Optional[str] = None,
+        do_multicast: bool = True,
         multicast_port=20000,
     ):
         self.bot = bot

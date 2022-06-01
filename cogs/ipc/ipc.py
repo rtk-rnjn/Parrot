@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 from core import Parrot, Cog
 from discord.ext.ipc import server
@@ -9,5 +10,5 @@ class IPCRoutes(Cog):
         self.bot = bot
 
     @server.route()
-    async def ping(self, data: server.IpcServerResponse) -> None:
-        return data
+    async def ping(self, data: server.IpcServerResponse) -> Any:
+        return str(data)

@@ -40,9 +40,7 @@ def parse_text(st: str) -> str:
 
 
 @ToAsync()
-def find_one(
-    soup: BeautifulSoup, name: str, **kwargs: Any
-) -> Optional[str]:
+def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[str]:
 
     if finder := soup.find(name, kwargs):
         return __parse_text(finder.text)
@@ -51,9 +49,7 @@ def find_one(
 
 
 @ToAsync()
-def find_all(
-    soup: BeautifulSoup, name: str, **kwargs: Any
-) -> Optional[List[str]]:
+def find_all(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[List[str]]:
     if finder := soup.find_all(name, kwargs):
         return [__parse_text(i.text) for i in finder]
 
@@ -68,11 +64,8 @@ def parse_url(html: str) -> BeautifulSoup:
 @ToAsync()
 def get_batting(soup: BeautifulSoup) -> Dict[str, Any]:
     data = [
-        [
-            __parse_text(i.text) for i in mini_table.find_all("td")
-        ] for mini_table in soup.find_all(
-                    "table", {"class": "table table-condensed"}
-                )
+        [__parse_text(i.text) for i in mini_table.find_all("td")]
+        for mini_table in soup.find_all("table", {"class": "table table-condensed"})
     ]
     if not data:
         return {}
@@ -82,11 +75,8 @@ def get_batting(soup: BeautifulSoup) -> Dict[str, Any]:
 @ToAsync()
 def get_bowling(soup: BeautifulSoup) -> Dict[str, Any]:
     data = [
-        [
-            __parse_text(i.text) for i in mini_table.find_all("td")
-        ] for mini_table in soup.find_all(
-                    "table", {"class": "table table-condensed"}
-                )
+        [__parse_text(i.text) for i in mini_table.find_all("td")]
+        for mini_table in soup.find_all("table", {"class": "table table-condensed"})
     ]
     if not data:
         return {}

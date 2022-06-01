@@ -29,7 +29,9 @@ async def cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
     async with aiohttp.ClientSession() as session:
         response = await session.get(url, headers={"User-Agent": random.choice(AGENTS)})
         if response.status != 200:
-            raise HTTPException(status_code=400, detail=f"Invalid URL - Status Code: {response.status}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid URL - Status Code: {response.status}"
+            )
 
         html = await response.text()
 
@@ -37,34 +39,18 @@ async def cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
 
     return {
         "success": True,
-        "title": await find_one(
-            soup, "h4", **{"class": "cb-list-item"}
-        ),
-        "status": await find_one(
-            soup, "div", **{"class": "cbz-ui-status"}
-        ),
-        "team_one": await find_one(
-            soup, "span", **{"class": "ui-bowl-team-scores"}
-        ),
-        "team_two": await find_one(
-            soup, "span", **{"class": "ui-bat-team-scores"}
-        ),
-        "crr": await find_all(
-            soup, "span", **{"class": "crr"}
-        ),
+        "title": await find_one(soup, "h4", **{"class": "cb-list-item"}),
+        "status": await find_one(soup, "div", **{"class": "cbz-ui-status"}),
+        "team_one": await find_one(soup, "span", **{"class": "ui-bowl-team-scores"}),
+        "team_two": await find_one(soup, "span", **{"class": "ui-bat-team-scores"}),
+        "crr": await find_all(soup, "span", **{"class": "crr"}),
         "extra": list(
             zip(
-                await find_all(
-                    soup, "span", **{"style": "color:#777;"}
-                ),
-                await find_all(
-                    soup, "span", **{"style": "color:#333"}
-                )
+                await find_all(soup, "span", **{"style": "color:#777;"}),
+                await find_all(soup, "span", **{"style": "color:#333"}),
             )
         ),
-        "commentry": await find_all(
-            soup, "p", **{"class": "commtext"}
-        ),
+        "commentry": await find_all(soup, "p", **{"class": "commtext"}),
         "batting": await get_batting(soup),
-        "bowling": await get_bowling(soup)
+        "bowling": await get_bowling(soup),
     }

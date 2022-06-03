@@ -206,7 +206,8 @@ class IPCRoutes(Cog):
         }
 
     @server.route()
-    async def announce_global(self, data: server.IpcServerResponse) -> None:
+    async def announce_global(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
+        MESSAGES = []
         async for webhook in self.bot.mongo.parrot_db.global_chat.find(
             {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
         ):
@@ -228,11 +229,13 @@ class IPCRoutes(Cog):
                         {"webhook": hook}
                     )  # all hooks are unique
                 except discord.HTTPException:
-                    return
+                    pass
                 else:
-                    if msg is not None:
-                        return {
+                    MESSAGES.append(
+                        {
                             "jump_url": msg.jump_url,
                             "clean_content": msg.clean_content,
                             "created_at": msg.created_at.isoformat(),
                         }
+                    )
+        return MESSAGES

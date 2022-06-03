@@ -222,7 +222,7 @@ class IPCRoutes(Cog):
                         username=f"{data.author_name}#{data.discriminator}",
                         avatar_url=data.avatar_url,
                         allowed_mentions=discord.AllowedMentions.none(),
-                        wait=True
+                        wait=True,
                     )
                 except discord.NotFound:
                     await self.bot.mongo.parrot_db.global_chat.delete_one(

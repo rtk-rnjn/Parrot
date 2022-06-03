@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 from typing import Any, Dict, List
 
 from core import Parrot, Cog
@@ -203,3 +204,31 @@ class IPCRoutes(Cog):
             "content": message.content,
             "embeds": [embed.to_dict() for embed in message.embeds],
         }
+
+    @server.route()
+    async def announce_global(self, data: server.IpcServerResponse) -> None:
+        async for webhook in self.bot.mongo.parrot_db.global_chat.find(
+            {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
+        ):
+            hook = webhook["webhook"]
+            if hook:
+                try:
+                    webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                    msg = await webhook.send(
+                        content=data.content[:1990],
+                        username=f"{data.author_name}#{data.discriminator}",
+                        avatar_url=data.avatar_url,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
+                except discord.NotFound:
+                    await self.bot.mongo.parrot_db.global_chat.delete_one(
+                        {"webhook": hook}
+                    )  # all hooks are unique
+                except discord.HTTPException:
+                    return
+                else:
+                    return {
+                        "jump_url": msg.jump_url,
+                        "clean_content": msg.clean_content,
+                        "created_at": msg.created_at.isoformat(),
+                    }

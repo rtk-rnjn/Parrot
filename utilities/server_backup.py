@@ -49,8 +49,7 @@ class Backup:
     def __dict__(self) -> Dict[str, Any]:
         return self.data
 
-    @staticmethod
-    def _overwrite_to_json(overwrites) -> Dict[str, Any]:
+    def _overwrite_to_json(self, overwrites) -> Dict[str, Any]:
         try:
             return {
                 str(target.id): overwrite._values
@@ -85,7 +84,7 @@ class Backup:
                         if tchannel.category is None
                         else str(tchannel.category.id),
                         "id": str(tchannel.id),
-                        "overwrites": self._overwrites_to_json(tchannel.overwrites),
+                        "overwrites": self._overwrite_to_json(tchannel.overwrites),
                         "topic": tchannel.topic,
                         "slowmode_delay": tchannel.slowmode_delay,
                         "nsfw": tchannel.is_nsfw(),
@@ -116,7 +115,7 @@ class Backup:
                         "category": None
                         if vchannel.category is None
                         else str(vchannel.category.id),
-                        "overwrites": self._overwrites_to_json(vchannel.overwrites),
+                        "overwrites": self._overwrite_to_json(vchannel.overwrites),
                         "bitrate": vchannel.bitrate,
                         "user_limit": vchannel.user_limit,
                         "rtc_region": str(vchannel.rtc_region),
@@ -137,7 +136,7 @@ class Backup:
                         "category": None
                         if schannel.category is None
                         else str(schannel.category.id),
-                        "overwrites": self._overwrites_to_json(schannel.overwrites),
+                        "overwrites": self._overwrite_to_json(schannel.overwrites),
                         "bitrate": schannel.bitrate,
                         "user_limit": schannel.user_limit,
                         "rtc_region": str(schannel.rtc_region),

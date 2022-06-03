@@ -30,5 +30,6 @@ class IPCRoutes(Cog):
         update = data.update
         upsert = data.upsert
 
-        return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
-    
+        return await self.bot.mongo[db][collection].update_one(
+            query, update, upsert=upsert
+        )

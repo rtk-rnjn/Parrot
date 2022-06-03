@@ -42,8 +42,10 @@ class IPCRoutes(Cog):
         update = getattr(data, "update", {})
         upsert = getattr(data, "upsert", False)
 
-        return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
-    
+        return await self.bot.mongo[db][collection].update_one(
+            query, update, upsert=upsert
+        )
+
     @server.route()
     async def commands(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
         if name := getattr(data, "name", None):
@@ -60,9 +62,10 @@ class IPCRoutes(Cog):
                 "enabled": command.enabled,
                 "hidden": command.hidden,
                 "cog": command.cog_name,
-            } for command in cmds
+            }
+            for command in cmds
         ]
-    
+
     @server.route()
     async def guilds(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
         if _id := getattr(data, "id", None):
@@ -81,7 +84,9 @@ class IPCRoutes(Cog):
                     "name": guild.owner.name,
                     "discriminator": guild.owner.discriminator,
                     "avatar_url": guild.owner.display_avatar.url,
-                } if guild.owner is not None else {},
+                }
+                if guild.owner is not None
+                else {},
                 "icon_url": guild.icon.url if guild.icon is not None else None,
                 "member_count": guild.member_count,
                 "channels": [
@@ -91,7 +96,8 @@ class IPCRoutes(Cog):
                         "type": str(channel.type),
                         "position": channel.position,
                         "overwrites": self._overwrite_to_json(channel.overwrites),
-                    } for channel in guild.channels
+                    }
+                    for channel in guild.channels
                 ],
                 "roles": [
                     {
@@ -103,7 +109,8 @@ class IPCRoutes(Cog):
                         "managed": role.managed,
                         "hoist": role.hoist,
                         "mentionable": role.mentionable,
-                    } for role in guild.roles
+                    }
+                    for role in guild.roles
                 ],
                 "members": [
                     {
@@ -117,7 +124,8 @@ class IPCRoutes(Cog):
                         "display_name": member.display_name,
                         "nick": member.nick,
                         "color": member.color.value,
-                    } for member in guild.members
+                    }
+                    for member in guild.members
                 ],
                 "emojis": [
                     {
@@ -129,7 +137,8 @@ class IPCRoutes(Cog):
                         "managed": emoji.managed,
                         "animated": emoji.animated,
                         "available": emoji.available,
-                    } for emoji in guild.emojis
+                    }
+                    for emoji in guild.emojis
                 ],
                 "threads": [
                     {
@@ -141,20 +150,28 @@ class IPCRoutes(Cog):
                         "slowmod_delay": thread.slowmod_delay,
                         "archived": thread.archived,
                         "locked": thread.locked,
-                    } for thread in guild.threads
-                ]
-            } for guild in guilds
+                    }
+                    for thread in guild.threads
+                ],
+            }
+            for guild in guilds
         ]
 
     @server.route()
     async def users(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
-        elif (name := getattr(data, "name", None)) and (discriminator := getattr(data, "discriminator", None)):
-            users = [discord.utils.get(self.bot.users, name=name, discriminator=discriminator)]
+        elif (name := getattr(data, "name", None)) and (
+            discriminator := getattr(data, "discriminator", None)
+        ):
+            users = [
+                discord.utils.get(
+                    self.bot.users, name=name, discriminator=discriminator
+                )
+            ]
         else:
             users = self.bot.users
-        
+
         return [
             {
                 "id": user.id,
@@ -164,7 +181,8 @@ class IPCRoutes(Cog):
                 "bot": user.bot,
                 "created_at": user.created_at.isoformat(),
                 "system": user.system,
-            } for user in users
+            }
+            for user in users
         ]
 
     @server.route()
@@ -183,7 +201,5 @@ class IPCRoutes(Cog):
                 "system": message.author.system,
             },
             "content": message.content,
-            "embeds": [
-                embed.to_dict() for embed in message.embeds
-            ]
+            "embeds": [embed.to_dict() for embed in message.embeds],
         }

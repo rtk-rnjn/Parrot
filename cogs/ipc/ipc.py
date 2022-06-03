@@ -10,5 +10,5 @@ class IPCRoutes(Cog):
         self.bot = bot
 
     @server.route()
-    async def ping(self, data: server.IpcServerResponse) -> Any:
-        return str(data)
+    async def echo(self, data: server.IpcServerResponse) -> Any:
+        return data.to_json()

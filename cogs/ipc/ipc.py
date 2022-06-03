@@ -206,7 +206,9 @@ class IPCRoutes(Cog):
         }
 
     @server.route()
-    async def announce_global(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
+    async def announce_global(
+        self, data: server.IpcServerResponse
+    ) -> List[Dict[str, str]]:
         MESSAGES = []
         async for webhook in self.bot.mongo.parrot_db.global_chat.find(
             {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}

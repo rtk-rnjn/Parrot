@@ -213,7 +213,9 @@ class IPCRoutes(Cog):
             hook = webhook["webhook"]
             if hook:
                 try:
-                    webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                    webhook = discord.Webhook.from_url(
+                        f"{hook}", session=self.bot.http_session
+                    )
                     msg = await webhook.send(
                         content=data.content[:1990],
                         username=f"{data.author_name}#{data.discriminator}",

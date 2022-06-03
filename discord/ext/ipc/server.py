@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 import aiohttp.web  # type: ignore
 from discord.ext.ipc.errors import JSONEncodeError
@@ -58,6 +58,10 @@ class IpcServerResponse:
         self._json.__delitem__(k)
         self.__refresh()
 
+    def __iter__(self) -> Iterable[Tuple[str, Any]]:
+        for k, v in self._json["data"].items():
+            yield (k, v)
+
     def get(self, k: Any, default: Any = None) -> Any:
         return self._json.get(k, default)
 
@@ -71,10 +75,13 @@ class IpcServerResponse:
         self.__refresh()
 
     def to_json(self) -> Dict[str, Any]:
-        return self._json
+        return self._json.get("data", {})
 
     def __repr__(self) -> str:
-        return "<IpcServerResponse length={0.length}>".format(self)
+        return (
+            f"<IpcServerResponse length={self.length} {' '.join(f'{k}={v}' for k, v in self._json.items())} "
+            f"endpoint={self.to_json()['endpoint']}>"
+        )
 
     def __str__(self) -> str:
         return self.__repr__()

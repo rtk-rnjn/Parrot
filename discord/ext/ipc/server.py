@@ -79,7 +79,7 @@ class IpcServerResponse:
 
     def __repr__(self) -> str:
         return (
-            f"<IpcServerResponse length={self.length} {' '.join(f'{k}={v}' for k, v in self._json.items())} "
+            f"<IpcServerResponse length={self.length} {' '.join(f'{k}={v}' for k, v in self._json['data'].items())} "
             f"endpoint={self.to_json()['endpoint']}>"
         )
 

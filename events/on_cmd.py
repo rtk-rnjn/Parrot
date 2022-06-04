@@ -290,12 +290,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-        
+
         if isinstance(error, asyncio.TimeoutError):
             ERROR_EMBED.description = "Command took too long to respond"
             ERROR_EMBED.title = f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-            
+
         ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
         ERROR_EMBED.title = (
             f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"

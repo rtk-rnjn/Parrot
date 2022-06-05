@@ -28,22 +28,24 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     async def guild_join(self, guild_id: int):
         collection = self.bot.mongo.parrot_db["global_chat"]
-        await collection.insert_one(POST)
+        _post = POST.copy()
+        _post["_id"] = guild_id
+        await collection.insert_one(_post)
 
         collection = self.bot.mongo.parrot_db["telephone"]
         post = {
-            "_id": guild_id,
             "channel": None,
             "pingrole": None,
             "is_line_busy": False,
             "memberping": None,
             "blocked": [],
         }
-        await collection.insert_one(post)
+        await collection.update_one(
+            {"_id": guild_id}, {"$set": post}, upsert=True
+        )
 
         collection = self.bot.mongo.parrot_db["ticket"]
         post = {
-            "_id": guild_id,
             "ticket_counter": 0,
             "valid_roles": [],
             "pinged_roles": [],
@@ -54,7 +56,9 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
             "category": None,
             "channel_id": None,
         }
-        await collection.insert_one(post)
+        await collection.update_one(
+            {"_id": guild_id}, {"$set": post}, upsert=True
+        )
 
     async def guild_remove(self, guild_id: int):
         collection = self.bot.mongo.parrot_db["server_config"]

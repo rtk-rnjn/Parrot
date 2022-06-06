@@ -27,10 +27,10 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
             return await guild.leave()
 
     async def guild_join(self, guild_id: int):
-        collection = self.bot.mongo.parrot_db["global_chat"]
-        _post = POST.copy()
-        _post["_id"] = guild_id
-        await collection.insert_one(_post)
+        # collection = self.bot.mongo.parrot_db["global_chat"]
+        # _post = POST.copy()
+        # _post["_id"] = guild_id
+        # await collection.insert_one(_post)
 
         collection = self.bot.mongo.parrot_db["telephone"]
         post = {

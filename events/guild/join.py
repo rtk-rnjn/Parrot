@@ -40,9 +40,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
             "memberping": None,
             "blocked": [],
         }
-        await collection.update_one(
-            {"_id": guild_id}, {"$set": post}, upsert=True
-        )
+        await collection.update_one({"_id": guild_id}, {"$set": post}, upsert=True)
 
         collection = self.bot.mongo.parrot_db["ticket"]
         post = {
@@ -56,9 +54,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
             "category": None,
             "channel_id": None,
         }
-        await collection.update_one(
-            {"_id": guild_id}, {"$set": post}, upsert=True
-        )
+        await collection.update_one({"_id": guild_id}, {"$set": post}, upsert=True)
 
     async def guild_remove(self, guild_id: int):
         collection = self.bot.mongo.parrot_db["server_config"]

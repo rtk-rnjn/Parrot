@@ -91,7 +91,7 @@ class Hidden(Cog):
         """
         This is called when a command is completed.
         """
-        if ctx.command.cog is None:
+        if ctx.cog is None:
             return
 
         if ctx.command.cog.qualified_name.lower() == "hidden":

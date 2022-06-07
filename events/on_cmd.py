@@ -63,8 +63,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):
         """Only for logging"""
-        if ctx.command.cog is None:
+        if ctx.cog is None:
             return
+
         if ctx.cog.qualified_name.lower() == "moderator":
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_mod_commands": {"$exists": True}}

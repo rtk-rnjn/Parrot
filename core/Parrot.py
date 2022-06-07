@@ -19,6 +19,7 @@ import datetime
 import asyncio
 import re
 import discord
+import pymongo
 from aiohttp import ClientSession  # type: ignore
 from collections import Counter, deque, defaultdict
 
@@ -509,7 +510,10 @@ class Parrot(commands.AutoShardedBot):
                 FAKE_POST = POST
                 FAKE_POST["_id"] = message.guild.id
                 prefix = "$"  # default prefix
-                await self.mongo.parrot_db.server_config.insert_one(FAKE_POST)
+                try:
+                    await self.mongo.parrot_db.server_config.insert_one(FAKE_POST)
+                except pymongo.errors.DuplicateKeyError:
+                    return commands.when_mentioned_or("$")(self, message)
                 self.server_config[message.guild.id] = FAKE_POST
 
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)

@@ -750,7 +750,7 @@ class Meta(Cog):
         embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
         if target.banner:
             embed.set_image(url=target.banner.url)
-        await ctx.reply(embed=embed)
+        await ctx.reply(ctx.author.mention, embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)

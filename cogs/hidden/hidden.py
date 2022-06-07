@@ -91,5 +91,8 @@ class Hidden(Cog):
         """
         This is called when a command is completed.
         """
+        if ctx.command.cog is None:
+            return
+
         if ctx.command.cog.qualified_name.lower() == "hidden":
             await self.bot.update_opt_in_out.start()

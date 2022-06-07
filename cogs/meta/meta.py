@@ -594,7 +594,7 @@ class Meta(Cog):
         if ctx.guild.me.guild_permissions.ban_members:
             embed.add_field(
                 name="Banned Members",
-                value=f"{len(await ctx.guild.bans())}",
+                value=f"{len([_ async for _ in ctx.guild.bans(limit=1000)])}+",
                 inline=True,
             )
         if ctx.guild.me.guild_permissions.manage_guild:

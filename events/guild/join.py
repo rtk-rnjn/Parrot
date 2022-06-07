@@ -13,7 +13,7 @@ BASE_URL = f"https://discord.com/api/webhooks/{CHANNEL_ID}/"
 
 
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.url = BASE_URL + os.environ["CHANNEL_TOKEN1"]
         self.collection = bot.mongo.parrot_db["server_config"]

@@ -12,7 +12,7 @@ akinator.py
 opuslib
 git+https://github.com/mongodb/mongo-python-driver
 dnspython
-git+https://github.com/mongodb/motor
+git+https://github.com/mongodb/motor.git
 aiofile
 tabulate
 lru_dict

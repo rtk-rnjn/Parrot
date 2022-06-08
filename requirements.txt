@@ -4,7 +4,7 @@ humanize
 markdownify
 psutil
 async_timeout
-jishaku
+git+https://github.com/Gorialis/jishaku
 beautifulsoup4
 PyYAML
 PyNacl
@@ -39,5 +39,5 @@ qrcode
 python-dotenv
 pygit2
 youtube_dl
-tweepy
+git+https://github.com/tweepy/tweepy
 prettytable

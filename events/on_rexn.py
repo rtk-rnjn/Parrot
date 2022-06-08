@@ -31,9 +31,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             pass
 
         try:
-            max_duration = self.bot.server_config[payload.guild_id]["starboard"][
-                "max_duration"
-            ] or TWO_WEEK
+            max_duration = (
+                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
+                or TWO_WEEK
+            )
         except KeyError:
             if (CURRENT_TIME - DATETIME.timestamp()) > TWO_WEEK:
                 return
@@ -72,9 +73,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             pass
 
         try:
-            max_duration = self.bot.server_config[payload.guild_id]["starboard"][
-                "max_duration"
-            ] or TWO_WEEK
+            max_duration = (
+                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
+                or TWO_WEEK
+            )
         except KeyError:
             if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > TWO_WEEK:
                 return

@@ -10,7 +10,7 @@ PyYAML
 PyNacl
 akinator.py
 opuslib
-pymongo
+https://github.com/mongodb/mongo-python-driver
 dnspython
 motor
 aiofile

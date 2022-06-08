@@ -10,10 +10,9 @@ PyYAML
 PyNacl
 akinator.py
 opuslib
-git+https://github.com/pypa/setuptools
 git+https://github.com/mongodb/mongo-python-driver
 dnspython
-git+https://github.com/mongodb/motor.git
+motor
 aiofile
 tabulate
 lru_dict

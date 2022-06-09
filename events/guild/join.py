@@ -19,6 +19,8 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         self.collection = bot.mongo.parrot_db["server_config"]
 
     async def __check_guild_requirements(self, guild: discord.Guild):
+        if guild.owner_id == getattr(self.bot.author_obj, "id", None):
+            return
         bots = len([m for m in guild.members if m.bot])
         humans = guild.member_count - bots
         if bots > humans:

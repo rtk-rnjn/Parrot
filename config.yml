@@ -39,6 +39,7 @@ extensions:
   - interactions.buttons
   - interactions.buttons.snakes
   - interactions.buttons.foggle
+  - interactions.slash
   - jishaku
   - cogs.holidays
   - cogs.cc

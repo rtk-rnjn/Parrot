@@ -825,9 +825,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         data = await response.json()
 
         if data["match"]:
-            await message.channel.send(
-                f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
-            )
+            with suppress(discord.HTTPException):
+                await message.channel.send(
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
+                )
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]

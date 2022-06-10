@@ -14,6 +14,55 @@ post: Dict[str, Any] = {
     "vc": None,
     "giveaway": [],
     "hub": None,
+    "stats_channels": {
+        "bots": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "members": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "channels": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "voice": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "text": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "categories": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "emojis": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "roles": {
+            "channel_id": None,
+            "channel_type": None,
+            "template": None
+        },
+        "role": [
+            # {
+            #   "role_id": None,
+            #   "channel_id": None,
+            #   "template": None
+            # }
+        ],
+    },
     "starboard": {
         "is_locked": False,
         "limit": None,

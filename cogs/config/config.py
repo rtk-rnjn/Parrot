@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from cogs.meta.robopage import SimplePages
 from cogs.config import method as mt_
 from cogs.ticket import method as mt
@@ -1346,3 +1347,94 @@ class Configuration(Cog):
 `Duration   `: {data['punish']['duration']}
 """
         )
+
+    @config.group(name="serverstats", aliases=["sstats"])
+    @commands.has_permissions(administrator=True)
+    async def serverstats(self, ctx: Context):
+        """Creates Fancy counters that everyone can see"""
+        if ctx.invoked_subcommand is None:
+            return await self.bot.invoke_help_command(ctx)
+    
+    @serverstats.command(name="create")
+    @commands.has_permissions(administrator=True)
+    async def serverstats_create(self, ctx: Context,):
+        """Creates a server stats counter"""
+        AVAILABLE_COUNTER = [
+            "bots", "members", "channels", "voice", "text", "categories", "emojis", "roles", "role"
+        ]
+        AVAILABLE_TYPE = [
+            "voice", "text", "category",
+        ]
+        PAYLOAD = {}
+        OP = "$set"
+
+        QUES = [
+            f"What type of counter you want to setup? (`{'`, `'.join(AVAILABLE_COUNTER)}`)",
+            f"What type of channel you want? (`{'`, `'.join(AVAILABLE_TYPE)}`)",
+            r"What should be the format of the channel? Example: `Total Channels {}`, `{} Roles in total`. Only the `{}` will be replaced with the counter value.", 
+        ]
+
+        async def wait_for_response() -> typing.Optional[str]:
+            def check(m: discord.Message) -> bool:
+                return m.author == ctx.author and m.channel == ctx.channel
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=60)
+                return msg.content.lower()
+            except asyncio.TimeoutError:
+                raise commands.BadArgument(f"{ctx.author.mention} You took too long to respond!")
+
+        await ctx.send(f"{ctx.author.mention} {QUES[0]}")
+        counter = await wait_for_response()
+
+        if counter not in AVAILABLE_COUNTER:
+            return await ctx.send(
+                f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE_COUNTER)}`"
+            )
+        if counter == "role":
+            OP = "$addToSet"
+
+        await ctx.send(f"{ctx.author.mention} {QUES[1]}")
+        channel_type = await wait_for_response()
+        if channel_type not in AVAILABLE_TYPE:
+            return await ctx.send(
+                f"{ctx.author.mention} invalid channel type! Available channel type: `{'`, `'.join(AVAILABLE_TYPE)}`"
+            )
+        PAYLOAD[f"{counter}.channel_type"] = channel_type
+        
+        await ctx.send(f"{ctx.author.mention} {QUES[2]}")
+        _format = await wait_for_response()
+        if r"{}" not in _format:
+            return await ctx.send(
+                f"{ctx.author.mention} invalid format! Please provide a valid format."
+            )
+        PAYLOAD[f"{counter}.template"] = _format
+
+        channel = 0
+        try:
+            if channel_type == "text":
+                channel = await ctx.guild.create_text_channel(
+                    _format.format(counter), position=0, reason=f"Action requested by {ctx.author} ({ctx.author.id})"
+                )
+            elif channel_type == "voice":
+                channel = await ctx.guild.create_voice_channel(
+                    _format.format(counter), position=0, reason=f"Action requested by {ctx.author} ({ctx.author.id})"
+                )
+            elif channel_type == "category":
+                channel = await ctx.guild.create_category(
+                    _format.format(counter), position=0, reason=f"Action requested by {ctx.author} ({ctx.author.id})"
+                )
+        except (ValueError, IndexError):
+            return await ctx.send(
+                f"{ctx.author.mention} invalid format! Please provide a valid format."
+            )
+        PAYLOAD[f"{counter}.channel_id"] = channel.id if isinstance(channel, discord.abc.Messageable) else channel
+
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id},
+            {
+                OP: PAYLOAD if counter != "role" else {"role": PAYLOAD}
+            },
+            upsert=True
+        )
+        
+        await ctx.send(f"{ctx.author.mention} counter created at #{channel.name} ({channel.mention})")

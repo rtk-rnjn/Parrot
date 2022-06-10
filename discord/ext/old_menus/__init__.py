@@ -978,9 +978,9 @@ class MenuPages(Menu):
         )
         if isinstance(value, dict):
             return value
-        elif isinstance(value, str):
+        if isinstance(value, str):
             return {"content": value, "embed": None}
-        elif isinstance(value, discord.Embed):
+        if isinstance(value, discord.Embed):
             return {"embed": value, "content": None}
 
     async def show_page(self, page_number):
@@ -1108,9 +1108,8 @@ class ListPageSource(PageSource):
         """
         if self.per_page == 1:
             return self.entries[page_number]
-        else:
-            base = page_number * self.per_page
-            return self.entries[base : base + self.per_page]
+        base = page_number * self.per_page
+        return self.entries[base : base + self.per_page]
 
 
 _GroupByEntry = namedtuple("_GroupByEntry", "key items")
@@ -1271,5 +1270,4 @@ class AsyncIteratorPageSource(PageSource):
         """
         if self.per_page == 1:
             return await self._get_single_page(page_number)
-        else:
-            return await self._get_page_range(page_number)
+        return await self._get_page_range(page_number)

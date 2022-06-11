@@ -110,7 +110,23 @@ class Configuration(Cog):
     ):
         """To setup the starboard in your server"""
         if not ctx.invoked_subcommand:
-            await self.bot.invoke_help_command(ctx)
+            try:
+                starboard_data = self.bot.server_config[ctx.guild.id]["starboard"]
+            except KeyError:
+                return await self.bot.invoke_help_command(ctx)
+            channel = ctx.guild.get_channel(starboard_data.get("channel", 0))
+            limit = starboard_data.get("limit")
+            is_locked = starboard_data.get("is_locked")
+            ignore_channel = ctx.guild.get_channel(starboard_data.get("ignore_channel", 0))
+            max_duration = starboard_data.get("max_duration")
+            return await ctx.reply(
+                f"Configuration of this server [starboard]\n\n"
+                f"`Channel :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
+                f"`Limit   :` **{limit}**\n"
+                f"`Locked  :` **{is_locked}**\n"
+                f"`Ignore  :` **{ignore_channel.mention if ignore_channel else 'None'} {starboard_data.get('ignore_channel')}**\n"
+                f"`Duration:` **{max_duration}**\n"
+            )
 
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)

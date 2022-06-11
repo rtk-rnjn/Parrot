@@ -1,4 +1,7 @@
 from __future__ import annotations
+import hashlib
+import random
+import string
 
 import urllib
 from core import Parrot, Context, Cog
@@ -46,6 +49,14 @@ class banFlag(
     _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
     command: typing.Optional[convert_bool] = False
 
+class SubscriptionFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
+    code: str = None
+    expiry: typing.Optional[ShortTime] = ShortTime("2d")
+    guild: typing.Optional[discord.Guild] = None
+    uses = typing.Optional[int] = 0
+    limit: typing.Optional[int] = 1
 
 act = {
     "channel_create": discord.AuditLogAction.channel_create,
@@ -464,6 +475,35 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception as e:
             return await ctx.send(e)
         await ctx.send(embed=discord.Embed(description=data))
+
+    @commands.command()
+    @commands.is_owner()
+    async def create_code(self, ctx: Context, *, args: SubscriptionFlag):
+        """To create a code for the bot premium"""
+        PAYLOAD = {}
+        BASIC = list(string.ascii_letters + string.digits)
+        random.shuffle(BASIC)
+
+        if args.code:
+            PAYLOAD["hash"] = hashlib.sha256(args.code.encode()).hexdigest()
+        else:
+            PAYLOAD["hash"] = hashlib.sha256("".join(BASIC).encode()).hexdigest()
+
+        PAYLOAD["guild"] = args.guild.id if args.guild else ctx.guild.id
+        PAYLOAD["expiry"] = args.expiry.dt.timestamp()
+        PAYLOAD["uses"] = args.uses
+        PAYLOAD["limit"] = args.limit
+        await self.bot.mongo.extra.subscriptions.insert_one(PAYLOAD)
+        await ctx.send(
+            f"""**{ctx.author.mention} Code created successfully.**
+`Hash  `: `{PAYLOAD["hash"]}`
+`Code  `: `{args.code or "".join(BASIC)}`
+`Guild `: `{args.guild.name if args.guild else ctx.guild.name}`
+`Expiry`: `{discord.utils.format_dt(args.expiry.dt, 'R')}`
+`Uses  `: `{args.uses}`
+`Limit `: `{args.limit}`
+"""
+        )
 
     @commands.command(hidden=True)
     @commands.is_owner()

@@ -5,6 +5,7 @@ post: Dict[str, Any] = {
     "prefix": "$",
     "mute_role": None,
     "mod_role": None,
+    "premium": False,
     "warn_auto": [],
     "counting": None,
     "oneword": None,

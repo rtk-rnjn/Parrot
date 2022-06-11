@@ -1,7 +1,10 @@
 from __future__ import annotations
+import discord
 
 from core import Parrot, Cog, Context
 from discord.ext import commands
+
+import hashlib
 
 
 class Hidden(Cog):
@@ -85,6 +88,48 @@ class Hidden(Cog):
         await ctx.send(
             f"{ctx.author.mention} You have opted-in to the use of Parrot commands."
         )
+
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def activate(self, ctx: Context, code: str):
+        """To upgrade the server to premium"""
+
+        code_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
+        if data := await self.bot.mongo.extra.subscription.find_one(
+            {"hash": code_hash}
+        ):
+            if data.get("uses", 0) > data.get("limit", 0):
+                await ctx.send(
+                    f"{ctx.author.mention} This code has been used up. Please ask for new code in support server"
+                )
+                return
+            
+            if data.get("guild", None) is not None:
+                if data["guild"] != ctx.guild.id:
+                    await ctx.send(
+                        f"{ctx.author.mention} This code is not for this server. Please ask for new code in support server"
+                    )
+                    return
+
+            if data.get("expiry", None) is not None:
+                if data["expiry"] < int(discord.utils.utcnow().timestamp()):
+                    await ctx.send(
+                        f"{ctx.author.mention} This code has expired. Please ask for new code in support server"
+                    )
+                    return
+
+            res = await ctx.prompt(f"{ctx.author.mention} are you sure you want to upgrade to premium?")
+            if not res:
+                return await ctx.send(f"{ctx.author.mention} cancelled.")
+            await self.bot.mongo.extra.subscription.update_one(
+                {"hash": code_hash}, {"$inc": {"uses": 1}}, upsert=True
+            )
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$set": {"premium": True}},
+                upsert=True,
+            )
+            await ctx.send(f"{ctx.author.mention} upgraded to premium :tada:")
 
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):

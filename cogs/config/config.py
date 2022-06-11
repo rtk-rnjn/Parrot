@@ -1408,6 +1408,16 @@ class Configuration(Cog):
             )
         if counter == "role":
             OP = "$addToSet"
+            await ctx.send(f"{ctx.author.mention} Enter the role name/ID or you can even mention it")
+            role = await wait_for_response()
+            try:
+                role = await commands.RoleConverter().convert(ctx, role)
+            except commands.BadArgument:
+                return await ctx.send(
+                    f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
+                )
+            else:
+                PAYLOAD["role_id"] = role.id
 
         await ctx.send(f"{ctx.author.mention} {QUES[1]}")
         channel_type = await wait_for_response()
@@ -1455,10 +1465,35 @@ class Configuration(Cog):
 
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {OP: PAYLOAD if counter != "role" else {"role": PAYLOAD}},
+            {OP: {f"stats_channels.{k}": v for k, v in PAYLOAD.items()} if counter != "role" else {"role": PAYLOAD}},
             upsert=True,
         )
 
         await ctx.send(
             f"{ctx.author.mention} counter created at #{channel.name} ({channel.mention})"
         )
+
+    @serverstats.command(name="delete")
+    @commands.has_permissions(administrator=True)
+    async def serverstats_delete(
+        self,
+        ctx: Context,
+        counter: str,
+    ):
+        """Deletes a server stats counter"""
+        AVAILABLE = ["bots", "members", "channels", "voice", "text", "categories", "emojis", "roles"]
+        if counter.lower() not in AVAILABLE:
+            return await ctx.send(
+                f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`"
+            )
+        if data := await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id, "stats_channels": {"$exists": True}},
+            {
+                "$set": {
+                    f"stats_channels.{counter}.channel_id": None,
+                    f"stats_channels.{counter}.channel_type": None,
+                    f"stats_channels.{counter}.template": None,
+                }
+            }
+        ):
+            await ctx.send(f"{ctx.author.mention} counter deleted")

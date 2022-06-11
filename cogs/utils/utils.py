@@ -2,7 +2,7 @@ from __future__ import annotations
 import io
 from itertools import zip_longest
 
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
@@ -50,7 +50,9 @@ class Utils(Cog):
         self.collection = bot.mongo.parrot_db["timers"]
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
+
         self.reminder_task.start()
+        self.server_stats_updater.start()
 
     # async def setup_hook(self) -> None:
     #     self.reminder_task.start()
@@ -1124,3 +1126,39 @@ class Utils(Cog):
         await ctx.send(
             f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`"
         )
+
+    @tasks.loop(seconds=600)
+    async def server_stats_updater(self):
+        for guild in self.bot.guilds:
+            try:
+                stats_channels: Dict[str, Any] = self.bot.server_config[guild.id]["stats_channels"]
+            except KeyError:
+                return
+            
+            PAYLOAD = {
+                "bots": len([m for m in guild.members if m.bot]),
+                "members": len(guild.members),
+                "channels": len(guild.channels),
+                "roles": len(guild.roles),
+                "emojis": len(guild.emojis),
+                "text": guild.text_channels,
+                "voice": guild.voice_channels,
+                "categories": len(guild.categories),
+            }
+        
+            for k, v in stats_channels.items():
+                v: Dict[str, Any]
+                channel = guild.get_channel(v["channel_id"])
+                if channel:
+                    await channel.edit(
+                        name=v["template"].format(PAYLOAD[k]), reason="Updating server stats"
+                    )
+
+            if roles := stats_channels.get("role"):
+                for role in roles:
+                    role = guild.get_role(role["role_id"])
+                    channel = guild.get_channel(role["channel_id"])
+                    if channel and role:
+                        await channel.edit(
+                            name=role["template"].format(len(role.members)), reason="Updating server stats"
+                        )

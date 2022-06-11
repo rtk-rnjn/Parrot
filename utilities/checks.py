@@ -81,7 +81,7 @@ def is_mod() -> Callable:
 
 
 def in_temp_channel() -> Callable:
-    async def predicate(ctx) -> Optional[bool]:
+    async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id}
         )
@@ -105,7 +105,7 @@ def in_temp_channel() -> Callable:
     return commands.check(predicate)
 
 
-async def _can_run(ctx) -> Optional[bool]:
+async def _can_run(ctx: Context) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
     if ctx.guild is not None and ctx.command:
         roles = set(ctx.author.roles)
@@ -133,6 +133,16 @@ async def _can_run(ctx) -> Optional[bool]:
                 return True
 
     return True
+
+
+def guild_premium() -> Callable:
+    def predicate(ctx: Context) -> bool:
+        """Returns True if the guild is premium."""
+        if not ctx.guild:  # Return False in a DM
+            return False
+
+        return ctx.bot.server_config[ctx.guild.id].get("premium")
+    return predicate
 
 
 def cooldown_with_role_bypass(

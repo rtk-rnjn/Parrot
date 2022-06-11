@@ -54,7 +54,7 @@ class SubscriptionFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
     code: str = None
-    expiry: typing.Optional[ShortTime] = ShortTime("2d")
+    expiry: typing.Optional[ShortTime] = None
     guild: typing.Optional[discord.Guild] = None
     uses = typing.Optional[int] = 0
     limit: typing.Optional[int] = 1
@@ -492,7 +492,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             PAYLOAD["hash"] = hashlib.sha256("".join(BASIC).encode()).hexdigest()
 
         PAYLOAD["guild"] = args.guild.id if args.guild else ctx.guild.id
-        PAYLOAD["expiry"] = args.expiry.dt.timestamp()
+        PAYLOAD["expiry"] = args.expiry.dt.timestamp() if args.expiry else ShortTime("2d").dt.timestamp()
         PAYLOAD["uses"] = args.uses
         PAYLOAD["limit"] = args.limit
         await self.bot.mongo.extra.subscriptions.insert_one(PAYLOAD)

@@ -48,7 +48,9 @@ class Configuration(Cog):
                 role = ctx.guild.get_role(data.get("mod_role", 0))
                 mod_log = ctx.guild.get_channel(data.get("action_log", 0))
                 mute_role = ctx.guild.get_role(data.get("mute_role", 0))
-                suggestion_channel = ctx.guild.get_channel(data.get("suggestion_channel", 0))
+                suggestion_channel = ctx.guild.get_channel(
+                    data.get("suggestion_channel", 0)
+                )
                 hub = ctx.guild.get_channel(data.get("hub", 0))
                 vc = ctx.guild.get_channel(data.get("vc", 0))
                 await ctx.reply(
@@ -117,7 +119,9 @@ class Configuration(Cog):
             channel = ctx.guild.get_channel(starboard_data.get("channel", 0))
             limit = starboard_data.get("limit")
             is_locked = starboard_data.get("is_locked")
-            ignore_channel = ctx.guild.get_channel(starboard_data.get("ignore_channel", 0))
+            ignore_channel = ctx.guild.get_channel(
+                starboard_data.get("ignore_channel", 0)
+            )
             max_duration = starboard_data.get("max_duration")
             return await ctx.reply(
                 f"Configuration of this server [starboard]\n\n"

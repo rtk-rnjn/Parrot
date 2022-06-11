@@ -45,13 +45,22 @@ class Configuration(Cog):
             if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": ctx.guild.id}
             ):
-                role = ctx.guild.get_role(data.get("mod_role"))
-                mod_log = ctx.guild.get_channel(data.get("action_log"))
+                role = ctx.guild.get_role(data.get("mod_role", 0))
+                mod_log = ctx.guild.get_channel(data.get("action_log", 0))
+                mute_role = ctx.guild.get_role(data.get("mute_role", 0))
+                suggestion_channel = ctx.guild.get_channel(data.get("suggestion_channel", 0))
+                hub = ctx.guild.get_channel(data.get("hub", 0))
+                vc = ctx.guild.get_channel(data.get("vc", 0))
                 await ctx.reply(
                     f"Configuration of this server [server_config]\n\n"
-                    f"`Prefix :` **{data['prefix']}**\n"
-                    f"`ModRole:` **{role.name if role else 'None'} ({data.get('mod_role')})**\n"
-                    f"`MogLog :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
+                    f"`Prefix  :` **{data['prefix']}**\n"
+                    f"`ModRole :` **{role.name if role else 'None'} ({data.get('mod_role')})**\n"
+                    f"`MogLog  :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
+                    f"`MuteRole:` **{mute_role.name if mute_role else 'None'} {data.get('mute_role')}**\n"
+                    f"`Premium :` **{'Enabled' if data.get('premium') else 'Disabled'}**\n\n"
+                    f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} {data.get('suggestion_channel')}**\n"
+                    f"`Hub     :` **{hub.mention if hub else 'None'} {data.get('hub')}**\n"
+                    f"`VC(24/7):` **{vc.mention if vc else 'None'} {data.get('vc')}**\n"
                 )
 
     @config.group(name="hub", invoke_without_command=True)

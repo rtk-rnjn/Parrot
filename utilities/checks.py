@@ -143,7 +143,7 @@ def guild_premium() -> Callable:
 
         return ctx.bot.server_config[ctx.guild.id].get("premium")
 
-    return predicate
+    return commands.check(predicate)
 
 
 def cooldown_with_role_bypass(

@@ -901,7 +901,7 @@ class Fun(Cog):
         await game.message_creation(message)
 
     @commands.group(
-        name="quiz", aliases=("trivia", "triviaquiz"), invoke_without_command=True
+        name="quiz", invoke_without_command=True
     )
     async def quiz_game(
         self, ctx: Context, category: Optional[str], questions: Optional[int]

@@ -56,7 +56,7 @@ class SubscriptionFlag(
     code: str = None
     expiry: typing.Optional[ShortTime] = None
     guild: typing.Optional[discord.Guild] = None
-    uses = typing.Optional[int] = 0
+    uses: typing.Optional[int] = 0
     limit: typing.Optional[int] = 1
 
 

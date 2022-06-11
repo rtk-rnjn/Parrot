@@ -492,7 +492,11 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             PAYLOAD["hash"] = hashlib.sha256("".join(BASIC).encode()).hexdigest()
 
         PAYLOAD["guild"] = args.guild.id if args.guild else ctx.guild.id
-        PAYLOAD["expiry"] = args.expiry.dt.timestamp() if args.expiry else ShortTime("2d").dt.timestamp()
+        PAYLOAD["expiry"] = (
+            args.expiry.dt.timestamp()
+            if args.expiry
+            else ShortTime("2d").dt.timestamp()
+        )
         PAYLOAD["uses"] = args.uses
         PAYLOAD["limit"] = args.limit
         await self.bot.mongo.extra.subscriptions.insert_one(PAYLOAD)

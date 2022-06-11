@@ -119,16 +119,15 @@ class Configuration(Cog):
             channel = ctx.guild.get_channel(starboard_data.get("channel", 0))
             limit = starboard_data.get("limit")
             is_locked = starboard_data.get("is_locked")
-            ignore_channel = ctx.guild.get_channel(
-                starboard_data.get("ignore_channel", 0)
-            )
+            ignore_channel = ', '.join([f"{ctx.guild.get_channel(c)} ({c})" for c in starboard_data.get("ignore_channel", [])])
             max_duration = starboard_data.get("max_duration")
+            
             return await ctx.reply(
                 f"Configuration of this server [starboard]\n\n"
                 f"`Channel :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
                 f"`Limit   :` **{limit}**\n"
                 f"`Locked  :` **{is_locked}**\n"
-                f"`Ignore  :` **{ignore_channel.mention if ignore_channel else 'None'} ({starboard_data.get('ignore_channel')})**\n"
+                f"`Ignore  :` **{ignore_channel or 'None'}**\n"
                 f"`Duration:` **{max_duration}**\n"
             )
 

@@ -142,6 +142,7 @@ def guild_premium() -> Callable:
             return False
 
         return ctx.bot.server_config[ctx.guild.id].get("premium")
+
     return predicate
 
 

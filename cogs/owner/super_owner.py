@@ -49,6 +49,7 @@ class banFlag(
     _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
     command: typing.Optional[convert_bool] = False
 
+
 class SubscriptionFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
@@ -57,6 +58,7 @@ class SubscriptionFlag(
     guild: typing.Optional[discord.Guild] = None
     uses = typing.Optional[int] = 0
     limit: typing.Optional[int] = 1
+
 
 act = {
     "channel_create": discord.AuditLogAction.channel_create,

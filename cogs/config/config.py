@@ -1408,7 +1408,9 @@ class Configuration(Cog):
             )
         if counter == "role":
             OP = "$addToSet"
-            await ctx.send(f"{ctx.author.mention} Enter the role name/ID or you can even mention it")
+            await ctx.send(
+                f"{ctx.author.mention} Enter the role name/ID or you can even mention it"
+            )
             role = await wait_for_response()
             try:
                 role = await commands.RoleConverter().convert(ctx, role)
@@ -1465,7 +1467,11 @@ class Configuration(Cog):
 
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {OP: {f"stats_channels.{k}": v for k, v in PAYLOAD.items()} if counter != "role" else {"role": PAYLOAD}},
+            {
+                OP: {f"stats_channels.{k}": v for k, v in PAYLOAD.items()}
+                if counter != "role"
+                else {"role": PAYLOAD}
+            },
             upsert=True,
         )
 
@@ -1481,7 +1487,16 @@ class Configuration(Cog):
         counter: str,
     ):
         """Deletes a server stats counter"""
-        AVAILABLE = ["bots", "members", "channels", "voice", "text", "categories", "emojis", "roles"]
+        AVAILABLE = [
+            "bots",
+            "members",
+            "channels",
+            "voice",
+            "text",
+            "categories",
+            "emojis",
+            "roles",
+        ]
         if counter.lower() not in AVAILABLE:
             return await ctx.send(
                 f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`"
@@ -1494,6 +1509,6 @@ class Configuration(Cog):
                     f"stats_channels.{counter}.channel_type": None,
                     f"stats_channels.{counter}.template": None,
                 }
-            }
+            },
         ):
             await ctx.send(f"{ctx.author.mention} counter deleted")

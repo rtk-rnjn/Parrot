@@ -1131,10 +1131,12 @@ class Utils(Cog):
     async def server_stats_updater(self):
         for guild in self.bot.guilds:
             try:
-                stats_channels: Dict[str, Any] = self.bot.server_config[guild.id]["stats_channels"]
+                stats_channels: Dict[str, Any] = self.bot.server_config[guild.id][
+                    "stats_channels"
+                ]
             except KeyError:
                 return
-            
+
             PAYLOAD = {
                 "bots": len([m for m in guild.members if m.bot]),
                 "members": len(guild.members),
@@ -1145,13 +1147,14 @@ class Utils(Cog):
                 "voice": guild.voice_channels,
                 "categories": len(guild.categories),
             }
-        
+
             for k, v in stats_channels.items():
                 v: Dict[str, Any]
                 channel = guild.get_channel(v["channel_id"])
                 if channel:
                     await channel.edit(
-                        name=v["template"].format(PAYLOAD[k]), reason="Updating server stats"
+                        name=v["template"].format(PAYLOAD[k]),
+                        reason="Updating server stats",
                     )
 
             if roles := stats_channels.get("role"):
@@ -1160,5 +1163,6 @@ class Utils(Cog):
                     channel = guild.get_channel(role["channel_id"])
                     if channel and role:
                         await channel.edit(
-                            name=role["template"].format(len(role.members)), reason="Updating server stats"
+                            name=role["template"].format(len(role.members)),
+                            reason="Updating server stats",
                         )

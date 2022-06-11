@@ -501,7 +501,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 `Hash  `: `{PAYLOAD["hash"]}`
 `Code  `: `{args.code or "".join(BASIC)}`
 `Guild `: `{args.guild.name if args.guild else ctx.guild.name}`
-`Expiry`: `{discord.utils.format_dt(args.expiry.dt if args.expiry else ShortTime("2d").dt, 'R')}`
+`Expiry`: {discord.utils.format_dt(args.expiry.dt if args.expiry else ShortTime("2d").dt, 'R')}
 `Uses  `: `{args.uses}`
 `Limit `: `{args.limit}`
 """

@@ -132,6 +132,10 @@ class Hidden(Cog):
                 upsert=True,
             )
             await ctx.send(f"{ctx.author.mention} upgraded to premium :tada:")
+        else:
+            await ctx.send(
+                f"{ctx.author.mention} This code is invalid. Please ask for new code in support server"
+            )
 
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):

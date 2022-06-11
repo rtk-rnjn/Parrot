@@ -58,11 +58,11 @@ class Configuration(Cog):
                     f"`Prefix  :` **{data['prefix']}**\n"
                     f"`ModRole :` **{role.name if role else 'None'} ({data.get('mod_role')})**\n"
                     f"`MogLog  :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
-                    f"`MuteRole:` **{mute_role.name if mute_role else 'None'} {data.get('mute_role')}**\n"
+                    f"`MuteRole:` **{mute_role.name if mute_role else 'None'} ({data.get('mute_role')})**\n"
                     f"`Premium :` **{'Enabled' if data.get('premium') else 'Disabled'}**\n\n"
-                    f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} {data.get('suggestion_channel')}**\n"
-                    f"`Hub     :` **{hub.mention if hub else 'None'} {data.get('hub')}**\n"
-                    f"`VC(24/7):` **{vc.mention if vc else 'None'} {data.get('vc')}**\n"
+                    f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n"
+                    f"`Hub     :` **{hub.mention if hub else 'None'} ({data.get('hub')})**\n"
+                    f"`VC(24/7):` **{vc.mention if vc else 'None'} ({data.get('vc')})**\n"
                 )
 
     @config.group(name="hub", invoke_without_command=True)
@@ -128,7 +128,7 @@ class Configuration(Cog):
                 f"`Channel :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
                 f"`Limit   :` **{limit}**\n"
                 f"`Locked  :` **{is_locked}**\n"
-                f"`Ignore  :` **{ignore_channel.mention if ignore_channel else 'None'} {starboard_data.get('ignore_channel')}**\n"
+                f"`Ignore  :` **{ignore_channel.mention if ignore_channel else 'None'} ({starboard_data.get('ignore_channel')})**\n"
                 f"`Duration:` **{max_duration}**\n"
             )
 

@@ -305,6 +305,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             random.choice(quote),
             embed=ERROR_EMBED,
         )
+
         raise error
 
 

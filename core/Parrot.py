@@ -23,7 +23,7 @@ import asyncio
 import re
 import discord
 import pymongo
-import topgg  # type: ignore  # noqa: F401
+
 from aiohttp import ClientSession  # type: ignore
 from collections import Counter, deque, defaultdict
 
@@ -32,6 +32,12 @@ from discord import app_commands
 
 from lru import LRU
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
+
+try:
+    import topgg  # type: ignore
+    HAS_TOP_GG = True
+except ImportError:
+    HAS_TOP_GG = False
 
 from utilities.config import (
     EXTENSIONS,
@@ -119,8 +125,9 @@ class Parrot(commands.AutoShardedBot):
         self._was_ready = False
 
         # Top.gg
-        self.topgg = topgg.DBLClient(self, os.environ["TOPGG"], autopost=True, post_shard_count=True)
-        self.topgg_webhook = topgg.WebhookManager(self)
+        if HAS_TOP_GG:
+            self.topgg = topgg.DBLClient(self, os.environ["TOPGG"], autopost=True, post_shard_count=True)
+            self.topgg_webhook = topgg.WebhookManager(self)
 
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)

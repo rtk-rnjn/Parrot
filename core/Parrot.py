@@ -214,7 +214,7 @@ class Parrot(commands.AutoShardedBot):
         traceback.print_exc()
         trace = traceback.format_exc()
         webhook = discord.Webhook.from_url(
-            f"https://discordapp.com/api/webhooks/{ERROR_LOG_WEBHOOK_ID}/{self._error_log_token}",
+            f"https://discordapp.com/api/webhooks/{ERROR_LOG_WEBHOOK_ID}/{self._error_log_token}", session=self.http_session
         )
         if webhook is not None:
             try:
@@ -534,7 +534,7 @@ class Parrot(commands.AutoShardedBot):
                 post = data
                 self.server_config[message.guild.id] = post
             else:
-                FAKE_POST = POST
+                FAKE_POST = POST.copy()
                 FAKE_POST["_id"] = message.guild.id
                 prefix = "$"  # default prefix
                 try:

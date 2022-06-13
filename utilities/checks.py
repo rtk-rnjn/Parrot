@@ -124,11 +124,11 @@ async def _can_run(ctx: Context) -> Optional[bool]:
             if any(role.id in data["role_in"] for role in roles):
                 return True
             if any(role.id in data["role_out"] for role in roles):
-                raise ex.CommandDisabledRole()
+                return False
             if ctx.channel.id in data["channel_out"]:
-                raise ex.CommandDisabledChannel()
+                return False
             if data["server"]:
-                raise ex.CommandDisabledServer()
+                return False
             if not data["server"]:
                 return True
 

@@ -62,7 +62,7 @@ class Configuration(Cog):
                     f"`MogLog  :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
                     f"`MuteRole:` **{mute_role.name if mute_role else 'None'} ({data.get('mute_role')})**\n"
                     f"`Premium :` **{'Enabled' if data.get('premium') else 'Disabled'}**\n\n"
-                    f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n"
+                    f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n\n"
                     f"`Hub     :` **{hub.mention if hub else 'None'} ({data.get('hub')})**\n"
                     f"`VC(24/7):` **{vc.mention if vc else 'None'} ({data.get('vc')})**\n"
                 )
@@ -527,8 +527,19 @@ class Configuration(Cog):
         for i in reward:
             role = ctx.guild.get_role(i["role"]) or None
             rwrd_tble.append([i["lvl", role.name if role else None]])
+        ignored_roles = ', '.join(
+            [getattr(ctx.guild.get_role(r), 'name', None) for r in leveling.get("ignore_role", []) if getattr(ctx.guild.get_role(r), 'name', None)]
+        )
+        ignored_channel = ', '.join(
+            [getattr(ctx.guild.get_channel(r), 'name', None) for r in leveling.get("ignore_channel", []) if getattr(ctx.guild.get_channel(r), 'name', None)]
+        )
+
         await ctx.reply(
-            f"""```
+            f"""Configuration of this server [leveling system]:
+`Enabled :` **{leveling.get("enable", False)}**
+`Channel :` **{getattr(ctx.guild.get_channel(leveling.get("channel", 0))), "name", "None"}**
+`Ignore R:` **{ignored_roles}**
+`Ignore C:` **{ignored_channel}** ```
 {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
 ```"""
         )
@@ -704,7 +715,10 @@ class Configuration(Cog):
     async def automod(self, ctx: Context):
         """To configure the automoderation"""
         if ctx.invoked_subcommand is None:
-            await self.bot.invoke_help_command(ctx)
+            try:
+                automod = self.bot.server_config[ctx.guild.id]["automod"]
+            except KeyError:
+                return await self.bot.invoke_help_command(ctx)
 
     @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -1406,7 +1420,7 @@ class Configuration(Cog):
 """
         )
 
-    @config.group(name="serverstats", aliases=["sstats"])
+    @config.group(name="serverstats", aliases=["sstats"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def serverstats(self, ctx: Context):
         """Creates Fancy counters that everyone can see"""

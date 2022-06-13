@@ -529,8 +529,8 @@ class Configuration(Cog):
             rwrd_tble.append([i["lvl", role.name if role else None]])
         await ctx.reply(
             f"""```
-            {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
-            ```"""
+{str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
+```"""
         )
 
     @leveling.command(name="channel")

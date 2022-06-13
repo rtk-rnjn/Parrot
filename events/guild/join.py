@@ -11,6 +11,10 @@ import discord
 WEBHOOK_CHANNEL_ID = WEBHOOK_JOIN_LEAVE_CHANNEL_ID
 BASE_URL = f"https://discord.com/api/webhooks/{WEBHOOK_CHANNEL_ID}/"
 
+HEAD_MODERATOR = 861476968439611392
+MODERATOR = 771025632184369152
+STAFF = 793531029184708639
+
 
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
@@ -19,8 +23,16 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         self.collection = bot.mongo.parrot_db["server_config"]
 
     async def __check_guild_requirements(self, guild: discord.Guild):
-        if guild.owner_id == getattr(self.bot.author_obj, "id", None):
-            return
+        staff_roles = [HEAD_MODERATOR, MODERATOR, STAFF]
+
+        if guild.me.guild_permissions.view_audit_log:
+            async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.bot_add):
+                m = self.bot.server.get_member(entry.user.id)
+                if (
+                    (entry.target.id == self.bot.user.id) and m and any(m._roles.has(r) for r in staff_roles)
+                ):
+                    return
+
         bots = len([m for m in guild.members if m.bot])
         humans = guild.member_count - bots
         if bots > humans:

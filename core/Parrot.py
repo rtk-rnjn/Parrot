@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+from contextlib import suppress
 import io
 
 import os
@@ -68,6 +69,7 @@ dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 ERROR_LOG_WEBHOOK_ID = 924513442273054730
+STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 
 
 @ToAsync()
@@ -102,13 +104,19 @@ class Parrot(commands.AutoShardedBot):
         self._CogMixin__cogs = commands.core._CaseInsensitiveDict()  # pycord be like
         self._seen_messages = 0
         self._change_log = None
+
         self._error_log_token = os.environ["CHANNEL_TOKEN2"]
+        self._startup_log_token = os.environ["CHANNEL_TOKEN3"]
+
         self.color = 0x87CEEB
         self.error_channel = None
         self.persistent_views_added = False
         self.spam_control = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.user
         )
+
+        self._was_ready = False
+
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)
         self.identifies = defaultdict(list)
@@ -137,6 +145,10 @@ class Parrot(commands.AutoShardedBot):
             port=1730,
             secret_key=os.environ["IPC_KEY"],
         )
+
+        # Extensions
+        self._successfully_loaded: List[str] = []
+        self._failed_to_load: Dict[str, str] = {}
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -185,7 +197,9 @@ class Parrot(commands.AutoShardedBot):
             try:
                 await self.load_extension(ext)
                 print(f"[{self.user.name.title()}] {ext} loaded successfully")
+                self._successfully_loaded.append(ext)
             except Exception as e:
+                self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
 
     async def db_latency(self) -> float:
@@ -253,6 +267,28 @@ class Parrot(commands.AutoShardedBot):
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
+        if not self._was_ready:
+            webhook = discord.Webhook.from_url(
+                f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}", session=self.http_session
+            )
+            if webhook is not None:
+                await webhook.send(
+                    f"```py\n{self.user.name.title()} is online!\n```",
+                )
+                with suppress(discord.HTTPException):
+                    await webhook.send(
+                        f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
+                    )
+                with suppress(discord.HTTPException):
+                    fail_msg = ""
+                    if self._failed_to_load:
+                        for k, v in self._failed_to_load.items():
+                            fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                        await webhook.send(
+                            f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
+                        )
+            self._was_ready = True
+
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
@@ -279,10 +315,26 @@ class Parrot(commands.AutoShardedBot):
         return
 
     async def on_disconnect(self) -> None:
+        webhook = discord.Webhook.from_url(
+            f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}", session=self.http_session
+        )
+        if webhook is not None:
+            await webhook.send(
+                f"```py\n{self.user.name.title()} disconnected from discord\n```",
+            )
+
         print(f"[{self.user.name.title()}] disconnect from discord")
         return
 
     async def on_shard_resumed(self, shard_id: int) -> None:
+        webhook = discord.Webhook.from_url(
+            f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}", session=self.http_session
+        )
+        if webhook is not None:
+            await webhook.send(
+                f"```py\n{self.user.name.title()} resumed shard {shard_id}\n```",
+            )
+
         print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 

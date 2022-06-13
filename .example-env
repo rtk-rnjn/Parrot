@@ -23,6 +23,7 @@ NASA_KEY=""
 # Discord Webhook Tokens
 CHANNEL_TOKEN1=""
 CHANNEL_TOKEN2=""
+CHANNEL_TOKEN3=""
 
 # Extra
 # https://www.remove.bg/api#remove-background

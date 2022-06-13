@@ -23,6 +23,7 @@ import asyncio
 import re
 import discord
 import pymongo
+import topgg  # type: ignore  # noqa: F401
 from aiohttp import ClientSession  # type: ignore
 from collections import Counter, deque, defaultdict
 
@@ -116,6 +117,10 @@ class Parrot(commands.AutoShardedBot):
         )
 
         self._was_ready = False
+
+        # Top.gg
+        self.topgg = topgg.DBLClient(self, os.environ["TOPGG"], autopost=True, post_shard_count=True)
+        self.topgg_webhook = topgg.WebhookManager(self)
 
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)
@@ -257,6 +262,16 @@ class Parrot(commands.AutoShardedBot):
         return self.mongo[db_name]
 
     async def on_autopost_success(self) -> None:
+        webhook = discord.Webhook.from_url(
+            f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
+            session=self.http_session,
+        )
+        if webhook is not None:
+            with suppress(discord.HTTPException):
+                await webhook.send(
+                    f"```py\n{self.user.name} posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count}).\n```",
+                )
+
         st = f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
         print(st)
 

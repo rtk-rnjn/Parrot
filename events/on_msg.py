@@ -399,7 +399,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         await self.bot.wait_until_ready()
         if not message.guild:
             return
@@ -603,11 +603,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_bulk_message_delete(self, messages):
+    async def on_bulk_message_delete(self, messages: tp.List[discord.Message]):
         pass
 
     @Cog.listener()
-    async def on_raw_message_delete(self, payload):
+    async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         await self.bot.wait_until_ready()
         await self._delete_record_message_to_database(
             payload.message_id, channel=payload.channel_id
@@ -945,7 +945,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @Cog.listener()
-    async def on_raw_message_edit(self, payload):
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
         await self.bot.wait_until_ready()
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}

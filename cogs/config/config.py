@@ -723,7 +723,7 @@ class Configuration(Cog):
             main = []
             main_str = ""
             for k, v in automod.items():
-                main_str = main_str + f"""\N{BULLET} Name: {k.title()}
+                main_str = f"""\N{BULLET} Name: {k.title()}
 
 `Enable    :` {v['enable']}
 `I. Channel:` {', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}

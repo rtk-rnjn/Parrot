@@ -275,20 +275,24 @@ class Configuration(Cog):
         await ctx.reply(
             f"{ctx.author.mention} removed `{event.replace('_', ' ').title()}` from the logging list"
         )
-    
+
     @logging.command(name="list")
     @commands.has_permissions(administrator=True)
     async def logging_list(self, ctx: Context):
         """To list the logging events"""
         main = []
-        if data := await self.bot.mongo.parrot_db.logging.find_one({"_id": ctx.guild.id}, {'_id': 0}):
+        if data := await self.bot.mongo.parrot_db.logging.find_one(
+            {"_id": ctx.guild.id}, {"_id": 0}
+        ):
             for k, v in data.items():
                 if v:
                     res = await self.bot.http_session.get(v)
                     if res.status == 200:
                         data = await res.json()
-                        channel = ctx.guild.get_channel(int(data['channel_id']))
-                        main.append([f"{k.replace('_', ' ').title()}", f"#{channel.name}"])
+                        channel = ctx.guild.get_channel(int(data["channel_id"]))
+                        main.append(
+                            [f"{k.replace('_', ' ').title()}", f"#{channel.name}"]
+                        )
         if main:
             table = tabulate(main, headers=["Event", "Channel"], tablefmt="pretty")
             await ctx.send(f"```\n{table}```")

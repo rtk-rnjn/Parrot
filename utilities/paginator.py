@@ -1,6 +1,6 @@
 # AUTHOR: https://github.com/davidetacchini/
 
-from typing import List, Optional, NamedTuple
+from typing import List, Optional, NamedTuple, Union
 from itertools import islice
 from core import Context
 
@@ -253,7 +253,7 @@ class PaginatorView(discord.ui.View):
 class PaginationView(discord.ui.View):
     current = 0
 
-    def __init__(self, embed_list: List[str, discord.Embed, discord.File]):
+    def __init__(self, embed_list: List[Union[str, discord.Embed, discord.File]]):
         super().__init__()
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

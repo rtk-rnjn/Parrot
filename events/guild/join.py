@@ -26,10 +26,14 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         staff_roles = [HEAD_MODERATOR, MODERATOR, STAFF]
 
         if guild.me.guild_permissions.view_audit_log:
-            async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.bot_add):
+            async for entry in guild.audit_logs(
+                limit=1, action=discord.AuditLogAction.bot_add
+            ):
                 m = self.bot.server.get_member(entry.user.id)
                 if (
-                    (entry.target.id == self.bot.user.id) and m and any(m._roles.has(r) for r in staff_roles)
+                    (entry.target.id == self.bot.user.id)
+                    and m
+                    and any(m._roles.has(r) for r in staff_roles)
                 ):
                     return
 

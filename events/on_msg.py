@@ -708,7 +708,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.bot.wait_until_ready()
-        if before.content != after.content and after.guild is None:
+        if before.content != after.content and after.guild is not None:
             await self._on_message_passive(after)
             await self._scam_detection(after)
             await self._edit_record_message_to_database(after)

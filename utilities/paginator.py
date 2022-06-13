@@ -1,7 +1,8 @@
 # AUTHOR: https://github.com/davidetacchini/
 
-from typing import Optional, NamedTuple
+from typing import List, Optional, NamedTuple
 from itertools import islice
+from core import Context
 
 import discord
 
@@ -127,9 +128,9 @@ class ParrotPaginator:
 class PaginatorView(discord.ui.View):
     def __init__(
         self,
-        ctx,
+        ctx: Context,
         pages: Pages,
-        embed,
+        embed: discord.Embed,
         timeout,
         show_page_count,
         *,
@@ -252,7 +253,7 @@ class PaginatorView(discord.ui.View):
 class PaginationView(discord.ui.View):
     current = 0
 
-    def __init__(self, embed_list: list):
+    def __init__(self, embed_list: List[str, discord.Embed]):
         super().__init__()
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
@@ -281,9 +282,14 @@ class PaginationView(discord.ui.View):
             self.next.disabled = True
             self._last.disabled = True
 
-        await interaction.response.edit_message(
-            embed=self.embed_list[self.current], view=self
-        )
+        if isinstance(self.embed_list[self.current], discord.Embed):
+            await interaction.response.edit_message(
+                embed=self.embed_list[self.current], view=self
+            )
+        else:
+            await interaction.response.edit_message(
+                content=self.embed_list[self.current], view=self
+            )
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.green, disabled=True)
     async def previous(
@@ -310,9 +316,14 @@ class PaginationView(discord.ui.View):
 
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
-        await interaction.response.edit_message(
-            embed=self.embed_list[self.current], view=self
-        )
+        if isinstance(self.embed_list[self.current], discord.Embed):
+            await interaction.response.edit_message(
+                embed=self.embed_list[self.current], view=self
+            )
+        else:
+            await interaction.response.edit_message(
+                content=self.embed_list[self.current], view=self
+            )
 
     @discord.ui.button(style=discord.ButtonStyle.blurple)
     async def count(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -336,9 +347,15 @@ class PaginationView(discord.ui.View):
             self.first.disabled = True
 
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-        await interaction.response.edit_message(
-            embed=self.embed_list[self.current], view=self
-        )
+
+        if isinstance(self.embed_list[self.current], discord.Embed):
+            await interaction.response.edit_message(
+                embed=self.embed_list[self.current], view=self
+            )
+        else:
+            await interaction.response.edit_message(
+                content=self.embed_list[self.current], view=self
+            )
 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.red, disabled=False)
     async def _last(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -355,11 +372,19 @@ class PaginationView(discord.ui.View):
             self.first.disabled = True
             self.previous.disabled = True
 
-        await interaction.response.edit_message(
-            embed=self.embed_list[self.current], view=self
-        )
+        if isinstance(self.embed_list[self.current], discord.Embed):
+            await interaction.response.edit_message(
+                embed=self.embed_list[self.current], view=self
+            )
+        else:
+            await interaction.response.edit_message(
+                content=self.embed_list[self.current], view=self
+            )
 
-    async def start(self, ctx):
-        self.message = await ctx.send(embed=self.embed_list[0], view=self)
+    async def start(self, ctx: Context):
+        if isinstance(self.embed_list[0], discord.Embed):
+            self.message = await ctx.send(embed=self.embed_list[0], view=self)
+        else:
+            self.message = await ctx.send(self.embed_list[0], view=self)
         self.user = ctx.author
         return self.message

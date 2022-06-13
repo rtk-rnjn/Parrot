@@ -1,0 +1,26 @@
+name: "Python security check using Bandit"
+description: "Github action to find common security issues in Python code and get its report as a artifact."
+
+inputs:
+  python_version:
+    description: "Version range or exact version of a Python version to use, using SemVer's version range syntax."
+    default: "3.8"
+    required: true
+
+  project_path:
+    description: "This is the path at which the your python project is located in you github repo."
+    required: false
+    default: "."
+
+  ignore_failure:
+    description: "This is to ignore the security failures and pass the check."
+    required: false
+    default: false
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+
+branding:
+  icon: "shield"
+  color: "gray-dark"

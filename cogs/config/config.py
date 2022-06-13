@@ -1350,9 +1350,10 @@ class Configuration(Cog):
             if data.get("role_in"):
                 main += f"\n`Role In    :` <@&{'>, <@&'.join([(str(c) for c in data['role_in'])])}>"
             if data.get("role_out"):
-                main += f"\n`Role In    :` <@&{'>, <@&'.join([(str(c) for c in data['role_out'])])}>"
+                main += f"\n`Role Out   :` <@&{'>, <@&'.join([(str(c) for c in data['role_out'])])}>"
             if data.get("server"):
-                main += f"`\nServer Wide?:` {data['server']}"
+                main += f"\n`Server Wide:` {data['server']}"
+            em_lis.append(main)
 
         if not em_lis:
             return await ctx.send(

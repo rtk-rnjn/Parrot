@@ -256,12 +256,19 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(
+            error, (
+                commands.MissingRequiredArgument,
+                commands.BadUnionArgument,
+                commands.BadLiteralArgument,
+                commands.TooManyArguments
+            )
+        ):
             command = ctx.command
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
             ERROR_EMBED.title = (
-                f"{QUESTION_MARK} Missing Required Argument {QUESTION_MARK}"
+                f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
             )
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
@@ -270,12 +277,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
             )
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-
-        if isinstance(error, (commands.BadUnionArgument, commands.BadLiteralArgument)):
-            ctx.command.reset_cooldown(ctx)
-            ERROR_EMBED.description = f"`@Parrot {ctx.command}` for help"
-            ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, ParrotCheckFailure):

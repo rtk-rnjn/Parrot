@@ -14,6 +14,7 @@ from core import Parrot, Context, Cog
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime
+from utilities.paginator import PaginationView
 
 from cogs.meta.robopage import SimplePages
 from cogs.config import method as mt_
@@ -737,8 +738,8 @@ class Configuration(Cog):
 `Duration:` {getattr(v['autowarn'].get('punish'), 'duration', None)}
 """
                 main.append(main_str)
-            page = SimplePages(main, ctx=ctx, per_page=3)
-            await page.start()
+            page = PaginationView(main)
+            await page.start(ctx)
 
     @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)

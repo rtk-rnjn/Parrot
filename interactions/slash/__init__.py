@@ -16,7 +16,6 @@ class ContextMenu(Cog):
         self.ctx_menu = app_commands.ContextMenu(
             name="Interpret as command",
             # description="Interpret the message as a command.",
-            guild_ids=[guild.id for guild in self.bot.guilds],
             callback=self.ctx_menu,
         )
         self.bot.tree.add_command(self.ctx_menu)
@@ -36,6 +35,12 @@ class ContextMenu(Cog):
         if message.content.startswith(prefix):
             await interaction.edit_original_message(
                 content=f"{interaction.user.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
+            )
+            return
+
+        if message.author.bot:
+            await interaction.edit_original_message(
+                content=f"{interaction.user.mention} the message is from a bot. Can't interpret it as command.",
             )
             return
 

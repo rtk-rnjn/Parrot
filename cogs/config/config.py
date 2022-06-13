@@ -527,11 +527,19 @@ class Configuration(Cog):
         for i in reward:
             role = ctx.guild.get_role(i["role"]) or None
             rwrd_tble.append([i["lvl", role.name if role else None]])
-        ignored_roles = ', '.join(
-            [getattr(ctx.guild.get_role(r), 'name', None) for r in leveling.get("ignore_role", []) if getattr(ctx.guild.get_role(r), 'name', None)]
+        ignored_roles = ", ".join(
+            [
+                getattr(ctx.guild.get_role(r), "name", None)
+                for r in leveling.get("ignore_role", [])
+                if getattr(ctx.guild.get_role(r), "name", None)
+            ]
         )
-        ignored_channel = ', '.join(
-            [getattr(ctx.guild.get_channel(r), 'name', None) for r in leveling.get("ignore_channel", []) if getattr(ctx.guild.get_channel(r), 'name', None)]
+        ignored_channel = ", ".join(
+            [
+                getattr(ctx.guild.get_channel(r), "name", None)
+                for r in leveling.get("ignore_channel", [])
+                if getattr(ctx.guild.get_channel(r), "name", None)
+            ]
         )
 
         await ctx.reply(
@@ -716,13 +724,17 @@ class Configuration(Cog):
         """To configure the automoderation"""
         if ctx.invoked_subcommand is None:
             try:
-                automod: typing.Dict[str, typing.Dict[str, typing.Any]] = self.bot.server_config[ctx.guild.id]["automod"]
+                automod: typing.Dict[
+                    str, typing.Dict[str, typing.Any]
+                ] = self.bot.server_config[ctx.guild.id]["automod"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
             main = []
             main_str = ""
             for k, v in automod.items():
-                main_str = main_str + f"""\N{BULLET} Name: {k.title()}
+                main_str = (
+                    main_str
+                    + f"""\N{BULLET} Name: {k.title()}
 
 `Enable    :` {v['enable']}
 `I. Channel:` {', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}
@@ -736,6 +748,7 @@ class Configuration(Cog):
 `Type    :` {getattr(v['autowarn'].get('punish'), 'type', None)}
 `Duration:` {getattr(v['autowarn'].get('punish'), 'duration', None)}
 """
+                )
                 main.append(main_str)
             page = SimplePages(main, ctx=ctx, per_page=3)
             await page.start()

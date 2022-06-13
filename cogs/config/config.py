@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+
 from discord.ext import commands
 import discord
 import typing
@@ -217,7 +218,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}"
         )
 
-    @config.command(aliases=["log"])
+    @config.group(aliases=["log"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(
         manage_channels=True, manage_webhooks=True, view_audit_log=True
@@ -226,38 +227,73 @@ class Configuration(Cog):
         self, ctx: Context, event: str, *, channel: discord.TextChannel = None
     ):
         """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
-        channel = channel or ctx.channel
-        if event not in events:
+        if not ctx.invoked_subcommand:
+            channel = channel or ctx.channel
+            if event.lower() not in events:
+                return await ctx.reply(
+                    f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
+                )
+            hooks = await channel.webhooks()
+            if len(hooks) >= 10:
+                for hook in hooks:
+                    if hook.user.id == self.bot.user.id:  # bot created that
+                        webhook = hook
+                        post = {str(event.lower()): str(webhook.url)}
+                        await self.bot.mongo.parrot_db.logging.update_one(
+                            {"_id": ctx.guild.id}, {"$set": post}, upsert=True
+                        )
+                        break
+                else:
+                    return await ctx.reply(
+                        f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
+                    )
+            else:
+                webhook = await channel.create_webhook(
+                    name=self.bot.user.name,
+                    reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
+                )
+                await self.bot.mongo.parrot_db.logging.update_one(
+                    {"_id": ctx.guild.id},
+                    {"$set": {str(event): str(webhook.url)}},
+                    upsert=True,
+                )
+            await ctx.reply(
+                f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}"
+            )
+
+    @logging.command(name="remove", aliases=["delete", "removeevent"])
+    @commands.has_permissions(administrator=True)
+    async def logging_remove(self, ctx: Context, event: str):
+        """To remove the logging event"""
+        if event.lower() not in events:
             return await ctx.reply(
                 f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
             )
-        hooks = await channel.webhooks()
-        if len(hooks) >= 10:
-            for hook in hooks:
-                if hook.user.id == self.bot.user.id:  # bot created that
-                    webhook = hook
-                    post = {str(event): str(webhook.url)}
-                    await self.bot.mongo.parrot_db.logging.update_one(
-                        {"_id": ctx.guild.id}, {"$set": post}, upsert=True
-                    )
-                    break
-            else:
-                return await ctx.reply(
-                    f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
-                )
-        else:
-            webhook = await channel.create_webhook(
-                name=self.bot.user.name,
-                reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
-            )
-            await self.bot.mongo.parrot_db.logging.update_one(
-                {"_id": ctx.guild.id},
-                {"$set": {str(event): str(webhook.url)}},
-                upsert=True,
-            )
-        await ctx.reply(
-            f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}"
+        await self.bot.mongo.parrot_db.logging.update_one(
+            {"_id": ctx.guild.id}, {"$set": {str(event.lower()): ""}}
         )
+        await ctx.reply(
+            f"{ctx.author.mention} removed `{event.replace('_', ' ').title()}` from the logging list"
+        )
+    
+    @logging.command(name="list")
+    @commands.has_permissions(administrator=True)
+    async def logging_list(self, ctx: Context):
+        """To list the logging events"""
+        main = []
+        if data := await self.bot.mongo.parrot_db.logging.find_one({"_id": ctx.guild.id}, {'_id': 0}):
+            for k, v in data.items():
+                if v:
+                    res = await self.bot.http_session.get(v)
+                    if res.status == 200:
+                        data = await res.json()
+                        channel = ctx.guild.get_channel(int(data['channel_id']))
+                        main.append([f"{k.replace('_', ' ').title()}", f"#{channel.name}"])
+        if main:
+            table = tabulate(main, headers=["Event", "Channel"], tablefmt="pretty")
+            await ctx.send(f"```\n{table}```")
+        else:
+            await ctx.reply(f"{ctx.author.mention} no logging events found")
 
     @config.command(aliases=["prefix"])
     @commands.has_permissions(administrator=True)
@@ -735,19 +771,20 @@ class Configuration(Cog):
             for k, v in automod.items():
                 main_str = f"""\N{BULLET} Name: {k.title()}
 
-`Enable    :` {v['enable']}
-`I. Channel:` {', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}
+`Enable    :` **{v['enable']}**
+`I. Channel:` **{', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}**
 
 [Autowarn]
-`Enabled:` {getattr(v['autowarn'], 'enable', False)}
-`Count  :` {getattr(v['autowarn'], 'count', 0)}
-`Delete :` {getattr(v['autowarn'], 'to_delete', False)}
+`Enabled   :` **{getattr(v['autowarn'], 'enable', False)}**
+`Count     :` **{getattr(v['autowarn'], 'count', 0)}**
+`Delete    :` **{getattr(v['autowarn'], 'to_delete', False)}**
 
 [Punish]
-`Type    :` {getattr(v['autowarn'].get('punish'), 'type', None)}
-`Duration:` {getattr(v['autowarn'].get('punish'), 'duration', None)}
+`Type      :` **{getattr(v['autowarn'].get('punish'), 'type', None)}**
+`Duration  :` **{getattr(v['autowarn'].get('punish'), 'duration', None)}**
 """
                 main.append(main_str)
+
             page = PaginationView(main)
             await page.start(ctx)
 

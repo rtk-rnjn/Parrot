@@ -210,7 +210,7 @@ class Parrot(commands.AutoShardedBot):
         self._prev_events.append(msg)
 
     async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
-        print(f'Ignoring exception in {event}', file=sys.stderr)
+        print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()
         trace = traceback.format_exc()
         webhook = discord.Webhook.from_url(

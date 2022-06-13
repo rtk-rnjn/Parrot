@@ -214,7 +214,8 @@ class Parrot(commands.AutoShardedBot):
         traceback.print_exc()
         trace = traceback.format_exc()
         webhook = discord.Webhook.from_url(
-            f"https://discordapp.com/api/webhooks/{ERROR_LOG_WEBHOOK_ID}/{self._error_log_token}", session=self.http_session
+            f"https://discordapp.com/api/webhooks/{ERROR_LOG_WEBHOOK_ID}/{self._error_log_token}",
+            session=self.http_session,
         )
         if webhook is not None:
             try:

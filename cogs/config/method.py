@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 import discord
+from core import Parrot, Context
+from typing import Union, Optional
 
 
-async def _enable(bot, ctx, cmd_cog, target, force=None):
+async def _enable(
+    bot: Parrot,
+    ctx: Context,
+    cmd_cog: str,
+    target: Union[discord.abc.Messageable, discord.Object],
+    force: Optional[bool]=None
+) -> None:
     collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
     data = await collection.find_one({"_id": cmd_cog})
     if not data:
@@ -30,7 +38,7 @@ async def _enable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable **server** wide"
             )
-    elif isinstance(target, discord.TextChannel):
+    elif isinstance(target, discord.abc.Messageable):
         if force:
             await collection.update_one(
                 {"_id": cmd_cog},
@@ -67,7 +75,13 @@ async def _enable(bot, ctx, cmd_cog, target, force=None):
             )
 
 
-async def _disable(bot, ctx, cmd_cog, target, force=None):
+async def _disable(
+    bot: Parrot,
+    ctx: Context,
+    cmd_cog: str,
+    target: Union[discord.abc.Messageable, discord.Object],
+    force: Optional[bool]=None
+) -> None:
     collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
     data = await collection.find_one({"_id": cmd_cog})
     if not data:
@@ -94,7 +108,7 @@ async def _disable(bot, ctx, cmd_cog, target, force=None):
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled **server** wide"
             )
-    elif isinstance(target, discord.TextChannel):
+    elif isinstance(target, discord.abc.Messageable):
         if force:
             await collection.update_one(
                 {"_id": cmd_cog},

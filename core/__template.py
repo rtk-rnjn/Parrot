@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Any, Dict
 
 post: Dict[str, Any] = {
@@ -43,8 +44,10 @@ post: Dict[str, Any] = {
         "enable": False,
         "channel": None,
         "reward": [
-            # "role": ROLE_ID,
-            # "lvl": LEVEL
+            # {
+            #     "role": ROLE_ID,
+            #     "lvl": LEVEL
+            # }
         ],
         "ignore_role": [],
         "ignore_channel": [],

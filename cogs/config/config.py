@@ -1,21 +1,23 @@
 from __future__ import annotations
-import asyncio
-from cogs.meta.robopage import SimplePages
-from cogs.config import method as mt_
-from cogs.ticket import method as mt
 
+import asyncio
 from discord.ext import commands
 import discord
 import typing
 import re
-
 import json
+
+from tabulate import tabulate
 
 from core import Parrot, Context, Cog
 
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime
+
+from cogs.meta.robopage import SimplePages
+from cogs.config import method as mt_
+from cogs.ticket import method as mt
 
 from .flags import AutoWarn, warnConfig
 
@@ -509,6 +511,28 @@ class Configuration(Cog):
                 f"{ctx.author.mention} set leveling system to: **{toggle}**"
             )
 
+    @leveling.command(name="show")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leveling_show(self, ctx: Context):
+        """To show leveling system"""
+        try:
+            leveling = self.bot.server_config[ctx.guild.id]["leveling"]
+        except KeyError:
+            return await ctx.reply(
+                f"{ctx.author.mention} leveling system is not set up yet!"
+            )
+        reward: typing.List[typing.Dict[str, int]] = leveling.get("reward", [])
+        rwrd_tble = []
+        for i in reward:
+            role = ctx.guild.get_role(i['role']) or None
+            rwrd_tble.append([i['lvl', role.name if role else None]])
+        await ctx.reply(
+            f"""```
+            {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
+            ```"""
+        )
+
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -623,8 +647,9 @@ class Configuration(Cog):
         if _ := await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id, "leveling.reward": level}
         ):
+            role = ctx.guild.get_role(_['role'])
             return await ctx.send(
-                f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{_['role']}**"
+                f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{getattr(role, 'name', 'Role Not Found')}**"
             )
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
@@ -1385,8 +1410,37 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     async def serverstats(self, ctx: Context):
         """Creates Fancy counters that everyone can see"""
+        table = []
+        table_role = []
         if ctx.invoked_subcommand is None:
-            return await self.bot.invoke_help_command(ctx)
+            try:
+                server_stats: typing.Dict[str, typing.Any] = self.bot.server_config[ctx.guild.id]["stats_channels"]
+            except KeyError:
+                return await self.bot.invoke_help_command(ctx)
+            for key, value in server_stats.items():
+                if key != "role":
+                    table.append(
+                        [
+                            key.title(),
+                            self.bot.get_channel(value.get['channel_id'].name if value.get('channel_id') else "None"),
+                            value.get("channel_type"),
+                            value.get("template"),
+                        ]
+                    )
+            for key, value in server_stats.get("role", {}).items():
+                role = ctx.guild.get_role(value.get("role_id"), 0)
+                channel = ctx.guild.get_channel(value.get("channel_id"), 0)
+                template = value.get("template")
+                table_role.append(
+                    [role.name if role else "None", channel.name if channel else "None", template]
+                )
+            await ctx.send(
+                f"""```
+{str(tabulate(table, headers=["Name", "Channel", "Type", "Template"], tablefmt="pretty"))}
+``````
+{str(tabulate(table_role, headers=["Role", "Channel", "Template"], tablefmt="pretty"))}
+```"""
+            )
 
     @serverstats.command(name="create")
     @commands.has_permissions(administrator=True)

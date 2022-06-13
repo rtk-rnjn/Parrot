@@ -716,9 +716,28 @@ class Configuration(Cog):
         """To configure the automoderation"""
         if ctx.invoked_subcommand is None:
             try:
-                automod = self.bot.server_config[ctx.guild.id]["automod"]
+                automod: typing.Dict[str, typing.Dict[str, typing.Any]] = self.bot.server_config[ctx.guild.id]["automod"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
+            main = []
+            for k, v in automod.items():
+                main_str = main + f"""\N{BULLET} Name: {k.title()}
+
+`Enable    :` {v['enable']}
+`I. Channel:` {', '.join([getattr(ctx.guild.get_channel(c), 'name', None) for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}
+
+[Autowarn]
+`Enabled:` {getattr(v['autowarn'], 'enable', False)}
+`Count  :` {getattr(v['autowarn'], 'count', 0)}
+`Delete :` {getattr(v['autowarn'], 'to_delete', False)}
+
+[Punish]
+`Type    :` {getattr(v['autowarn'].get('punish'), 'type', None)}
+`Duration:` {getattr(v['autowarn'].get('punish'), 'duration', None)}
+"""
+                main.append(main_str)
+            page = SimplePages(main, ctx=ctx, per_page=3)
+            await page.start()
 
     @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -1342,7 +1361,7 @@ class Configuration(Cog):
         em_lis = []
         collection = enable_disable[f"{ctx.guild.id}"]
         async for data in collection.find({}):
-            main = f"> Command/Cog: {data['_id']}"
+            main = f"\N{BULLET} Command/Cog: {data['_id']}"
             if data.get("channel_in"):
                 main += f"\n`Channel In :` <#{'>, <#'.join([(str(c) for c in data['channel_in'])])}>"
             if data.get("channel_out"):

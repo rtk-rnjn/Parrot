@@ -287,7 +287,9 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current], view=self
             )
         elif isinstance(self.embed_list[0], discord.File):
-            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
+            await interaction.response.edit_message(
+                attachments=[self.embed_list[0]], view=self
+            )
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -323,7 +325,9 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current], view=self
             )
         elif isinstance(self.embed_list[0], discord.File):
-            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
+            await interaction.response.edit_message(
+                attachments=[self.embed_list[0]], view=self
+            )
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -357,7 +361,9 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current], view=self
             )
         elif isinstance(self.embed_list[0], discord.File):
-            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
+            await interaction.response.edit_message(
+                attachments=[self.embed_list[0]], view=self
+            )
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -383,7 +389,9 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current], view=self
             )
         elif isinstance(self.embed_list[0], discord.File):
-            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
+            await interaction.response.edit_message(
+                attachments=[self.embed_list[0]], view=self
+            )
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self

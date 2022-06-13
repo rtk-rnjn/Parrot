@@ -253,7 +253,7 @@ class PaginatorView(discord.ui.View):
 class PaginationView(discord.ui.View):
     current = 0
 
-    def __init__(self, embed_list: List[str, discord.Embed]):
+    def __init__(self, embed_list: List[str, discord.Embed, discord.File]):
         super().__init__()
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
@@ -286,6 +286,8 @@ class PaginationView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.embed_list[self.current], view=self
             )
+        elif isinstance(self.embed_list[0], discord.File):
+            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -320,6 +322,8 @@ class PaginationView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.embed_list[self.current], view=self
             )
+        elif isinstance(self.embed_list[0], discord.File):
+            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -352,6 +356,8 @@ class PaginationView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.embed_list[self.current], view=self
             )
+        elif isinstance(self.embed_list[0], discord.File):
+            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -376,6 +382,8 @@ class PaginationView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.embed_list[self.current], view=self
             )
+        elif isinstance(self.embed_list[0], discord.File):
+            await interaction.response.edit_message(attachments=[self.embed_list[0]], view=self)
         else:
             await interaction.response.edit_message(
                 content=self.embed_list[self.current], view=self
@@ -384,6 +392,8 @@ class PaginationView(discord.ui.View):
     async def start(self, ctx: Context):
         if isinstance(self.embed_list[0], discord.Embed):
             self.message = await ctx.send(embed=self.embed_list[0], view=self)
+        elif isinstance(self.embed_list[0], discord.File):
+            self.message = await ctx.send(file=self.embed_list[0], view=self)
         else:
             self.message = await ctx.send(self.embed_list[0], view=self)
         self.user = ctx.author

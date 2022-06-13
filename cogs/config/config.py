@@ -525,8 +525,8 @@ class Configuration(Cog):
         reward: typing.List[typing.Dict[str, int]] = leveling.get("reward", [])
         rwrd_tble = []
         for i in reward:
-            role = ctx.guild.get_role(i['role']) or None
-            rwrd_tble.append([i['lvl', role.name if role else None]])
+            role = ctx.guild.get_role(i["role"]) or None
+            rwrd_tble.append([i["lvl", role.name if role else None]])
         await ctx.reply(
             f"""```
             {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
@@ -647,7 +647,7 @@ class Configuration(Cog):
         if _ := await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id, "leveling.reward": level}
         ):
-            role = ctx.guild.get_role(_['role'])
+            role = ctx.guild.get_role(_["role"])
             return await ctx.send(
                 f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{getattr(role, 'name', 'Role Not Found')}**"
             )
@@ -1414,7 +1414,9 @@ class Configuration(Cog):
         table_role = []
         if ctx.invoked_subcommand is None:
             try:
-                server_stats: typing.Dict[str, typing.Any] = self.bot.server_config[ctx.guild.id]["stats_channels"]
+                server_stats: typing.Dict[str, typing.Any] = self.bot.server_config[
+                    ctx.guild.id
+                ]["stats_channels"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
             for key, value in server_stats.items():
@@ -1422,7 +1424,11 @@ class Configuration(Cog):
                     table.append(
                         [
                             key.title(),
-                            self.bot.get_channel(value.get['channel_id'].name if value.get('channel_id') else "None"),
+                            self.bot.get_channel(
+                                value.get["channel_id"].name
+                                if value.get("channel_id")
+                                else "None"
+                            ),
                             value.get("channel_type"),
                             value.get("template"),
                         ]
@@ -1432,7 +1438,11 @@ class Configuration(Cog):
                 channel = ctx.guild.get_channel(value.get("channel_id"), 0)
                 template = value.get("template")
                 table_role.append(
-                    [role.name if role else "None", channel.name if channel else "None", template]
+                    [
+                        role.name if role else "None",
+                        channel.name if channel else "None",
+                        template,
+                    ]
                 )
             await ctx.send(
                 f"""```

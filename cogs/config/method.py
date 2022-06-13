@@ -10,7 +10,7 @@ async def _enable(
     ctx: Context,
     cmd_cog: str,
     target: Union[discord.abc.Messageable, discord.Object],
-    force: Optional[bool]=None
+    force: Optional[bool] = None,
 ) -> None:
     collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
     data = await collection.find_one({"_id": cmd_cog})
@@ -80,7 +80,7 @@ async def _disable(
     ctx: Context,
     cmd_cog: str,
     target: Union[discord.abc.Messageable, discord.Object],
-    force: Optional[bool]=None
+    force: Optional[bool] = None,
 ) -> None:
     collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
     data = await collection.find_one({"_id": cmd_cog})

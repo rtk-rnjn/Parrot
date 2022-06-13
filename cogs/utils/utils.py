@@ -1157,7 +1157,7 @@ class Utils(Cog):
                         reason="Updating server stats",
                     )
 
-            if roles := stats_channels.get("role", []   ):
+            if roles := stats_channels.get("role", []):
                 for role in roles:
                     role = guild.get_role(role["role_id"])
                     channel = guild.get_channel(role["channel_id"])

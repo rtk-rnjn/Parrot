@@ -34,7 +34,7 @@ AUTHOR_DISCRIMINATOR: int = data["discriminator"]
 
 GITHUB: str = data["github"]
 SUPPORT_SERVER: str = data["support_server"]
-JOIN_LEAVE_CHANNEL_ID: int = data["join_leave_channel_id"]
+WEBHOOK_JOIN_LEAVE_CHANNEL_ID: int = data["webhook_join_leave_channel_id"]
 SUPPORT_SERVER_ID = 741614680652644382
 
 MEME_PASS = "***qwerty123"

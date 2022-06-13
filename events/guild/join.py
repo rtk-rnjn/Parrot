@@ -3,13 +3,13 @@ from __future__ import annotations
 from core import Parrot, Cog
 from core.__template import post as POST
 
-from utilities.config import JOIN_LEAVE_CHANNEL_ID
+from utilities.config import WEBHOOK_JOIN_LEAVE_CHANNEL_ID
 
 import os
 import discord
 
-CHANNEL_ID = JOIN_LEAVE_CHANNEL_ID
-BASE_URL = f"https://discord.com/api/webhooks/{CHANNEL_ID}/"
+WEBHOOK_CHANNEL_ID = WEBHOOK_JOIN_LEAVE_CHANNEL_ID
+BASE_URL = f"https://discord.com/api/webhooks/{WEBHOOK_CHANNEL_ID}/"
 
 
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):

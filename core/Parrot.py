@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+import io
 
 import os
+import sys
 import traceback
 from typing import (
     Any,
@@ -65,6 +67,7 @@ intents.message_content = True
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
+ERROR_LOG_WEBHOOK_ID = 924513442273054730
 
 
 @ToAsync()
@@ -99,7 +102,7 @@ class Parrot(commands.AutoShardedBot):
         self._CogMixin__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages = 0
         self._change_log = None
-        self._error_log_token = os.environ["CHANNEL_TOKEN1"]
+        self._error_log_token = os.environ["CHANNEL_TOKEN2"]
         self.color = 0x87CEEB
         self.error_channel = None
         self.persistent_views_added = False
@@ -205,6 +208,28 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
+
+    async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
+        print(f'Ignoring exception in {event}', file=sys.stderr)
+        traceback.print_exc()
+        trace = traceback.format_exc()
+        webhook = discord.Webhook.from_url(
+            f"https://discordapp.com/api/webhooks/{ERROR_LOG_WEBHOOK_ID}/{self._error_log_token}",
+        )
+        if webhook is not None:
+            try:
+                await webhook.send(
+                    f"```py\nIgnoring exception in {event}\n{trace}\n```",
+                )
+            except discord.HTTPException:
+                await webhook.send(
+                    file=discord.File(
+                        io.BytesIO(
+                            f"Ignoring exception in {event}\n{trace}".encode("utf-8")
+                        ),
+                        filename="traceback.txt",
+                    )
+                )
 
     async def before_identify_hook(
         self, shard_id: int, *, initial: bool = False

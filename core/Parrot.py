@@ -35,6 +35,7 @@ from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 try:
     import topgg  # type: ignore
+
     HAS_TOP_GG = True
 except ImportError:
     HAS_TOP_GG = False
@@ -126,7 +127,9 @@ class Parrot(commands.AutoShardedBot):
 
         # Top.gg
         if HAS_TOP_GG:
-            self.topgg = topgg.DBLClient(self, os.environ["TOPGG"], autopost=True, post_shard_count=True)
+            self.topgg = topgg.DBLClient(
+                self, os.environ["TOPGG"], autopost=True, post_shard_count=True
+            )
             self.topgg_webhook = topgg.WebhookManager(self)
 
         self._auto_spam_count = Counter()

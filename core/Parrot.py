@@ -119,7 +119,9 @@ class Parrot(commands.AutoShardedBot):
         self._was_ready = False
 
         # Top.gg
-        self.topgg = topgg.DBLClient(self, os.environ["TOPGG"], autopost=True, post_shard_count=True)
+        self.topgg = topgg.DBLClient(
+            self, os.environ["TOPGG"], autopost=True, post_shard_count=True
+        )
         self.topgg_webhook = topgg.WebhookManager(self)
 
         self._auto_spam_count = Counter()

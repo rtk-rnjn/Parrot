@@ -323,8 +323,6 @@ class NASA(Cog):
             )
         em_list = []
         for index in range(0, len(res["collection"]["items"])):
-            if (index + 1) % 10 == 0:
-                break
             if data := res["collection"]["items"][index]:
                 try:
                     title = data["data"][0]["title"]
@@ -345,20 +343,20 @@ class NASA(Cog):
                     img, vid, srt = [], [], []
                     i, j, k = 1, 1, 1
                     if media:
-                        for link in media[:3]:
+                        for link in media[:10]:
                             if link.endswith(".jpg") or link.endswith(".png"):
                                 img.append(
-                                    f"[Link {i}]({urllib.parse.quote_plus(link)})"
+                                    f"[Link {i}]({link.replace(' ', '%20')})"
                                 )
                                 i += 1
                             if link.endswith(".mp4"):
                                 vid.append(
-                                    f"[Link {j}]({urllib.parse.quote_plus(link)})"
+                                    f"[Link {j}]({link.replace(' ', '%20')})"
                                 )
                                 j += 1
                             if link.endswith(".str"):
                                 srt.append(
-                                    f"[Link {k}]({urllib.parse.quote_plus(link)})"
+                                    f"[Link {k}]({link.replace(' ', '%20')})"
                                 )
                                 k += 1
 

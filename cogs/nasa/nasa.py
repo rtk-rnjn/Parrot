@@ -336,7 +336,7 @@ class NASA(Cog):
                             media_url, headers={"User-Agent": AGENT}
                         ) as r:
                             if r.status == 200:
-                                media = r.json()
+                                media = await r.json()
                             else:
                                 media = None
                     img, vid, srt = [], [], []

@@ -113,6 +113,7 @@ class Parrot(commands.AutoShardedBot):
     commands: Set[commands.Command]
     cached_messages: Sequence[discord.Message]
     guilds: List[discord.Guild]
+
     tree_cls: Type[discord.app_commands.CommandTree]
     tree: discord.app_commands.CommandTree
 
@@ -155,11 +156,9 @@ class Parrot(commands.AutoShardedBot):
 
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
-        # if HAS_TOP_GG:
-        #     self.topgg = topgg.DBLClient(
-        #         self, os.environ["TOPGG"], autopost=True, post_shard_count=True
-        #     )
-        #     self.topgg_webhook = topgg.WebhookManager(self)
+        if self.HAS_TOP_GG:
+            self.topgg = None
+            self.topgg_webhook = None
 
         self._auto_spam_count = Counter()
         self.resumes = defaultdict(list)
@@ -245,6 +244,11 @@ class Parrot(commands.AutoShardedBot):
             except Exception as e:
                 self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
+        if self.HAS_TOP_GG:
+            self.topgg = topgg.DBLClient(
+                self, os.environ["TOPGG"], autopost=True, post_shard_count=True, session=self.http_session
+            )
+            self.topgg_webhook = topgg.WebhookManager(self)
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -305,20 +309,21 @@ class Parrot(commands.AutoShardedBot):
         return self.mongo[db_name]
 
     async def on_autopost_success(self) -> None:
-        webhook = discord.Webhook.from_url(
-            f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
-            session=self.http_session,
-        )
-        if webhook is not None:
-            with suppress(discord.HTTPException):
-                await webhook.send(
-                    f"```py\n{self.user.name} posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count}).\n```",
-                    avatar_url=self.user.avatar.url,
-                    username=self.user.name,
-                )
+        if self.HAS_TOP_GG:
+            webhook = discord.Webhook.from_url(
+                f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
+                session=self.http_session,
+            )
+            if webhook is not None:
+                with suppress(discord.HTTPException):
+                    await webhook.send(
+                        f"```py\n{self.user.name} posted server count ({self.topgg.guild_count}), shard count ({self.shard_count}).\n```",
+                        avatar_url=self.user.avatar.url,
+                        username=self.user.name,
+                    )
 
-        st = f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
-        print(st)
+            st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
+            print(st)
 
     def run(self) -> None:
         """To run connect and login into discord"""

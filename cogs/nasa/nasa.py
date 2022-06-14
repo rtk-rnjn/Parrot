@@ -288,9 +288,7 @@ class NASA(Cog):
                 timestamp=discord.utils.utcnow(),
             )
             embed.set_image(url=f"{img}")
-            embed.set_footer(
-                text=f"Requested by {ctx.author}"
-            )
+            embed.set_footer(text=f"Requested by {ctx.author}")
             embed.set_thumbnail(
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
             )
@@ -346,19 +344,13 @@ class NASA(Cog):
                     if media:
                         for link in media[:10]:
                             if link.endswith(".jpg") or link.endswith(".png"):
-                                img.append(
-                                    f"[Image {i}]({link.replace(' ', '%20')})"
-                                )
+                                img.append(f"[Image {i}]({link.replace(' ', '%20')})")
                                 i += 1
                             if link.endswith(".mp4"):
-                                vid.append(
-                                    f"[Video {j}]({link.replace(' ', '%20')})"
-                                )
+                                vid.append(f"[Video {j}]({link.replace(' ', '%20')})")
                                 j += 1
                             if link.endswith(".str"):
-                                srt.append(
-                                    f"[Link {k}]({link.replace(' ', '%20')})"
-                                )
+                                srt.append(f"[Link {k}]({link.replace(' ', '%20')})")
                                 k += 1
 
                     embed = discord.Embed(

@@ -329,6 +329,7 @@ class NASA(Cog):
                     description = data["data"][0]["description"]
                     preview = data["links"][0]["href"].replace(" ", "%20")
                     media_url = data["href"]
+                    render = data["links"][0]["render"]
                 except KeyError:
                     continue
                 else:
@@ -365,7 +366,8 @@ class NASA(Cog):
                         description=f"{description[:1000]}...",
                         timestamp=discord.utils.utcnow(),
                     )
-                    embed.set_image(url=f"{preview}")
+                    if render == "image":
+                        embed.set_image(url=f"{preview}")
                     if img:
                         embed.add_field(
                             name="Images", value=f"{', '.join(img[:5])}", inline=False

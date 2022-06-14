@@ -6,6 +6,7 @@ import discord
 import aiohttp  # type: ignore
 import random
 from discord.ext import commands
+import urllib.parse  # type: ignore
 
 from utilities.paginator import PaginationView
 from core import Cog, Parrot, Context
@@ -328,7 +329,7 @@ class NASA(Cog):
                 try:
                     title = data["data"][0]["title"]
                     description = data["data"][0]["description"]
-                    # preview = data["links"][0]["href"]
+                    preview = data["links"][0]["href"]
                     media_url = data["href"]
                 except KeyError:
                     continue
@@ -346,13 +347,13 @@ class NASA(Cog):
                     if media:
                         for link in media[:3]:
                             if link.endswith(".jpg") or link.endswith(".png"):
-                                img.append(f"[Link {i}]({link})")
+                                img.append(f"[Link {i}]({urllib.parse.quote_plus(link)})")
                                 i += 1
                             if link.endswith(".mp4"):
-                                vid.append(f"[Link {j}]({link})")
+                                vid.append(f"[Link {j}]({urllib.parse.quote_plus(link)})")
                                 j += 1
                             if link.endswith(".str"):
-                                srt.append(f"[Link {k}]({link})")
+                                srt.append(f"[Link {k}]({urllib.parse.quote_plus(link)})")
                                 k += 1
 
                     embed = discord.Embed(
@@ -360,7 +361,7 @@ class NASA(Cog):
                         description=f"{description}",
                         timestamp=discord.utils.utcnow(),
                     )
-                    # embed.set_image(url=f"{preview}")
+                    embed.set_image(url=f"{urllib.parse.quote_plus(preview)}")
                     if img:
                         embed.add_field(
                             name="Images", value=f"{', '.join(img)}", inline=False

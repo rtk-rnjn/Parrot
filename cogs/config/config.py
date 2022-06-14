@@ -1549,6 +1549,16 @@ class Configuration(Cog):
         ctx: Context,
     ):
         """Creates a server stats counter"""
+        COUNTER_PAYLOAD = {
+            "bots": len([m for m in ctx.guild.members if m.bot]),
+            "members": len(ctx.guild.members),
+            "channels": len(ctx.guild.channels),
+            "roles": len(ctx.guild.roles),
+            "emojis": len(ctx.guild.emojis),
+            "text": ctx.guild.text_channels,
+            "voice": ctx.guild.voice_channels,
+            "categories": len(ctx.guild.categories),
+        }
         AVAILABLE_COUNTER = [
             "bots",
             "members",
@@ -1628,19 +1638,19 @@ class Configuration(Cog):
         try:
             if channel_type == "text":
                 channel = await ctx.guild.create_text_channel(
-                    _format.format(counter),
+                    _format.format(COUNTER_PAYLOAD[counter.lower()]),
                     position=0,
                     reason=f"Action requested by {ctx.author} ({ctx.author.id})",
                 )
             elif channel_type == "voice":
                 channel = await ctx.guild.create_voice_channel(
-                    _format.format(counter),
+                    _format.format(COUNTER_PAYLOAD[counter.lower()]),
                     position=0,
                     reason=f"Action requested by {ctx.author} ({ctx.author.id})",
                 )
             elif channel_type == "category":
                 channel = await ctx.guild.create_category(
-                    _format.format(counter),
+                    _format.format(COUNTER_PAYLOAD[counter.lower()]),
                     position=0,
                     reason=f"Action requested by {ctx.author} ({ctx.author.id})",
                 )

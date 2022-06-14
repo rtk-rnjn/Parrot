@@ -1508,14 +1508,11 @@ class Configuration(Cog):
                 return await self.bot.invoke_help_command(ctx)
             for key, value in server_stats.items():
                 if key != "role":
+                    chn = self.bot.get_channel(value['channel_id']) if value.get('channel_id') else 0
                     table.append(
                         [
                             key.title(),
-                            self.bot.get_channel(
-                                value.get["channel_id"].name
-                                if value.get("channel_id")
-                                else "None"
-                            ),
+                            f"#{chn.name}" if chn else "None",
                             value.get("channel_type"),
                             value.get("template"),
                         ]

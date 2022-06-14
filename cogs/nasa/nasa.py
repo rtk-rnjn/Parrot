@@ -289,7 +289,7 @@ class NASA(Cog):
             )
             embed.set_image(url=f"{img}")
             embed.set_footer(
-                text=f"Page {index+1}/{len(res['photos'])} | {ctx.author.name}"
+                text=f"Requested by {ctx.author}"
             )
             embed.set_thumbnail(
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
@@ -346,12 +346,12 @@ class NASA(Cog):
                         for link in media[:10]:
                             if link.endswith(".jpg") or link.endswith(".png"):
                                 img.append(
-                                    f"[Link {i}]({link.replace(' ', '%20')})"
+                                    f"[Image {i}]({link.replace(' ', '%20')})"
                                 )
                                 i += 1
                             if link.endswith(".mp4"):
                                 vid.append(
-                                    f"[Link {j}]({link.replace(' ', '%20')})"
+                                    f"[Video {j}]({link.replace(' ', '%20')})"
                                 )
                                 j += 1
                             if link.endswith(".str"):
@@ -362,26 +362,26 @@ class NASA(Cog):
 
                     embed = discord.Embed(
                         title=f"{title}",
-                        description=f"{description}",
+                        description=f"{description[:1000]}...",
                         timestamp=discord.utils.utcnow(),
                     )
                     embed.set_image(url=f"{preview}")
                     if img:
                         embed.add_field(
-                            name="Images", value=f"{', '.join(img)}", inline=False
+                            name="Images", value=f"{', '.join(img[:5])}", inline=False
                         )
                     if vid:
                         embed.add_field(
-                            name="Videos", value=f"{', '.join(vid)}", inline=False
+                            name="Videos", value=f"{', '.join(vid[:5])}", inline=False
                         )
                     if srt:
                         embed.add_field(
                             name="Srt", value=f"{', '.join(srt)}", inline=False
                         )
                     embed.set_footer(text=f"Requested by {ctx.author}")
-                    # embed.set_thumbnail(
-                    #     url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-                    # )
+                    embed.set_thumbnail(
+                        url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
+                    )
                     em_list.append(embed)
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")

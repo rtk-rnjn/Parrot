@@ -141,6 +141,7 @@ class CustomMember(CustomBase):
         self.id = member.id
         self.name = member.name
         self.nick = member.nick
+        self.display_name = member.display_name
         self.discriminator = member.discriminator
         self.bot = member.bot
         self.guild_permissions = member.guild_permissions

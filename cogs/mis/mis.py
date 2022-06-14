@@ -141,7 +141,7 @@ def _create_qr(
     board_size: Optional[int] = 10,
     border: Optional[int] = 4,
     **kw,
-) -> str:
+) -> discord.File:
     qr = qrcode.QRCode(
         version=version,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -151,9 +151,11 @@ def _create_qr(
     qr.add_data(text)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white", **kw)
-    _timestamp = int(discord.utils.utcnow().timestamp())  # float float
-    img.save(f"temp/{_timestamp}.png")
-    return f"temp/{_timestamp}.png"
+    
+    out = io.BytesIO()
+    img.save(out, "png")
+    out.seek(0)
+    return discord.File(out, filename="qr.png")
 
 
 class QRCodeFlags(
@@ -943,10 +945,9 @@ class Misc(Cog):
             payload["image_factory"] = StyledPilImage
         payload["board_size"] = flags.board_size
         payload["border"] = flags.border
-        path = await _create_qr(text, **payload)
-        f = discord.File(path, filename="name.png")
-        e = discord.Embed().set_image(url="attachment://name.png")
-        await ctx.reply(embed=e, file=f)
+        file = await _create_qr(text, **payload)
+        e = discord.Embed().set_image(url="attachment://qr.png")
+        await ctx.reply(embed=e, file=file)
 
     @commands.command(name="minecraftstatus", aliases=["mcs", "mcstatus"])
     @commands.cooldown(1, 5, commands.BucketType.member)

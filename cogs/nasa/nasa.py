@@ -1,8 +1,10 @@
 from __future__ import annotations
+import io
 
 import os
 import discord
 import aiohttp  # type: ignore
+import random
 from discord.ext import commands
 
 from utilities.paginator import PaginationView
@@ -10,12 +12,16 @@ from core import Cog, Parrot, Context
 
 NASA_KEY = os.environ["NASA_KEY"]
 
+with open(r"extra/user_agents.txt") as f:
+    USER_AGENTS = f.read().splitlines()
+
 
 class NASA(Cog):
     """Incridible NASA API Integration"""
 
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.random_agent = lambda x: random.choice(x)
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -41,7 +47,9 @@ class NASA(Cog):
             colour=discord.Colour.blue(),
             timestamp=discord.utils.utcnow(),
         )
-        embed.set_image(url=f"{link}")
+        res = await self.bot.http_session.get(link)
+        file = discord.File(io.BytesIO(await res.read()), filename="earth.jpg")
+        embed.set_image(url=f"attachment://earth.jpg", file=file)
         embed.set_thumbnail(
             url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
         )
@@ -300,7 +308,7 @@ class NASA(Cog):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
+            async with session.get(link, headers={"User-Agent": self.random_agent(USER_AGENTS)}) as r:
                 if r.status >= 300:
                     return await ctx.reply(
                         f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
@@ -316,9 +324,10 @@ class NASA(Cog):
             title = res["collection"]["items"][index]["data"][0]["title"]
             description = res["collection"]["items"][index]["data"][0]["description"]
             preview = res["collection"]["items"][index]["links"][0]["href"]
+            media_url = res["collection"]["items"][index]["href"]
 
             async with aiohttp.ClientSession() as session:
-                async with session.get() as r:
+                async with session.get(media_url) as r:
                     if r.status == 200:
                         media = r.json()
                     else:

@@ -1618,6 +1618,7 @@ class Configuration(Cog):
                 )
             else:
                 PAYLOAD["role_id"] = role.id
+                COUNTER_PAYLOAD["role"] = len(role.members)
 
         await ctx.send(f"{ctx.author.mention} {QUES[1]}")
         channel_type = await wait_for_response()

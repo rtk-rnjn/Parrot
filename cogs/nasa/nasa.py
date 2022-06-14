@@ -374,9 +374,9 @@ class NASA(Cog):
                             name="Srt", value=f"{', '.join(srt)}", inline=False
                         )
                     embed.set_footer(text=f"Requested by {ctx.author}")
-                    embed.set_thumbnail(
-                        url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-                    )
+                    # embed.set_thumbnail(
+                    #     url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
+                    # )
                     em_list.append(embed)
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")

@@ -104,18 +104,14 @@ class Hidden(Cog):
                 )
                 return
 
-            if (
-                data.get("guild", None) is not None
-                and data["guild"] != ctx.guild.id
-            ):
+            if data.get("guild", None) is not None and data["guild"] != ctx.guild.id:
                 await ctx.send(
                     f"{ctx.author.mention} This code is not for this server. Please ask for new code in support server"
                 )
                 return
 
-            if (
-                data.get("expiry", None) is not None
-                and data["expiry"] < int(discord.utils.utcnow().timestamp())
+            if data.get("expiry", None) is not None and data["expiry"] < int(
+                discord.utils.utcnow().timestamp()
             ):
                 await ctx.send(
                     f"{ctx.author.mention} This code has expired. Please ask for new code in support server"

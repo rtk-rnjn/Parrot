@@ -322,7 +322,7 @@ class NASA(Cog):
             )
         em_list = []
         for index in range(0, len(res["collection"]["items"])):
-            if (index+1) % 10 == 0:
+            if (index + 1) % 10 == 0:
                 break
             if data := res["collection"]["items"][index]:
                 try:

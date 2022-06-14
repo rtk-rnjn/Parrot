@@ -345,19 +345,13 @@ class NASA(Cog):
                     if media:
                         for link in media[:10]:
                             if link.endswith(".jpg") or link.endswith(".png"):
-                                img.append(
-                                    f"[Link {i}]({link.replace(' ', '%20')})"
-                                )
+                                img.append(f"[Link {i}]({link.replace(' ', '%20')})")
                                 i += 1
                             if link.endswith(".mp4"):
-                                vid.append(
-                                    f"[Link {j}]({link.replace(' ', '%20')})"
-                                )
+                                vid.append(f"[Link {j}]({link.replace(' ', '%20')})")
                                 j += 1
                             if link.endswith(".str"):
-                                srt.append(
-                                    f"[Link {k}]({link.replace(' ', '%20')})"
-                                )
+                                srt.append(f"[Link {k}]({link.replace(' ', '%20')})")
                                 k += 1
 
                     embed = discord.Embed(

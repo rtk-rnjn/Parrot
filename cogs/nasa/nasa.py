@@ -308,7 +308,9 @@ class NASA(Cog):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(link, headers={"User-Agent": self.random_agent(USER_AGENTS)}) as r:
+            async with session.get(
+                link, headers={"User-Agent": self.random_agent(USER_AGENTS)}
+            ) as r:
                 if r.status >= 300:
                     return await ctx.reply(
                         f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"

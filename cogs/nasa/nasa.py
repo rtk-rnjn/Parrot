@@ -307,8 +307,9 @@ class NASA(Cog):
     async def nasasearch(self, ctx: Context, *, string: commands.clean_content):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
+        AGENT = self.random_agent(USER_AGENTS)
         async with aiohttp.ClientSession() as session:
-            async with session.get(link, headers={"User-Agent": self.random_agent(USER_AGENTS)}) as r:
+            async with session.get(link, headers={"User-Agent": AGENT}) as r:
                 if r.status >= 300:
                     return await ctx.reply(
                         f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
@@ -321,50 +322,54 @@ class NASA(Cog):
             )
         em_list = []
         for index in range(0, len(res["collection"]["items"])):
-            title = res["collection"]["items"][index]["data"][0]["title"]
-            description = res["collection"]["items"][index]["data"][0]["description"]
-            preview = res["collection"]["items"][index]["links"][0]["href"]
-            media_url = res["collection"]["items"][index]["href"]
+            if data := res["collection"]["items"][index]:
+                try:
+                    title = data["data"][0]["title"]
+                    description = data["data"][0]["description"]
+                    preview = data["links"][0]["href"]
+                    media_url = data["href"]
+                except KeyError:
+                    continue
+                else:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(media_url, headers={'User-Agent': AGENT}) as r:
+                            if r.status == 200:
+                                media = r.json()
+                            else:
+                                media = None
+                    img, vid, srt = [], [], []
+                    i, j, k = 1, 1, 1
+                    if media:
+                        for link in media:
+                            if link.endswith(".jpg") or link.endswith(".png"):
+                                img.append(f"[Link {i}]({link})")
+                                i += 1
+                            if link.endswith(".mp4"):
+                                vid.append(f"[Link {j}]({link})")
+                                j += 1
+                            if link.endswith(".str"):
+                                srt.append(f"[Link {k}]({link})")
+                                k += 1
 
-            async with aiohttp.ClientSession() as session:
-                async with session.get(media_url) as r:
-                    if r.status == 200:
-                        media = r.json()
-                    else:
-                        media = None
-            img, vid, srt = [], [], []
-            i, j, k = 1, 1, 1
-            if media:
-                for link in media:
-                    if link.endswith(".jpg") or link.endswith(".png"):
-                        img.append(f"[Link {i}]({link})")
-                        i += 1
-                    if link.endswith(".mp4"):
-                        vid.append(f"[Link {j}]({link})")
-                        j += 1
-                    if link.endswith(".str"):
-                        srt.append(f"[Link {k}]({link})")
-                        k += 1
-
-            embed = discord.Embed(
-                title=f"{title}",
-                description=f"{description}",
-                timestamp=discord.utils.utcnow(),
-            )
-            embed.set_image(url=f"{preview}")
-            if img:
-                embed.add_field(name="Images", value=f"{', '.join(img)}", inline=False)
-            if vid:
-                embed.add_field(name="Videos", value=f"{', '.join(vid)}", inline=False)
-            if srt:
-                embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
-            embed.set_footer(
-                text=f"Requested by {ctx.author}"
-            )
-            embed.set_thumbnail(
-                url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-            )
-            em_list.append(embed)
+                    embed = discord.Embed(
+                        title=f"{title}",
+                        description=f"{description}",
+                        timestamp=discord.utils.utcnow(),
+                    )
+                    embed.set_image(url=f"{preview}")
+                    if img:
+                        embed.add_field(name="Images", value=f"{', '.join(img)}", inline=False)
+                    if vid:
+                        embed.add_field(name="Videos", value=f"{', '.join(vid)}", inline=False)
+                    if srt:
+                        embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
+                    embed.set_footer(
+                        text=f"Requested by {ctx.author}"
+                    )
+                    embed.set_thumbnail(
+                        url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
+                    )
+                    em_list.append(embed)
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)

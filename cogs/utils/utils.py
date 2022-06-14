@@ -54,9 +54,6 @@ class Utils(Cog):
         self.reminder_task.start()
         self.server_stats_updater.start()
 
-    # async def setup_hook(self) -> None:
-    #     self.reminder_task.start()
-
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="sparkles_", id=892435276264259665)
@@ -565,6 +562,7 @@ class Utils(Cog):
 
     async def cog_unload(self):
         self.reminder_task.cancel()
+        self.server_stats_updater.cancel()
 
     @commands.command(aliases=["level"])
     @commands.bot_has_permissions(attach_files=True)
@@ -1166,3 +1164,7 @@ class Utils(Cog):
                             name=role["template"].format(len(role.members)),
                             reason="Updating server stats",
                         )
+
+    @server_stats_updater.before_loop
+    async def before_server_stats_updater(self):
+        await self.bot.wait_until_ready()

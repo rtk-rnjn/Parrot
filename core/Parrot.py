@@ -246,7 +246,11 @@ class Parrot(commands.AutoShardedBot):
                 traceback.print_exc()
         if self.HAS_TOP_GG:
             self.topgg = topgg.DBLClient(
-                self, os.environ["TOPGG"], autopost=True, post_shard_count=True, session=self.http_session
+                self,
+                os.environ["TOPGG"],
+                autopost=True,
+                post_shard_count=True,
+                session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)
 

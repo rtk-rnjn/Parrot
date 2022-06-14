@@ -332,7 +332,9 @@ class NASA(Cog):
                     continue
                 else:
                     async with aiohttp.ClientSession() as session:
-                        async with session.get(media_url, headers={'User-Agent': AGENT}) as r:
+                        async with session.get(
+                            media_url, headers={"User-Agent": AGENT}
+                        ) as r:
                             if r.status == 200:
                                 media = r.json()
                             else:
@@ -358,14 +360,18 @@ class NASA(Cog):
                     )
                     embed.set_image(url=f"{preview}")
                     if img:
-                        embed.add_field(name="Images", value=f"{', '.join(img)}", inline=False)
+                        embed.add_field(
+                            name="Images", value=f"{', '.join(img)}", inline=False
+                        )
                     if vid:
-                        embed.add_field(name="Videos", value=f"{', '.join(vid)}", inline=False)
+                        embed.add_field(
+                            name="Videos", value=f"{', '.join(vid)}", inline=False
+                        )
                     if srt:
-                        embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
-                    embed.set_footer(
-                        text=f"Requested by {ctx.author}"
-                    )
+                        embed.add_field(
+                            name="Srt", value=f"{', '.join(srt)}", inline=False
+                        )
+                    embed.set_footer(text=f"Requested by {ctx.author}")
                     embed.set_thumbnail(
                         url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
                     )

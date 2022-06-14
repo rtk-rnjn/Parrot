@@ -1577,6 +1577,7 @@ class Configuration(Cog):
             "category",
         ]
         PAYLOAD = {}
+        PAYLOAD_R = {}
         OP = "$set"
 
         QUES = [
@@ -1617,7 +1618,7 @@ class Configuration(Cog):
                     f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
                 )
             else:
-                PAYLOAD["role_id"] = role.id
+                PAYLOAD_R["role_id"] = role.id
                 COUNTER_PAYLOAD["role"] = len(role.members)
 
         await ctx.send(f"{ctx.author.mention} {QUES[1]}")
@@ -1627,6 +1628,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid channel type! Available channel type: `{'`, `'.join(AVAILABLE_TYPE)}`"
             )
         PAYLOAD[f"{counter}.channel_type"] = channel_type
+        PAYLOAD_R["channel_type"] = channel_type
 
         await ctx.send(f"{ctx.author.mention} {QUES[2]}")
         _format = await wait_for_response()
@@ -1635,6 +1637,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid format! Please provide a valid format."
             )
         PAYLOAD[f"{counter}.template"] = _format
+        PAYLOAD_R["template"] = _format
 
         channel = 0
         try:
@@ -1663,13 +1666,16 @@ class Configuration(Cog):
         PAYLOAD[f"{counter}.channel_id"] = (
             channel.id if isinstance(channel, discord.abc.Messageable) else channel
         )
+        PAYLOAD_R["channel_id"] = (
+            channel.id if isinstance(channel, discord.abc.Messageable) else channel
+        )
 
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {
                 OP: {f"stats_channels.{k}": v for k, v in PAYLOAD.items()}
                 if counter != "role"
-                else {"role": PAYLOAD}
+                else {"stats_channels.role": PAYLOAD_R}
             },
             upsert=True,
         )
@@ -1695,11 +1701,46 @@ class Configuration(Cog):
             "categories",
             "emojis",
             "roles",
+            "role"
         ]
         if counter.lower() not in AVAILABLE:
             return await ctx.send(
                 f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`"
             )
+
+        async def wait_for_response() -> typing.Optional[str]:
+            def check(m: discord.Message) -> bool:
+                return m.author == ctx.author and m.channel == ctx.channel
+
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=60)
+                return msg.content.lower()
+            except asyncio.TimeoutError:
+                raise commands.BadArgument(
+                    f"{ctx.author.mention} You took too long to respond!"
+                )
+
+        if counter == "role":
+            await ctx.send(
+                f"{ctx.author.mention} Enter the role name/ID or you can even mention it"
+            )
+            role = await wait_for_response()
+            try:
+                role = await commands.RoleConverter().convert(ctx, role)
+            except commands.BadArgument:
+                return await ctx.send(
+                    f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
+                )
+            else:
+                await self.bot.mongo.parrot_db.server_config.update_one(
+                    {"_id": ctx.guild.id},
+                    {"$pull": {"stats_channels.role": {"role_id": role.id}}},
+                    upsert=True,
+                )
+                return await ctx.send(
+                    f"{ctx.author.mention} counter deleted for role {role.name} ({role.mention})"
+                )
+
         if data := await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id, "stats_channels": {"$exists": True}},
             {

@@ -878,6 +878,8 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice ban"""
+        if member.voice is None:
+            return await ctx.send(f"{ctx.author.mention} {member} is not in Voice Channel")
         await mt._voice_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -904,6 +906,8 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice unban"""
+        if member.voice is None:
+            return await ctx.send(f"{ctx.author.mention} {member} is not in Voice Channel")
         await mt._voice_unban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,

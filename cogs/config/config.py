@@ -1525,10 +1525,12 @@ class Configuration(Cog):
                     role = ctx.guild.get_role(value.get("role_id"), 0)
                     channel = ctx.guild.get_channel(value.get("channel_id"), 0)
                     template = value.get("template")
+                    channel_type = value.get("channel_type")
                     table_role.append(
                         [
                             role.name if role else "None",
                             channel.name if channel else "None",
+                            channel_type,
                             template,
                         ]
                     )
@@ -1536,7 +1538,7 @@ class Configuration(Cog):
                 f"""```
 {str(tabulate(table, headers=["Name", "Channel", "Type", "Template"], tablefmt="pretty"))}
 ``````
-{str(tabulate(table_role, headers=["Role", "Channel", "Template"], tablefmt="pretty"))}
+{str(tabulate(table_role, headers=["Role", "Channel", "Type", "Template"], tablefmt="pretty"))}
 ```"""
             )
 

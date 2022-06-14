@@ -29,6 +29,7 @@ post: Dict[str, Any] = {
             # {
             #   "role_id": None,
             #   "channel_id": None,
+            #   "channel_type": None,
             #   "template": None
             # }
         ],

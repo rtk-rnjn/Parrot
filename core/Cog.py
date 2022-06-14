@@ -22,6 +22,6 @@ class Cog(commands.Cog):
 
     def __str__(self) -> str:
         return "{0.__class__.__name__}".format(self)
-    
+
     def __repr__(self) -> str:
         return self.__str__()

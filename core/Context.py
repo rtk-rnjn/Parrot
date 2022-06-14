@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from .Parrot import Parrot
     from .Cog import Cog
 
+
 class Context(commands.Context):
     channel: discord.abc.Messageable
     prefix: Optional[str]

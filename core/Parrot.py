@@ -100,6 +100,7 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
+
     user: Optional[discord.ClientUser]
     help_command: Optional[commands.HelpCommand]
 

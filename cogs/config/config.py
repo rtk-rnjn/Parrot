@@ -1701,7 +1701,7 @@ class Configuration(Cog):
             "categories",
             "emojis",
             "roles",
-            "role"
+            "role",
         ]
         if counter.lower() not in AVAILABLE:
             return await ctx.send(

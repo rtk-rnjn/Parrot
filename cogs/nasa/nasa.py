@@ -331,19 +331,20 @@ class NASA(Cog):
                     if r.status == 200:
                         media = r.json()
                     else:
-                        pass
+                        media = None
             img, vid, srt = [], [], []
             i, j, k = 1, 1, 1
-            for link in media:
-                if link.endswith(".jpg") or link.endswith(".png"):
-                    img.append(f"[Link {i}]({link})")
-                    i += 1
-                if link.endswith(".mp4"):
-                    vid.append(f"[Link {j}]({link})")
-                    j += 1
-                if link.endswith(".str"):
-                    srt.append(f"[Link {k}]({link})")
-                    k += 1
+            if media:
+                for link in media:
+                    if link.endswith(".jpg") or link.endswith(".png"):
+                        img.append(f"[Link {i}]({link})")
+                        i += 1
+                    if link.endswith(".mp4"):
+                        vid.append(f"[Link {j}]({link})")
+                        j += 1
+                    if link.endswith(".str"):
+                        srt.append(f"[Link {k}]({link})")
+                        k += 1
 
             embed = discord.Embed(
                 title=f"{title}",

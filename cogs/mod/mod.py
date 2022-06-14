@@ -1030,7 +1030,9 @@ class Moderator(Cog):
     ):
         """To give the member voice move"""
 
-        def check(m: discord.Member, b: discord.VoiceState, a: discord.VoiceState) -> bool:
+        def check(
+            m: discord.Member, b: discord.VoiceState, a: discord.VoiceState
+        ) -> bool:
             return m.id == ctx.me.id and (b.channel.id != a.channel.id)
 
         if channel is None:

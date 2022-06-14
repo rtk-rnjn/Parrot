@@ -146,6 +146,8 @@ class Parrot(commands.AutoShardedBot):
         self._startup_log_token = os.environ["CHANNEL_TOKEN3"]
 
         self.color = 0x87CEEB
+        self.colour = self.color
+
         self.error_channel = None
         self.persistent_views_added = False
         self.spam_control = commands.CooldownMapping.from_cooldown(

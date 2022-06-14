@@ -1005,7 +1005,7 @@ class Moderator(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} you must be in voice channel to use the command"
             )
-        await ctx.voice.channel.edit(
+        await ctx.author.voice.channel.edit(
             user_limit=limit,
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
         )
@@ -1030,7 +1030,7 @@ class Moderator(Cog):
     ):
         """To give the member voice move"""
 
-        def check(m, b, a):
+        def check(m: discord.Member, b: discord.VoiceState, a: discord.VoiceState) -> bool:
             return m.id == ctx.me.id and (b.channel.id != a.channel.id)
 
         if channel is None:
@@ -1047,7 +1047,10 @@ class Moderator(Cog):
                 )
 
             try:
-                _, __, a = await self.bot.wait_for(
+                await ctx.send(
+                    f"{ctx.author.mention} move the bot to other channel as to move other users"
+                )
+                m, b, a = await self.bot.wait_for(
                     "voice_state_update", timeout=60, check=check
                 )
             except asyncio.TimeoutError:
@@ -1058,15 +1061,22 @@ class Moderator(Cog):
                         voice_channel=a.channel,
                         reason=reason,
                     )
-        else:
-            if not member:
-                member = channel.members
-
-            for mem in member:
-                await mem.edit(
-                    voice_channel=a,
-                    reason=reason,
+                return await ctx.send(
+                    f"{ctx.author.mention} moved {len(member)} members to {a.channel.mention}"
                 )
+
+        if not member:
+            member = channel.members
+
+        for mem in member:
+            await mem.edit(
+                voice_channel=a,
+                reason=reason,
+            )
+        await ctx.guild.me.edit(voice_channel=None)
+        return await ctx.send(
+            f"{ctx.author.mention} moved {len(member)} members to {a.channel.mention}"
+        )
 
     @commands.group(aliases=["emote"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))

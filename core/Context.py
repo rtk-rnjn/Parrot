@@ -22,15 +22,15 @@ CONFIRM_REACTIONS: Tuple[str, ...] = (
 
 if TYPE_CHECKING:
     from .Parrot import Parrot
-
+    from .Cog import Cog
 
 class Context(commands.Context):
-    channel: Union[
-        discord.VoiceChannel, discord.TextChannel, discord.Thread, discord.DMChannel
-    ]
-    prefix: str
+    channel: discord.abc.Messageable
+    prefix: Optional[str]
     command: commands.Command[Any, ..., Any]
     bot: Parrot
+    cog: Optional[Cog]
+    qualified_name: str
 
     """A custom implementation of commands.Context class."""
 

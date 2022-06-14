@@ -7,15 +7,22 @@ import io
 import os
 import sys
 import traceback
+import types
 from typing import (
     Any,
     Awaitable,
     Callable,
+    Collection,
     Iterator,
+    Mapping,
     Optional,
     Dict,
+    Sequence,
+    Set,
+    Type,
     Union,
     List,
+    TYPE_CHECKING,
 )
 import jishaku as jishaku  # type: ignore  # noqa: F401
 import datetime
@@ -62,7 +69,13 @@ from .__template import post as POST
 
 from time import perf_counter
 
-from .Context import Context
+if TYPE_CHECKING:
+    from .Context import Context
+    from .Cog import Cog
+else:
+    Context = commands.Context
+    Cog = commands.Cog
+
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -87,9 +100,23 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
+    user: Optional[discord.ClientUser]
+    help_command: Optional[commands.HelpCommand]
 
     http_session: ClientSession
     mongo: AsyncIOMotorClient
+
+    cogs: Mapping[str, Cog]
+    extensions: Mapping[str, types.ModuleType]
+
+    commands: Set[commands.Command]
+    cached_messages: Sequence[discord.Message]
+    guilds: List[discord.Guild]
+    tree_cls: Type[discord.app_commands.CommandTree]
+    tree: discord.app_commands.CommandTree
+
+    owner_id: Optional[int]
+    owner_ids: Optional[Collection[int]]
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(
@@ -251,6 +278,8 @@ class Parrot(commands.AutoShardedBot):
             try:
                 await webhook.send(
                     f"```py\nIgnoring exception in {event}\n{trace}\n```",
+                    avatar_url=self.user.avatar.url,
+                    username=self.user.name,
                 )
             except discord.HTTPException:
                 await webhook.send(
@@ -259,7 +288,9 @@ class Parrot(commands.AutoShardedBot):
                             f"Ignoring exception in {event}\n{trace}".encode("utf-8")
                         ),
                         filename="traceback.txt",
-                    )
+                    ),
+                    avatar_url=self.user.avatar.url,
+                    username=self.user.name,
                 )
 
     async def before_identify_hook(
@@ -281,6 +312,8 @@ class Parrot(commands.AutoShardedBot):
             with suppress(discord.HTTPException):
                 await webhook.send(
                     f"```py\n{self.user.name} posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count}).\n```",
+                    avatar_url=self.user.avatar.url,
+                    username=self.user.name,
                 )
 
         st = f"[{self.user.name.title()}] Posted server count ({self.topggpy.guild_count}), shard count ({self.shard_count})"
@@ -302,10 +335,14 @@ class Parrot(commands.AutoShardedBot):
             if webhook is not None:
                 await webhook.send(
                     f"```py\n{self.user.name.title()} is online!\n```",
+                    avatar_url=self.user.avatar.url,
+                    username=self.user.name,
                 )
                 with suppress(discord.HTTPException):
                     await webhook.send(
                         f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
+                        avatar_url=self.user.avatar.url,
+                        username=self.user.name,
                     )
                 with suppress(discord.HTTPException):
                     fail_msg = ""
@@ -314,6 +351,8 @@ class Parrot(commands.AutoShardedBot):
                             fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
                         await webhook.send(
                             f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
+                            avatar_url=self.user.avatar.url,
+                            username=self.user.name,
                         )
             self._was_ready = True
 
@@ -548,7 +587,7 @@ class Parrot(commands.AutoShardedBot):
     async def get_or_fetch_message(
         self,
         channel: discord.TextChannel,
-        messageID: int,
+        message: int,
         *,
         fetch: bool = True,
         cache: bool = True,
@@ -563,7 +602,7 @@ class Parrot(commands.AutoShardedBot):
         -----------
         channel: discord.TextChannel
             The channel to look in.
-        messageID: int
+        message: int
             The message ID to search for.
         fetch: bool
             To fetch the message from channel or not.
@@ -578,29 +617,28 @@ class Parrot(commands.AutoShardedBot):
             The Message or None if not found.
         """
         if force_fetch:
-            msg = await channel.fetch_message(messageID)
-            self.message_cache[messageID] = msg
+            msg = await channel.fetch_message(message)
+            self.message_cache[message] = msg
             return msg
 
-        if cache and (msg := self._connection._get_message(messageID)):
-            self.message_cache[messageID] = msg
+        if cache and (msg := self._connection._get_message(message)):
+            self.message_cache[message] = msg
             return msg
 
         if partial:
-            return channel.get_partial_message(messageID)
+            return channel.get_partial_message(message)
 
         try:
-            return self.message_cache[messageID]
+            return self.message_cache[message]
         except KeyError:
             if fetch:
                 async for msg in channel.history(
                     limit=1,
-                    before=discord.Object(messageID + 1),
-                    after=discord.Object(messageID - 1),
+                    before=discord.Object(message + 1),
+                    after=discord.Object(message - 1),
                 ):
-                    if msg:
-                        self.message_cache[messageID] = msg
-                        return msg
+                    self.message_cache[message] = msg
+                    return msg
 
     async def get_prefix(
         self, message: discord.Message

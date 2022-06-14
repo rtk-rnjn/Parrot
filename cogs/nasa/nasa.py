@@ -302,6 +302,7 @@ class NASA(Cog):
 
     @commands.command(aliases=["nsearch", "ns"])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
     @Context.with_type
     async def nasasearch(self, ctx: Context, *, string: commands.clean_content):
         """NASA Image and Video Library"""

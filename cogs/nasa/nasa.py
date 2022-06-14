@@ -308,7 +308,9 @@ class NASA(Cog):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(link, headers={"User-Agent": self.random_agent(USER_AGENTS)}) as r:
+            async with session.get(
+                link, headers={"User-Agent": self.random_agent(USER_AGENTS)}
+            ) as r:
                 if r.status >= 300:
                     return await ctx.reply(
                         f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
@@ -358,9 +360,7 @@ class NASA(Cog):
                 embed.add_field(name="Videos", value=f"{', '.join(vid)}", inline=False)
             if srt:
                 embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
-            embed.set_footer(
-                text=f"Requested by {ctx.author}"
-            )
+            embed.set_footer(text=f"Requested by {ctx.author}")
             embed.set_thumbnail(
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
             )

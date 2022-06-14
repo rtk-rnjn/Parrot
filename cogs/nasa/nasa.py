@@ -323,7 +323,7 @@ class NASA(Cog):
             )
         em_list = []
         for index in range(0, len(res["collection"]["items"])):
-            if (index+1) % 10 == 0:
+            if (index + 1) % 10 == 0:
                 break
             if data := res["collection"]["items"][index]:
                 try:
@@ -347,13 +347,19 @@ class NASA(Cog):
                     if media:
                         for link in media[:3]:
                             if link.endswith(".jpg") or link.endswith(".png"):
-                                img.append(f"[Link {i}]({urllib.parse.quote_plus(link)})")
+                                img.append(
+                                    f"[Link {i}]({urllib.parse.quote_plus(link)})"
+                                )
                                 i += 1
                             if link.endswith(".mp4"):
-                                vid.append(f"[Link {j}]({urllib.parse.quote_plus(link)})")
+                                vid.append(
+                                    f"[Link {j}]({urllib.parse.quote_plus(link)})"
+                                )
                                 j += 1
                             if link.endswith(".str"):
-                                srt.append(f"[Link {k}]({urllib.parse.quote_plus(link)})")
+                                srt.append(
+                                    f"[Link {k}]({urllib.parse.quote_plus(link)})"
+                                )
                                 k += 1
 
                     embed = discord.Embed(

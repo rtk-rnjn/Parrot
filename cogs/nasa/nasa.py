@@ -359,7 +359,7 @@ class NASA(Cog):
             if srt:
                 embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
             embed.set_footer(
-                f"Page {index+1}/{len(res['collection']['items'])} | {ctx.author.name}"
+                text=f"Requested by {ctx.author}"
             )
             embed.set_thumbnail(
                 url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"

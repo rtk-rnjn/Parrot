@@ -257,19 +257,18 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(
-            error, (
+            error,
+            (
                 commands.MissingRequiredArgument,
                 commands.BadUnionArgument,
                 commands.BadLiteralArgument,
-                commands.TooManyArguments
-            )
+                commands.TooManyArguments,
+            ),
         ):
             command = ctx.command
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
-            ERROR_EMBED.title = (
-                f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
-            )
+            ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MaxConcurrencyReached):

@@ -84,12 +84,14 @@ class Profanity(Cog):
             except KeyError:
                 pass
             else:
-                await self.__instant_action_parser(
-                    name=instant_action,
-                    ctx=ctx,
-                    message=message,
-                    **data["automod"]["profanity"]["autowarn"]["punish"],
-                )
+                if instant_action and to_warn:
+                    await self.__instant_action_parser(
+                        name=instant_action,
+                        ctx=ctx,
+                        message=message,
+                        **data["automod"]["mention"]["autowarn"]["punish"],
+                    )
+                    return
 
             if to_warn:
                 await warn(

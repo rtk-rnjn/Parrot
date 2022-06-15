@@ -17,6 +17,7 @@ from discord.ext import commands, tasks
 from discord.utils import MISSING  # type: ignore
 import textwrap
 import re
+import urllib.parse
 from aiohttp import ClientResponseError  # type: ignore
 
 from time import time
@@ -24,10 +25,15 @@ from urllib.parse import quote_plus
 from pymongo import ReturnDocument, UpdateOne
 import emojis
 
-from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE
+from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE, EQUATION_REGEX
 from utilities.rankcard import rank_card
 
-from core import Parrot, Cog
+if tp.TYPE_CHECKING:
+    from core import Parrot, Cog, Context
+else:
+    Parrot = commands.Bot
+    Cog = commands.Cog
+    Context = commands.Context
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -398,6 +404,27 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     else MISSING,
                 )
 
+    async def equation_solver(self, message: discord.Message):
+        def check(r: discord.Reaction, u: discord.User):
+            return r.message.id == message.id and u.id == message.author.id
+
+        if re.fullmatch(EQUATION_REGEX, message.content):
+            await message.add_reaction("\N{SPIRAL NOTE PAD}")
+
+            try:
+                r, u = await self.bot.wait_for('reaction_add', check=check, timeout=30)
+            except asyncio.TimeoutError:
+                return
+            if r.emoji == "\N{SPIRAL NOTE PAD}":
+                url = f"http://twitch.center/customapi/math?expr={urllib.parse.quote(message.content)}"
+                res = await self.bot.http_session.get(url)
+                if res.status == 200:
+                    text = await res.text()
+                else:
+                    return
+                if text != "???":
+                    await message.reply(text)
+
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         await self.bot.wait_until_ready()
@@ -407,6 +434,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await self._scam_detection(message)
         await self._on_message_leveling(message)
         await self._add_record_message_to_database(message)
+        await self.equation_solver(message)
 
         if message.guild.me.id == message.author.id:
             return
@@ -712,6 +740,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             await self._on_message_passive(after)
             await self._scam_detection(after)
             await self._edit_record_message_to_database(after)
+            await self.equation_solver(after)
 
     async def _on_message_leveling(self, message: discord.Message):
         if not message.guild:

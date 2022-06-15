@@ -1157,11 +1157,11 @@ class Utils(Cog):
 
                 if roles := stats_channels.get("role", []):
                     for role in roles:
-                        role = guild.get_role(role["role_id"])
+                        r = guild.get_role(role["role_id"])
                         channel = guild.get_channel(role["channel_id"])
                         if channel and role:
                             await channel.edit(
-                                name=role["template"].format(len(role.members)),
+                                name=role["template"].format(len(r.members)),
                                 reason="Updating server stats",
                             )
 

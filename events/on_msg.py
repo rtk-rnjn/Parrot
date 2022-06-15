@@ -421,6 +421,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             "sqrt",
             "^",
         ]
+        message.content = message.content.replace("\N{MULTIPLICATION SIGN}", "*").replace("\N{DIVISION SIGN}", "/")
+
         if message.author.bot:
             return
         if len(message.content) < 3:

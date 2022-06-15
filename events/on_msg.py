@@ -412,7 +412,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             await message.add_reaction("\N{SPIRAL NOTE PAD}")
 
             try:
-                r, u = await self.bot.wait_for('reaction_add', check=check, timeout=30)
+                r, u = await self.bot.wait_for("reaction_add", check=check, timeout=30)
             except asyncio.TimeoutError:
                 return
             if r.emoji == "\N{SPIRAL NOTE PAD}":

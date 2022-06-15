@@ -328,7 +328,6 @@ class Utils(Cog):
         question = questions_and_choices[0]
         choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
 
-
         body = "\n".join(f"{key}: {c}" for key, c in choices)
         poll = await ctx.send(f"**Poll: {question}**\n\n{body}")
         await ctx.bulk_add_reactions(poll, *[emoji for emoji, _ in choices])

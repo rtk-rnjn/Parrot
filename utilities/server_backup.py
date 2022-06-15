@@ -253,7 +253,7 @@ class Backup:
 
 
 class BackupLoader:
-    def __init__(self, bot: Parrot, data):
+    def __init__(self, bot: Parrot, data: Dict[str, Any]):
         self.data = data
         self.bot = bot
         self.id_translator = {}
@@ -294,14 +294,8 @@ class BackupLoader:
 
     async def run_tasks(self, coros, wait=True):
         async def executor(_coro):
-            try:
-                await _coro
-
-            except Exception:
-                pass
-
-            finally:
-                self.semaphore.release()
+            await _coro
+            self.semaphore.release()
 
         tasks = []
         for coro in coros:
@@ -323,23 +317,15 @@ class BackupLoader:
             difference = len(self.data["roles"]) - len(existing_roles)
             for role in existing_roles:
                 if difference < 0:
-                    try:
-                        await role.delete(reason=self.reason)
-                    except Exception:
-                        pass
-
-                    else:
-                        difference += 1
-
+                    await role.delete(reason=self.reason)
+                    difference += 1
                 else:
                     break
 
         if self.options.channels:
             for channel in self.guild.channels:
-                try:
-                    await channel.delete(reason=self.reason)
-                except Exception:
-                    pass
+                await channel.delete(reason=self.reason)
+
 
     async def _load_settings(self):
         await self.guild.edit(
@@ -369,40 +355,38 @@ class BackupLoader:
             )
         )
         for role in reversed(self.data["roles"]):
-            try:
-                if role["default"]:
-                    await self.guild.default_role.edit(
-                        permissions=discord.Permissions(role["permissions"])
-                    )
-                    new_role = self.guild.default_role
+            if role["default"]:
+                await self.guild.default_role.edit(
+                    permissions=discord.Permissions(role["permissions"])
+                )
+                new_role = self.guild.default_role
+            else:
+                kwargs = {
+                    "name": role["name"],
+                    "hoist": role["hoist"],
+                    "mentionable": role["mentionable"],
+                    "color": discord.Color(role["color"]),
+                    "permissions": discord.Permissions.none(),
+                    "reason": self.reason,
+                }
+
+                if role["unicode_emoji"]:
+                    kwargs["unicode_emoji"] = role["unicode_emoji"]
+
+                if len(existing_roles) == 0:
+                    try:
+                        new_role = await asyncio.wait_for(
+                            self.guild.create_role(**kwargs), 10
+                        )
+                    except asyncio.TimeoutError:
+                        # Probably hit the 24h rate limit. Just skip roles
+                        break
                 else:
-                    kwargs = {
-                        "name": role["name"],
-                        "hoist": role["hoist"],
-                        "mentionable": role["mentionable"],
-                        "color": discord.Color(role["color"]),
-                        "permissions": discord.Permissions.none(),
-                        "reason": self.reason,
-                    }
+                    new_role = existing_roles.pop(0)
+                    await new_role.edit(**kwargs)
 
-                    if role["unicode_emoji"]:
-                        kwargs["unicode_emoji"] = role["unicode_emoji"]
+            self.id_translator[role["id"]] = new_role.id
 
-                    if len(existing_roles) == 0:
-                        try:
-                            new_role = await asyncio.wait_for(
-                                self.guild.create_role(**kwargs), 10
-                            )
-                        except asyncio.TimeoutError:
-                            # Probably hit the 24h rate limit. Just skip roles
-                            break
-                    else:
-                        new_role = existing_roles.pop(0)
-                        await new_role.edit(**kwargs)
-
-                self.id_translator[role["id"]] = new_role.id
-            except Exception:
-                pass
 
     async def _load_role_permissions(self):
         tasks = []
@@ -417,53 +401,44 @@ class BackupLoader:
 
     async def _load_categories(self):
         for category in self.data["categories"]:
-            try:
-                created = await self.guild.create_category_channel(
-                    name=category["name"],
-                    overwrites=await self._overwrites_from_json(category["overwrites"]),
-                    reason=self.reason,
-                )
-                self.id_translator[category["id"]] = created.id
-            except Exception:
-                pass
+            created = await self.guild.create_category_channel(
+                name=category["name"],
+                overwrites=await self._overwrites_from_json(category["overwrites"]),
+                reason=self.reason,
+            )
+            self.id_translator[category["id"]] = created.id
 
     async def _load_text_channels(self):
         for tchannel in self.data["text_channels"]:
-            try:
-                created = await self.guild.create_text_channel(
-                    name=tchannel["name"],
-                    overwrites=await self._overwrites_from_json(tchannel["overwrites"]),
-                    category=discord.Object(
-                        self.id_translator.get(tchannel["category"])
-                    ),
-                    reason=self.reason,
-                )
+            created = await self.guild.create_text_channel(
+                name=tchannel["name"],
+                overwrites=await self._overwrites_from_json(tchannel["overwrites"]),
+                category=discord.Object(
+                    self.id_translator.get(tchannel["category"])
+                ),
+                reason=self.reason,
+            )
 
-                self.id_translator[tchannel["id"]] = created.id
-                await created.edit(
-                    topic=self._translate_mentions(tchannel["topic"]),
-                    nsfw=tchannel["nsfw"],
-                )
-            except Exception:
-                pass
+            self.id_translator[tchannel["id"]] = created.id
+            await created.edit(
+                topic=self._translate_mentions(tchannel["topic"]),
+                nsfw=tchannel["nsfw"],
+            )
 
     async def _load_voice_channels(self):
         for vchannel in self.data["voice_channels"]:
-            try:
-                created = await self.guild.create_voice_channel(
-                    name=vchannel["name"],
-                    overwrites=await self._overwrites_from_json(vchannel["overwrites"]),
-                    category=discord.Object(
-                        self.id_translator.get(vchannel["category"])
-                    ),
-                    reason=self.reason,
-                )
-                await created.edit(
-                    bitrate=vchannel["bitrate"], user_limit=vchannel["user_limit"]
-                )
-                self.id_translator[vchannel["id"]] = created.id
-            except Exception:
-                pass
+            created = await self.guild.create_voice_channel(
+                name=vchannel["name"],
+                overwrites=await self._overwrites_from_json(vchannel["overwrites"]),
+                category=discord.Object(
+                    self.id_translator.get(vchannel["category"])
+                ),
+                reason=self.reason,
+            )
+            await created.edit(
+                bitrate=vchannel["bitrate"], user_limit=vchannel["user_limit"]
+            )
+            self.id_translator[vchannel["id"]] = created.id
 
     async def _load_channels(self):
         await self._load_categories()
@@ -522,16 +497,13 @@ class BackupLoader:
 
         await self.run_tasks(tasks)
 
-    async def load(self, guild, loader: discord.User, options: BooleanArgs = None):
+    async def load(self, guild: discord.Guild, loader: discord.User, options: BooleanArgs = None):
         self.options = options or self.options
         self.guild = guild
         self.loader = loader
         self.reason = f"Backup loaded by {loader}"
 
-        try:
-            await self._prepare_guild()
-        except Exception:
-            pass
+        await self._prepare_guild()
 
         steps = [
             ("roles", self._load_roles),
@@ -543,7 +515,4 @@ class BackupLoader:
         ]
         for option, coro in steps:
             if self.options.get(option):
-                try:
-                    await coro()
-                except Exception:
-                    pass
+                await coro()

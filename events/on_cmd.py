@@ -17,8 +17,6 @@ with open("extra/quote.txt") as f:
 
 quote = quote.split("\n")
 QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
-CHANNEL_TOKEN_2 = 924513442273054730
-TOKEN_2 = os.environ["CHANNEL_TOKEN2"]
 
 
 class ErrorView(discord.ui.View):

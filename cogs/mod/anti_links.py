@@ -72,7 +72,7 @@ class LinkProt(Cog):
                     "punish"
                 ]["type"]
             except KeyError:
-                pass
+                instant_action = False
             else:
                 if instant_action and to_warn:
                     await self.__instant_action_parser(
@@ -81,9 +81,8 @@ class LinkProt(Cog):
                         message=message,
                         **data["automod"]["mention"]["autowarn"]["punish"],
                     )
-                    return
 
-            if to_warn:
+            if to_warn and not instant_action:
                 await warn(
                     message.guild,
                     message.author,

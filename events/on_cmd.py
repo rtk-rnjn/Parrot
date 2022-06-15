@@ -108,7 +108,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                     )
 
     @Cog.listener()
-    async def on_command_error(self, ctx: Context, error):
+    async def on_command_error(self, ctx: Context, error: commands.CommandError):
         await self.bot.wait_until_ready()
         # if command has local error handler, return
         if hasattr(ctx.command, "on_error"):

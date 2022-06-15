@@ -328,11 +328,12 @@ class Utils(Cog):
         question = questions_and_choices[0]
         choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
 
-        await ctx.message.delete(delay=0)
 
         body = "\n".join(f"{key}: {c}" for key, c in choices)
         poll = await ctx.send(f"**Poll: {question}**\n\n{body}")
         await ctx.bulk_add_reactions(poll, *[emoji for emoji, _ in choices])
+
+        await ctx.message.delete(delay=5)
 
     @commands.group(name="todo", invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -1146,13 +1147,14 @@ class Utils(Cog):
                 pass
             else:
                 for k, v in stats_channels.items():
-                    v: Dict[str, Any]
-                    channel = guild.get_channel(v["channel_id"])
-                    if channel:
-                        await channel.edit(
-                            name=v["template"].format(PAYLOAD[k]),
-                            reason="Updating server stats",
-                        )
+                    if k != "role":
+                        v: Dict[str, Any]
+                        channel = guild.get_channel(v["channel_id"])
+                        if channel:
+                            await channel.edit(
+                                name=v["template"].format(PAYLOAD[k]),
+                                reason="Updating server stats",
+                            )
 
                 if roles := stats_channels.get("role", []):
                     for role in roles:

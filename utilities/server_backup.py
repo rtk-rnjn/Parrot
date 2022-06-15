@@ -326,7 +326,6 @@ class BackupLoader:
             for channel in self.guild.channels:
                 await channel.delete(reason=self.reason)
 
-
     async def _load_settings(self):
         await self.guild.edit(
             name=self.data["name"],
@@ -387,7 +386,6 @@ class BackupLoader:
 
             self.id_translator[role["id"]] = new_role.id
 
-
     async def _load_role_permissions(self):
         tasks = []
         for role in self.data["roles"]:
@@ -413,9 +411,7 @@ class BackupLoader:
             created = await self.guild.create_text_channel(
                 name=tchannel["name"],
                 overwrites=await self._overwrites_from_json(tchannel["overwrites"]),
-                category=discord.Object(
-                    self.id_translator.get(tchannel["category"])
-                ),
+                category=discord.Object(self.id_translator.get(tchannel["category"])),
                 reason=self.reason,
             )
 
@@ -430,9 +426,7 @@ class BackupLoader:
             created = await self.guild.create_voice_channel(
                 name=vchannel["name"],
                 overwrites=await self._overwrites_from_json(vchannel["overwrites"]),
-                category=discord.Object(
-                    self.id_translator.get(vchannel["category"])
-                ),
+                category=discord.Object(self.id_translator.get(vchannel["category"])),
                 reason=self.reason,
             )
             await created.edit(
@@ -497,7 +491,9 @@ class BackupLoader:
 
         await self.run_tasks(tasks)
 
-    async def load(self, guild: discord.Guild, loader: discord.User, options: BooleanArgs = None):
+    async def load(
+        self, guild: discord.Guild, loader: discord.User, options: BooleanArgs = None
+    ):
         self.options = options or self.options
         self.guild = guild
         self.loader = loader

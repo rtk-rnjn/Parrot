@@ -405,6 +405,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     async def equation_solver(self, message: discord.Message):
+        if message.author.bot:
+            return
+        if len(message.content) < 3:
+            return
+
         def check(r: discord.Reaction, u: discord.User):
             return r.message.id == message.id and u.id == message.author.id
 

@@ -69,13 +69,8 @@ from .__template import post as POST
 
 from time import perf_counter
 
-if TYPE_CHECKING:
-    from .Context import Context
-    from .Cog import Cog
-else:
-    Context = commands.Context
-    Cog = commands.Cog
-
+from .Context import Context
+from .Cog import Cog
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"

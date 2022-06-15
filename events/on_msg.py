@@ -423,7 +423,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 else:
                     return
                 if text != "???":
-                    await message.reply(text)
+                    return await message.reply(text)
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

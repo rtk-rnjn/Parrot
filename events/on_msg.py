@@ -405,7 +405,22 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     async def equation_solver(self, message: discord.Message):
-        OP = ['+', '-', '*', '/', 'sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'log', 'ln', 'sqrt', '^']
+        OP = [
+            "+",
+            "-",
+            "*",
+            "/",
+            "sin",
+            "cos",
+            "tan",
+            "cot",
+            "sec",
+            "csc",
+            "log",
+            "ln",
+            "sqrt",
+            "^",
+        ]
         if message.author.bot:
             return
         if len(message.content) < 3:

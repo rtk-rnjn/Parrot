@@ -382,8 +382,8 @@ class BackupLoader:
                 else:
                     new_role = existing_roles.pop(0)
                     await new_role.edit(**kwargs)
-
-            self.id_translator[role["id"]] = new_role.id
+            if new_role:
+                self.id_translator[role["id"]] = new_role.id
 
     async def _load_role_permissions(self):
         tasks = []

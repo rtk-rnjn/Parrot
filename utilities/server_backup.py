@@ -180,7 +180,7 @@ class BackupSaver:
         self.data = {
             "id": str(self.guild.id),
             "name": self.guild.name,
-            "icon_url": str(getattr(self.guild.icon), "url", None),
+            "icon_url": str(getattr(self.guild.icon, "url", None)),
             "owner": str(self.guild.owner_id),
             "member_count": self.guild.member_count,
             "system_channel": str(self.guild.system_channel),

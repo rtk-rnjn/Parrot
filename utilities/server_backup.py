@@ -86,7 +86,7 @@ class BackupSaver:
                             {
                                 "channel": str(webhook.channel.id),
                                 "name": webhook.name,
-                                "avatar": str(webhook.avatar_url),
+                                "avatar": str(webhook.display_avatar.url),
                                 "url": webhook.url,
                             }
                             for webhook in await tchannel.webhooks()
@@ -180,7 +180,7 @@ class BackupSaver:
         self.data = {
             "id": str(self.guild.id),
             "name": self.guild.name,
-            "icon_url": str(self.guild.icon_url),
+            "icon_url": str(getattr(self.guild.icon), "url", None),
             "owner": str(self.guild.owner_id),
             "member_count": self.guild.member_count,
             "system_channel": str(self.guild.system_channel),

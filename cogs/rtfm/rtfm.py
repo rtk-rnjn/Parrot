@@ -35,10 +35,17 @@ from . import _doc
 
 from ._used import get_raw, wrapping, prepare_payload, execute_run
 
+try:
+    import lxml
+    HTML_PARSER = "lxml"
+except ImportError:
+    HTML_PARSER = "html.parser"
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 with open("extra/lang.txt") as f:
     languages = f.read()
+
 
 GITHUB_API_URL = "https://api.github.com"
 API_ROOT_RP = "https://realpython.com/search/api/v1/"
@@ -711,7 +718,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                         "An error occurred (status code: {response.status}). Retry later."
                     )
 
-                soup = BeautifulSoup(await response.text(), "lxml")
+                soup = BeautifulSoup(await response.text(), HTML_PARSER)
 
                 nameTag = soup.find("h2", string="NAME\n")
 
@@ -1334,7 +1341,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 return error_embed
 
             soup = BeautifulSoup(
-                await response.text(), features="lxml"
+                await response.text(), features=HTML_PARSER
             )  # changed the parser
             first_kata_div = await _doc.get_ele(
                 soup.find_all, "div", class_="item-title px-0"

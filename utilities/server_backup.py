@@ -199,9 +199,9 @@ class Backup:
             await asyncio.sleep(0)
 
     async def _save_bans(self):
-        for reason, user in await self.guild.bans():
+        async for entry in self.guild.bans():
             try:
-                self.data["bans"].append({"user": str(user.id), "reason": reason})
+                self.data["bans"].append({"user": str(entry.user.id), "reason": entry.reason})
             except Exception:
                 pass
 
@@ -260,7 +260,7 @@ class BackupLoader:
         self.options = BooleanArgs([])
         self.semaphore = asyncio.Semaphore(2)
 
-    async def _overwrites_from_json(self, json):
+    async def _overwrites_from_json(self, json: Dict[str, Any]):
         overwrites = {}
         for union_id, overwrite in json.items():
             try:
@@ -272,7 +272,7 @@ class BackupLoader:
                         self.guild.roles,
                     )
                 )
-                if len(roles) == 0:
+                if not roles:
                     continue
 
                 union = roles[0]

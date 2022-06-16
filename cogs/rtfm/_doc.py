@@ -13,6 +13,12 @@ from typing import Any, Optional
 from utilities.converters import ToAsync
 from core import Context
 
+try:
+    import lxml
+    HTML_PARSER = "lxml"
+except ImportError:
+    HTML_PARSER = "html.parser"
+
 
 @ToAsync()
 def get_ele(soup, name, **kw: Any):
@@ -35,7 +41,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
                 )
 
             soup = BeautifulSoup(
-                str(await response.text()), "lxml"
+                str(await response.text()), HTML_PARSER
             )  # icantinstalllxmlinheroku
 
             def soup_match(tag):
@@ -81,7 +87,7 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            soup = BeautifulSoup(await response.text(), "lxml")
+            soup = BeautifulSoup(await response.text(), HTML_PARSER)
             uls = await get_ele(soup, "ul", class_="mw-search-results")
 
             if not uls:
@@ -131,7 +137,7 @@ async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            results = BeautifulSoup(await response.text(), "lxml").find(
+            results = BeautifulSoup(await response.text(), HTML_PARSER).find(
                 "div", class_="searchresults"
             )
 

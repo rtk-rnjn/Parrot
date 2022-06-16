@@ -10,6 +10,13 @@ import aiohttp  # type: ignore
 import discord
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter  # type: ignore
+from core import Context
+
+try:
+    import lxml
+    HTML_PARSER = "lxml"
+except ImportError:
+    HTML_PARSER = "html.parser"
 
 
 class DocMarkdownConverter(MarkdownConverter):
@@ -29,10 +36,10 @@ class DocMarkdownConverter(MarkdownConverter):
 
 
 def markdownify(html):
-    return DocMarkdownConverter(bullets="•").convert(html)
+    return DocMarkdownConverter(bullets="\N{BULLET}").convert(html)
 
 
-async def _process_mozilla_doc(ctx, url):
+async def _process_mozilla_doc(ctx: Context, url):
     """
     From a given url from developers.mozilla.org, processes format,
     returns tag formatted content
@@ -46,7 +53,7 @@ async def _process_mozilla_doc(ctx, url):
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            body = BeautifulSoup(await response.text(), "lxml").find("body")
+            body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
 
     # if body.get('class')[0] == 'error':
     #     # 404
@@ -128,7 +135,7 @@ async def _git_main_ref(part, ctx, text):
                 # Website redirects to home page
                 return await ctx.send("No results")
 
-            soup = BeautifulSoup(await response.text(), "lxml")
+            soup = BeautifulSoup(await response.text(), HTML_PARSER)
             sectors = soup.find_all("div", {"class": "sect1"}, limit=3)
 
             title = sectors[0].find("p").text
@@ -170,7 +177,7 @@ async def sql_ref(ctx, text):
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            body = BeautifulSoup(await response.text(), "lxml").find("body")
+            body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
             intro = body.find(
                 lambda x: x.name == "h2" and "Introduction to " in x.string
             )
@@ -212,7 +219,7 @@ async def haskell_ref(ctx, text):
                     f"An error occurred (status code: {response.status}). Retry later."
                 )
 
-            soup = BeautifulSoup(await response.text(), "lxml").find(
+            soup = BeautifulSoup(await response.text(), HTML_PARSER).find(
                 "div", id="content"
             )
 

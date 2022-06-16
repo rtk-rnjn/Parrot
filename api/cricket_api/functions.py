@@ -10,6 +10,12 @@ import re
 
 from typing import Any, Callable, List, Optional, Dict
 
+try:
+    import lxml
+    HTML_PARSER = "lxml"
+except ImportError:
+    HTML_PARSER = "html.parser"
+
 
 class ToAsync:
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
@@ -58,7 +64,7 @@ def find_all(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[List[str
 
 @ToAsync()
 def parse_url(html: str) -> BeautifulSoup:
-    return BeautifulSoup(html, "lxml")
+    return BeautifulSoup(html, HTML_PARSER)
 
 
 @ToAsync()

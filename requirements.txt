@@ -29,6 +29,7 @@ cchardet
 topggpy
 rapidfuzz
 chess
+lxml
 Pillow
 typing_extensions
 arrow

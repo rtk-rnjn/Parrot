@@ -201,7 +201,9 @@ class Backup:
     async def _save_bans(self):
         async for entry in self.guild.bans():
             try:
-                self.data["bans"].append({"user": str(entry.user.id), "reason": entry.reason})
+                self.data["bans"].append(
+                    {"user": str(entry.user.id), "reason": entry.reason}
+                )
             except Exception:
                 pass
 
@@ -424,7 +426,7 @@ class BackupLoader:
                 category=discord.Object(self.id_translator.get(vchannel["category"])),
                 reason=self.reason,
                 bitrate=vchannel["bitrate"],
-                user_limit=vchannel["user_limit"]
+                user_limit=vchannel["user_limit"],
             )
             self.id_translator[vchannel["id"]] = created.id
 

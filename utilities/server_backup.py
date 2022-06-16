@@ -278,6 +278,9 @@ class BackupLoader:
 
                 union = roles[0]
 
+            if not union:
+                continue
+
             overwrites[union] = discord.PermissionOverwrite(**overwrite)
 
         return overwrites

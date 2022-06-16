@@ -697,6 +697,7 @@ class Parrot(commands.AutoShardedBot):
         force_fetch: bool = True,
     ) -> Any:
         if _id is None:
+            something = None
             if not isinstance(get_function, Callable):
                 something = get_function
             if isinstance(fetch_function, Awaitable) and something is None:

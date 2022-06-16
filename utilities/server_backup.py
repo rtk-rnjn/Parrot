@@ -1,7 +1,7 @@
 from __future__ import annotations
 import asyncio
 
-from typing import Any, Dict
+from typing import Any, Awaitable, Dict, Iterable, List
 
 import discord
 
@@ -9,7 +9,7 @@ from core import Parrot
 
 
 class BooleanArgs:
-    def __init__(self, args):
+    def __init__(self, args: Iterable):
         self._args = {}
         self.all = False
 
@@ -258,7 +258,6 @@ class BackupLoader:
         self.bot = bot
         self.id_translator = {}
         self.options = BooleanArgs([])
-        self.semaphore = asyncio.Semaphore(2)
 
     async def _overwrites_from_json(self, json: Dict[str, Any]):
         overwrites = {}
@@ -292,14 +291,12 @@ class BackupLoader:
 
         return text
 
-    async def run_tasks(self, coros, wait=True):
+    async def run_tasks(self, coros: List[Awaitable], wait=True):
         async def executor(_coro):
             await _coro
-            self.semaphore.release()
 
         tasks = []
         for coro in coros:
-            await self.semaphore.acquire()
             tasks.append(self.bot.loop.create_task(executor(coro)))
 
         if wait and tasks:
@@ -412,14 +409,12 @@ class BackupLoader:
                 name=tchannel["name"],
                 overwrites=await self._overwrites_from_json(tchannel["overwrites"]),
                 category=discord.Object(self.id_translator.get(tchannel["category"])),
+                topic=self._translate_mentions(tchannel["topic"]),
+                nsfw=tchannel["nsfw"],
                 reason=self.reason,
             )
 
             self.id_translator[tchannel["id"]] = created.id
-            await created.edit(
-                topic=self._translate_mentions(tchannel["topic"]),
-                nsfw=tchannel["nsfw"],
-            )
 
     async def _load_voice_channels(self):
         for vchannel in self.data["voice_channels"]:
@@ -428,9 +423,8 @@ class BackupLoader:
                 overwrites=await self._overwrites_from_json(vchannel["overwrites"]),
                 category=discord.Object(self.id_translator.get(vchannel["category"])),
                 reason=self.reason,
-            )
-            await created.edit(
-                bitrate=vchannel["bitrate"], user_limit=vchannel["user_limit"]
+                bitrate=vchannel["bitrate"],
+                user_limit=vchannel["user_limit"]
             )
             self.id_translator[vchannel["id"]] = created.id
 

@@ -325,6 +325,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
             count = await self.get_star_count(msg)
 
+            if not limit:
+                return False
+
             if count >= limit:
                 await self.star_post(starboard_channel=channel, message=msg)
                 return True

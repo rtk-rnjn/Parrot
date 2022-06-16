@@ -201,7 +201,9 @@ class Backup:
     async def _save_bans(self):
         async for entry in self.guild.bans():
             try:
-                self.data["bans"].append({"user": str(entry.user.id), "reason": entry.reason})
+                self.data["bans"].append(
+                    {"user": str(entry.user.id), "reason": entry.reason}
+                )
             except Exception:
                 pass
 

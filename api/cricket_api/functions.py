@@ -12,6 +12,7 @@ from typing import Any, Callable, List, Optional, Dict
 
 try:
     import lxml
+
     HTML_PARSER = "lxml"
 except ImportError:
     HTML_PARSER = "html.parser"

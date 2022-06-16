@@ -37,6 +37,7 @@ from ._used import get_raw, wrapping, prepare_payload, execute_run
 
 try:
     import lxml
+
     HTML_PARSER = "lxml"
 except ImportError:
     HTML_PARSER = "html.parser"

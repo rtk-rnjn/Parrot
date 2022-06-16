@@ -403,7 +403,8 @@ class BackupLoader:
                 overwrites=await self._overwrites_from_json(category["overwrites"]),
                 reason=self.reason,
             )
-            self.id_translator[category["id"]] = created.id
+            if created is not None:
+                self.id_translator[category["id"]] = created.id
 
     async def _load_text_channels(self):
         for tchannel in self.data["text_channels"]:
@@ -415,8 +416,8 @@ class BackupLoader:
                 nsfw=tchannel["nsfw"],
                 reason=self.reason,
             )
-
-            self.id_translator[tchannel["id"]] = created.id
+            if created is not None:
+                self.id_translator[tchannel["id"]] = created.id
 
     async def _load_voice_channels(self):
         for vchannel in self.data["voice_channels"]:
@@ -428,7 +429,8 @@ class BackupLoader:
                 bitrate=vchannel["bitrate"],
                 user_limit=vchannel["user_limit"],
             )
-            self.id_translator[vchannel["id"]] = created.id
+            if created is not None:
+                self.id_translator[vchannel["id"]] = created.id
 
     async def _load_channels(self):
         await self._load_categories()

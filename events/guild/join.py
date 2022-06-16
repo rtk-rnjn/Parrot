@@ -76,7 +76,6 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     async def guild_remove(self, guild_id: int):
         collection = self.bot.mongo.parrot_db["server_config"]
-        await collection.delete_one({"_id": guild_id})
 
         collection = self.bot.mongo.parrot_db[f"{guild_id}"]
         await collection.drop()

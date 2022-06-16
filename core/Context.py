@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+import datetime
 
 from discord.ext import commands
 import discord
@@ -222,8 +223,11 @@ class Context(commands.Context):
         await view.wait()
         return view.value
 
-    async def release(self, _for: Optional[int] = None) -> None:
-        await asyncio.sleep(_for or 0)
+    async def release(self, _for: Union[int, datetime.datetime] = None) -> None:
+        if isinstance(_for, datetime.datetime):
+            await discord.utils.sleep_until(_for)
+        else:
+            await asyncio.sleep(_for or 0)
 
     async def safe_send(
         self, content: str, *, escape_mentions: bool = True, **kwargs: Any

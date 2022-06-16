@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import io
 
 from discord.ext import commands
 import discord
@@ -16,6 +17,7 @@ from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime
 from utilities.paginator import PaginationView
+from utilities.server_backup import BackupSaver, BooleanArgs, ServerBackup, BackupLoader, BackupInfo
 
 from cogs.meta.robopage import SimplePages
 from cogs.config import method as mt_
@@ -1752,3 +1754,72 @@ class Configuration(Cog):
             },
         ):
             await ctx.send(f"{ctx.author.mention} counter deleted")
+
+    @config.group(name="backup", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(manage_guild=True, ban_members=True, attach_files=True)
+    @commands.cooldown(1, 600, commands.BucketType.guild)
+    async def config_backup(self, ctx: Context):
+        """Saves your server template"""
+        if ctx.invoked_subcommand is None:
+            data = await BackupSaver(self.bot, self.bot.http_session, ctx.guild).save()
+            data = json.dumps(data, indent=4)
+            await self.bot.mongo.extra.server_misc.update_one(
+                {"_id": ctx.guild.id},
+                {"$set": {"backup": data}},
+                upsert=True,
+            )
+            await ctx.send(
+                f"{ctx.author.mention} Your server template has been saved!\n",
+                file=discord.File(
+                    io.BytesIO(data.encode("utf-8")), filename="server_template.json"
+                )
+            )
+
+    @config_backup.command(name="load")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(administrator=True)
+    async def config_backup_load(self, ctx: Context, guild: discord.Guild=None):
+        """Loads a server template"""
+        guild = guild or ctx.guild
+        data = await self.bot.mongo.extra.server_misc.find_one({"_id": guild.id})
+        if data is None:
+            return await ctx.send(
+                f"{ctx.author.mention} No backup found for this server!"
+            )
+
+        if backup := data.get("backup"):
+            backup = json.loads(backup)
+            loader = BackupLoader(self.bot, self.bot.http_session, guild, backup)
+            msg = await ctx.send(
+                f"{ctx.author.mention} Are you sure you want to load this backup? This will delete all channels and roles in this server."
+            )
+
+            await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+            def check(r: discord.Reaction, u: discord.User) -> bool:
+                return r.message.id == msg.id and u == ctx.author and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+
+            try:
+                await self.bot.wait_for("reaction_add", check=check, timeout=60)
+            except asyncio.TimeoutError:
+                return await ctx.send(
+                    f"{ctx.author.mention} You took too long to respond!"
+                )
+            else:
+                await ctx.send(f"{ctx.author.mention} Loading backup...")
+                await ctx.release(5)
+                await loader.load()
+
+    @config_backup.command(name="delete")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(administrator=True)
+    async def config_backup_delete(self, ctx: Context):
+        """Deletes your server template"""
+        data = await self.bot.mongo.extra.server_misc.update_one(
+            {"_id": ctx.guild.id}, {"$unset": {"backup": 1}}, upsert=True
+        )
+        if data.modified_count:
+            await ctx.send(f"{ctx.author.mention} Your server template has been deleted!")
+        else:
+            await ctx.send(f"{ctx.author.mention} No backup found for this server!")

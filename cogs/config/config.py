@@ -17,7 +17,7 @@ from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime
 from utilities.paginator import PaginationView
-from utilities.server_backup import BackupSaver, BooleanArgs, ServerBackup, BackupLoader, BackupInfo
+from utilities.server_backup import BackupSaver, BooleanArgs, BackupLoader, BackupInfo
 
 from cogs.meta.robopage import SimplePages
 from cogs.config import method as mt_
@@ -1808,7 +1808,7 @@ class Configuration(Cog):
             else:
                 await ctx.send(f"{ctx.author.mention} Loading backup...")
                 await ctx.release(5)
-                await loader.load()
+                await loader.load(guild, ctx.author, BooleanArgs(['+']))
 
     @config_backup.command(name="delete")
     @commands.has_permissions(administrator=True)

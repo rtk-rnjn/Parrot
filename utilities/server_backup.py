@@ -9,6 +9,7 @@ __all__ = (
     "BackupInfo"
 )
 
+
 class BooleanArgs:
     def __init__(self, args):
         self._args = {}

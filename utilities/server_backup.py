@@ -4,7 +4,7 @@ import asyncio
 
 __all__ = (
     "BooleanArgs",
-    "ServerBackup",
+    "BackupSaver",
     "BackupLoader",
     "BackupInfo"
 )

@@ -283,7 +283,7 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             try:
                 await webhook.send(
-                    f"```py\nIgnoring exception in {event}\n{trace}\n``````py\nArgs: {args}\nKwargs: {kwargs}",
+                    f"```py\nIgnoring exception in {event}\n{trace}\n``````py\nArgs: {args}\nKwargs: {kwargs}```",
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )

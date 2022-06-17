@@ -283,7 +283,7 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             try:
                 await webhook.send(
-                    f"```py\nIgnoring exception in {event}\n{trace}\n```",
+                    f"```py\nIgnoring exception in {event}\n{trace}\n``````py\nArgs: {args}\nKwargs: {kwargs}",
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )
@@ -291,7 +291,7 @@ class Parrot(commands.AutoShardedBot):
                 await webhook.send(
                     file=discord.File(
                         io.BytesIO(
-                            f"Ignoring exception in {event}\n{trace}".encode("utf-8")
+                            f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode("utf-8")
                         ),
                         filename="traceback.txt",
                     ),
@@ -396,6 +396,8 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             await webhook.send(
                 f"```py\n{self.user.name.title()} disconnected from discord\n```",
+                avatar_url=self.user.avatar.url,
+                username=self.user.name,
             )
 
         print(f"[{self.user.name.title()}] disconnect from discord")
@@ -409,6 +411,8 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             await webhook.send(
                 f"```py\n{self.user.name.title()} resumed shard {shard_id}\n```",
+                avatar_url=self.user.avatar.url,
+                username=self.user.name,
             )
 
         print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")

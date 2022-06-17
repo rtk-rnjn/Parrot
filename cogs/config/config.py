@@ -1524,8 +1524,8 @@ class Configuration(Cog):
                         ]
                     )
             for _role in server_stats.get("role", []):
-                role = ctx.guild.get_role(_role.get("role_id"), 0)
-                channel = ctx.guild.get_channel(_role.get("channel_id"), 0)
+                role = ctx.guild.get_role(_role.get("role_id", 0))
+                channel = ctx.guild.get_channel(_role.get("channel_id", 0))
                 template = _role.get("template")
                 channel_type = _role.get("channel_type")
                 table_role.append(

@@ -477,7 +477,7 @@ class Misc(Cog):
 
         pages = []
 
-        for item in json_["items"]:
+        for item in json_.get("items", []):
             title = item["title"]
             link = item["link"]
             snippet = item.get("snippet")
@@ -487,6 +487,10 @@ class Misc(Cog):
 > {snippet}
 
 """
+            )
+        if not pages:
+            return await ctx.reply(
+                f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
             )
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()

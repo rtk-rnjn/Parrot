@@ -489,9 +489,11 @@ class Memegen(Cog):
         """
         Meme Generator: Awkward Seal.
         """
+        font = font or "impact"
+        fontsize = fontsize or 50
         params = {
             "template_id": 13757816,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -535,7 +537,7 @@ class Memegen(Cog):
 
         params = {
             "template_id": 129242436,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -579,7 +581,7 @@ class Memegen(Cog):
 
         params = {
             "template_id": 112126428,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -622,7 +624,7 @@ class Memegen(Cog):
         fontsize = fontsize or 50
         params = {
             "template_id": 8072285,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -665,7 +667,7 @@ class Memegen(Cog):
         fontsize = fontsize or 50
         params = {
             "template_id": 181913649,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -708,7 +710,7 @@ class Memegen(Cog):
         fontsize = fontsize or 50
         params = {
             "template_id": 100777631,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -752,7 +754,7 @@ class Memegen(Cog):
 
         params = {
             "template_id": 87743020,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -795,7 +797,7 @@ class Memegen(Cog):
         fontsize = fontsize or 50
         params = {
             "template_id": 217743513,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,
@@ -841,7 +843,7 @@ class Memegen(Cog):
         fontsize = fontsize or 50
         params = {
             "template_id": template,
-            "username": "RitikRanjan",
+            "username": "rtk_rnjn",
             "password": f"{meme_pass}",
             "text0": text1,
             "text1": text2,

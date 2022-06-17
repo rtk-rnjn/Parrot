@@ -1407,10 +1407,10 @@ class Configuration(Cog):
                 f"{ctx.author.mention} {command} is nither command nor any category"
             )
 
-    @cmdconfig.command()
+    @cmdconfig.command(name="list")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def list(self, ctx: Context):
+    async def cmd_config_list(self, ctx: Context):
         """To view what all configuation are being made with command"""
         enable_disable = self.bot.mongo.enable_disable
         em_lis = []

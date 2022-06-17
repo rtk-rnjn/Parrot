@@ -1523,20 +1523,19 @@ class Configuration(Cog):
                             value.get("template"),
                         ]
                     )
-            for role in server_stats.get("role", []):
-                for key, value in role.items():
-                    role = ctx.guild.get_role(value.get("role_id"), 0)
-                    channel = ctx.guild.get_channel(value.get("channel_id"), 0)
-                    template = value.get("template")
-                    channel_type = value.get("channel_type")
-                    table_role.append(
-                        [
-                            role.name if role else "None",
-                            channel.name if channel else "None",
-                            channel_type,
-                            template,
-                        ]
-                    )
+            for _role in server_stats.get("role", []):
+                role = ctx.guild.get_role(_role.get("role_id"), 0)
+                channel = ctx.guild.get_channel(_role.get("channel_id"), 0)
+                template = _role.get("template")
+                channel_type = _role.get("channel_type")
+                table_role.append(
+                    [
+                        role.name if role else "None",
+                        channel.name if channel else "None",
+                        channel_type,
+                        template,
+                    ]
+                )
             await ctx.send(
                 f"""```
 {str(tabulate(table, headers=["Name", "Channel", "Type", "Template"], tablefmt="pretty"))}

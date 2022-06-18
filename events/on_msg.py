@@ -443,15 +443,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 r, u = await self.bot.wait_for("reaction_add", check=check, timeout=30)
             except asyncio.TimeoutError:
                 return
-            if r.emoji == "\N{SPIRAL NOTE PAD}":
-                url = f"http://twitch.center/customapi/math?expr={urllib.parse.quote(message.content)}"
-                res = await self.bot.http_session.get(url)
-                if res.status == 200:
-                    text = await res.text()
-                else:
-                    return
-                if text != "???":
-                    return await message.reply(text)
+            with suppress(discord.HTTPException):
+                if r.emoji == "\N{SPIRAL NOTE PAD}":
+                    url = f"http://twitch.center/customapi/math?expr={urllib.parse.quote(message.content)}"
+                    res = await self.bot.http_session.get(url)
+                    if res.status == 200:
+                        text = await res.text()
+                    else:
+                        return
+                    if text != "???":
+                        return await message.reply(text)
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

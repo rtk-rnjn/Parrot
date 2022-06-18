@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+from contextlib import suppress
 import datetime
 
 from discord.ext import commands
@@ -32,7 +33,6 @@ class Context(commands.Context):
     command: commands.Command[Any, ..., Any]
     bot: Parrot
     cog: Optional[Cog]
-    qualified_name: str
 
     """A custom implementation of commands.Context class."""
 
@@ -58,7 +58,7 @@ class Context(commands.Context):
                 lambda m: m.name.lower() == "muted", self.author.roles
             )
             return (
-                self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"])
+                self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"] or 0)
                 or global_muted
                 or author_muted
             )
@@ -67,7 +67,7 @@ class Context(commands.Context):
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(
-                    self.bot.server_config[self.guild.id]["mute_role"]
+                    self.bot.server_config[self.guild.id]["mute_role"] or 0
                 )
 
     async def modrole(
@@ -75,14 +75,14 @@ class Context(commands.Context):
     ) -> Optional[discord.Role]:
         try:
             return self.guild.get_role(
-                self.bot.server_config[self.guild.id]["mod_role"]
+                self.bot.server_config[self.guild.id]["mod_role"] or 0
             )
         except KeyError:
             if await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(
-                    self.bot.server_config[self.guild.id]["mod_role"]
+                    self.bot.server_config[self.guild.id]["mod_role"] or 0
                 )
 
     @discord.utils.cached_property
@@ -110,13 +110,11 @@ class Context(commands.Context):
     ) -> Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
-            try:
+            with suppress(discord.Forbidden):
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden:
-                pass
             return
 
         embed = kwargs.get(
@@ -132,13 +130,11 @@ class Context(commands.Context):
     ) -> Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
-            try:
+            with suppress(discord.Forbidden):
                 await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
-            except discord.Forbidden:
-                pass
             return
 
         embed = kwargs.get(
@@ -241,7 +237,7 @@ class Context(commands.Context):
             return await self.send(
                 file=discord.File(fp, filename="message_too_long.txt"), **kwargs
             )  # must have `Attach Files` permissions
-        return await self.send(content)
+        return await self.send(content, **kwargs)
 
     async def bulk_add_reactions(
         self,

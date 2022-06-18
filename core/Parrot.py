@@ -597,7 +597,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_or_fetch_message(
         self,
-        channel: discord.TextChannel,
+        channel: Union[discord.TextChannel, discord.PartialMessageable, discord.Object, int],
         message: int,
         *,
         fetch: bool = True,
@@ -627,6 +627,17 @@ class Parrot(commands.AutoShardedBot):
         Optional[discord.Message]
             The Message or None if not found.
         """
+        if isinstance(channel, int):
+            if force_fetch:
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
+            else:
+                channel = self.get_channel(channel)
+        elif isinstance(channel, discord.Object):
+            if force_fetch:
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
+            else:
+                channel = self.get_channel(channel.id)
+
         if force_fetch:
             msg = await channel.fetch_message(message)
             self.message_cache[message] = msg
@@ -696,7 +707,7 @@ class Parrot(commands.AutoShardedBot):
         self,
         get_function: Union[Callable, Any],
         fetch_function: Union[Callable, Awaitable],
-        _id: Optional[int] = None,
+        _id: Union[int, discord.Object] = None,
         *,
         force_fetch: bool = True,
     ) -> Any:
@@ -704,10 +715,11 @@ class Parrot(commands.AutoShardedBot):
             something = None
             if not isinstance(get_function, Callable):
                 something = get_function
-            if isinstance(fetch_function, Awaitable) and something is None:
+            if isinstance(fetch_function, Awaitable) and something is None and force_fetch:
                 return await fetch_function
             return something
         try:
+            _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
             if something is None and force_fetch:
                 return await fetch_function(_id)

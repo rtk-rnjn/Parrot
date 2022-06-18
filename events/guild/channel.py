@@ -1,6 +1,7 @@
 from __future__ import annotations
 from contextlib import suppress
-from typing import Any, List, Tuple
+from datetime import datetime
+from typing import Any, List, Optional, Tuple, Union
 
 from core import Cog, Parrot
 
@@ -235,7 +236,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         return ls
 
     @Cog.listener()
-    async def on_guild_channel_pins_update(self, channel, last_pin):
+    async def on_guild_channel_pins_update(self, channel: Union[discord.abc.GuildChannel, discord.Thread], last_pin: Optional[datetime]):
         await self.bot.wait_until_ready()
         if not channel.guild.me.guild_permissions.view_audit_log:
             return
@@ -300,11 +301,23 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         break
 
     @Cog.listener()
-    async def on_guild_integrations_update(self, guild):
+    async def on_guild_integrations_update(self, guild: discord.Guild):
         pass
 
     @Cog.listener()
-    async def on_webhooks_update(self, channel):
+    async def on_webhooks_update(self, channel: discord.abc.GuildChannel):
+        pass
+
+    @Cog.listener()
+    async def on_integration_create(self, integration: discord.Integration):
+        pass
+
+    @Cog.listener()
+    async def on_integration_update(self, integration: discord.Integration):
+        pass
+
+    @Cog.listener()
+    async def on_raw_integration_delete(self, payload: discord.RawIntegrationDeleteEvent):
         pass
 
 

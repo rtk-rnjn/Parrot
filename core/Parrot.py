@@ -22,9 +22,8 @@ from typing import (
     Type,
     Union,
     List,
-    TYPE_CHECKING,
 )
-import jishaku as jishaku  # type: ignore  # noqa: F401
+import jishaku  # type: ignore  # noqa: F401
 import datetime
 import asyncio
 import re
@@ -115,7 +114,7 @@ class Parrot(commands.AutoShardedBot):
     owner_id: Optional[int]
     owner_ids: Optional[Collection[int]]
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,

@@ -12,11 +12,11 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
         self.collection = bot.mongo.parrot_db["logging"]
 
     @Cog.listener()
-    async def on_guild_available(self, guild):
+    async def on_guild_available(self, guild: discord.Guild):
         pass
 
     @Cog.listener()
-    async def on_guild_unavailable(self, guild):
+    async def on_guild_unavailable(self, guild: discord.Guild):
         pass
 
     @Cog.listener()
@@ -100,5 +100,5 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
                         break
 
 
-async def setup(bot):
+async def setup(bot: Parrot):
     await bot.add_cog(Extra(bot))

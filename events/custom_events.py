@@ -110,7 +110,7 @@ class EventCustom(Cog):
         post["expires_at"] = age.dt.timestamp()
         await self.bot.mongo.parrot_db.timers.insert_one(post)
 
-    async def _parse_giveaway(self, **kw) -> None:
+    async def _parse_giveaway(self, **kw: Any) -> None:
         data: Dict[str, Any] = await self.bot.mongo.parrot_db.giveaway.find_one(
             {
                 "message_id": kw.get("message_id"),

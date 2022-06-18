@@ -20,7 +20,7 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 
 class ErrorView(discord.ui.View):
-    def __init__(self, author_id, *, ctx: Context = None, error=None):
+    def __init__(self, author_id, *, ctx: Context = None, error: commands.CommandError=None):
         super().__init__(timeout=300.0)
         self.author_id = author_id
         self.ctx = ctx
@@ -307,5 +307,5 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         raise error
 
 
-async def setup(bot):
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(Cmd(bot))

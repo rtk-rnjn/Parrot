@@ -121,14 +121,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             commands.BucketType.member,
         )
 
-        self.write_data = []
+        self.write_data: tp.List[UpdateOne] = []
 
         self.msg_db_bulkdelete.start()
         self.msg_db_bulkwrite.start()
 
         self.lock = asyncio.Lock()
 
-    async def _fetch_response(self, url: str, response_format: str, **kwargs) -> tp.Any:
+    async def _fetch_response(self, url: str, response_format: str, **kwargs: tp.Any) -> tp.Any:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(
             url, raise_for_status=True, **kwargs
@@ -352,7 +352,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return False
         return True
 
-    def is_banned(self, user) -> bool:
+    def is_banned(self, user: tp.Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
         try:
             return (user.id in self.bot.opts[user.guild.id]["global"]) or (
@@ -604,7 +604,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
         await asyncio.sleep(0)
 
-    async def _edit_record_message_to_database(self, message):
+    async def _edit_record_message_to_database(self, message: discord.Message):
         self.write_data.append(
             UpdateOne(
                 {"_id": message.channel.id, "messages.id": message.id},
@@ -637,7 +637,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
         await asyncio.sleep(0)
 
-    def _msg_raw(self, message):
+    def _msg_raw(self, message: discord.Message):
         return {
             "id": message.id,
             "author": message.author.id,
@@ -656,7 +656,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         }
 
     @Cog.listener()
-    async def on_message_delete(self, message):
+    async def on_message_delete(self, message: discord.Message):
         pass
 
     @Cog.listener()
@@ -915,7 +915,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def __add_roles(
         self,
-        member,
+        member: discord.Member,
         role: tp.Union[discord.Roles, discord.Object],
         reason: tp.Optional[str] = None,
     ):

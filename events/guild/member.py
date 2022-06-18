@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Union
 
 from core import Cog, Parrot
 import discord
@@ -64,7 +65,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     pass
 
     @Cog.listener()
-    async def on_member_remove(self, member):
+    async def on_member_remove(self, member: discord.Member):
         await self.bot.wait_until_ready()
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": member.guild.id, "on_member_leave": {"$exists": True}}
@@ -128,7 +129,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         return ls
 
     @Cog.listener()
-    async def on_member_update(self, before, after):
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
         await self.bot.wait_until_ready()
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": after.guild.id, "on_member_update": {"$exists": True}}
@@ -158,7 +159,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         await self.bot.wait_until_ready()
         if member.bot:
             return
@@ -252,7 +253,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         return 1
 
-    async def __on_voice_channel_join(self, channel, member):
+    async def __on_voice_channel_join(self, channel: Union[discord.VoiceChannel, discord.StageChannel], member: discord.Member):
         try:
             self.bot.server_config[member.guild.id]["hub"]
         except KeyError:
@@ -294,7 +295,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         member=member,
                     )
 
-    async def __on_voice_channel_remove(self, channel, member):
+    async def __on_voice_channel_remove(self, channel: Union[discord.VoiceChannel, discord.StageChannel], member: discord.Member):
         if data := await self.bot.mongo.parrot_db.server_config.find_one(
             {
                 "_id": member.guild.id,
@@ -326,12 +327,16 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     return
 
     @Cog.listener(name="on_voice_state_update")
-    async def hub_on_voice_state_update(self, member, before, after):
+    async def hub_on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         await self.bot.wait_until_ready()
         if member.bot:
             return
 
         if member.guild is None:
+            return
+
+        __channel = before.channel or after.channel
+        if isinstance(__channel, discord.StageChannel) or __channel is None:
             return
 
         if before.channel and after.channel:
@@ -341,13 +346,17 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         if before.channel is None:
             return await self.__on_voice_channel_join(after.channel, member)
+
         if after.channel is None:
             return await self.__on_voice_channel_remove(before.channel, member)
 
     @Cog.listener()
-    async def on_presence_update(self, before, after):
+    async def on_presence_update(self, before: discord.Member, after: discord.Member):
         pass  # nothing can be done, as discord dont gave use presence intent UwU
 
+    @Cog.listener()
+    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
+        pass
 
-async def setup(bot):
+async def setup(bot: Parrot):
     await bot.add_cog(Member(bot))

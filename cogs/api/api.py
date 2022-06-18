@@ -114,7 +114,6 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
             for token in TOKEN_REGEX.findall(message.content)
             if validate_token(token)
         ]
-        self.__interal_token_caching.update(set(tokens))
 
         if all(token in self.__interal_token_caching for token in tokens):
             return
@@ -124,6 +123,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
                 "\n".join(tokens), description="Discord tokens detected"
             )
             msg = f"{message.author.mention}, I have found tokens and sent them to <{url}> to be invalidated for you."
+            self.__interal_token_caching.update(set(tokens))
             with suppress(discord.HTTPException):
                 await message.channel.send(msg)
 

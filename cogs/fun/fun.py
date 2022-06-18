@@ -2657,7 +2657,7 @@ class Fun(Cog):
             return (
                 m.author == ctx.author
                 and m.channel == ctx.channel
-                and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 20
+                and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 55
             )
 
         ini = time.perf_counter()

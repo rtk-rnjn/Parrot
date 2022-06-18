@@ -2,12 +2,7 @@ import discord
 import traceback
 import asyncio
 
-__all__ = (
-    "BooleanArgs",
-    "BackupSaver",
-    "BackupLoader",
-    "BackupInfo"
-)
+__all__ = ("BooleanArgs", "BackupSaver", "BackupLoader", "BackupInfo")
 
 
 class BooleanArgs:

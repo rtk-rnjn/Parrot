@@ -1053,7 +1053,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def realpython(
-        self, ctx: Context, amount: Optional[int] = 5, *, user_search: str=None
+        self, ctx: Context, amount: Optional[int] = 5, *, user_search: str = None
     ) -> None:
         """
         Send some articles from RealPython that match the search terms.
@@ -1064,7 +1064,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             home_page_embed = Embed(
                 title="Real Python Home Page",
                 url="https://realpython.com/",
-                colour=ctx.author.color
+                colour=ctx.author.color,
             )
             await ctx.send(embed=home_page_embed)
             return

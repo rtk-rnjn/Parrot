@@ -212,8 +212,11 @@ class OnThread(Cog):
         pass
 
     @Cog.listener()
-    async def on_raw_thread_member_remove(self, payload: discord.RawThreadMembersUpdate) -> None:
+    async def on_raw_thread_member_remove(
+        self, payload: discord.RawThreadMembersUpdate
+    ) -> None:
         pass
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnThread(bot))

@@ -2,6 +2,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import binascii
+from contextlib import suppress
 import os
 import yarl  # type: ignore
 
@@ -48,6 +49,8 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self._req_lock = asyncio.Lock(loop=self.bot.loop)
         self.token = os.environ["GITHUB_TOKEN"]
+
+        self.__interal_token_caching = set()
 
     async def github_request(
         self, method, url, *, params=None, data=None, headers=None
@@ -102,7 +105,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         return js["html_url"]
 
     @Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message) -> None:
         if not message.guild or message.guild.id == DISCORD_PY_ID:
             return
 
@@ -111,12 +114,18 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
             for token in TOKEN_REGEX.findall(message.content)
             if validate_token(token)
         ]
+        self.__interal_token_caching.update(set(tokens))
+
+        if all(token in self.__interal_token_caching for token in tokens):
+            return
+
         if tokens and message.author.id != self.bot.user.id:
             url = await self.create_gist(
                 "\n".join(tokens), description="Discord tokens detected"
             )
             msg = f"{message.author.mention}, I have found tokens and sent them to <{url}> to be invalidated for you."
-            return await message.channel.send(msg)
+            with suppress(discord.HTTPException):
+                await message.channel.send(msg)
 
     @commands.group(name="gist")
     @commands.is_owner()

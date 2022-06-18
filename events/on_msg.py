@@ -128,7 +128,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         self.lock = asyncio.Lock()
 
-    async def _fetch_response(self, url: str, response_format: str, **kwargs: tp.Any) -> tp.Any:
+    async def _fetch_response(
+        self, url: str, response_format: str, **kwargs: tp.Any
+    ) -> tp.Any:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(
             url, raise_for_status=True, **kwargs

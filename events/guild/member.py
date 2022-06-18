@@ -159,7 +159,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @Cog.listener()
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    async def on_voice_state_update(
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,
+        after: discord.VoiceState,
+    ):
         await self.bot.wait_until_ready()
         if member.bot:
             return
@@ -253,7 +258,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         return 1
 
-    async def __on_voice_channel_join(self, channel: Union[discord.VoiceChannel, discord.StageChannel], member: discord.Member):
+    async def __on_voice_channel_join(
+        self,
+        channel: Union[discord.VoiceChannel, discord.StageChannel],
+        member: discord.Member,
+    ):
         try:
             self.bot.server_config[member.guild.id]["hub"]
         except KeyError:
@@ -295,7 +304,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         member=member,
                     )
 
-    async def __on_voice_channel_remove(self, channel: Union[discord.VoiceChannel, discord.StageChannel], member: discord.Member):
+    async def __on_voice_channel_remove(
+        self,
+        channel: Union[discord.VoiceChannel, discord.StageChannel],
+        member: discord.Member,
+    ):
         if data := await self.bot.mongo.parrot_db.server_config.find_one(
             {
                 "_id": member.guild.id,
@@ -327,7 +340,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     return
 
     @Cog.listener(name="on_voice_state_update")
-    async def hub_on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    async def hub_on_voice_state_update(
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,
+        after: discord.VoiceState,
+    ):
         await self.bot.wait_until_ready()
         if member.bot:
             return
@@ -357,6 +375,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
         pass
+
 
 async def setup(bot: Parrot):
     await bot.add_cog(Member(bot))

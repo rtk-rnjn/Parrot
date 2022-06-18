@@ -58,7 +58,9 @@ class Context(commands.Context):
                 lambda m: m.name.lower() == "muted", self.author.roles
             )
             return (
-                self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"] or 0)
+                self.guild.get_role(
+                    self.bot.server_config[self.guild.id]["mute_role"] or 0
+                )
                 or global_muted
                 or author_muted
             )

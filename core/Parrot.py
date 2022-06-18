@@ -290,7 +290,9 @@ class Parrot(commands.AutoShardedBot):
                 await webhook.send(
                     file=discord.File(
                         io.BytesIO(
-                            f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode("utf-8")
+                            f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode(
+                                "utf-8"
+                            )
                         ),
                         filename="traceback.txt",
                     ),
@@ -596,7 +598,9 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_or_fetch_message(
         self,
-        channel: Union[discord.TextChannel, discord.PartialMessageable, discord.Object, int],
+        channel: Union[
+            discord.TextChannel, discord.PartialMessageable, discord.Object, int
+        ],
         message: int,
         *,
         fetch: bool = True,
@@ -628,12 +632,16 @@ class Parrot(commands.AutoShardedBot):
         """
         if isinstance(channel, int):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
+                channel = await self.getch(
+                    self.get_channel, self.fetch_channel, channel, force_fetch=True
+                )
             else:
                 channel = self.get_channel(channel)
         elif isinstance(channel, discord.Object):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
+                channel = await self.getch(
+                    self.get_channel, self.fetch_channel, channel.id, force_fetch=True
+                )
             else:
                 channel = self.get_channel(channel.id)
 
@@ -714,7 +722,11 @@ class Parrot(commands.AutoShardedBot):
             something = None
             if not isinstance(get_function, Callable):
                 something = get_function
-            if isinstance(fetch_function, Awaitable) and something is None and force_fetch:
+            if (
+                isinstance(fetch_function, Awaitable)
+                and something is None
+                and force_fetch
+            ):
                 return await fetch_function
             return something
         try:

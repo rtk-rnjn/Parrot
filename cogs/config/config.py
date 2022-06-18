@@ -1756,7 +1756,9 @@ class Configuration(Cog):
 
     @config.group(name="backup", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(manage_guild=True, ban_members=True, attach_files=True)
+    @commands.bot_has_permissions(
+        manage_guild=True, ban_members=True, attach_files=True
+    )
     @commands.cooldown(1, 600, commands.BucketType.guild)
     async def config_backup(self, ctx: Context):
         """Saves your server template"""
@@ -1772,13 +1774,13 @@ class Configuration(Cog):
                 f"{ctx.author.mention} Your server template has been saved!\n",
                 file=discord.File(
                     io.BytesIO(data.encode("utf-8")), filename="server_template.json"
-                )
+                ),
             )
 
     @config_backup.command(name="load")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(administrator=True)
-    async def config_backup_load(self, ctx: Context, guild: discord.Guild=None):
+    async def config_backup_load(self, ctx: Context, guild: discord.Guild = None):
         """Loads a server template"""
         guild = guild or ctx.guild
         data = await self.bot.mongo.extra.server_misc.find_one({"_id": guild.id})
@@ -1797,7 +1799,11 @@ class Configuration(Cog):
             await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
             def check(r: discord.Reaction, u: discord.User) -> bool:
-                return r.message.id == msg.id and u == ctx.author and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+                return (
+                    r.message.id == msg.id
+                    and u == ctx.author
+                    and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+                )
 
             try:
                 await self.bot.wait_for("reaction_add", check=check, timeout=60)
@@ -1808,7 +1814,7 @@ class Configuration(Cog):
             else:
                 await ctx.send(f"{ctx.author.mention} Loading backup...")
                 await ctx.release(5)
-                await loader.load(guild, ctx.author, BooleanArgs(['+']))
+                await loader.load(guild, ctx.author, BooleanArgs(["+"]))
 
     @config_backup.command(name="delete")
     @commands.has_permissions(administrator=True)
@@ -1819,6 +1825,8 @@ class Configuration(Cog):
             {"_id": ctx.guild.id}, {"$unset": {"backup": 1}}, upsert=True
         )
         if data.modified_count:
-            await ctx.send(f"{ctx.author.mention} Your server template has been deleted!")
+            await ctx.send(
+                f"{ctx.author.mention} Your server template has been deleted!"
+            )
         else:
             await ctx.send(f"{ctx.author.mention} No backup found for this server!")

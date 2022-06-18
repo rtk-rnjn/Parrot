@@ -236,7 +236,11 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         return ls
 
     @Cog.listener()
-    async def on_guild_channel_pins_update(self, channel: Union[discord.abc.GuildChannel, discord.Thread], last_pin: Optional[datetime]):
+    async def on_guild_channel_pins_update(
+        self,
+        channel: Union[discord.abc.GuildChannel, discord.Thread],
+        last_pin: Optional[datetime],
+    ):
         await self.bot.wait_until_ready()
         if not channel.guild.me.guild_permissions.view_audit_log:
             return
@@ -317,7 +321,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_raw_integration_delete(self, payload: discord.RawIntegrationDeleteEvent):
+    async def on_raw_integration_delete(
+        self, payload: discord.RawIntegrationDeleteEvent
+    ):
         pass
 
 

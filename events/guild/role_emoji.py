@@ -1,5 +1,6 @@
 from __future__ import annotations
 from contextlib import suppress
+from typing import Sequence
 
 from core import Cog, Parrot
 import discord
@@ -12,11 +13,11 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.collection = bot.mongo.parrot_db["logging"]
 
-    def permissions_to_json(self, permissions) -> str:
+    def permissions_to_json(self, permissions: discord.Permissions) -> str:
         return json.dumps(dict(permissions), indent=4) if permissions else "{}"
 
     @Cog.listener()
-    async def on_guild_role_create(self, role):
+    async def on_guild_role_create(self, role: discord.Role):
         await self.bot.wait_until_ready()
         if not role.guild.me.guild_permissions.view_audit_log:
             return
@@ -150,7 +151,7 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
         return ls
 
     @Cog.listener()
-    async def on_guild_role_update(self, before, after):
+    async def on_guild_role_update(self, before: discord.Role, after: discord.Role):
         await self.bot.wait_until_ready()
         if not after.guild.me.guild_permissions.view_audit_log:
             return
@@ -183,17 +184,17 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 **Change/Update**
 {ext}
 """
+                        fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
+                        await webhook.send(
+                            content=content,
+                            avatar_url=self.bot.user.avatar.url,
+                            username=self.bot.user.name,
+                            file=discord.File(fp, filename="permissions.json"),
+                        )
                         break
-                fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="permissions.json"),
-                )
 
     @Cog.listener()
-    async def on_guild_emojis_update(self, guild, before, after):
+    async def on_guild_emojis_update(self, guild: discord.Guild, before: Sequence[discord.Emoji], after: Sequence[discord.Emoji]):
         await self.bot.wait_until_ready()
         if not guild.me.guild_permissions.view_audit_log:
             return
@@ -224,11 +225,11 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `URL     `: **<{url}>**
 `Animated`: **{animated}**
 """
-            await webhook.send(
-                content=content,
-                avatar_url=self.bot.user.avatar.url,
-                username=self.bot.user.name,
-            )
+                await webhook.send(
+                    content=content,
+                    avatar_url=self.bot.user.avatar.url,
+                    username=self.bot.user.name,
+                )
 
         if data := await self.collection.find_one(
             {"_id": guild.id, "on_emoji_delete": {"$exists": True}}
@@ -293,5 +294,5 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
             )
 
 
-async def setup(bot):
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(GuildRoleEmoji(bot))

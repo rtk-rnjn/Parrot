@@ -439,13 +439,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return r.message.id == message.id and u.id == message.author.id
 
         if re.fullmatch(EQUATION_REGEX, message.content):
-            await message.add_reaction("\N{SPIRAL NOTE PAD}")
-
-            try:
-                r, u = await self.bot.wait_for("reaction_add", check=check, timeout=30)
-            except asyncio.TimeoutError:
-                return
-            with suppress(discord.HTTPException):
+            with suppress(discord.Forbidden):
+                await message.add_reaction("\N{SPIRAL NOTE PAD}")
+                try:
+                    r, u = await self.bot.wait_for("reaction_add", check=check, timeout=30)
+                except asyncio.TimeoutError:
+                    return
                 if r.emoji == "\N{SPIRAL NOTE PAD}":
                     url = f"http://twitch.center/customapi/math?expr={urllib.parse.quote(message.content)}"
                     res = await self.bot.http_session.get(url)

@@ -17,19 +17,8 @@ async def dial(
     collection = bot.mongo.parrot_db.telephone
 
     async def telephone_update(guild_id: int, event: str, value: Any) -> None:
-        if _ := await collection.find_one({"_id": guild_id}):
-            await collection.update_one({"_id": guild_id}, {"$set": {event: value}})
-            return
+        await collection.update_one({"_id": guild_id}, {"$set": {event: value}}, upsert=True)
 
-        post = {
-            "_id": guild_id,
-            "channel": None,
-            "pingrole": None,
-            "is_line_busy": False,
-            "memberping": None,
-            "blocked": [],
-        }
-        await collection.insert_one(post)
 
     if server.id == ctx.guild.id:
         return await ctx.send("Can't make a self call")
@@ -46,19 +35,19 @@ async def dial(
             f"{ctx.author.mention} no telephone line channel is set for the **{number}** server, or the number you entered do not match with any other server!"
         )
 
-    if target_guild["is_line_busy"]:
+    if target_guild.get("is_line_busy"):
         return await ctx.send(
             f"Can not make a connection to **{number} ({bot.get_guild(target_guild['_id']).name})**. Line busy!"
         )
 
-    target_channel = bot.get_channel(target_guild["channel"])
+    target_channel = bot.get_channel(target_guild.get("channel"))
     if not target_channel:
         return await ctx.send(
             "Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission."
         )
 
-    if (target_guild["_id"] in self_guild["blocked"]) or (
-        self_guild["_id"] in target_guild["blocked"]
+    if (target_guild["_id"] in self_guild.get("blocked", [])) or (
+        self_guild["_id"] in target_guild.get("blocked", [])
     ):
         return await ctx.send(
             "Calling failed! Possible reasons: They blocked You, You blocked Them."
@@ -77,7 +66,7 @@ async def dial(
             delete_after=1,
         )
         await temp_message.delete(delay=0)
-    except AttributeError:
+    except (AttributeError, KeyError):
         pass
 
     def check_pickup_hangup(m):

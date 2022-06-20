@@ -357,9 +357,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def is_banned(self, user: tp.Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
         try:
-            return (user.id in self.bot.opts[user.guild.id]["global"]) or (
-                self.bot.banned_users[user.id].get("global", False)
-            )
+            return self.bot.banned_users[user.id].get("global", False) or (user.id in self.bot.opts[user.guild.id]["global"]) 
         except KeyError:
             return False
 

@@ -357,9 +357,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def is_banned(self, user: tp.Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
         try:
-            return self.bot.banned_users[user.id].get("global", False) or (user.id in self.bot.opts[user.guild.id]["global"]) 
+            return self.bot.banned_users[user.id].get("global", False)
         except KeyError:
-            return False
+            try:
+                return (user.id in self.bot.opts[user.guild.id]["global"])
+            except KeyError:
+                return False
 
     def get_emoji_count(self, message_content: str) -> int:
         str_count = emojis.count(message_content)

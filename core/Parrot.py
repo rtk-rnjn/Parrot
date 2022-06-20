@@ -746,6 +746,7 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_banned_members(self):
         async for data in self.mongo.parrot_db.banned_users.find({}):
+            self.banned_users = {}
             self.banned_users[data["_id"]] = data
 
     @tasks.loop(count=1)

@@ -48,6 +48,7 @@ extensions:
   - cogs.hidden
   - cogs.ipc
   - cogs.wolfram
+  - cogs.sector_17
 invite: >-
   https://discord.com/oauth2/authorize?client_id=800780974274248764&scope=bot+applications.commands&permissions=1099780451414
 dev_logo: >-

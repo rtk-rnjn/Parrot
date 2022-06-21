@@ -10,7 +10,7 @@ from pymongo import ReturnDocument
 
 
 async def get_warn_count(ctx: Context, guild: discord.Guild) -> Optional[int]:
-    data = await ctx.bot.parrot_db.server_config.find_one_and_update(
+    data = await ctx.bot.mongo.parrot_db.server_config.find_one_and_update(
         {"_id": guild.id},
         {"$inc": {"warn_count": 1}},
         upsert=True,

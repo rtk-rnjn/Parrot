@@ -739,8 +739,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             )
             main = ""
             with suppress(discord.HTTPException):
-                if payload.cached_messages:
-                    msgs = payload.cached_messages
+                msgs = payload.cached_messages
 
                 for msg in msgs:
                     if not msg.author.bot:

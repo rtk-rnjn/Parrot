@@ -741,10 +741,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             with suppress(discord.HTTPException):
                 if payload.cached_messages:
                     msgs = payload.cached_messages
-                else:
-                    msgs = []
+
                 for msg in msgs:
-                    if not msg.bot:
+                    if not msg.author.bot:
                         main += f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
                 if msgs:
                     fp = io.BytesIO(main.encode())

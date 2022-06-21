@@ -494,8 +494,8 @@ class Meta(Cog):
             colour=ctx.guild.owner.colour,
             timestamp=discord.utils.utcnow(),
         )
-
-        embed.set_thumbnail(url=ctx.guild.icon.url)
+        if ctx.guild.icon:
+            embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.set_footer(text=f"ID: {ctx.guild.id}")
         statuses = [
             len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members))),

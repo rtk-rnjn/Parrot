@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import binascii
 import functools
 import random
 import io
@@ -1570,65 +1571,31 @@ class Fun(Cog):
     async def decode(self, ctx: Context, *, string: str):
         """Decode the code to text from Base64 encryption"""
         base64_string = string
-        base64_bytes = base64_string.encode("ascii")
+        try:
+            base64_bytes = base64_string.encode("ascii")
 
-        sample_string_bytes = base64.b64decode(base64_bytes)
-        sample_string = sample_string_bytes.decode("ascii")
+            sample_string_bytes = base64.b64decode(base64_bytes)
+            sample_string = sample_string_bytes.decode("ascii")
+        except (UnicodeEncodeError, UnicodeDecodeError, binascii.Error):
+            await ctx.send(
+                f"{ctx.author.mention} The string you entered is not valid Base64. Please try again."
+            )
+            return
 
-        embed = discord.Embed(
-            title="Decoding...",
-            colour=discord.Colour.red(),
-            timestamp=discord.utils.utcnow(),
-        )
-        embed.add_field(
-            name="Encoded text:", value=f"```\n{base64_string}\n```", inline=False
-        )
-        embed.add_field(
-            name="Decoded text:", value=f"```\n{sample_string}\n```", inline=False
-        )
-        embed.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png"
-        )
-        embed.set_footer(
-            text=f"{ctx.author.name}", icon_url=f"{ctx.author.display_avatar.url}"
-        )
-        await ctx.reply(embed=embed)
+        await ctx.reply(f"{ctx.author.mention} {sample_string}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def encode(self, ctx: Context, *, string: str):
-        """Encode the text to Base64 Encryption and in Binary"""
+        """Encode the text to Base64 Encryption"""
         sample_string = string
         sample_string_bytes = sample_string.encode("ascii")
-        res = "".join(format(ord(i), "b") for i in string)
         base64_bytes = base64.b64encode(sample_string_bytes)
         base64_string = base64_bytes.decode("ascii")
 
-        embed = discord.Embed(
-            title="Encoding...",
-            colour=discord.Colour.red(),
-            timestamp=discord.utils.utcnow(),
-        )
-        embed.add_field(
-            name="Normal [string] text:",
-            value=f"```\n{sample_string}\n```",
-            inline=False,
-        )
-        embed.add_field(
-            name="Encoded [base64]:", value=f"```\n{base64_string}\n```", inline=False
-        )
-        embed.add_field(
-            name="Encoded [binary]:", value=f"```\n{str(res)}\n```", inline=False
-        )
-        embed.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/4/45/Parrot_Logo.png"
-        )
-        embed.set_footer(
-            text=f"{ctx.author.name}", icon_url=f"{ctx.author.display_avatar.url}"
-        )
-        await ctx.reply(embed=embed)
+        await ctx.reply(f"{ctx.author.mention} {base64_string}")
 
     @commands.command(name="fact")
     @commands.bot_has_permissions(embed_links=True)

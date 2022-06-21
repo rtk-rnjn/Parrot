@@ -750,7 +750,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     fp = None
                 main_content = f"""**Bulk Message Delete**
 
-`Total Messages:` **{len(msgs)}**
+`Total Messages:` **{len(msg_ids)}**
 `Channel       :` **<#{payload.channel_id}>**
 """
                 await webhook.send(

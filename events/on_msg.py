@@ -885,6 +885,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
 
         if response.status != 200:
+            for i in match_list:
+                self.__scam_link_cache[i] = False
             return
 
         data = await response.json()

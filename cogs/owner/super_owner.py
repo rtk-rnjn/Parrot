@@ -42,7 +42,7 @@ class auditFlag(
     action: typing.Optional[str] = None
 
 
-class banFlag(
+class BanFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
     reason: str = None
@@ -231,7 +231,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ctx: Context,
         user: discord.User,
         *,
-        args: banFlag,
+        args: BanFlag,
     ):
         """To ban the user"""
         reason = args.reason or "No reason provided"
@@ -304,11 +304,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 ls.append(embed)
             page = PaginationView(embed_list=ls)
             await page.start(ctx)
-
-    @imgsearch.command(name="custom")
-    @commands.is_owner()
-    async def imgsearch_custom(self, ctx: Context, *, text: str):
-        ...
 
     @commands.command()
     @commands.is_owner()
@@ -400,7 +395,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     @commands.is_owner()
-    async def removebg(self, ctx: Context, *, url):
+    async def removebg(self, ctx: Context, *, url: str):
         """To remove the background from image"""
         async with self.bot.http_session.get(url) as img:
             imgdata = io.BytesIO(await img.read())
@@ -457,15 +452,14 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async for webhook in collection.find({"webhook": {"$exists": True}}):
             hook = webhook["webhook"]
             if hook:
-                async with aiohttp.ClientSession() as session:
-                    webhook = discord.Webhook.from_url(f"{hook}", session=session)
-                    if webhook:
-                        await webhook.send(
-                            content=announcement,
-                            username="SERVER",
-                            avatar_url=self.bot.user.display_avatar.url,
-                            allowed_mentions=discord.AllowedMentions.none(),
-                        )
+                webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                if webhook:
+                    await webhook.send(
+                        content=announcement,
+                        username="SERVER",
+                        avatar_url=self.bot.user.display_avatar.url,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
 
     @commands.command()
     async def python(self, ctx: Context, *, text: str):

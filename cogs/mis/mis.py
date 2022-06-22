@@ -1,6 +1,6 @@
 from __future__ import annotations
 import hashlib
-from typing import BinaryIO, Iterable, List, Optional, Union
+from typing import BinaryIO, Iterable, List, Literal, Optional, Union
 
 from cogs.meta.robopage import SimplePages
 
@@ -104,6 +104,66 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     valuation: convert_bool = False
     latex: convert_bool = False
 
+
+class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+    c2coff: Optional[int] = 0
+    exact_terms: Optional[str] = None
+    exclude_terms: Optional[str] = None
+    file_type: Optional[str] = None
+    filter: Optional[str] = None
+    gl: Optional[str] = None
+    high_range: Optional[str] = None
+    hl: Optional[str] = None
+    hq: Optional[str] = None
+    img_color_type: Optional[Literal["color", "gray", "mono", "trans"]] = None
+    img_dominant_color: Optional[Literal["black", "blue", "brown", "gray", "green", "orange", "ping", "purple", "red", "teal", "white", "yellow"]] = None
+    img_size: Optional[Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"]] = None
+    img_type: Optional[Literal["face", "photo", "clipart", "lineart", "stock", "animated"]] = None
+    link_site: Optional[str] = None
+    low_range: Optional[str] = None
+    lr: Optional[Literal["lang_ar", "lang_bg", "lang_cs", "lang_da", "lang_de", "lang_ca", "lang_el", "lang_en", "lang_es", "lang_et", "lang_fi", "lang_fr", "lang_hr", "lang_hu", "lang_id", "lang_is", "lang_it", "lang_iw", "lang_ja", "lang_ko", "lang_lt", "lang_lv", "lang_nl", "lang_no", "lang_pl", "lang_pt", "lang_ro", "lang_ru", "lang_sk", "lang_sl", "lang_sr", "lang_sv", "lang_tr", "lang_zh-CN", "lang_zh-TW"]] = None
+    num: Optional[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]] = None
+    or_terms: Optional[str] = None
+    q: str
+    related_site: Optional[str] = None
+    rights: Optional[Literal["cc_publicdomain", "cc_attribute", "cc_sharealike", "cc_noncommercial", "cc_nonderived"]] = None
+    safe: Optional[Literal["active", "off"]] = None
+    search_type: Optional[Literal["image"]] = None
+    site_search: Optional[str] = None
+    site_search_filter: Optional[Literal["i", "e"]] = None
+    sort: Optional[str] = None
+    start: Optional[int] = None
+
+
+_SEACH_FLAG_CONVERTERS = {
+    "c2off": "c2coff",
+    "exact_terms": "exactTerms",
+    "exclude_terms": "excludeTerms",
+    "file_type": "fileType",
+    "filter": "filter",
+    "gl": "gl",
+    "high_range": "highRange",
+    "hl": "hl",
+    "hq": "hq",
+    "img_color_type": "imgColorType",
+    "img_dominant_color": "imgDominantColor",
+    "img_size": "imgSize",
+    "img_type": "imgType",
+    "link_site": "linkSite",
+    "low_range": "lowRange",
+    "lr": "lr",
+    "num": "num",
+    "or_terms": "orTerms",
+    "q": "q",
+    "related_site": "relatedSite",
+    "rights": "rights",
+    "safe": "safe",
+    "search_type": "searchType",
+    "site_search_filter": "siteSearchFilter",
+    "sort": "sort",
+    "start": "start",
+}
+    
 
 def get_country_code(country: str) -> str:
     for c, n in COUNTRY_CODES.items():
@@ -453,28 +513,70 @@ class Misc(Cog):
         # await paginator.start(ctx)
         await PaginationView(em_list).start(ctx=ctx)
 
-    @commands.command(name="search", aliases=["googlesearch", "google"])
+    @commands.group(name="search", aliases=["googlesearch", "google"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def search(self, ctx: Context, *, search: str):
         """Simple google search Engine"""
-        search = urllib.parse.quote(search)
-        if ctx.channel.nsfw:
-            safe = "off"
-        else:
-            safe = "active"
-        url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
+        if not ctx.invoked_subcommand:
+            search = urllib.parse.quote(search)
+            if ctx.channel.nsfw:
+                safe = "off"
+            else:
+                safe = "active"
+            url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
 
-        response = await self.bot.http_session.get(url)
-        if response.status == 200:
+            response = await self.bot.http_session.get(url)
             json_ = await response.json()
-        else:
-            return await ctx.reply(
-                f"{ctx.author.mention} No results found.```\n{search}```"
-            )
+            if response.status != 200:
+                return await ctx.reply(
+                    f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
+                )
 
+            pages = []
+
+            for item in json_.get("items", []):
+                title = item["title"]
+                link = item["link"]
+                snippet = item.get("snippet")
+
+                pages.append(
+                    f"""**[Title: {title}]({link})**
+    > {snippet}
+
+    """
+                )
+            if not pages:
+                return await ctx.reply(
+                    f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
+                )
+            page = SimplePages(entries=pages, ctx=ctx, per_page=3)
+            await page.start()
+
+    @search.command()
+    @commands.cooldown(1, 60, commands.BucketType.member)
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def search_custom(self, ctx: Context, *, search: SearchFlag):
+        """To make custom search request"""
+        PAYLOAD = {"q": search.q}
+        for k, v in _SEACH_FLAG_CONVERTERS.items():
+            if getattr(search, k):
+                PAYLOAD[v] = getattr(search, k)
+        if not ctx.channel.nsfw:
+            PAYLOAD["safe"] = "active"
+
+        url = "https://www.googleapis.com/customsearch/v1"
+        response = await self.bot.http_session.get(url, params=PAYLOAD)
+
+        json_ = await response.json()
+        if response.status != 200:
+            return await ctx.reply(
+                f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
+            )
         pages = []
 
         for item in json_.get("items", []):
@@ -495,6 +597,7 @@ class Misc(Cog):
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 
+        
     @commands.command()
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)

@@ -184,7 +184,9 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 **Change/Update**
 {ext}
 """
-                        fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
+                        fp = io.BytesIO(
+                            self.permissions_to_json(after.permissions).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.avatar.url,
@@ -194,7 +196,12 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         break
 
     @Cog.listener()
-    async def on_guild_emojis_update(self, guild: discord.Guild, before: Sequence[discord.Emoji], after: Sequence[discord.Emoji]):
+    async def on_guild_emojis_update(
+        self,
+        guild: discord.Guild,
+        before: Sequence[discord.Emoji],
+        after: Sequence[discord.Emoji],
+    ):
         await self.bot.wait_until_ready()
         if not guild.me.guild_permissions.view_audit_log:
             return

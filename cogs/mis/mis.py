@@ -105,7 +105,9 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     latex: convert_bool = False
 
 
-class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+class SearchFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
     c2coff: Optional[int] = 0
     exact_terms: Optional[str] = None
     exclude_terms: Optional[str] = None
@@ -116,17 +118,82 @@ class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", del
     hl: Optional[str] = None
     hq: Optional[str] = None
     img_color_type: Optional[Literal["color", "gray", "mono", "trans"]] = None
-    img_dominant_color: Optional[Literal["black", "blue", "brown", "gray", "green", "orange", "ping", "purple", "red", "teal", "white", "yellow"]] = None
-    img_size: Optional[Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"]] = None
-    img_type: Optional[Literal["face", "photo", "clipart", "lineart", "stock", "animated"]] = None
+    img_dominant_color: Optional[
+        Literal[
+            "black",
+            "blue",
+            "brown",
+            "gray",
+            "green",
+            "orange",
+            "ping",
+            "purple",
+            "red",
+            "teal",
+            "white",
+            "yellow",
+        ]
+    ] = None
+    img_size: Optional[
+        Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"]
+    ] = None
+    img_type: Optional[
+        Literal["face", "photo", "clipart", "lineart", "stock", "animated"]
+    ] = None
     link_site: Optional[str] = None
     low_range: Optional[str] = None
-    lr: Optional[Literal["lang_ar", "lang_bg", "lang_cs", "lang_da", "lang_de", "lang_ca", "lang_el", "lang_en", "lang_es", "lang_et", "lang_fi", "lang_fr", "lang_hr", "lang_hu", "lang_id", "lang_is", "lang_it", "lang_iw", "lang_ja", "lang_ko", "lang_lt", "lang_lv", "lang_nl", "lang_no", "lang_pl", "lang_pt", "lang_ro", "lang_ru", "lang_sk", "lang_sl", "lang_sr", "lang_sv", "lang_tr", "lang_zh-CN", "lang_zh-TW"]] = None
+    lr: Optional[
+        Literal[
+            "lang_ar",
+            "lang_bg",
+            "lang_cs",
+            "lang_da",
+            "lang_de",
+            "lang_ca",
+            "lang_el",
+            "lang_en",
+            "lang_es",
+            "lang_et",
+            "lang_fi",
+            "lang_fr",
+            "lang_hr",
+            "lang_hu",
+            "lang_id",
+            "lang_is",
+            "lang_it",
+            "lang_iw",
+            "lang_ja",
+            "lang_ko",
+            "lang_lt",
+            "lang_lv",
+            "lang_nl",
+            "lang_no",
+            "lang_pl",
+            "lang_pt",
+            "lang_ro",
+            "lang_ru",
+            "lang_sk",
+            "lang_sl",
+            "lang_sr",
+            "lang_sv",
+            "lang_tr",
+            "lang_zh-CN",
+            "lang_zh-TW",
+        ]
+    ] = None
     num: Optional[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]] = None
     or_terms: Optional[str] = None
     q: str
     related_site: Optional[str] = None
-    rights: Optional[Literal["cc_publicdomain", "cc_attribute", "cc_sharealike", "cc_noncommercial", "cc_nonderived"]] = None
+    rights: Optional[
+        Literal[
+            "cc_publicdomain",
+            "cc_attribute",
+            "cc_sharealike",
+            "cc_noncommercial",
+            "cc_nonderived",
+        ]
+    ] = None
     safe: Optional[Literal["active", "off"]] = None
     search_type: Optional[Literal["image"]] = None
     site_search: Optional[str] = None
@@ -163,7 +230,7 @@ _SEACH_FLAG_CONVERTERS = {
     "sort": "sort",
     "start": "start",
 }
-    
+
 
 def get_country_code(country: str) -> str:
     for c, n in COUNTRY_CODES.items():
@@ -513,7 +580,9 @@ class Misc(Cog):
         # await paginator.start(ctx)
         await PaginationView(em_list).start(ctx=ctx)
 
-    @commands.group(name="search", aliases=["googlesearch", "google"], invoke_without_command=True)
+    @commands.group(
+        name="search", aliases=["googlesearch", "google"], invoke_without_command=True
+    )
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -597,7 +666,6 @@ class Misc(Cog):
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 
-        
     @commands.command()
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)

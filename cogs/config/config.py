@@ -1109,7 +1109,9 @@ class Configuration(Cog):
     ):
         """To setup the telephone line in the channel."""
         await self.bot.mongo.parrot_db.telephone.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"channel": channel.id if channel else None}}, upsert=True
+            {"_id": ctx.guild.id},
+            {"$set": {"channel": channel.id if channel else None}},
+            upsert=True,
         )
         if not channel:
             return await ctx.reply(
@@ -1125,7 +1127,9 @@ class Configuration(Cog):
     async def tel_config_pingrole(self, ctx: Context, *, role: discord.Role = None):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
         await self.bot.mongo.parrot_db.telephone.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"pingrole": role.id if role else None}}, upsert=True
+            {"_id": ctx.guild.id},
+            {"$set": {"pingrole": role.id if role else None}},
+            upsert=True,
         )
         if not role:
             return await ctx.reply(
@@ -1143,7 +1147,9 @@ class Configuration(Cog):
     ):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
         await self.bot.mongo.parrot_db.telephone.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"memberping": member.id if member else None}}, upsert=True
+            {"_id": ctx.guild.id},
+            {"$set": {"memberping": member.id if member else None}},
+            upsert=True,
         )
         if not member:
             return await ctx.reply(

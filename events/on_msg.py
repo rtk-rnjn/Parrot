@@ -360,7 +360,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return self.bot.banned_users[user.id].get("global", False)
         except KeyError:
             try:
-                return (user.id in self.bot.opts[user.guild.id]["global"])
+                return user.id in self.bot.opts[user.guild.id]["global"]
             except KeyError:
                 return False
 
@@ -443,7 +443,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             with suppress(discord.Forbidden):
                 await message.add_reaction("\N{SPIRAL NOTE PAD}")
                 try:
-                    r, u = await self.bot.wait_for("reaction_add", check=check, timeout=30)
+                    r, u = await self.bot.wait_for(
+                        "reaction_add", check=check, timeout=30
+                    )
                 except asyncio.TimeoutError:
                     return
                 if r.emoji == "\N{SPIRAL NOTE PAD}":

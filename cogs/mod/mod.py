@@ -517,11 +517,15 @@ class Moderator(Cog):
     @clear.command(name="regex")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _regex(self, ctx: Context, pattern: Optional[str]=None, search: int=100):
+    async def _regex(
+        self, ctx: Context, pattern: Optional[str] = None, search: int = 100
+    ):
         """Removed messages that matches the regex pattern."""
         pattern = pattern or r".*"
+
         def check(m: discord.Message) -> bool:
             return bool(re.match(rf"{pattern}", m.content))
+
         await mt.do_removal(ctx, search, check)
 
     @clear.command()

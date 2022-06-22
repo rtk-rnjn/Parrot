@@ -878,7 +878,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             )
             return
 
-        if match_list and all(not self.__scam_link_cache.get(i, True) for i in set(match_list)):
+        if match_list and all(
+            not self.__scam_link_cache.get(i, True) for i in set(match_list)
+        ):
             return
 
         response = await self.bot.http_session.post(

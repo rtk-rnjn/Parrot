@@ -769,7 +769,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.bot.wait_until_ready()
-        if before.content != after.content and after.guild is not None:
+        if before.content != after.content and after.guild is not None and after.author.id == self.bot.user.id:
             await self._on_message_passive(after)
             await self._scam_detection(after)
             await self._edit_record_message_to_database(after)
@@ -897,7 +897,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         data = await response.json()
 
         if data["match"]:
-            with suppress(discord.HTTPException):
+            with suppress(discord.Forbidden):
                 await message.channel.send(
                     f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
                 )

@@ -899,9 +899,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 await message.channel.send(
                     f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
                 )
-                for match in data["matches"]:
-                    self.__scam_link_cache[match["domain"]] = True
-                    await asyncio.sleep(0)
+            for match in data["matches"]:
+                self.__scam_link_cache[match["domain"]] = True
+                await asyncio.sleep(0)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]

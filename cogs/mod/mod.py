@@ -514,6 +514,16 @@ class Moderator(Cog):
         """Removes messages that have embeds in them."""
         await mt.do_removal(ctx, search, lambda e: len(e.embeds))
 
+    @clear.command(name="regex")
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
+    async def _regex(self, ctx: Context, pattern: Optional[str]=None, search: int=100):
+        """Removed messages that matches the regex pattern."""
+        pattern = pattern or r".*"
+        def check(m: discord.Message) -> bool:
+            return bool(re.match(rf"{pattern}", m.content))
+        await mt.do_removal(ctx, search, check)
+
     @clear.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
@@ -548,6 +558,8 @@ class Moderator(Cog):
             await mt.do_removal(ctx, 100, lambda e: substr in e.content)
 
     @clear.command(name="bot", aliases=["bots"])
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: int = 100):
         """Removes a bot user's messages and messages with their optional prefix."""
 
@@ -559,6 +571,8 @@ class Moderator(Cog):
         await mt.do_removal(ctx, search, predicate)
 
     @clear.command(name="emoji", aliases=["emojis"])
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _emoji(self, ctx: Context, search: int = 100):
         """Removes all messages containing custom emoji."""
         custom_emoji = re.compile(r"<a?:[a-zA-Z0-9\_]+:([0-9]+)>")
@@ -569,6 +583,8 @@ class Moderator(Cog):
         await mt.do_removal(ctx, search, predicate)
 
     @clear.command(name="reactions")
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _reactions(self, ctx: Context, search: int = 100):
         """Removes all reactions from messages that have them."""
 
@@ -607,6 +623,8 @@ class Moderator(Cog):
         )
 
     @clear.command()
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def custom(self, ctx: Context, *, arguments: str):
         """A more advanced purge command.
 

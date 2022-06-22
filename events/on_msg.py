@@ -873,6 +873,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
 
         if any(self.__scam_link_cache.get(i, False) for i in set(match_list)):
+            await message.channel.send(
+                f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
+            )
             return
 
         response = await self.bot.http_session.post(

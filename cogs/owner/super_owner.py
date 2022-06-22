@@ -452,7 +452,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async for webhook in collection.find({"webhook": {"$exists": True}}):
             hook = webhook["webhook"]
             if hook:
-                webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                webhook = discord.Webhook.from_url(
+                    f"{hook}", session=self.bot.http_session
+                )
                 if webhook:
                     await webhook.send(
                         content=announcement,

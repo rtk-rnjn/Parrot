@@ -17,8 +17,9 @@ async def dial(
     collection = bot.mongo.parrot_db.telephone
 
     async def telephone_update(guild_id: int, event: str, value: Any) -> None:
-        await collection.update_one({"_id": guild_id}, {"$set": {event: value}}, upsert=True)
-
+        await collection.update_one(
+            {"_id": guild_id}, {"$set": {event: value}}, upsert=True
+        )
 
     if server.id == ctx.guild.id:
         return await ctx.send("Can't make a self call")

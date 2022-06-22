@@ -128,6 +128,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
         self.lock = asyncio.Lock()
 
+        self.__scam_link_cache: tp.Dict[str, bool] = {}
+
     async def _fetch_response(
         self, url: str, response_format: str, **kwargs: tp.Any
     ) -> tp.Any:
@@ -870,7 +872,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             message.content,
         )
 
-        if not match_list:
+        if any(self.__scam_link_cache.get(i, False) for i in set(match_list)):
             return
 
         response = await self.bot.http_session.post(
@@ -889,6 +891,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 await message.channel.send(
                     f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
                 )
+                for match in data['matches']:
+                    self.__scam_link_cache[match['domain']] = True
+                    await asyncio.sleep(0)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection = self.bot.mongo.leveling[f"{member.guild.id}"]

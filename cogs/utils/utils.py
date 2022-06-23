@@ -816,7 +816,9 @@ class Utils(Cog):
     async def suggest_delete(self, ctx: Context, *, messageID: int):
         """To delete the suggestion you suggested"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(
+            messageID, guild=ctx.guild
+        )
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -840,7 +842,9 @@ class Utils(Cog):
     async def suggest_status(self, ctx: Context, *, messageID: int):
         """To get the statistics os the suggestion"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(
+            messageID, guild=ctx.guild
+        )
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -870,7 +874,9 @@ class Utils(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_resolved(self, ctx: Context, *, threadID: int):
         """To mark the suggestion as resolved"""
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(threadID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(
+            threadID, guild=ctx.guild
+        )
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
             return await ctx.send(
@@ -895,7 +901,9 @@ class Utils(Cog):
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, messageID: int, *, remark: str):
         """To add a note in suggestion embed"""
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(
+            messageID, guild=ctx.guild
+        )
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -921,7 +929,9 @@ class Utils(Cog):
     ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(
+            messageID, guild=ctx.guild
+        )
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -951,7 +961,9 @@ class Utils(Cog):
         - APPROVED
         """
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(
+            messageID, guild=ctx.guild
+        )
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"

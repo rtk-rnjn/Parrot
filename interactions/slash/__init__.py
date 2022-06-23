@@ -50,7 +50,7 @@ class ContextMenu(Cog):
 
         end = time.perf_counter()
         await interaction.edit_original_message(
-            content=f"{interaction.user.mention} the command is interpreted as command. It took {end - ini:.2f} seconds.",
+            content=f"{interaction.user.mention} completed command interpretation. It took {end - ini:.2f} seconds.",
         )
 
     @commands.command(hidden=True)

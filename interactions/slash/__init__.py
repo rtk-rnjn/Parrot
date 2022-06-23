@@ -42,10 +42,16 @@ class ContextMenu(Cog):
                 content=f"{interaction.user.mention} the message is from a bot. Can't interpret it as command.",
             )
             return
+        ini = time.perf_counter()
 
         message.content = f"{prefix}{message.content}"
         message.author = interaction.user
         await self.bot.process_commands(message)
+
+        end = time.perf_counter()
+        await interaction.edit_original_message(
+            content=f"{interaction.user.mention} the command is interpreted as command. It took {end - ini:.2f} seconds.",
+        )
 
     @commands.command(hidden=True)
     @commands.is_owner()

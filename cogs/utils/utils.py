@@ -904,7 +904,8 @@ class Utils(Cog):
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
         embed.add_field(name="Remark", value=remark[:250])
-        await msg.edit(content=msg.content, embed=embed)
+        new_msg = await msg.edit(content=msg.content, embed=embed)
+        self.message[new_msg.id]["message"] = new_msg
 
         user_id = int(embed.footer.text.split(":")[1])
         user = ctx.guild.get_member(user_id)
@@ -930,12 +931,12 @@ class Utils(Cog):
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
         embed.color = 0xADD8E6
-        await msg.edit(embed=embed, content=None)
+        new_msg = await msg.edit(embed=embed, content=None)
+        self.message[new_msg.id]["message"] = new_msg
 
         for reaction in msg.reactions:
             if str(reaction.emoji) not in REACTION_EMOJI:
                 await msg.clear_reaction(reaction.emoji)
-
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @suggest.command(name="flag")
@@ -976,7 +977,9 @@ class Utils(Cog):
         await self.__notify_user(ctx, user, message=msg, remark="")
 
         content = f"Flagged: {flag} | {payload['emoji']}"
-        await msg.edit(content=content, embed=embed)
+        new_msg = await msg.edit(content=content, embed=embed)
+        self.message[new_msg.id]["message"] = new_msg
+
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @Cog.listener(name="on_raw_message_delete")

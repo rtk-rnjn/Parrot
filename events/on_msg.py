@@ -1074,24 +1074,53 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 )
 
     @tasks.loop(seconds=10)
-    async def msg_db_bulkdelete(self):
+    async def msg_db_bulkdelete(self) -> None:
         async with self.lock:
             await self.bot.mongo.msg_db.content.update_many(
                 {}, {"$pull": {"messages": {"timestamp": {"$lt": int(time()) - 43200}}}}
             )
 
     @tasks.loop(seconds=10)
-    async def msg_db_bulkwrite(self):
+    async def msg_db_bulkwrite(self) -> None:
         if not self.write_data:
             return
         async with self.lock:
             await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
             self.write_data.clear()
 
-    async def cog_unload(self):
+    async def cog_unload(self) -> None:
         self.msg_db_bulkwrite.cancel()
         self.msg_db_bulkdelete.cancel()
 
+    @Cog.listener("on_message")
+    async def on_message_updater(self, message: discord.Message) -> None:
+        if message.author.id in self.bot.message_cache:
+            self.bot.message_cache[message.author.id] = message
+
+    @Cog.listener("on_message_delete")
+    async def on_message_delete_updater(self, message: discord.Message) -> None:
+        if message.author.id in self.bot.message_cache:
+            del self.bot.message_cache[message.author.id]
+
+    @Cog.listener("on_message_edit")
+    async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
+        if before.author.id in self.bot.message_cache:
+            self.bot.message_cache[before.author.id] = after
+
+    @Cog.listener("on_reaction_add")
+    async def on_reaction_add_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
+        if reaction.message.id in self.bot.message_cache:
+            self.bot.message_cache[reaction.message.id] = reaction.message
+
+    @Cog.listener("on_reaction_remove")
+    async def on_reaction_remove_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
+        if reaction.message.id in self.bot.message_cache:
+            self.bot.message_cache[reaction.message.id] = reaction.message
+
+    @Cog.listener("on_reaction_clear")
+    async def on_reaction_clear_updater(self, message: discord.Message, _: tp.List[discord.Reaction]) -> None:
+        if message.id in self.bot.message_cache:
+            self.bot.message_cache[message.id] = message
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

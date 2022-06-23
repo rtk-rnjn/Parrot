@@ -670,11 +670,14 @@ class Utils(Cog):
         try:
             self.message[msg_id]
         except KeyError:
-            return await self.__fetch_message_from_channel(
+            msg = await self.__fetch_message_from_channel(
                 message=msg_id, channel=channel
             )
         else:
-            return self.message[msg_id]["message"]
+            msg = self.message[msg_id]["message"]
+
+        if msg.author.id == self.bot.user.id:
+            return msg
 
     async def __fetch_message_from_channel(
         self, *, message: int, channel: discord.TextChannel
@@ -720,16 +723,17 @@ class Utils(Cog):
         channel = await self.__fetch_suggestion_channel(ctx.guild)
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
+        await ctx.bulk_add_reactions(msg, *REACTION_EMOJI)
+        thread = await msg.create_thread(name=f"Suggestion {ctx.author}")
+
         payload = {
             "message_author": msg.author,
             "message_downvote": 0,
             "message_upvote": 0,
             "message": msg,
+            "thread": thread.id,
         }
         self.message[msg.id] = payload
-
-        await ctx.bulk_add_reactions(msg, *REACTION_EMOJI)
-        await msg.create_thread(name=f"Suggestion {ctx.author}")
         return msg
 
     async def __notify_on_suggestion(
@@ -770,7 +774,7 @@ class Utils(Cog):
 
     @commands.group(aliases=["suggestion"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True, create_public_threads=True)
     async def suggest(self, ctx: Context, *, suggestion: commands.clean_content):
         """Suggest something. Abuse of the command may result in required mod actions"""
 
@@ -782,7 +786,7 @@ class Utils(Cog):
                 name=str(ctx.author), icon_url=ctx.author.display_avatar.url
             )
             embed.set_footer(
-                text=f"Author ID: {ctx.author.id}", icon_url=ctx.guild.icon.url
+                text=f"Author ID: {ctx.author.id}", icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url)
             )
 
             file: Optional[discord.File] = None
@@ -812,9 +816,6 @@ class Utils(Cog):
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
 
-        if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
-
         if ctx.channel.permissions_for(ctx.author).manage_messages:
             await msg.delete(delay=0)
             await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
@@ -840,13 +841,10 @@ class Utils(Cog):
             )
         PAYLOAD: Dict[str, Any] = self.message[msg.id]
 
-        if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
-
         table = TabularData()
 
-        upvoter = [PAYLOAD["message_downvote"]]
-        downvoter = [PAYLOAD["message_upvote"]]
+        upvoter = [PAYLOAD["message_upvote"]]
+        downvoter = [PAYLOAD["message_downvote"]]
 
         table.set_columns(["Upvote", "Downvote"])
         ls = list(zip_longest(upvoter, downvoter, fillvalue=""))
@@ -854,13 +852,32 @@ class Utils(Cog):
 
         # conflict = [i for i in upvoter if i in downvoter]
 
-        embed = discord.Embed()
+        embed = discord.Embed(title=f"Suggestion Statistics of message ID: {messageID}")
         embed.description = f"```\n{table.render()}```"
         # if conflict:
         #     embed.add_field(name=f"Conflit in Reaction: {len(conflict)}", value=", ".join([str(i) for i in conflict]))
         if msg.content:
             embed.add_field(name="Flagged", value=msg.content)
         await ctx.send(content=msg.jump_url, embed=embed)
+
+    @suggest.command(name="resolved")
+    @commands.cooldown(1, 60, commands.BucketType.member)
+    async def suggest_resolved(self, ctx: Context, *, threadID: int):
+        """To mark the suggestion as resolved"""
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(threadID)
+
+        if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
+            return await ctx.send(
+                f"{ctx.author.mention} You don't own that 'suggestion'"
+            )
+
+        thread: discord.Thread = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, threadID)
+        if not msg or not thread:
+            return await ctx.send(
+                f"{ctx.author.mention} Can not find message of ID `{threadID}`. Probably already deleted, or `{threadID}` is invalid"
+            )
+        await thread.edit(archived=True, locked=True, reason=f"Suggestion resolved by {ctx.author.mention}")
+        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @suggest.command(name="note", aliases=["remark"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
@@ -871,9 +888,6 @@ class Utils(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-
-        if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
@@ -900,9 +914,6 @@ class Utils(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-
-        if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
 
         embed: discord.Embed = msg.embeds[0]
         embed.clear_fields()
@@ -1012,7 +1023,7 @@ class Utils(Cog):
         if str(payload.emoji) == "\N{DOWNWARDS BLACK ARROW}":
             self.message[payload.message_id]["message_downvote"] -= 1
 
-    async def __parse_mod_action(self, message: discord.Message) -> None:
+    async def __parse_mod_action(self, message: discord.Message) -> Optional[bool]:
         if not self.__is_mod(message.author):
             return
 

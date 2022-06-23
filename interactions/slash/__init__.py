@@ -13,17 +13,17 @@ class ContextMenu(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-        self.ctx_menu = app_commands.ContextMenu(
+        self.ctx_menu_interpret_as_command = app_commands.ContextMenu(
             name="Interpret as command",
-            # description="Interpret the message as a command.",
-            callback=self.ctx_menu,
+            guild_only=True,
+            callback=self.ctx_menu_interpret_as_command,
         )
-        self.bot.tree.add_command(self.ctx_menu)
+        self.bot.tree.add_command(self.ctx_menu_interpret_as_command)
 
     async def cog_unload(self) -> None:
-        self.bot.tree.remove_command(self.ctx_menu)
+        self.bot.tree.remove_command(self.ctx_menu_interpret_as_command)
 
-    async def ctx_menu(
+    async def ctx_menu_interpret_as_command(
         self, interaction: discord.Interaction, message: discord.Message
     ) -> None:
         # await interaction.response.defer(thinking=False)

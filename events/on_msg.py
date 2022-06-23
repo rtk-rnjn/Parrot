@@ -1103,29 +1103,38 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             del self.bot.message_cache[message.author.id]
 
     @Cog.listener("on_message_edit")
-    async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
+    async def on_message_edit_updater(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         if before.author.id in self.bot.message_cache:
             self.bot.message_cache[before.author.id] = after
 
     @Cog.listener("on_reaction_add")
-    async def on_reaction_add_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
+    async def on_reaction_add_updater(
+        self, reaction: discord.Reaction, _: discord.User
+    ) -> None:
         if reaction.message.id in self.bot.message_cache:
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_remove")
-    async def on_reaction_remove_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
+    async def on_reaction_remove_updater(
+        self, reaction: discord.Reaction, _: discord.User
+    ) -> None:
         if reaction.message.id in self.bot.message_cache:
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_clear")
-    async def on_reaction_clear_updater(self, message: discord.Message, _: tp.List[discord.Reaction]) -> None:
+    async def on_reaction_clear_updater(
+        self, message: discord.Message, _: tp.List[discord.Reaction]
+    ) -> None:
         if message.id in self.bot.message_cache:
             self.bot.message_cache[message.id] = message
-    
+
     @Cog.listener("on_reaction_clear_emoji")
     async def on_reaction_clear_emoji_updater(self, reaction: discord.Reaction) -> None:
         if reaction.message.id in self.bot.message_cache:
             self.bot.message_cache[reaction.message.id] = reaction.message
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))

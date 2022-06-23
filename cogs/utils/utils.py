@@ -786,7 +786,8 @@ class Utils(Cog):
                 name=str(ctx.author), icon_url=ctx.author.display_avatar.url
             )
             embed.set_footer(
-                text=f"Author ID: {ctx.author.id}", icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url)
+                text=f"Author ID: {ctx.author.id}",
+                icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url),
             )
 
             file: Optional[discord.File] = None
@@ -871,12 +872,18 @@ class Utils(Cog):
                 f"{ctx.author.mention} You don't own that 'suggestion'"
             )
 
-        thread: discord.Thread = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, threadID)
+        thread: discord.Thread = await self.bot.getch(
+            ctx.guild.get_channel, ctx.guild.fetch_channel, threadID
+        )
         if not msg or not thread:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{threadID}`. Probably already deleted, or `{threadID}` is invalid"
             )
-        await thread.edit(archived=True, locked=True, reason=f"Suggestion resolved by {ctx.author.mention}")
+        await thread.edit(
+            archived=True,
+            locked=True,
+            reason=f"Suggestion resolved by {ctx.author.mention}",
+        )
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @suggest.command(name="note", aliases=["remark"])

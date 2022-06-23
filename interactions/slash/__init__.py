@@ -15,7 +15,6 @@ class ContextMenu(Cog):
 
         self.ctx_menu_interpret_as_command = app_commands.ContextMenu(
             name="Interpret as command",
-            guild_only=True,
             callback=self.ctx_menu_interpret_as_command,
         )
         self.bot.tree.add_command(self.ctx_menu_interpret_as_command)

@@ -9,8 +9,6 @@ from aiofile import async_open  # type: ignore
 
 from discord.ext import commands
 import discord
-
-import aiohttp  # type: ignore
 import datetime
 import os
 import traceback

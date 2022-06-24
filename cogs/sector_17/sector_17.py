@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from core import Parrot, Context, Cog
-import discord
+from core import Parrot, Cog
 
 
 class Sector1729(Cog):

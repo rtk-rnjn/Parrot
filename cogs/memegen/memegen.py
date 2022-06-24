@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import discord
-import aiohttp  # type: ignore
 from discord.ext import commands
 from core import Parrot, Context, Cog
 

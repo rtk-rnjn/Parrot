@@ -1,5 +1,4 @@
 from __future__ import annotations
-from contextlib import suppress
 from typing import Any, Dict, List
 
 from core import Parrot, Cog

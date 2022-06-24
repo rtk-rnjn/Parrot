@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from core import Parrot, Cog
-from core.__template import post as POST
 
 from utilities.config import WEBHOOK_JOIN_LEAVE_CHANNEL_ID
 

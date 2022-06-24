@@ -14,7 +14,6 @@ import string
 import operator
 import unicodedata
 import discord
-import aiohttp  # type: ignore
 import asyncio
 import math
 from aiohttp import request  # type: ignore

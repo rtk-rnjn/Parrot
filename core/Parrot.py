@@ -92,6 +92,9 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     return function(*args, **kwargs)
 
 
+__all__ = ("Parrot",)
+
+
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
@@ -560,7 +563,7 @@ class Parrot(commands.AutoShardedBot):
                     yield member
 
     async def get_or_fetch_member(
-        self, guild: discord.Guild, member_id: int
+        self, guild: discord.Guild, member_id: Union[int, discord.Object]
     ) -> Optional[discord.Member]:
         """|coro|
 
@@ -578,6 +581,8 @@ class Parrot(commands.AutoShardedBot):
         Optional[Member]
             The member or None if not found.
         """
+        member_id = member.id if isinstance(member, discord.Object) else int(member_id)
+
         member = guild.get_member(member_id)
         if member is not None:
             return member

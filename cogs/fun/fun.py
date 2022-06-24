@@ -1664,8 +1664,8 @@ class Fun(Cog):
             comment = comment[:19:]
         async with self.bot.http_session.get(
             f"https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}"
-        ) as wastedImage:  # get users avatar as png with 1024 size
-            imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
+        ) as itssostupid:  # get users avatar as png with 1024 size
+            imageData = io.BytesIO(await itssostupid.read())  # read the image/bytes
 
             await ctx.reply(
                 file=discord.File(imageData, "itssostupid.png")

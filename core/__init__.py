@@ -1,3 +1,5 @@
-from .Parrot import Parrot as Parrot  # noqa: F401
-from .Cog import Cog as Cog  # noqa: F401
-from .Context import Context as Context  # noqa: F401
+from .Parrot import Parrot
+from .Cog import Cog
+from .Context import Context
+
+__all__ = ("Parrot", "Cog", "Context",)

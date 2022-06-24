@@ -582,7 +582,7 @@ class Parrot(commands.AutoShardedBot):
             The member or None if not found.
         """
         member_id = (
-            member.id if isinstance(member_id, discord.Object) else int(member_id)
+            member_id.id if isinstance(member_id, discord.Object) else int(member_id)
         )
 
         member = guild.get_member(member_id)

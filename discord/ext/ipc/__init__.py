@@ -7,7 +7,7 @@ from discord.ext.ipc.errors import (
     NoEndpointFoundError,
     ServerConnectionRefusedError,
     JSONEncodeError,
-    NotConnected
+    NotConnected,
 )
 
 _VersionInfo = collections.namedtuple(

@@ -45,16 +45,15 @@ async def _process_mozilla_doc(ctx: Context, url):
     From a given url from developers.mozilla.org, processes format,
     returns tag formatted content
     """
-    async with aiohttp.ClientSession() as client_session:
-        async with client_session.get(url) as response:
-            if response.status == 404:
-                return await ctx.send("No results")
-            if response.status != 200:
-                return await ctx.send(
-                    f"An error occurred (status code: {response.status}). Retry later."
-                )
+    response = await ctx.bot.http_session.get(url)
+    if response.status == 404:
+        return await ctx.send("No results")
+    if response.status != 200:
+        return await ctx.send(
+            f"An error occurred (status code: {response.status}). Retry later."
+        )
 
-            body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
+    body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
 
     # if body.get('class')[0] == 'error':
     #     # 404
@@ -126,35 +125,34 @@ async def _git_main_ref(part, ctx, text):
     base_url = f"https://git-scm.com/docs/{part}{text}"
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
-    async with aiohttp.ClientSession() as client_session:
-        async with client_session.get(url) as response:
-            if response.status != 200:
-                return await ctx.send(
-                    f"An error occurred (status code: {response.status}). Retry later."
-                )
-            if str(response.url) == "https://git-scm.com/docs":
-                # Website redirects to home page
-                return await ctx.send("No results")
+    response = await ctx.bot.http_session.get(url)
+    if response.status != 200:
+        return await ctx.send(
+            f"An error occurred (status code: {response.status}). Retry later."
+        )
+    if str(response.url) == "https://git-scm.com/docs":
+        # Website redirects to home page
+        return await ctx.send("No results")
 
-            soup = BeautifulSoup(await response.text(), HTML_PARSER)
-            sectors = soup.find_all("div", {"class": "sect1"}, limit=3)
+    soup = BeautifulSoup(await response.text(), HTML_PARSER)
+    sectors = soup.find_all("div", {"class": "sect1"}, limit=3)
 
-            title = sectors[0].find("p").text
+    title = sectors[0].find("p").text
 
-            emb = discord.Embed(title=title, url=url)
-            emb.set_author(name="Git reference")
-            emb.set_thumbnail(url="https://git-scm.com/images/logo@2x.png")
+    emb = discord.Embed(title=title, url=url)
+    emb.set_author(name="Git reference")
+    emb.set_thumbnail(url="https://git-scm.com/images/logo@2x.png")
 
-            for tag in sectors[1:]:
-                content = "\n".join(
-                    [
-                        markdownify(p)
-                        for p in tag.find_all(lambda x: x.name in ["p", "pre"])
-                    ]
-                )
-                emb.add_field(name=tag.find("h2").text, value=content[:1024])
+    for tag in sectors[1:]:
+        content = "\n".join(
+            [
+                markdownify(p)
+                for p in tag.find_all(lambda x: x.name in ["p", "pre"])
+            ]
+        )
+        emb.add_field(name=tag.find("h2").text, value=content[:1024])
 
-            await ctx.send(embed=emb)
+    await ctx.send(embed=emb)
 
 
 git_ref = partial(_git_main_ref, "git-")
@@ -171,35 +169,34 @@ async def sql_ref(ctx, text):
     base_url = f"http://www.sqltutorial.org/sql-{text}/"
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
-    async with aiohttp.ClientSession() as client_session:
-        async with client_session.get(url) as response:
-            if response.status != 200:
-                return await ctx.send(
-                    f"An error occurred (status code: {response.status}). Retry later."
-                )
+    response = await ctx.bot.http_session.get(url)
+    if response.status != 200:
+        return await ctx.send(
+            f"An error occurred (status code: {response.status}). Retry later."
+        )
 
-            body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
-            intro = body.find(
-                lambda x: x.name == "h2" and "Introduction to " in x.string
-            )
-            title = body.find("h1").string
+    body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
+    intro = body.find(
+        lambda x: x.name == "h2" and "Introduction to " in x.string
+    )
+    title = body.find("h1").string
 
-            ps = []
-            for tag in tuple(intro.next_siblings):
-                if tag.name == "h2" and tag.text.startswith("SQL "):
-                    break
-                if tag.name == "p":
-                    ps.append(tag)
+    ps = []
+    for tag in tuple(intro.next_siblings):
+        if tag.name == "h2" and tag.text.startswith("SQL "):
+            break
+        if tag.name == "p":
+            ps.append(tag)
 
-            description = "\n".join([markdownify(p) for p in ps])[:2048]
+    description = "\n".join([markdownify(p) for p in ps])[:2048]
 
-            emb = discord.Embed(title=title, url=url, description=description)
-            emb.set_author(name="SQL Reference")
-            emb.set_thumbnail(
-                url="https://users.soe.ucsc.edu/~kunqian/logos/sql-logo.png"
-            )
+    emb = discord.Embed(title=title, url=url, description=description)
+    emb.set_author(name="SQL Reference")
+    emb.set_thumbnail(
+        url="https://users.soe.ucsc.edu/~kunqian/logos/sql-logo.png"
+    )
 
-            await ctx.send(embed=emb)
+    await ctx.send(embed=emb)
 
 
 async def haskell_ref(ctx, text):
@@ -211,34 +208,33 @@ async def haskell_ref(ctx, text):
     base_url = f"https://wiki.haskell.org/{snake}"
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
-    async with aiohttp.ClientSession() as client_session:
-        async with client_session.get(url) as response:
-            if response.status == 404:
-                return await ctx.send(f"No results for `{text}`")
-            if response.status != 200:
-                return await ctx.send(
-                    f"An error occurred (status code: {response.status}). Retry later."
-                )
+    response = await ctx.bot.http_session.get(url)
+    if response.status == 404:
+        return await ctx.send(f"No results for `{text}`")
+    if response.status != 200:
+        return await ctx.send(
+            f"An error occurred (status code: {response.status}). Retry later."
+        )
 
-            soup = BeautifulSoup(await response.text(), HTML_PARSER).find(
-                "div", id="content"
+    soup = BeautifulSoup(await response.text(), HTML_PARSER).find(
+        "div", id="content"
+    )
+
+    title = soup.find("h1", id="firstHeading").string
+    description = "\n".join(
+        [
+            markdownify(p)
+            for p in soup.find_all(
+                lambda x: x.name in ["p", "li"]
+                and tuple(x.parents)[1].name not in ("td", "li"),
+                limit=6,
             )
+        ]
+    )[:2048]
 
-            title = soup.find("h1", id="firstHeading").string
-            description = "\n".join(
-                [
-                    markdownify(p)
-                    for p in soup.find_all(
-                        lambda x: x.name in ["p", "li"]
-                        and tuple(x.parents)[1].name not in ("td", "li"),
-                        limit=6,
-                    )
-                ]
-            )[:2048]
+    emb = discord.Embed(title=title, description=description, url=url)
+    emb.set_thumbnail(
+        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png"
+    )
 
-            emb = discord.Embed(title=title, description=description, url=url)
-            emb.set_thumbnail(
-                url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png"
-            )
-
-            await ctx.send(embed=emb)
+    await ctx.send(embed=emb)

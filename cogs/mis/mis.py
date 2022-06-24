@@ -388,18 +388,17 @@ class Misc(Cog):
 
     async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
-        async with aiohttp.ClientSession() as aioclient:
-            post = await aioclient.post("https://hastebin.com/documents", data=text)
-            if post.status == 200:
-                response = await post.text()
-                return f"https://hastebin.com/{response[8:-2]}"
+        post = await self.bot.http_session.post("https://hastebin.com/documents", data=text)
+        if post.status == 200:
+            response = await post.text()
+            return f"https://hastebin.com/{response[8:-2]}"
 
-            # Rollback bin
-            post = await aioclient.post(
-                "https://bin.readthedocs.fr/new", data={"code": text, "lang": lang}
-            )
-            if post.status == 200:
-                return str(post.url)
+        # Rollback bin
+        post = await self.bot.http_session.post(
+            "https://bin.readthedocs.fr/new", data={"code": text, "lang": lang}
+        )
+        if post.status == 200:
+            return str(post.url)
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
@@ -454,15 +453,10 @@ class Misc(Cog):
         new_text = urllib.parse.quote(text)
         link = "http://twitch.center/customapi/math?expr=" + new_text
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.text()
-                else:
-                    return
+        r = await self.bot.http_session.get(link)
         embed = discord.Embed(
             title="Calculated!!",
-            description=f"```ini\n[Answer is: {res}]```",
+            description=f"```ini\n[Answer is: {await r.text()}]```",
             timestamp=discord.utils.utcnow(),
         )
         embed.set_footer(text=f"{ctx.author.name}")
@@ -513,14 +507,14 @@ class Misc(Cog):
         """
         new_expression = urllib.parse.quote(expression)
         link = f"https://newton.now.sh/api/v2/{operation}/{new_expression}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return await ctx.reply(
-                        f"{ctx.author.mention} invalid **{expression}** or either **{operation}**"
-                    )
+        
+        r = await self.bot.htt_session.get(link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return await ctx.reply(
+                f"{ctx.author.mention} invalid **{expression}** or either **{operation}**"
+                )
         result = res["result"]
         embed = discord.Embed(
             title="Calculated!!",
@@ -749,14 +743,13 @@ class Misc(Cog):
         )
 
         loc = loc.capitalize()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return await ctx.reply(
-                        f"{ctx.author.mention} no location named, **{location}**"
-                    )
+        r = await self.bot.http_session.get(link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return await ctx.reply(
+                f"{ctx.author.mention} no location named, **{location}**"
+            )
 
         lat = res["coord"]["lat"]
         lon = res["coord"]["lon"]
@@ -1006,20 +999,14 @@ class Misc(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} can not provide more than 10 options"
             )
-        async with aiohttp.ClientSession() as session:
-            poll = await session.post(
-                BASE_URL, json=data, headers={"API-KEY": os.environ["STRAW_POLL"]}
-            )
+        poll = await self.bot.http_session.post(
+            BASE_URL, json=data, headers={"API-KEY": os.environ["STRAW_POLL"]}
+        )
 
         data = await poll.json()
         _exists = await collection.find_one_and_update(
-            {"_id": ctx.author.id}, {"$set": {"content_id": data["content_id"]}}
+            {"_id": ctx.author.id}, {"$set": {"content_id": data["content_id"]}}, upsert=True
         )
-
-        if not _exists:
-            await collection.insert_one(
-                {"_id": ctx.author.id, "content_id": data["content_id"]}
-            )
 
         msg = await ctx.reply(
             f"Poll created: <https://strawpoll.com/{data['content_id']}>"
@@ -1035,8 +1022,7 @@ class Misc(Cog):
         """To get the poll data"""
         URL = f"https://strawpoll.com/api/poll/{content_id}"
 
-        async with aiohttp.ClientSession() as session:
-            poll = await session.get(URL, headers={"API-KEY": os.environ["STRAW_POLL"]})
+        poll = await self.bot.http_session.get(URL, headers={"API-KEY": os.environ["STRAW_POLL"]})
         try:
             data = await poll.json()
         except json.decoder.JSONDecodeError:
@@ -1067,12 +1053,11 @@ class Misc(Cog):
         if not _exists:
             return
         URL = "https://strawpoll.com/api/content/delete"
-        async with aiohttp.ClientSession() as session:
-            await session.delete(
-                URL,
-                data={"content_id": content_id},
-                headers={"API-KEY": os.environ["STRAW_POLL"]},
-            )
+        await self.bot.http_session.delete(
+            URL,
+            data={"content_id": content_id},
+            headers={"API-KEY": os.environ["STRAW_POLL"]},
+        )
         await ctx.reply(f"{ctx.author.mention} deleted")
 
     @commands.command(name="orc")
@@ -1085,8 +1070,7 @@ class Misc(Cog):
         if not link:
             await ctx.reply(f"{ctx.author.mention} must provide the link")
         try:
-            async with aiohttp.ClientSession() as session:
-                res = await session.get(link)
+            res = await self.bot.http_session.get(link)
         except Exception as e:
             return await ctx.reply(
                 f"{ctx.author.mention} something not right. Error raised {e}"
@@ -1137,9 +1121,8 @@ class Misc(Cog):
         else:
             link = f"https://api.mcsrvstat.us/2/{address}"
 
-        async with aiohttp.ClientSession() as session:
-            res = await session.get(link)
-            data = await res.json()
+        res = await self.bot.http_session.get(link)
+        data = await res.json()
         try:
             if data["online"]:
                 ip = data["ip"]

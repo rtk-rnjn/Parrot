@@ -1269,9 +1269,8 @@ async def _emoji_add(
 ):
     for emoji in emojis:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(emoji.url) as res:
-                    raw = await res.read()
+            res = await ctx.bot.http_session.get(emoji.url)
+            raw = await res.read()
             ej = await guild.create_custom_emoji(
                 name=emoji.name,
                 image=raw,
@@ -1296,9 +1295,8 @@ async def _emoji_addurl(
     **kwargs: Any,
 ):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as res:
-                raw = await res.read()
+        res = await ctx.bot.http_session.get(url)
+        raw = await res.read()
         emoji = await guild.create_custom_emoji(
             name=name,
             image=raw,

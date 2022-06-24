@@ -65,12 +65,11 @@ class NASA(Cog):
         """Asteroid Picture of the Day"""
         link = f"https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         title = res["title"]
         expln = res["explanation"]
@@ -101,12 +100,11 @@ class NASA(Cog):
         """Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format"""
         s_link = f"https://epic.gsfc.nasa.gov/api/images.php?date={date}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(s_link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(s_link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         em_list = []
         for index in range(0, len(res)):
@@ -140,12 +138,11 @@ class NASA(Cog):
         """You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format"""
         link = f"https://api.nasa.gov/neo/rest/v1/feed?start_date={start}&end_date={end}&api_key={NASA_KEY}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         em_list = []
 
         for date in res["near_earth_objects"]:
@@ -222,12 +219,11 @@ class NASA(Cog):
         """Find any asteroid in the space by ID. "$help findaid" for syntax"""
         link = f"https://api.nasa.gov/neo/rest/v1/neo/{id}?api_key={NASA_KEY}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         name = res["name"]
         link_self = res["nasa_jpl_url"]
 
@@ -268,12 +264,11 @@ class NASA(Cog):
         """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format"""
         link = f"https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={date}&api_key={NASA_KEY}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(link)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         em_list = []
 
@@ -308,13 +303,12 @@ class NASA(Cog):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link, headers={"User-Agent": AGENT}) as r:
-                if r.status >= 300:
-                    return await ctx.reply(
-                        f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
-                    )
-                res = await r.json()
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
+            )
+        res = await r.json()
 
         if not res["collection"]["items"]:
             await ctx.reply(
@@ -332,14 +326,13 @@ class NASA(Cog):
                 except KeyError:
                     continue
                 else:
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(
-                            media_url, headers={"User-Agent": AGENT}
-                        ) as r:
-                            if r.status == 200:
-                                media = await r.json()
-                            else:
-                                media = None
+                    r = await self.bot.http_session.get(
+                        media_url, headers={"User-Agent": AGENT}
+                    )
+                    if r.status == 200:
+                        media = await r.json()
+                    else:
+                        media = None
                     img, vid, srt = [], [], []
                     i, j, k = 1, 1, 1
                     if media:

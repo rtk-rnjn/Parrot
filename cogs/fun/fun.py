@@ -1647,12 +1647,11 @@ class Fun(Cog):
     @Context.with_type
     async def roast(self, ctx: Context, *, member: discord.Member = None):
         """Insult your enemy, Ugh!"""
-        if member is None:
-            member = ctx.author
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://insult.mattbas.org/api/insult") as response:
-                insult = await response.text()
-                await ctx.reply(f"**{member.name}** {insult}")
+        member = member or ctx.author
+
+        response = await self.bot.http_session.get("https://insult.mattbas.org/api/insult")
+        insult = await response.text()
+        await ctx.reply(f"**{member.name}** {insult}")
 
     @commands.command(aliases=["its-so-stupid"])
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
@@ -1663,17 +1662,14 @@ class Fun(Cog):
         member = ctx.author
         if len(comment) > 20:
             comment = comment[:19:]
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
+        async with self.bot.http_session.get(
+            f"https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}"
+        ) as wastedImage:  # get users avatar as png with 1024 size
+            imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
 
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "itssostupid.png")
-                )  # replying the file
+            await ctx.reply(
+                file=discord.File(imageData, "itssostupid.png")
+            )  # replying the file
 
     @commands.command(name="meme")
     @commands.bot_has_permissions(embed_links=True)
@@ -1682,12 +1678,12 @@ class Fun(Cog):
     async def meme(self, ctx: Context):
         """Random meme generator."""
         link = "https://memes.blademaker.tv/api?lang=en"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as response:
-                if response.status == 200:
-                    res = await response.json()
-                else:
-                    return
+
+        response = await self.bot.http_session.get(link)
+        if response.status == 200:
+            res = await response.json()
+        else:
+            return
         title = res["title"]
         ups = res["ups"]
         downs = res["downs"]
@@ -1708,12 +1704,11 @@ class Fun(Cog):
     async def fakepeople(self, ctx: Context):
         """Fake Identity generator."""
         link = "https://randomuser.me/api/"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as response:
-                if response.status == 200:
-                    res = await response.json()
-                else:
-                    return
+        response = await self.bot.http_session.get(link)
+        if response.status == 200:
+            res = await response.json()
+        else:
+            return
         res = res["results"][0]
         name = f"{res['name']['title']} {res['name']['first']} {res['name']['last']}"
         address = f"{res['location']['street']['number']}, {res['location']['street']['name']}, {res['location']['city']}, {res['location']['state']}, {res['location']['country']}, {res['location']['postcode']}"
@@ -1830,17 +1825,14 @@ class Fun(Cog):
             name = member.name[:20:]
         else:
             name = member.name
-        async with aiohttp.ClientSession() as wastedSession:
-            async with wastedSession.get(
-                f"https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}"
-            ) as wastedImage:  # get users avatar as png with 1024 size
-                imageData = io.BytesIO(await wastedImage.read())  # read the image/bytes
+        async with self.bot.http_session.get(
+            f"https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}"
+        ) as ytcomment:  # get users avatar as png with 1024 size
+            imageData = io.BytesIO(await ytcomment.read())  # read the image/bytes
 
-                await wastedSession.close()  # closing the session and;
-
-                await ctx.reply(
-                    file=discord.File(imageData, "ytcomment.png")
-                )  # replying the file
+            await ctx.reply(
+                file=discord.File(imageData, "ytcomment.png")
+            )  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

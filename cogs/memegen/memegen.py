@@ -29,12 +29,11 @@ class Memegen(Cog):
             "text": f"{text}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -54,12 +53,11 @@ class Memegen(Cog):
             "url": f"{member.display_avatar.url}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -81,12 +79,11 @@ class Memegen(Cog):
             "url": f"{member.display_avatar.url}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -113,12 +110,11 @@ class Memegen(Cog):
             "intensity": intensity,
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -137,12 +133,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "blurpify", "image": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -164,12 +159,11 @@ class Memegen(Cog):
             "username": f"{ctx.author.name}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -188,12 +182,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "deepfry", "image": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -212,12 +205,11 @@ class Memegen(Cog):
             text = "No U"
         params = {"type": "tweet", "text": f"{text}", "username": f"{ctx.author.name}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -236,12 +228,11 @@ class Memegen(Cog):
             text = "No U"
         params = {"type": "trumptweet", "text": f"{text}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -265,12 +256,11 @@ class Memegen(Cog):
             "image": f"{member.display_avatar.url}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -289,12 +279,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "awooify", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -313,12 +302,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "animeface", "image": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -337,12 +325,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "iphonex", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -361,12 +348,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "threats", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -383,12 +369,11 @@ class Memegen(Cog):
         """
         params = {"type": "clyde", "text": f"{text}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -411,12 +396,11 @@ class Memegen(Cog):
             "username": f"{member.name}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -437,12 +421,11 @@ class Memegen(Cog):
             "user2": f"{ctx.author.display_avatar.url}",
         }
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -461,12 +444,11 @@ class Memegen(Cog):
             member = ctx.author
         params = {"type": "baguette", "url": f"{member.display_avatar.url}"}
         url = "https://nekobot.xyz/api/imagegen"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
         img = res["message"]
         em = discord.Embed(title="", timestamp=discord.utils.utcnow())
         em.set_image(url=img)
@@ -501,12 +483,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -545,12 +526,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -589,12 +569,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -632,12 +611,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -675,12 +653,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -718,12 +695,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -762,12 +738,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -805,12 +780,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return
@@ -851,12 +825,11 @@ class Memegen(Cog):
             "max_font_size": fontsize,
         }
         url = "https://api.imgflip.com/caption_image"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as r:
-                if r.status == 200:
-                    res = await r.json()
-                else:
-                    return
+        r = await self.bot.http_session.get(url, params=params)
+        if r.status == 200:
+            res = await r.json()
+        else:
+            return
 
         if not res["success"]:
             return

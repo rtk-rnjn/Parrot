@@ -59,43 +59,6 @@ class SubscriptionFlag(
     limit: typing.Optional[int] = 1
 
 
-act = {
-    "channel_create": discord.AuditLogAction.channel_create,
-    "channel_delete": discord.AuditLogAction.channel_delete,
-    "channel_update": discord.AuditLogAction.channel_update,
-    "overwrite_create": discord.AuditLogAction.overwrite_create,
-    "overwrite_update": discord.AuditLogAction.overwrite_update,
-    "overwrite_delete": discord.AuditLogAction.overwrite_delete,
-    "kick": discord.AuditLogAction.kick,
-    "member_prune": discord.AuditLogAction.member_prune,
-    "ban": discord.AuditLogAction.ban,
-    "unban": discord.AuditLogAction.unban,
-    "member_update": discord.AuditLogAction.member_update,
-    "member_role_update": discord.AuditLogAction.member_role_update,
-    "member_disconnect": discord.AuditLogAction.member_disconnect,
-    "bot_add": discord.AuditLogAction.bot_add,
-    "role_create": discord.AuditLogAction.role_create,
-    "role_update": discord.AuditLogAction.role_update,
-    "role_delete": discord.AuditLogAction.role_delete,
-    "invite_create": discord.AuditLogAction.invite_create,
-    "invite_delete": discord.AuditLogAction.invite_delete,
-    "invite_update": discord.AuditLogAction.invite_update,
-    "webhook_create": discord.AuditLogAction.webhook_create,
-    "webhook_delete": discord.AuditLogAction.webhook_delete,
-    "webhook_update": discord.AuditLogAction.webhook_update,
-    "emoji_create": discord.AuditLogAction.emoji_create,
-    "emoji_delete": discord.AuditLogAction.emoji_delete,
-    "emoji_update": discord.AuditLogAction.emoji_update,
-    "message_delete": discord.AuditLogAction.message_delete,
-    "message_bulk_delete": discord.AuditLogAction.message_bulk_delete,
-    "message_pin": discord.AuditLogAction.message_pin,
-    "message_unpin": discord.AuditLogAction.message_unpin,
-    "integration_create": discord.AuditLogAction.integration_create,
-    "integration_delete": discord.AuditLogAction.integration_delete,
-    "integration_update": discord.AuditLogAction.integration_update,
-}
-
-
 class nitro(discord.ui.View):
     def __init__(self, ctx):
         super().__init__(timeout=None)
@@ -104,7 +67,7 @@ class nitro(discord.ui.View):
 
     @discord.ui.button(
         custom_id="fun (nitro)",
-        label="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claim⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+        label="\N{BRAILLE PATTERN BLANK}"*16 + "Claim" + "\N{BRAILLE PATTERN BLANK}"*16,
         style=discord.ButtonStyle.green,
     )
     async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -117,7 +80,7 @@ class nitro(discord.ui.View):
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
-        button.label = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Claimed⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+        button.label = "\N{BRAILLE PATTERN BLANK}"*16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}"*16,
 
         ni = discord.Embed(
             title="You received a gift, but...",
@@ -149,9 +112,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @Context.with_type
     async def gitload(self, ctx: Context, *, link: str):
         """To load the cog extension from github"""
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as r:
-                data = await r.read()
+        r = await self.bot.http_session.get(link)
+        data = await r.read()
         name = f"temp/temp{self.count}"
         name_cog = f"temp.temp{self.count}"
         try:
@@ -422,7 +384,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         kwargs["limit"] = args.limit or 100
         if args.action:
-            kwargs["action"] = act.get(args.action.lower().replace(" ", "_"))
+            kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
 
         if args.before:
             kwargs["before"] = args.before.dt
@@ -457,7 +419,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 if webhook:
                     await webhook.send(
                         content=announcement,
-                        username="SERVER",
+                        username="SERVER - SECTOR 17-29",
                         avatar_url=self.bot.user.display_avatar.url,
                         allowed_mentions=discord.AllowedMentions.none(),
                     )
@@ -684,15 +646,14 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         cache = {}
         for key, page in page_types.items():
             sub = cache[key] = {}
-            async with aiohttp.ClientSession() as session:
-                async with session.get(page + "/objects.inv") as resp:
-                    if resp.status != 200:
-                        raise RuntimeError(
-                            "Cannot build rtfm lookup table, try again later."
-                        )
+            resp = await self.bot.http_session.get(page + "/objects.inv")
+            if resp.status != 200:
+                raise RuntimeError(
+                    "Cannot build rtfm lookup table, try again later."
+                )
 
-                    stream = SphinxObjectFileReader(await resp.read())
-                    cache[key] = self.parse_object_inv(stream, page)
+            stream = SphinxObjectFileReader(await resp.read())
+            cache[key] = self.parse_object_inv(stream, page)
 
         self._rtfm_cache = cache
 

@@ -1649,7 +1649,9 @@ class Fun(Cog):
         """Insult your enemy, Ugh!"""
         member = member or ctx.author
 
-        response = await self.bot.http_session.get("https://insult.mattbas.org/api/insult")
+        response = await self.bot.http_session.get(
+            "https://insult.mattbas.org/api/insult"
+        )
         insult = await response.text()
         await ctx.reply(f"**{member.name}** {insult}")
 

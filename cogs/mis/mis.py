@@ -388,7 +388,9 @@ class Misc(Cog):
 
     async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
-        post = await self.bot.http_session.post("https://hastebin.com/documents", data=text)
+        post = await self.bot.http_session.post(
+            "https://hastebin.com/documents", data=text
+        )
         if post.status == 200:
             response = await post.text()
             return f"https://hastebin.com/{response[8:-2]}"
@@ -507,14 +509,14 @@ class Misc(Cog):
         """
         new_expression = urllib.parse.quote(expression)
         link = f"https://newton.now.sh/api/v2/{operation}/{new_expression}"
-        
+
         r = await self.bot.htt_session.get(link)
         if r.status == 200:
             res = await r.json()
         else:
             return await ctx.reply(
                 f"{ctx.author.mention} invalid **{expression}** or either **{operation}**"
-                )
+            )
         result = res["result"]
         embed = discord.Embed(
             title="Calculated!!",
@@ -1005,7 +1007,9 @@ class Misc(Cog):
 
         data = await poll.json()
         _exists = await collection.find_one_and_update(
-            {"_id": ctx.author.id}, {"$set": {"content_id": data["content_id"]}}, upsert=True
+            {"_id": ctx.author.id},
+            {"$set": {"content_id": data["content_id"]}},
+            upsert=True,
         )
 
         msg = await ctx.reply(
@@ -1022,7 +1026,9 @@ class Misc(Cog):
         """To get the poll data"""
         URL = f"https://strawpoll.com/api/poll/{content_id}"
 
-        poll = await self.bot.http_session.get(URL, headers={"API-KEY": os.environ["STRAW_POLL"]})
+        poll = await self.bot.http_session.get(
+            URL, headers={"API-KEY": os.environ["STRAW_POLL"]}
+        )
         try:
             data = await poll.json()
         except json.decoder.JSONDecodeError:

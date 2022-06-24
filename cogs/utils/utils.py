@@ -1021,6 +1021,11 @@ class Utils(Cog):
         await self.suggest(context, suggestion=message.content)
 
     @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+        if after.id in self.message:
+            self.message[after.id]["message"] = after
+
+    @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         await mt.add_reactor(self.bot, payload)
 

@@ -649,7 +649,7 @@ def __is_int(st: str, error: str) -> Optional[int]:
         return main
 
 
-async def add_reactor(bot: Parrot, payload):
+async def add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 
@@ -659,7 +659,7 @@ async def add_reactor(bot: Parrot, payload):
     )
 
 
-async def remove_reactor(bot: Parrot, payload):
+async def remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 

@@ -5,7 +5,6 @@ import os
 import discord
 import random
 from discord.ext import commands
-import urllib.parse  # type: ignore
 
 from utilities.paginator import PaginationView
 from core import Cog, Parrot, Context
@@ -21,7 +20,7 @@ class NASA(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.random_agent = lambda x: random.choice(x)
+        self.random_agent = random.choice
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

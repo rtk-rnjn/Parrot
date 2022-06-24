@@ -451,7 +451,7 @@ class BackupLoader:
             roles = [
                 discord.Object(self.id_translator.get(role))
                 for role in member_data["roles"]
-                if role in self.id_translator.keys()
+                if role in self.id_translator
             ]
 
             if self.guild.me.top_role.position > member.top_role.position:

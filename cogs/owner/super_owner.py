@@ -29,7 +29,7 @@ from utilities.converters import convert_bool
 from cogs.meta.robopage import SimplePages
 
 
-class auditFlag(
+class AuditFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
     guild: typing.Optional[discord.Guild] = None
@@ -39,7 +39,6 @@ class auditFlag(
     after: typing.Optional[ShortTime] = None
     oldest_first: typing.Optional[convert_bool] = False
     user: typing.Union[discord.User, discord.Member] = None
-    action: typing.Optional[str] = None
 
 
 class BanFlag(
@@ -411,7 +410,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
     @commands.is_owner()
-    async def auditlog(self, ctx: Context, *, args: auditFlag):
+    async def auditlog(self, ctx: Context, *, args: AuditFlag):
         """To get the audit log of the server, in nice format"""
         ls = []
         guild = args.guild or ctx.guild

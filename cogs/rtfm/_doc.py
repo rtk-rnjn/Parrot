@@ -58,8 +58,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
         return await ctx.send(f"{ctx.author.mention} no results")
 
     content = [
-        f"[{a.string}](https://docs.python.org/3/{a.get('href')})"
-        for a in links
+        f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links
     ]
 
     emb = discord.Embed(title="Python 3 docs")
@@ -94,7 +93,9 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
 
     if language == "C":
         wanted = "w/c/"
-        url = "https://wikiprogramming.org/wp-content/uploads/2015/05/c-logo-150x150.png"
+        url = (
+            "https://wikiprogramming.org/wp-content/uploads/2015/05/c-logo-150x150.png"
+        )
     else:
         wanted = "w/cpp/"
         url = "https://isocpp.org/files/img/cpp_logo.png"
@@ -105,8 +106,7 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
             break
 
     content = [
-        f"[{a.string}](https://en.cppreference.com/{a.get('href')})"
-        for a in links
+        f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links
     ]
     emb = discord.Embed(title=f"{language} docs")
     emb.set_thumbnail(url=url)
@@ -156,9 +156,7 @@ async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     ls = await get_ele(ul.find_all, "li", limit=10)
     for li in ls:
         a = li.find("div", class_="mw-search-result-heading").find("a")
-        content.append(
-            f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})"
-        )
+        content.append(f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})")
 
     emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 

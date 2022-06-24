@@ -145,10 +145,7 @@ async def _git_main_ref(part, ctx, text):
 
     for tag in sectors[1:]:
         content = "\n".join(
-            [
-                markdownify(p)
-                for p in tag.find_all(lambda x: x.name in ["p", "pre"])
-            ]
+            [markdownify(p) for p in tag.find_all(lambda x: x.name in ["p", "pre"])]
         )
         emb.add_field(name=tag.find("h2").text, value=content[:1024])
 
@@ -176,9 +173,7 @@ async def sql_ref(ctx, text):
         )
 
     body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
-    intro = body.find(
-        lambda x: x.name == "h2" and "Introduction to " in x.string
-    )
+    intro = body.find(lambda x: x.name == "h2" and "Introduction to " in x.string)
     title = body.find("h1").string
 
     ps = []
@@ -192,9 +187,7 @@ async def sql_ref(ctx, text):
 
     emb = discord.Embed(title=title, url=url, description=description)
     emb.set_author(name="SQL Reference")
-    emb.set_thumbnail(
-        url="https://users.soe.ucsc.edu/~kunqian/logos/sql-logo.png"
-    )
+    emb.set_thumbnail(url="https://users.soe.ucsc.edu/~kunqian/logos/sql-logo.png")
 
     await ctx.send(embed=emb)
 
@@ -216,9 +209,7 @@ async def haskell_ref(ctx, text):
             f"An error occurred (status code: {response.status}). Retry later."
         )
 
-    soup = BeautifulSoup(await response.text(), HTML_PARSER).find(
-        "div", id="content"
-    )
+    soup = BeautifulSoup(await response.text(), HTML_PARSER).find("div", id="content")
 
     title = soup.find("h1", id="firstHeading").string
     description = "\n".join(

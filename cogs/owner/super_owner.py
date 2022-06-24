@@ -67,7 +67,9 @@ class nitro(discord.ui.View):
 
     @discord.ui.button(
         custom_id="fun (nitro)",
-        label="\N{BRAILLE PATTERN BLANK}"*16 + "Claim" + "\N{BRAILLE PATTERN BLANK}"*16,
+        label="\N{BRAILLE PATTERN BLANK}" * 16
+        + "Claim"
+        + "\N{BRAILLE PATTERN BLANK}" * 16,
         style=discord.ButtonStyle.green,
     )
     async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -80,7 +82,11 @@ class nitro(discord.ui.View):
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
-        button.label = "\N{BRAILLE PATTERN BLANK}"*16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}"*16,
+        button.label = (
+            "\N{BRAILLE PATTERN BLANK}" * 16
+            + "Claimed"
+            + "\N{BRAILLE PATTERN BLANK}" * 16,
+        )
 
         ni = discord.Embed(
             title="You received a gift, but...",
@@ -384,7 +390,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         kwargs["limit"] = args.limit or 100
         if args.action:
-            kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
+            kwargs["action"] = getattr(
+                discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None
+            )
 
         if args.before:
             kwargs["before"] = args.before.dt
@@ -648,9 +656,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             sub = cache[key] = {}
             resp = await self.bot.http_session.get(page + "/objects.inv")
             if resp.status != 200:
-                raise RuntimeError(
-                    "Cannot build rtfm lookup table, try again later."
-                )
+                raise RuntimeError("Cannot build rtfm lookup table, try again later.")
 
             stream = SphinxObjectFileReader(await resp.read())
             cache[key] = self.parse_object_inv(stream, page)

@@ -3,7 +3,6 @@ import io
 
 import os
 import discord
-import aiohttp  # type: ignore
 import random
 from discord.ext import commands
 import urllib.parse  # type: ignore

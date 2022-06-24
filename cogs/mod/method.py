@@ -7,7 +7,6 @@ from core import Parrot, Context
 
 import discord
 import asyncio
-import aiohttp  # type: ignore
 import datetime
 
 from utilities.time import FutureTime

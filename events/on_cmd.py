@@ -5,7 +5,6 @@ from contextlib import suppress
 import discord
 import math
 import random
-import os
 from discord.ext import commands
 
 from core import Parrot, Context, Cog

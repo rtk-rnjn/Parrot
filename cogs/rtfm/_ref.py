@@ -3,10 +3,6 @@ from __future__ import annotations
 import re
 import urllib.parse
 from functools import partial
-
-# import sys
-
-import aiohttp  # type: ignore
 import discord
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter  # type: ignore

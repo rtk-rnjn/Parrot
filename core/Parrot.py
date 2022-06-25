@@ -219,7 +219,9 @@ class Parrot(commands.AutoShardedBot):
     async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
         if self._change_log is None:
-            self._change_log = [msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)]
+            self._change_log = [
+                msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)
+            ]
 
         return self._change_log[0]
 

@@ -442,7 +442,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return r.message.id == message.id and u.id == message.author.id
 
         if re.fullmatch(EQUATION_REGEX, message.content):
-            with suppress(discord.Forbidden):
+            with suppress(discord.Forbidden, discord.NotFound):
                 await message.add_reaction("\N{SPIRAL NOTE PAD}")
                 try:
                     r, u = await self.bot.wait_for(

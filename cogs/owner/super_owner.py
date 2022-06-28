@@ -603,7 +603,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 name="Connections",
                 value=f", ".join(
                     f'[{i["type"].title()}]({i["url"] or ""})' for i in connections if i != "fetchError"
-                ),
+                ) or "No connections",
             )
         await ctx.send(embed=em)
 

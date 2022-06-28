@@ -50,9 +50,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             role = discord.utils.get(member.guild.roles, name="Muted")
 
         if role is None:
-            return
+            role = discord.utils.get(member.guild.roles, name="Muted")
 
-        if member.id in self.muted.get(member.guild.id, []):
+        if member.id in self.muted.get(member.guild.id, []) and role is not None:
             self.muted[member.guild.id].remove(member.id)
             with suppress(discord.Forbidden):
                 await member.add_roles(
@@ -92,24 +92,20 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         member = payload.user
         if isinstance(member, discord.User):
             return
-        print(1)
         try:
             role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
             role = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
-        print(2)
         if role is None:
-            return
-        print(3)
+            role = discord.utils.get(member.guild.roles, name="Muted")
+
         if (role in member.roles) or ("muted" in [
             r.name.lower() for r in member.roles
         ]):
-            print(4)
             if guild_set := self.muted.get(member.guild.id):
                 guild_set.add(member.id)
             else:
-                print(5)
                 self.muted[member.guild.id] = {member.id}
 
     def difference_list(self, li1: list, li2: list) -> list:

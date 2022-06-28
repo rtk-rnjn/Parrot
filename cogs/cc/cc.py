@@ -513,10 +513,10 @@ class CustomCommand(Cog):
         self,
         *,
         message: discord.Message,
-        ignored_role: int = None,
-        required_role: int = None,
-        required_channel: int = None,
-        ignored_channel: int = None,
+        ignored_role: Optional[int] = None,
+        required_role: Optional[int] = None,
+        required_channel: Optional[int] = None,
+        ignored_channel: Optional[int] = None,
         **kwargs,
     ) -> bool:
         if message.author._roles.has(required_role or 0):

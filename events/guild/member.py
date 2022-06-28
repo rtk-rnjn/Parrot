@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Union
+from typing import Dict, Set, Union
+
+from pymongo import UpdateOne
 
 from core import Cog, Parrot
 import discord
@@ -13,7 +15,7 @@ from contextlib import suppress
 class Member(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.muted = {}  # {GUILD_ID: {*MEMBER_IDS}}
+        self.muted: Dict[int, Set[int]] = {}  # {GUILD_ID: {*MEMBER_IDS}}
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -41,28 +43,23 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
-        data = await self.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": member.guild.id}
-        )
-        if data:
+        try:
+            role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
+            role = member.guild.get_role(role)
+        except KeyError:
+            role = discord.utils.get(member.guild.roles, name="Muted")
+        
+        if role is None:
+            return
 
-            muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
-                member.guild.roles, name="Muted"
-            )
-            if not muted:
-                return
+        if member.id in self.muted.get(member.guild.id, {}):
+            self.muted[member.guild.id].remove(member.id)
+            with suppress(discord.Forbidden):
+                await member.add_roles(
+                    role,
+                    reason=f"Action auto performed | Reason: {member} attempted to mute bypass, by rejoining the server",
+                )
 
-            if (member.guild.id in self.muted) and (
-                member.id in self.muted[member.guild.id]
-            ):
-                self.muted[member.guild.id].remove(member.id)
-                try:
-                    await member.add_roles(
-                        muted,
-                        reason=f"Action auto performed | Reason: {member} attempted to mute bypass, by rejoining the server",
-                    )
-                except discord.errors.Forbidden:
-                    pass
 
     @Cog.listener()
     async def on_member_remove(self, member: discord.Member):
@@ -91,17 +88,21 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
-        if data := await self.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": member.guild.id}
-        ):
-            muted = member.guild.get_role(data["mute_role"]) or discord.utils.get(
-                member.guild.roles, name="Muted"
-            )
-            if muted and (muted in member.roles):
-                if member.guild.id in self.muted:
-                    self.muted[member.guild.id].add(member.id)
-                elif member.guild.id not in self.muted:
-                    self.muted[member.guild.id] = {member.id}
+        try:
+            role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
+            role = member.guild.get_role(role)
+        except KeyError:
+            role = discord.utils.get(member.guild.roles, name="Muted")
+
+        if role is None:
+            return
+
+        if member._roles.has(role.id) or "muted" in [r.name.lower() for r in member.roles]:
+            if guild_set := self.muted.get(member.guild.id):
+                guild_set.add(member.id)
+            else:
+                self.muted[member.guild.id] = {member.id}
+
 
     def difference_list(self, li1: list, li2: list) -> list:
         return [i for i in li1 + li2 if i not in li1 or i not in li2]
@@ -376,6 +377,18 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
         pass
 
+    async def cog_load(self):
+        async for data in self.bot.mongo.parrot_db.server_config.find({"muted": {"$exists": True}}):
+            self.muted[data["_id"]] = set(data["muted"])
 
-async def setup(bot: Parrot):
+    async def cog_unload(self):
+        operations = []
+        for guild_id, set_member_muted in self.muted.items():
+            operations.append(UpdateOne({"_id": guild_id}, {"$set": {"muted": list(set_member_muted)}}, upsert=True))
+
+        await self.bot.mongo.parrot_db.server_config.write_bulk(
+            operations
+        )
+
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(Member(bot))

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 from operator import attrgetter
 import traceback
 
@@ -16,7 +17,7 @@ import io
 
 from async_timeout import timeout  # type: ignore
 
-from discord import File, Embed, Colour, Permissions, PermissionOverwrite, Object
+from discord import File, Embed, Colour, Guild, Member, Permissions, PermissionOverwrite, Object, Role, User
 
 
 # Example
@@ -137,7 +138,7 @@ class CustomEmoji:
 
 
 class CustomMember(CustomBase):
-    def __init__(self, member: discord.Member):
+    def __init__(self, member: Member):
         self.id = member.id
         self.name = member.name
         self.nick = member.nick
@@ -152,7 +153,7 @@ class CustomMember(CustomBase):
 
 
 class CustomRole(CustomBase):
-    def __init__(self, role: discord.Role):
+    def __init__(self, role: Role):
         self.id = role.id
         self.name = role.name
         self.color = role.color
@@ -165,7 +166,7 @@ class CustomRole(CustomBase):
 
 
 class CustomGuild(CustomBase):
-    def __init__(self, guild: discord.Guild):
+    def __init__(self, guild: Guild):
         self.id = guild.id
         self.name = guild.name
 
@@ -229,7 +230,7 @@ class CustomCategoryChannel(CustomBase):
 class BaseCustomCommand:
     __class__ = None
 
-    def __init__(self, bot: Parrot, *, guild: discord.Guild, **kwargs: Any) -> None:
+    def __init__(self, bot: Parrot, *, guild: Guild, **kwargs: Any) -> None:
         self.__bot = bot
         self.__guild = guild
         self.env = env
@@ -252,8 +253,13 @@ class BaseCustomCommand:
         self.env["get_channel"] = self.get_channel
         self.env["get_role"] = self.get_role
         self.env["get_channel_type"] = self.get_channel_type
+        self.env["get_permissions_for"] = self.get_permissions_for
+        self.env["get_overwrites_for"] = self.get_overwrites_for
+
         self.env["wait_for_message"] = self.wait_for_message
         self.env["message_send"] = self.message_send
+
+        [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
     async def wait_for_message(
         self, timeout: float, **kwargs: Any
@@ -266,12 +272,13 @@ class BaseCustomCommand:
                 return all(pred(message) == value for pred, value in converted_pred)
 
             return check
+        with suppress(asyncio.TimeoutError):
+            msg = await self.__bot.wait_for(
+                "message",
+                check=check_outer(**kwargs),
+                timeout=10 if timeout > 10 else timeout,
+            )
 
-        msg = await self.__bot.wait_for(
-            "message",
-            check=check_outer(**kwargs),
-            timeout=10 if timeout > 10 else timeout,
-        )
         if msg.guild != self.__guild:
             return None
         return CustomMessage(msg)
@@ -381,6 +388,47 @@ class BaseCustomCommand:
             return "STAGE"
         return None
 
+    def __get_role_or_user(self, obj: Union[CustomMember, CustomRole, int], need_user: bool=False) -> Union[Member, User, Role, None]:
+        obj = None
+        if isinstance(obj, CustomMember):
+            obj = self.__guild.get_member(obj.id)
+        elif isinstance(obj, CustomRole):
+            obj = self.__guild.get_role(obj.id)
+
+        elif isinstance(obj, int):
+            obj = self.__guild.get_member(obj)
+            if obj is None:
+                obj = self.__guild.get_role(obj)
+
+            if obj is None and need_user:
+                obj = self.__bot.get_user(obj)
+
+        return obj
+
+    async def get_permissions_for(self, channel: int, _for: Union[CustomMember, CustomRole, int]) -> Optional[Permissions]:
+        obj = self.__get_role_or_user(_for,)
+
+        if obj is None:
+            return None
+        
+        chn = self.__guild.get_channel(channel)
+        if chn:
+            return chn.permissions_for(obj)
+        return None
+
+    async def get_overwrites_for(self, channel: int, _for: Union[CustomMember, CustomRole, int]) -> Optional[PermissionOverwrite]:
+        obj = self.__get_role_or_user(_for, need_user=True)
+
+        if obj is None:
+            return None
+        
+        chn = self.__guild.get_channel(channel)
+        if chn:
+            return chn.overwrites_for(obj)
+        return None
+    
+    # DB
+
     async def get_db(self, **kwargs: Any) -> Dict[str, Any]:
         project = kwargs.pop("projection", {})
         return await self.__bot.mongo.cc.storage.find_one(
@@ -408,7 +456,7 @@ class BaseCustomCommand:
 class BaseCustomCommandOnMsg(BaseCustomCommand):
     __class__ = None
 
-    def __init__(self, bot: Parrot, *, guild: discord.Guild, message: discord.Message):
+    def __init__(self, bot: Parrot, *, guild: Guild, message: discord.Message):
         super().__init__(bot, guild=guild)
         self.__message = message
 
@@ -542,7 +590,7 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
         self.__message = reaction.message
 
         self.env["user"] = CustomMember(self.__user)
-        self.env["reaction_type"] = kwargs.pop("reaction_type", None)
+        [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
     async def execute(
         self,

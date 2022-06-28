@@ -52,7 +52,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if role is None:
             return
 
-        if member.id in self.muted.get(member.guild.id, {}):
+        if member.id in self.muted.get(member.guild.id, []):
             self.muted[member.guild.id].remove(member.id)
             with suppress(discord.Forbidden):
                 await member.add_roles(
@@ -96,9 +96,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if role is None:
             return
 
-        if member._roles.has(role.id) or "muted" in [
+        if member._roles.has(role.id) or ("muted" in [
             r.name.lower() for r in member.roles
-        ]:
+        ]):
             if guild_set := self.muted.get(member.guild.id):
                 guild_set.add(member.id)
             else:

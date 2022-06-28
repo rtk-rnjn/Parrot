@@ -602,7 +602,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             em.add_field(
                 name="Connections",
                 value=f", ".join(
-                    f'[{i["type"].title()}]({i["url"] or ""})' for i in connections if i != "fetchError"
+                    f'[{i["type"].title()}]({i["url"] or ""})'
+                    for i in connections
+                    if i != "fetchError"
                 ),
             )
         await ctx.send(embed=em)

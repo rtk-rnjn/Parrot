@@ -70,7 +70,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 data["on_member_leave"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
-                content = f"""**Member Joined Event**
+                content = f"""**Member Leave Event**
 
 `Name (ID)  :` **{member} (`{member.id}`)**
 `Account age:` **{discord.utils.format_dt(member.created_at)}**

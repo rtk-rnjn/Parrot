@@ -549,6 +549,51 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         embed.set_footer(text=f"{issues} warnings")
         await ctx.send(embed=embed)
 
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def force_spy(self, ctx: Context, *, user: discord.User):
+        """To spy someone, only meant for fun. I have no intention to fuck someone's privacy"""
+        API = "https://japi.rest/discord/v1/user/{}"
+        async with self.bot.http_session.get(API.format(user.id)) as resp:
+            data = await resp.json()
+
+        presence = data["presence"]
+        connections = data["connections"]
+        data = data["data"]
+        if "message" in data:
+            return await ctx.send(data["message"])
+
+        em = discord.Embed(title="User Info")
+        if data["bio"]:
+            em.description = data["bio"]
+        if data["avatarURL"]:
+            em.set_footer(text=data["tag"],)
+        em.add_field(name="ID", value=data["id"])
+        if data["banner_color"]:
+            em.color = discord.Color.from_str(data["banner_color"])
+        if data["bannerURL"]:
+            em.set_image(url=data["bannerURL"])
+        if data["premium_since"]:
+            date = data["premium_since"].replace("T", " ").replace("+00:00", " ")
+            em.add_field(name="Premium Since", value=date)
+        em.add_field(name="Created At", value=discord.utils.format_dt(user.created_at, "R"))
+        if data["public_flags_array"]:
+            em.add_field(name="Public Flags Array", value=f'{", ".join(i.replace("_", " ").title() for i in data["public_flags_array"])}')
+        if data["public_flags"]:
+            em.add_field(name="Public Flags", value=data["public_flags"])
+        if data["avatar"]:
+            em.add_field(name="Avatar", value=data["avatar"])
+        if presence.get("activities"):
+            __presence = ""
+            for i in presence["activities"]:
+                __presence = f"""[{i["type"].title()} {i["name"]}]({i["url"]}) {i.get("emoji", {}).get("name", "")} {i["state"]}
+
+""" 
+            em.add_field(name="Presence", value=__presence)
+
+        if connections:
+            em.add_field(name="Connections", value=f', '.join(f'[{i["type"].title()}]({i["url"] or ""})' for i in connections))
+        await ctx.send(embed=em)
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

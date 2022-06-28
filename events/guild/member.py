@@ -102,9 +102,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if role is None:
             return
         print(3)
-        if (role in member.roles) or ("muted" in [
-            r.name.lower() for r in member.roles
-        ]):
+        if (role in member.roles) or (
+            "muted" in [r.name.lower() for r in member.roles]
+        ):
             print(4)
             if guild_set := self.muted.get(member.guild.id):
                 guild_set.add(member.id)

@@ -593,9 +593,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if presence.get("activities"):
             __presence = ""
             for i in presence["activities"]:
-                if i == "fetchError":
-                    __presence = "Fetch Error"
-                    break
                 __presence = f"""[{i["type"].title()} {i["name"]}]({i["url"]}) {i.get("emoji", {}).get("name", "")} {i["state"]}
 
 """
@@ -605,7 +602,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             em.add_field(
                 name="Connections",
                 value=f", ".join(
-                    f'[{i["type"].title()}]({i["url"] or ""})' for i in connections
+                    f'[{i["type"].title()}]({i["url"] or ""})' for i in connections if i != "fetchError"
                 ),
             )
         await ctx.send(embed=em)

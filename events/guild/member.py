@@ -100,9 +100,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if role is None:
             role = discord.utils.get(member.guild.roles, name="Muted")
 
-        if (role in member.roles) or ("muted" in [
-            r.name.lower() for r in member.roles
-        ]):
+        if (role in member.roles) or (
+            "muted" in [r.name.lower() for r in member.roles]
+        ):
             if guild_set := self.muted.get(member.guild.id):
                 guild_set.add(member.id)
             else:

@@ -21,7 +21,6 @@ async def main() -> None:
             bot.http_session = http_session
             bot.mongo = AsyncIOMotorClient(
                 f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-                io_loop=bot.loop,
             )
             await bot.start(TOKEN)
 

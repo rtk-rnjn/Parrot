@@ -17,7 +17,18 @@ import io
 
 from async_timeout import timeout  # type: ignore
 
-from discord import File, Embed, Colour, Guild, Member, Permissions, PermissionOverwrite, Object, Role, User
+from discord import (
+    File,
+    Embed,
+    Colour,
+    Guild,
+    Member,
+    Permissions,
+    PermissionOverwrite,
+    Object,
+    Role,
+    User,
+)
 
 
 # Example
@@ -272,6 +283,7 @@ class BaseCustomCommand:
                 return all(pred(message) == value for pred, value in converted_pred)
 
             return check
+
         with suppress(asyncio.TimeoutError):
             msg = await self.__bot.wait_for(
                 "message",
@@ -388,7 +400,9 @@ class BaseCustomCommand:
             return "STAGE"
         return None
 
-    def __get_role_or_user(self, obj: Union[CustomMember, CustomRole, int], need_user: bool=False) -> Union[Member, User, Role, None]:
+    def __get_role_or_user(
+        self, obj: Union[CustomMember, CustomRole, int], need_user: bool = False
+    ) -> Union[Member, User, Role, None]:
         obj = None
         if isinstance(obj, CustomMember):
             obj = self.__guild.get_member(obj.id)
@@ -405,28 +419,34 @@ class BaseCustomCommand:
 
         return obj
 
-    async def get_permissions_for(self, channel: int, _for: Union[CustomMember, CustomRole, int]) -> Optional[Permissions]:
-        obj = self.__get_role_or_user(_for,)
+    async def get_permissions_for(
+        self, channel: int, _for: Union[CustomMember, CustomRole, int]
+    ) -> Optional[Permissions]:
+        obj = self.__get_role_or_user(
+            _for,
+        )
 
         if obj is None:
             return None
-        
+
         chn = self.__guild.get_channel(channel)
         if chn:
             return chn.permissions_for(obj)
         return None
 
-    async def get_overwrites_for(self, channel: int, _for: Union[CustomMember, CustomRole, int]) -> Optional[PermissionOverwrite]:
+    async def get_overwrites_for(
+        self, channel: int, _for: Union[CustomMember, CustomRole, int]
+    ) -> Optional[PermissionOverwrite]:
         obj = self.__get_role_or_user(_for, need_user=True)
 
         if obj is None:
             return None
-        
+
         chn = self.__guild.get_channel(channel)
         if chn:
             return chn.overwrites_for(obj)
         return None
-    
+
     # DB
 
     async def get_db(self, **kwargs: Any) -> Dict[str, Any]:

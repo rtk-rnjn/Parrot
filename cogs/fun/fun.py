@@ -998,6 +998,7 @@ class Fun(Cog):
                     if question_dict["id"] not in done_questions:
                         done_questions.append(question_dict["id"])
                         break
+                    await asyncio.sleep(0)
 
                 if "dynamic_id" not in question_dict:
                     quiz_entry = QuizEntry(

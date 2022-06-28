@@ -588,7 +588,7 @@ class Utils(Cog):
                 return_document=ReturnDocument.AFTER,
             ):
                 level = int((data["xp"] // 42) ** 0.55)
-                xp = self.__get_required_xp(level + 1)
+                xp = await self.__get_required_xp(level + 1)
                 rank = await self.__get_rank(collection=collection, member=member)
                 file = await rank_card(
                     level,
@@ -621,13 +621,14 @@ class Utils(Cog):
         pages = SimplePages(entries, ctx=ctx, per_page=10)
         await pages.start()
 
-    def __get_required_xp(self, level: int) -> int:
+    async def __get_required_xp(self, level: int) -> int:
         xp = 0
         while True:
             xp += 12
             lvl = int((xp // 42) ** 0.55)
             if lvl == level:
                 return int(xp)
+            await asyncio.sleep(0)
 
     async def __get_rank(self, *, collection, member: discord.Member):
         countr = 0

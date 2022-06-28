@@ -448,6 +448,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
         if real_winners:
             return real_winners
         win_count = win_count - len(real_winners)
+        await asyncio.sleep(0)
 
 
 async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:

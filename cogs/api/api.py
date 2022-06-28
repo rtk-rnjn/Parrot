@@ -48,7 +48,7 @@ def validate_token(token: str) -> bool:
 class Gist(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self._req_lock = asyncio.Lock(loop=self.bot.loop)
+        self._req_lock = asyncio.Lock()
         self.token = os.environ["GITHUB_TOKEN"]
 
         self.__interal_token_caching = set()

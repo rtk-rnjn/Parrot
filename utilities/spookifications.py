@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from random import choice, randint
 
 from PIL import Image, ImageOps

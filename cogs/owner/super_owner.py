@@ -567,7 +567,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if data["bio"]:
             em.description = data["bio"]
         if data["avatarURL"]:
-            em.set_footer(text=data["tag"],)
+            em.set_footer(
+                text=data["tag"],
+            )
         em.add_field(name="ID", value=data["id"])
         if data["banner_color"]:
             em.color = discord.Color.from_str(data["banner_color"])
@@ -576,9 +578,14 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if data["premium_since"]:
             date = data["premium_since"].replace("T", " ").replace("+00:00", " ")
             em.add_field(name="Premium Since", value=date)
-        em.add_field(name="Created At", value=discord.utils.format_dt(user.created_at, "R"))
+        em.add_field(
+            name="Created At", value=discord.utils.format_dt(user.created_at, "R")
+        )
         if data["public_flags_array"]:
-            em.add_field(name="Public Flags Array", value=f'{", ".join(i.replace("_", " ").title() for i in data["public_flags_array"])}')
+            em.add_field(
+                name="Public Flags Array",
+                value=f'{", ".join(i.replace("_", " ").title() for i in data["public_flags_array"])}',
+            )
         if data["public_flags"]:
             em.add_field(name="Public Flags", value=data["public_flags"])
         if data["avatar"]:
@@ -588,12 +595,18 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             for i in presence["activities"]:
                 __presence = f"""[{i["type"].title()} {i["name"]}]({i["url"]}) {i.get("emoji", {}).get("name", "")} {i["state"]}
 
-""" 
+"""
             em.add_field(name="Presence", value=__presence)
 
         if connections:
-            em.add_field(name="Connections", value=f', '.join(f'[{i["type"].title()}]({i["url"] or ""})' for i in connections))
+            em.add_field(
+                name="Connections",
+                value=f", ".join(
+                    f'[{i["type"].title()}]({i["url"] or ""})' for i in connections
+                ),
+            )
         await ctx.send(embed=em)
+
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

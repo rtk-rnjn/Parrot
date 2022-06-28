@@ -87,21 +87,29 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     username=self.bot.user.name,
                 )
 
+    @Cog.listener()
+    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
+        member = payload.user
+        if isinstance(member, discord.User):
+            return
+        print(1)
         try:
             role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
             role = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
-
+        print(2)
         if role is None:
             return
-
-        if member._roles.has(role.id) or ("muted" in [
+        print(3)
+        if (role in member.roles) or ("muted" in [
             r.name.lower() for r in member.roles
         ]):
+            print(4)
             if guild_set := self.muted.get(member.guild.id):
                 guild_set.add(member.id)
             else:
+                print(5)
                 self.muted[member.guild.id] = {member.id}
 
     def difference_list(self, li1: list, li2: list) -> list:
@@ -273,10 +281,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if not all(
                 [perms.manage_permissions, perms.manage_channels, perms.move_members]
             ):
-                # await self.__notify_member(
-                #     f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
-                #     member=member
-                # )
                 return
             if channel.id == self.bot.server_config[member.guild.id]["hub"]:
                 if channel.category:
@@ -321,10 +325,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if not all(
                 [perms.manage_permissions, perms.manage_channels, perms.move_members]
             ):
-                # await self.__notify_member(
-                #     f"{member.mention} can not proceed to make Hub channel. Bot need `Manage Roles`, `Manage Channels` and `Move Members` permissions",
-                #     member=member
-                # )
                 return
             for ch in data["temp_channels"]:
                 if ch["channel_id"] == channel.id and ch["author"] == member.id:

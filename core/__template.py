@@ -8,7 +8,7 @@ post: Dict[str, Any] = {
     "mod_role": None,
     "premium": False,
     "warn_auto": [],
-    "muted": []
+    "muted": [],
     "counting": None,
     "oneword": None,
     "autowarn": [],

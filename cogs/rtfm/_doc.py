@@ -6,7 +6,7 @@ from string import ascii_uppercase
 import discord
 
 from bs4 import BeautifulSoup
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from utilities.converters import ToAsync
 from core import Context
@@ -20,7 +20,7 @@ except ImportError:
 
 
 @ToAsync()
-def get_ele(soup, name, **kw: Any):
+def get_ele(soup, name, **kw: Dict[str, Any]):
     url = soup.find_all(name, **kw)
     return url
 

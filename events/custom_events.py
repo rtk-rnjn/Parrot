@@ -22,7 +22,7 @@ class EventCustom(Cog):
         else:
             self.create_timer = None
 
-    async def on_timer_complete(self, **kw: Any) -> None:
+    async def on_timer_complete(self, **kw: Dict[str, Any]) -> None:
         await self.bot.wait_until_ready()
         if kw.get("mod_action"):
             await self.mod_action_parser(**kw.get("mod_action"))
@@ -61,7 +61,7 @@ class EventCustom(Cog):
                 return await self._parse_timer(**kw)
             await self.extra_action_parser(data.get("name"), **data.get("main"))
 
-    async def mod_action_parser(self, **kw: Any) -> None:
+    async def mod_action_parser(self, **kw: Dict[str, Any]) -> None:
         action: str = kw.get("action")
         guild: discord.Guild = self.bot.get_guild(kw.get("guild"))
         if guild is None:
@@ -82,7 +82,7 @@ class EventCustom(Cog):
                 # User not found, Bot Not having permissions, Other HTTP Error
                 pass
 
-    async def extra_action_parser(self, name: str, **kw: Any) -> None:
+    async def extra_action_parser(self, name: str, **kw: Dict[str, Any]) -> None:
         if name.upper() == "REMOVE_AFK":
             await self.bot.mongo.parrot_db.afk.delete_one(kw)
             self.bot.afk.remove(kw.get("messageAuthor"))
@@ -100,7 +100,7 @@ class EventCustom(Cog):
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)
 
-    async def _parse_timer(self, **kw: Any):
+    async def _parse_timer(self, **kw: Dict[str, Any]):
         age: str = kw["extra"]["main"].get("age")
         if age is None:
             return
@@ -110,7 +110,7 @@ class EventCustom(Cog):
         post["expires_at"] = age.dt.timestamp()
         await self.bot.mongo.parrot_db.timers.insert_one(post)
 
-    async def _parse_giveaway(self, **kw: Any) -> None:
+    async def _parse_giveaway(self, **kw: Dict[str, Any]) -> None:
         data: Dict[str, Any] = await self.bot.mongo.parrot_db.giveaway.find_one(
             {
                 "message_id": kw.get("message_id"),

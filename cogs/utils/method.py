@@ -451,7 +451,7 @@ async def end_giveaway(bot: Parrot, **kw) -> List[int]:
         await asyncio.sleep(0)
 
 
-async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
+async def __check_requirements(bot: Parrot, **kw: Dict[str, Any]) -> List[int]:
     # vars
     real_winners = kw.get("winners")
 

@@ -369,10 +369,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     async def on_presence_update(self, before: discord.Member, after: discord.Member):
         pass  # nothing can be done, as discord dont gave use presence intent UwU
 
-    @Cog.listener()
-    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
-        pass
-
     async def cog_load(self):
         async for data in self.bot.mongo.parrot_db.server_config.find(
             {"muted": {"$exists": True}}

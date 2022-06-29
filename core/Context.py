@@ -12,7 +12,7 @@ import functools
 
 from utilities.emotes import emojis
 
-from typing import Optional, Union, List, Tuple, Any, TYPE_CHECKING
+from typing import Dict, Optional, Union, List, Tuple, Any, TYPE_CHECKING
 
 
 __all__ = ("Context",)
@@ -228,7 +228,7 @@ class Context(commands.Context):
             await asyncio.sleep(_for or 0)
 
     async def safe_send(
-        self, content: str, *, escape_mentions: bool = True, **kwargs: Any
+        self, content: str, *, escape_mentions: bool = True, **kwargs: Dict[str, Any]
     ) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
@@ -256,10 +256,10 @@ class Context(commands.Context):
         self,
         channel: discord.TextChannel,
         user: Union[discord.Member, discord.User],
-        *args: Any,
+        *args: Tuple[Any],
         timeout: float = 60,
         delete_after: bool = False,
-        **kwargs: Any,
+        **kwargs: Dict[str, Any],
     ) -> Optional[bool]:
         """|coro|
 

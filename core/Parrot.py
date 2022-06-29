@@ -89,7 +89,7 @@ STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 
 
 @ToAsync()
-def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+def func(function: Callable[..., Any], *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
     return function(*args, **kwargs)
 
 
@@ -277,7 +277,7 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
 
-    async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
+    async def on_error(self, event: str, *args: Any, **kwargs: Dict[str, Any]) -> None:
         print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()
         trace = traceback.format_exc()

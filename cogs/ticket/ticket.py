@@ -42,7 +42,7 @@ class Ticket(Cog):
     @commands.cooldown(1, 5, commands.BucketType.channel)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def save(self, ctx: Context, limit: Optional[int]=100):
+    async def save(self, ctx: Context, limit: Optional[int] = 100):
         """Use this to save the transcript of a ticket.
         This command only works in ticket channels."""
         await mt._save(ctx, self.bot, limit)

@@ -10,7 +10,12 @@ class IPCRoutes(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    def _overwrite_to_json(self, overwrites: Dict[Union[discord.User, discord.Role], discord.PermissionOverwrite]) -> Dict[str, Union[str, bool, None]]:
+    def _overwrite_to_json(
+        self,
+        overwrites: Dict[
+            Union[discord.User, discord.Role], discord.PermissionOverwrite
+        ],
+    ) -> Dict[str, Union[str, bool, None]]:
         try:
             return {
                 str(target.id): overwrite._values

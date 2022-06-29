@@ -6,6 +6,7 @@ import discord
 from core import Context, Parrot
 import asyncio
 
+
 async def chat_exporter(
     channel: discord.TextChannel, limit: Optional[int] = 100
 ) -> None:
@@ -128,9 +129,10 @@ async def _new(ctx: Context, args: Optional[str] = None) -> None:
 
         await ticket_channel.send(pinged_msg_content)
 
-
     await ctx.bot.mongo.parrot_db.ticket.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"ticket_channel_ids": ticket_channel.id}}, upsert=True
+        {"_id": ctx.guild.id},
+        {"$addToSet": {"ticket_channel_ids": ticket_channel.id}},
+        upsert=True,
     )
     created_em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -217,7 +219,9 @@ async def _save(ctx: Context, bot: Parrot, limit: int) -> None:
                         "RUNNING",
                     )
 
+
 # CONFIG
+
 
 async def _addaccess(ctx: Context, role: discord.Role) -> None:
 

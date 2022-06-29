@@ -8,9 +8,11 @@ import json
 
 BASE_URL = "https://youtube.com"
 
+
 class YoutubeSearch:
     search_terms: str
-    def __init__(self, max_results: Optional[int]=5):
+
+    def __init__(self, max_results: Optional[int] = 5):
         self.max_results = max_results
 
         self._cache: Dict[str, str] = {}

@@ -12,7 +12,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
         self.collection = bot.mongo.parrot_db["logging"]
 
     @Cog.listener()
-    async def on_member_ban(self, guild, user):
+    async def on_member_ban(self, guild: discord.Guild, user: discord.User):
         await self.bot.wait_until_ready()
         if not guild.me.guild_permissions.view_audit_log:
             return
@@ -42,7 +42,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
                         break
 
     @Cog.listener()
-    async def on_member_unban(self, guild, user):
+    async def on_member_unban(self, guild: discord.Guild, user: discord.User):
         await self.bot.wait_until_ready()
         if not guild.me.guild_permissions.view_audit_log:
             return
@@ -72,7 +72,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
                         break
 
     @Cog.listener()
-    async def on_user_update(self, before, after):
+    async def on_user_update(self, before: discord.User, after: discord.User):
         pass
 
 

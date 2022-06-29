@@ -1,7 +1,7 @@
 from __future__ import annotations
 from contextlib import suppress
 from datetime import datetime
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from core import Cog, Parrot
 
@@ -15,7 +15,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.collection = bot.mongo.parrot_db["logging"]
 
-    def _overwrite_to_json(self, overwrites) -> str:
+    def _overwrite_to_json(self, overwrites: Dict[Union[discord.Role, discord.User], discord.PermissionOverwrite]) -> str:
         try:
             over = {
                 f"{str(target.name)} ({'Role' if isinstance(target, discord.Role) else 'Member'})": overwrite._values
@@ -133,7 +133,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         )
 
     @Cog.listener()
-    async def on_guild_channel_update(self, before, after):
+    async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
         await self.bot.wait_until_ready()
         channel = after
         if not channel.guild.me.guild_permissions.view_audit_log:
@@ -180,7 +180,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         )
                         break
 
-    def _channel_change(self, before, after, *, TYPE: str) -> List[Tuple[str, Any]]:
+    def _channel_change(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel, *, TYPE: str) -> List[Tuple[str, Any]]:
         ls = []
         if before.name != after.name:
             ls.append(("`Name Changed     :`", before.name))

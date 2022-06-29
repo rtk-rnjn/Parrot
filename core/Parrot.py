@@ -117,6 +117,8 @@ class Parrot(commands.AutoShardedBot):
     owner_id: Optional[int]
     owner_ids: Optional[Collection[int]]
 
+    voice_clients: List[discord.VoiceProtocol]
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             command_prefix=self.get_prefix,

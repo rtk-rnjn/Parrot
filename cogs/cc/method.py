@@ -598,7 +598,11 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
     __class__ = None
 
     def __init__(
-        self, bot: Parrot, reaction: discord.Reaction, user: discord.User, **kwargs: Dict[str, Any]
+        self,
+        bot: Parrot,
+        reaction: discord.Reaction,
+        user: discord.User,
+        **kwargs: Dict[str, Any],
     ):
         super().__init__(
             bot,

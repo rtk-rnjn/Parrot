@@ -88,7 +88,11 @@ class Wordle:
         return buf
 
     async def start(
-        self, ctx: Context, *, embed_color: DiscordColor = DEFAULT_COLOR, **kwargs: Dict[str, Any]
+        self,
+        ctx: Context,
+        *,
+        embed_color: DiscordColor = DEFAULT_COLOR,
+        **kwargs: Dict[str, Any],
     ) -> Optional[discord.Message]:
 
         self.embed_color = embed_color

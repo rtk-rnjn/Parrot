@@ -453,7 +453,7 @@ class Misc(Cog):
     async def calculator(self, ctx: Context, *, text: str):
         """This is basic calculator with all the expression supported. Syntax is similar to python math module"""
         new_text = urllib.parse.quote(text)
-        link = "http://twitch.center/customapi/math?expr=" + new_text
+        link = f"http://twitch.center/customapi/math?expr={new_text}"
 
         r = await self.bot.http_session.get(link)
         embed = discord.Embed(

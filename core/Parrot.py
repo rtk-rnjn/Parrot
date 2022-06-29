@@ -19,6 +19,7 @@ from typing import (
     Dict,
     Sequence,
     Set,
+    Tuple,
     Type,
     Union,
     List,
@@ -111,15 +112,15 @@ class Parrot(commands.AutoShardedBot):
     cached_messages: Sequence[discord.Message]
     guilds: List[discord.Guild]
 
-    tree_cls: Type[discord.app_commands.CommandTree]
-    tree: discord.app_commands.CommandTree
+    tree_cls: Type[app_commands.CommandTree]
+    tree: app_commands.CommandTree
 
     owner_id: Optional[int]
     owner_ids: Optional[Collection[int]]
 
     voice_clients: List[discord.VoiceProtocol]
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Tuple, **kwargs: Dict[str, Any]) -> None:
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,

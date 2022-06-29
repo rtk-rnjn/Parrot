@@ -126,8 +126,6 @@ class NASA(Cog):
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
-        # paginator = Paginator(pages=em_list, timeout=60.0)
-        # await paginator.start(ctx)
 
     @commands.command(aliases=["finda", "asteroid", "neo"])
     @commands.bot_has_permissions(embed_links=True)
@@ -206,9 +204,6 @@ class NASA(Cog):
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
-        # paginator = Paginator(pages=em_list, timeout=60.0)
-
-        # await paginator.start(ctx)
 
     @commands.command(aliases=["findaid", "asteroidid"])
     @commands.bot_has_permissions(embed_links=True)
@@ -289,9 +284,6 @@ class NASA(Cog):
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
-        # paginator = Paginator(pages=em_list, timeout=60.0)
-
-        # await paginator.start(ctx)
 
     @commands.command(aliases=["nsearch", "ns"])
     @commands.bot_has_permissions(embed_links=True)
@@ -372,5 +364,4 @@ class NASA(Cog):
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
-        # paginator = Paginator(pages=em_list, timeout=60.0)
-        # await paginator.start(ctx)
+

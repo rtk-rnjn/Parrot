@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from core import Parrot, Cog
 from discord.ext.ipc import server
@@ -10,7 +10,7 @@ class IPCRoutes(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    def _overwrite_to_json(self, overwrites) -> Dict[str, Any]:
+    def _overwrite_to_json(self, overwrites: Dict[Union[discord.User, discord.Role], discord.PermissionOverwrite]) -> Dict[str, Union[str, bool, None]]:
         try:
             return {
                 str(target.id): overwrite._values
@@ -20,11 +20,11 @@ class IPCRoutes(Cog):
             return {}
 
     @server.route()
-    async def echo(self, data: server.IpcServerResponse) -> Any:
+    async def echo(self, data: server.IpcServerResponse) -> Dict[str, Any]:
         return data.to_json()
 
     @server.route()
-    async def db_exec_find_one(self, data: server.IpcServerResponse) -> Any:
+    async def db_exec_find_one(self, data: server.IpcServerResponse) -> Dict[str, Any]:
         db = data.db
         collection = data.collection
 
@@ -47,7 +47,7 @@ class IPCRoutes(Cog):
         )
 
     @server.route()
-    async def commands(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
+    async def commands(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
         if name := getattr(data, "name", None):
             cmds = [await self.bot.get_command(name)]
         else:

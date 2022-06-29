@@ -364,4 +364,3 @@ class NASA(Cog):
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
-

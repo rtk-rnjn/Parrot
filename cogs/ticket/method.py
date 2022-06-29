@@ -5,6 +5,7 @@ import discord
 
 from core import Context, Parrot
 import asyncio
+import io
 
 
 async def chat_exporter(
@@ -18,7 +19,7 @@ async def chat_exporter(
             f"{', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} "
             f"{', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
         )
-    return await channel.send(file=discord.File(st.encode(), "FILE.txt"))
+    return await channel.send(file=discord.File(io.BytesIO(st.encode()), "FILE.txt"))
 
 
 async def log(

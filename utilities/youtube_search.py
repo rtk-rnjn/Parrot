@@ -1,18 +1,24 @@
 from __future__ import annotations
+from typing import Any, Dict, Optional
 
 import aiohttp  # type: ignore
 import urllib.parse
 import json
 
 
+BASE_URL = "https://youtube.com"
+
 class YoutubeSearch:
-    def __init__(self, search_terms: str, max_results=None):
-        self.search_terms = search_terms
+    search_terms: str
+    def __init__(self, max_results: Optional[int]=5):
         self.max_results = max_results
 
-    async def _search(self):
+        self._cache: Dict[str, str] = {}
+
+    async def _search(self, search_term):
+        self.search_terms = search_term
         encoded_search = urllib.parse.quote_plus(self.search_terms)
-        BASE_URL = "https://youtube.com"
+
         url = f"{BASE_URL}/results?search_query={encoded_search}"
         async with aiohttp.ClientSession() as session:
             response = await session.get(url)
@@ -26,10 +32,12 @@ class YoutubeSearch:
                     response = await response.text()
         results = self._parse_html(response)
         if self.max_results is not None and len(results) > self.max_results:
-            return results[: self.max_results]
+            results = results[: self.max_results]
+
+        self._cache[self.search_terms] = results
         return results
 
-    def _parse_html(self, response):
+    def _parse_html(self, response: str):
         results = []
         start = response.index("ytInitialData") + len("ytInitialData") + 3
         end = response.index("};", start) + 1
@@ -43,7 +51,7 @@ class YoutubeSearch:
         for video in videos:
             res = {}
             if "videoRenderer" in video.keys():
-                video_data = video.get("videoRenderer", {})
+                video_data: Dict[str, Any] = video.get("videoRenderer", {})
                 res["id"] = video_data.get("videoId", None)
                 res["thumbnails"] = [
                     thumb.get("url", None)
@@ -76,10 +84,14 @@ class YoutubeSearch:
                 results.append(res)
         return results
 
-    async def to_dict(self) -> dict:
-        result = await self._search()
+    async def to_dict(self, s: str) -> dict:
+        if result := self._cache.get(self.search_terms):
+            return result
+        result = await self._search(s)
         return result
 
-    async def to_json(self) -> str:
-        result = json.dumps({"videos": await self._search()})
+    async def to_json(self, s: str) -> str:
+        if result := self._cache.get(self.search_terms):
+            return json.dumps({"videos": result})
+        result = json.dumps({"videos": await self._search(s)})
         return result

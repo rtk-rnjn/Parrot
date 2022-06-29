@@ -1,6 +1,6 @@
 from __future__ import annotations
 import hashlib
-from typing import BinaryIO, Iterable, List, Literal, Optional, Union
+from typing import Any, BinaryIO, Dict, Iterable, List, Literal, Optional, Union
 
 from cogs.meta.robopage import SimplePages
 
@@ -322,6 +322,8 @@ class Misc(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.snipes = {}
+
+        self.youtube_search = YoutubeSearch(5)
 
         @bot.listen("on_message_delete")
         async def on_message_delete(msg):
@@ -819,10 +821,10 @@ class Misc(Cog):
     @commands.is_nsfw()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def youtube(self, ctx: Context, limit: Optional[int] = None, *, query: str):
+    async def youtube(self, ctx: Context, *, query: str):
         """Search for videos on YouTube"""
-        results = await YoutubeSearch(query, max_results=limit or 5).to_json()
-        main = json.loads(results)
+        results = await self.youtube_search.to_json(query)
+        main: Dict[str, Any] = json.loads(results)
 
         em_list = []
 

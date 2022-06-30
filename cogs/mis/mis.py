@@ -1055,7 +1055,11 @@ class Misc(Cog):
     @Context.with_type
     async def delete_poll(self, ctx: Context, content_id: str):
         """To delete the poll. Only if it's yours"""
-        _exists: Dict[str, Any] = await self.bot.mongo.parrot_db.poll.collection.find_one({"_id": ctx.author.id})
+        _exists: Dict[
+            str, Any
+        ] = await self.bot.mongo.parrot_db.poll.collection.find_one(
+            {"_id": ctx.author.id}
+        )
         if not _exists:
             return
         URL = "https://strawpoll.com/api/content/delete"

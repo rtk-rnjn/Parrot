@@ -6,6 +6,7 @@ from typing import Union, Optional, Dict, Any
 
 from pymongo.collection import Collection
 
+
 async def _enable(
     bot: Parrot,
     ctx: Context,

@@ -86,7 +86,9 @@ class Configuration(Cog):
         ctx: Context,
     ):
         """To setup Hub like channel"""
-        overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+        overwrites: Dict[
+            Union[discord.Role, discord.Member], discord.PermissionOverwrite
+        ] = {
             ctx.guild.default_role: discord.PermissionOverwrite(
                 connect=True, read_messages=True
             ),
@@ -126,11 +128,15 @@ class Configuration(Cog):
         """To setup the starboard in your server"""
         if not ctx.invoked_subcommand:
             try:
-                starboard_data: Dict[str, Union[str, int, List[int], bool]] = self.bot.server_config[ctx.guild.id]["starboard"]
+                starboard_data: Dict[
+                    str, Union[str, int, List[int], bool]
+                ] = self.bot.server_config[ctx.guild.id]["starboard"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
 
-            channel: Optional[discord.TextChannel] = ctx.guild.get_channel(starboard_data.get("channel", 0))
+            channel: Optional[discord.TextChannel] = ctx.guild.get_channel(
+                starboard_data.get("channel", 0)
+            )
             limit: int = starboard_data.get("limit")
             is_locked: bool = starboard_data.get("is_locked")
 
@@ -494,7 +500,9 @@ class Configuration(Cog):
         c: Collection = self.bot.mongo.parrot_db.global_chat
         if not setting:
 
-            overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+            overwrites: Dict[
+                Union[discord.Role, discord.Member], discord.PermissionOverwrite
+            ] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
                     read_messages=True, send_messages=True, read_message_history=True
                 ),
@@ -777,9 +785,9 @@ class Configuration(Cog):
         """To configure the automoderation"""
         if ctx.invoked_subcommand is None:
             try:
-                automod: Dict[
-                    str, Dict[str, Any]
-                ] = self.bot.server_config[ctx.guild.id]["automod"]
+                automod: Dict[str, Dict[str, Any]] = self.bot.server_config[
+                    ctx.guild.id
+                ]["automod"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
             main = []
@@ -1071,7 +1079,9 @@ class Configuration(Cog):
     @Context.with_type
     async def telephone(self, ctx: Context):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
-        data: Dict[str, Any] = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.telephone.find_one(
+            {"_id": ctx.guild.id}
+        )
         if not data:
             await self.bot.mongo.parrot_db.telephone.insert_one(
                 {
@@ -1204,7 +1214,9 @@ class Configuration(Cog):
     @Context.with_type
     async def ticketconfig(self, ctx: Context):
         """To config the Ticket Parrot Bot in the server"""
-        data: Dict[str, Any] = await self.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.ticket.find_one(
+            {"_id": ctx.guild.id}
+        )
         if not data:
             await self.bot.mongo.parrot_db.ticket.insert_one(
                 {
@@ -1519,9 +1531,9 @@ class Configuration(Cog):
         table_role = []
         if ctx.invoked_subcommand is None:
             try:
-                server_stats: Dict[str, Any] = self.bot.server_config[
-                    ctx.guild.id
-                ]["stats_channels"]
+                server_stats: Dict[str, Any] = self.bot.server_config[ctx.guild.id][
+                    "stats_channels"
+                ]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
             for key, value in server_stats.items():
@@ -1800,7 +1812,9 @@ class Configuration(Cog):
     async def config_backup_load(self, ctx: Context, guild: discord.Guild = None):
         """Loads a server template"""
         guild = guild or ctx.guild
-        data: Dict[str, Any] = await self.bot.mongo.extra.server_misc.find_one({"_id": guild.id})
+        data: Dict[str, Any] = await self.bot.mongo.extra.server_misc.find_one(
+            {"_id": guild.id}
+        )
         if data is None:
             return await ctx.send(
                 f"{ctx.author.mention} No backup found for this server!"

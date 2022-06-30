@@ -122,7 +122,7 @@ class Parrot(commands.AutoShardedBot):
 
     voice_clients: List[discord.VoiceProtocol]
 
-    def __init__(self, *args: Tuple, **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> None:
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
@@ -279,7 +279,7 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
 
-    async def on_error(self, event: str, *args: Any, **kwargs: Dict[str, Any]) -> None:
+    async def on_error(self, event: str, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> None:
         print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()
         trace = traceback.format_exc()
@@ -377,7 +377,7 @@ class Parrot(commands.AutoShardedBot):
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
         )
 
-        ls = await self.mongo.parrot_db.afk.distinct("messageAuthor")
+        ls: List[Optional[int]] = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
         await self.update_opt_in_out.start()
@@ -691,6 +691,7 @@ class Parrot(commands.AutoShardedBot):
             if data := await self.mongo.parrot_db.server_config.find_one(
                 {"_id": message.guild.id}
             ):
+                data: Dict[str, Any] = data
                 prefix = data["prefix"]
                 post = data
                 self.server_config[message.guild.id] = post

@@ -96,13 +96,15 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             role = int(self.bot.server_config[payload.guild_id]["mute_role"] or 0)
             role = member.guild.get_role(role)
         except KeyError:
-            role = discord.utils.get(member.guild.roles, name="Muted")
+            role = discord.utils.find(
+                lambda m: "muted" in m.name.lower(), member.roles
+            )
         if role is None:
-            role = discord.utils.get(member.guild.roles, name="Muted")
+            role = discord.utils.find(
+                lambda m: "muted" in m.name.lower(), member.roles
+            )
 
-        if (role in member.roles) or (
-            "muted" in [r.name.lower() for r in member.roles]
-        ):
+        if role in member.roles:
             if guild_set := self.muted.get(member.guild.id):
                 guild_set.add(member.id)
             else:

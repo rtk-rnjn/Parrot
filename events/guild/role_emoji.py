@@ -1,6 +1,6 @@
 from __future__ import annotations
 from contextlib import suppress
-from typing import Sequence
+from typing import List, Sequence, Tuple, Union
 
 from core import Cog, Parrot
 import discord
@@ -118,9 +118,9 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 
     def _update_role(
         self,
-        before,
-        after,
-    ):
+        before: discord.Role,
+        after: discord.Role,
+    ) -> List[Tuple[str, Union[int, str, bool, Tuple[int, int, int]]]]:
         ls = []
         if before.name != after.name:
             ls.append(("`Name Changed      :`", after.name))

@@ -341,34 +341,36 @@ class Parrot(commands.AutoShardedBot):
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
-        if not self._was_ready:
-            webhook = discord.Webhook.from_url(
-                f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
-                session=self.http_session,
+        if self._was_ready:
+            return
+        webhook = discord.Webhook.from_url(
+            f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
+            session=self.http_session,
+        )
+        if webhook is None:
+            return
+        await webhook.send(
+            f"```py\n{self.user.name.title()} is online!\n```",
+            avatar_url=self.user.avatar.url,
+            username=self.user.name,
+        )
+        with suppress(discord.HTTPException):
+            await webhook.send(
+                f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
+                avatar_url=self.user.avatar.url,
+                username=self.user.name,
             )
-            if webhook is not None:
+        with suppress(discord.HTTPException):
+            fail_msg = ""
+            if self._failed_to_load:
+                for k, v in self._failed_to_load.items():
+                    fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
                 await webhook.send(
-                    f"```py\n{self.user.name.title()} is online!\n```",
+                    f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )
-                with suppress(discord.HTTPException):
-                    await webhook.send(
-                        f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
-                        avatar_url=self.user.avatar.url,
-                        username=self.user.name,
-                    )
-                with suppress(discord.HTTPException):
-                    fail_msg = ""
-                    if self._failed_to_load:
-                        for k, v in self._failed_to_load.items():
-                            fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
-                        await webhook.send(
-                            f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
-                            avatar_url=self.user.avatar.url,
-                            username=self.user.name,
-                        )
-            self._was_ready = True
+        self._was_ready = True
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
@@ -462,8 +464,8 @@ class Parrot(commands.AutoShardedBot):
                 if true:
                     return
 
-            _true = await _can_run(ctx)
-            if not _true:
+            can_run = await _can_run(ctx)
+            if not can_run:
                 await ctx.reply(
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in "
                     f"**{ctx.channel.mention}** by the staff!",
@@ -742,14 +744,14 @@ class Parrot(commands.AutoShardedBot):
             ):
                 return await fetch_function
             return something
-        try:
+        with suppress(discord.HTTPException):
             _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
             if something is None and force_fetch:
                 return await fetch_function(_id)
             return something
-        except discord.HTTPException:
-            return None
+
+        return None
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
@@ -765,6 +767,7 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_opt_in_out(self):
         async for data in self.mongo.extra.misc.find({}):
-            _id = data.pop("_id")
+            data: Dict[str, Any]
+            _id: int = data.pop("_id")
             self.opts[_id] = data
             await asyncio.sleep(0)

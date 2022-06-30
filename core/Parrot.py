@@ -364,7 +364,9 @@ class Parrot(commands.AutoShardedBot):
             fail_msg = ""
             if self._failed_to_load:
                 for k, v in self._failed_to_load.items():
-                    fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                    fail_msg += (
+                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                    )
                 await webhook.send(
                     f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
                     avatar_url=self.user.avatar.url,

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Set, Union
+from typing import Dict, List, Set, Union
 
 from pymongo import UpdateOne
 
@@ -90,10 +90,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
         member = payload.user
-        if isinstance(member, discord.User):
+        if isinstance(member, discord.User) or member.bot:
             return
         try:
-            role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
+            role = int(self.bot.server_config[payload.guild_id]["mute_role"] or 0)
             role = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
@@ -108,7 +108,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             else:
                 self.muted[member.guild.id] = {member.id}
 
-    def difference_list(self, li1: list, li2: list) -> list:
+    def difference_list(self, li1: List, li2: List) -> List:
         return [i for i in li1 + li2 if i not in li1 or i not in li2]
 
     def _member_change(self, before, after):

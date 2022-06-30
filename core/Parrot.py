@@ -279,7 +279,9 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
 
-    async def on_error(self, event: str, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> None:
+    async def on_error(
+        self, event: str, *args: Tuple[Any], **kwargs: Dict[str, Any]
+    ) -> None:
         print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()
         trace = traceback.format_exc()
@@ -377,7 +379,9 @@ class Parrot(commands.AutoShardedBot):
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
         )
 
-        ls: List[Optional[int]] = await self.mongo.parrot_db.afk.distinct("messageAuthor")
+        ls: List[Optional[int]] = await self.mongo.parrot_db.afk.distinct(
+            "messageAuthor"
+        )
         self.afk = set(ls)
         VCS = await self.mongo.parrot_db.server_config.distinct("vc")
         await self.update_opt_in_out.start()

@@ -90,7 +90,7 @@ STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 
 @ToAsync()
 def func(
-    function: Callable[..., Any], *args: Tuple[Any], **kwargs: Dict[str, Any]
+    function: Callable[..., Any], *args: Any, **kwargs: Any
 ) -> Any:
     return function(*args, **kwargs)
 
@@ -122,7 +122,7 @@ class Parrot(commands.AutoShardedBot):
 
     voice_clients: List[discord.VoiceProtocol]
 
-    def __init__(self, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
@@ -280,7 +280,7 @@ class Parrot(commands.AutoShardedBot):
         self._prev_events.append(msg)
 
     async def on_error(
-        self, event: str, *args: Tuple[Any], **kwargs: Dict[str, Any]
+        self, event: str, *args: Any, **kwargs: Any
     ) -> None:
         print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()

@@ -241,7 +241,7 @@ class CustomCategoryChannel(CustomBase):
 class BaseCustomCommand:
     __class__ = None
 
-    def __init__(self, bot: Parrot, *, guild: Guild, **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, bot: Parrot, *, guild: Guild, **kwargs: Any) -> None:
         self.__bot = bot
         self.__guild = guild
         self.env = env
@@ -273,7 +273,7 @@ class BaseCustomCommand:
         [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
     async def wait_for_message(
-        self, timeout: float, **kwargs: Dict[str, Any]
+        self, timeout: float, **kwargs: Any
     ) -> Optional[CustomMessage]:
         def check_outer(**kwargs) -> Callable:
             def check(message) -> bool:
@@ -319,7 +319,7 @@ class BaseCustomCommand:
         return CustomMessage(msg)
 
     async def channel_create(
-        self, channel_type: str, name: str, **kwargs: Dict[str, Any]
+        self, channel_type: str, name: str, **kwargs: Any
     ) -> Union[CustomTextChannel, CustomVoiceChannel]:
         if channel_type.upper() == "TEXT":
             channel = await self.__guild.create_text_channel(name, **kwargs)
@@ -328,7 +328,7 @@ class BaseCustomCommand:
             channel = await self.__guild.create_voice_channel(name, **kwargs)
             return CustomVoiceChannel(channel)
 
-    async def channel_edit(self, channel_id: int, **kwargs: Dict[str, Any]) -> NoReturn:
+    async def channel_edit(self, channel_id: int, **kwargs: Any) -> NoReturn:
         await self.__guild.get_channel(channel_id).edit(**kwargs)
         return
 
@@ -338,11 +338,11 @@ class BaseCustomCommand:
 
     # roles
 
-    async def role_create(self, name: str, **kwargs: Dict[str, Any]) -> CustomRole:
+    async def role_create(self, name: str, **kwargs: Any) -> CustomRole:
         role = await self.__guild.create_role(name, **kwargs)
         return CustomRole(role)
 
-    async def role_edit(self, role_id: int, **kwargs: Dict[str, Any]) -> NoReturn:
+    async def role_edit(self, role_id: int, **kwargs: Any) -> NoReturn:
         await self.__guild.get_role(role_id).edit(**kwargs)
         return
 
@@ -363,7 +363,7 @@ class BaseCustomCommand:
         await self.__guild.get_member(member_id).ban(reason)
         return
 
-    async def edit_member(self, member_id: int, **kwargs: Dict[str, Any]) -> NoReturn:
+    async def edit_member(self, member_id: int, **kwargs: Any) -> NoReturn:
         await self.__guild.get_member(member_id).edit(**kwargs)
         return
 
@@ -449,13 +449,13 @@ class BaseCustomCommand:
 
     # DB
 
-    async def get_db(self, **kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    async def get_db(self, **kwargs: Any) -> Dict[str, Any]:
         project = kwargs.pop("projection", {})
         return await self.__bot.mongo.cc.storage.find_one(
             {"_id": self.__guild.id, **kwargs}, project
         )
 
-    async def edit_db(self, **kwargs: Dict[str, Any]) -> NoReturn:
+    async def edit_db(self, **kwargs: Any) -> NoReturn:
         upsert = kwargs.pop("upsert", False)
         await self.__bot.mongo.cc.storage.update_one(
             {"_id": self.__guild.id}, kwargs, upsert=upsert
@@ -528,7 +528,7 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
 class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
     __class__ = None
 
-    def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Dict[str, Any]):
+    def __init__(self, bot: Parrot, message: discord.Message, **kwargs: Any):
         super().__init__(bot, guild=message.guild, message=message, **kwargs)
         self.__message = message
 
@@ -560,7 +560,7 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
 class _CustomCommandsExecutionOnMember(BaseCustomCommand):
     __class__ = None
 
-    def __init__(self, bot: Parrot, member: discord.member, **kwargs: Dict[str, Any]):
+    def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
         super().__init__(bot, guild=member.guild, **kwargs)
         self.__member = member
         self.env["guild"] = CustomGuild(self.__member.guild)
@@ -602,7 +602,7 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
         bot: Parrot,
         reaction: discord.Reaction,
         user: discord.User,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(
             bot,

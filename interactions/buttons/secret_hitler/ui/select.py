@@ -23,7 +23,7 @@ V = TypeVar("V", bound="SelectUI", covariant=True)
 
 
 class SelectButton(discord.ui.Button[V], Generic[T, V]):
-    def __init__(self, item: T, *args: Tuple[Any], **kwargs: Dict[str, Any]):
+    def __init__(self, item: T, *args: Any, **kwargs: Any):
         self.item: T = item
         super().__init__(*args, **kwargs)
 

@@ -183,7 +183,7 @@ class Context(commands.Context):
         delete_after: bool = True,
         reacquire: bool = True,
         author_id: Optional[int] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[bool]:
         """|coro|
 
@@ -228,7 +228,7 @@ class Context(commands.Context):
             await asyncio.sleep(_for or 0)
 
     async def safe_send(
-        self, content: str, *, escape_mentions: bool = True, **kwargs: Dict[str, Any]
+        self, content: str, *, escape_mentions: bool = True, **kwargs: Any
     ) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
@@ -256,10 +256,10 @@ class Context(commands.Context):
         self,
         channel: discord.TextChannel,
         user: Union[discord.Member, discord.User],
-        *args: Tuple[Any],
+        *args: Any,
         timeout: float = 60,
         delete_after: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[bool]:
         """|coro|
 

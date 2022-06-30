@@ -92,7 +92,7 @@ class Wordle:
         ctx: Context,
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[discord.Message]:
 
         self.embed_color = embed_color

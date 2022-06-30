@@ -21,7 +21,7 @@ async def _add_roles_bot(
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -61,7 +61,7 @@ async def _add_roles_humans(
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -100,7 +100,7 @@ async def _add_roles(
     member: discord.Member,
     role: discord.Role,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -138,7 +138,7 @@ async def _remove_roles(
     member: discord.Member,
     role: discord.Role,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -176,7 +176,7 @@ async def _role_hoist(
     role: discord.Role,
     _bool: bool,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -214,7 +214,7 @@ async def _change_role_name(
     role: discord.Role,
     text: str,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -252,7 +252,7 @@ async def _change_role_color(
     role: discord.Role,
     int_: int,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
         return await destination.send(
@@ -294,7 +294,7 @@ async def _ban(
     days: int = 0,
     reason: str,
     silent: bool = False,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if (
         isinstance(member, discord.Member)
@@ -332,7 +332,7 @@ async def _mass_ban(
     members: Union[List[discord.Member], discord.Member],
     days: int = 0,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members
     for member in members:
@@ -369,7 +369,7 @@ async def _softban(
     destination: discord.TextChannel,
     members: Union[List[discord.Member], discord.Member],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members
     for member in members:
@@ -410,7 +410,7 @@ async def _temp_ban(
     reason: str,
     silent: bool = True,
     bot: Parrot = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     bot = bot or ctx.bot
     members = [members] if not isinstance(members, list) else members
@@ -454,7 +454,7 @@ async def _unban(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         await guild.unban(
@@ -479,7 +479,7 @@ async def _timeout(
     _datetime: datetime.datetime,
     reason: str,
     silent: bool = False,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
@@ -522,7 +522,7 @@ async def _mute(
     member: discord.Member,
     reason: str,
     silent: bool = False,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
         return await destination.send(
@@ -571,7 +571,7 @@ async def _unmute(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if member.timed_out_until:
         try:
@@ -621,7 +621,7 @@ async def _kick(
     member: discord.Member,
     reason: str,
     silent: bool = False,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         if ctx.author.top_role.position < member.top_role.position and not silent:
@@ -653,7 +653,7 @@ async def _mass_kick(
     destination: discord.TextChannel,
     members: Union[List[discord.Member], discord.Member],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members
     for member in members:
@@ -692,7 +692,7 @@ async def _block(
     members: Union[List[discord.Member], discord.Member],
     reason: str,
     silent: bool = False,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members
     for member in members:
@@ -744,7 +744,7 @@ async def _unblock(
     channel: discord.TextChannel,
     members: Union[List[discord.Member], discord.Member],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     members = [members] if not isinstance(members, list) else members
     for member in members:
@@ -786,7 +786,7 @@ async def _text_lock(
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     reason: str = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         overwrite = channel.overwrites
@@ -817,7 +817,7 @@ async def _vc_lock(
     destination: discord.TextChannel,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
     reason: str = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if not channel:
         return
@@ -847,7 +847,7 @@ async def _text_unlock(
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     reason: str = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         overwrite = channel.overwrites
@@ -878,7 +878,7 @@ async def _vc_unlock(
     destination: discord.TextChannel,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
     reason: str = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if not channel:
         return
@@ -908,7 +908,7 @@ async def _change_nickname(
     destination: discord.TextChannel,
     member: discord.Member,
     name: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -935,7 +935,7 @@ async def _change_channel_topic(
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     text: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         await channel.edit(
@@ -959,7 +959,7 @@ async def _change_channel_name(
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     text: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         await channel.edit(
@@ -983,7 +983,7 @@ async def _slowmode(
     seconds: int,
     channel: discord.TextChannel,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if seconds:
         try:
@@ -1022,7 +1022,7 @@ async def _clone(
     destination: discord.TextChannel,
     channel: discord.TextChannel,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         new_channel = await channel.clone(
@@ -1049,7 +1049,7 @@ async def _voice_mute(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1075,7 +1075,7 @@ async def _voice_unmute(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         await member.edit(
@@ -1097,7 +1097,7 @@ async def _voice_deafen(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1123,7 +1123,7 @@ async def _voice_undeafen(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         await member.edit(
@@ -1145,7 +1145,7 @@ async def _voice_kick(
     destination: discord.TextChannel,
     member: discord.Member,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1172,7 +1172,7 @@ async def _voice_ban(
     member: discord.Member,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
         return await destination.send(
@@ -1206,7 +1206,7 @@ async def _voice_unban(
     member: discord.Member,
     channel: Union[discord.VoiceChannel, discord.StageChannel],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         overwrite = channel.overwrites
@@ -1235,7 +1235,7 @@ async def _emoji_delete(
     destination: discord.TextChannel,
     emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     for emoji in emojis:
         try:
@@ -1258,7 +1258,7 @@ async def _emoji_add(
     destination: discord.TextChannel,
     emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     for emoji in emojis:
         try:
@@ -1285,7 +1285,7 @@ async def _emoji_addurl(
     url: str,
     name: str,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         res = await ctx.bot.http_session.get(url)
@@ -1309,7 +1309,7 @@ async def _emoji_rename(
     emoji: Union[discord.Emoji, discord.PartialEmoji],
     name: str,
     reason: str,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ):
     try:
         await emoji.edit(

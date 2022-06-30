@@ -10,7 +10,7 @@ from utilities.time import ShortTime
 
 
 class FakeMessage:
-    def __init__(self, **kwargs: Dict[str, Any]):
+    def __init__(self, **kwargs: Any):
         [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
 

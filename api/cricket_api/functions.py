@@ -47,7 +47,7 @@ def parse_text(st: str) -> str:
 
 
 @ToAsync()
-def find_one(soup: BeautifulSoup, name: str, **kwargs: Dict[str, Any]) -> Optional[str]:
+def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[str]:
 
     if finder := soup.find(name, kwargs):
         return __parse_text(finder.text)
@@ -57,7 +57,7 @@ def find_one(soup: BeautifulSoup, name: str, **kwargs: Dict[str, Any]) -> Option
 
 @ToAsync()
 def find_all(
-    soup: BeautifulSoup, name: str, **kwargs: Dict[str, Any]
+    soup: BeautifulSoup, name: str, **kwargs: Any
 ) -> Optional[List[str]]:
     if finder := soup.find_all(name, kwargs):
         return [__parse_text(i.text) for i in finder]

@@ -183,7 +183,7 @@ class Context(commands.Context):
         delete_after: bool = True,
         reacquire: bool = True,
         author_id: Optional[int] = None,
-        **kwargs,
+        **kwargs: Dict[str, Any],
     ) -> Optional[bool]:
         """|coro|
 
@@ -337,7 +337,7 @@ class ConfirmationView(discord.ui.View):
         if self.delete_after and self.message:
             await self.message.delete(delay=0)
 
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
     async def confirm(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -347,7 +347,7 @@ class ConfirmationView(discord.ui.View):
             await interaction.delete_original_message()
         self.stop()
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = False
         await interaction.response.defer()

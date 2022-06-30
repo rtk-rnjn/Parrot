@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import discord
 from core import Parrot, Context
-from typing import Union, Optional
+from typing import Union, Optional, Dict, Any
 
+from pymongo.collection import Collection
 
 async def _enable(
     bot: Parrot,
@@ -12,8 +13,8 @@ async def _enable(
     target: Union[discord.abc.Messageable, discord.Object],
     force: Optional[bool] = None,
 ) -> None:
-    collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
-    data = await collection.find_one({"_id": cmd_cog})
+    collection: Collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
+    data: Dict[str, Any] = await collection.find_one({"_id": cmd_cog})
     if not data:
         await collection.insert_one(
             {
@@ -82,8 +83,8 @@ async def _disable(
     target: Union[discord.abc.Messageable, discord.Object],
     force: Optional[bool] = None,
 ) -> None:
-    collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
-    data = await collection.find_one({"_id": cmd_cog})
+    collection: Collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
+    data: Dict[str, Any] = await collection.find_one({"_id": cmd_cog})
     if not data:
         await collection.insert_one(
             {

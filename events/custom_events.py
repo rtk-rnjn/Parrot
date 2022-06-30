@@ -10,7 +10,7 @@ from utilities.time import ShortTime
 
 
 class FakeMessage:
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Dict[str, Any]):
         [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
 
@@ -126,6 +126,8 @@ class EventCustom(Cog):
             {"message_id": kw.get("message_id"), "status": "ONGOING"},
             {"$set": {"status": "END"}},
         )
+        if not channel:
+            return
         msg_link = f"https://discord.com/channels/{kw.get('guild_id')}/{kw.get('giveaway_channel')}/{kw.get('message_id')}"
         if not member_ids:
             return await channel.send(f"No winners!\n> {msg_link}")

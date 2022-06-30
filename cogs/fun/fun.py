@@ -1808,7 +1808,7 @@ class Fun(Cog):
             embed.add_field(name="Example", value=f"{example[:250:]}...")
             embed.set_author(name=f"Author: {author}")
             embed.set_footer(
-                text=f"\N{THUMBS UP SIGN} {thumbs_up} • \N{THUMBS DOWN SIGN} {thumbs_down}"
+                text=f"\N{THUMBS UP SIGN} {thumbs_up} \N{BULLET} \N{THUMBS DOWN SIGN} {thumbs_down}"
             )
             em_list.append(embed)
 
@@ -2292,7 +2292,7 @@ class Fun(Cog):
     async def flags(self, ctx: Context):
         """This lists the flags that can be used with the prideavatar command."""
         choices = sorted(set(GENDER_OPTIONS.values()))
-        options = "• " + "\n• ".join(choices)
+        options = "\N{BULLET} " + "\n\N{BULLET} ".join(choices)
         embed = discord.Embed(
             title="I have the following flags:",
             description=options,

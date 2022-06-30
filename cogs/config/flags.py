@@ -8,7 +8,7 @@ from utilities.converters import convert_bool
 
 
 class AutoWarn(
-    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
+    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"  # type: ignore
 ):
     enable: Optional[convert_bool] = True
     count: Optional[int] = None
@@ -18,7 +18,7 @@ class AutoWarn(
 
 
 class warnConfig(
-    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
+    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"  # type: ignore
 ):
     count: Optional[int] = None
     action: Optional[str] = None

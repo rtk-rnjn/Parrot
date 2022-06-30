@@ -5,11 +5,15 @@ import io
 
 from discord.ext import commands
 import discord
-import typing
+from typing import Optional, Any, Dict, List, Union
 import re
 import json
 
 from tabulate import tabulate
+
+from pymongo.collection import Collection
+from pymongo.results import UpdateResult
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from core import Parrot, Context, Cog
 
@@ -51,6 +55,8 @@ class Configuration(Cog):
             if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": ctx.guild.id}
             ):
+                data: Dict[str, Any]
+
                 role = ctx.guild.get_role(data.get("mod_role", 0))
                 mod_log = ctx.guild.get_channel(data.get("action_log", 0))
                 mute_role = ctx.guild.get_role(data.get("mute_role", 0))
@@ -59,6 +65,7 @@ class Configuration(Cog):
                 )
                 hub = ctx.guild.get_channel(data.get("hub", 0))
                 vc = ctx.guild.get_channel(data.get("vc", 0))
+
                 await ctx.reply(
                     f"Configuration of this server [server_config]\n\n"
                     f"`Prefix  :` **{data['prefix']}**\n"
@@ -79,7 +86,7 @@ class Configuration(Cog):
         ctx: Context,
     ):
         """To setup Hub like channel"""
-        overwrites = {
+        overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
             ctx.guild.default_role: discord.PermissionOverwrite(
                 connect=True, read_messages=True
             ),
@@ -90,13 +97,13 @@ class Configuration(Cog):
                 manage_permissions=True,
             ),
         }
-        cat = await ctx.guild.create_category_channel(
+        cat: discord.CategoryChannel = await ctx.guild.create_category_channel(
             "The Hub",
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             overwrites=overwrites,
         )
 
-        channel = await ctx.guild.create_voice_channel(
+        channel: discord.VoiceChannel = await ctx.guild.create_voice_channel(
             "Hub - Join to create",
             reason=f"Action requested by {ctx.author} ({ctx.author.id})",
             category=cat,
@@ -119,19 +126,21 @@ class Configuration(Cog):
         """To setup the starboard in your server"""
         if not ctx.invoked_subcommand:
             try:
-                starboard_data = self.bot.server_config[ctx.guild.id]["starboard"]
+                starboard_data: Dict[str, Union[str, int, List[int], bool]] = self.bot.server_config[ctx.guild.id]["starboard"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
-            channel = ctx.guild.get_channel(starboard_data.get("channel", 0))
-            limit = starboard_data.get("limit")
-            is_locked = starboard_data.get("is_locked")
+
+            channel: Optional[discord.TextChannel] = ctx.guild.get_channel(starboard_data.get("channel", 0))
+            limit: int = starboard_data.get("limit")
+            is_locked: bool = starboard_data.get("is_locked")
+
             ignore_channel = ", ".join(
                 [
                     f"{ctx.guild.get_channel(c)} ({c})"
                     for c in starboard_data.get("ignore_channel", [])
                 ]
             )
-            max_duration = starboard_data.get("max_duration")
+            max_duration: str = starboard_data.get("max_duration")
 
             return await ctx.reply(
                 f"Configuration of this server [starboard]\n\n"
@@ -145,7 +154,7 @@ class Configuration(Cog):
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
     async def starboard_channel(
-        self, ctx: Context, *, channel: typing.Optional[discord.TextChannel] = None
+        self, ctx: Context, *, channel: Optional[discord.TextChannel] = None
     ):
         """To setup the channel"""
         await self.bot.mongo.parrot_db.server_config.update_one(
@@ -230,12 +239,12 @@ class Configuration(Cog):
     ):
         """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
         if not ctx.invoked_subcommand:
-            channel = channel or ctx.channel
+            channel: discord.TextChannel = channel or ctx.channel
             if event.lower() not in events:
                 return await ctx.reply(
                     f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
                 )
-            hooks = await channel.webhooks()
+            hooks: List[discord.Webhook] = await channel.webhooks()
             if len(hooks) >= 10:
                 for hook in hooks:
                     if hook.user.id == self.bot.user.id:  # bot created that
@@ -250,7 +259,7 @@ class Configuration(Cog):
                         f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
                     )
             else:
-                webhook = await channel.create_webhook(
+                webhook: discord.Webhook = await channel.create_webhook(
                     name=self.bot.user.name,
                     reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
                 )
@@ -286,12 +295,13 @@ class Configuration(Cog):
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": ctx.guild.id}, {"_id": 0}
         ):
+            data: Dict[str, str]
             for k, v in data.items():
                 if v:
                     res = await self.bot.http_session.get(v)
                     if res.status == 200:
-                        data = await res.json()
-                        channel = ctx.guild.get_channel(int(data["channel_id"]))
+                        d: Dict[str, Any] = await res.json()
+                        channel = ctx.guild.get_channel(int(d["channel_id"]))
                         main.append(
                             [f"{k.replace('_', ' ').title()}", f"#{channel.name}"]
                         )
@@ -326,7 +336,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def suggestchannel(
-        self, ctx: Context, *, channel: discord.TextChannel = None
+        self, ctx: Context, *, channel: Optional[discord.TextChannel] = None
     ):
         """To configure the suggestion channel. If no channel is provided it will remove the channel"""
         if channel:
@@ -346,7 +356,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def vc_247(
-        self, ctx: Context, *, channel: typing.Optional[discord.VoiceChannel] = None
+        self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None
     ):
         """To set 24/7 VC"""
         if channel:
@@ -387,7 +397,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
             )
         if duration:
-            _ = ShortTime(duration)
+            ShortTime(duration)  # type: ignore
         if _ := await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
@@ -478,13 +488,13 @@ class Configuration(Cog):
         ctx: Context,
         setting: str = None,
         *,
-        role: typing.Optional[discord.Role] = None,
+        role: Optional[discord.Role] = None,
     ):
         """This command will connect your server with other servers which then connected to #global-chat must try this once"""
-        c = self.bot.mongo.parrot_db.global_chat
+        c: Collection = self.bot.mongo.parrot_db.global_chat
         if not setting:
 
-            overwrites = {
+            overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
                     read_messages=True, send_messages=True, read_message_history=True
                 ),
@@ -560,12 +570,12 @@ class Configuration(Cog):
     async def leveling_show(self, ctx: Context):
         """To show leveling system"""
         try:
-            leveling = self.bot.server_config[ctx.guild.id]["leveling"]
+            leveling: Dict[str, Any] = self.bot.server_config[ctx.guild.id]["leveling"]
         except KeyError:
             return await ctx.reply(
                 f"{ctx.author.mention} leveling system is not set up yet!"
             )
-        reward: typing.List[typing.Dict[str, int]] = leveling.get("reward", [])
+        reward: List[Dict[str, int]] = leveling.get("reward", [])
         rwrd_tble = []
         for i in reward:
             role = ctx.guild.get_role(i["role"]) or None
@@ -767,8 +777,8 @@ class Configuration(Cog):
         """To configure the automoderation"""
         if ctx.invoked_subcommand is None:
             try:
-                automod: typing.Dict[
-                    str, typing.Dict[str, typing.Any]
+                automod: Dict[
+                    str, Dict[str, Any]
                 ] = self.bot.server_config[ctx.guild.id]["automod"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
@@ -1061,7 +1071,7 @@ class Configuration(Cog):
     @Context.with_type
     async def telephone(self, ctx: Context):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
-        data = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
         if not data:
             await self.bot.mongo.parrot_db.telephone.insert_one(
                 {
@@ -1194,7 +1204,7 @@ class Configuration(Cog):
     @Context.with_type
     async def ticketconfig(self, ctx: Context):
         """To config the Ticket Parrot Bot in the server"""
-        data = await self.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         if not data:
             await self.bot.mongo.parrot_db.ticket.insert_one(
                 {
@@ -1372,7 +1382,7 @@ class Configuration(Cog):
         self,
         ctx: Context,
         command: commands.clean_content,
-        target: typing.Union[discord.TextChannel, discord.Role] = None,
+        target: Union[discord.TextChannel, discord.Role] = None,
         force: str = None,
     ):
         """To enable the command"""
@@ -1396,7 +1406,7 @@ class Configuration(Cog):
         self,
         ctx: Context,
         command: commands.clean_content,
-        target: typing.Union[discord.TextChannel, discord.Role] = None,
+        target: Union[discord.TextChannel, discord.Role] = None,
         force: str = None,
     ):
         """To disable the command"""
@@ -1447,8 +1457,8 @@ class Configuration(Cog):
     @Context.with_type
     async def clear(self, ctx: Context):
         """To clear all overrides"""
-        enable_disable = self.bot.mongo.enable_disable
-        collection = enable_disable[f"{ctx.guild.id}"]
+        enable_disable: AsyncIOMotorDatabase = self.bot.mongo.enable_disable
+        collection: Collection = enable_disable[f"{ctx.guild.id}"]
         await collection.drop()
         await ctx.send(f"{ctx.author.mention} reseted everything!")
 
@@ -1472,7 +1482,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**"
             )
             return
-        _ = ShortTime(flags.duration)  # flake8: noqa
+        ShortTime(flags.duration)  # flake8: noqa
 
         data = {
             "enable": flags.enable,
@@ -1509,7 +1519,7 @@ class Configuration(Cog):
         table_role = []
         if ctx.invoked_subcommand is None:
             try:
-                server_stats: typing.Dict[str, typing.Any] = self.bot.server_config[
+                server_stats: Dict[str, Any] = self.bot.server_config[
                     ctx.guild.id
                 ]["stats_channels"]
             except KeyError:
@@ -1529,7 +1539,8 @@ class Configuration(Cog):
                             value.get("template"),
                         ]
                     )
-            for _role in server_stats.get("role", []):
+            for _role in server_stats.get("role", {}):
+                _role: Dict[str, Any]
                 role = ctx.guild.get_role(_role.get("role_id", 0))
                 channel = ctx.guild.get_channel(_role.get("channel_id", 0))
                 template = _role.get("template")
@@ -1593,7 +1604,7 @@ class Configuration(Cog):
             r"What should be the format of the channel? Example: `Total Channels {}`, `{} Roles in total`. Only the `{}` will be replaced with the counter value.",
         ]
 
-        async def wait_for_response() -> typing.Optional[str]:
+        async def wait_for_response() -> Optional[str]:
             def check(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 
@@ -1715,7 +1726,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`"
             )
 
-        async def wait_for_response() -> typing.Optional[str]:
+        async def wait_for_response() -> Optional[str]:
             def check(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 
@@ -1789,7 +1800,7 @@ class Configuration(Cog):
     async def config_backup_load(self, ctx: Context, guild: discord.Guild = None):
         """Loads a server template"""
         guild = guild or ctx.guild
-        data = await self.bot.mongo.extra.server_misc.find_one({"_id": guild.id})
+        data: Dict[str, Any] = await self.bot.mongo.extra.server_misc.find_one({"_id": guild.id})
         if data is None:
             return await ctx.send(
                 f"{ctx.author.mention} No backup found for this server!"
@@ -1827,7 +1838,7 @@ class Configuration(Cog):
     @commands.bot_has_permissions(administrator=True)
     async def config_backup_delete(self, ctx: Context):
         """Deletes your server template"""
-        data = await self.bot.mongo.extra.server_misc.update_one(
+        data: UpdateResult = await self.bot.mongo.extra.server_misc.update_one(
             {"_id": ctx.guild.id}, {"$unset": {"backup": 1}}, upsert=True
         )
         if data.modified_count:

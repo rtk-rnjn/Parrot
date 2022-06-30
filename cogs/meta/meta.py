@@ -834,7 +834,7 @@ class Meta(Cog):
         """To get the info regarding the server emoji"""
         em = discord.Embed(
             title="Emoji Info",
-            description=f"• [Download the emoji]({emoji.url})\n• Emoji ID: `{emoji.id}`",
+            description=f"\N{BULLET} [Download the emoji]({emoji.url})\n\N{BULLET} Emoji ID: `{emoji.id}`",
             timestamp=discord.utils.utcnow(),
             color=ctx.author.color,
         )

@@ -89,7 +89,9 @@ STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 
 
 @ToAsync()
-def func(function: Callable[..., Any], *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
+def func(
+    function: Callable[..., Any], *args: Tuple[Any], **kwargs: Dict[str, Any]
+) -> Any:
     return function(*args, **kwargs)
 
 

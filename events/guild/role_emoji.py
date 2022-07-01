@@ -92,7 +92,6 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         )
                         break
 
-
         await self.bot.mongo.parrot_db["server_config"].update_one(
             {"_id": role.guild.id}, {"$set": {"mod_role": None}}, upsert=True
         )

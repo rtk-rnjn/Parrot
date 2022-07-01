@@ -18,7 +18,7 @@ class AkiView(discord.ui.View):
         game: Akinator,
         player: discord.Member,
         q: str,
-    ):
+    ) -> None:
         super().__init__(timeout=60)
         self.bot = bot
         self.ctx = ctx
@@ -63,11 +63,11 @@ class AkiView(discord.ui.View):
 
         return
 
-    def generate_embed(self) -> discord.Embed:
+    def generate_embed(self, q: str) -> discord.Embed:
         return (
             discord.Embed(color=self.bot.color, timestamp=self.message.created_at)
             .set_footer(text=f"{self.player}", icon_url=self.player.display_avatar.url)
-            .add_field(name=f"Q. {self.q_n}", value=self.q)
+            .add_field(name=f"Q. {self.q_n}", value=q)
         )
 
     @discord.ui.button(
@@ -78,11 +78,11 @@ class AkiView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
-        self.q = await self.game.answer("yes")
+        q = await self.game.answer("yes")
         self.q_n += 1
 
         await interaction.edit_original_message(
-            content=self.message.author.mention, embed=self.generate_embed(), view=self
+            content=self.message.author.mention, embed=self.generate_embed(q), view=self
         )
 
     @discord.ui.button(
@@ -93,11 +93,11 @@ class AkiView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
-        self.q = await self.game.answer("no")
+        q = await self.game.answer("no")
         self.q_n += 1
         await self.is_game_ended()
         await interaction.edit_original_message(
-            content=self.message.author.mention, embed=self.generate_embed(), view=self
+            content=self.message.author.mention, embed=self.generate_embed(q), view=self
         )
 
     @discord.ui.button(
@@ -108,11 +108,11 @@ class AkiView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
-        self.q = await self.game.answer("idk")
+        q = await self.game.answer("idk")
         self.q_n += 1
         await self.is_game_ended()
         await interaction.edit_original_message(
-            content=self.message.author.mention, embed=self.generate_embed(), view=self
+            content=self.message.author.mention, embed=self.generate_embed(q), view=self
         )
 
     @discord.ui.button(
@@ -123,11 +123,11 @@ class AkiView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
-        self.q = await self.game.answer("probably")
+        q = await self.game.answer("probably")
         self.q_n += 1
         await self.is_game_ended()
         await interaction.edit_original_message(
-            content=self.message.author.mention, embed=self.generate_embed(), view=self
+            content=self.message.author.mention, embed=self.generate_embed(q), view=self
         )
 
     @discord.ui.button(
@@ -138,11 +138,11 @@ class AkiView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
-        self.q = await self.game.answer("probably not")
+        q = await self.game.answer("probably not")
         self.q_n += 1
         await self.is_game_ended()
         await interaction.edit_original_message(
-            content=self.message.author.mention, embed=self.generate_embed(), view=self
+            content=self.message.author.mention, embed=self.generate_embed(q), view=self
         )
 
     @discord.ui.button(label="Go Back", style=discord.ButtonStyle.blurple)
@@ -151,18 +151,17 @@ class AkiView(discord.ui.View):
     ):
         await interaction.response.defer()
         try:
-            self.q = await self.game.back()
-        except akinator.CantGoBackAnyFurther:
-            pass
-        else:
+            q = await self.game.back()
             self.q_n -= 1
-        finally:
-            await self.is_game_ended()
-            await interaction.edit_original_message(
-                content=self.message.author.mention,
-                embed=self.generate_embed(),
-                view=self,
-            )
+        except akinator.CantGoBackAnyFurther:
+            return await interaction.response.send_message("Cant go back", ephemeral=True)
+
+        await self.is_game_ended()
+        await interaction.edit_original_message(
+            content=self.message.author.mention,
+            embed=self.generate_embed(q),
+            view=self,
+        )
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)
     async def quit_game(

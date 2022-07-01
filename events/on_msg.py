@@ -4,7 +4,20 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Match, Optional, Literal, Pattern, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Match,
+    Optional,
+    Literal,
+    Pattern,
+    Set,
+    Tuple,
+    Union,
+)
 
 import aiohttp  # type: ignore
 from cogs.fun.fun import replace_many
@@ -800,7 +813,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            enable: bool = self.bot.server_config[message.guild.id]["leveling"]["enable"]
+            enable: bool = self.bot.server_config[message.guild.id]["leveling"][
+                "enable"
+            ]
         except KeyError:
             return
 

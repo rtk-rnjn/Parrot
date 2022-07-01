@@ -137,7 +137,7 @@ class AkiView(discord.ui.View):
             content=self.message.author.mention, embed=self.generate_embed(), view=self
         )
 
-    @discord.ui.button(lable="Go Back", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Go Back", style=discord.ButtonStyle.blurple)
     async def go_back_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -155,7 +155,7 @@ class AkiView(discord.ui.View):
                 view=self,
             )
 
-    @discord.ui.button(lable="Quit", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)
     async def quit_game(
         self, interaction: discord.Inteaction, button: discord.ui.Button
     ):

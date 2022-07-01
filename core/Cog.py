@@ -5,7 +5,7 @@ from __future__ import annotations
 from discord.ext import commands
 import discord
 
-from typing import Optional
+from typing import Any, Optional
 
 __all__ = ("Cog",)
 
@@ -17,7 +17,7 @@ class Cog(commands.Cog):
 
     """A custom implementation of commands.Cog class."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def __str__(self) -> str:

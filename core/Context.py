@@ -12,10 +12,11 @@ import functools
 
 from utilities.emotes import emojis
 
-from typing import Dict, Optional, Union, List, Tuple, Any, TYPE_CHECKING
+from typing import Optional, Union, List, Tuple, Any, TYPE_CHECKING
 
 
 __all__ = ("Context",)
+
 
 CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS UP SIGN}",
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
     from .Cog import Cog
 
 
-class Context(commands.Context):
+class Context(commands.Context['Parrot']):
     channel: discord.abc.Messageable
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]

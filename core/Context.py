@@ -178,7 +178,7 @@ class Context(commands.Context["Parrot"]):
 
     async def prompt(
         self,
-        message: str,
+        message: Optional[str] = None,
         *,
         timeout: float = 60.0,
         delete_after: bool = True,

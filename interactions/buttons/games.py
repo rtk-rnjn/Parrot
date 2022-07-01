@@ -3008,7 +3008,7 @@ class Games(Cog):
             )
             await ctx.send(embed=embed)
 
-            def check_response(m):
+            def check_response(m: discord.Message):
                 replies = (
                     "yes",
                     "y",

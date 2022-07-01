@@ -44,7 +44,7 @@ from aiofile import async_open
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from interactions.buttons.__wordle import Wordle
 from interactions.buttons.__number_slider import NumberSlider
-from interactions.buttons.__aki import BetaAkinator
+from interactions.buttons.__aki import Akinator
 from interactions.buttons.__chess import Chess
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__2048 import Twenty48, Twenty48_Button
@@ -2161,7 +2161,7 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def aki(self, ctx: Context):
         """Answer the questions and let the bot guess your character!"""
-        await BetaAkinator().start(ctx)
+        await Akinator().start(ctx)
 
     @commands.command(aliases=["tic", "tic_tac_toe", "ttt"])
     async def tictactoe(

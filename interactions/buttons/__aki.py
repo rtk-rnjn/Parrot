@@ -31,15 +31,16 @@ class AkiView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction):
 
-        if interaction.user == self.player:
+        if interaction.user.id == self.player.id:
             return True
         await interaction.response.send_message(
             content="This isn't your game!", ephemeral=True
         )
         return False
 
-    async def is_game_ended(self) -> None:
+    async def is_game_ended(self, interaction: discord.Interaction) -> None:
         if self.game.progression <= 80:
+            await interaction.response.defer()
             await self.game.win()
             self.stop()
             embed = discord.Embed(
@@ -52,13 +53,15 @@ class AkiView(discord.ui.View):
             if val is None:
                 return
             if val:
-                await self.message.channel.send(
+                await interaction.response.send_message(
                     f"{self.message.author.mention} Yayy! Guessed right huh!"
                 )
             else:
-                await self.message.channel.send(
+                await interaction.response.send_message(
                     f"{self.message.author.mention} uff! Kinda hard one!"
                 )
+
+        return
 
     def generate_embed(self) -> discord.Embed:
         return (
@@ -77,7 +80,7 @@ class AkiView(discord.ui.View):
         self.q = await self.game.answer("yes")
         self.q_n += 1
 
-        await self.message.edit(
+        await interaction.edit_original_message(
             content=self.message.author.mention, embed=self.generate_embed(), view=self
         )
 
@@ -91,7 +94,7 @@ class AkiView(discord.ui.View):
         self.q = await self.game.answer("no")
         self.q_n += 1
         await self.is_game_ended()
-        await self.message.edit(
+        await interaction.edit_original_message(
             content=self.message.author.mention, embed=self.generate_embed(), view=self
         )
 
@@ -105,7 +108,7 @@ class AkiView(discord.ui.View):
         self.q = await self.game.answer("idk")
         self.q_n += 1
         await self.is_game_ended()
-        await self.message.edit(
+        await interaction.edit_original_message(
             content=self.message.author.mention, embed=self.generate_embed(), view=self
         )
 
@@ -119,7 +122,7 @@ class AkiView(discord.ui.View):
         self.q = await self.game.answer("probably")
         self.q_n += 1
         await self.is_game_ended()
-        await self.message.edit(
+        await interaction.edit_original_message(
             content=self.message.author.mention, embed=self.generate_embed(), view=self
         )
 
@@ -133,7 +136,7 @@ class AkiView(discord.ui.View):
         self.q = await self.game.answer("probably")
         self.q_n += 1
         await self.is_game_ended()
-        await self.message.edit(
+        await interaction.edit_original_message(
             content=self.message.author.mention, embed=self.generate_embed(), view=self
         )
 
@@ -149,7 +152,7 @@ class AkiView(discord.ui.View):
             self.q_n -= 1
         finally:
             await self.is_game_ended()
-            await self.message.edit(
+            await interaction.edit_original_message(
                 content=self.message.author.mention,
                 embed=self.generate_embed(),
                 view=self,

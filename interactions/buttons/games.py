@@ -2158,7 +2158,7 @@ class Games(Cog):
         await self._play_game(ctx, None, board_size, emoji1, emoji2)
 
     @commands.command(aliases=["akinator"])
-    @commands.bot_has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def aki(self, ctx: Context):
         """Answer the questions and let the bot guess your character!"""
         await Akinator().start(ctx)

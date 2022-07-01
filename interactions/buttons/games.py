@@ -2159,11 +2159,15 @@ class Games(Cog):
 
     @commands.command(aliases=["akinator"])
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
     async def aki(self, ctx: Context):
         """Answer the questions and let the bot guess your character!"""
         await Akinator().start(ctx)
 
     @commands.command(aliases=["tic", "tic_tac_toe", "ttt"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
     async def tictactoe(
         self, ctx: Context, *, opponent: Optional[discord.Member] = None
     ):
@@ -2193,18 +2197,19 @@ class Games(Cog):
         )  # flake8: noqa
 
     @commands.group(name="minesweeper", aliases=["ms"], invoke_without_command=True)
-    async def minesweeper(self, ctx):
+    async def minesweeper(self, ctx: Context):
         """Minesweeper game commands"""
+        await self.bot.invoke_help_command(ctx)
 
     @minesweeper.group(name="start")
     @commands.check(is_no_game)
-    async def ms_start(self, ctx):
+    async def ms_start(self, ctx: Context):
         """Starts a Minesweeper game"""
         if ctx.invoked_subcommand is None:
             await MetaGameUI(ctx.author, ctx.channel).start()
 
     @ms_start.command(name="tiny")
-    async def ms_start_tiny(self, ctx):
+    async def ms_start_tiny(self, ctx: Context):
         """Starts a easy difficulty Minesweeper game"""
         game = self._games[ctx.channel] = Game(5, 5)
         game.last_state = await ctx.send(
@@ -2212,7 +2217,7 @@ class Games(Cog):
         )
 
     @ms_start.command(name="easy")
-    async def ms_start_easy(self, ctx):
+    async def ms_start_easy(self, ctx: Context):
         """Starts a easy difficulty Minesweeper game"""
         game = self._games[ctx.channel] = Game(10, 7)
         game.last_state = await ctx.send(
@@ -2220,7 +2225,7 @@ class Games(Cog):
         )
 
     @ms_start.command(name="medium")
-    async def ms_start_medium(self, ctx):
+    async def ms_start_medium(self, ctx: Context):
         """Starts a medium difficulty Minesweeper game"""
         game = self._games[ctx.channel] = Game(17, 8)
         game.last_state = await ctx.send(

@@ -170,10 +170,10 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin = Client()
 
         # caching variables
-        self.server_config = LRU(256)
-        self.message_cache: Dict[int, Any] = {}
-        self.banned_users: Dict[int, Any] = {}
-        self.afk = set()
+        self.server_config: Dict[int, Dict[str, Any]] = LRU(256)  # type: ignore
+        self.message_cache: Dict[int, discord.Message] = {}
+        self.banned_users: Dict[int, Dict[str, Union[str, bool, int]]] = {}
+        self.afk: Set[int] = set()
 
         self.opts: Dict[str, Any] = {}
         self.func: Callable = func

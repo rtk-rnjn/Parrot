@@ -7,13 +7,15 @@ from core import Parrot, Cog
 from time import time
 import discord
 
+from pymongo.collection import Collection
+from pymongo.typings import _DocumentType as DocumentType
 
 TWO_WEEK = 1209600
 # 60 * 60 * 24 * 7 * 2
 
 
 class OnReaction(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
@@ -42,7 +44,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
                 return
 
-        collection = self.bot.mongo.parrot_db.starboard
+        collection: Collection = self.bot.mongo.parrot_db.starboard
         data = await collection.find_one_and_update(
             {
                 "$or": [
@@ -84,7 +86,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
                 return
 
-        collection = self.bot.mongo.parrot_db.starboard
+        collection: Collection = self.bot.mongo.parrot_db.starboard
         data = await collection.find_one_and_update(
             {
                 "$or": [
@@ -129,8 +131,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         return post
 
     async def get_star_count(
-        self, message: discord.Message, *, from_db: bool = True
+        self, message: Optional[discord.Message] = None, *, from_db: bool = True
     ) -> Optional[int]:
+        if not message:
+            return 0
+
         if from_db:
             if data := await self.bot.mongo.parrot_db.starboard.find_one(
                 {
@@ -167,7 +172,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def star_post(
         self, *, starboard_channel: discord.TextChannel, message: discord.Message
     ) -> None:
-        embed = discord.Embed(timestamp=message.created_at)
+        embed: discord.Embed = discord.Embed(timestamp=message.created_at)
         embed.set_footer(text=f"ID: {message.author.id}")
 
         count = await self.get_star_count(message, from_db=True)
@@ -192,7 +197,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                     name="Attachment",
                     value=f"[{message.attachments[0].filename}]({message.attachments[0].url})",
                 )
-        msg = await starboard_channel.send(
+        msg: discord.Message = await starboard_channel.send(
             f"{self.star_emoji(count)} {count} | In: {message.channel.mention} | Message ID: {message.id}\n> {message.jump_url}",
             embed=embed,
         )
@@ -217,13 +222,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         bot_message_id = data["message_id"]["bot"]
         main_message = data["message_id"]["author"]
         try:
-            starboard_channel = self.bot.server_config[payload.guild_id]["starboard"][
+            starboard_channel: int = self.bot.server_config[payload.guild_id]["starboard"][
                 "channel"
-            ]
+            ] or 0
         except KeyError:
             return False
         else:
-            starchannel = await self.bot.getch(
+            starchannel: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, starboard_channel
             )
 
@@ -255,7 +260,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
         server_config = self.bot.server_config
-        ch = await self.bot.getch(
+        ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
         )
 
@@ -264,22 +269,23 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         msg = await self.bot.get_or_fetch_message(ch, payload.message_id)
         try:
-            limit = server_config[payload.guild_id]["starboard"]["limit"]
+            limit = server_config[payload.guild_id]["starboard"]["limit"] or 0
         except KeyError:
             return False
         count = await self.get_star_count(msg, from_db=True)
         if limit > count:
-            data = await self.bot.mongo.parrot_db.starboard.find_one_and_delete(
+            collection: Collection = self.bot.mongo.parrot_db.starboard
+            data: DocumentType = await collection.find_one_and_delete(
                 {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
             )
             if not data:
                 return False
             try:
-                channel = server_config[payload.guild_id]["starboard"]["channel"]
+                channel: int = server_config[payload.guild_id]["starboard"]["channel"] or 0
             except KeyError:
                 return False
 
-            starboard_channel = await self.bot.getch(
+            starboard_channel: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, channel
             )
             bot_msg = await self.bot.get_or_fetch_message(
@@ -295,7 +301,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         data = self.bot.server_config
 
         try:
-            locked = data[payload.guild_id]["starboard"]["is_locked"]
+            locked: bool = data[payload.guild_id]["starboard"]["is_locked"]
         except KeyError:
             return False
 
@@ -304,17 +310,17 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return False
         else:
-            channel = await self.bot.getch(
+            channel: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, channel
             )
 
         if not locked:
             try:
-                limit = data[payload.guild_id]["starboard"]["limit"]
+                limit: int = data[payload.guild_id]["starboard"]["limit"] or 0
             except KeyError:
                 return False
 
-            ch = await self.bot.getch(
+            ch: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
             )
             msg: discord.Message = await self.bot.get_or_fetch_message(

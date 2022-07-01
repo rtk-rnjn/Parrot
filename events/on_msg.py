@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 
-import typing as tp
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Match, Optional, Literal, Pattern, Set, Tuple, Union
 
 import aiohttp  # type: ignore
 from cogs.fun.fun import replace_many
@@ -24,12 +24,13 @@ from time import time
 from urllib.parse import quote_plus
 from pymongo import ReturnDocument, UpdateOne
 from pymongo.collection import Collection
+from pymongo.typings import _DocumentType as DocumentType
 import emojis
 
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE, EQUATION_REGEX
 from utilities.rankcard import rank_card
 
-if tp.TYPE_CHECKING:
+if TYPE_CHECKING:
     from core import Parrot, Cog
 else:
     Parrot = commands.Bot
@@ -38,12 +39,13 @@ else:
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
 
-TRIGGER = (
+TRIGGER: Tuple[Literal] = (
     "ok google,",
     "ok google ",
     "hey google,",
     "hey google ",
 )
+
 GITHUB_RE = re.compile(
     r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
     r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
@@ -56,8 +58,6 @@ GITHUB_GIST_RE = re.compile(
     r"(-L(?P<start_line>\d+)([-~:]L(?P<end_line>\d+))?)",
     re.IGNORECASE,
 )
-
-GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw"}
 
 GITLAB_RE = re.compile(
     r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)"
@@ -76,11 +76,13 @@ QUESTION_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw"}
+
 DISCORD_PY_ID = 336642139381301249
 
 
 class Delete(discord.ui.View):
-    def __init__(self, user):
+    def __init__(self, user: discord.Member):
         super().__init__(timeout=30.0)
         self.user = user
         self.value = None
@@ -106,8 +108,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.channel
         )
-        self.log_collection = bot.mongo.parrot_db["logging"]
-        self.pattern_handlers = [
+        self.log_collection: Collection = bot.mongo.parrot_db["logging"]
+        self.pattern_handlers: List[Tuple[Pattern[str, Callable]]] = [
             (GITHUB_RE, self._fetch_github_snippet),
             (GITHUB_GIST_RE, self._fetch_github_gist_snippet),
             (GITLAB_RE, self._fetch_gitlab_snippet),
@@ -120,18 +122,18 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             commands.BucketType.member,
         )
 
-        self.write_data: tp.List[UpdateOne] = []
+        self.write_data: List[UpdateOne] = []
 
         self.msg_db_bulkdelete.start()
         self.msg_db_bulkwrite.start()
 
         self.lock = asyncio.Lock()
 
-        self.__scam_link_cache: tp.Dict[str, bool] = {}
+        self.__scam_link_cache: Dict[str, bool] = {}
 
     async def _fetch_response(
-        self, url: str, response_format: str, **kwargs: tp.Any
-    ) -> tp.Union[str, tp.Dict[str, tp.Any], None]:
+        self, url: str, response_format: str, **kwargs: Any
+    ) -> Union[str, Dict[str, Any], None]:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(
             url, raise_for_status=True, **kwargs
@@ -141,7 +143,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if response_format == "json":
                 return await response.json()
 
-    def _find_ref(self, path: str, refs: tp.Tuple) -> tp.Tuple:
+    def _find_ref(self, path: str, refs: Tuple) -> Tuple:
         """Loops through all branches and tags to find the required ref."""
         # Base case: there is no slash in the branch name
         ref, file_path = path.split("/", 1)
@@ -315,7 +317,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "gitlink", []
             )
 
-    async def query_ddg(self, query: str) -> tp.Optional[str]:
+    async def query_ddg(self, query: str) -> Optional[str]:
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
         # saying `ok google`, and querying from ddg LOL.
         res = await self.bot.http_session.get(link)
@@ -355,7 +357,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return False
         return True
 
-    def is_banned(self, user: tp.Union[discord.User, discord.Member]) -> bool:
+    def is_banned(self, user: Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
         try:
             return self.bot.banned_users[user.id].get("global", False)
@@ -437,7 +439,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if not any(i in message.content for i in OP):
             return
 
-        def check(r: discord.Reaction, u: discord.User):
+        def check(r: discord.Reaction, u: discord.User) -> bool:
             return r.message.id == message.id and u.id == message.author.id
 
         if re.fullmatch(EQUATION_REGEX, message.content):
@@ -490,13 +492,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await self.quick_answer(message)
         await self._on_message_passive(message)
 
-        channel = await self.bot.mongo.parrot_db.global_chat.find_one(
+        collection: Collection = self.bot.mongo.parrot_db.global_chat
+        data: Optional[DocumentType] = await collection.find_one(
             {"_id": message.guild.id, "channel_id": message.channel.id}
         )
         if links := INVITE_RE.findall(message.content):
             await self.on_invite(message, links)
 
-        if channel:
+        if data:
             bucket = self.cd_mapping.get_bucket(message)
             retry_after = bucket.update_rate_limit()
 
@@ -506,7 +509,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     delete_after=10,
                 )
 
-            guild = channel
+            guild = data
             role_id = guild.get("ignore_role") or guild.get("ignore-role") or 0
             if message.author._roles.has(role_id):
                 return
@@ -516,7 +519,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             ):  # bot commands or mention in starting
                 return
 
-            urls = LINKS_NO_PROTOCOLS.search(message.content)
+            urls: Match[str] = LINKS_NO_PROTOCOLS.search(message.content)
             if urls:
                 try:
                     await message.delete(delay=0)
@@ -543,7 +546,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         delete_after=5,
                     )
 
-            to_send = self.refrain_message(message.content.lower())
+            to_send: bool = self.refrain_message(message.content.lower())
             if not to_send:
                 try:
                     await message.delete(delay=0)
@@ -573,7 +576,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         delete_after=5,
                     )
 
-            async for webhook in self.bot.mongo.parrot_db.global_chat.find(
+            async for webhook in collection.find(
                 {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
             ):
                 hook = webhook["webhook"]
@@ -589,7 +592,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                     allowed_mentions=discord.AllowedMentions.none(),
                                 )
                     except discord.NotFound:
-                        await self.bot.mongo.parrot_db.global_chat.delete_one(
+                        await collection.delete_one(
                             {"webhook": hook}
                         )  # all hooks are unique
                     except discord.HTTPException:
@@ -622,9 +625,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _delete_record_message_to_database(
         self,
-        obj: tp.Union[discord.Message, int, tp.List[int], tp.Set[int]],
+        obj: Union[discord.Message, int, List[int], Set[int]],
         *,
-        channel: tp.Union[discord.TextChannel, discord.Object, int],
+        channel: Union[discord.TextChannel, discord.Object, int],
     ):
         if isinstance(obj, discord.Message):
             obj = [obj.id]
@@ -665,7 +668,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_bulk_message_delete(self, messages: tp.List[discord.Message]):
+    async def on_bulk_message_delete(self, messages: List[discord.Message]):
         pass
 
     @Cog.listener()
@@ -722,7 +725,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self, payload: discord.RawBulkMessageDeleteEvent
     ):
         await self.bot.wait_until_ready()
-        msg_ids = list(payload.message_ids)
+        msg_ids: List[int] = list(payload.message_ids)
+
         await self._delete_record_message_to_database(
             msg_ids, channel=payload.channel_id
         )
@@ -789,14 +793,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             {"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True
         )
 
-        bucket = self.message_cooldown.get_bucket(message)
-        retry_after = bucket.update_rate_limit()
+        bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)
+        retry_after: float = bucket.update_rate_limit()
 
         if retry_after:
             return
 
         try:
-            enable = self.bot.server_config[message.guild.id]["leveling"]["enable"]
+            enable: bool = self.bot.server_config[message.guild.id]["leveling"]["enable"]
         except KeyError:
             return
 
@@ -804,7 +808,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            role = (
+            role: List = (
                 self.bot.server_config[message.guild.id]["leveling"]["ignore_role"]
                 or []
             )
@@ -815,7 +819,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            ignore_channel = (
+            ignore_channel: List = (
                 self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"]
                 or []
             )
@@ -830,14 +834,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         )
 
         try:
-            announce_channel = (
+            announce_channel: int = (
                 self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
             )
         except KeyError:
             return
         else:
             collection: Collection = self.bot.mongo.leveling[f"{message.guild.id}"]
-            ch = await self.bot.getch(
+            ch: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
                 announce_channel,
@@ -852,11 +856,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 ):
                     cog = self.bot.get_cog("Utils")
                     level = int((data["xp"] // 42) ** 0.55)
-                    xp = cog._Utils__get_required_xp(level + 1)
-                    rank = await cog._Utils__get_rank(
+                    xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
+                    rank = await cog._Utils__get_rank(  # type: ignore
                         collection=collection, member=message.author
                     )
-                    file = await rank_card(
+                    file: discord.File = await rank_card(
                         level,
                         rank,
                         message.author,
@@ -937,8 +941,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def __add_roles(
         self,
         member: discord.Member,
-        role: tp.Union[discord.Roles, discord.Object],
-        reason: tp.Optional[str] = None,
+        role: Union[discord.Roles, discord.Object],
+        reason: Optional[str] = None,
     ):
         try:
             await member.add_roles(role, reason=reason)
@@ -1008,7 +1012,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
 
     async def _what_is_this(
-        self, message: tp.Union[discord.Message, str], *, channel: discord.TextChannel
+        self, message: Union[discord.Message, str], *, channel: discord.TextChannel
     ) -> None:
         if match := QUESTION_REGEX.fullmatch(
             message.content if isinstance(message, discord.Message) else message
@@ -1125,7 +1129,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener("on_reaction_clear")
     async def on_reaction_clear_updater(
-        self, message: discord.Message, _: tp.List[discord.Reaction]
+        self, message: discord.Message, _: List[discord.Reaction]
     ) -> None:
         if message.id in self.bot.message_cache:
             self.bot.message_cache[message.id] = message

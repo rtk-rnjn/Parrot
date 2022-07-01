@@ -20,6 +20,7 @@ from utilities.converters import convert_bool
 from utilities.rankcard import rank_card
 
 from pymongo import ReturnDocument  # type: ignore
+from pymongo.collection import Collection  # type: ignore
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
@@ -31,6 +32,7 @@ class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
 
 
 REACTION_EMOJI = ["\N{UPWARDS BLACK ARROW}", "\N{DOWNWARDS BLACK ARROW}"]
+
 
 OTHER_REACTION = {
     "INVALID": {"emoji": "\N{WARNING SIGN}", "color": 0xFFFFE0},
@@ -44,10 +46,10 @@ OTHER_REACTION = {
 class Utils(Cog):
     """Utilities for server, UwU"""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.react_collection = bot.mongo.parrot_db["reactions"]
-        self.collection = bot.mongo.parrot_db["timers"]
+        self.react_collection: Collection = bot.mongo.parrot_db["reactions"]
+        self.collection: Collection = bot.mongo.parrot_db["timers"]
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
 
@@ -68,7 +70,7 @@ class Utils(Cog):
         dm_notify: bool = False,
         is_todo: bool = False,
         **kw,
-    ):
+    ) -> None:
         """|coro|
 
         Master Function to register Timers.
@@ -111,14 +113,13 @@ class Utils(Cog):
         await self.collection.insert_one(post)
 
     async def delete_timer(self, **kw):
-        collection = self.collection
-        await collection.delete_one(kw)
+        await self.collection.delete_one(kw)
 
     @commands.group(aliases=["remind"], invoke_without_command=True)
     @Context.with_type
     async def remindme(
         self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
-    ):
+    ) -> None:
         """To make reminders as to get your tasks done on time"""
         if not ctx.invoked_subcommand:
             seconds = age.dt.timestamp()
@@ -131,6 +132,7 @@ class Utils(Cog):
                 await ctx.author.send(text)
             except discord.Fobidden:
                 await ctx.reply(text)
+
             await self.create_timer(
                 expires_at=seconds,
                 created_at=ctx.message.created_at.timestamp(),
@@ -140,7 +142,7 @@ class Utils(Cog):
 
     @remindme.command(name="list")
     @Context.with_type
-    async def _list(self, ctx: Context):
+    async def _list(self, ctx: Context) -> None:
         """To get all your reminders"""
         ls = []
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
@@ -154,7 +156,7 @@ class Utils(Cog):
 
     @remindme.command(name="del", aliases=["delete"])
     @Context.with_type
-    async def delremind(self, ctx: Context, message: int):
+    async def delremind(self, ctx: Context, message: int) -> None:
         """To delete the reminder"""
         await self.delete_timer(_id=message)
         await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
@@ -163,7 +165,7 @@ class Utils(Cog):
     @Context.with_type
     async def remindmedm(
         self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
-    ):
+    ) -> None:
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = age.dt.timestamp()
         text = (
@@ -175,6 +177,7 @@ class Utils(Cog):
             await ctx.author.send(text)
         except discord.Fobidden:
             await ctx.reply(text)
+
         await self.create_timer(
             expires_at=seconds,
             created_at=ctx.message.created_at.timestamp(),
@@ -316,7 +319,7 @@ class Utils(Cog):
         Not more than 10 options. :)
         """
 
-        def to_emoji(c):
+        def to_emoji(c) -> str:
             base = 0x1F1E6
             return chr(base + c)
 
@@ -554,7 +557,7 @@ class Utils(Cog):
             ):
                 cog = self.bot.get_cog("EventCustom")
                 await self.collection.delete_one({"_id": data["_id"]})
-                await cog.on_timer_complete(**data)
+                await cog.on_timer_complete(**data)  # type: ignore
 
     @reminder_task.before_loop
     async def before_reminder_task(self):
@@ -580,7 +583,7 @@ class Utils(Cog):
                 f"{ctx.author.mention} leveling system is disabled in this server"
             )
         else:
-            collection = self.bot.mongo.leveling[f"{member.guild.id}"]
+            collection: Collection = self.bot.mongo.leveling[f"{member.guild.id}"]
             if data := await collection.find_one_and_update(
                 {"_id": member.id},
                 {"$inc": {"xp": 0}},

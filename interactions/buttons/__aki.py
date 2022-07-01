@@ -1,3 +1,5 @@
+# https://github.com/Tom-the-Bomb/Discord-Games/blob/master/discord_games/button_games/number_slider.py
+
 from __future__ import annotations
 
 from typing import Optional, ClassVar, Any, Final, TypeAlias, Union
@@ -301,8 +303,8 @@ class BetaAkinator(Akinator):
         self,
         ctx: commands.Context[commands.Bot],
         *,
-        back_button: bool = False,
-        delete_button: bool = False,
+        back_button: bool = True,
+        delete_button: bool = True,
         embed_color: DiscordColor = DEFAULT_COLOR,
         win_at: int = 80,
         timeout: Optional[float] = None,

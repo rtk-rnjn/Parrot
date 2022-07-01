@@ -17,7 +17,7 @@ def rank_card(
     custom_background: str,
     xp_color: str,
     next_level_xp: int,
-):
+) -> discord.File:
     # create backdrop
 
     img = Image.new("RGB", (934, 282), color=custom_background)

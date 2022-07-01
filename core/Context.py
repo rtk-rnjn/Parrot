@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 
 
 class Context(commands.Context["Parrot"]):
-    channel: discord.abc.Messageable
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]
     bot: Parrot

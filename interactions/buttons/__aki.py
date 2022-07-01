@@ -39,7 +39,7 @@ class AkiView(discord.ui.View):
         return False
 
     async def is_game_ended(self, interaction: discord.Interaction) -> None:
-        if self.game.progression <= 80:
+        if self.game.progression >= 80:
             await interaction.response.defer()
             await self.game.win()
             self.stop()
@@ -77,6 +77,7 @@ class AkiView(discord.ui.View):
     async def yes_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         self.q = await self.game.answer("yes")
         self.q_n += 1
 
@@ -91,6 +92,7 @@ class AkiView(discord.ui.View):
     async def no_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         self.q = await self.game.answer("no")
         self.q_n += 1
         await self.is_game_ended()
@@ -105,6 +107,7 @@ class AkiView(discord.ui.View):
     async def idk_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         self.q = await self.game.answer("idk")
         self.q_n += 1
         await self.is_game_ended()
@@ -119,6 +122,7 @@ class AkiView(discord.ui.View):
     async def probably_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         self.q = await self.game.answer("probably")
         self.q_n += 1
         await self.is_game_ended()
@@ -133,6 +137,7 @@ class AkiView(discord.ui.View):
     async def probably_not_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         self.q = await self.game.answer("probably")
         self.q_n += 1
         await self.is_game_ended()
@@ -144,6 +149,7 @@ class AkiView(discord.ui.View):
     async def go_back_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         try:
             self.q = await self.game.back()
         except akinator.CantGoBackAnyFurther:

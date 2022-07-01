@@ -3,7 +3,7 @@ import asyncio
 
 from collections import defaultdict
 import re
-from typing import Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from cogs.cc.method import (
     CustomCommandsExecutionOnJoin,
     CustomCommandsExecutionOnMsg,
@@ -339,7 +339,7 @@ class CustomCommand(Cog):
                 "commands.review_needed": False,
             },
         ):
-            commands = data.get("commands", [])
+            commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
                 if (
                     command.get("trigger_type") == "on_message"
@@ -375,7 +375,7 @@ class CustomCommand(Cog):
             },
         ):
 
-            commands = data.get("commands", [])
+            commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
                 if (
                     command["trigger_type"] == "on_message"
@@ -416,7 +416,7 @@ class CustomCommand(Cog):
             }
         ):
 
-            commands = data.get("commands", [])
+            commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
                 if (
                     command["trigger_type"]
@@ -456,7 +456,7 @@ class CustomCommand(Cog):
                 ]
             }
         ):
-            commands = data.get("commands", [])
+            commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
                 if (
                     command["trigger_type"]
@@ -479,7 +479,7 @@ class CustomCommand(Cog):
                 "commands.review_needed": False,
             },
         ):
-            commands = data.get("commands", [])
+            commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
                 if (
                     command["trigger_type"] == "member_join"
@@ -499,7 +499,7 @@ class CustomCommand(Cog):
                 "commands.review_needed": False,
             },
         ):
-            commands = data.get("commands", [])
+            commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
                 if (
                     command["trigger_type"] == "member_remove"
@@ -517,7 +517,7 @@ class CustomCommand(Cog):
         required_role: Optional[int] = None,
         required_channel: Optional[int] = None,
         ignored_channel: Optional[int] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> bool:
         if message.author._roles.has(required_role or 0):
             return True

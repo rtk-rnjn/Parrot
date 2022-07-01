@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from .Cog import Cog
 
 
-class Context(commands.Context['Parrot']):
+class Context(commands.Context["Parrot"]):
     channel: discord.abc.Messageable
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]

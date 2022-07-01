@@ -222,9 +222,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         bot_message_id = data["message_id"]["bot"]
         main_message = data["message_id"]["author"]
         try:
-            starboard_channel: int = self.bot.server_config[payload.guild_id]["starboard"][
-                "channel"
-            ] or 0
+            starboard_channel: int = (
+                self.bot.server_config[payload.guild_id]["starboard"]["channel"] or 0
+            )
         except KeyError:
             return False
         else:
@@ -281,7 +281,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             if not data:
                 return False
             try:
-                channel: int = server_config[payload.guild_id]["starboard"]["channel"] or 0
+                channel: int = (
+                    server_config[payload.guild_id]["starboard"]["channel"] or 0
+                )
             except KeyError:
                 return False
 

@@ -48,7 +48,7 @@ class NASA(Cog):
         )
         res = await self.bot.http_session.get(link)
         file = discord.File(io.BytesIO(await res.read()), filename="earth.jpg")
-        embed.set_image(url=f"attachment://earth.jpg", file=file)
+        embed.set_image(url="attachment://earth.jpg", file=file)
         embed.set_thumbnail(
             url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
         )

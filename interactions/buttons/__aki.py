@@ -138,7 +138,7 @@ class AkiView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
-        self.q = await self.game.answer("probably")
+        self.q = await self.game.answer("probably not")
         self.q_n += 1
         await self.is_game_ended()
         await interaction.edit_original_message(

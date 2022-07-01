@@ -154,7 +154,9 @@ class AkiView(discord.ui.View):
             q = await self.game.back()
             self.q_n -= 1
         except akinator.CantGoBackAnyFurther:
-            return await interaction.response.send_message("Cant go back", ephemeral=True)
+            return await interaction.response.send_message(
+                "Cant go back", ephemeral=True
+            )
 
         await self.is_game_ended()
         await interaction.edit_original_message(

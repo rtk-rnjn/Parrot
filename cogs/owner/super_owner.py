@@ -601,7 +601,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if connections:
             em.add_field(
                 name="Connections",
-                value=f", ".join(
+                value=", ".join(
                     f'[{i["type"].title()}]({i["url"] or ""})'
                     for i in connections
                     if i != "fetchError"

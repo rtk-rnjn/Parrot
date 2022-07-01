@@ -23,7 +23,7 @@ class Options(Enum):
     no = "\N{CROSS MARK}"
     idk = "\N{SHRUG}"
     p = "\N{THINKING FACE}"
-    pn  = "\N{CONFUSED FACE}"
+    pn = "\N{CONFUSED FACE}"
 
 
 class BaseView(discord.ui.View):
@@ -40,13 +40,14 @@ class Akinator:
     """
     Akinator Game, utilizes reactions
     """
-    BAR: ClassVar[str] = "\N{FULL BLOCK}"*2
+
+    BAR: ClassVar[str] = "\N{FULL BLOCK}" * 2
     instructions: ClassVar[str] = (
-        '\N{WHITE HEAVY CHECK MARK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `yes`\n'
-        '\N{CROSS MARK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `no`\n'
-        '\N{SHRUG} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `I dont know`\n'
-        '\N{THINKING FACE} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `probably`\n'
-        '\N{CONFUSED FACE} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `probably not`\n'
+        "\N{WHITE HEAVY CHECK MARK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `yes`\n"
+        "\N{CROSS MARK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `no`\n"
+        "\N{SHRUG} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `I dont know`\n"
+        "\N{THINKING FACE} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `probably`\n"
+        "\N{CONFUSED FACE} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `probably not`\n"
     )
 
     def __init__(self) -> None:
@@ -61,7 +62,7 @@ class Akinator:
         self.back_button: bool = False
         self.delete_button: bool = False
 
-        self.bar: str = ''
+        self.bar: str = ""
         self.questions: int = 0
 
     def build_bar(self) -> str:
@@ -72,21 +73,21 @@ class Akinator:
     def build_embed(self, *, instructions: bool = True) -> discord.Embed:
 
         embed = discord.Embed(
-            title = "Guess your character!",
-            description = (
+            title="Guess your character!",
+            description=(
                 "```swift\n"
                 f"Question-Number  : {self.questions}\n"
                 f"Progression-Level: {self.aki.progression:.2f}\n```\n"
                 f"{self.build_bar()}"
             ),
-            color = self.embed_color,
+            color=self.embed_color,
         )
         embed.add_field(name="- Question -", value=self.aki.question)
 
         if instructions:
             embed.add_field(name="\u200b", value=self.instructions, inline=False)
 
-        embed.set_footer(text= "Figuring out the next question | This may take a second")
+        embed.set_footer(text="Figuring out the next question | This may take a second")
         return embed
 
     async def win(self) -> discord.Embed:
@@ -98,9 +99,12 @@ class Akinator:
         embed.title = "Character Guesser Engine Results"
         embed.description = f"Total Questions: `{self.questions}`"
 
-        embed.add_field(name="Character Guessed", value=f"\n**Name:** {self.guess['name']}\n{self.guess['description']}")
+        embed.add_field(
+            name="Character Guessed",
+            value=f"\n**Name:** {self.guess['name']}\n{self.guess['description']}",
+        )
 
-        embed.set_image(url=self.guess['absolute_picture_path'])
+        embed.set_image(url=self.guess["absolute_picture_path"])
         embed.set_footer(text="Was I correct?")
 
         return embed
@@ -150,10 +154,12 @@ class Akinator:
         self.win_at = win_at
 
         if self.back_button:
-            self.instructions += f'{BACK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `back`\n'
+            self.instructions += (
+                f"{BACK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `back`\n"
+            )
 
         if self.delete_button:
-            self.instructions += f'{STOP} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `cancel`\n'
+            self.instructions += f"{STOP} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `cancel`\n"
 
         await self.aki.start_game(child_mode=child_mode)
 
@@ -180,7 +186,9 @@ class Akinator:
                         return emoji in (BACK, STOP)
 
             try:
-                reaction, user = await ctx.bot.wait_for('reaction_add', timeout=timeout, check=check)
+                reaction, user = await ctx.bot.wait_for(
+                    "reaction_add", timeout=timeout, check=check
+                )
             except asyncio.TimeoutError:
                 return
 
@@ -200,7 +208,9 @@ class Akinator:
                 try:
                     await self.aki.back()
                 except CantGoBackAnyFurther:
-                    await self.message.reply('I cannot go back any further', delete_after=10)
+                    await self.message.reply(
+                        "I cannot go back any further", delete_after=10
+                    )
             else:
                 self.questions += 1
 
@@ -213,19 +223,18 @@ class Akinator:
         return await self.message.edit(embed=embed)
 
 
-class AkiButton(discord.ui.Button['AkiView']):
-
+class AkiButton(discord.ui.Button["AkiView"]):
     async def callback(self, interaction: discord.Interaction) -> None:
         return await self.view.process_input(interaction, self.label.lower())
 
 
 class AkiView(BaseView):
     OPTIONS: ClassVar[dict[str, discord.ButtonStyle]] = {
-        'yes': discord.ButtonStyle.green,
-        'no': discord.ButtonStyle.red,
-        'idk': discord.ButtonStyle.blurple,
-        'probably': discord.ButtonStyle.gray,
-        'probably not': discord.ButtonStyle.gray,
+        "yes": discord.ButtonStyle.green,
+        "no": discord.ButtonStyle.red,
+        "idk": discord.ButtonStyle.blurple,
+        "probably": discord.ButtonStyle.gray,
+        "probably not": discord.ButtonStyle.gray,
     }
 
     def __init__(self, game: BetaAkinator, *, timeout: float) -> None:
@@ -238,28 +247,24 @@ class AkiView(BaseView):
             self.add_item(AkiButton(label=label, style=style))
 
         if self.game.back_button:
-            delete = AkiButton(
-                label='back', 
-                style=discord.ButtonStyle.red, 
-                row=1
-            )
+            delete = AkiButton(label="back", style=discord.ButtonStyle.red, row=1)
             self.add_item(delete)
 
         if self.game.delete_button:
-            delete = AkiButton(
-                label='Cancel', 
-                style=discord.ButtonStyle.red, 
-                row=1
-            )
+            delete = AkiButton(label="Cancel", style=discord.ButtonStyle.red, row=1)
             self.add_item(delete)
 
-    async def process_input(self, interaction: discord.Interaction, answer: str) -> None:
+    async def process_input(
+        self, interaction: discord.Interaction, answer: str
+    ) -> None:
 
         game = self.game
 
         if interaction.user != game.player:
-            return await interaction.response.send_message(content="This isn't your game", ephemeral=True)
-        
+            return await interaction.response.send_message(
+                content="This isn't your game", ephemeral=True
+            )
+
         if answer == "cancel":
             await interaction.message.reply("Session ended", mention_author=True)
             self.stop()
@@ -270,11 +275,13 @@ class AkiView(BaseView):
                 await game.aki.back()
                 embed = game.build_embed(instructions=False)
             except CantGoBackAnyFurther:
-                return await interaction.response.send_message('I cant go back any further!', ephemeral=True)
+                return await interaction.response.send_message(
+                    "I cant go back any further!", ephemeral=True
+                )
         else:
             game.questions += 1
             await game.aki.answer(answer)
-            
+
             if game.aki.progression >= game.win_at:
                 self.disable_all()
                 embed = await game.win()
@@ -289,14 +296,15 @@ class BetaAkinator(Akinator):
     """
     Akinator(buttons) Game
     """
+
     async def start(
-        self, 
+        self,
         ctx: commands.Context[commands.Bot],
         *,
         back_button: bool = False,
         delete_button: bool = False,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        win_at: int = 80, 
+        win_at: int = 80,
         timeout: Optional[float] = None,
         child_mode: bool = True,
     ) -> discord.Message:

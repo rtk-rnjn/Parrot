@@ -36,7 +36,7 @@ from . import _doc
 from ._used import get_raw, wrapping, prepare_payload, execute_run
 
 try:
-    import lxml
+    import lxml  # type: ignore
 
     HTML_PARSER = "lxml"
 except ImportError:
@@ -624,7 +624,6 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             )
             return await ctx.send(embed=emb)
 
-        no_rerun = True
         language = payload
         lang = None  # to override in 2 first cases
 

@@ -20,7 +20,7 @@ except ImportError:
 
 
 @ToAsync()
-def get_ele(soup, name, **kw: Dict[str, Any]):
+def get_ele(soup, name, **kw: Any):
     url = soup.find_all(name, **kw)
     return url
 

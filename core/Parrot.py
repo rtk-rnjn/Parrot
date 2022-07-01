@@ -364,7 +364,9 @@ class Parrot(commands.AutoShardedBot):
             fail_msg = ""
             if self._failed_to_load:
                 for k, v in self._failed_to_load.items():
-                    fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                    fail_msg += (
+                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                    )
                 await webhook.send(
                     f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
                     avatar_url=self.user.avatar.url,
@@ -767,7 +769,8 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_opt_in_out(self):
         async for data in self.mongo.extra.misc.find({}):
-            data: Dict[str, Any]
+            data: Dict[str, Any] = data
             _id: int = data.pop("_id")
+            self.opts = {}
             self.opts[_id] = data
             await asyncio.sleep(0)

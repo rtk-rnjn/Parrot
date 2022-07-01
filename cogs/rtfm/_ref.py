@@ -9,7 +9,7 @@ from markdownify import MarkdownConverter  # type: ignore
 from core import Context
 
 try:
-    import lxml
+    import lxml  # type: ignore
 
     HTML_PARSER = "lxml"
 except ImportError:

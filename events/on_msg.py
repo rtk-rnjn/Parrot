@@ -23,17 +23,17 @@ from aiohttp import ClientResponseError  # type: ignore
 from time import time
 from urllib.parse import quote_plus
 from pymongo import ReturnDocument, UpdateOne
+from pymongo.collection import Collection
 import emojis
 
 from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE, EQUATION_REGEX
 from utilities.rankcard import rank_card
 
 if tp.TYPE_CHECKING:
-    from core import Parrot, Cog, Context
+    from core import Parrot, Cog
 else:
     Parrot = commands.Bot
     Cog = commands.Cog
-    Context = commands.Context
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -106,7 +106,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.channel
         )
-        self.collection = None
         self.log_collection = bot.mongo.parrot_db["logging"]
         self.pattern_handlers = [
             (GITHUB_RE, self._fetch_github_snippet),
@@ -132,7 +131,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _fetch_response(
         self, url: str, response_format: str, **kwargs: tp.Any
-    ) -> tp.Any:
+    ) -> tp.Union[str, tp.Dict[str, tp.Any], None]:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(
             url, raise_for_status=True, **kwargs
@@ -837,7 +836,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return
         else:
-            collection = self.bot.mongo.leveling[f"{message.guild.id}"]
+            collection: Collection = self.bot.mongo.leveling[f"{message.guild.id}"]
             ch = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
@@ -911,7 +910,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 await asyncio.sleep(0)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
-        collection = self.bot.mongo.leveling[f"{member.guild.id}"]
+        collection: Collection = self.bot.mongo.leveling[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
             {"_id": member.id},
             {"$inc": {"xp": xp}},

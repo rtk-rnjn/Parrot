@@ -769,7 +769,8 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_opt_in_out(self):
         async for data in self.mongo.extra.misc.find({}):
-            data: Dict[str, Any]
+            data: Dict[str, Any] = data
             _id: int = data.pop("_id")
+            self.opts = {}
             self.opts[_id] = data
             await asyncio.sleep(0)

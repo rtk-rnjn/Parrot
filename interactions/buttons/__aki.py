@@ -260,6 +260,7 @@ class AkiView(BaseView):
         self, interaction: discord.Interaction, answer: str
     ) -> None:
 
+        await interaction.response.defer()
         game = self.game
 
         if interaction.user != game.player:

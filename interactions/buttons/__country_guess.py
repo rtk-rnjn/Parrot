@@ -17,6 +17,7 @@ from PIL import Image, ImageFilter, ImageOps
 DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
+
 class CountryGuesser:
     """
     CountryGuesser Game
@@ -47,7 +48,7 @@ class CountryGuesser:
         else:
             self.light_mode: bool = light_mode
 
-        folder = 'assets/country-flags' if self.is_flags else 'assets/country-data'
+        folder = 'extra/country-flags' if self.is_flags else 'extra/country-data'
         self._countries_path = pathlib.Path(__file__).parent / folder
 
         self.all_countries = os.listdir(self._countries_path)
@@ -132,8 +133,7 @@ class CountryGuesser:
         def check(m: discord.Message) -> bool:
             if length:
                 return m.channel == ctx.channel and m.author == ctx.author and len(m.content) == length
-            else:
-                return m.channel == ctx.channel and m.author == ctx.author
+            return m.channel == ctx.channel and m.author == ctx.author
 
         message: discord.Message = await ctx.bot.wait_for('message', timeout=self.timeout, check=check)
         content = message.content.strip().lower()
@@ -216,6 +216,7 @@ class CountryGuesser:
                             await hint_msg.reply(f'Okay continue guessing! You have **{self.guesses}** guesses left.', mention_author=False)
 
         return self.message
+
 
 class CountryInput(discord.ui.Modal, title='Input your guess!'):
     
@@ -329,7 +330,7 @@ class BetaCountryGuesser(CountryGuesser):
         *, 
         embed_color: DiscordColor = DEFAULT_COLOR,
         ignore_diff_len: bool = False,
-        timeout: Optional[float] = None,
+        timeout: Optional[float] = 120,
     ) -> discord.Message:  
         """
         starts the Country Guesser(buttons) Game

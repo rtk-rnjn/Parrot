@@ -48,8 +48,11 @@ from interactions.buttons.__aki import Akinator
 from interactions.buttons.__chess import Chess
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__2048 import Twenty48, Twenty48_Button
+from interactions.buttons.__light_out import LightsOut
+from interactions.buttons.__country_guess import BetaCountryGuesser
 
 from utilities.constants import Colours
+from utilities.converters import convert_bool
 
 emoji = emojis  # Idk
 SMALL = 3
@@ -2708,3 +2711,17 @@ class Games(Cog):
     async def wordle(self, ctx: Context):
         """To start wordle game"""
         await Wordle().start(ctx)
+
+    @commands.command(aliases=['lightsout'])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def lightout(self, ctx: Context, count: int=4):
+        """Light Out Game"""
+        lg = LightsOut(count)
+        await lg.start(ctx, timeout=120)
+    
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def countryguess(self, ctx: Context, is_flag: convert_bool=False):
+        """Country guessing game"""
+        cg = BetaCountryGuesser(is_flag=is_flag)
+        await cg.start(ctx, timeout=120)

@@ -2723,5 +2723,5 @@ class Games(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def countryguess(self, ctx: Context, is_flag: convert_bool=False):
         """Country guessing game"""
-        cg = BetaCountryGuesser(is_flag=is_flag)
+        cg = BetaCountryGuesser(is_flags=is_flag)
         await cg.start(ctx, timeout=120)

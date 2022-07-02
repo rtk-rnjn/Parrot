@@ -433,7 +433,7 @@ class RTFM(Cog):
                 )
             )
 
-        res = res_json["info"]
+        res = res_json.get("info", "Unknown")
 
         def getval(key):
             return res[key] or "Unknown"

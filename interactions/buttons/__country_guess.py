@@ -49,7 +49,7 @@ class CountryGuesser:
             self.light_mode: bool = light_mode
 
         folder = 'extra/country-flags' if self.is_flags else 'extra/country-data'
-        self._countries_path = pathlib.Path(__file__).parent / folder
+        self._countries_path = folder
 
         self.all_countries = os.listdir(self._countries_path)
 

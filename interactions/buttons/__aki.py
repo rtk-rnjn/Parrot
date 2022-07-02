@@ -198,7 +198,7 @@ class Akinator:
                 done, _ = await asyncio.wait(
                     {REACTION_ADD, REACTION_REMOVE},
                     return_when=asyncio.FIRST_COMPLETED,
-                    timeout=timeout
+                    timeout=timeout,
                 )
                 for task in done:
                     reaction, user = task.result()

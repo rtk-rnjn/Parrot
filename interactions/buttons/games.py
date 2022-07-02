@@ -2160,7 +2160,6 @@ class Games(Cog):
     @commands.command(aliases=["akinator"])
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     @commands.max_concurrency(1, commands.BucketType.user)
-    @Context.with_type
     async def aki(self, ctx: Context):
         """Answer the questions and let the bot guess your character!"""
         await Akinator().start(ctx)

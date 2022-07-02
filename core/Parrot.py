@@ -690,7 +690,7 @@ class Parrot(commands.AutoShardedBot):
     ) -> Union[str, Callable, List[str]]:
         """Dynamic prefixing"""
         try:
-            prefix = self.server_config[message.guild.id]["prefix"]
+            prefix: str = self.server_config[message.guild.id]["prefix"]
         except KeyError:
             if data := await self.mongo.parrot_db.server_config.find_one(
                 {"_id": message.guild.id}

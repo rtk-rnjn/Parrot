@@ -118,7 +118,7 @@ class Akinator:
         embed_color: DiscordColor = DEFAULT_COLOR,
         remove_reaction_after: bool = False,
         win_at: int = 80,
-        timeout: Optional[float] = None,
+        timeout: Optional[float] = 120.0,
         back_button: bool = False,
         delete_button: bool = False,
         child_mode: bool = True,
@@ -187,17 +187,33 @@ class Akinator:
                     except ValueError:
                         return emoji in (BACK, STOP)
 
+            REACTION_ADD = ctx.bot.wait_for(
+                "reaction_add", timeout=timeout, check=check
+            )
+            REACTION_REMOVE = ctx.bot.wait_for(
+                "reaction_remove", timeout=timeout, check=check
+            )
+
             try:
-                reaction, user = await ctx.bot.wait_for(
-                    "reaction_add", timeout=timeout, check=check
+                done, _ = await asyncio.wait(
+                    {REACTION_ADD, REACTION_REMOVE},
+                    return_when=asyncio.FIRST_COMPLETED,
+                    timeout=timeout
                 )
+                for task in done:
+                    reaction, user = task.result()
+                    break
+
             except asyncio.TimeoutError:
                 return
+
+            reaction: discord.Reaction
+            user: discord.User
 
             if remove_reaction_after:
                 try:
                     await self.message.remove_reaction(reaction, user)
-                except discord.DiscordException:
+                except discord.Forbidden:
                     pass
 
             emoji = str(reaction.emoji)

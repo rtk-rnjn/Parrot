@@ -96,19 +96,19 @@ class Context(commands.Context["Parrot"]):
 
     def with_type(func):
         @functools.wraps(func)
-        async def wrapped(*args, **kwargs):
+        async def wrapped(*args: Any, **kwargs: Any):
 
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             try:
                 async with context.typing():
                     return await func(*args, **kwargs)
             except discord.Forbidden:
-                pass
+                pass  # thanks cloudflare
 
         return wrapped
 
     async def send(
-        self, content: Optional[str] = None, **kwargs
+        self, content: Optional[str] = None, **kwargs: Any
     ) -> Optional[discord.Message]:
         perms = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):

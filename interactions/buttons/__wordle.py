@@ -123,7 +123,7 @@ class Wordle:
             content = guess.content.lower()
 
             if content.upper() == "QUIT":
-                return
+                return await ctx.send(f"Game over! You quit! Word was: {self.word}")
 
             if content not in self._valid_words:
                 await ctx.send(

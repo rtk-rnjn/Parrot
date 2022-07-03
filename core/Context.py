@@ -12,7 +12,17 @@ import functools
 
 from utilities.emotes import emojis
 
-from typing import Generic, Literal, Optional, TypeVar, Union, List, Tuple, Any, TYPE_CHECKING
+from typing import (
+    Generic,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+    List,
+    Tuple,
+    Any,
+    TYPE_CHECKING,
+)
 
 
 __all__: Tuple[Literal["Context"]] = ("Context",)

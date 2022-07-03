@@ -16,6 +16,7 @@ NASA_KEY = os.environ["NASA_KEY"]
 with open(r"extra/user_agents.txt") as f:
     USER_AGENTS = f.read().splitlines()
 
+
 def date_parser(arg: str) -> str:
     """Validate whether the giving strin is in YYYY-MM-DD format"""
     try:
@@ -42,7 +43,9 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def earth(self, ctx: Context, longitute: float, latitude: float, date: date_parser):
+    async def earth(
+        self, ctx: Context, longitute: float, latitude: float, date: date_parser
+    ):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
         if not -90 <= latitude <= 90:
             return await ctx.reply(
@@ -61,7 +64,9 @@ class NASA(Cog):
         )
         res = await self.bot.http_session.get(link)
         file = discord.File(io.BytesIO(await res.read()), filename="earth.jpg")
-        embed.set_image(url="attachment://earth.jpg",)
+        embed.set_image(
+            url="attachment://earth.jpg",
+        )
         embed.set_thumbnail(
             url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
         )
@@ -307,7 +312,9 @@ class NASA(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def nasasearch(self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content):
+    async def nasasearch(
+        self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content
+    ):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)

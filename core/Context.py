@@ -33,10 +33,8 @@ CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS DOWN SIGN}",
 )
 
-if TYPE_CHECKING:
-    from .Parrot import Parrot
-    from .Cog import Cog
-
+from .Parrot import Parrot
+from .Cog import Cog
 
 ParrotT = TypeVar("ParrotT", bound=Parrot)
 

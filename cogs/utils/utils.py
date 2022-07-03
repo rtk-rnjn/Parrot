@@ -315,8 +315,8 @@ class Utils(Cog):
     @Context.with_type
     async def quickpoll(self, ctx: Context, *questions_and_choices: str):
         """
-        To make a quick poll for making quick decision. 'Question must be in quotes' and Options, must, be, seperated, by, commans.
-        Not more than 10 options. :)
+        To make a quick poll for making quick decision. 'Question must be in quotes' and Options must be seperated by spaces.
+        Not more than 21 options. :)
         """
 
         def to_emoji(c) -> str:
@@ -612,7 +612,7 @@ class Utils(Cog):
                 f"{ctx.author.mention} **{member}** don't have any xp yet."
             )
 
-    @commands.command()
+    @commands.command(aliases=["leaderboard"])
     @commands.bot_has_permissions(embed_links=True)
     async def lb(self, ctx: Context, *, limit: Optional[int] = None):
         """To display the Leaderboard"""
@@ -621,6 +621,10 @@ class Utils(Cog):
         entries = await self.__get_entries(
             collection=collection, limit=limit, guild=ctx.guild
         )
+        if not entries:
+            return await ctx.send(
+                f"{ctx.author.mention} there is no one in the leaderboard"
+            )
         pages = SimplePages(entries, ctx=ctx, per_page=10)
         await pages.start()
 
@@ -633,7 +637,7 @@ class Utils(Cog):
                 return int(xp)
             await asyncio.sleep(0)
 
-    async def __get_rank(self, *, collection, member: discord.Member):
+    async def __get_rank(self, *, collection: Collection, member: discord.Member):
         countr = 0
 
         # you can't use `enumerate`
@@ -642,7 +646,9 @@ class Utils(Cog):
             if data["_id"] == member.id:
                 return countr
 
-    async def __get_entries(self, *, collection, limit: int, guild: discord.Guild):
+    async def __get_entries(
+        self, *, collection: Collection, limit: int, guild: discord.Guild
+    ):
         ls = []
         async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
             if member := await self.bot.get_or_fetch_member(guild, data["_id"]):

@@ -18,7 +18,7 @@ class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         if self.bot.get_cog("Utils"):
-            self.create_timer: Callable = self.bot.get_cog("Utils").create_timer
+            self.create_timer: Callable = self.bot.get_cog("Utils").create_timer  # type: ignore
         else:
             self.create_timer = None
 

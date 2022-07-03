@@ -35,7 +35,9 @@ IGNORE = [
 ]
 
 
-async def _show_tag(bot: Parrot, ctx: Context, tag, msg_ref=None):
+async def _show_tag(
+    bot: Parrot, ctx: Context, tag: str, msg_ref: discord.Message = None
+):
     collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if not data["nsfw"]:
@@ -491,7 +493,7 @@ async def __update_giveaway_reactors(
     )
 
 
-def __item__remove(ls: List[Any], item: Any) -> Optional[List]:
+def __item__remove(ls: List[Any], item: Any) -> Optional[List[Any]]:
     try:
         ls.remove(item)
     except (ValueError, KeyError):

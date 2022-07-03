@@ -12,10 +12,10 @@ import functools
 
 from utilities.emotes import emojis
 
-from typing import Optional, Union, List, Tuple, Any, TYPE_CHECKING
+from typing import Generic, Literal, Optional, TypeVar, Union, List, Tuple, Any, TYPE_CHECKING
 
 
-__all__ = ("Context",)
+__all__: Tuple[Literal["Context"]] = ("Context",)
 
 
 CONFIRM_REACTIONS: Tuple[str, ...] = (
@@ -28,20 +28,23 @@ if TYPE_CHECKING:
     from .Cog import Cog
 
 
-class Context(commands.Context["Parrot"]):
+ParrotT = TypeVar("ParrotT", bound=Parrot)
+
+
+class Context(commands.Context["Parrot"], Generic[ParrotT]):
+    """A custom implementation of commands.Context class."""
+
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]
     bot: Parrot
     cog: Optional[Cog]
 
-    """A custom implementation of commands.Context class."""
-
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy
-        return f"<core.{self.bot.user.name} Context>"
+        return f"<core.{self.bot.user.name} Context author={self.author} guild={self.guild} channel={self.channel}>"
 
     @property
     def session(self) -> Any:
@@ -110,7 +113,7 @@ class Context(commands.Context["Parrot"]):
     async def send(
         self, content: Optional[str] = None, **kwargs: Any
     ) -> Optional[discord.Message]:
-        perms = self.channel.permissions_for(self.me)
+        perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
                 await self.author.send(
@@ -119,7 +122,7 @@ class Context(commands.Context["Parrot"]):
                 )
             return
 
-        embed = kwargs.get(
+        embed: discord.Embed = kwargs.get(
             "embed",
         )
         if isinstance(embed, discord.Embed) and not embed.color:
@@ -130,7 +133,7 @@ class Context(commands.Context["Parrot"]):
     async def reply(
         self, content: Optional[str] = None, **kwargs
     ) -> Optional[discord.Message]:
-        perms = self.channel.permissions_for(self.me)
+        perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
                 await self.author.send(
@@ -139,7 +142,7 @@ class Context(commands.Context["Parrot"]):
                 )
             return
 
-        embed = kwargs.get(
+        embed: discord.Embed = kwargs.get(
             "embed",
         )
         if isinstance(embed, discord.Embed) and not embed.color:

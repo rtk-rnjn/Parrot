@@ -1340,12 +1340,12 @@ class Moderator(Cog):
         if isinstance(target, discord.Member):
             member_embed = MEMBER_EMBED.copy()
             member_embed.description = (
-                f"Reason: {reason}\n"
-                f"Action will be performed on: {target} {target.id}"
+                f"Reason: {reason or 'no reason provided'}\n"
+                f"Action will be performed on: {target} ({target.id})"
             )
             member_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon is not None:
-                member_embed.set_thumbnail(url=ctx.guild.icon.url)
+                member_embed.set_thumbnail(url=target.display_avatar.url)
 
             msg = await ctx.send(embed=member_embed)
             await ctx.bulk_add_reactions(msg, *mt.MEMBER_REACTION)
@@ -1392,7 +1392,7 @@ class Moderator(Cog):
                     role=role,
                     reason=reason,
                 )
-                return
+                return await msg.delete(delay=0)
 
             if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
                 await ctx.send(
@@ -1414,7 +1414,7 @@ class Moderator(Cog):
                     member=target,
                     name=(m.content)[:32:],
                 )
-                return
+                return await msg.delete(delay=0)
 
             await func(
                 guild=ctx.guild,
@@ -1429,8 +1429,8 @@ class Moderator(Cog):
         if isinstance(target, discord.TextChannel):
             tc_embed = TEXT_CHANNEL_EMBED.copy()
             tc_embed.description = (
-                f"Reason: {reason}\n"
-                f"Action will be performed on: {target} {target.id}"
+                f"Reason: {reason or 'no reason provided'}\n"
+                f"Action will be performed on: {target} ({target.id})"
             )
             tc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon:
@@ -1480,7 +1480,7 @@ class Moderator(Cog):
                     channels=target,
                     text=m.content,
                 )
-                return
+                return await msg.delete(delay=0)
 
             await func(
                 guild=ctx.guild,
@@ -1501,8 +1501,8 @@ class Moderator(Cog):
         ):
             vc_embed = VOICE_CHANNEL_EMBED
             vc_embed.description = (
-                f"Reason: {reason}\n"
-                f"Action will be performed on: {target} {target.id}"
+                f"Reason: {reason or 'no reason provided'}\n"
+                f"Action will be performed on: {target} ({target.id})"
             )
             vc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon:
@@ -1547,7 +1547,8 @@ class Moderator(Cog):
                     channel=ctx.channel,
                     text=m.content,
                 )
-                return
+                return await msg.delete(delay=0)
+
             await func(
                 guild=guild,
                 command_name=ctx.command.qualified_name,
@@ -1561,8 +1562,8 @@ class Moderator(Cog):
         if isinstance(target, discord.Role):
             role_embed = ROLE_EMBED
             role_embed.description = (
-                f"Reason: {reason}\n"
-                f"Action will be performed on: {target} {target.id}"
+                f"Reason: {reason or 'no reason provided'}\n"
+                f"Action will be performed on: {target} ({target.id})"
             )
             role_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if ctx.guild.icon:
@@ -1570,7 +1571,7 @@ class Moderator(Cog):
             msg: discord.Message = await ctx.send(embed=role_embed)
             await ctx.bulk_add_reactions(msg, *mt.ROLE_REACTION)
 
-            def check_reaction_role(reaction, user):
+            def check_reaction_role(reaction: discord.Reaction, user: discord.User):
                 return (
                     str(reaction.emoji) in mt.ROLE_REACTION
                     and user == ctx.author
@@ -1612,7 +1613,7 @@ class Moderator(Cog):
                     int_=color,
                     reason=reason,
                 )
-                return
+                return await msg.delete(delay=0)
 
             if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
                 await ctx.send(
@@ -1633,7 +1634,7 @@ class Moderator(Cog):
                     text=m.content,
                     reason=reason,
                 )
-                return
+                return await msg.delete(delay=0)
 
             await func(
                 guild=ctx.guild,

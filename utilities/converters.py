@@ -129,7 +129,7 @@ class MemberID(commands.Converter):
                     )()
 
         if not can_execute_action(ctx, ctx.author, m):
-            raise commands.BadArgument(
-                "You cannot do this action on this user due to role hierarchy."
+            await ctx.send(
+                f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
             )
         return m

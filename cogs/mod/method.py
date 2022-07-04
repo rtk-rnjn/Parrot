@@ -304,6 +304,7 @@ async def _ban(
         return await destination.send(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
+
     try:
         if member.id in (ctx.author.id, guild.me.id) and not silent:
             await destination.send(

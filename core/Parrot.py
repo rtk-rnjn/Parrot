@@ -553,7 +553,7 @@ class Parrot(commands.AutoShardedBot):
                 )
                 if members:
                     yield members[0]
-        elif total_need_resolution <= 100:
+        elif total_need_resolution <= 100 and total_need_resolution > 1:
             # Only a single resolution call needed here
             resolved = await guild.query_members(
                 limit=100, user_ids=needs_resolution, cache=True

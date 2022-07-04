@@ -999,23 +999,35 @@ class Meta(Cog):
 """
         await ctx.send(embed=embed)
 
-    @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.command(aliases=['sticker-info'])
+    @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def sticker_info(self, ctx: Context, sticker: discord.GuildSticker):
+    async def stickerinfo(self, ctx: Context, sticker: discord.GuildSticker = None):
         """Get the info regarding the Sticker"""
+        if sticker is None and not ctx.message.stickers:
+            return await ctx.send(
+                f"{ctx.author.mention} you did not provide any sticker"
+            )
+        sticker = sticker or await ctx.message.stickers[0].fetch()
         embed = discord.Embed(
-            title=sticker.name, timestamp=discord.utils.utcnow(), url=sticker.url
+            title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url
+        ).add_field(
+            name="Name", value=sticker.name,
+        ).add_field(
+            name="ID", value=sticker.id,
+        ).add_field(
+            name="Created At", value=discord.utils.format_dt(sticker.created_at),
+        ).add_field(
+            name="User", value=sticker.user.mention,
+        ).add_field(
+            name="Available", value=sticker.available,
+        ).add_field(
+            name="Emoji", value=sticker.emoji,
+        ).set_thumbnail(
+            url=sticker.url,
+        ).set_footer(
+            text=f"{ctx.author}",
         )
-        embed.description = f"""`ID         :` **{sticker.id}**
-`Name       :` **{sticker.name}**
-`URL        :` **{sticker.url}**
-`Created At :` **{'Can not determinded' if sticker.created_at is None else discord.utils.format_dt(sticker.created_at)}**
-`User       :` **{sticker.user}**
-`Available? :` **{sticker.available}**
-`Format     :` **{sticker.format}**
-`Emoji      :` **{sticker.emoji}**
-`Description:` **{sticker.description}**
-"""
+        embed.description = f"""`Description:` **{sticker.description}**"""
         await ctx.send(embed=embed)

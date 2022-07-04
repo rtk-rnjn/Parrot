@@ -1049,13 +1049,14 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
-        channel: Union[discord.VoiceChannel, None],
+        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,
+        channel: Union[discord.VoiceChannel, None] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice move"""
-
+        if member:
+            member: List[discord.Member] = [i async for i in self.bot.resolve_member_ids(ctx.guild, member)]
         def check(
             m: discord.Member, b: discord.VoiceState, a: discord.VoiceState
         ) -> bool:
@@ -1078,32 +1079,33 @@ class Moderator(Cog):
                 await ctx.send(
                     f"{ctx.author.mention} move the bot to other channel as to move other users"
                 )
-                m, b, a = await self.bot.wait_for(
+                _, _, a = await self.bot.wait_for(
                     "voice_state_update", timeout=60, check=check
                 )
             except asyncio.TimeoutError:
                 return await ctx.send(f"{ctx.author.mention} you ran out time")
-            else:
-                for mem in member:
-                    await mem.edit(
-                        voice_channel=a.channel,
-                        reason=reason,
-                    )
-                return await ctx.send(
-                    f"{ctx.author.mention} moved {len(member)} members to {a.channel.mention}"
+
+            a: discord.VoiceState = a
+
+            for mem in member:
+                await mem.edit(
+                    voice_channel=a.channel,
+                    reason=reason,
                 )
+            return await ctx.send(
+                f"{ctx.author.mention} moved {len(member)} members to {a.channel.mention}"
+            )
 
         if not member:
             member = channel.members
 
         for mem in member:
             await mem.edit(
-                voice_channel=a,
+                voice_channel=channel,
                 reason=reason,
             )
-        await ctx.guild.me.edit(voice_channel=None)
         return await ctx.send(
-            f"{ctx.author.mention} moved {len(member)} members to {a.channel.mention}"
+            f"{ctx.author.mention} moved {len(member)} members to {channel.mention}"
         )
 
     @commands.group(aliases=["emote"])

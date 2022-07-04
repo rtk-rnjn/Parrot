@@ -30,9 +30,8 @@ def date_parser(arg: Optional[str] = None) -> str:
 
 def upper_split(ini_str: str) -> str:
     """To split the the given string by camel case"""
-    res_pos = [i for i, e in enumerate(ini_str+'A') if e.isupper()]
-    res_list = [ini_str[res_pos[j]:res_pos[j + 1]]
-                for j in range(len(res_pos)-1)]
+    res_pos = [i for i, e in enumerate(ini_str + "A") if e.isupper()]
+    res_list = [ini_str[res_pos[j] : res_pos[j + 1]] for j in range(len(res_pos) - 1)]
     return " ".join(res_list)
 
 
@@ -407,11 +406,14 @@ class NASA(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def donki(self, ctx: Context,):
+    async def donki(
+        self,
+        ctx: Context,
+    ):
         """Space Weather Database Of Notifications, Knowledge, Information (DONKI)"""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
-    
+
     @donki.command(name="cme")
     async def donki_cme(self, ctx: Context, start: date_parser, end: date_parser):
         """Coronal Mass Ejection"""
@@ -438,7 +440,9 @@ class NASA(Cog):
             active_region_num = data["activeRegionNum"]
             link = data["link"]
             note = data["note"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
 
             em.description = f"""
 Activity ID: {activity_id}
@@ -468,7 +472,7 @@ Instuments: {instruments}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
@@ -484,7 +488,7 @@ Link: {link}
 """
             em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)
-    
+
     @donki.command(name="ips")
     async def donki_ips(self, ctx: Context, start: date_parser, end: date_parser):
         """Interplanetary Shock"""
@@ -498,7 +502,7 @@ Link: {link}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
@@ -508,7 +512,9 @@ Link: {link}
             location = data["location"]
             eventTime = data["eventTime"]
             link = data["link"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
             em.description = f"""
 Catalog: {catalog}
 Activity ID: {activityID}
@@ -536,20 +542,24 @@ Instuments: {instruments}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
             em = discord.Embed()
             flrID = data["flrID"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
             beginTime = data["beginTime"]
             peakTime = data["peakTime"]
             endTime = data["endTime"]
             classType = data["classType"]
             sourceLocation = data["sourceLocation"]
             activeRegionNum = data["activeRegionNum"]
-            linkedEvents = ", ".join(i["activityID"] for i in data.get("linkedEvents", []))
+            linkedEvents = ", ".join(
+                i["activityID"] for i in data.get("linkedEvents", [])
+            )
             link = data["link"]
             em.description = f"""
 FLR ID: {flrID}
@@ -568,7 +578,7 @@ Link: {link}
 
             em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)
-    
+
     @donki.command(name="sep")
     async def donki_sep(self, ctx: Context, start: date_parser, end: date_parser):
         """Solar Energetic Particle"""
@@ -582,16 +592,20 @@ Link: {link}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
             em = discord.Embed()
             sepID = data["sepID"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
             eventTime = data["eventTime"]
 
-            linkedEvents = ", ".join(i["activityID"] for i in data.get("linkedEvents", []))
+            linkedEvents = ", ".join(
+                i["activityID"] for i in data.get("linkedEvents", [])
+            )
             link = data["link"]
             em.description = f"""
 SEP ID: {sepID}
@@ -605,7 +619,7 @@ Link: {link}
 
             em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)
-    
+
     @donki.command(name="mpc")
     async def donki_mpc(self, ctx: Context, start: date_parser, end: date_parser):
         """Magnetopause Crossing"""
@@ -619,14 +633,16 @@ Link: {link}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
             em = discord.Embed()
             mpcID = data["mpcID"]
             eventTime = data["eventTime"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
             link = data["link"]
             em.description = f"""
 MPC ID: {mpcID}
@@ -639,7 +655,7 @@ Instuments: {instruments}
 
             em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)
-    
+
     @donki.command(name="rbe")
     async def donki_rbe(self, ctx: Context, start: date_parser, end: date_parser):
         """Radiation Belt Enhancement"""
@@ -653,14 +669,16 @@ Instuments: {instruments}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
             em = discord.Embed()
             rbeID = data["rbeID"]
             eventTime = data["eventTime"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
             link = data["link"]
             em.description = f"""
 RBE ID: {rbeID}
@@ -673,7 +691,7 @@ Instuments: {instruments}
 
             em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)
-    
+
     @donki.command(name="hhs")
     async def donki_hhs(self, ctx: Context, start: date_parser, end: date_parser):
         """Hight Speed Stream"""
@@ -687,14 +705,16 @@ Instuments: {instruments}
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
-        
+
         em_list = []
 
         for data in res:
             em = discord.Embed()
             hhsID = data["hhsID"]
             eventTime = data["eventTime"]
-            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            instruments = ", ".join(
+                i["displayName"] for i in data.get("instruments", [])
+            )
             link = data["link"]
             em.description = f"""
 HHS ID: {hhsID}

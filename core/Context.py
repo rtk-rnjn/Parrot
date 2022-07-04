@@ -3,6 +3,7 @@
 from __future__ import annotations
 from contextlib import suppress
 import datetime
+from operator import attrgetter
 
 from discord.ext import commands
 import discord
@@ -13,6 +14,7 @@ import functools
 from utilities.emotes import emojis
 
 from typing import (
+    Callable,
     Generic,
     Literal,
     Optional,
@@ -315,6 +317,53 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
             if delete_after:
                 await message.delete(delay=0)
 
+    async def wait_for(self, event_name: str, *, timeout: float, **kwargs: Any) -> Any:
+        """|coro|
+
+        Waits for a given event to be triggered.
+
+        Parameters
+        -----------
+        event_name: str
+            The event name to wait for.
+        timeout: float
+            How long to wait for the event to be triggered.
+        **kwargs: Any
+            The arguments to pass to the event.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            If the event is not triggered before the given timeout.
+        """
+        error_message: Optional[str] = kwargs.pop("error", None)
+
+        def outer_check(**kw) -> Callable:
+            """Check function for the event"""
+            if isinstance(kw.get("check"), Callable):
+                return check
+
+            def __suppress_attr_error(func: Callable, *args, **kwargs) -> Any:
+                """Suppress attribute error for the function."""
+                with suppress(AttributeError):
+                    func(*args, **kwargs)
+                    return True
+                return False
+
+            def check(*args,) -> bool:
+                """Main check function"""
+                convert_pred = [
+                    (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
+                ]
+                return all(all(pred(i) == val for i in args if __suppress_attr_error(pred, i)) for pred, val in convert_pred)
+            return check
+
+        try:
+            return await self.bot.wait_for(event_name, timeout=timeout, check=outer_check(**kwargs))
+        except asyncio.TimeoutError:
+            if error_message:
+                await self.send(error_message)
+            raise
 
 class ConfirmationView(discord.ui.View):
     def __init__(

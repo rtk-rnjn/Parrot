@@ -390,7 +390,7 @@ class Configuration(Cog):
     async def warnadd(
         self, ctx: Context, count: int, action: str, duration: str = None
     ):
-        """To configure the warn settings in server"""
+        """To add warn settings in server. This is configuration is applicable when used `warn` command"""
         ACTIONS = [
             "ban",
             "tempban",
@@ -428,8 +428,8 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def warndel(self, ctx: Context, *, flags: warnConfig):
-        """To configure the warn settings"""
-        ACTIONS = [
+        """To delete warn settings. This is configuration is applicable when used `warn` command"""
+        ACTIONS: List[str] = [
             "ban",
             "tempban",
             "kick",
@@ -1478,7 +1478,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def autowarn(self, ctx: Context, action: str, *, flags: AutoWarn):
-        """Autowarn management of the server"""
+        """Autowarn management of the server on automod"""
         PUNISH = [
             "ban",
             "tempban",
@@ -1621,7 +1621,7 @@ class Configuration(Cog):
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                msg = await self.bot.wait_for("message", check=check, timeout=60)
+                msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=60)
                 return msg.content.lower()
             except asyncio.TimeoutError:
                 raise commands.BadArgument(

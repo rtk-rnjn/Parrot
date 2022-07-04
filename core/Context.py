@@ -36,13 +36,14 @@ CONFIRM_REACTIONS: Tuple[str, ...] = (
 )
 
 from .Parrot import Parrot
-from .Cog import Cog
 
 ParrotT = TypeVar("ParrotT", bound=Parrot)
 
 
 class Context(commands.Context["Parrot"], Generic[ParrotT]):
     """A custom implementation of commands.Context class."""
+    if TYPE_CHECKING:
+        from .Cog import Cog
 
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]
@@ -336,14 +337,18 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         asyncio.TimeoutError
             If the event is not triggered before the given timeout.
         """
-        error_message: Optional[str] = kwargs.pop("error", None)
+        error_message: Optional[str] = kwargs.pop("error", None) or kwargs.pop(
+            "error_message", None
+        )
 
         def outer_check(**kw) -> Callable:
             """Check function for the event"""
             if isinstance(kw.get("check"), Callable):
                 return kw["check"]
 
-            def __suppress_attr_error(func: Callable, *args, **kwargs) -> Any:
+            def __suppress_attr_error(
+                func: Callable, *args: Any, **kwargs: Any
+            ) -> bool:
                 """Suppress attribute error for the function."""
                 with suppress(AttributeError):
                     func(*args, **kwargs)

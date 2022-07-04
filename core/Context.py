@@ -341,7 +341,7 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         def outer_check(**kw) -> Callable:
             """Check function for the event"""
             if isinstance(kw.get("check"), Callable):
-                return check
+                return kw["check"]
 
             def __suppress_attr_error(func: Callable, *args, **kwargs) -> Any:
                 """Suppress attribute error for the function."""

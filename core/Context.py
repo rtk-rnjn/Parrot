@@ -350,20 +350,29 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
                     return True
                 return False
 
-            def check(*args,) -> bool:
+            def check(
+                *args,
+            ) -> bool:
                 """Main check function"""
                 convert_pred = [
                     (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
                 ]
-                return all(all(pred(i) == val for i in args if __suppress_attr_error(pred, i)) for pred, val in convert_pred)
+                return all(
+                    all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
+                    for pred, val in convert_pred
+                )
+
             return check
 
         try:
-            return await self.bot.wait_for(event_name, timeout=timeout, check=outer_check(**kwargs))
+            return await self.bot.wait_for(
+                event_name, timeout=timeout, check=outer_check(**kwargs)
+            )
         except asyncio.TimeoutError:
             if error_message:
                 await self.send(error_message)
             raise
+
 
 class ConfirmationView(discord.ui.View):
     def __init__(

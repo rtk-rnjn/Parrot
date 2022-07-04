@@ -999,7 +999,7 @@ class Meta(Cog):
 """
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['sticker-info'])
+    @commands.command(aliases=["sticker-info"])
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
@@ -1010,24 +1010,45 @@ class Meta(Cog):
                 f"{ctx.author.mention} you did not provide any sticker"
             )
         sticker = sticker or await ctx.message.stickers[0].fetch()
-        embed = discord.Embed(
-            title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url
-        ).add_field(
-            name="Name", value=sticker.name,
-        ).add_field(
-            name="ID", value=sticker.id,
-        ).add_field(
-            name="Created At", value=discord.utils.format_dt(sticker.created_at),
-        ).add_field(
-            name="User", value=sticker.user.mention,
-        ).add_field(
-            name="Available", value=sticker.available,
-        ).add_field(
-            name="Emoji", value=sticker.emoji,
-        ).set_thumbnail(
-            url=sticker.url,
-        ).set_footer(
-            text=f"{ctx.author}",
+        if sticker.guild and sticker.guild.id != ctx.guild.id:
+            return await ctx.send(
+                f"{ctx.author.mention} this sticker is not from this server"
+            )
+
+        embed = (
+            discord.Embed(
+                title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url
+            )
+            .add_field(
+                name="Name",
+                value=sticker.name,
+            )
+            .add_field(
+                name="ID",
+                value=sticker.id,
+            )
+            .add_field(
+                name="Created At",
+                value=discord.utils.format_dt(sticker.created_at),
+            )
+            .add_field(
+                name="User",
+                value=sticker.user.mention,
+            )
+            .add_field(
+                name="Available",
+                value=sticker.available,
+            )
+            .add_field(
+                name="Emoji",
+                value=sticker.emoji,
+            )
+            .set_thumbnail(
+                url=sticker.url,
+            )
+            .set_footer(
+                text=f"{ctx.author}",
+            )
         )
         embed.description = f"""`Description:` **{sticker.description}**"""
         await ctx.send(embed=embed)

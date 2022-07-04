@@ -1049,14 +1049,19 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,
+        member: Annotated[
+            List[discord.abc.Snowflake], commands.Greedy[MemberID]
+        ] = None,
         channel: Union[discord.VoiceChannel, None] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice move"""
         if member:
-            member: List[discord.Member] = [i async for i in self.bot.resolve_member_ids(ctx.guild, member)]
+            member: List[discord.Member] = [
+                i async for i in self.bot.resolve_member_ids(ctx.guild, member)
+            ]
+
         def check(
             m: discord.Member, b: discord.VoiceState, a: discord.VoiceState
         ) -> bool:
@@ -1207,6 +1212,85 @@ class Moderator(Cog):
             reason=reason,
             emoji=emoji,
             name=name,
+        )
+
+    @commands.group()
+    @commands.check_any(
+        is_mod(),
+        commands.has_permissions(
+            manage_emojis=True,
+        ),
+    )
+    @Context.with_type
+    async def sticker(self, ctx: Context):
+        """Sticker Management of the server"""
+        if not ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+
+    @sticker.command(name="add")
+    async def sticker_add(self, ctx: Context, emoji: str, *, description: str):
+        """To add sticker"""
+        if not ctx.message.stickers:
+            return await ctx.send(
+                f"{ctx.author.mention} You did not provide any sticker"
+            )
+
+        await mt._sticker_add(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            emoji=emoji,
+            sticker=ctx.message.stickers[0],
+            description=description,
+            reason=f"Action requested by: {ctx.author} {ctx.author.id}",
+        )
+
+    @sticker.command(name="delete")
+    async def sticker_delete(
+        self,
+        ctx: Context,
+        sticker: Optional[discord.GuildSticker] = None,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
+    ):
+        """To delete sticker"""
+        if not ctx.message.stickers:
+            return await ctx.send(
+                f"{ctx.author.mention} You did not provide any sticker"
+            )
+        sticker = sticker or ctx.message.stickers[0]
+        await mt._sticker_delete(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            sticker=sticker,
+        )
+
+    @sticker.command(name="addurl")
+    async def sticker_addurl(
+        self,
+        ctx: Context,
+        url: str,
+        name: str,
+        emoji: str,
+        description: str,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
+    ):
+        """To add sticker from url"""
+        await mt._sticker_addurl(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            url=url,
+            name=name,
+            emoji=emoji,
+            description=description,
         )
 
     @commands.command()

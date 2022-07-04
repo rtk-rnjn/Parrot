@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import io
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from core import Parrot, Context
@@ -1224,6 +1225,102 @@ async def _voice_unban(
     except Exception as e:
         await destination.send(
             f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
+        )
+
+
+async def _sticker_delete(
+    *,
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    sticker: discord.GuildSticker,
+    reason: str,
+    **kwargs: Any,
+):
+    if sticker.guild and sticker.guild.id != guild.id:
+        return await destination.send(
+            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker is not in this server"
+        )
+
+    try:
+        await sticker.delete(reason=reason)
+        await destination.send(f"{ctx.author.mention} sticker deleted **{sticker}**")
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} **{sticker.name} {sticker.id}**. Error raised: **{e}**"
+        )
+
+
+async def _sticker_add(
+    *,
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    sticker: discord.StickerItem,
+    reason: str,
+    **kwargs: Any,
+):
+    url = sticker.url
+    if not url:
+        return await destination.send(
+            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker has no url"
+        )
+    res = await ctx.bot.http_session.get(url)
+    if res.status != 200:
+        return await destination.send(
+            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker has no url"
+        )
+    raw = await res.read()
+    buffer = io.BytesIO(raw)
+    file = discord.File(buffer, filename=f"{sticker.name}.png")
+    try:
+        sticker = await guild.create_sticker(
+            name=sticker.name,
+            description=kwargs.get(
+                "description", f"No description given to the {sticker.name}"
+            ),
+            emoji=kwargs.get("emoji"),
+            file=file,
+            reason=reason,
+        )
+        await destination.send(f"{ctx.author.mention} sticker added **{sticker.name}**")
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} **{sticker.name} {sticker.id}**. Error raised: **{e}**"
+        )
+
+
+async def _sticker_addurl(
+    *,
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    url: str,
+    name: str,
+    emoji: str,
+    reason: str,
+    description: str,
+    **kwargs: Any,
+):
+    res = await ctx.bot.http_session.get(url)
+    raw = await res.read()
+    buffer = io.BytesIO(raw)
+    file = discord.File(buffer, filename=f"{name}.png")
+    try:
+        sticker = await guild.create_sticker(
+            name=name,
+            description=description,
+            emoji=emoji,
+            file=file,
+            reason=reason,
+        )
+        await destination.send(f"{ctx.author.mention} sticker added **{sticker.name}**")
+    except Exception as e:
+        await destination.send(
+            f"Can not able to {command_name} **{sticker.name} {sticker.id}**. Error raised: **{e}**"
         )
 
 

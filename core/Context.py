@@ -349,9 +349,7 @@ class ConfirmationView(discord.ui.View):
             await self.message.delete(delay=0)
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
-    async def confirm(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
+    async def confirm(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.value = True
         await interaction.response.defer()
         if self.delete_after:

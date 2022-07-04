@@ -19,7 +19,10 @@ def convert_bool(text: Union[str, bool]) -> bool:
 
 
 class ActionReason(commands.Converter):
+    """Action reason converter"""
+
     async def convert(self, ctx: Context, argument: str = None) -> str:
+        """Convert the argument to a action string"""
         ret = f"Action requested by {ctx.author} (ID: {ctx.author.id}) | Reason: {argument or 'no reason provided'}"
 
         if len(ret) > 512:
@@ -31,6 +34,8 @@ class ActionReason(commands.Converter):
 
 
 class ToAsync:
+    """Converts a blocking function to an async function"""
+
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
 
         self.executor = executor
@@ -100,7 +105,10 @@ def can_execute_action(
 
 
 class MemberID(commands.Converter):
+    """A converter that handles user mentions and user IDs."""
+
     async def convert(self, ctx: Context, argument: str):
+        """Convert a user mention or ID to a member object."""
         try:
             m = await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:

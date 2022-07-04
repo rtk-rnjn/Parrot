@@ -1339,6 +1339,9 @@ class Moderator(Cog):
 
         if isinstance(target, discord.Member):
             member_embed = MEMBER_EMBED.copy()
+            member_embed.description = (
+                f"Reason: {reason}\nAction will be performed on: {target} {target.id}"
+            )
             member_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon is not None:
                 member_embed.set_thumbnail(url=ctx.guild.icon.url)
@@ -1357,6 +1360,7 @@ class Moderator(Cog):
                 reaction, _ = await self.bot.wait_for(
                     "reaction_add", timeout=60.0, check=check
                 )
+                reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
 
@@ -1370,7 +1374,9 @@ class Moderator(Cog):
                     f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]"
                 )
                 try:
-                    m = await self.bot.wait_for("message", timeout=30, check=check_msg)
+                    m: discord.Message = await self.bot.wait_for(
+                        "message", timeout=30, check=check_msg
+                    )
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 role = await commands.RoleConverter().convert(ctx, m.content)

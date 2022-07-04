@@ -1340,7 +1340,8 @@ class Moderator(Cog):
         if isinstance(target, discord.Member):
             member_embed = MEMBER_EMBED.copy()
             member_embed.description = (
-                f"Reason: {reason}\nAction will be performed on: {target} {target.id}"
+                f"Reason: {reason}\n"
+                f"Action will be performed on: {target} {target.id}"
             )
             member_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon is not None:
@@ -1349,7 +1350,7 @@ class Moderator(Cog):
             msg = await ctx.send(embed=member_embed)
             await ctx.bulk_add_reactions(msg, *mt.MEMBER_REACTION)
 
-            def check(reaction, user) -> bool:
+            def check(reaction: discord.Reaction, user: discord.User) -> bool:
                 return (
                     str(reaction.emoji) in mt.MEMBER_REACTION
                     and user == ctx.author
@@ -1370,7 +1371,7 @@ class Moderator(Cog):
                 "\N{DOWNWARDS BLACK ARROW}",
                 "\N{UPWARDS BLACK ARROW}",
             }:
-                temp = await ctx.send(
+                temp: discord.Message = await ctx.send(
                     f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]"
                 )
                 try:
@@ -1399,7 +1400,9 @@ class Moderator(Cog):
                     delete_after=30,
                 )
                 try:
-                    m = await self.bot.wait_for("message", timeout=30, check=check_msg)
+                    m: discord.Message = await self.bot.wait_for(
+                        "message", timeout=30, check=check_msg
+                    )
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
 
@@ -1425,26 +1428,31 @@ class Moderator(Cog):
 
         if isinstance(target, discord.TextChannel):
             tc_embed = TEXT_CHANNEL_EMBED.copy()
+            tc_embed.description = (
+                f"Reason: {reason}\n"
+                f"Action will be performed on: {target} {target.id}"
+            )
             tc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon:
                 tc_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg = await ctx.send(embed=tc_embed)
+            msg: discord.Message = await ctx.send(embed=tc_embed)
             await ctx.bulk_add_reactions(msg, *mt.TEXT_REACTION)
 
-            def check(reaction, user):
+            def check(reaction: discord.Reaction, user: discord.User) -> bool:
                 return (
                     str(reaction.emoji) in mt.TEXT_REACTION
                     and user == ctx.author
                     and reaction.message.id == msg.id
                 )
 
-            def check_msg(m):
+            def check_msg(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                reaction, user = await self.bot.wait_for(
+                reaction, _ = await self.bot.wait_for(
                     "reaction_add", timeout=60.0, check=check
                 )
+                reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
 
@@ -1458,7 +1466,9 @@ class Moderator(Cog):
                     delete_after=60,
                 )
                 try:
-                    m = await self.bot.wait_for("message", timeout=60, check=check_msg)
+                    m: discord.Message = await self.bot.wait_for(
+                        "message", timeout=60, check=check_msg
+                    )
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 await func(
@@ -1490,13 +1500,19 @@ class Moderator(Cog):
             ),
         ):
             vc_embed = VOICE_CHANNEL_EMBED
+            vc_embed.description = (
+                f"Reason: {reason}\n"
+                f"Action will be performed on: {target} {target.id}"
+            )
             vc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon:
                 vc_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg = await ctx.send(embed=vc_embed)
+            msg: discord.Message = await ctx.send(embed=vc_embed)
             await ctx.bulk_add_reactions(msg, *mt.VC_REACTION)
 
-            def check_reaction_vc(reaction, user):
+            def check_reaction_vc(
+                reaction: discord.Reaction, user: discord.User
+            ) -> bool:
                 return (
                     str(reaction.emoji) in mt.VC_REACTION
                     and user == ctx.author
@@ -1507,6 +1523,7 @@ class Moderator(Cog):
                 reaction, _ = await self.bot.wait_for(
                     "reaction_add", timeout=60.0, check=check_reaction_vc
                 )
+                reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
 
@@ -1517,7 +1534,9 @@ class Moderator(Cog):
                     f"{ctx.author.mention} Enter the Channel Name", delete_after=60
                 )
                 try:
-                    m = await self.bot.wait_for("message", timeout=60, check=check_msg)
+                    m: discord.Message = await self.bot.wait_for(
+                        "message", timeout=60, check=check_msg
+                    )
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 await func(
@@ -1541,10 +1560,14 @@ class Moderator(Cog):
 
         if isinstance(target, discord.Role):
             role_embed = ROLE_EMBED
+            role_embed.description = (
+                f"Reason: {reason}\n"
+                f"Action will be performed on: {target} {target.id}"
+            )
             role_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if ctx.guild.icon:
                 role_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg = await ctx.send(embed=role_embed)
+            msg: discord.Message = await ctx.send(embed=role_embed)
             await ctx.bulk_add_reactions(msg, *mt.ROLE_REACTION)
 
             def check_reaction_role(reaction, user):
@@ -1555,9 +1578,10 @@ class Moderator(Cog):
                 )
 
             try:
-                reaction, user = await self.bot.wait_for(
+                reaction, _ = await self.bot.wait_for(
                     "reaction_add", timeout=60.0, check=check_reaction_role
                 )
+                reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
 
@@ -1569,7 +1593,9 @@ class Moderator(Cog):
                     delete_after=60,
                 )
                 try:
-                    m = await self.bot.wait_for("message", timeout=60, check=check_msg)
+                    m: discord.Message = await self.bot.wait_for(
+                        "message", timeout=60, check=check_msg
+                    )
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 try:
@@ -1593,7 +1619,9 @@ class Moderator(Cog):
                     f"{ctx.author.mention} Enter the Role Name", delete_after=60
                 )
                 try:
-                    m = await self.bot.wait_for("message", timeout=60, check=check_msg)
+                    m: discord.Message = await self.bot.wait_for(
+                        "message", timeout=60, check=check_msg
+                    )
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 await mt._change_role_name(

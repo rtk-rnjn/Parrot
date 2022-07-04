@@ -51,6 +51,18 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-out to the use of Parrot commands."
         )
 
+    @optout.command(name="equation", hidden=True)
+    async def optout_equation(self, ctx: Context):
+        """Opt-out for equation usage"""
+        await self.bot.mongo.extra.misc.update_one(
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"equation": ctx.author.id}},
+            upsert=True,
+        )
+        await ctx.send(
+            f"{ctx.author.mention} You have opted-out to the use of equations."
+        )
+
     @commands.group(hidden=True, invoke_without_command=True)
     async def optin(self, ctx: Context):
         """Opt-in to the certain configuration"""
@@ -87,6 +99,16 @@ class Hidden(Cog):
         )
         await ctx.send(
             f"{ctx.author.mention} You have opted-in to the use of Parrot commands."
+        )
+
+    @optin.command(name="equation", hidden=True)
+    async def optin_equation(self, ctx: Context):
+        """Opt-in for equation usage"""
+        await self.bot.mongo.extra.misc.update_one(
+            {"_id": ctx.guild.id}, {"$pull": {"equation": ctx.author.id}}, upsert=True
+        )
+        await ctx.send(
+            f"{ctx.author.mention} You have opted-in to the use of equations."
         )
 
     @commands.command(hidden=True)

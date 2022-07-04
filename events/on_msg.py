@@ -325,16 +325,22 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         return "\n".join(map(lambda x: x[1], sorted(all_snippets)))
 
     def _check_gitlink_req(self, message: discord.Message):
-        if guild := self.bot.opts.get(message.guild.id):
+        if self.bot.opts.get(message.guild.id):
             return message.author.id in self.bot.opts[message.guild.id].get(
                 "gitlink", []
+            )
+
+    def _check_equation_req(self, message: discord.Message):
+        if self.bot.opts.get(message.guild.id):
+            return message.author.id in self.bot.opts[message.guild.id].get(
+                "equation", []
             )
 
     async def query_ddg(self, query: str) -> Optional[str]:
         link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
         # saying `ok google`, and querying from ddg LOL.
         res = await self.bot.http_session.get(link)
-        data = json.loads(await res.text())
+        data: Dict = json.loads(await res.text())
         if data.get("Abstract"):
             return data.get("Abstract")
         if data["RelatedTopics"]:
@@ -450,6 +456,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         if not any(i in message.content for i in OP):
+            return
+
+        if self._check_equation_req(message):
             return
 
         def check(r: discord.Reaction, u: discord.User) -> bool:

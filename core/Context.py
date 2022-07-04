@@ -42,6 +42,7 @@ ParrotT = TypeVar("ParrotT", bound=Parrot)
 
 class Context(commands.Context["Parrot"], Generic[ParrotT]):
     """A custom implementation of commands.Context class."""
+
     if TYPE_CHECKING:
         from .Cog import Cog
 

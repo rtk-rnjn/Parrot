@@ -799,7 +799,11 @@ class Moderator(Cog):
     @commands.bot_has_permissions(manage_nicknames=True)
     @Context.with_type
     async def nick(
-        self, ctx: Context, member: discord.Member, *, name: commands.clean_content
+        self,
+        ctx: Context,
+        member: discord.Member,
+        *,
+        name: commands.clean_content = None,
     ):
         """
         To change the nickname of the specified member
@@ -810,7 +814,7 @@ class Moderator(Cog):
             ctx=ctx,
             destination=ctx.channel,
             member=member,
-            name=name,
+            name=name or "Moderated Nickname",
         )
 
     @commands.group()

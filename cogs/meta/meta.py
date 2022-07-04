@@ -998,3 +998,24 @@ class Meta(Cog):
 `Inviter?    :` **{invite.inviter}**
 """
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
+    async def sticker_info(self, ctx: Context, sticker: discord.GuildSticker):
+        """Get the info regarding the Sticker"""
+        embed = discord.Embed(
+            title=sticker.name, timestamp=discord.utils.utcnow(), url=sticker.url
+        )
+        embed.description = f"""`ID         :` **{sticker.id}**
+`Name       :` **{sticker.name}**
+`URL        :` **{sticker.url}**
+`Created At :` **{'Can not determinded' if sticker.created_at is None else discord.utils.format_dt(sticker.created_at)}**
+`User       :` **{sticker.user}**
+`Available? :` **{sticker.available}**
+`Format     :` **{sticker.format}**
+`Emoji      :` **{sticker.emoji}**
+`Description:` **{sticker.description}**
+"""
+        await ctx.send(embed=embed)

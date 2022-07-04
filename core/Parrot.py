@@ -147,8 +147,8 @@ class Parrot(commands.AutoShardedBot):
         self.color = 0x87CEEB
         self.colour = self.color
 
-        self.error_channel = None
-        self.persistent_views_added = False
+        self.error_channel: Optional[discord.TextChannel] = None
+        self.persistent_views_added: bool = False
         self.spam_control = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.user
         )
@@ -161,7 +161,7 @@ class Parrot(commands.AutoShardedBot):
             self.topgg = None
             self.topgg_webhook = None
 
-        self._auto_spam_count = Counter()
+        self._auto_spam_count: Counter = Counter()
         self.resumes = defaultdict(list)
         self.identifies = defaultdict(list)
         self._prev_events = deque(maxlen=10)

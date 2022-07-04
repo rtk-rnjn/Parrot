@@ -3,9 +3,9 @@ import io
 
 import os
 from typing import Optional
-import discord
 import random
 from datetime import datetime
+import discord
 from discord.ext import commands
 
 from utilities.paginator import PaginationView
@@ -17,13 +17,23 @@ with open(r"extra/user_agents.txt") as f:
     USER_AGENTS = f.read().splitlines()
 
 
-def date_parser(arg: str) -> str:
-    """Validate whether the giving strin is in YYYY-MM-DD format"""
+def date_parser(arg: Optional[str] = None) -> str:
+    """Validate whether the given string is in YYYY-MM-DD format."""
+    if arg is None:
+        return datetime.now().strftime("%Y-%m-%d")
     try:
         datetime.strptime(arg, "%Y-%m-%d")
     except ValueError:
-        raise commands.BadArgument("Invalid date format. Use YYYY-MM-DD")
+        raise commands.BadArgument("Invalid date format. Use YYYY-MM-DD") from None
     return arg
+
+
+def upper_split(ini_str: str) -> str:
+    """To split the the given string by camel case"""
+    res_pos = [i for i, e in enumerate(ini_str+'A') if e.isupper()]
+    res_list = [ini_str[res_pos[j]:res_pos[j + 1]]
+                for j in range(len(res_pos)-1)]
+    return " ".join(res_list)
 
 
 class NASA(Cog):
@@ -229,9 +239,9 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def findasteroididid(self, ctx: Context, id: int):
+    async def findasteroididid(self, ctx: Context, asteroid_id: int):
         """Find any asteroid in the space by ID. "$help findaid" for syntax"""
-        link = f"https://api.nasa.gov/neo/rest/v1/neo/{id}?api_key={NASA_KEY}"
+        link = f"https://api.nasa.gov/neo/rest/v1/neo/{asteroid_id}?api_key={NASA_KEY}"
 
         r = await self.bot.http_session.get(link)
         if r.status == 200:
@@ -390,4 +400,310 @@ class NASA(Cog):
                 break
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
+        await PaginationView(em_list).start(ctx=ctx)
+
+    @commands.group()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def donki(self, ctx: Context,):
+        """Space Weather Database Of Notifications, Knowledge, Information (DONKI)"""
+        if not ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+    
+    @donki.command(name="cme")
+    async def donki_cme(self, ctx: Context, start: date_parser, end: date_parser):
+        """Coronal Mass Ejection"""
+        url = f"https://api.nasa.gov/DONKI/CME?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(url, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find CME in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+
+            activity_id = data["activityID"]
+            catalog = data["catalog"]
+            start_time = data["startTime"]
+            source_location = data["sourceLocation"]
+            active_region_num = data["activeRegionNum"]
+            link = data["link"]
+            note = data["note"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+
+            em.description = f"""
+Activity ID: {activity_id}
+Catalog: {catalog}
+Start Time: {start_time}
+Source Location: {source_location}
+Active Region Num: {active_region_num}
+Link: {link}
+Instuments: {instruments}
+"""
+            em.title = catalog
+            em.url = link
+
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+
+    @donki.command(name="gst")
+    async def donki_gst(self, ctx: Context, start: date_parser, end: date_parser):
+        """Geomagnetic Storm"""
+        link = f"https://api.nasa.gov/DONKI/GST?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find GST in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            gstID = data["gstID"]
+            startTime = data["startTime"]
+            link = data["link"]
+
+            em.description = f"""
+GST ID: {gstID}
+Start Time: {startTime}
+Link: {link}
+"""
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+    
+    @donki.command(name="ips")
+    async def donki_ips(self, ctx: Context, start: date_parser, end: date_parser):
+        """Interplanetary Shock"""
+        link = f"https://api.nasa.gov/DONKI/IPS?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find IPS in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            catalog = data["catalog"]
+            activityID = data["activityID"]
+            location = data["location"]
+            eventTime = data["eventTime"]
+            link = data["link"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            em.description = f"""
+Catalog: {catalog}
+Activity ID: {activityID}
+Location: {location}
+Event Time: {eventTime}
+Link: {link}
+Instuments: {instruments}
+"""
+            em.title = catalog
+            em.url = link
+
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+
+    @donki.command(name="flr")
+    async def donki_flr(self, ctx: Context, start: date_parser, end: date_parser):
+        """Solar Flare"""
+        link = f"https://api.nasa.gov/DONKI/FLR?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find FLR in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            flrID = data["flrID"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            beginTime = data["beginTime"]
+            peakTime = data["peakTime"]
+            endTime = data["endTime"]
+            classType = data["classType"]
+            sourceLocation = data["sourceLocation"]
+            activeRegionNum = data["activeRegionNum"]
+            linkedEvents = ", ".join(i["activityID"] for i in data.get("linkedEvents", []))
+            link = data["link"]
+            em.description = f"""
+FLR ID: {flrID}
+Instruments: {instruments}
+Begin Time: {beginTime}
+Peak Time: {peakTime}
+End Time: {endTime}
+Class Type: {classType}
+Source Location: {sourceLocation}
+Active Region Num: {activeRegionNum}
+Linked Events: {linkedEvents}
+Link: {link}
+"""
+            em.title = flrID
+            em.url = link
+
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+    
+    @donki.command(name="sep")
+    async def donki_sep(self, ctx: Context, start: date_parser, end: date_parser):
+        """Solar Energetic Particle"""
+        link = f"https://api.nasa.gov/DONKI/SEP?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find SEP in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            sepID = data["sepID"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            eventTime = data["eventTime"]
+
+            linkedEvents = ", ".join(i["activityID"] for i in data.get("linkedEvents", []))
+            link = data["link"]
+            em.description = f"""
+SEP ID: {sepID}
+Instruments: {instruments}
+Event Time: {eventTime}
+Linked Events: {linkedEvents}
+Link: {link}
+"""
+            em.title = sepID
+            em.url = link
+
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+    
+    @donki.command(name="mpc")
+    async def donki_mpc(self, ctx: Context, start: date_parser, end: date_parser):
+        """Magnetopause Crossing"""
+        link = f"https://api.nasa.gov/DONKI/MPC?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find MPC in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            mpcID = data["mpcID"]
+            eventTime = data["eventTime"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            link = data["link"]
+            em.description = f"""
+MPC ID: {mpcID}
+Event Time: {eventTime}
+Link: {link}
+Instuments: {instruments}
+"""
+            em.title = mpcID
+            em.url = link
+
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+    
+    @donki.command(name="rbe")
+    async def donki_rbe(self, ctx: Context, start: date_parser, end: date_parser):
+        """Radiation Belt Enhancement"""
+        link = f"https://api.nasa.gov/DONKI/RBE?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find RBE in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            rbeID = data["rbeID"]
+            eventTime = data["eventTime"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            link = data["link"]
+            em.description = f"""
+RBE ID: {rbeID}
+Event Time: {eventTime}
+Link: {link}
+Instuments: {instruments}
+"""
+            em.title = rbeID
+            em.url = link
+
+            em_list.append(em)
+        await PaginationView(em_list).start(ctx=ctx)
+    
+    @donki.command(name="hhs")
+    async def donki_hhs(self, ctx: Context, start: date_parser, end: date_parser):
+        """Hight Speed Stream"""
+        link = f"https://api.nasa.gov/DONKI/HHS?startDate={start}&endDate={end}&api_key={NASA_KEY}"
+        AGENT = self.random_agent(USER_AGENTS)
+        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        if r.status >= 300:
+            return await ctx.reply(
+                f"{ctx.author.mention} could not find HHS in DONKI | Http status: {r.status}"
+            )
+        res = await r.json()
+        if not res:
+            return await ctx.reply(f"{ctx.author.mention} no results")
+        
+        em_list = []
+
+        for data in res:
+            em = discord.Embed()
+            hhsID = data["hhsID"]
+            eventTime = data["eventTime"]
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
+            link = data["link"]
+            em.description = f"""
+HHS ID: {hhsID}
+Event Time: {eventTime}
+Link: {link}
+Instuments: {instruments}
+"""
+            em.title = hhsID
+            em.url = link
+
+            em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)

@@ -350,7 +350,7 @@ class ConfirmationView(discord.ui.View):
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
     async def confirm(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self, interaction: discord.Interaction, _: discord.ui.Button
     ):
         self.value = True
         await interaction.response.defer()
@@ -359,7 +359,7 @@ class ConfirmationView(discord.ui.View):
         self.stop()
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.red)
-    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.value = False
         await interaction.response.defer()
         if self.delete_after:

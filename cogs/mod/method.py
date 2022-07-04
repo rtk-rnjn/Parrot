@@ -1238,6 +1238,10 @@ async def _emoji_delete(
     **kwargs: Any,
 ):
     for emoji in emojis:
+        if emoji.guild.id != guild.id:
+            return await destination.send(
+                f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server"
+            )
         try:
             if emoji.guild.id == guild.id:
                 await emoji.delete(
@@ -1312,6 +1316,10 @@ async def _emoji_rename(
     **kwargs: Any,
 ):
     try:
+        if emoji.guild.id != guild.id:
+            return await destination.send(
+                f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server"
+            )
         await emoji.edit(
             name=name,
             reason=reason,

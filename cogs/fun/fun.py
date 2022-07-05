@@ -2714,9 +2714,8 @@ class Fun(Cog):
                 file = discord.File(
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
                 )
-                embed = (
-                    discord.Embed(timestamp=discord.utils.utcnow())
-                    .set_image(url=f"attachment://{ctx.command.name}.gif")
+                embed = discord.Embed(timestamp=discord.utils.utcnow()).set_image(
+                    url=f"attachment://{ctx.command.name}.gif"
                 )
                 embed.set_footer(text=f"{ctx.author}")
                 await ctx.reply(embed=embed, file=file)

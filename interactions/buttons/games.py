@@ -2707,16 +2707,16 @@ class Games(Cog):
         """To start wordle game"""
         await Wordle().start(ctx)
 
-    @commands.command(aliases=['lightsout'])
+    @commands.command(aliases=["lightsout"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def lightout(self, ctx: Context, count: int=4):
+    async def lightout(self, ctx: Context, count: int = 4):
         """Light Out Game"""
         lg = LightsOut(count)
         await lg.start(ctx, timeout=120)
-    
+
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def countryguess(self, ctx: Context, is_flag: convert_bool=False):
+    async def countryguess(self, ctx: Context, is_flag: convert_bool = False):
         """Country guessing game"""
         cg = BetaCountryGuesser(is_flags=is_flag)
         await cg.start(ctx, timeout=120)

@@ -1,10 +1,10 @@
 # AUTHOR: https://github.com/davidetacchini/
 
-from typing import List, Optional, NamedTuple, Union
 from itertools import islice
-from core import Context
+from typing import List, NamedTuple, Optional, Union
 
 import discord
+from core import Context
 
 
 def get_chunks(iterable, size):

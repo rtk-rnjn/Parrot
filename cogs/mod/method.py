@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from collections import Counter
-import io
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
-
-from core import Parrot, Context
-
-import discord
 import asyncio
 import datetime
+import io
+from collections import Counter
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
-from utilities.time import FutureTime
+import discord
+from core import Context, Parrot
+from utilities.time import FutureTime, ShortTime
 
 
 async def _add_roles_bot(
@@ -1500,9 +1498,83 @@ VC_REACTION: Dict[str, Callable] = {
     "\N{OPEN LOCK}": _vc_unlock,
     "\N{LOWER LEFT FOUNTAIN PEN}": _change_channel_name,
 }
+
 ROLE_REACTION: Dict[str, Callable] = {
     "\N{UPWARDS BLACK ARROW}": _role_hoist,
     "\N{DOWNWARDS BLACK ARROW}": _role_hoist,
     "\N{RAINBOW}": _change_role_color,
     "\N{LOWER LEFT FOUNTAIN PEN}": _change_role_name,
 }
+
+
+async def instant_action_parser(
+    *, name: str, ctx: Context, message: discord.Message, **kw: Any
+):
+    PUNISH = [
+        "ban",
+        "tempban",
+        "kick",
+        "timeout",
+        "mute",
+    ]
+
+    if name not in PUNISH:
+        return
+
+    if kw.get("duration"):
+        try:
+            duration = ShortTime(kw["duration"])
+        except Exception:
+            duration = None
+    else:
+        duration = None
+
+    if name == "ban":
+        try:
+            await ctx.guild.ban(message.author, reason="Auto mod: Mention protection")
+        except (discord.Forbidden, discord.NotFound):
+            pass
+
+    if name == "tempban":
+        try:
+            await ctx.guild.ban(message.author, reason="Auto mod: Mention protection")
+        except (discord.Forbidden, discord.NotFound):
+            pass
+        else:
+            mod_action = {
+                "action": "UNBAN",
+                "member": message.author.id,
+                "reason": "Auto mod: Automatic tempban action",
+                "guild": ctx.guild.id,
+            }
+            cog = ctx.bot.get_cog("Utils")
+            await cog.create_timer(
+                expires_at=duration.dt.timestamp(),
+                created_at=discord.utils.utcnow().timestamp(),
+                message=ctx.message,
+                mod_action=mod_action,
+            )
+
+    if name == "kick":
+        try:
+            await message.author.kick(reason="Auto mod: Mention protection")
+        except (discord.Forbidden, discord.NotFound):
+            pass
+
+    if name in ("timeout", "mute"):
+        try:
+            if duration:
+                await message.author.edit(
+                    timed_out_until=duration.dt,
+                    reason="Auto mod: Mention protection",
+                )
+            else:
+                muted = await ctx.muterole()
+                if not muted:
+                    return
+                await message.author.add_roles(
+                    muted,
+                    reason="Auto mod: Mention protection",
+                )
+        except (discord.Forbidden, discord.NotFound):
+            pass

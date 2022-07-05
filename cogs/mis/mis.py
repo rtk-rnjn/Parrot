@@ -1,51 +1,45 @@
 from __future__ import annotations
+
 import hashlib
+import inspect
+import io
+import json
+import os
+import re
+import string
+import urllib.parse
+from html import unescape
+from pathlib import Path
 from typing import Any, BinaryIO, Dict, Iterable, List, Literal, Optional, Union
 
-from cogs.meta.robopage import SimplePages
-
-from discord.ext import commands
-from discord import Embed
-
-import urllib.parse
 import aiohttp  # type: ignore
 import discord
-import re
-import os
-import inspect
-import json
-from pathlib import Path
-import io
-import string
-from html import unescape
-
 import qrcode  # type: ignore
+from cogs.meta.robopage import SimplePages
+from core import Cog, Context, Parrot
+from discord import Embed
+from discord.ext import commands
+from PIL import Image
 from qrcode.image.styledpil import StyledPilImage  # type: ignore
+from qrcode.image.styles.colormasks import (  # type: ignore
+    HorizontalGradiantColorMask,
+    RadialGradiantColorMask,
+    SolidFillColorMask,
+    SquareGradiantColorMask,
+    VerticalGradiantColorMask,
+)
 from qrcode.image.styles.moduledrawers import (  # type: ignore
-    RoundedModuleDrawer,
     CircleModuleDrawer,
     GappedSquareModuleDrawer,
     HorizontalBarsDrawer,
+    RoundedModuleDrawer,
     SquareModuleDrawer,
     VerticalBarsDrawer,
 )
-from qrcode.image.styles.colormasks import (  # type: ignore
-    RadialGradiantColorMask,
-    SquareGradiantColorMask,
-    HorizontalGradiantColorMask,
-    VerticalGradiantColorMask,
-    SolidFillColorMask,
-)
-
-from core import Parrot, Context, Cog
-
-from utilities.youtube_search import YoutubeSearch
 from utilities.converters import ToAsync, convert_bool
 from utilities.paginator import PaginationView
 from utilities.ttg import Truths
-
-from PIL import Image
-
+from utilities.youtube_search import YoutubeSearch
 
 invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"
 invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\/)?([A-Za-z0-9\-]+)(\/)?"

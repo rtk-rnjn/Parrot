@@ -1,10 +1,10 @@
 from __future__ import annotations
-import discord
-
-from core import Parrot, Cog, Context
-from discord.ext import commands
 
 import hashlib
+
+import discord
+from core import Cog, Context, Parrot
+from discord.ext import commands
 
 
 class Hidden(Cog):

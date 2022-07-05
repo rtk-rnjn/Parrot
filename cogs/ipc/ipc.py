@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 from typing import Any, Dict, List, Union
 
-from core import Parrot, Cog
-from discord.ext.ipc import server
 import discord
+from core import Cog, Parrot
+from discord.ext.ipc import server
 
 
 class IPCRoutes(Cog):

@@ -2,23 +2,23 @@
 
 from __future__ import annotations
 
+import asyncio
+import random
 from typing import (
     TYPE_CHECKING,
     Any,
     Coroutine,
     Final,
     List,
-    Optional,
     Literal,
+    Optional,
     Set,
     Tuple,
     TypeVar,
     Union,
 )
-import random
-import asyncio
-import discord
 
+import discord
 from core import Context, Parrot
 
 if TYPE_CHECKING:

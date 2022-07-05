@@ -7,7 +7,7 @@ import random
 from abc import ABCMeta, abstractmethod
 from collections.abc import Collection
 from functools import cached_property
-from typing import Any, Generic, Literal, NoReturn, Optional, TypeVar, Union, List, Dict
+from typing import Any, Dict, Generic, List, Literal, NoReturn, Optional, TypeVar, Union
 
 from discord.enums import Enum
 from discord.utils import MISSING

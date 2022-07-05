@@ -1,12 +1,11 @@
 from __future__ import annotations
+
 from typing import Optional
 
-from discord.ext import commands
 import discord
-
-from core import Parrot, Context, Cog
-
 from cogs.ticket import method as mt
+from core import Cog, Context, Parrot
+from discord.ext import commands
 
 
 class Ticket(Cog):

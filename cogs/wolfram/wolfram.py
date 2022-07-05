@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from io import BytesIO
-from typing import Callable, Optional, List, Tuple
-from urllib.parse import urlencode
 import os
+from io import BytesIO
+from typing import Callable, List, Optional, Tuple
+from urllib.parse import urlencode
+
 import arrow  # type: ignore
 import discord
+from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import BucketType, check, group  # type: ignore
-
-from core import Parrot, Cog, Context
 from utilities.paginator import PaginationView
 
 APPID = os.environ["WOLFRAM_APP"]

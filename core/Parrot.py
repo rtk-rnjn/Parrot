@@ -1,41 +1,39 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from contextlib import suppress
-import io
 
+import asyncio
+import datetime
+import io
 import os
+import re
 import sys
 import traceback
 import types
+from collections import Counter, defaultdict, deque
+from contextlib import suppress
 from typing import (
     Any,
     Awaitable,
     Callable,
     Collection,
+    Dict,
     Iterator,
+    List,
     Mapping,
     Optional,
-    Dict,
     Sequence,
     Set,
     Type,
     Union,
-    List,
 )
-import jishaku  # type: ignore  # noqa: F401
-import datetime
-import asyncio
-import re
+
 import discord
+import jishaku  # type: ignore  # noqa: F401
 import pymongo
-
 from aiohttp import ClientSession  # type: ignore
-from collections import Counter, deque, defaultdict
-
-from discord.ext import commands, tasks, ipc
 from discord import app_commands
-
+from discord.ext import commands, ipc, tasks
 from lru import LRU
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
@@ -46,30 +44,28 @@ try:
 except ImportError:
     HAS_TOP_GG = False
 
-from utilities.config import (
-    EXTENSIONS,
-    OWNER_IDS,
-    CASE_INSENSITIVE,
-    STRIP_AFTER_PREFIX,
-    TOKEN,
-    AUTHOR_NAME,
-    AUTHOR_DISCRIMINATOR,
-    MASTER_OWNER,
-    GITHUB,
-    SUPPORT_SERVER,
-    SUPPORT_SERVER_ID,
-)
-
-from utilities.checks import _can_run
-from utilities.paste import Client
-from utilities.converters import ToAsync
-
-from .__template import post as POST
-
 from time import perf_counter
 
-from .Context import Context
+from utilities.checks import _can_run
+from utilities.config import (
+    AUTHOR_DISCRIMINATOR,
+    AUTHOR_NAME,
+    CASE_INSENSITIVE,
+    EXTENSIONS,
+    GITHUB,
+    MASTER_OWNER,
+    OWNER_IDS,
+    STRIP_AFTER_PREFIX,
+    SUPPORT_SERVER,
+    SUPPORT_SERVER_ID,
+    TOKEN,
+)
+from utilities.converters import ToAsync
+from utilities.paste import Client
+
+from .__template import post as POST
 from .Cog import Cog
+from .Context import Context
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"

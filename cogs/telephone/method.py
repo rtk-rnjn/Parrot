@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
 import asyncio
-from core import Context, Parrot
-import discord
 import random
 import time
+from typing import Any
+
+import discord
+from core import Context, Parrot
 from discord.ext import commands
 
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)

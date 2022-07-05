@@ -1,10 +1,10 @@
 from __future__ import annotations
+
+import json
+import urllib.parse
 from typing import Any, Dict, Optional
 
 import aiohttp  # type: ignore
-import urllib.parse
-import json
-
 
 BASE_URL = "https://youtube.com"
 

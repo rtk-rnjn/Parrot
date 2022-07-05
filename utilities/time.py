@@ -3,13 +3,12 @@ from __future__ import annotations
 import datetime
 import re
 
+import discord
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
-
-import discord
 from discord.ext import commands
 
-from .formats import plural, human_join
+from .formats import human_join, plural
 
 # Monkey patch mins and secs into the units
 units = pdt.pdtLocales["en_US"].units

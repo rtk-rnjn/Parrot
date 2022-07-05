@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from discord import Embed
 import discord
+from discord import Embed
 
 MEMBER_EMBED: discord.Embed = Embed(
     title="Moderator Menu", timestamp=discord.utils.utcnow()

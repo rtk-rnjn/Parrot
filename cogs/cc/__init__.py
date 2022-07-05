@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from .cc import CustomCommand
 from core import Parrot
+
+from .cc import CustomCommand
 
 
 async def setup(bot: Parrot) -> None:

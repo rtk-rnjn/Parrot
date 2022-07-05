@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from .wolfram import Wolfram
 from core import Parrot as Bot
+
+from .wolfram import Wolfram
 
 
 async def setup(bot: Bot) -> None:

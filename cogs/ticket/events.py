@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import discord
-
 from typing import Optional
 
-from core import Parrot, Cog
+import discord
+from core import Cog, Parrot
 
 
 class TicketReaction(Cog, command_attrs=dict(hidden=True)):

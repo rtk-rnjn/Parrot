@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import aiohttp  # type: ignore
+import datetime
 import re
 from textwrap import dedent
 from typing import Any, Dict, Optional
-import datetime
+
+import aiohttp  # type: ignore
 
 MB_URL_RE = re.compile(
     r"(?:(?:https?://)?mystb\.in/)?(?P<ID>[a-zA-Z]+)(?:\.(?P<syntax>[a-zA-Z0-9]+))?"

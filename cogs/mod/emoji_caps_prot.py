@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+import random
+import re
 from typing import List, Optional
-import discord
 
+import discord
+import emojis
+from cogs.mod.method import instant_action_parser
+from core import Cog, Context, Parrot
 from utilities.infraction import warn
 from utilities.time import ShortTime
-import re
-import random
-
-import emojis
-from core import Parrot, Cog, Context
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -18,6 +18,7 @@ with open("extra/duke_nekum.txt") as f:
 class EmojiCapsProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.__instant_action_parser = instant_action_parser
 
     async def delete(self, message: discord.Message) -> None:
         await message.delete(delay=0)
@@ -190,79 +191,3 @@ class EmojiCapsProt(Cog):
     ) -> None:
         if before.content != after.content:
             await self._on_message_passive(after)
-
-    async def __instant_action_parser(
-        self, *, name: str, ctx: Context, message: discord.Message, **kw
-    ):
-        PUNISH = [
-            "ban",
-            "tempban",
-            "kick",
-            "timeout",
-            "mute",
-        ]
-
-        if name not in PUNISH:
-            return
-
-        if kw.get("duration"):
-            try:
-                duration = ShortTime(kw["duration"])
-            except Exception:
-                duration = None
-        else:
-            duration = None
-
-        if name == "ban":
-            try:
-                await ctx.guild.ban(
-                    message.author, reason="Auto mod: Emoji/Caps protection"
-                )
-            except (discord.Forbidden, discord.NotFound):
-                pass
-
-        if name == "tempban":
-            try:
-                await ctx.guild.ban(
-                    message.author, reason="Auto mod: Emoji/Caps protection"
-                )
-            except (discord.Forbidden, discord.NotFound):
-                pass
-            else:
-                mod_action = {
-                    "action": "UNBAN",
-                    "member": message.author.id,
-                    "reason": "Auto mod: Automatic tempban action",
-                    "guild": ctx.guild.id,
-                }
-                cog = self.bot.get_cog("Utils")
-                await cog.create_timer(
-                    expires_at=duration.dt.timestamp(),
-                    created_at=discord.utils.utcnow().timestamp(),
-                    message=ctx.message,
-                    mod_action=mod_action,
-                )
-
-        if name == "kick":
-            try:
-                await message.author.kick(reason="Auto mod: Emoji/Caps protection")
-            except (discord.Forbidden, discord.NotFound):
-                pass
-
-        if name in ("timeout", "mute"):
-            try:
-                if duration:
-                    await message.author.edit(
-                        timed_out_until=duration.dt,
-                        reason="Auto mod: Emoji/Caps protection",
-                    )
-                else:
-                    muted = await ctx.muterole()
-                    if not muted:
-                        return
-                    await message.author.add_roles(
-                        muted,
-                        reason="Auto mod: Emoji/Caps protection",
-                    )
-            except (discord.Forbidden, discord.NotFound):
-                pass

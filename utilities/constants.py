@@ -1,4 +1,5 @@
 import enum
+
 from .emotes import EMOJIS
 
 

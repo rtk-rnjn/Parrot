@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, List, Dict
+from typing import TYPE_CHECKING, ClassVar, Dict, List
 
 import discord
 

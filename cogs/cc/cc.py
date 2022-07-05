@@ -1,9 +1,13 @@
 from __future__ import annotations
-import asyncio
 
-from collections import defaultdict
+import asyncio
+import importlib
 import re
+from collections import defaultdict
 from typing import Any, Dict, List, Optional, Union
+
+import discord
+from cogs.cc import method
 from cogs.cc.method import (
     CustomCommandsExecutionOnJoin,
     CustomCommandsExecutionOnMsg,
@@ -11,12 +15,7 @@ from cogs.cc.method import (
     CustomCommandsExecutionOnRemove,
     indent,
 )
-from cogs.cc import method
-import importlib
-
-from core import Parrot, Context, Cog
-
-import discord
+from core import Cog, Context, Parrot
 from discord.ext import commands
 
 importlib.reload(method)

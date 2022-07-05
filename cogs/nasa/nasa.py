@@ -1,15 +1,15 @@
 from __future__ import annotations
-import io
 
+import io
 import os
-from typing import Optional
 import random
 from datetime import datetime
-import discord
-from discord.ext import commands
+from typing import Optional
 
+import discord
+from core import Cog, Context, Parrot
+from discord.ext import commands
 from utilities.paginator import PaginationView
-from core import Cog, Parrot, Context
 
 NASA_KEY = os.environ["NASA_KEY"]
 

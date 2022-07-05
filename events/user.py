@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 from contextlib import suppress
 
-from core import Cog, Parrot
-
 import discord
+from core import Cog, Parrot
 
 
 class User(Cog, command_attrs=dict(hidden=True)):

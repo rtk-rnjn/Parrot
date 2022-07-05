@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import Dict, List, Set, Union
 
-from pymongo import UpdateOne
-
-from core import Cog, Parrot
-import discord
 import time
 from contextlib import suppress
+from typing import Dict, List, Set, Union
+
+import discord
+from core import Cog, Parrot
+from pymongo import UpdateOne
 
 # collection = parrot_db["server_config"]
 # log = parrot_db["logging"]

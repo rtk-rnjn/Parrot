@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from .fun import Fun
 from core import Parrot
+
+from .fun import Fun
 
 
 async def setup(bot: Parrot) -> None:

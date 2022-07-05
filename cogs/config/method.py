@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import discord
-from core import Parrot, Context
-from typing import Union, Optional, Dict, Any
+from typing import Any, Dict, Optional, Union
 
+import discord
+from core import Context, Parrot
 from pymongo.collection import Collection
 
 

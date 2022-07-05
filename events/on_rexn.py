@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import datetime
+from time import time
 from typing import Any, Dict, List, Optional, Union
 
-from core import Parrot, Cog
-from time import time
 import discord
-
+from core import Cog, Parrot
 from pymongo.collection import Collection
 from pymongo.typings import _DocumentType as DocumentType
 

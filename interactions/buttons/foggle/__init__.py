@@ -5,20 +5,17 @@ from __future__ import annotations
 import asyncio
 import random
 import re
-
-from functools import wraps
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Literal, NamedTuple, Optional, List, Dict
+from functools import wraps
+from typing import Dict, List, Literal, NamedTuple, Optional
 
 import discord
+from core import Cog, Context, Parrot
 from discord.ext import commands
 from discord.ext import old_menus as menus
 
-from core import Parrot, Cog, Context
-
 from .parser import View
-
 
 SMALL = 3
 ORIGINAL = 4

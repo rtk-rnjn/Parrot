@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from discord.ext import commands
 import typing
-import discord
 
+import discord
+from discord.ext import commands
 
 # class purgeFlag(
 #     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "

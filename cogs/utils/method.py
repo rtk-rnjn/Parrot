@@ -1,17 +1,16 @@
 from __future__ import annotations
+
 import asyncio
 import random
+from time import time
 from typing import Any, Dict, List, Optional
 
 import discord
+from core import Context, Parrot
 from discord.ext import commands
-from time import time
-
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError
 from utilities.paginator import ParrotPaginator
 from utilities.time import ShortTime
-
-from core import Parrot, Context
 
 IGNORE = [
     "all",

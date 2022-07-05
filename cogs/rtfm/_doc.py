@@ -3,13 +3,12 @@ from __future__ import annotations
 import urllib.parse
 from functools import partial
 from string import ascii_uppercase
-import discord
-
-from bs4 import BeautifulSoup
 from typing import Any, Dict, Optional
 
-from utilities.converters import ToAsync
+import discord
+from bs4 import BeautifulSoup
 from core import Context
+from utilities.converters import ToAsync
 
 try:
     import lxml

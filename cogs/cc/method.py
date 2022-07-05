@@ -1,35 +1,32 @@
 from __future__ import annotations
+
+import asyncio
+import datetime
+import io
+import random
+import re
+import textwrap
+import time
+import traceback
 from contextlib import suppress
 from operator import attrgetter
-import traceback
+from typing import Any, Callable, Dict, List, NoReturn, Optional, Union
 
 import discord
-from core import Parrot
-from typing import Any, Callable, Dict, NoReturn, Optional, Union, List
-
-import re
-import time
-import random
-import datetime
-import asyncio
-import textwrap
-import io
-
 from async_timeout import timeout  # type: ignore
-
+from core import Parrot
 from discord import (
-    File,
-    Embed,
     Colour,
+    Embed,
+    File,
     Guild,
     Member,
-    Permissions,
-    PermissionOverwrite,
     Object,
+    PermissionOverwrite,
+    Permissions,
     Role,
     User,
 )
-
 
 # Example
 """

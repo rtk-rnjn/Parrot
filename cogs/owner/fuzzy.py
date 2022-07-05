@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import re
 import heapq
-
+import re
 from difflib import SequenceMatcher
 
 

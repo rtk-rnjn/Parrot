@@ -1,12 +1,12 @@
 from __future__ import annotations
+
 import time
 from typing import Literal, Optional
 
-from core import Cog, Parrot, Context
-
-from discord.ext import commands
-from discord import app_commands
 import discord
+from core import Cog, Context, Parrot
+from discord import app_commands
+from discord.ext import commands
 
 
 class ContextMenu(Cog):

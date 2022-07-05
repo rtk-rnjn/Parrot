@@ -1,11 +1,12 @@
 from __future__ import annotations
+
+import io
+import json
 from contextlib import suppress
 from typing import List, Sequence, Tuple, Union
 
-from core import Cog, Parrot
 import discord
-import io
-import json
+from core import Cog, Parrot
 
 
 class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):

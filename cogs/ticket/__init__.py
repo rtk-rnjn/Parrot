@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from core import Parrot
-from .ticket import Ticket
+
 from .events import TicketReaction
+from .ticket import Ticket
 
 
 async def setup(bot: Parrot) -> None:

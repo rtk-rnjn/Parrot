@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from discord.ext import commands
-import discord
 from time import time
 
-from core import Parrot, Cog, Context
+import discord
+from core import Cog, Context, Parrot
+from discord.ext import commands
+
 from .method import dial
 
 

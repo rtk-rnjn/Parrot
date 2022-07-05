@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import socket
+
 from aiohttp import AsyncResolver, ClientSession, TCPConnector  # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
-from utilities.config import TOKEN, my_secret
-from core import Parrot
 
+from core import Parrot
+from utilities.config import TOKEN, my_secret
 
 bot = Parrot()
 

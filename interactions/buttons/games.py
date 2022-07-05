@@ -4,53 +4,48 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 import json
-from pathlib import Path
 import random
 import re
-import itertools
-
-from dataclasses import dataclass
-from functools import partial, cached_property, wraps
-from string import ascii_uppercase
 from collections import defaultdict
 from collections.abc import Iterable
+from dataclasses import dataclass
+from functools import cached_property, partial, wraps
+from pathlib import Path
+from random import choice, sample
+from string import ascii_uppercase
 from typing import (
     Any,
+    Dict,
     Iterator,
+    List,
     Literal,
+    NamedTuple,
     Optional,
+    Tuple,
     TypedDict,
     Union,
     overload,
-    Dict,
-    NamedTuple,
-    List,
-    Tuple,
 )
 
 import discord
-from discord import Member as User
-from discord.ext import commands, boardgames
-from discord.ext import old_menus as menus
-from discord.utils import MISSING
-from random import sample, choice
-
-from core import Cog, Parrot, Context
-
 import emojis
 from aiofile import async_open
-
-from interactions.buttons.secret_hitler.ui.join import JoinUI
-from interactions.buttons.__wordle import Wordle
-from interactions.buttons.__number_slider import NumberSlider
+from core import Cog, Context, Parrot
+from discord import Member as User
+from discord.ext import boardgames, commands
+from discord.ext import old_menus as menus
+from discord.utils import MISSING
+from interactions.buttons.__2048 import Twenty48, Twenty48_Button
 from interactions.buttons.__aki import Akinator
 from interactions.buttons.__chess import Chess
-from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
-from interactions.buttons.__2048 import Twenty48, Twenty48_Button
-from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__country_guess import BetaCountryGuesser
-
+from interactions.buttons.__light_out import LightsOut
+from interactions.buttons.__number_slider import NumberSlider
+from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
+from interactions.buttons.__wordle import Wordle
+from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 

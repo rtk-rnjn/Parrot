@@ -1,43 +1,40 @@
 from __future__ import annotations
 
-import binascii
-import functools
-import random
-import io
-import datetime
-import time
-import urllib
-import re
-import json
-import base64
-import string
-import operator
-import unicodedata
-import discord
 import asyncio
-import math
-from aiohttp import request  # type: ignore
-from discord.ext import commands, tasks
-from discord import Embed
-from PIL import Image, ImageColor
-import rapidfuzz  # type: ignore
+import base64
+import binascii
 import colorsys
-
+import datetime
+import functools
+import io
+import json
+import math
+import operator
+import random
+import re
+import string
+import time
+import unicodedata
+import urllib
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from pathlib import Path
 from random import choice, randint
-from typing import Callable, Optional, Union, TypeVar, List, Tuple, Dict
-from concurrent.futures import ThreadPoolExecutor
+from typing import Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
-from dataclasses import dataclass
-from collections import defaultdict
-
-from utilities.paginator import PaginationView
+import discord
+import rapidfuzz  # type: ignore
+from aiohttp import request  # type: ignore
+from core import Cog, Context, Parrot
+from discord import Embed
+from discord.ext import commands, tasks
+from PIL import Image, ImageColor
 from utilities import spookifications
 from utilities.constants import Colours, EmbeddedActivity
-from utilities.img import timecard, imagine
+from utilities.img import imagine, timecard
+from utilities.paginator import PaginationView
 from utilities.regex import LINKS_RE
-
-from core import Parrot, Context, Cog
 
 from ._effects import PfpEffects
 from ._jeyy_api_endpoints import END_POINTS

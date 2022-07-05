@@ -1,27 +1,23 @@
 from __future__ import annotations
-import io
-
-import psutil
-
-from discord import __version__ as discord_version
-from discord.ext import old_menus as menus
-import discord
-from discord.ext import commands
-
-from time import time
-
-from utilities.config import SUPPORT_SERVER, VERSION, PRIVACY_POLICY
-
-from core import Parrot, Context, Cog
-from collections import Counter
-from .robopage import RoboPages
 
 import datetime
 import inspect
+import io
 import itertools
-import pygit2  # type: ignore
-
+from collections import Counter
+from time import time
 from typing import Any, Dict, List, Optional, Union
+
+import discord
+import psutil
+import pygit2  # type: ignore
+from core import Cog, Context, Parrot
+from discord import __version__ as discord_version
+from discord.ext import commands
+from discord.ext import old_menus as menus
+from utilities.config import PRIVACY_POLICY, SUPPORT_SERVER, VERSION
+
+from .robopage import RoboPages
 
 SUPPORT_SERVER_ID = 741614680652644382
 

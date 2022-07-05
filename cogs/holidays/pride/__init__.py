@@ -2,18 +2,16 @@ from __future__ import annotations
 
 import json
 import random
-import discord
-
-from discord.ext import commands
-
-from pathlib import Path
 from datetime import datetime
-from rapidfuzz import fuzz  # type: ignore
-import dateutil.parser
+from pathlib import Path
 from typing import Optional, Union
-from utilities.constants import Colours
 
+import dateutil.parser
+import discord
 from core import Cog, Context, Parrot
+from discord.ext import commands
+from rapidfuzz import fuzz  # type: ignore
+from utilities.constants import Colours
 
 NAMES = json.loads(Path(r"extra/pride/drag_queen_names.json").read_text("utf8"))
 VIDEOS = json.loads(Path(r"extra/pride/anthems.json").read_text("utf8"))

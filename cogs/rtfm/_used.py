@@ -1,12 +1,13 @@
 from __future__ import annotations
-import discord
+
 import re
+
+import discord
+from core import Parrot
 from discord.ext import commands
 from yaml import safe_load as yaml_load  # type: ignore
 
 from ._tio import Tio
-
-from core import Parrot
 
 with open("extra/lang.txt") as f:
     languages = f.read().split("\n")

@@ -1,26 +1,22 @@
 from __future__ import annotations
-import io
-from itertools import zip_longest
-
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-from cogs.meta.robopage import SimplePages
-from cogs.utils import method as mt
-
-from core import Parrot, Cog, Context
-from discord.ext import commands, tasks
-import discord
 
 import asyncio
+import io
+from itertools import zip_longest
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from utilities.checks import is_mod
-from utilities.formats import TabularData
-from utilities.time import ShortTime
-from utilities.converters import convert_bool
-from utilities.rankcard import rank_card
-
+import discord
+from cogs.meta.robopage import SimplePages
+from cogs.utils import method as mt
+from core import Cog, Context, Parrot
+from discord.ext import commands, tasks
 from pymongo import ReturnDocument  # type: ignore
 from pymongo.collection import Collection  # type: ignore
+from utilities.checks import is_mod
+from utilities.converters import convert_bool
+from utilities.formats import TabularData
+from utilities.rankcard import rank_card
+from utilities.time import ShortTime
 
 
 class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):

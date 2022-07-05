@@ -1,11 +1,11 @@
 from __future__ import annotations
+
+import asyncio
+import io
 from typing import Optional
 
 import discord
-
 from core import Context, Parrot
-import asyncio
-import io
 
 
 async def chat_exporter(

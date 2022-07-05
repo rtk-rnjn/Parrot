@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from core import Parrot, Cog
-
-from utilities.config import WEBHOOK_JOIN_LEAVE_CHANNEL_ID
-
 import os
+
 import discord
+from core import Cog, Parrot
+from utilities.config import WEBHOOK_JOIN_LEAVE_CHANNEL_ID
 
 WEBHOOK_CHANNEL_ID = WEBHOOK_JOIN_LEAVE_CHANNEL_ID
 BASE_URL = f"https://discord.com/api/webhooks/{WEBHOOK_CHANNEL_ID}/"

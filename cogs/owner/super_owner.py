@@ -1,30 +1,29 @@
 from __future__ import annotations
-import hashlib
-import random
-import string
 
-import urllib
-from core import Parrot, Context, Cog
-from aiofile import async_open  # type: ignore
-
-from discord.ext import commands
-import discord
 import datetime
+import hashlib
+import io
+import json
 import os
+import random
+import re
+import string
 import traceback
 import typing
-
-import re
-import io
+import urllib
 import zlib
-import json
-
-from . import fuzzy
 from collections import Counter
+
+import discord
+from aiofile import async_open  # type: ignore
+from cogs.meta.robopage import SimplePages
+from core import Cog, Context, Parrot
+from discord.ext import commands
+from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
 from utilities.time import ShortTime
-from utilities.converters import convert_bool
-from cogs.meta.robopage import SimplePages
+
+from . import fuzzy
 
 
 class AuditFlag(

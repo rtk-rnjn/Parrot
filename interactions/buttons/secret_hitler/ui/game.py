@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Collection
-from typing import Union, Optional, List, Dict
+from typing import Dict, List, Optional, Union
 
 import discord
 from discord import Member as User
@@ -23,7 +23,6 @@ from ..game import (
     Skip,
     VoteGameState,
 )
-
 from .discard import DiscardUI
 from .peek import PeekUI
 from .player import PlayerUI

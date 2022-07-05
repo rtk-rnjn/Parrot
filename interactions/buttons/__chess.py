@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any, List, Optional
-import chess
 
+import chess
 import discord
-from core import Parrot, Context
+from core import Context, Parrot
 from utilities.paginator import ParrotPaginator
 
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from .mod import Moderator
-from .profanity import Profanity
+from core import Parrot
+
 from .anti_links import LinkProt
-from .spam_prot import SpamProt
 from .emoji_caps_prot import EmojiCapsProt
 from .mention_prot import MentionProt
-
-from core import Parrot
+from .mod import Moderator
+from .profanity import Profanity
+from .spam_prot import SpamProt
 
 
 async def setup(bot: Parrot) -> None:

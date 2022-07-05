@@ -1,31 +1,28 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
+import re
 import shlex
+from typing import Any, List, Optional, Union
+
+import discord
+from cogs.meta.robopage import RoboPages, TextPageSource
+from cogs.mod import method as mt
 from cogs.mod.embeds import (
     MEMBER_EMBED,
     ROLE_EMBED,
     TEXT_CHANNEL_EMBED,
     VOICE_CHANNEL_EMBED,
 )
-
 from cogs.mod.flags import warnFlag
-from cogs.mod import method as mt
-from cogs.meta.robopage import TextPageSource, RoboPages
-
+from core import Cog, Context, Parrot
 from discord.ext import commands
-import discord
-import re
-import asyncio
-from typing import Any, List, Optional, Union
 from typing_extensions import Annotated
-
-from core import Parrot, Context, Cog
-
-from utilities.checks import is_mod, in_temp_channel
+from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID
+from utilities.infraction import custom_delete_warn, delete_many_warn, show_warn, warn
 from utilities.time import FutureTime, ShortTime
-from utilities.infraction import delete_many_warn, custom_delete_warn, warn, show_warn
 
 
 class Arguments(argparse.ArgumentParser):

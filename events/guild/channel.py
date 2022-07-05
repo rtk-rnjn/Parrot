@@ -1,13 +1,13 @@
 from __future__ import annotations
+
+import io
+import json
 from contextlib import suppress
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from core import Cog, Parrot
-
 import discord
-import io
-import json
+from core import Cog, Parrot
 
 
 class GuildChannel(Cog, command_attrs=dict(hidden=True)):

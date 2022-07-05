@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import io
-from typing import cast, Tuple
+from typing import Tuple, cast
 
-from PIL import Image, ImageDraw, ImageFont
 import discord
 from discord.ext import commands
+from PIL import Image, ImageDraw, ImageFont
 from utilities.converters import ToAsync
 
 IMAGE = "extra/imagine.png"

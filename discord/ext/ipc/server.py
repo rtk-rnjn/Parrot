@@ -4,9 +4,8 @@ import logging
 from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 import aiohttp.web  # type: ignore
-from discord.ext.ipc.errors import JSONEncodeError
-
 from core import Parrot
+from discord.ext.ipc.errors import JSONEncodeError
 
 log = logging.getLogger(__name__)
 

@@ -6,12 +6,13 @@ from __future__ import annotations
 
 import itertools
 import re
-from prettytable import PrettyTable
-import pyparsing
-import pandas as pd
-import numpy as np
-from tabulate import tabulate
 from distutils.util import strtobool
+
+import numpy as np
+import pandas as pd
+import pyparsing
+from prettytable import PrettyTable
+from tabulate import tabulate
 
 # dict of boolean operations
 OPERATIONS = {

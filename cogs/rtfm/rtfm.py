@@ -1,39 +1,33 @@
 from __future__ import annotations
 
-import unicodedata
+import asyncio
+import hashlib
 import os
 import re
 import sys
-from cogs.meta.robopage import SimplePages
-import discord
-import aiohttp  # type: ignore
-import hashlib
-
-from random import choice
-import rapidfuzz  # type: ignore
+import unicodedata
+import urllib.parse
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
-from typing import Any, Optional, Union, Tuple, Dict
-import asyncio
-import urllib.parse
+from io import BytesIO
+from random import choice
+from typing import Any, Dict, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
 
-from io import BytesIO
-
+import aiohttp  # type: ignore
+import discord
+import rapidfuzz  # type: ignore
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
-
-from core import Parrot, Context, Cog
-
-from discord.ext import commands, tasks
+from cogs.meta.robopage import SimplePages
+from core import Cog, Context, Parrot
 from discord import Embed, Interaction, SelectOption, ui
+from discord.ext import commands, tasks
 from utilities.converters import WrappedMessageConverter
 
-from . import _ref
-from . import _doc
-
-from ._used import get_raw, wrapping, prepare_payload, execute_run
+from . import _doc, _ref
+from ._used import execute_run, get_raw, prepare_payload, wrapping
 
 try:
     import lxml  # type: ignore

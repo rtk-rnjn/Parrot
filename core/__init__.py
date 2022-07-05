@@ -1,6 +1,6 @@
-from .Parrot import Parrot
 from .Cog import Cog
 from .Context import Context
+from .Parrot import Parrot
 
 __all__ = (
     "Parrot",

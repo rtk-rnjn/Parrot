@@ -1,15 +1,13 @@
 from __future__ import annotations
 
+import random
 from typing import List
 
-from core import Parrot, Cog, Context
-
-from discord.ext import commands
 import discord
-import random
-
+from cogs.mod.method import instant_action_parser
+from core import Cog, Context, Parrot
+from discord.ext import commands
 from utilities.infraction import warn
-from utilities.time import ShortTime
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -21,6 +19,7 @@ class SpamProt(Cog):
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             5, 5, commands.BucketType.member
         )
+        self.__instant_action_parser = instant_action_parser
 
     async def delete(self, message: discord.Message) -> None:
         def check(m: discord.Message) -> bool:
@@ -101,75 +100,3 @@ class SpamProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
-
-    async def __instant_action_parser(
-        self, *, name: str, ctx: Context, message: discord.Message, **kw
-    ):
-        PUNISH = [
-            "ban",
-            "tempban",
-            "kick",
-            "timeout",
-            "mute",
-        ]
-
-        if name not in PUNISH:
-            return
-
-        if kw.get("duration"):
-            try:
-                duration = ShortTime(kw["duration"])
-            except Exception:
-                duration = None
-        else:
-            duration = None
-
-        if name == "ban":
-            try:
-                await ctx.guild.ban(message.author, reason="Auto mod: Spam protection")
-            except (discord.Forbidden, discord.NotFound):
-                pass
-
-        if name == "tempban":
-            try:
-                await ctx.guild.ban(message.author, reason="Auto mod: Spam protection")
-            except (discord.Forbidden, discord.NotFound):
-                pass
-            else:
-                mod_action = {
-                    "action": "UNBAN",
-                    "member": message.author.id,
-                    "reason": "Auto mod: Automatic tempban action",
-                    "guild": ctx.guild.id,
-                }
-                cog = self.bot.get_cog("Utils")
-                await cog.create_timer(
-                    expires_at=duration.dt.timestamp(),
-                    created_at=discord.utils.utcnow().timestamp(),
-                    message=ctx.message,
-                    mod_action=mod_action,
-                )
-
-        if name == "kick":
-            try:
-                await message.author.kick(reason="Auto mod: Spam protection")
-            except (discord.Forbidden, discord.NotFound):
-                pass
-
-        if name in ("timeout", "mute"):
-            try:
-                if duration:
-                    await message.author.edit(
-                        timed_out_until=duration.dt,
-                        reason="Auto mod: Spam protection",
-                    )
-                else:
-                    muted = await ctx.muterole()
-                    if not muted:
-                        return
-                    await message.author.add_roles(
-                        muted,
-                        reason="Auto mod: Spam protection",
-                    )
-            except (discord.Forbidden, discord.NotFound):
-                pass

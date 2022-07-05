@@ -1,18 +1,17 @@
 from __future__ import annotations
+
 import asyncio
 import difflib
-from io import BytesIO
 import os
 import pathlib
 import random
-
+from io import BytesIO
 from typing import Final, Optional, TypeAlias, Union
 
 import discord
 from discord.ext import commands
-
-from utilities.converters import ToAsync
 from PIL import Image, ImageFilter, ImageOps
+from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)

@@ -1,21 +1,19 @@
 from __future__ import annotations
 
 import random
-from json import loads
 import re
-import discord
-from discord.ext import commands
-
-from pathlib import Path
-from typing import Optional, Union, List, Tuple
 from contextlib import suppress
 from io import BytesIO
+from json import loads
+from pathlib import Path
+from typing import List, Optional, Tuple, Union
+
+import discord
+from core import Cog, Context, Parrot
+from discord.ext import commands
 from PIL import Image
 from utilities.constants import Colours, Month
-
 from utilities.deco import seasonal_task
-
-from core import Cog, Context, Parrot
 
 ALL_VIDS = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))
 BUNNY_NAMES = loads(Path(r"extra/easter/bunny_names.json").read_text("utf8"))

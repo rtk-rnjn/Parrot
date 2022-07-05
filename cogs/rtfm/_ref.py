@@ -3,10 +3,11 @@ from __future__ import annotations
 import re
 import urllib.parse
 from functools import partial
+
 import discord
 from bs4 import BeautifulSoup
-from markdownify import MarkdownConverter  # type: ignore
 from core import Context
+from markdownify import MarkdownConverter  # type: ignore
 
 try:
     import lxml  # type: ignore

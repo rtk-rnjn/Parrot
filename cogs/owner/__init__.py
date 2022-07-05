@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from core import Parrot
 
-from .super_owner import Owner, DiscordPy
+from .super_owner import DiscordPy, Owner
 
 
 async def setup(bot: Parrot) -> None:

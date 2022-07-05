@@ -4,7 +4,7 @@ import math
 import random
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, Optional, Tuple, List
+from typing import Callable, List, Optional, Tuple
 
 import discord
 from PIL import Image, ImageDraw, ImageOps

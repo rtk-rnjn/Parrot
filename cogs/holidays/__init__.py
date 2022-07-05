@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from .pride import Pride
-from .hanukkah import Hanukkah
 from core import Parrot
+
+from .hanukkah import Hanukkah
+from .pride import Pride
 
 
 async def setup(bot: Parrot) -> None:

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from core import Parrot, Context, Cog
 import discord
+from core import Cog, Context, Parrot
 from discord.ext import commands
+
 from ._actions import ENDPOINTS
 
 

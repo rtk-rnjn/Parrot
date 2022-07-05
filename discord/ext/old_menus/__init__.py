@@ -2,13 +2,13 @@
 # https://github.com/Rapptz/discord-ext-menus/blob/master/discord/ext/menus/__init__.py
 
 import asyncio
-import discord
-
-import itertools
 import inspect
+import itertools
 import logging
 import re
 from collections import OrderedDict, namedtuple
+
+import discord
 
 # Needed for the setup.py script
 __version__ = "1.0.0-a"

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from .config import Configuration
 from core import Parrot
+
+from .config import Configuration
 
 
 async def setup(bot: Parrot) -> None:

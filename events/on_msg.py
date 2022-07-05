@@ -1,50 +1,48 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-import asyncio
-from contextlib import suppress
 
+import asyncio
+import io
+import json
+import random
+import re
+import textwrap
+import urllib.parse
+from contextlib import suppress
+from time import time
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Dict,
     List,
+    Literal,
     Match,
     Optional,
-    Literal,
     Pattern,
     Set,
     Tuple,
     Union,
 )
+from urllib.parse import quote_plus
 
 import aiohttp  # type: ignore
-from cogs.fun.fun import replace_many
 import discord
-import random
-import io
-import json
+import emojis
+from aiohttp import ClientResponseError  # type: ignore
+from cogs.fun.fun import replace_many
 from discord import Webhook
 from discord.ext import commands, tasks
 from discord.utils import MISSING  # type: ignore
-import textwrap
-import re
-import urllib.parse
-from aiohttp import ClientResponseError  # type: ignore
-
-from time import time
-from urllib.parse import quote_plus
 from pymongo import ReturnDocument, UpdateOne
 from pymongo.collection import Collection
 from pymongo.typings import _DocumentType as DocumentType
-import emojis
-
-from utilities.regex import LINKS_NO_PROTOCOLS, INVITE_RE, EQUATION_REGEX
 from utilities.rankcard import rank_card
+from utilities.regex import EQUATION_REGEX, INVITE_RE, LINKS_NO_PROTOCOLS
 
 if TYPE_CHECKING:
-    from core import Parrot, Cog
+    from core import Cog, Parrot
 else:
     Parrot = commands.Bot
     Cog = commands.Cog

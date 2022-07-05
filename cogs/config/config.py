@@ -2,33 +2,27 @@ from __future__ import annotations
 
 import asyncio
 import io
-
-from discord.ext import commands
-import discord
-from typing import Optional, Any, Dict, List, Union
-import re
 import json
+import re
+from typing import Any, Dict, List, Optional, Union
 
-from tabulate import tabulate
-
+import discord
+from cogs.config import method as mt_
+from cogs.meta.robopage import SimplePages
+from cogs.ticket import method as mt
+from core import Cog, Context, Parrot
+from discord.ext import commands
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.collection import Collection
 from pymongo.results import UpdateResult
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from core import Parrot, Context, Cog
-
+from tabulate import tabulate
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
-from utilities.time import ShortTime
 from utilities.paginator import PaginationView
-from utilities.server_backup import BackupSaver, BooleanArgs, BackupLoader
-
-from cogs.meta.robopage import SimplePages
-from cogs.config import method as mt_
-from cogs.ticket import method as mt
+from utilities.server_backup import BackupLoader, BackupSaver, BooleanArgs
+from utilities.time import ShortTime
 
 from .flags import AutoWarn, warnConfig
-
 
 with open(r"cogs/config/events.json") as f:
     events = json.load(f)

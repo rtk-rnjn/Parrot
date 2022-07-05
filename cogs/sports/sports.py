@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import Any, Dict
 
-from core import Parrot, Cog, Context
-from tabulate import tabulate  # type: ignore
-from discord.ext import commands, tasks
 import discord
+from core import Cog, Context, Parrot
+from discord.ext import commands, tasks
+from tabulate import tabulate  # type: ignore
 from utilities.deco import with_role
 
 STAFF_ROLES = [771025632184369152, 793531029184708639]

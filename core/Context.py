@@ -1,31 +1,29 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from contextlib import suppress
-import datetime
-from operator import attrgetter
 
-from discord.ext import commands
-import discord
 import asyncio
-import io
+import datetime
 import functools
-
-from utilities.emotes import emojis
-
+import io
+from contextlib import suppress
+from operator import attrgetter
 from typing import (
+    TYPE_CHECKING,
+    Any,
     Callable,
     Generic,
+    List,
     Literal,
     Optional,
+    Tuple,
     TypeVar,
     Union,
-    List,
-    Tuple,
-    Any,
-    TYPE_CHECKING,
 )
 
+import discord
+from discord.ext import commands
+from utilities.emotes import emojis
 
 __all__: Tuple[Literal["Context"]] = ("Context",)
 

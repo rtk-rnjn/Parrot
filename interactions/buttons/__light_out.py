@@ -1,14 +1,22 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 import random
-from typing import Any, TYPE_CHECKING, Coroutine, Optional, Literal, Final, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Coroutine,
+    Final,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+)
 
 import discord
 from discord.ext import commands
 
-from .__number_slider import SlideView, DEFAULT_COLOR, DiscordColor
-
+from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias

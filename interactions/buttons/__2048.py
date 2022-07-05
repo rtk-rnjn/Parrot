@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import itertools
-from typing import Any
-import discord
 import random
+from typing import Any
+
+import discord
 
 
 class Twenty48:

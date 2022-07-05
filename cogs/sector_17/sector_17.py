@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core import Parrot, Cog
+from core import Cog, Parrot
 
 
 class Sector1729(Cog):

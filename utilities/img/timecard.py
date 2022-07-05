@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import io
 import random
-
 from typing import NamedTuple, Optional
 
-from PIL import Image, ImageDraw, ImageFont
-
 import discord
+from PIL import Image, ImageDraw, ImageFont
 from utilities.converters import ToAsync
 
 

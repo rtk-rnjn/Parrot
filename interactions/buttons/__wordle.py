@@ -1,8 +1,9 @@
 # https://github.com/Tom-the-Bomb/Discord-Games/blob/master/discord_games/wordle.py
 
 from __future__ import annotations
+
 import asyncio
-from typing import Any, Optional, Union, List, Dict, Final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Final, List, Optional, Union
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -11,10 +12,9 @@ import random
 from io import BytesIO
 
 import discord
-from PIL import Image, ImageDraw, ImageFont
-
-from utilities.converters import ToAsync
 from core import Context
+from PIL import Image, ImageDraw, ImageFont
+from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)

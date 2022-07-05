@@ -1,14 +1,13 @@
 from __future__ import annotations
+
 import asyncio
+import math
+import random
 from contextlib import suppress
 
 import discord
-import math
-import random
+from core import Cog, Context, Parrot
 from discord.ext import commands
-
-from core import Parrot, Context, Cog
-
 from utilities.exceptions import ParrotCheckFailure
 
 with open("extra/quote.txt") as f:

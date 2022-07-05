@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict
-import yaml
 import os
-from dotenv import load_dotenv, dotenv_values  # type: ignore
+from typing import Any, Dict
+
+import yaml
+from dotenv import dotenv_values, load_dotenv  # type: ignore
 
 load_dotenv()
 dotenv_values(".env")

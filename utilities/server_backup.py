@@ -1,6 +1,7 @@
-import discord
-import traceback
 import asyncio
+import traceback
+
+import discord
 
 __all__ = ("BooleanArgs", "BackupSaver", "BackupLoader", "BackupInfo")
 

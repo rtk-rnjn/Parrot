@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Optional, ClassVar, Any, Final, TypeAlias, Union
+import asyncio
+from enum import Enum
+from typing import Any, ClassVar, Final, Optional, TypeAlias, Union
 
 import discord
-from discord.ext import commands
 from akinator import CantGoBackAnyFurther
 from akinator.async_aki import Akinator as AkinatorGame
-
-from enum import Enum
-import asyncio
+from discord.ext import commands
 
 BACK = "\N{BLACK LEFT-POINTING TRIANGLE}"
 STOP = "\N{BLACK SQUARE FOR STOP}"

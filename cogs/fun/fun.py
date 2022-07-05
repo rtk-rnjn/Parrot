@@ -83,7 +83,9 @@ def suppress_links(message: str) -> str:
 
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
-GENDER_OPTIONS: Dict[str, Any] = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
+GENDER_OPTIONS: Dict[str, Any] = json.loads(
+    Path(r"extra/gender_options.json").read_text("utf8")
+)
 
 IMAGES = {
     6: "https://cdn.discordapp.com/attachments/859123972884922418/888133201497837598/hangman0.png",
@@ -2055,7 +2057,9 @@ class Fun(Cog):
             "\N{HUNDRED POINTS SYMBOL}",
             "\N{GEM STONE}",
         ]
-        e = discord.PartialEmoji(name="SlotsEmoji", id=923478531873325076, animated=True)
+        e = discord.PartialEmoji(
+            name="SlotsEmoji", id=923478531873325076, animated=True
+        )
         msg = await ctx.send(
             f"""{ctx.author.mention} your slots results:
 > {e} {e} {e}"""
@@ -2630,7 +2634,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def reaction_test(self, ctx: Context):
         """Reaction test, REACT AS FAST AS POSSIBLE"""
-        EMOJIS = [
+        EMOJIS: List[str] = [
             "\N{GRINNING FACE}",
             "\N{SMILING FACE WITH OPEN MOUTH}",
             "\N{FACE WITH TEARS OF JOY}",
@@ -2710,7 +2714,12 @@ class Fun(Cog):
                 file = discord.File(
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
                 )
-                await ctx.reply(file=file)
+                embed = (
+                    discord.Embed(timestamp=discord.utils.utcnow())
+                    .set_image(f"attachment://{ctx.command.name}.gif")
+                )
+                embed.set_footer(text=f"{ctx.author}")
+                await ctx.reply(embed=embed, file=file)
 
             self.bot.add_command(callback)
 

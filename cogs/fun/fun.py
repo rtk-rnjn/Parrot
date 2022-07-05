@@ -21,7 +21,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice, randint
-from typing import Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 import discord
 import rapidfuzz  # type: ignore
@@ -83,7 +83,7 @@ def suppress_links(message: str) -> str:
 
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
-GENDER_OPTIONS = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
+GENDER_OPTIONS: Dict[str, Any] = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
 
 IMAGES = {
     6: "https://cdn.discordapp.com/attachments/859123972884922418/888133201497837598/hangman0.png",
@@ -2055,27 +2055,28 @@ class Fun(Cog):
             "\N{HUNDRED POINTS SYMBOL}",
             "\N{GEM STONE}",
         ]
+        e = discord.PartialEmoji(name="SlotsEmoji", id=923478531873325076, animated=True)
         msg = await ctx.send(
             f"""{ctx.author.mention} your slots results:
-> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>"""
+> {e} {e} {e}"""
         )
         await ctx.release(1.5)
-        _ = random.choice(CHOICE)
+        _1 = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
-> {_} <a:SlotsEmoji:923478531873325076> <a:SlotsEmoji:923478531873325076>"""
+> {_1} {e} {e}"""
         )
         await ctx.release(1.5)
-        __ = random.choice(CHOICE)
+        _2 = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
-> {_} {__} <a:SlotsEmoji:923478531873325076>"""
+> {_1} {_2} {e}"""
         )
         await ctx.release(1.5)
-        ___ = random.choice(CHOICE)
+        _3 = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
-> {_} {__} {___}"""
+> {_1} {_2} {_3}"""
         )
 
     async def _fetch_user(self, user_id: int) -> Optional[discord.User]:
@@ -2086,16 +2087,7 @@ class Fun(Cog):
         fetch_member can't be used due to the avatar url being part of the user object, and
         some weird caching that D.py does
         """
-        user = self.bot.get_user(user_id)
-        if user is None:
-            try:
-                user = await self.bot.fetch_user(user_id)
-            except discord.errors.NotFound:
-                return None
-            except discord.HTTPException:
-                return None
-
-        return user
+        return self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
     @commands.command(
         name="8bitify",

@@ -83,10 +83,10 @@ class User(Cog, command_attrs=dict(hidden=True)):
                         "at": discord.utils.utcnow().timestamp(),
                         "before_name": before.name,
                         "before_discriminator": before.discriminator,
-                        "before_avatar": await before.avatar.read(),
+                        "before_avatar": await before.display_avatar.read(),
                         "after_name": after.name,
                         "after_discriminator": after.discriminator,
-                        "after_avatar": await after.avatar.read(),
+                        "after_avatar": await after.display_avatar.read(),
                     }
                 }
             },

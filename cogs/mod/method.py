@@ -527,12 +527,12 @@ async def _self_mute(
     val = await ctx.prompt("Are you sure want to get muted? Don't DM mod for unmute")
     if val:
         try:
-            await destination.send(
-                f"**{member}** you will be unmuted **{discord.utils.format_dt(_datetime, 'R')}**"
-            )
             await member.edit(
                 timed_out_until=_datetime,
                 reason=reason,
+            )
+            await destination.send(
+                f"**{member}** you will be unmuted **{discord.utils.format_dt(_datetime, 'R')}**"
             )
         except Exception as e:
             await destination.send(

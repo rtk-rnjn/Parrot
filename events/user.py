@@ -4,6 +4,7 @@ from contextlib import suppress
 
 import discord
 from core import Cog, Parrot
+from pymongo.collection import Collection
 
 
 class User(Cog, command_attrs=dict(hidden=True)):
@@ -73,7 +74,24 @@ class User(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_user_update(self, before: discord.User, after: discord.User):
-        pass
+        collection: Collection = self.bot.mongo.extra.user_misc
+        await collection.update_one(
+            {"_id": before.id},
+            {
+                "$addToSet": {
+                    "change": {
+                        "at": discord.utils.utcnow().timestamp(),
+                        "before_name": before.name,
+                        "before_discriminator": before.discriminator,
+                        "before_avatar": await before.avatar.read(),
+                        "after_name": after.name,
+                        "after_discriminator": after.discriminator,
+                        "after_avatar": await after.avatar.read(),
+                    }
+                }
+            },
+            upsert=True,
+        )
 
 
 async def setup(bot):

@@ -7,7 +7,7 @@ import shlex
 from typing import Any, List, Optional, Union
 
 import discord
-from cogs.meta.robopage import RoboPages, TextPageSource
+from cogs.meta.robopage import SimplePages
 from cogs.mod import method as mt
 from cogs.mod.embeds import (
     MEMBER_EMBED,
@@ -18,6 +18,7 @@ from cogs.mod.embeds import (
 from cogs.mod.flags import warnFlag
 from core import Cog, Context, Parrot
 from discord.ext import commands
+from pymongo.collection import Collection
 from typing_extensions import Annotated
 from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID
@@ -1652,7 +1653,14 @@ class Moderator(Cog):
     @commands.command(name="warn")
     @commands.bot_has_permissions(embed_links=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warnuser(self, ctx: Context, user: discord.Member, *, reason: str):
+    async def warnuser(
+        self,
+        ctx: Context,
+        user: discord.Member,
+        duration: Optional[ShortTime] = None,
+        *,
+        reason: str,
+    ):
         """To warn the user"""
         try:
             await user.send(
@@ -1669,6 +1677,7 @@ class Moderator(Cog):
                 message=ctx.message,
                 at=ctx.message.created_at.timestamp(),
                 ctx=ctx,
+                expires_at=duration.dt.timestamp() if duration else None,
             )
             await ctx.send(f"{ctx.author.mention} **{user}** warned")
         finally:
@@ -1677,10 +1686,8 @@ class Moderator(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def delwarn(self, ctx: Context, warn_id: Optional[int] = None):
+    async def delwarn(self, ctx: Context, warn_id: int):
         """To delete warn of user by ID"""
-        if not warn_id:
-            return
         somthing = await custom_delete_warn(ctx, ctx.guild, warn_id=warn_id)
         if somthing:
             await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
@@ -1726,7 +1733,8 @@ class Moderator(Cog):
         if flags.message:
             payload["warn_id"] = flags.warn_id
         data = await show_warn(ctx, ctx.guild, **payload)
-        page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
+        # page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
+        page = SimplePages(data)
         await page.start()
 
     async def warn_task(
@@ -1747,7 +1755,7 @@ class Moderator(Cog):
             commands.Context instance
         """
         count = 0
-        col = self.bot.mongo.warn_db[f"{ctx.guild.id}"]
+        col: Collection = self.bot.mongo.warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
         if data := await self.bot.mongo.parrot_db.server_config.find_one(

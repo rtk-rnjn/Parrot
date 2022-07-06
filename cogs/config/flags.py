@@ -17,9 +17,9 @@ class AutoWarn(
     delete: Optional[convert_bool] = True
 
 
-class warnConfig(
+class WarnConfig(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"  # type: ignore
 ):
     count: Optional[int] = None
     action: Optional[str] = None
-    duration: Optional[ShortTime] = None
+    duration: Optional[str] = None

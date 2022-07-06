@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import discord
 from core import Context
 from pymongo import ReturnDocument
+from pymongo.collection import Collection
+from pymongo.results import DeleteResult
 from tabulate import tabulate
+
+from utilities.time import ShortTime
 
 
 async def get_warn_count(ctx: Context, guild: discord.Guild) -> Optional[int]:
@@ -17,6 +21,15 @@ async def get_warn_count(ctx: Context, guild: discord.Guild) -> Optional[int]:
         return_document=ReturnDocument.AFTER,
     )
     return data["warn_count"]
+
+
+def get_warn_expiry(ctx: Context):
+    try:
+        duration = ctx.bot.server_config[ctx.guild.id]["warn_expiry"]
+    except KeyError:
+        return None
+    else:
+        return ShortTime(duration).dt.timestamp()
 
 
 async def warn(
@@ -57,46 +70,71 @@ async def warn(
         "target": user.id,
         "moderator": moderator.id,
         "reason": reason,
-        "expires_at": expires_at,
+        "expires_at": expires_at or get_warn_expiry(ctx),
         "message_link": message.jump_url if message else None,
         "channel": message.channel.id if message else None,
         "message": message.id if message else None,
         "messageUrl": message.jump_url,
         "at": at,
     }
-    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
+    collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.insert_one(post)
+
+    cog = ctx.bot.get_cog("Utils")
+    if cog and expires_at:
+        await cog.create_timer(  # type: ignore
+            expires_at=expires_at,
+            created_at=discord.utils.utcnow(),
+            message=message,
+            extra={
+                "name": "DB_EXECUTE",
+                "main": {
+                    "database": "warn_db",
+                    "collection": f"{guild.id}",
+                    "action": "delete_one",
+                    "filter": {"warn_id": count},
+                },
+            },
+        )
     return post
 
 
-async def custom_delete_warn(ctx, guild: discord.Guild, **kwargs):
-    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
+async def custom_delete_warn(ctx: Context, guild: discord.Guild, **kwargs) -> DeleteResult:
+    collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     return await collection.delete_one(kwargs)
 
 
 async def delete_warn_by_message_id(
-    ctx, guild: discord.Guild, *, messageID: int
+    ctx: Context, guild: discord.Guild, *, messageID: int
 ) -> None:
-    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
+    collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.delete_one({"message": messageID})
 
 
-async def delete_many_warn(ctx, guild: discord.Guild, **kw) -> None:
-    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
+async def delete_many_warn(ctx: Context, guild: discord.Guild, **kw) -> None:
+    collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.delete_many(kw)
 
 
-async def edit_warn(ctx, guild: discord.Guild, **kw) -> None:
-    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
+async def edit_warn(ctx: Context, guild: discord.Guild, **kw) -> None:
+    collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.update_one(kw)
 
 
-async def show_warn(ctx, guild: discord.Guild, **kw) -> str:
-    collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
-    temp = {"User": [], "Reason": [], "At": []}
+async def show_warn(ctx: Context, guild: discord.Guild, **kw) -> List[str]:
+    collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
+
+    temp = {"ID": [], "User": [], "Reason": [], "At": []}
+    entries: List[str] = []
+    i = 1
     async for data in collection.find({**kw}):
-        temp["User"].append(data["target"])
-        # temp["Moderator"].append(data["moderator"])
+        temp["User"].append(f'{data["target"]} ({ctx.bot.get_user(data["target"])})')
+        temp["ID"].append(data["warn_id"])
         temp["Reason"].append(data["reason"])
         temp["At"].append(f"{datetime.fromtimestamp(data['at'])}")
-    return str(tabulate(temp, headers="keys", tablefmt="pretty"))
+        i += 1
+        if i % 10 == 0:
+            entries.append(tabulate(temp, headers="keys", tablefmt="pretty"))
+            temp = {"ID": [], "User": [], "Reason": [], "At": []}
+
+    return entries

@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional
 import discord
 from cogs.utils.method import end_giveaway
 from core import Cog, Parrot
+from pymongo.collection import Collection
 from utilities.time import ShortTime
 
 
@@ -98,6 +99,14 @@ class EventCustom(Cog):
 
         if name.upper() == "GIVEAWAY_END":
             await self._parse_giveaway(**kw)
+
+        if name.upper() == "DB_EXECUTE":
+            await self._parse_db_execute(**kw)
+
+    async def _parse_db_execute(self, **kw: Any) -> None:
+        collection: Collection = self.bot.mongo[kw["database"]][kw["collection"]]
+        if kw.get("action") == "delete_one":
+            await collection.delete_one(kw["filter"])
 
     async def _parse_timer(self, **kw: Any):
         age: str = kw["extra"]["main"].get("age")

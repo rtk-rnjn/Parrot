@@ -7,11 +7,17 @@ post: Dict[str, Any] = {
     "mute_role": None,
     "mod_role": None,
     "premium": False,
-    "warn_auto": [],
+    "warn_auto": [
+        # {
+        #     "count": int,
+        #     "action": str,
+        #     "duration": str,
+        # }
+    ],
+    "warn_expiry": None,
     "muted": [],
     "counting": None,
     "oneword": None,
-    "autowarn": [],
     "warn_count": 0,
     "suggestion_channel": None,
     "vc": None,

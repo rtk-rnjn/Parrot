@@ -2687,7 +2687,7 @@ class Fun(Cog):
                 ref = ctx.message.reference
                 url = None
                 if ref and isinstance(ref.resolved, discord.Message):
-                    msg = ref.resolved
+                    msg: discord.Message = ref.resolved
                     if msg.attachments and msg.attachments[0].url.endswith(
                         ("png", "jpeg", "jpg", "gif", "webp")
                     ):

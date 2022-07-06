@@ -65,6 +65,7 @@ class Utils(Cog):
         message: discord.Message,
         dm_notify: bool = False,
         is_todo: bool = False,
+        extra: Dict[str, Any] = None,
         **kw,
     ) -> None:
         """|coro|
@@ -103,7 +104,7 @@ class Utils(Cog):
             "is_todo": is_todo,
             "mod_action": mod_action,
             "cmd_exec_str": cmd_exec_str,
-            "extra": kw.get("extra"),
+            "extra": extra,
             **kw,
         }
         await self.collection.insert_one(post)
@@ -311,7 +312,7 @@ class Utils(Cog):
     @Context.with_type
     async def quickpoll(self, ctx: Context, *questions_and_choices: str):
         """
-        To make a quick poll for making quick decision. 'Question must be in quotes' and Options must be seperated by spaces.
+        To make a quick poll for making quick decision. 'Question must be in quotes' and 'Options' 'must' 'be' 'seperated' 'by' 'spaces'.
         Not more than 21 options. :)
         """
 

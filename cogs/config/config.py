@@ -22,7 +22,7 @@ from utilities.paginator import PaginationView
 from utilities.server_backup import BackupLoader, BackupSaver, BooleanArgs
 from utilities.time import ShortTime
 
-from .flags import AutoWarn, warnConfig
+from .flags import AutoWarn, WarnConfig
 
 with open(r"cogs/config/events.json") as f:
     events = json.load(f)
@@ -378,7 +378,15 @@ class Configuration(Cog):
         if ctx.guild.me.voice:
             await ctx.guild.me.edit(voice_channel=None)
 
-    @config.command()
+    @config.group(name="warn")
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def config_warn(self, ctx: Context):
+        """To set the warning configuration of the server"""
+        if not ctx.invoked_subcommand:
+            await self.bot.invoke_help_command(ctx)
+
+    @config_warn.command(name="add")
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def warnadd(
@@ -418,10 +426,10 @@ class Configuration(Cog):
         )
         await ctx.send(f"{ctx.author.mention} updated")
 
-    @config.command()
+    @config_warn.command(name="del", aliases=["remove", "delete"])
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def warndel(self, ctx: Context, *, flags: warnConfig):
+    async def warndel(self, ctx: Context, *, flags: WarnConfig):
         """To delete warn settings. This is configuration is applicable when used `warn` command"""
         ACTIONS: List[str] = [
             "ban",
@@ -440,10 +448,46 @@ class Configuration(Cog):
             payload["action"] = flags.action.lower()
         if flags.count:
             payload["count"] = flags.count
+        if flags.duration:
+            payload["duration"] = flags.duration
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"warn_auto": {**payload}}}
         )
         await ctx.send(f"{ctx.author.mention} updated")
+
+    @config_warn.command(name="expiry", aliases=["expire"])
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def warnexpiry(self, ctx: Context, *, duration: str):
+        """To set the expiry duration of warns"""
+        ShortTime(duration)
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"warn_expiry": duration}}
+        )
+
+    @config_warn.command(name="list", aliases=["show"])
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def warnlist(self, ctx: Context):
+        """To list warn settings. This is configuration is applicable when used `warn` command"""
+        warn_auto = await self.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id, "warn_auto": {"$exists": True}}, {"warn_auto": 1}
+        )
+        if not warn_auto:
+            return await ctx.send(f"{ctx.author.mention} no warn settings")
+
+        entries: List[str] = []
+
+        for data in warn_auto:
+            count = data.get("count")
+            action = data.get("action")
+            duration = data.get("duration")
+            entries.append(
+                f"""Count: {count} | Action: {action} | Duration: {duration}"""
+            )
+
+        p = SimplePages(entries, ctx=ctx, per_page=10)
+        await p.start()
 
     @config.command(aliases=["mute-role"])
     @commands.has_permissions(administrator=True)

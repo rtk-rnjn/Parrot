@@ -75,6 +75,12 @@ class User(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_user_update(self, before: discord.User, after: discord.User):
         collection: Collection = self.bot.mongo.extra.user_misc
+        try:
+            before_avatar = before.display_avatar.read()
+            after_avatar = after.display_avatar.read()
+        except (discord.NotFound, discord.DiscordException):
+            return
+
         await collection.update_one(
             {"_id": before.id},
             {
@@ -83,10 +89,10 @@ class User(Cog, command_attrs=dict(hidden=True)):
                         "at": discord.utils.utcnow().timestamp(),
                         "before_name": before.name,
                         "before_discriminator": before.discriminator,
-                        "before_avatar": await before.display_avatar.read(),
+                        "before_avatar": before_avatar,
                         "after_name": after.name,
                         "after_discriminator": after.discriminator,
-                        "after_avatar": await after.display_avatar.read(),
+                        "after_avatar": after_avatar,
                     }
                 }
             },

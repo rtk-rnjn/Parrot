@@ -1275,24 +1275,34 @@ class Configuration(Cog):
 
             ticket_counter = data["ticket_counter"]
             valid_roles = (
-                ", ".join(ctx.guild.get_role(n).name for n in data["valid_roles"])
+                ", ".join(
+                    getattr(ctx.guild.get_role(n), "name", None)
+                    for n in data["valid_roles"]
+                )
                 if data.get("valid_roles")
                 else None
             )
             pinged_roles = (
-                ", ".join(ctx.guild.get_role(n).name for n in data["pinged_roles"])
+                ", ".join(
+                    getattr(ctx.guild.get_role(n), "name", None)
+                    for n in data["pinged_roles"]
+                )
                 if data.get("pinged_roles")
                 else None
             )
             current_active_channel = (
                 ", ".join(
-                    ctx.guild.get_channel(n).name for n in data["ticket_channel_ids"]
+                    getattr(ctx.guild.get_channel(n), "name", None)
+                    for n in data["ticket_channel_ids"]
                 )
                 if data.get("ticket_channel_ids")
                 else None
             )
             verified_roles = (
-                ", ".join(ctx.guild.get_role(n).name for n in data["verified_roles"])
+                ", ".join(
+                    getattr(ctx.guild.get_role(n), "name", None)
+                    for n in data["verified_roles"]
+                )
                 if data.get("verified_roles")
                 else None
             )
@@ -1862,7 +1872,7 @@ class Configuration(Cog):
 
         if backup := data.get("backup"):
             backup = json.loads(backup)
-            loader = BackupLoader(self.bot, self.bot.http_session, guild, backup)
+            loader = BackupLoader(self.bot, self.bot.http_session, backup)
             msg = await ctx.send(
                 f"{ctx.author.mention} Are you sure you want to load this backup? This will delete all channels and roles in this server."
             )

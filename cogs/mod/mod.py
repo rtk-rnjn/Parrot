@@ -448,7 +448,6 @@ class Moderator(Cog):
             reason=reason
             or f"Selfmute | {ctx.author} ({ctx.author.id}) | No reason given",
             _datetime=duration.dt,
-            duration=duration,
         )
 
     @commands.command(aliases=["mute"])

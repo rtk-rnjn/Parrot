@@ -522,6 +522,7 @@ async def _self_mute(
     member: discord.Member,
     _datetime: datetime.datetime,
     reason: str,
+    **kwargs: Any,
 ):
     val = await ctx.prompt("Are you sure want to get muted? Don't DM mod for unmute")
     if val:

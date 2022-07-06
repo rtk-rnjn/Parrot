@@ -428,9 +428,34 @@ class Moderator(Cog):
                     reason=reason,
                 )
 
+    @commands.command(name="selfmute", hidden=True)
+    @commands.bot_has_permissions(moderate_members=True, manage_roles=True)
+    @Context.with_type
+    async def self_mute(
+        self,
+        ctx: Context,
+        duration: ShortTime,
+        *,
+        reason: Annotated[Optional[str], ActionReason] = None,
+    ):
+        """To mute yourself"""
+        await mt._self_mute(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            member=ctx.author,
+            reason=reason
+            or f"Selfmute | {ctx.author} ({ctx.author.id}) | No reason given",
+            _datetime=duration.dt,
+            duration=duration,
+        )
+
     @commands.command(aliases=["mute"])
     @commands.bot_has_permissions(moderate_members=True)
-    @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True))
+    @commands.check_any(
+        is_mod(), commands.has_permissions(moderate_members=True, manage_roles=True)
+    )
     @Context.with_type
     async def timeout(
         self,

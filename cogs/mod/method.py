@@ -513,6 +513,41 @@ async def _timeout(
             )
 
 
+async def _self_mute(
+    *,
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.TextChannel,
+    member: discord.Member,
+    _datetime: datetime.datetime,
+    reason: str,
+):
+    val = await ctx.prompt("Are you sure want to get muted? Don't DM mod for unmute")
+    if val:
+        try:
+            await destination.send(
+                f"**{member}** you will be unmuted **{discord.utils.format_dt(_datetime, 'R')}**"
+            )
+            await member.edit(
+                timed_out_until=_datetime,
+                reason=reason,
+            )
+        except Exception as e:
+            await destination.send(
+                f"Can not able to {command_name} **{member}**. Error raised: **{e}**"
+            )
+            return
+
+    if val is None:
+        await destination.send(f"{ctx.author.mention} you did not respond in time.")
+
+    if val is False:
+        return await destination.send(
+            f"{ctx.author.mention} nevermind reverting the process."
+        )
+
+
 async def _mute(
     *,
     guild: discord.Guild,

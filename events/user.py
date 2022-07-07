@@ -10,7 +10,7 @@ from pymongo.collection import Collection
 class User(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = bot.mongo.parrot_db["logging"]
+        self.collection: Collection = bot.mongo.parrot_db["logging"]
 
     @Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):
@@ -78,16 +78,8 @@ class User(Cog, command_attrs=dict(hidden=True)):
             return
 
         collection: Collection = self.bot.mongo.extra.user_misc
-        try:
-            before_avatar = await before.display_avatar.read()
-            after_avatar = await after.display_avatar.read()
-        except (discord.NotFound, discord.DiscordException):
-            return
 
         PAYLOAD = {}
-        if before_avatar != after_avatar:
-            PAYLOAD["before_avatar"] = before_avatar
-            PAYLOAD["after_avatar"] = after_avatar
         if before.name != after.name:
             PAYLOAD["before_name"] = before.name
             PAYLOAD["after_name"] = after.name

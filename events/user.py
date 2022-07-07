@@ -74,6 +74,9 @@ class User(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_user_update(self, before: discord.User, after: discord.User):
+        if before.bot:
+            return
+
         collection: Collection = self.bot.mongo.extra.user_misc
         try:
             before_avatar = await before.display_avatar.read()

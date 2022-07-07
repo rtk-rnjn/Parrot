@@ -81,18 +81,24 @@ class User(Cog, command_attrs=dict(hidden=True)):
         except (discord.NotFound, discord.DiscordException):
             return
 
+        PAYLOAD = {}
+        if before_avatar != after_avatar:
+            PAYLOAD["before_avatar"] = before_avatar
+            PAYLOAD["after_avatar"] = after_avatar
+        if before.name != after.name:
+            PAYLOAD["before_name"] = before.name
+            PAYLOAD["after_name"] = after.name
+        if before.discriminator != after.discriminator:
+            PAYLOAD["before_discriminator"] = before.discriminator
+            PAYLOAD["after_discriminator"] = after.discriminator
+
         await collection.update_one(
             {"_id": before.id},
             {
                 "$addToSet": {
                     "change": {
                         "at": discord.utils.utcnow().timestamp(),
-                        "before_name": before.name,
-                        "before_discriminator": before.discriminator,
-                        "before_avatar": before_avatar,
-                        "after_name": after.name,
-                        "after_discriminator": after.discriminator,
-                        "after_avatar": after_avatar,
+                        **PAYLOAD,
                     }
                 }
             },

@@ -399,7 +399,9 @@ class Utils(Cog):
                 "after",
                 "custom",
             ):
-                return
+                return await ctx.send(
+                    f"{ctx.author.mention} you can't set afk reason reserved words."
+                )
             post = {
                 "_id": ctx.message.id,
                 "messageURL": ctx.message.jump_url,
@@ -499,6 +501,7 @@ class Utils(Cog):
     async def custom_afk(self, ctx: Context, *, flags: afkFlags):
         """To set the custom AFK"""
         payload = {
+            "_id": ctx.message.id,
             "text": flags.text or "AFK",
             "ignoredChannel": (
                 [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
@@ -509,7 +512,6 @@ class Utils(Cog):
             "messageAuthor": ctx.author.id,
             "messageURL": ctx.message.jump_url,
             "channel": ctx.channel.id,
-            "_id": ctx.message.id,
             "pings": [],
         }
 
@@ -699,19 +701,18 @@ class Utils(Cog):
             before=discord.Object(message + 1),
             after=discord.Object(message - 1),
         ):
-            if msg:
-                payload = {
-                    "message_author": msg.author,
-                    "message": msg,
-                    "message_downvote": self.__get_emoji_count_from__msg(
-                        msg, emoji="\N{DOWNWARDS BLACK ARROW}"
-                    ),
-                    "message_upvote": self.__get_emoji_count_from__msg(
-                        msg, emoji="\N{UPWARDS BLACK ARROW}"
-                    ),
-                }
-                self.message[message] = payload
-                return msg
+            payload = {
+                "message_author": msg.author,
+                "message": msg,
+                "message_downvote": self.__get_emoji_count_from__msg(
+                    msg, emoji="\N{DOWNWARDS BLACK ARROW}"
+                ),
+                "message_upvote": self.__get_emoji_count_from__msg(
+                    msg, emoji="\N{UPWARDS BLACK ARROW}"
+                ),
+            }
+            self.message[message] = payload
+            return msg
 
     def __get_emoji_count_from__msg(
         self,
@@ -766,11 +767,14 @@ class Utils(Cog):
     async def __notify_user(
         self,
         ctx: Context,
-        user: discord.Member,
+        user: Optional[discord.Member] = None,
         *,
         message: discord.Message,
         remark: str,
     ) -> None:
+        if user is None:
+            return
+
         remark = remark or "No remark was given"
 
         content = (
@@ -867,12 +871,9 @@ class Utils(Cog):
         ls = list(zip_longest(upvoter, downvoter, fillvalue=""))
         table.add_rows(ls)
 
-        # conflict = [i for i in upvoter if i in downvoter]
-
         embed = discord.Embed(title=f"Suggestion Statistics of message ID: {messageID}")
         embed.description = f"```\n{table.render()}```"
-        # if conflict:
-        #     embed.add_field(name=f"Conflit in Reaction: {len(conflict)}", value=", ".join([str(i) for i in conflict]))
+
         if msg.content:
             embed.add_field(name="Flagged", value=msg.content)
         await ctx.send(content=msg.jump_url, embed=embed)

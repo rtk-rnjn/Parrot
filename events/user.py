@@ -3,7 +3,9 @@ from __future__ import annotations
 from contextlib import suppress
 
 import discord
-from core import Cog, Parrot
+from cogs.meta.robopage import SimplePages
+from core import Cog, Context, Parrot
+from discord.ext import commands
 from pymongo.collection import Collection
 
 
@@ -87,18 +89,42 @@ class User(Cog, command_attrs=dict(hidden=True)):
             PAYLOAD["before_discriminator"] = before.discriminator
             PAYLOAD["after_discriminator"] = after.discriminator
 
-        await collection.update_one(
-            {"_id": before.id},
-            {
-                "$addToSet": {
-                    "change": {
-                        "at": discord.utils.utcnow().timestamp(),
-                        **PAYLOAD,
+        if PAYLOAD:
+            await collection.update_one(
+                {"_id": before.id},
+                {
+                    "$addToSet": {
+                        "change": {
+                            "at": discord.utils.utcnow().timestamp(),
+                            **PAYLOAD,
+                        }
                     }
-                }
-            },
-            upsert=True,
+                },
+                upsert=True,
+            )
+
+    @commands.command(aliases=["userinfo"])
+    @commands.is_owner()
+    async def user_change(self, ctx: Context, *, user: discord.User):
+        """To set the update of users"""
+        data: dict = await self.bot.mongo.extra.user_misc.find_one({"_id": user.id})
+        if not data:
+            await ctx.send("User didn't updated since a while")
+        entries = []
+        for index, change in enumerate(data["change"]):
+            if index % 10 == 0:
+                break
+            entries.append(
+                f"""{discord.utils.format_dt(change['at'])}
+Name: {change.get('before_name')} -> {change('after_name')}
+Discriminator: {change.get('before_discriminator')} -> {change('after_discriminator')}
+"""
+            )
+        p = SimplePages(
+            entries,
+            ctx=ctx,
         )
+        await p.start()
 
 
 async def setup(bot):

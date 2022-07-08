@@ -103,7 +103,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
                 upsert=True,
             )
 
-    @commands.command(aliases=["userinfo"])
+    @commands.command(aliases=["userchange"])
     @commands.is_owner()
     async def user_change(self, ctx: Context, *, user: discord.User):
         """To set the update of users"""

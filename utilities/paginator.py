@@ -251,6 +251,7 @@ class PaginatorView(discord.ui.View):
 
 
 class PaginationView(discord.ui.View):
+    message: discord.Message
     current = 0
 
     def __init__(self, embed_list: List[Union[str, discord.Embed, discord.File]]):
@@ -266,6 +267,11 @@ class PaginationView(discord.ui.View):
             ephemeral=True,
         )
         return False
+
+    async def on_timeout(self):
+        self.stop()
+        if hasattr(self, "message"):
+            await self.message.edit(view=None)
 
     @discord.ui.button(label="First", style=discord.ButtonStyle.red, disabled=True)
     async def first(self, interaction: discord.Interaction, button: discord.ui.Button):

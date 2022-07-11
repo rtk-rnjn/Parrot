@@ -11,7 +11,8 @@ from utilities.time import ShortTime
 
 class FakeMessage:
     def __init__(self, **kwargs: Any):
-        [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 
 class EventCustom(Cog):
@@ -24,8 +25,8 @@ class EventCustom(Cog):
 
     async def on_timer_complete(self, **kw: Any) -> None:
         await self.bot.wait_until_ready()
-        if kw.get("mod_action"):
-            await self.mod_action_parser(**kw.get("mod_action"))
+        if data := kw.get("mod_action"):
+            await self.mod_action_parser(**data)
 
         if kw.get("embed"):
             embed: discord.Embed = discord.Embed.from_dict(kw.get("embed"))
@@ -56,7 +57,7 @@ class EventCustom(Cog):
                     pass
 
         if kw.get("extra"):
-            data = kw.get("extra")
+            data: Dict[str, Any] = kw.get("extra")
             if data.get("name") == "SET_TIMER_LOOP":
                 return await self._parse_timer(**kw)
             await self.extra_action_parser(data.get("name"), **data.get("main"))
@@ -79,7 +80,15 @@ class EventCustom(Cog):
             try:
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
             except (discord.NotFound, discord.HTTPException, discord.Forbidden):
-                # User not found, Bot Not having permissions, Other HTTP Error
+                pass  # User not found, Bot Not having permissions, Other HTTP Error
+
+        if action.upper() == "KICK":
+            member: discord.Member = self.bot.get_or_fetch_member(guild, target)
+            if member is None:
+                return
+            try:
+                await guild.kick(member, reason=kw.get("reason"))
+            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
                 pass
 
     async def extra_action_parser(self, name: str, **kw: Any) -> None:

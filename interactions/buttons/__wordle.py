@@ -14,6 +14,7 @@ from io import BytesIO
 import discord
 from core import Context
 from PIL import Image, ImageDraw, ImageFont
+from pymongo.collection import Collection
 from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
@@ -30,13 +31,13 @@ GRAY = (119, 123, 125)
 ORANGE = (200, 179, 87)
 GREEN = (105, 169, 99)
 LGRAY = (198, 201, 205)
-
+VALID_WORDS = tuple(open(r"extra/5_words.txt", "r").read().splitlines())
 
 class Wordle:
     def __init__(self, *, text_size: int = 55) -> None:
         self.embed_color: Optional[DiscordColor] = None
 
-        self._valid_words = tuple(open(r"extra/5_words.txt", "r").read().splitlines())
+        self._valid_words = VALID_WORDS
         self._text_size = text_size
         self._font = ImageFont.truetype(r"extra/HelveticaNeuBold.ttf", self._text_size)
 
@@ -107,7 +108,7 @@ class Wordle:
 
         while True:
 
-            def check(m):
+            def check(m: discord.Message) -> None:
                 return (
                     len(m.content) == 5
                     and m.author == ctx.author
@@ -149,8 +150,12 @@ class Wordle:
                 )
 
                 if won:
+                    col: Collection = ctx.bot.mongo.extra.games_leaderboard
+                    await col.update_one(
+                        {"_id": ctx.author.id}, {"$inc": {"wordle.games_won": 1}}, upsert=True
+                    )
                     return await ctx.send("Game Over! You won!")
-                if len(self.guesses) >= 6:
+                if len(self.guesses) > 5:
                     return await ctx.send(
                         f"Game Over! You lose, the word was: **{self.word}**"
                     )

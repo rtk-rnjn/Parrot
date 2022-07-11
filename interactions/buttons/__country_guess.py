@@ -272,7 +272,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             await interaction.message.edit(view=self.view, embed=game.embed)
             col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
             await col.update_one(
-                {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.games_won": 1}}
+                {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.games_won": 1}}, upsert=True
             )
             return self.view.stop()
 
@@ -288,7 +288,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             )
             col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
             await col.update_one(
-                {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.games_lost": 1}}
+                {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.games_lost": 1}}, upsert=True
             )
             return self.view.stop()
 
@@ -299,7 +299,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
         )
         col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
         await col.update_one(
-            {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.guesses_used": 1}}
+            {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.guesses_used": 1}}, upsert=True
         )
         await interaction.response.edit_message(embed=game.embed)
 
@@ -361,7 +361,7 @@ class CountryView(discord.ui.View):
         )
         await interaction.message.edit(view=self, embed=self.game.embed)
         await self.ctx.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": self.ctx.author.id}, {"$inc": {"country_guess.games_played": 1}}
+            {"_id": self.ctx.author.id}, {"$inc": {"country_guess.games_played": 1}}, upsert=True
         )
         return self.stop()
 

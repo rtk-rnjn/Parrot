@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import difflib
 import os
-import pathlib
 import random
 from io import BytesIO
 from typing import Final, Optional, TypeAlias, Union
@@ -11,6 +10,8 @@ from typing import Final, Optional, TypeAlias, Union
 import discord
 from discord.ext import commands
 from PIL import Image, ImageFilter, ImageOps
+from core import Parrot, Context
+from pymongo.collection import Collection
 from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
@@ -243,7 +244,7 @@ class CountryGuesser:
 
 
 class CountryInput(discord.ui.Modal, title="Input your guess!"):
-    def __init__(self, view: CountryView) -> None:
+    def __init__(self, view: CountryView, *, ctx: Context) -> None:
         super().__init__()
         self.view = view
 
@@ -269,6 +270,10 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             self.view.disable_all()
             game.embed.description = f"```fix\n{game.country.title()}\n```"
             await interaction.message.edit(view=self.view, embed=game.embed)
+            col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
+            await col.update_one(
+                {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.games_won": 1}}
+            )
             return self.view.stop()
 
         game.guesses -= 1
@@ -281,6 +286,10 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             await interaction.response.send_message(
                 f"Game Over! you lost, The country was `{game.country.title()}`"
             )
+            col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
+            await col.update_one(
+                {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.games_lost": 1}}
+            )
             return self.view.stop()
 
         acc = game.get_accuracy(guess)
@@ -288,18 +297,22 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n"
             f"+ You have {game.guesses} guesses left.\n"
         )
-
+        col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
+        await col.update_one(
+            {"_id": self.view.ctx.author.id}, {"$inc": {"country_guess.guesses_used": 1}}
+        )
         await interaction.response.edit_message(embed=game.embed)
 
 
 class CountryView(discord.ui.View):
     def __init__(
-        self, game: BetaCountryGuesser, *, user: discord.User, timeout: float
+        self, game: BetaCountryGuesser, *, user: discord.User, timeout: float, ctx: commands.Context[Parrot]
     ) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game
         self.user = user
+        self.ctx: Context = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.user:
@@ -347,6 +360,9 @@ class CountryView(discord.ui.View):
             f"Game Over! The country was `{self.game.country.title()}`"
         )
         await interaction.message.edit(view=self, embed=self.game.embed)
+        await self.ctx.bot.mongo.extra.games_leaderboard.update_one(
+            {"_id": self.ctx.author.id}, {"$inc": {"country_guess.games_played": 1}}
+        )
         return self.stop()
 
 
@@ -398,7 +414,7 @@ class BetaCountryGuesser(CountryGuesser):
             name="Guess Log", value="```diff\n\u200b\n```", inline=False
         )
 
-        self.view = CountryView(self, user=ctx.author, timeout=timeout)
+        self.view = CountryView(self, user=ctx.author, timeout=timeout, ctx=ctx)
         self.message = await ctx.send(embed=self.embed, file=file, view=self.view)
 
         await self.view.wait()

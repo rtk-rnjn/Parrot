@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import time
 from typing import List, Optional
 
 import discord
 from core import Context
+from pymongo.collection import Collection
 
 
 class SokobanGame:
@@ -168,8 +170,12 @@ class SokobanGameView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game
-        self.level = level or 0
+        self._original_game = game
+        self.level = level or 1
         self.ctx = ctx
+
+        self.ini = time.perf_counter()
+        self.moves = 0
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if self.user == interaction.user:
@@ -188,7 +194,11 @@ class SokobanGameView(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
             )
         )
-        embed.description = f"Thanks for playing!\nFor next level type `{self.ctx.prefix}sokoban {self.level+1}`"
+        embed.description = f"{self.game.display_board()}"
+        embed.add_field(
+            name="Thanks for playing",
+            value=f"For next level type `{self.ctx.prefix}sokoban {self.level+1}`",
+        )
         return embed
 
     @discord.ui.button(
@@ -197,15 +207,27 @@ class SokobanGameView(discord.ui.View):
         style=discord.ButtonStyle.primary,
         disabled=False,
     )
-    async def null_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        return
+    async def null_button(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self.game = self._original_game
+        embed = (
+            discord.Embed(
+                title="Sokoban Game",
+                description=f"{self.game.display_board()}",
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"User: {self.user}")
+            .set_thumbnail(
+                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
+            ),
+        )
+        await self.db_update()
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
         emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False
     )
-    async def upward(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def upward(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self.moves += 1
         self.game.move_up()
         embed = (
             discord.Embed(
@@ -223,7 +245,7 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return
+            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -234,8 +256,10 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
     )
     async def null_button2(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):  
+        self.stop()
+        await self.db_update()
         await interaction.message.delete()
 
     @discord.ui.button(
@@ -245,7 +269,8 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def left(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def left(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self.moves += 1
         self.game.move_left()
         embed = (
             discord.Embed(
@@ -263,7 +288,7 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return
+            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -274,9 +299,8 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def downward(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def downward(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self.moves += 1
         self.game.move_down()
         embed = (
             discord.Embed(
@@ -294,7 +318,7 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return
+            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -305,7 +329,8 @@ class SokobanGameView(discord.ui.View):
         disabled=False,
         row=1,
     )
-    async def right(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def right(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self.moves += 1
         self.game.move_right()
         embed = (
             discord.Embed(
@@ -323,7 +348,7 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return
+            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -340,3 +365,21 @@ class SokobanGameView(discord.ui.View):
             ),
             view=self,
         )
+
+    async def db_update(self):
+        col: Collection = self.bot.extra.games_leaderboard
+        time_taken = time.perf_counter() - self.ini
+        await col.update_one(
+            {"_id": self.user.id},
+            {
+                "$addToSet": {
+                    "sokoban": {
+                        "level": self.level,
+                        "time_taken": time_taken,
+                        "moves": self.moves,
+                    }
+                }
+            },
+            upsert=True,
+        )
+        self.moves = 0

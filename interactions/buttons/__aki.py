@@ -33,9 +33,6 @@ class BaseView(discord.ui.View):
             if isinstance(button, discord.ui.Button):
                 button.disabled = True
 
-    async def on_timeout(self) -> None:
-        return self.stop()
-
 
 class Akinator:
     """
@@ -54,7 +51,7 @@ class Akinator:
     def __init__(self) -> None:
         self.aki: AkinatorGame = AkinatorGame()
 
-        self.player: Optional[discord.User] = None
+        self.player: Optional[discord.Member] = None
         self.win_at: Optional[int] = None
         self.guess: Optional[dict[str, Any]] = None
         self.message: Optional[discord.Message] = None
@@ -65,6 +62,8 @@ class Akinator:
 
         self.bar: str = ""
         self.questions: int = 0
+
+        self.bot: commands.Bot = None
 
     def build_bar(self) -> str:
         prog = round(self.aki.progression / 8)
@@ -108,6 +107,11 @@ class Akinator:
         embed.set_image(url=self.guess["absolute_picture_path"])
         embed.set_footer(text="Was I correct?")
 
+        await self.bot.mongo.extra.games_leaderboard.update_one(
+            {"_id": self.player.id,},
+            {"$inc": {"aki.games_played": 1, "aki.questions_answered": self.questions}},
+            upsert=True,
+        )
         return embed
 
     async def start(
@@ -118,8 +122,8 @@ class Akinator:
         remove_reaction_after: bool = False,
         win_at: int = 80,
         timeout: Optional[float] = 120.0,
-        back_button: bool = False,
-        delete_button: bool = False,
+        back_button: bool = True,
+        delete_button: bool = True,
         child_mode: bool = True,
     ) -> Optional[discord.Message]:
         """
@@ -147,7 +151,7 @@ class Akinator:
         Optional[discord.Message]
             returns the game message
         """
-
+        self.bot = ctx.bot
         self.back_button = back_button
         self.delete_button = delete_button
         self.embed_color = embed_color

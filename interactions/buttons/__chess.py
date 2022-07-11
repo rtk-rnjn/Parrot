@@ -6,6 +6,8 @@ from typing import Any, List, Optional
 import chess
 import discord
 from core import Context, Parrot
+from pymongo import UpdateOne
+from pymongo.collection import Collection
 from utilities.paginator import ParrotPaginator
 
 
@@ -91,6 +93,7 @@ class Chess:
         self.alternate_turn = black
 
         self.game_stop = False
+        self.game_message: Optional[discord.Message] = None
 
     def legal_moves(self) -> List[str]:
         return [self.board.san(move) for move in self.board.legal_moves]
@@ -98,7 +101,7 @@ class Chess:
     async def wait_for_move(self) -> Optional[discord.Message]:
         LEGAL_MOVES = self.legal_moves()
 
-        def check(m) -> bool:
+        def check(m: discord.Message) -> bool:
             if m.content.lower() in ("exit", "quit", "resign", "abort", "draw"):
                 return True
             return (
@@ -115,6 +118,7 @@ class Chess:
                 await self.ctx.send(
                     f"**{self.turn}** did not responded on time! Game Over!"
                 )
+                self.game_stop = True
                 return None
 
     def switch(self) -> None:
@@ -143,7 +147,8 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 ```
 """
         embed.set_footer(text=f"Turn: {self.alternate_turn} | Having 5m to make move")
-        await self.ctx.send(
+        await self.game_message.delete()
+        self.game_message = await self.ctx.send(
             content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx)
         )
         await self.game_over()
@@ -153,22 +158,29 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
     ) -> bool:
         if not self.game_stop:
             if self.board.is_checkmate():
-                await self.ctx.send(f"Game over! **{self.turn}** wins by check-mate")
-                self.game_stop = True
-            elif self.board.is_stalemate():
-                await self.ctx.send("Game over! Ended with draw!")
-                self.game_stop = True
-            elif self.board.is_insufficient_material():
                 await self.ctx.send(
-                    "Game over! Insfficient material left to continue the game! Draw!"
+                    f"**Game over! **{self.turn}** wins by check-mate**"
                 )
                 self.game_stop = True
+                await self.add_db_as_draw()
+            elif self.board.is_stalemate():
+                await self.ctx.send("**Game over! Ended with draw!**")
+                self.game_stop = True
+                await self.add_db_as_draw()
+            elif self.board.is_insufficient_material():
+                await self.ctx.send(
+                    "**Game over! Insfficient material left to continue the game! Draw**!"
+                )
+                self.game_stop = True
+                await self.add_db_as_draw()
             elif self.board.is_seventyfive_moves():
-                await self.ctx.send("Game over! 75-moves rule | Game Draw!")
+                await self.ctx.send("**Game over! 75-moves rule | Game Draw!**")
                 self.game_stop = True
+                await self.add_db_as_draw()
             elif self.board.is_fivefold_repetition():
-                await self.ctx.send("Game over! Five-fold repitition. | Game Draw!")
+                await self.ctx.send("**Game over! Five-fold repitition. | Game Draw!**")
                 self.game_stop = True
+                await self.add_db_as_draw()
             else:
                 self.game_stop = False
         return self.game_stop
@@ -187,7 +199,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 ```
 """
         embed.set_footer(text=f"Turn: {self.turn} | Having 5m to make move")
-        await self.ctx.send(
+        self.game_message = await self.ctx.send(
             content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx)
         )
         while not self.game_stop:
@@ -200,9 +212,34 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 "resign",
                 "abort",
             ):
-                return await self.ctx.send(
-                    f"**{msg.author}** resigned/aborted the game. Game Over!"
+                msg_ = await self.ctx.send(
+                    f"**{msg.author}** resigned/aborted the game. Game Over! **{self.white} {self.black} now shake hands!**"
                 )
+                await msg_.add_reaction("\N{HANDSHAKE}")
+                self.game_stop = True
+
+                col: Collection = self.bot.mongo.extra.games_leaderboard
+                await col.bulk_write(
+                    [
+                        UpdateOne(
+                            {"_id": _id},
+                            {
+                                "$addToSet": {
+                                    "chess_games": {
+                                        "white": self.white.id,
+                                        "black": self.black.id,
+                                        "winner": msg.author.id,
+                                        "draw": False,
+                                    }
+                                },
+                            },
+                            upsert=True,
+                        )
+                        for _id in (self.white.id, self.black.id)
+                    ]
+                )
+                return
+
             if msg.content.lower() == "draw":
                 value = await self.ctx.prompt(
                     f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`",
@@ -216,6 +253,8 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                     )
                     await msg_.add_reaction("\N{HANDSHAKE}")
                     self.game_stop = True  # this is imp. as the game wasn't stopping
+                    await self.add_db_as_draw()
+                    return
             else:
                 if self.react_on_success:
                     try:
@@ -224,3 +263,26 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                         pass
                 await self.place_move(msg.content)
                 self.switch()
+
+    async def add_db_as_draw(self):
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+        await col.bulk_write(
+            [
+                UpdateOne(
+                    {"_id": _id},
+                    {
+                        "$addToSet": {
+                            "chess": {
+                                "white": self.white.id,
+                                "black": self.black.id,
+                                "winner": None,
+                                "draw": True,
+                            }
+                        },
+                    },
+                    upsert=True,
+                )
+                for _id in (self.white.id, self.black.id)
+            ]
+        )
+        return

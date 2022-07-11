@@ -270,26 +270,26 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             game.embed.description = f"```fix\n{game.country.title()}\n```"
             await interaction.message.edit(view=self.view, embed=game.embed)
             return self.view.stop()
-        else:
-            game.guesses -= 1
 
-            if not game.guesses:
-                self.view.disable_all()
-                game.update_guesslog("- GAME OVER, you lost -")
+        game.guesses -= 1
 
-                await interaction.message.edit(embed=game.embed, view=self.view)
-                await interaction.response.send_message(
-                    f"Game Over! you lost, The country was `{game.country.title()}`"
-                )
-                return self.view.stop()
-            else:
-                acc = game.get_accuracy(guess)
-                game.update_guesslog(
-                    f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n"
-                    f"+ You have {game.guesses} guesses left.\n"
-                )
+        if not game.guesses:
+            self.view.disable_all()
+            game.update_guesslog("- GAME OVER, you lost -")
 
-                await interaction.response.edit_message(embed=game.embed)
+            await interaction.message.edit(embed=game.embed, view=self.view)
+            await interaction.response.send_message(
+                f"Game Over! you lost, The country was `{game.country.title()}`"
+            )
+            return self.view.stop()
+
+        acc = game.get_accuracy(guess)
+        game.update_guesslog(
+            f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n"
+            f"+ You have {game.guesses} guesses left.\n"
+        )
+
+        await interaction.response.edit_message(embed=game.embed)
 
 
 class CountryView(discord.ui.View):

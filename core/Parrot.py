@@ -19,7 +19,6 @@ from typing import (
     Callable,
     Collection,
     Dict,
-    Iterator,
     List,
     Mapping,
     Optional,
@@ -34,7 +33,7 @@ import jishaku  # type: ignore  # noqa: F401
 import pymongo
 from aiohttp import ClientSession  # type: ignore
 from discord import app_commands
-from discord.ext import commands, ipc, tasks
+from discord.ext import commands, ipc, tasks  # type: ignore
 from lru import LRU
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 

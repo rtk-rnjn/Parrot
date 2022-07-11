@@ -19,7 +19,7 @@ class IPCRoutes(Cog):
     ) -> Dict[str, Union[str, Optional[bool]]]:
         try:
             return {
-                str(target.id): overwrite._values
+                str(target.id): overwrite._values  # type: ignore
                 for target, overwrite in overwrites.items()
             }
         except Exception:
@@ -194,7 +194,9 @@ class IPCRoutes(Cog):
     @server.route()
     async def get_message(self, data: server.IpcServerResponse) -> Dict[str, Any]:
         channel = self.bot.get_channel(data.channel_id)
-        message: discord.Message = await self.bot.get_or_fetch_message(channel, data.message_id, partial=False,)
+        message = await self.bot.get_or_fetch_message(channel, data.message_id, partial=False,)
+        if not isinstance(message, discord.Message):
+            return {}
 
         return {
             "id": message.id,

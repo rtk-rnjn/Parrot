@@ -14,6 +14,7 @@ from collections import Counter, defaultdict, deque
 from contextlib import suppress
 from typing import (
     Any,
+    AsyncGenerator,
     Awaitable,
     Callable,
     Collection,
@@ -94,7 +95,7 @@ __all__ = ("Parrot",)
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
-    user: Optional[discord.ClientUser]
+    user: discord.ClientUser
     help_command: Optional[commands.HelpCommand]
 
     http_session: ClientSession
@@ -135,7 +136,7 @@ class Parrot(commands.AutoShardedBot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._CogMixin__cogs = commands.core._CaseInsensitiveDict()  # pycord be like
         self._seen_messages = 0
-        self._change_log = None
+        self._change_log: List[discord.Message] = []
 
         self._error_log_token = os.environ["CHANNEL_TOKEN2"]
         self._startup_log_token = os.environ["CHANNEL_TOKEN3"]
@@ -154,13 +155,13 @@ class Parrot(commands.AutoShardedBot):
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
         if self.HAS_TOP_GG:
-            self.topgg = None
-            self.topgg_webhook = None
+            self.topgg: topgg.DBLClient
+            self.topgg_webhook: topgg.WebhookManager
 
         self._auto_spam_count: Counter = Counter()
-        self.resumes = defaultdict(list)
-        self.identifies = defaultdict(list)
-        self._prev_events = deque(maxlen=10)
+        self.resumes: Dict[int, List[datetime.datetime]] = defaultdict(list)
+        self.identifies: Dict[int, List[datetime.datetime]] = defaultdict(list)
+        self._prev_events: "deque[str]" = deque(maxlen=10)
 
         self.mystbin = Client()
 
@@ -216,7 +217,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
-        if self._change_log is None:
+        if not self._change_log:
             self._change_log = [
                 msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)
             ]
@@ -426,7 +427,7 @@ class Parrot(commands.AutoShardedBot):
         print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 
-    async def process_commands(self, message: discord.Message) -> Optional[Context]:
+    async def process_commands(self, message: discord.Message) -> None:
 
         ctx: Context = await self.get_context(message, cls=Context)
 
@@ -475,7 +476,7 @@ class Parrot(commands.AutoShardedBot):
                 return
 
         await self.invoke(ctx)
-        return ctx
+        return
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
@@ -485,9 +486,10 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
-            return await message.channel.send(
+            await message.channel.send(
                 f"Prefix: `{await self.get_guild_prefixes(message.guild)}`"
             )
+            return
 
         await self.process_commands(message)
 
@@ -502,7 +504,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def resolve_member_ids(
         self, guild: discord.Guild, member_ids: List[int]
-    ) -> Iterator[Optional[discord.Member]]:
+    ) -> AsyncGenerator[discord.Member, None]:
         """|coro|
 
         Bulk resolves member IDs to member instances, if possible.
@@ -618,7 +620,7 @@ class Parrot(commands.AutoShardedBot):
         cache: bool = True,
         partial: bool = False,
         force_fetch: bool = False,
-    ) -> Union[discord.Message, discord.PartialMessage]:
+    ) -> Union[discord.Message, discord.PartialMessage, None]:
         """|coro|
 
         Get message from cache. Fetches if not found, and stored in cache
@@ -643,21 +645,22 @@ class Parrot(commands.AutoShardedBot):
         """
         if isinstance(channel, int):
             if force_fetch:
-                channel = await self.getch(
+                c = await self.getch(
                     self.get_channel, self.fetch_channel, channel, force_fetch=True
                 )
             else:
-                channel = self.get_channel(channel)
+                c = self.get_channel(channel)
         elif isinstance(channel, discord.Object):
             if force_fetch:
-                channel = await self.getch(
+                c = await self.getch(
                     self.get_channel, self.fetch_channel, channel.id, force_fetch=True
                 )
             else:
-                channel = self.get_channel(channel.id)
+                c = self.get_channel(channel.id)
 
+        main_channel: discord.TextChannel = c
         if force_fetch:
-            msg = await channel.fetch_message(message)
+            msg = await main_channel.fetch_message(message)
             self.message_cache[message] = msg
             return msg
 
@@ -666,13 +669,13 @@ class Parrot(commands.AutoShardedBot):
             return msg
 
         if partial:
-            return channel.get_partial_message(message)
+            return main_channel.get_partial_message(message)
 
         try:
             return self.message_cache[message]
         except KeyError:
             if fetch:
-                async for msg in channel.history(
+                async for msg in main_channel.history(
                     limit=1,
                     before=discord.Object(message + 1),
                     after=discord.Object(message - 1),
@@ -680,17 +683,20 @@ class Parrot(commands.AutoShardedBot):
                     self.message_cache[message] = msg
                     return msg
 
+        return None
+
     async def get_prefix(
         self, message: discord.Message
     ) -> Union[str, Callable, List[str]]:
         """Dynamic prefixing"""
+        if message.guild is None:
+            return commands.when_mentioned_or("$")(self, message)
         try:
             prefix: str = self.server_config[message.guild.id]["prefix"]
         except KeyError:
             if data := await self.mongo.parrot_db.server_config.find_one(
                 {"_id": message.guild.id}
             ):
-                data: Dict[str, Any] = data
                 prefix = data["prefix"]
                 post = data
                 self.server_config[message.guild.id] = post
@@ -710,7 +716,7 @@ class Parrot(commands.AutoShardedBot):
             prefix = match.group(1)
         return commands.when_mentioned_or(prefix)(self, message)
 
-    async def get_guild_prefixes(self, guild: discord.Guild) -> Optional[str]:
+    async def get_guild_prefixes(self, guild: discord.Guild) -> str:
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
@@ -718,6 +724,7 @@ class Parrot(commands.AutoShardedBot):
                 {"_id": guild.id}
             ):
                 return data.get("prefix")
+        return "$"
 
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)
@@ -732,7 +739,7 @@ class Parrot(commands.AutoShardedBot):
     ) -> Any:
         if _id is None:
             something = None
-            if not isinstance(get_function, Callable):
+            if not callable(get_function):
                 something = get_function
             if (
                 isinstance(fetch_function, Awaitable)
@@ -744,7 +751,7 @@ class Parrot(commands.AutoShardedBot):
         with suppress(discord.HTTPException):
             _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
-            if something is None and force_fetch:
+            if something is None and force_fetch and callable(fetch_function):
                 return await fetch_function(_id)
             return something
 

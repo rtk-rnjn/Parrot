@@ -12,6 +12,7 @@ from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 from pymongo import ReturnDocument  # type: ignore
 from pymongo.collection import Collection  # type: ignore
+from events.custom_events import EventCustom
 from utilities.checks import is_mod
 from utilities.converters import convert_bool
 from utilities.formats import TabularData
@@ -112,14 +113,14 @@ class Utils(Cog):
     async def delete_timer(self, **kw):
         await self.collection.delete_one(kw)
 
-    @commands.group(aliases=["remind"], invoke_without_command=True)
+    @commands.group(aliases=["remind", "reminder"], invoke_without_command=True)
     @Context.with_type
     async def remindme(
-        self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
+        self, ctx: Context, when: ShortTime, *, task: commands.clean_content = None
     ) -> None:
         """To make reminders as to get your tasks done on time"""
         if not ctx.invoked_subcommand:
-            seconds = age.dt.timestamp()
+            seconds = when.dt.timestamp()
             text = (
                 f"{ctx.author.mention} alright, you will be mentioned in {ctx.channel.mention} at **<t:{int(seconds)}:R>**."
                 f"To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
@@ -137,7 +138,7 @@ class Utils(Cog):
                 message=ctx.message,
             )
 
-    @remindme.command(name="list")
+    @remindme.command(name="list", aliases=["all"])
     @Context.with_type
     async def _list(self, ctx: Context) -> None:
         """To get all your reminders"""
@@ -147,11 +148,12 @@ class Utils(Cog):
                 f"<t:{int(data['expires_at'])}:R>\n> [{data['content']}]({data['messageURL']})"
             )
         if not ls:
-            return await ctx.send(f"{ctx.author.mention} you don't have any reminders")
+            await ctx.send(f"{ctx.author.mention} you don't have any reminders")
+            return
         p = SimplePages(ls, ctx=ctx, per_page=4)
         await p.start()
 
-    @remindme.command(name="del", aliases=["delete"])
+    @remindme.command(name="del", aliases=["delete", "remove"])
     @Context.with_type
     async def delremind(self, ctx: Context, message: int) -> None:
         """To delete the reminder"""
@@ -161,10 +163,10 @@ class Utils(Cog):
     @remindme.command(name="dm")
     @Context.with_type
     async def remindmedm(
-        self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
+        self, ctx: Context, when: ShortTime, *, task: commands.clean_content = None
     ) -> None:
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
-        seconds = age.dt.timestamp()
+        seconds = when.dt.timestamp()
         text = (
             f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
             f"within **<t:{int(seconds)}:R>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
@@ -172,7 +174,7 @@ class Utils(Cog):
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
             await ctx.author.send(text)
-        except discord.Fobidden:
+        except discord.Forbidden:
             await ctx.reply(text)
 
         await self.create_timer(
@@ -183,17 +185,17 @@ class Utils(Cog):
             dm_notify=True,
         )
 
-    @remindme.command(name="loop")
+    @remindme.command(name="loop", aliases=["repeat"])
     @Context.with_type
     async def remindmeloop(
-        self, ctx: Context, age: ShortTime, *, task: commands.clean_content = None
+        self, ctx: Context, when: ShortTime, *, task: commands.clean_content = None
     ):
         """Same as remind me but you will get reminder on every given time.
 
         `$remind loop 1d To vote the bot`
         This will make a reminder for everyday `To vote the bot`
         """
-        seconds = age.dt.timestamp()
+        seconds = when.dt.timestamp()
         now = discord.utils.utcnow().timestamp()
         if seconds - now <= 300:
             return await ctx.reply(
@@ -213,7 +215,7 @@ class Utils(Cog):
             "is_todo": False,
             "mod_action": None,
             "cmd_exec_str": None,
-            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}},
+            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(when)}},
         }
         await self.collection.insert_one(post)
         text = (
@@ -223,7 +225,7 @@ class Utils(Cog):
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
             await ctx.author.send(text)
-        except discord.Fobidden:
+        except discord.Forbidden:
             await ctx.reply(text)
 
     @commands.group(invoke_without_command=True)
@@ -329,7 +331,7 @@ class Utils(Cog):
         choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
 
         body = "\n".join(f"{key}: {c}" for key, c in choices)
-        poll = await ctx.send(f"**Poll: {question}**\n\n{body}")
+        poll: discord.Message = await ctx.send(f"**Poll: {question}**\n\n{body}")
         await ctx.bulk_add_reactions(poll, *[emoji for emoji, _ in choices])
 
         await ctx.message.delete(delay=5)
@@ -554,7 +556,7 @@ class Utils(Cog):
             async for data in self.collection.find(
                 {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
             ):
-                cog = self.bot.get_cog("EventCustom")
+                cog: EventCustom = self.bot.get_cog("EventCustom")
                 await self.collection.delete_one({"_id": data["_id"]})
                 await cog.on_timer_complete(**data)  # type: ignore
 
@@ -603,7 +605,7 @@ class Utils(Cog):
                 )
                 await ctx.reply(file=file)
                 return
-            if ctx.author.id == member.author.id:
+            if ctx.author.id == member.id:
                 return await ctx.reply(
                     f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages"
                 )
@@ -693,6 +695,8 @@ class Utils(Cog):
         if msg.author.id == self.bot.user.id:
             return msg
 
+        return None
+
     async def __fetch_message_from_channel(
         self, *, message: int, channel: discord.TextChannel
     ):
@@ -731,9 +735,12 @@ class Utils(Cog):
         embed: discord.Embed,
         ctx: Context,
         file: Optional[discord.File] = None,
-    ) -> discord.Message:
+    ) -> Optional[discord.Message]:
 
-        channel = await self.__fetch_suggestion_channel(ctx.guild)
+        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(ctx.guild)
+        if channel is None:
+            raise commands.BadArgument(f"{ctx.author.mention} error fetching suggestion channel")
+        
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
         await ctx.bulk_add_reactions(msg, *REACTION_EMOJI)

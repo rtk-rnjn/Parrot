@@ -84,6 +84,7 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
                 return self.guild.get_role(
                     self.bot.server_config[self.guild.id]["mute_role"] or 0
                 )
+        return None
 
     async def modrole(
         self,
@@ -99,11 +100,12 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
                 return self.guild.get_role(
                     self.bot.server_config[self.guild.id]["mod_role"] or 0
                 )
+        return None
 
     @discord.utils.cached_property
-    def replied_reference(self) -> Optional[discord.Message]:
+    def replied_reference(self) -> Optional[discord.MessageReference]:
         ref = self.message.reference
-        if ref and isinstance(ref.resolved, discord.Message):
+        if ref is not None and isinstance(ref.resolved, discord.Message):
             return ref.resolved.to_reference()
         return None
 
@@ -126,13 +128,12 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
-                await self.author.send(
+                return await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
-            return
 
-        embed: discord.Embed = kwargs.get(
+        embed: Optional[discord.Embed] = kwargs.get(
             "embed",
         )
         if isinstance(embed, discord.Embed) and not embed.color:
@@ -141,18 +142,17 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         return await super().send(content, **kwargs)
 
     async def reply(
-        self, content: Optional[str] = None, **kwargs
+        self, content: Optional[str] = None, **kwargs: Any
     ) -> Optional[discord.Message]:
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
-                await self.author.send(
+                return await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
-            return
 
-        embed: discord.Embed = kwargs.get(
+        embed: Optional[discord.Embed] = kwargs.get(
             "embed",
         )
         if isinstance(embed, discord.Embed) and not embed.color:
@@ -173,7 +173,7 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         for name, entry in entries:
             output.append(f"{name:<{width}}: {entry}")
         output.append("```")
-        await self.send("\n".join(output))
+        return await self.send("\n".join(output))
 
     async def indented_entry_to_code(
         self, entries: List[Tuple[Any, Any]]
@@ -183,7 +183,7 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         for name, entry in entries:
             output.append(f"\u200b{name:>{width}}: {entry}")
         output.append("```")
-        await self.send("\n".join(output))
+        return await self.send("\n".join(output))
 
     async def emoji(self, emoji: str) -> str:
         return emojis[emoji]
@@ -342,7 +342,7 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
 
         def outer_check(**kw) -> Callable:
             """Check function for the event"""
-            if isinstance(kw.get("check"), Callable):
+            if callable(kw.get("check")):
                 return kw["check"]
 
             def __suppress_attr_error(

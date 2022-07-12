@@ -919,7 +919,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if any(self.__scam_link_cache.get(i, False) for i in set(match_list)):
             with suppress(discord.Forbidden):
                 await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message."
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. "
                     f"Match: `{'`, `'.join(k for k, v in self.__scam_link_cache.items() if v and k in match_list)}`",
                 )
             return

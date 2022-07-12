@@ -257,7 +257,7 @@ class SokobanGameView(discord.ui.View):
     )
     async def null_button2(
         self, interaction: discord.Interaction, _: discord.ui.Button
-    ):  
+    ):
         self.stop()
         await self.db_update()
         await interaction.message.delete()

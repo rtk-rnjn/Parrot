@@ -178,7 +178,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     ) -> None:
         count = await self.get_star_count(message, from_db=True)
 
-        embed: discord.Embed = discord.Embed(timestamp=message.created_at, color=self.star_gradient_colour(count))
+        embed: discord.Embed = discord.Embed(
+            timestamp=message.created_at, color=self.star_gradient_colour(count)
+        )
         embed.set_footer(text=f"ID: {message.author.id}")
 
         embed.set_author(

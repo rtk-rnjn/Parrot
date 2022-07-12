@@ -158,7 +158,7 @@ class Twenty48_Button(discord.ui.View):
             {"$inc": {"twenty48.games_played": 1, "twenty48.total_moves": self._moves}},
             upsert=True,
         )
-    
+
     async def on_timeout(self):
         await self.update_to_db()
 

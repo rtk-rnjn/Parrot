@@ -108,7 +108,9 @@ class Akinator:
         embed.set_footer(text="Was I correct?")
 
         await self.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": self.player.id,},
+            {
+                "_id": self.player.id,
+            },
             {"$inc": {"aki.games_played": 1, "aki.questions_answered": self.questions}},
             upsert=True,
         )

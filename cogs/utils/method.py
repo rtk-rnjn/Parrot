@@ -403,9 +403,7 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
         bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel")
     )
 
-    msg: discord.Message = await bot.get_or_fetch_message(
-        channel, kw["message_id"]
-    )
+    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"])
 
     embed = msg.embeds[0]
     embed.color = 0xFF000
@@ -501,6 +499,7 @@ def __item__remove(ls: List[Any], item: Any) -> Optional[List[Any]]:
     except (ValueError, KeyError):
         return ls
     return ls
+
 
 async def __wait_for__message(ctx: Context) -> str:
     def check(m: discord.Message) -> bool:

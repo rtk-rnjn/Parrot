@@ -46,8 +46,8 @@ else:
 
 # dict.iteritems(), dict.iterkeys() is also incompatible
 if _PY2:
-    iteritems = dict.iteritems
-    iterkeys = dict.iterkeys
+    iteritems = dict.iteritems  # type: ignore
+    iterkeys = dict.iterkeys  # type: ignore
 else:
     iteritems = dict.items
     iterkeys = dict.keys
@@ -283,7 +283,7 @@ def unobjectify(x):
 try:
     import orjson as json  # type: ignore
 except ImportError:
-    import json
+    import json  # type: ignore
 
 
 def toJSON(self, **options):
@@ -297,12 +297,12 @@ def toJSON(self, **options):
     return (json.dumps(self, **options)).decode()
 
 
-Object.toJSON = toJSON
+Object.toJSON = toJSON  # type: ignore
 
 try:
     # Attempt to register ourself with PyYAML as a representer
-    import yaml
-    from yaml.representer import Representer, SafeRepresenter
+    import yaml  # type: ignore
+    from yaml.representer import Representer, SafeRepresenter  # type: ignore
 
     def from_yaml(loader, node):
         """PyYAML support for Munches using the tag `!object` and `!object.Object`.
@@ -377,8 +377,8 @@ try:
     def fromYAML(*args, **kwargs):
         return objectify(yaml.safe_load(*args, **kwargs))
 
-    Object.toYAML = toYAML
-    Object.fromYAML = staticmethod(fromYAML)
+    Object.toYAML = toYAML  # type: ignore
+    Object.fromYAML = staticmethod(fromYAML)  # type: ignore
 
 except ImportError:
     pass

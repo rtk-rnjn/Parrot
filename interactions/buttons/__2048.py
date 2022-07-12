@@ -157,7 +157,7 @@ class Twenty48_Button(discord.ui.View):
 
     async def update_to_db(self) -> None:
         await self.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": self.user.id, "guild_id": self.user.guild.id},
+            {"_id": self.user.id,},
             {"$inc": {"twenty48.games_played": 1, "twenty48.total_moves": self._moves}},
             upsert=True,
         )

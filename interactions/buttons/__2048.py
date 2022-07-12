@@ -141,17 +141,26 @@ class Twenty48_Button(discord.ui.View):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
 
+        self.__conversion = game._conversion
+        self.__controls = game._controls
+        self.__size = game.size
+        self.__board = game.board
+        self.__has_empty = game.has_empty
+        self.__message = game.message
+
         self.bot = bot
         self.user = user
 
         self._moves = 0
 
-        self._original_game = Twenty48(game._conversion)
-        self._original_game.board = game.board
-        self._original_game.has_empty = game.has_empty
-        self._original_game.size = game.size
-        self._original_game.message = game.message
-        self._original_game._controls = game._controls
+    def make_original_instance(self) -> Twenty48:
+        original_game = Twenty48(self.__conversion)
+        original_game.board = self.__board
+        original_game.has_empty = self.__has_empty
+        original_game.size = self.__size
+        original_game.message = self.__message
+        original_game._controls = self.__controls
+        return original_game
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
 
@@ -179,7 +188,7 @@ class Twenty48_Button(discord.ui.View):
         disabled=False,
     )
     async def null_button(self, interaction: discord.Interaction, _: discord.ui.Button):
-        self.game = self._original_game
+        self.game = self.make_original_instance()
         self._moves = 0
         board_string = self.game.number_to_emoji()
         embed = (

@@ -367,7 +367,7 @@ class SokobanGameView(discord.ui.View):
         )
 
     async def db_update(self):
-        col: Collection = self.bot.extra.games_leaderboard
+        col: Collection = self.ctx.bot.mongo.extra.games_leaderboard
         time_taken = time.perf_counter() - self.ini
         await col.update_one(
             {"_id": self.user.id},

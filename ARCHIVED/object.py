@@ -16,7 +16,7 @@
     It is safe to import * from this module:
         __all__ = ('Object', 'objectify','unobjectify')
     un/objectify provide dictionary conversion; Munches can also be
-    converted via Object.to/fromDict().
+    converted via Object.to/from_dict().
 """
 
 import sys
@@ -80,7 +80,7 @@ class Object(dict):
     And "splats".
     >>> "The {knights} who say {ni}!".format(**Object(knights='lolcats', ni='can haz'))
     'The lolcats who say can haz!'
-    See unobjectify/Object.toDict, objectify/Object.fromDict for notes about conversion.
+    See unobjectify/Object.to_dict, objectify/Object.from_dict for notes about conversion.
     """
 
     def __contains__(self, k):
@@ -188,10 +188,10 @@ class Object(dict):
         else:
             object.__delattr__(self, k)
 
-    def toDict(self):
+    def to_dict(self):
         """Recursively converts a Object back into a dictionary.
         >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
-        >>> b.toDict()
+        >>> b.to_dict()
         {'ponies': 'are pretty!', 'foo': {'lol': True}, 'hello': 42}
         See unobjectify for more info.
         """
@@ -217,9 +217,9 @@ class Object(dict):
     __members__ = __dir__  # for python2.x compatibility
 
     @staticmethod
-    def fromDict(d):
+    def from_dict(d):
         """Recursively transforms a dictionary into a Object via copy.
-        >>> b = Object.fromDict({'urmom': {'sez': {'what': 'what'}}})
+        >>> b = Object.from_dict({'urmom': {'sez': {'what': 'what'}}})
         >>> b.urmom.sez.what
         'what'
         See objectify for more info.
@@ -286,18 +286,18 @@ except ImportError:
     import json  # type: ignore
 
 
-def toJSON(self, **options):
+def to_json(self, **options):
     """Serializes this Object to JSON. Accepts the same keyword options as `json.dumps()`.
     >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
     >>> json.dumps(b)
     '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
-    >>> b.toJSON()
+    >>> b.to_json()
     '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
     """
     return (json.dumps(self, **options)).decode()
 
 
-Object.toJSON = toJSON  # type: ignore
+Object.to_json = to_json  # type: ignore
 
 try:
     # Attempt to register ourself with PyYAML as a representer

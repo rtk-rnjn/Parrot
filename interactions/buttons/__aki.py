@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from typing import Any, ClassVar, Final, Optional, TypeAlias, Union
+from typing import Any, ClassVar, Dict, Final, Optional, TypeAlias, Union
 
 import discord
 from akinator import CantGoBackAnyFurther
@@ -53,7 +53,7 @@ class Akinator:
 
         self.player: Optional[discord.Member] = None
         self.win_at: Optional[int] = None
-        self.guess: Optional[dict[str, Any]] = None
+        self.guess: Optional[Dict[str, Any]] = None
         self.message: Optional[discord.Message] = None
 
         self.embed_color: Optional[DiscordColor] = None

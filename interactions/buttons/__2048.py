@@ -140,11 +140,18 @@ class Twenty48_Button(discord.ui.View):
     ) -> None:
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
-        self._original_game = game
+
         self.bot = bot
         self.user = user
 
         self._moves = 0
+
+        self._original_game = Twenty48(game._conversion)
+        self._original_game.board = game.board
+        self._original_game.has_empty = game.has_empty
+        self._original_game.size = game.size
+        self._original_game.message = game.message
+        self._original_game._controls = game._controls
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
 

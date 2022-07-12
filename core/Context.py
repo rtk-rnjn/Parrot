@@ -234,7 +234,7 @@ class Context(commands.Context["Parrot"], Generic[ParrotT]):
         await view.wait()
         return view.value
 
-    async def release(self, _for: Union[int, datetime.datetime] = None) -> None:
+    async def release(self, _for: Union[int, float, datetime.datetime] = None) -> None:
         if isinstance(_for, datetime.datetime):
             await discord.utils.sleep_until(_for)
         else:

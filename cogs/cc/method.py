@@ -1,5 +1,4 @@
 from __future__ import annotations
-import ast
 
 import asyncio
 import datetime
@@ -11,9 +10,10 @@ import time
 import traceback
 from contextlib import suppress
 from operator import attrgetter
-from typing import Any, Callable, Dict, List, NoReturn, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import discord
+from discord.utils import MISSING
 from async_timeout import timeout  # type: ignore
 from core import Parrot
 from discord import (
@@ -98,19 +98,19 @@ env = {
 
 
 class CustomBase:
-    def __repr__(self) -> None:
+    def __repr__(self) -> str:
         return f"<Object {self.__class__.__name__}>"
 
 
 class CustomMessage(CustomBase):
     def __init__(self, message: discord.Message):
         self.id = message.id
-        self.author = CustomMember(message.author)
-        self.channel = CustomTextChannel(message.channel)
+        self.author = CustomMember(message.author) if isinstance(message.author, discord.Member) else None
+        self.channel = CustomTextChannel(message.channel) if isinstance(message.channel, discord.TextChannel) else None
         self.content = message.content
         self.embeds = message.embeds
         self.created_at = message.created_at
-        self.guild = CustomGuild(message.guild)
+        self.guild = CustomGuild(message.guild) if message.guild is not None else None
         self.jump_url = message.jump_url
         self.mentions = message.mentions
         self.pinned = message.pinned
@@ -142,8 +142,7 @@ class CustomEmoji:
             self.name = emoji.name
             self.animated = emoji.animated
             self.url = emoji.url
-        else:
-            self.__str__ = emoji
+
 
 
 class CustomMember(CustomBase):
@@ -183,8 +182,8 @@ class CustomGuild(CustomBase):
             self.afk_channel = guild.afk_channel.id
             self.afk_timeout = guild.afk_timeout
         else:
-            self.afk_channel = None
-            self.afk_timeout = None
+            self.afk_channel = 0
+            self.afk_timeout = 0
 
         self.created_at = guild.created_at
         self.verification_level = guild.verification_level
@@ -305,33 +304,40 @@ class BaseCustomCommand:
         delete_after: float = None,
     ) -> Optional[CustomMessage]:
         allowed_mentions = discord.AllowedMentions.none()
-        msg = await self.__guild.get_channel(channel_id).send(
-            content,
-            embed=embed,
-            embeds=embeds,
-            file=file,
-            files=files,
-            delete_after=delete_after,
-            allowed_mentions=allowed_mentions,
-        )
+        channel: discord.TextChannel = self.__guild.get_channel(channel_id)
+        if isinstance(channel, discord.TextChannel):
+            msg = await channel.send(
+                content,
+                embed=embed,
+                embeds=embeds,
+                file=file,
+                files=files,
+                delete_after=delete_after,
+                allowed_mentions=allowed_mentions,
+            )
         return CustomMessage(msg)
 
     async def channel_create(
         self, channel_type: str, name: str, **kwargs: Any
-    ) -> Union[CustomTextChannel, CustomVoiceChannel]:
+    ) -> Union[CustomTextChannel, CustomVoiceChannel, None]:
         if channel_type.upper() == "TEXT":
-            channel = await self.__guild.create_text_channel(name, **kwargs)
-            return CustomTextChannel(channel)
+            text_channel = await self.__guild.create_text_channel(name, **kwargs)
+            return CustomTextChannel(text_channel)
         if channel_type.upper() == "VOICE":
-            channel = await self.__guild.create_voice_channel(name, **kwargs)
-            return CustomVoiceChannel(channel)
+            voice_channel = await self.__guild.create_voice_channel(name, **kwargs)
+            return CustomVoiceChannel(voice_channel)
+        return None
 
-    async def channel_edit(self, channel_id: int, **kwargs: Any) -> NoReturn:
-        await self.__guild.get_channel(channel_id).edit(**kwargs)
+    async def channel_edit(self, channel_id: int, **kwargs: Any) -> None:
+        channel = self.__guild.get_channel(channel_id)
+        if channel is not None:
+            await channel.edit(**kwargs)
         return
 
-    async def channel_delete(self, channel_id: int) -> NoReturn:
-        await self.__guild.get_channel(channel_id).delete()
+    async def channel_delete(self, channel_id: int) -> None:
+        channel = self.__guild.get_channel(channel_id)
+        if channel is not None:
+            await channel.delete()
         return
 
     # roles
@@ -340,42 +346,54 @@ class BaseCustomCommand:
         role = await self.__guild.create_role(name, **kwargs)
         return CustomRole(role)
 
-    async def role_edit(self, role_id: int, **kwargs: Any) -> NoReturn:
+    async def role_edit(self, role_id: int, **kwargs: Any) -> None:
         await self.__guild.get_role(role_id).edit(**kwargs)
         return
 
     async def role_delete(
         self,
         role_id: int,
-    ) -> NoReturn:
+    ) -> None:
         await self.__guild.get_role(role_id).delete()
         return
 
     # mod actions
 
-    async def kick_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__guild.get_member(member_id).kick(reason)
+    async def kick_member(self, member_id: int, reason: str) -> None:
+        member = self.__guild.get_member(member_id)
+        if member is not None:
+            await member.kick(reason=reason)
         return
 
-    async def ban_member(self, member_id: int, reason: str) -> NoReturn:
-        await self.__guild.get_member(member_id).ban(reason)
+    async def ban_member(self, member_id: int, reason: str) -> None:
+        member = self.__guild.get_member(member_id)
+        if member is not None:
+            await member.ban(reason=reason)
         return
 
-    async def edit_member(self, member_id: int, **kwargs: Any) -> NoReturn:
-        await self.__guild.get_member(member_id).edit(**kwargs)
+    async def edit_member(self, member_id: int, **kwargs: Any) -> None:
+        member = self.__guild.get_member(member_id)
+        if member is not None:
+            await member.edit(**kwargs)
         return
 
     # utils
 
-    async def get_member(self, member_id: int) -> CustomMember:
-        return CustomMember(self.__guild.get_member(member_id))
+    async def get_member(self, member_id: int) -> Optional[CustomMember]:
+        member = self.__guild.get_member(member_id)
+        if member is not None:
+            return CustomMember(member)
+        return None
 
-    async def get_role(self, role_id: int) -> CustomRole:
-        return CustomRole(self.__guild.get_role(role_id))
+    async def get_role(self, role_id: int) -> Optional[CustomRole]:
+        role = self.__guild.get_role(role_id)
+        if role is not None:
+            return CustomRole(role)
+        return None
 
     async def get_channel(
         self, channel_id: int
-    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel]:
+    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel, None]:
         channel = self.__guild.get_channel(channel_id)
         if isinstance(channel, discord.TextChannel):
             return CustomTextChannel(channel)
@@ -383,9 +401,10 @@ class BaseCustomCommand:
             return CustomVoiceChannel(channel)
         if isinstance(channel, discord.CategoryChannel):
             return CustomCategoryChannel(channel)
+        return None
 
-    async def get_channel_type(self, channel: int) -> Optional[str]:
-        channel = self.__guild.get_channel(channel)
+    async def get_channel_type(self, channel_id: int) -> Optional[str]:
+        channel = self.__guild.get_channel(channel_id)
         if isinstance(channel, discord.TextChannel):
             return "TEXT"
         if isinstance(channel, discord.VoiceChannel):
@@ -401,21 +420,20 @@ class BaseCustomCommand:
     def __get_role_or_user(
         self, obj: Union[CustomMember, CustomRole, int], need_user: bool = False
     ) -> Union[Member, User, Role, None]:
-        obj = None
         if isinstance(obj, CustomMember):
-            obj = self.__guild.get_member(obj.id)
+            return self.__guild.get_member(obj.id)
         elif isinstance(obj, CustomRole):
-            obj = self.__guild.get_role(obj.id)
+            return self.__guild.get_role(obj.id)
 
         elif isinstance(obj, int):
             obj = self.__guild.get_member(obj)
             if obj is None:
-                obj = self.__guild.get_role(obj)
+                return self.__guild.get_role(obj)
 
             if obj is None and need_user:
-                obj = self.__bot.get_user(obj)
+                return self.__bot.get_user(obj)
 
-        return obj
+        return None
 
     async def get_permissions_for(
         self, channel: int, _for: Union[CustomMember, CustomRole, int]
@@ -453,7 +471,7 @@ class BaseCustomCommand:
             {"_id": self.__guild.id, **kwargs}, project
         )
 
-    async def edit_db(self, **kwargs: Any) -> NoReturn:
+    async def edit_db(self, **kwargs: Any) -> None:
         upsert = kwargs.pop("upsert", False)
         await self.__bot.mongo.cc.storage.update_one(
             {"_id": self.__guild.id}, kwargs, upsert=upsert
@@ -462,7 +480,7 @@ class BaseCustomCommand:
 
     async def del_db(
         self,
-    ) -> NoReturn:
+    ) -> None:
         await self.__bot.mongo.cc.storage.delete_one(
             {
                 "_id": self.__guild.id,
@@ -487,40 +505,41 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
         self.env["message_create_thread"] = self.message_create_thread
         self.env["reactions_users"] = self.reactions_users
 
-    async def message_pin(self) -> NoReturn:
+    async def message_pin(self) -> None:
         await self.__message.pin()
         return
 
-    async def message_unpin(self) -> NoReturn:
+    async def message_unpin(self) -> None:
         await self.__message.unpin()
         return
 
-    async def message_publish(self) -> NoReturn:
+    async def message_publish(self) -> None:
         await self.__message.publish()
         return
 
-    async def message_create_thread(self) -> NoReturn:
+    async def message_create_thread(self) -> None:
         await self.__message.create_thread()
         return
 
-    async def message_add_reaction(self, emoji: str) -> NoReturn:
+    async def message_add_reaction(self, emoji: str) -> None:
         await self.__message.add_reaction(emoji)
         return
 
     async def message_remove_reaction(
         self, emoji: str, member: CustomMember
-    ) -> NoReturn:
+    ) -> None:
         await self.__message.remove_reaction(emoji, discord.Object(id=member.id))
         return
 
-    async def message_clear_reactions(self) -> NoReturn:
+    async def message_clear_reactions(self) -> None:
         await self.__message.clear_reactions()
         return
 
     async def reactions_users(self, emoji: Any) -> List[CustomMember]:
         for reaction in self.__message.reactions:
             if str(reaction.emoji) == emoji:
-                return [CustomMember(member) async for member in reaction.users()]
+                return [CustomMember(member) async for member in reaction.users() if isinstance(member, discord.Member)]
+        return []
 
 
 class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
@@ -533,17 +552,17 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
     async def execute(
         self,
         code: str,
-    ) -> NoReturn:
+    ) -> None:
         try:
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
 
                 try:
-                    self.env["function"]
+                    function: Callable = self.env["function"]
                 except KeyError:
                     return
 
-                await self.env["function"](CustomMessage(self.__message))
+                await function(CustomMessage(self.__message))
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
@@ -558,7 +577,7 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
 class _CustomCommandsExecutionOnMember(BaseCustomCommand):
     __class__ = None
 
-    def __init__(self, bot: Parrot, member: discord.member, **kwargs: Any):
+    def __init__(self, bot: Parrot, member: discord.Member, **kwargs: Any):
         super().__init__(bot, guild=member.guild, **kwargs)
         self.__member = member
         self.env["guild"] = CustomGuild(self.__member.guild)
@@ -566,17 +585,17 @@ class _CustomCommandsExecutionOnMember(BaseCustomCommand):
     async def execute(
         self,
         code: str,
-    ) -> NoReturn:
+    ) -> None:
         try:
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)
 
                 try:
-                    self.env["function"]
+                    function: Callable = self.env["function"]
                 except KeyError:
                     return
 
-                await self.env["function"](CustomMember(self.__member))
+                await function(CustomMember(self.__member))
                 return
         except Exception as e:
             return
@@ -617,7 +636,7 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
     async def execute(
         self,
         code: str,
-    ) -> NoReturn:
+    ) -> None:
         try:
             async with timeout(10):
                 exec(compile(code, "<string>", "exec"), self.env)

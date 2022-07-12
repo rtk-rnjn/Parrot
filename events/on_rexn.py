@@ -17,7 +17,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
+    async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> None:
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         try:
@@ -55,11 +55,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return_document=True,
         )
         if data:
-            return await self.edit_starbord_post(payload, **data)
+            await self.edit_starbord_post(payload, **data)
+            return
 
-        return await self.__on_star_reaction_add(payload)
+        await self.__on_star_reaction_add(payload)
+        return
 
-    async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> bool:
+    async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> None:
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         try:
@@ -69,7 +71,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                     "ignore_channel"
                 ]
             ):
-                return False
+                return
         except KeyError:
             pass
 
@@ -98,14 +100,17 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         if data:
             await self.edit_starbord_post(payload, **data)
-        return await self.__on_star_reaction_remove(payload)
+            return
+
+        await self.__on_star_reaction_remove(payload)
+        return
 
     async def __make_starboard_post(
         self,
         *,
         bot_message: discord.Message,
         message: discord.Message,
-    ) -> Dict[str, Union[str, int, List[int], None]]:
+    ) -> dict:
         post = {
             "message_id": {"bot": bot_message.id, "author": message.id},
             "channel_id": message.channel.id,
@@ -131,7 +136,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def get_star_count(
         self, message: Optional[discord.Message] = None, *, from_db: bool = True
-    ) -> Optional[int]:
+    ) -> int:
         if not message:
             return 0
 
@@ -171,11 +176,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def star_post(
         self, *, starboard_channel: discord.TextChannel, message: discord.Message
     ) -> None:
-        embed: discord.Embed = discord.Embed(timestamp=message.created_at)
-        embed.set_footer(text=f"ID: {message.author.id}")
-
         count = await self.get_star_count(message, from_db=True)
-        embed.color = self.star_gradient_colour(count)
+
+        embed: discord.Embed = discord.Embed(timestamp=message.created_at, color=self.star_gradient_colour(count))
+        embed.set_footer(text=f"ID: {message.author.id}")
 
         embed.set_author(
             name=str(message.author),
@@ -289,7 +293,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             starboard_channel: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, channel
             )
-            bot_msg = await self.bot.get_or_fetch_message(
+            bot_msg: discord.Message = await self.bot.get_or_fetch_message(
                 starboard_channel, data["message_id"]["bot"], partial=True
             )
             await bot_msg.delete(delay=0)

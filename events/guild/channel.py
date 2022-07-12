@@ -72,7 +72,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         )
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                             file=discord.File(fp, filename="overwrites.json"),
                         )
@@ -115,7 +115,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         )
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                             file=discord.File(fp, filename="overwrites.json"),
                         )
@@ -181,7 +181,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         )
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                             file=discord.File(fp, filename="overwrites.json"),
                         )
@@ -203,7 +203,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             ls.append(
                 ("`Overwrite Changed:`", self._overwrite_to_json(before.overwrites))
             )
-        if before.category.id != after.category.id:
+        if before.category and after.category and before.category.id != after.category.id:
             ls.append(
                 (
                     "`Category Changed :`"
@@ -282,7 +282,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 """
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                         )
                         break
@@ -312,7 +312,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 """
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                         )
                         break

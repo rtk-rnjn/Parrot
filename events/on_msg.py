@@ -50,7 +50,7 @@ else:
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
 
-TRIGGER: Tuple[Literal] = (
+TRIGGER: Tuple = (
     "ok google,",
     "ok google ",
     "hey google,",
@@ -120,13 +120,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             3, 5, commands.BucketType.channel
         )
         self.log_collection: Collection = bot.mongo.parrot_db["logging"]
-        self.pattern_handlers: List[Tuple[Pattern[str, Callable]]] = [
+        self.pattern_handlers: List[Tuple[Pattern[str], Callable]] = [
             (GITHUB_RE, self._fetch_github_snippet),
             (GITHUB_GIST_RE, self._fetch_github_gist_snippet),
             (GITLAB_RE, self._fetch_gitlab_snippet),
             (BITBUCKET_RE, self._fetch_bitbucket_snippet),
         ]
-        self.message_append = []
+        self.message_append: List[discord.Message] = []
         self.message_cooldown = commands.CooldownMapping.from_cooldown(
             1,
             60,
@@ -153,6 +153,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return await response.text()
             if response_format == "json":
                 return await response.json()
+        return None
 
     def _find_ref(self, path: str, refs: Tuple) -> Tuple:
         """Loops through all branches and tags to find the required ref."""
@@ -420,7 +421,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     fp = None
                 await webhook.send(
                     content=content,
-                    avatar_url=self.bot.user.avatar.url,
+                    avatar_url=self.bot.user.display_avatar.url,
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt")
                     if fp is not None
@@ -733,7 +734,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         fp = None
                     await webhook.send(
                         content=main_content,
-                        avatar_url=self.bot.user.avatar.url,
+                        avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
                         file=discord.File(fp, filename="content.txt")
                         if fp is not None
@@ -782,7 +783,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 """
                 await webhook.send(
                     content=main_content,
-                    avatar_url=self.bot.user.avatar.url,
+                    avatar_url=self.bot.user.display_avatar.url,
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt")
                     if fp is not None
@@ -963,7 +964,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def __add_roles(
         self,
         member: discord.Member,
-        role: Union[discord.Roles, discord.Object],
+        role: discord.abc.Snowflake,
         reason: Optional[str] = None,
     ):
         try:
@@ -1045,9 +1046,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 ignore_case=True,
             )
             if data := await self.bot.mongo.extra.dictionary.find_one({"word": word}):
-                return await channel.send(
+                await channel.send(
                     f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
                 )
+            return
 
     @Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
@@ -1092,7 +1094,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     fp = None
                 await webhook.send(
                     content=main_content,
-                    avatar_url=self.bot.user.avatar.url,
+                    avatar_url=self.bot.user.display_avatar.url,
                     username=self.bot.user.name,
                     file=discord.File(fp, filename="content.txt")
                     if fp is not None

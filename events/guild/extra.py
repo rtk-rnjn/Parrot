@@ -53,7 +53,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 """
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                         )
                         break
@@ -94,7 +94,7 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 """
                         await webhook.send(
                             content=content,
-                            avatar_url=self.bot.user.avatar.url,
+                            avatar_url=self.bot.user.display_avatar.url,
                             username=self.bot.user.name,
                         )
                         break

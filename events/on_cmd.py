@@ -11,9 +11,9 @@ from discord.ext import commands
 from utilities.exceptions import ParrotCheckFailure
 
 with open("extra/quote.txt") as f:
-    quote = f.read()
+    quote_ = f.read()
 
-quote = quote.split("\n")
+quote = quote_.split("\n")
 QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 
@@ -36,7 +36,7 @@ class ErrorView(discord.ui.View):
 
     @discord.ui.button(label="Show full error", style=discord.ButtonStyle.green)
     async def show_full_traceback(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self, interaction: discord.Interaction, _: discord.ui.Button
     ):
         await interaction.response.send_message(str(self.error), ephemeral=True)
 
@@ -80,7 +80,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 """
                     await webhook.send(
                         content=main_content,
-                        avatar_url=self.bot.user.avatar.url,
+                        avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
                     )
 
@@ -101,7 +101,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 """
                     await webhook.send(
                         content=main_content,
-                        avatar_url=self.bot.user.avatar.url,
+                        avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
                     )
 

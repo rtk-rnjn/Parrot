@@ -31,7 +31,7 @@ class EventCustom(Cog):
         if kw.get("embed"):
             embed: discord.Embed = discord.Embed.from_dict(kw.get("embed"))
         else:
-            embed = None
+            embed = discord.utils.MISSING
 
         if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
             user: discord.User = self.bot.get_user(kw["messageAuthor"])

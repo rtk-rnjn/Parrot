@@ -123,7 +123,7 @@ class Configuration(Cog):
         if not ctx.invoked_subcommand:
             try:
                 starboard_data: Dict[
-                    str, Union[str, int, List[int], bool]
+                    str, Union[str, int, List[int], bool, None]
                 ] = self.bot.server_config[ctx.guild.id]["starboard"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
@@ -131,8 +131,8 @@ class Configuration(Cog):
             channel: Optional[discord.TextChannel] = ctx.guild.get_channel(
                 starboard_data.get("channel", 0)
             )
-            limit: int = starboard_data.get("limit")
-            is_locked: bool = starboard_data.get("is_locked")
+            limit: Optional[int] = starboard_data.get("limit")
+            is_locked: Optional[bool] = starboard_data.get("is_locked")
 
             ignore_channel = ", ".join(
                 [
@@ -140,7 +140,7 @@ class Configuration(Cog):
                     for c in starboard_data.get("ignore_channel", [])
                 ]
             )
-            max_duration: str = starboard_data.get("max_duration")
+            max_duration: Optional[str] = starboard_data.get("max_duration")
 
             return await ctx.reply(
                 f"Configuration of this server [starboard]\n\n"
@@ -239,15 +239,15 @@ class Configuration(Cog):
     ):
         """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
         if not ctx.invoked_subcommand:
-            channel: discord.TextChannel = channel or ctx.channel
+            chn: discord.TextChannel = channel or ctx.channel
             if event.lower() not in events:
                 return await ctx.reply(
                     f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
                 )
-            hooks: List[discord.Webhook] = await channel.webhooks()
+            hooks: List[discord.Webhook] = await chn.webhooks()
             if len(hooks) >= 10:
                 for hook in hooks:
-                    if hook.user.id == self.bot.user.id:  # bot created that
+                    if hook is not None and hook.user.id == self.bot.user.id:  # type: ignore
                         webhook = hook
                         post = {str(event.lower()): str(webhook.url)}
                         await self.bot.mongo.parrot_db.logging.update_one(
@@ -256,10 +256,10 @@ class Configuration(Cog):
                         break
                 else:
                     return await ctx.reply(
-                        f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {channel.mention}. This happens when channel has already 10 webhooks created."
+                        f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {chn.mention}. This happens when channel has already 10 webhooks created."
                     )
             else:
-                webhook: discord.Webhook = await channel.create_webhook(
+                webhook: discord.Webhook = await chn.create_webhook(
                     name=self.bot.user.name,
                     reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
                 )
@@ -269,7 +269,7 @@ class Configuration(Cog):
                     upsert=True,
                 )
             await ctx.reply(
-                f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {channel.mention}"
+                f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {chn.mention}"
             )
 
     @logging.command(name="remove", aliases=["delete", "removeevent"])
@@ -295,7 +295,6 @@ class Configuration(Cog):
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": ctx.guild.id}, {"_id": 0}
         ):
-            data: Dict[str, str]
             for k, v in data.items():
                 if v:
                     res = await self.bot.http_session.get(v)

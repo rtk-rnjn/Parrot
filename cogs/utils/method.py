@@ -403,8 +403,8 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
         bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel")
     )
 
-    msg: Optional[discord.Message] = await bot.get_or_fetch_message(
-        channel, kw.get("message_id")
+    msg: discord.Message = await bot.get_or_fetch_message(
+        channel, kw["message_id"]
     )
 
     embed = msg.embeds[0]
@@ -426,11 +426,11 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
     __item__remove(reactors, bot.user.id)
 
     if not reactors:
-        return
+        return []
 
     win_count = kw.get("winners", 1)
 
-    real_winners = []
+    real_winners: List[int] = []
 
     while True:
         if win_count > len(reactors):
@@ -500,9 +500,9 @@ def __item__remove(ls: List[Any], item: Any) -> Optional[List[Any]]:
         ls.remove(item)
     except (ValueError, KeyError):
         return ls
+    return ls
 
-
-async def __wait_for__message(ctx: Context) -> Optional[str]:
+async def __wait_for__message(ctx: Context) -> str:
     def check(m: discord.Message) -> bool:
         return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
 
@@ -637,7 +637,7 @@ async def _make_giveaway_drop(
     embed.set_footer(
         text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url
     )
-    msg = await ctx.send(embed=embed)
+    msg: discord.Message = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
 

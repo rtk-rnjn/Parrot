@@ -615,7 +615,7 @@ class Fun(Cog):
                 score_cutoff=80,
             )
         except (ValueError, TypeError):
-            return
+            return None
         return f"#{self.colour_mapping[match]}"
 
     async def cog_unload(self) -> None:
@@ -649,7 +649,7 @@ class Fun(Cog):
 
     async def _get_discord_message(
         self, ctx: Context, text: str
-    ) -> Union[discord.Message, str]:
+    ) -> Union[discord.Message, str, None]:
         """
         Attempts to convert a given `text` to a discord Message object and return it.
         Conversion will succeed if given a discord Message ID or link.
@@ -658,7 +658,7 @@ class Fun(Cog):
         try:
             text = await commands.MessageConverter().convert(ctx, text)
         except commands.BadArgument:
-            return
+            return None
         return text
 
     async def _get_text_and_embed(
@@ -1658,7 +1658,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def itssostupid(self, ctx, *, comment: str):
+    async def itssostupid(self, ctx: Context, *, comment: str):
         """:| I don't know what is this, I think a meme generator."""
         member = ctx.author
         if len(comment) > 20:
@@ -2037,7 +2037,7 @@ class Fun(Cog):
     async def coinflip(self, ctx: Context, *, choose: str = None):
         """Coin Flip, It comes either HEADS or TAILS"""
         choose = "tails" if str(choose).lower() in ("tails", "tail", "t") else "heads"
-        msg = await ctx.send(
+        msg: discord.Message = await ctx.send(
             f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
         )
         await ctx.release(1.5)
@@ -2060,7 +2060,7 @@ class Fun(Cog):
         e = discord.PartialEmoji(
             name="SlotsEmoji", id=923478531873325076, animated=True
         )
-        msg = await ctx.send(
+        msg: discord.Message = await ctx.send(
             f"""{ctx.author.mention} your slots results:
 > {e} {e} {e}"""
         )
@@ -2091,7 +2091,7 @@ class Fun(Cog):
         fetch_member can't be used due to the avatar url being part of the user object, and
         some weird caching that D.py does
         """
-        return self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
+        return await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
     @commands.command(
         name="8bitify",
@@ -2419,7 +2419,7 @@ class Fun(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(self, ctx: Context, text: str = None):
         """Make a cat say something"""
-        m = await ctx.reply("starting")
+        m: discord.Message = await ctx.reply("starting")
         text = text or "Hi..."
         BLANK = ""
         list = (
@@ -2462,7 +2462,7 @@ class Fun(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_poof(self, ctx: Context):
         """Poof"""
-        m = await ctx.send("...")
+        m: discord.Message = await ctx.send("...")
         ls = ("(   ' - ')", "' - ')", "- ')", "')", ")", "*poofness*")
         for i in ls:
             await m.edit(content=i)
@@ -2519,7 +2519,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
-        m = await ctx.send(r"`(\°-°)\  ┬─┬`")
+        m: discord.Message = await ctx.send(r"`(\°-°)\  ┬─┬`")
         # Thanks `CutieRei#5211`(830248412904947753)
         # ㅠㅕㅛㅑ
         lst = (
@@ -2641,7 +2641,7 @@ class Fun(Cog):
             "\N{SMILING FACE WITH HALO}",
         ]
         emoji = random.choice(EMOJIS)
-        confirm = await ctx.send(
+        confirm: discord.Message = await ctx.send(
             f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start."
         )
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
@@ -2695,7 +2695,7 @@ class Fun(Cog):
                     elif msg.embeds and str(msg.embeds[0].image.url).endswith(
                         ("png", "jpeg", "jpg", "gif", "webp")
                     ):
-                        url = ctx.replied_reference.embeds[0].image.url
+                        url = ref.resolved.embeds[0].image.url
 
                 elif isinstance(target, discord.Member):
                     url = target.display_avatar.url
@@ -2715,10 +2715,10 @@ class Fun(Cog):
                     io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
                 )
                 embed = (
-                    discord.Embed(timestamp=discord.utils.utcnow())
-                    .set_image(url=f"attachment://{ctx.command.name}.gif")
-                )
-                embed.set_footer(text=f"{ctx.author}")
+                    discord.Embed(timestamp=discord.utils.utcnow()).set_image(
+                        url=f"attachment://{ctx.command.name}.gif"
+                    )
+                ).set_footer(text=f"{ctx.author}")
                 await ctx.reply(embed=embed, file=file)
 
             self.bot.add_command(callback)

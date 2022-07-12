@@ -39,7 +39,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 """
                 await webhook.send(
                     content=content,
-                    avatar_url=self.bot.user.avatar.url,
+                    avatar_url=self.bot.user.display_avatar.url,
                     username=self.bot.user.name,
                 )
 
@@ -83,7 +83,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 """
                 await webhook.send(
                     content=content,
-                    avatar_url=self.bot.user.avatar.url,
+                    avatar_url=self.bot.user.display_avatar.url,
                     username=self.bot.user.name,
                 )
 
@@ -157,7 +157,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 """
                 await webhook.send(
                     content=content,
-                    avatar_url=self.bot.user.avatar.url,
+                    avatar_url=self.bot.user.display_avatar.url,
                     username=self.bot.user.name,
                 )
 
@@ -191,7 +191,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 """
                     await webhook.send(
                         content=content,
-                        avatar_url=self.bot.user.avatar.url,
+                        avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
                     )
                     return
@@ -216,7 +216,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 """
                     await webhook.send(
                         content=content,
-                        avatar_url=self.bot.user.avatar.url,
+                        avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
                     )
                     return
@@ -242,7 +242,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 """
                     await webhook.send(
                         content=content,
-                        avatar_url=self.bot.user.avatar.url,
+                        avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
                     )
                     return

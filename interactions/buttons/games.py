@@ -2317,14 +2317,10 @@ class Games(Cog):
             discord.Embed(
                 title="2048 Game",
                 description=f"{BoardString}",
-                timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {ctx.author}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
-            )
         )
-        await ctx.send(embed=embed, view=Twenty48_Button(game, ctx.author))
+        await ctx.send(ctx.author.mention, embed=embed, view=Twenty48_Button(game, ctx.author, bot=self.bot))
 
     @commands.group(name="chess", invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)

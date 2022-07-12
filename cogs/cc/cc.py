@@ -50,9 +50,12 @@ ERROR_ON_REVIEW_REQUIRED = """
 
 
 class ContentCode:
+    source: str
+    language: str
     def __init__(self, argument: Optional[str]):
         if argument is None:
-            return "``` ```"
+            self.source = "``` ```"
+            self.language = None
         try:
             block, code = argument.split("\n", 1)
         except ValueError:

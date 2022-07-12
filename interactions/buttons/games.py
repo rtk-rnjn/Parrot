@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import asyncio
-import itertools
 import json
 import random
 import re
@@ -17,12 +16,15 @@ from random import choice, sample
 from string import ascii_uppercase
 from typing import (
     Any,
+    Callable,
     Dict,
     Iterator,
     List,
     Literal,
     NamedTuple,
     Optional,
+    Sequence,
+    Set,
     Tuple,
     TypedDict,
     Union,
@@ -33,9 +35,8 @@ import discord
 import emojis
 from aiofile import async_open
 from core import Cog, Context, Parrot
-from discord import Member as User
-from discord.ext import boardgames, commands
-from discord.ext import old_menus as menus
+from discord.ext import boardgames, commands  # type: ignore
+from discord.ext import old_menus as menus  # type: ignore
 from discord.utils import MISSING
 from interactions.buttons.__2048 import Twenty48, Twenty48_Button
 from interactions.buttons.__aki import Akinator
@@ -305,7 +306,7 @@ class DiscordGame(GameBoogle):
 
     def setup(self):
         self.all_words: set[str] = set()
-        self.words: Dict[User, set[str]] = defaultdict(set)
+        self.words: Dict[discord.Member, set[str]] = defaultdict(set)
 
     async def check_message(self, message: discord.Message):
         word = message.content
@@ -409,9 +410,9 @@ class ClassicGame(GameBoogle):
     def setup(self):
         self.over = False
         self.used_words: set[str] = set()
-        self.word_lists: Dict[User, str] = {}
-        self.words: Dict[User, set[str]] = defaultdict(set)
-        self.unique_words: Dict[User, set[str]] = defaultdict(set)
+        self.word_lists: Dict[discord.Member, str] = {}
+        self.words: Dict[discord.Member, set[str]] = defaultdict(set)
+        self.unique_words: Dict[discord.Member, set[str]] = defaultdict(set)
 
     async def finalize(self, timed_out: bool):
         await super().finalize(timed_out)
@@ -606,10 +607,10 @@ class GameC4:
 
         self.unicode_numbers = [emojis.encode(i) for i in NUMBERS[: self.grid_size]]
 
-        self.message = None
+        self.message: discord.Message = None
 
-        self.player_active = None
-        self.player_inactive = None
+        self.player_active: Union[AI_C4, discord.Member, None] = None
+        self.player_inactive: Union[AI_C4, discord.Member, None] = None
 
     @staticmethod
     def generate_board(size: int) -> List[List[int]]:
@@ -638,7 +639,7 @@ class GameC4:
             await self.message.edit(content=None, embed=embed)
 
     async def game_over(
-        self, action: str, player1: discord.user, player2: discord.user
+        self, action: str, player1: discord.User, player2: discord.User
     ) -> None:
         """Announces to public chat."""
         if action == "win":
@@ -703,7 +704,7 @@ class GameC4:
             and str(reaction.emoji) in (*self.unicode_numbers, CROSS_EMOJI)
         )
 
-    async def player_turn(self) -> Coordinate:
+    async def player_turn(self) -> Optional[Coordinate]:
         """Initiate the player's turn."""
         message = await self.channel.send(
             f"{self.player_active.mention}, it's your turn! React with the column you want to place your token in."
@@ -718,14 +719,14 @@ class GameC4:
                 await self.channel.send(
                     f"{self.player_active.mention}, you took too long. Game over!"
                 )
-                return
+                return None
             else:
                 await message.delete(delay=0)
                 if str(reaction.emoji) == CROSS_EMOJI:
                     await self.game_over(
                         "quit", self.player_active, self.player_inactive
                     )
-                    return
+                    return None
 
                 try:
                     await self.message.remove_reaction(reaction, user)
@@ -779,7 +780,7 @@ class AI_C4:
 
     def get_possible_places(self) -> List[Coordinate]:
         """Gets all the coordinates where the AI_C4 could possibly place a counter."""
-        possible_coords = []
+        possible_coords: List[Coordinate] = []
         for column_num in range(self.game.grid_size):
             column = [row[column_num] for row in self.game.grid]
             for row_num, square in reversed(list(enumerate(column))):
@@ -795,10 +796,11 @@ class AI_C4:
         with 10% chance of not winning and returning None
         """
         if random.randint(1, 10) == 1:
-            return
+            return None
         for coords in coord_list:
             if self.game.check_win(coords, 2):
                 return coords
+        return None
 
     def check_player_win(self, coord_list: List[Coordinate]) -> Optional[Coordinate]:
         """
@@ -807,10 +809,11 @@ class AI_C4:
         from winning with 25% of not blocking them  and returning None.
         """
         if random.randint(1, 4) == 1:
-            return
+            return None
         for coords in coord_list:
             if self.game.check_win(coords, 1):
                 return coords
+        return None
 
     @staticmethod
     def random_coords(coord_list: List[Coordinate]) -> Coordinate:
@@ -1044,9 +1047,9 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
 
 
 class GameTicTacToe(discord.ui.View):
-    children: List[ButtonTicTacToe]
+    children: Sequence[ButtonTicTacToe]
 
-    def __init__(self, players: Tuple[User, User]):
+    def __init__(self, players: Tuple[discord.Member, discord.Member]):
         self.players = list(players)
         random.shuffle(self.players)
 
@@ -1096,7 +1099,7 @@ class GameTicTacToe(discord.ui.View):
         self.board = ai.move(self.board)
 
     @property
-    def current_player(self) -> User:
+    def current_player(self) -> discord.Member:
         return self.players[self.board.current_player]
 
 
@@ -1116,7 +1119,7 @@ EmojiSet = Dict[Tuple[bool, bool], str]
 class Player:
     """Each player in the game - their messages for the boards and their current grid."""
 
-    user: Optional[discord.Member]
+    user: discord.Member
     board: Optional[discord.Message]
     opponent_board: discord.Message
     grid: Grid
@@ -1217,8 +1220,8 @@ class GameBattleShip:
 
         self.gameover: bool = False
 
-        self.turn: Optional[discord.Member] = None
-        self.next: Optional[discord.Member] = None
+        self.turn: Optional[Player] = None
+        self.next: Optional[Player] = None
 
         self.match: Optional[re.Match] = None
         self.surrender: bool = False
@@ -1348,6 +1351,7 @@ class GameBattleShip:
             if not self.match:
                 self.bot.loop.create_task(message.add_reaction(CROSS_EMOJI))
             return bool(self.match)
+        return False
 
     async def take_turn(self) -> Optional[Square]:
         """Lets the player who's turn it is choose a square."""
@@ -1410,7 +1414,7 @@ class GameBattleShip:
         await self.p1.user.send(f"You're playing battleship with {self.p2.user}.")
         await self.p2.user.send(f"You're playing battleship with {self.p1.user}.")
 
-        alert_messages = []
+        alert_messages: List[discord.Message] = []
 
         self.turn = self.p1
         self.next = self.p2
@@ -1476,8 +1480,10 @@ class Cell:
             else:
                 number = boardgames.keycap_digit(self.number)
 
-            return "💥" if self.mine else number
-        return "🚩" if self.flagged else "⬜"
+            return "\N{COLLISION SYMBOL}" if self.mine else number
+        return (
+            "\N{TRIANGULAR FLAG ON POST}" if self.flagged else "\N{WHITE LARGE SQUARE}"
+        )
 
 
 class Game(boardgames.Board[Cell]):
@@ -1716,13 +1722,13 @@ class Games(Cog):
         self.games_boogle: Dict[discord.TextChannel, Game] = {}
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
         self.games_hitler: Dict[int, discord.ui.View] = {}
-        self.chess_games = []
+        self.chess_games: List[int] = []
 
         self.max_board_size = 9
         self.min_board_size = 5
         self.templates = self._load_templates()
-        self.edited_content = {}
-        self.checks = set()
+        self.edited_content: Dict[int, str] = {}
+        self.checks: Set[Callable] = set()
 
     @staticmethod
     def _load_templates() -> list[MadlibsTemplate]:
@@ -2313,14 +2319,15 @@ class Games(Cog):
         game = Twenty48(_2048_GAME, size=boardsize)
         game.start()
         BoardString = game.number_to_emoji()
-        embed = (
-            discord.Embed(
-                title="2048 Game",
-                description=f"{BoardString}",
-            )
-            .set_footer(text=f"User: {ctx.author}")
+        embed = discord.Embed(
+            title="2048 Game",
+            description=f"{BoardString}",
+        ).set_footer(text=f"User: {ctx.author}")
+        await ctx.send(
+            ctx.author.mention,
+            embed=embed,
+            view=Twenty48_Button(game, ctx.author, bot=self.bot),
         )
-        await ctx.send(ctx.author.mention, embed=embed, view=Twenty48_Button(game, ctx.author, bot=self.bot))
 
     @commands.group(name="chess", invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
@@ -2328,7 +2335,7 @@ class Games(Cog):
     async def chess(self, ctx: Context):
         """Chess game. In testing"""
         if not ctx.invoked_subcommand:
-            announcement = await ctx.send(
+            announcement: discord.Message = await ctx.send(
                 "**Chess**: A new game is about to start!\n"
                 f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
                 f"(Cancel the game with {CROSS_EMOJI}.)"
@@ -2367,9 +2374,9 @@ class Games(Cog):
             await game.start()
 
     @chess.command()
-    async def custom_chess(self, ctx: Context, board: fenPass):
+    async def custom_chess(self, ctx: Context, board: fenPass):  # type: ignore
         """To play chess, from a custom FEN notation"""
-        announcement = await ctx.send(
+        announcement: discord.Message = await ctx.send(
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)"
@@ -2475,7 +2482,9 @@ class Games(Cog):
         if message.channel not in self.games_boogle:
             return
 
-        await self.games_boogle[message.channel].check_message(message)
+        if isinstance(message.channel, discord.TextChannel):
+            game: Game = self.games_boogle[message.channel]
+            await game.check_message(message)
 
     @commands.command(aliases=["umbrogus", "secret_hitler", "secret-hitler"])
     @commands.bot_has_permissions(embed_links=True)

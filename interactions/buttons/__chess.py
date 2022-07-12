@@ -120,6 +120,7 @@ class Chess:
                 )
                 self.game_stop = True
                 return None
+        return None
 
     def switch(self) -> None:
         if self.turn == self.white:
@@ -131,9 +132,9 @@ class Chess:
             self.alternate_turn = self.black
             return
 
-    async def place_move(self, move: str) -> None:
+    async def place_move(self, user_move: str) -> None:
         st = "white" if self.alternate_turn == self.white else "black"
-        move = self.board.push_san(move)
+        move = self.board.push_san(user_move)
         content = f"{self.white.mention} VS {self.black.mention}"
         embed = discord.Embed(
             timestamp=discord.utils.utcnow(),

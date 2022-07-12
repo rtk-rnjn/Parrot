@@ -14,4 +14,4 @@ dependency_file_paths = [
 
 [[transformers]]
 name = "isort"
-enabled = false
+enabled = true

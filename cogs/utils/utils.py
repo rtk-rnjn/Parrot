@@ -737,10 +737,14 @@ class Utils(Cog):
         file: Optional[discord.File] = None,
     ) -> Optional[discord.Message]:
 
-        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(ctx.guild)
+        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(
+            ctx.guild
+        )
         if channel is None:
-            raise commands.BadArgument(f"{ctx.author.mention} error fetching suggestion channel")
-        
+            raise commands.BadArgument(
+                f"{ctx.author.mention} error fetching suggestion channel"
+            )
+
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
         await ctx.bulk_add_reactions(msg, *REACTION_EMOJI)

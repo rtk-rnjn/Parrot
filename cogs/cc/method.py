@@ -105,8 +105,16 @@ class CustomBase:
 class CustomMessage(CustomBase):
     def __init__(self, message: discord.Message):
         self.id = message.id
-        self.author = CustomMember(message.author) if isinstance(message.author, discord.Member) else None
-        self.channel = CustomTextChannel(message.channel) if isinstance(message.channel, discord.TextChannel) else None
+        self.author = (
+            CustomMember(message.author)
+            if isinstance(message.author, discord.Member)
+            else None
+        )
+        self.channel = (
+            CustomTextChannel(message.channel)
+            if isinstance(message.channel, discord.TextChannel)
+            else None
+        )
         self.content = message.content
         self.embeds = message.embeds
         self.created_at = message.created_at
@@ -142,7 +150,6 @@ class CustomEmoji:
             self.name = emoji.name
             self.animated = emoji.animated
             self.url = emoji.url
-
 
 
 class CustomMember(CustomBase):
@@ -525,9 +532,7 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
         await self.__message.add_reaction(emoji)
         return
 
-    async def message_remove_reaction(
-        self, emoji: str, member: CustomMember
-    ) -> None:
+    async def message_remove_reaction(self, emoji: str, member: CustomMember) -> None:
         await self.__message.remove_reaction(emoji, discord.Object(id=member.id))
         return
 
@@ -538,7 +543,11 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
     async def reactions_users(self, emoji: Any) -> List[CustomMember]:
         for reaction in self.__message.reactions:
             if str(reaction.emoji) == emoji:
-                return [CustomMember(member) async for member in reaction.users() if isinstance(member, discord.Member)]
+                return [
+                    CustomMember(member)
+                    async for member in reaction.users()
+                    if isinstance(member, discord.Member)
+                ]
         return []
 
 

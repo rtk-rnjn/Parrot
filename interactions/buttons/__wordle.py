@@ -33,6 +33,7 @@ GREEN = (105, 169, 99)
 LGRAY = (198, 201, 205)
 VALID_WORDS = tuple(open(r"extra/5_words.txt", "r").read().splitlines())
 
+
 class Wordle:
     def __init__(self, *, text_size: int = 55) -> None:
         self.embed_color: Optional[DiscordColor] = None
@@ -152,7 +153,9 @@ class Wordle:
                 if won:
                     col: Collection = ctx.bot.mongo.extra.games_leaderboard
                     await col.update_one(
-                        {"_id": ctx.author.id}, {"$inc": {"wordle.games_won": 1}}, upsert=True
+                        {"_id": ctx.author.id},
+                        {"$inc": {"wordle.games_won": 1}},
+                        upsert=True,
                     )
                     return await ctx.send("Game Over! You won!")
                 if len(self.guesses) > 5:

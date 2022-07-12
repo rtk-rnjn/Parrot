@@ -194,7 +194,11 @@ class IPCRoutes(Cog):
     @server.route()
     async def get_message(self, data: server.IpcServerResponse) -> Dict[str, Any]:
         channel = self.bot.get_channel(data.channel_id)
-        message = await self.bot.get_or_fetch_message(channel, data.message_id, partial=False,)
+        message = await self.bot.get_or_fetch_message(
+            channel,
+            data.message_id,
+            partial=False,
+        )
         if not isinstance(message, discord.Message):
             return {}
 

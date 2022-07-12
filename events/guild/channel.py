@@ -203,7 +203,11 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             ls.append(
                 ("`Overwrite Changed:`", self._overwrite_to_json(before.overwrites))
             )
-        if before.category and after.category and before.category.id != after.category.id:
+        if (
+            before.category
+            and after.category
+            and before.category.id != after.category.id
+        ):
             ls.append(
                 (
                     "`Category Changed :`"

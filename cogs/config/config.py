@@ -49,8 +49,6 @@ class Configuration(Cog):
             if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": ctx.guild.id}
             ):
-                data: Dict[str, Any]
-
                 role = ctx.guild.get_role(data.get("mod_role", 0))
                 mod_log = ctx.guild.get_channel(data.get("action_log", 0))
                 mute_role = ctx.guild.get_role(data.get("mute_role", 0))
@@ -1599,7 +1597,6 @@ class Configuration(Cog):
                         ]
                     )
             for _role in server_stats.get("role", {}):
-                _role: Dict[str, Any]
                 role = ctx.guild.get_role(_role.get("role_id", 0))
                 channel = ctx.guild.get_channel(_role.get("channel_id", 0))
                 template = _role.get("template")

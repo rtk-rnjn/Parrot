@@ -31,7 +31,9 @@ GRAY = (119, 123, 125)
 ORANGE = (200, 179, 87)
 GREEN = (105, 169, 99)
 LGRAY = (198, 201, 205)
-VALID_WORDS = tuple(open(r"extra/5_words.txt", "r").read().splitlines())
+
+with open(r"extra/5_words.txt", "r") as f:
+    VALID_WORDS = tuple(f.read().splitlines())
 
 
 class Wordle:

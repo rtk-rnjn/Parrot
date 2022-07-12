@@ -899,8 +899,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     )
                     await message.reply("GG! Level up!", file=file)
 
-    async def _scam_detection(self, message: discord.Message):
+    async def _scam_detection(self, message: discord.Message) -> None:
         if message.guild is None:
+            return
+
+        if message.author.id == self.bot.user.id:
             return
 
         if not message.channel.permissions_for(message.guild.me).send_messages:  # type: ignore
@@ -916,7 +919,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if any(self.__scam_link_cache.get(i, False) for i in set(match_list)):
             with suppress(discord.Forbidden):
                 await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message."
+                    f"Match: `{'`, `'.join(k for k, v in self.__scam_link_cache.items() if v and k in match_list)}`",
                 )
             return
 

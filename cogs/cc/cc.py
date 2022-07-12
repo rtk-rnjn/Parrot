@@ -50,7 +50,9 @@ ERROR_ON_REVIEW_REQUIRED = """
 
 
 class ContentCode:
-    def __init__(self, argument: str):
+    def __init__(self, argument: Optional[str]):
+        if argument is None:
+            return "``` ```"
         try:
             block, code = argument.split("\n", 1)
         except ValueError:
@@ -66,15 +68,15 @@ class ContentCode:
 
 
 class CCFlag(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
-    code: str = None
+    code: Optional[str] = None
     # name: str = None
     trigger_type: str = "on_message"
 
-    requied_role: discord.Role = None
-    ignored_role: discord.Role = None
+    requied_role: Optional[discord.Role] = None
+    ignored_role: Optional[discord.Role] = None
 
-    requied_channel: discord.TextChannel = None
-    ignored_channel: discord.TextChannel = None
+    requied_channel: Optional[discord.TextChannel] = None
+    ignored_channel: Optional[discord.TextChannel] = None
 
 
 class CustomCommand(Cog):
@@ -90,7 +92,6 @@ class CustomCommand(Cog):
         def default_value():
             return 0
 
-        self.default_dict = defaultdict(default_value)
         self.data = {}
 
     async def cog_load(self):
@@ -169,7 +170,7 @@ class CustomCommand(Cog):
         def check(msg: discord.Message) -> bool:
             return msg.author == ctx.author and msg.channel == ctx.channel
 
-        async def wait_for(**kwargs) -> Optional[discord.Message]:
+        async def wait_for(**kwargs) -> discord.Message:
             try:
                 return await self.bot.wait_for("message", **kwargs)
             except asyncio.TimeoutError:
@@ -328,7 +329,7 @@ class CustomCommand(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
-        if not message.guild:
+        if message.guild is None:
             return
 
         if data := await self.bot.mongo.cc.commands.find_one(

@@ -651,11 +651,11 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
                 exec(compile(code, "<string>", "exec"), self.env)
 
                 try:
-                    self.env["function"]
+                    function: Callable = self.env["function"]
                 except KeyError:
                     return
 
-                await self.env["function"](
+                await function(
                     CustomReaction(self.__reaction), CustomMember(self.__user)
                 )
                 return

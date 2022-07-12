@@ -467,14 +467,19 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             with suppress(discord.Forbidden, discord.NotFound):
                 await message.add_reaction("\N{SPIRAL NOTE PAD}")
                 try:
-                    r, u = await self.bot.wait_for(
+                    r, _ = await self.bot.wait_for(
                         "reaction_add", check=check, timeout=30
                     )
                 except asyncio.TimeoutError:
                     return
                 if r.emoji == "\N{SPIRAL NOTE PAD}":
                     url = f"http://twitch.center/customapi/math?expr={urllib.parse.quote(message.content)}"
-                    res = await self.bot.http_session.get(url)
+                    try:
+                        res = await self.bot.http_session.get(url)
+                    except aiohttp.ClientOSError:
+                        await asyncio.sleep(60)
+                        return
+
                     if res.status == 200:
                         text = await res.text()
                     else:
@@ -895,6 +900,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     await message.reply("GG! Level up!", file=file)
 
     async def _scam_detection(self, message: discord.Message):
+        if message.guild is None:
+            return
+
+        if not message.channel.permissions_for(message.guild.me).send_messages:  # type: ignore
+            return
+
         API = "https://anti-fish.bitflow.dev/check"
 
         match_list = re.findall(
@@ -914,27 +925,28 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         ):
             return
 
-        response = await self.bot.http_session.post(
-            API,
-            json={"message": message.content},
-            headers={"User-Agent": f"{self.bot.user.name} ({self.bot.github})"},
-        )
+        with suppress(aiohttp.ClientOSError):
+            response = await self.bot.http_session.post(
+                API,
+                json={"message": message.content},
+                headers={"User-Agent": f"{self.bot.user.name} ({self.bot.github})"},
+            )
 
-        if response.status != 200:
-            for i in match_list:
-                self.__scam_link_cache[i] = False
-            return
+            if response.status != 200:
+                for i in match_list:
+                    self.__scam_link_cache[i] = False
+                return
 
-        data = await response.json()
+            data = await response.json()
 
-        if data["match"]:
-            with suppress(discord.Forbidden):
+            if data["match"]:
                 await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{'`, `'.join(set(match_list))}`",
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. "
+                    f"Match: `{'`, `'.join(i['domain'] for i in data['matches'])}`"
                 )
-            for match in data["matches"]:
-                self.__scam_link_cache[match["domain"]] = True
-                await asyncio.sleep(0)
+                for match in data["matches"]:
+                    self.__scam_link_cache[match["domain"]] = True
+                    await asyncio.sleep(0)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         collection: Collection = self.bot.mongo.leveling[f"{member.guild.id}"]

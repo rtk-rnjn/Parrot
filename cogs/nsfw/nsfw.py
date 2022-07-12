@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -21,10 +22,10 @@ class NSFW(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{NO ONE UNDER EIGHTEEN SYMBOL}")
 
-    async def get_embed(self, type_str: str) -> discord.Embed:
+    async def get_embed(self, type_str: str) -> Optional[discord.Embed]:
         response = await self.bot.http_session.get(self.url, params={"type": type_str})
         if response.status != 200:
-            return
+            return None
         url = (await response.json())["message"]
         embed = discord.Embed(
             title=f"{type_str.title()}",
@@ -42,7 +43,11 @@ class NSFW(Cog):
             @commands.bot_has_permissions(embed_links=True)
             @Context.with_type
             async def callback(ctx: Context):
-                await ctx.reply(embed=await self.get_embed(f"{ctx.command.name}"))
+                embed = await self.get_embed(f"{ctx.command.name}")
+                if embed is not None:
+                    await ctx.reply(embed=embed)
+                else:
+                    await ctx.reply("{ctx.author.mention} something not right? This is not use but the API")
 
             self.bot.add_command(callback)
 

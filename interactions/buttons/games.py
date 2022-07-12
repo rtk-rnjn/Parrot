@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from functools import cached_property, partial, wraps
 from pathlib import Path
 from random import choice, sample
-from string import ascii_uppercase
 from typing import (
     Any,
     Callable,

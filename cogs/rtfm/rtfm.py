@@ -12,7 +12,7 @@ from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore
@@ -166,6 +166,7 @@ class Icons:
 
 class InformationDropdown(ui.Select):
     """A dropdown inheriting from ui.Select that allows finding out other information about the kata."""
+    original_message: discord.Message
 
     def __init__(
         self,
@@ -343,7 +344,7 @@ class RTFM(Cog):
 
         return content
 
-    referred = {
+    referred: Dict[str, Callable] = {
         "csp-directives": _ref.csp_directives,
         "git": _ref.git_ref,
         "git-guides": _ref.git_tutorial_ref,
@@ -356,7 +357,7 @@ class RTFM(Cog):
     }
 
     # TODO: lua, java, javascript, asm
-    documented = {
+    documented: Dict[str, Callable] = {
         "c": _doc.c_doc,
         "cpp": _doc.cpp_doc,
         "haskell": _doc.haskell_doc,
@@ -674,7 +675,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def reference(self, ctx: Context, language, *, query: str):
+    async def reference(self, ctx: Context, language: str, *, query: str):
         """Returns element reference from given language"""
         lang = language.strip("`")
 
@@ -687,7 +688,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command(aliases=["doc"])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def documentation(self, ctx: Context, language, *, query: str):
+    async def documentation(self, ctx: Context, language: str, *, query: str):
         """Returns element reference from given language"""
         lang = language.strip("`")
 
@@ -1560,7 +1561,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         kata_view = self.create_view(
             dropdown, f"https://codewars.com/kata/{first_kata_id}"
         )
-        original_message = await ctx.send(embed=kata_embed, view=kata_view)
+        original_message: discord.Message = await ctx.send(embed=kata_embed, view=kata_view)
         dropdown.original_message = original_message
 
         wait_for_kata = await kata_view.wait()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Optional
 
 import discord
 from core import Parrot
@@ -45,7 +46,7 @@ def prepare_payload(payload):
 
 async def get_message(
     interaction: discord.Interaction, fetch=False, *, bot: Parrot
-) -> discord.Message:
+) -> Optional[discord.Message]:
     """Retrieve referenced message, trying cache first and handle deletion"""
     ref = interaction.message.reference
 
@@ -61,8 +62,8 @@ async def get_message(
     # message is None, means we have to fetch
 
     try:
-        return bot.get_or_fetch_message(
-            interaction.message.channel, ref.message_id, partial=True
+        return await bot.get_or_fetch_message(
+            interaction.message.channel, ref.message_id, fetch=True
         )
     except discord.errors.NotFound:
         # message deleted
@@ -113,7 +114,7 @@ class RerunBtn(discord.ui.Button):
         await interaction.message.edit(content=result)
 
 
-async def execute_run(bot: Parrot, language, code, rerun=False) -> tuple:
+async def execute_run(bot: Parrot, language: str, code: str,) -> str:
     # Powered by tio.run
 
     options = {"--stats": False, "--wrapped": False}

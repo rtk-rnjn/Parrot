@@ -223,6 +223,7 @@ class Twenty48_Button(discord.ui.View):
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
+            await self.update_to_db()
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
@@ -261,6 +262,7 @@ class Twenty48_Button(discord.ui.View):
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
+            await self.update_to_db()
 
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
@@ -287,7 +289,7 @@ class Twenty48_Button(discord.ui.View):
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
-
+            await self.update_to_db()
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
@@ -313,5 +315,5 @@ class Twenty48_Button(discord.ui.View):
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
-
+            await self.update_to_db()
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)

@@ -63,7 +63,7 @@ from pymongo.collection import Collection
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 
-from .__command_flags import SokobanStatsFlag
+from .__command_flags import SokobanStatsFlag, TwentyFortyEightStatsFlag
 
 emoji = emojis  # Idk
 
@@ -1105,6 +1105,7 @@ class GameTicTacToe(discord.ui.View):
     @property
     def current_player(self) -> discord.Member:
         return self.players[self.board.current_player]
+
 
 EmojiSet = Dict[Tuple[bool, bool], str]
 
@@ -2272,21 +2273,30 @@ class Games(Cog):
         await announcement.delete()
         bs = BetaBattleShip(player1=ctx.author, player2=user)
         await bs.start(ctx, timeout=120)
-    
+
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
     async def top(self, ctx: Context):
         """To display your statistics of games, WIP"""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
-    
-    @top.command()
-    async def sokoban_stats(self, ctx: Context, user: Optional[discord.User] = None, *, flag: SokobanStatsFlag):
+
+    @top.command(name="sokoban")
+    async def sokoban_stats(
+        self,
+        ctx: Context,
+        user: Optional[discord.User] = None,
+        *,
+        flag: SokobanStatsFlag,
+    ):
         """Sokoban Game"""
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
-        sort_by = "time_taken" if flag.sort_by.lower() == "time" else flag.sort_by.lower()
+        sort_by = (
+            "time_taken" if flag.sort_by.lower() == "time" else flag.sort_by.lower()
+        )
         FILTER = {"sokoban": {"$exists": True}}
         FILTER["_id"] = user.id
 
@@ -2296,9 +2306,7 @@ class Games(Cog):
                 "$push": {
                     "sokoban": {
                         "$each": [],
-                        "$sort": {
-                            sort_by: int(flag.sort)
-                        },
+                        "$sort": {sort_by: int(flag.sort)},
                         "$slice": int(flag.limit),
                     }
                 }
@@ -2307,15 +2315,72 @@ class Games(Cog):
         )
         if not data:
             await ctx.send(
-                f"{ctx.author.mention + 'you' if user is ctx.author else user} haven't played Sokoban yet!"
+                f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played Sokoban yet!"
             )
             return
         entries = []
         sokoban_data: List[Dict[str, Union[int, float]]] = data["sokoban"]
         for i in sokoban_data:
-            entries.append(f"""`Level`: {i['level']}
-`Time Taken`: {i['time_taken']}
+            entries.append(
+                f"""`Level`: {i['level']}
+`Time Taken`: {int(i['time_taken'])} seconds
 `Moves`: {i['moves']}
-""")
+"""
+            )
         p = SimplePages(entries, ctx=ctx)
         await p.start()
+
+    @top.command(name="2048")
+    async def twenty_four_eight_stats(
+        self,
+        ctx: Context,
+        user: Optional[discord.User] = None,
+        *,
+        flag: TwentyFortyEightStatsFlag,
+    ):
+        """2048 Game"""
+        user = user or ctx.author
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+
+        sort_by = (
+            "games_played" if flag.sort_by.lower() == "games" else flag.sort_by.lower()
+        )
+        sort_by = "moves" if sort_by == "total_moves" else sort_by
+
+        FILTER = {"twenty48": {"$exists": True}}
+
+        if flag.me and flag._global:
+            return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
+
+        if flag.me:
+            data = await col.find_one_and_update(
+                {"_id": user.id, **FILTER},
+                return_document=ReturnDocument.AFTER,
+            )
+            if not data:
+                await ctx.send(
+                    f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played 2048 yet!"
+                )
+                return
+
+        if flag._global:
+            entries = []
+            async for data in col.find_one(FILTER):
+                user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+                entries.append(
+                    f"""User: `{user or 'NA'}`
+`Games Played`: {data['twenty48']['games_played']} games played
+`Total Moves `: {data['twenty48']['total_moves']} moves
+"""
+                )
+            if not entries:
+                await ctx.send(f"{ctx.author.mention} No one has played 2048 yet!")
+                return
+
+            def func(e):
+                return e[sort_by]
+
+            entries.sort(reverse=bool(flag.sort), key=func)
+
+            p = SimplePages(entries, ctx=ctx)
+            await p.start()

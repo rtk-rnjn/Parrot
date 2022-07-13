@@ -14,3 +14,13 @@ class SokobanStatsFlag(
     sort_by: Literal["level", "time", "moves"] = "time"
     sort: Literal[1, 0] = 1
     limit: int = 100
+
+
+class TwentyFortyEightStatsFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
+    me: Optional[convert_bool] = True
+    _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
+    sort_by: Literal["moves", "games"] = "games_played"
+    sort: Literal[1, 0] = 1
+    limit: int = 100

@@ -25,9 +25,6 @@ import discord
 from discord.ext import commands
 from utilities.emotes import emojis
 
-__all__: Tuple[Literal["Context"]] = ("Context",)
-
-
 CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",

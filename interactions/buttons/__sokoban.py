@@ -370,14 +370,11 @@ class SokobanGameView(discord.ui.View):
         col: Collection = self.ctx.bot.mongo.extra.games_leaderboard
         time_taken = time.perf_counter() - self.ini
         await col.update_one(
-            {"_id": self.user.id},
+            {"_id": self.user.id, "sokoban.level": self.game.level},
             {
-                "$addToSet": {
-                    "sokoban": {
-                        "level": self.level,
-                        "time_taken": time_taken,
-                        "moves": self.moves,
-                    }
+                "$set": {
+                    "sokoban.$.time_taken": time_taken,
+                    "sokoban.$.moves": self.moves,
                 }
             },
             upsert=True,

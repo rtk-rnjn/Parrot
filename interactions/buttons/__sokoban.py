@@ -377,17 +377,18 @@ class SokobanGameView(discord.ui.View):
                         {"$set": {"sokoban.$.time_taken": time_taken}},
                     )
                     return
-            await col.update_one(
-                {"_id": self.user.id},
-                {
-                    "$addToSet": {
-                        "sokoban": {
-                            "level": self.level,
-                            "time_taken": time_taken,
-                            "moves": self.moves,
-                        }
+            return
+        await col.update_one(
+            {"_id": self.user.id},
+            {
+                "$addToSet": {
+                    "sokoban": {
+                        "level": self.level,
+                        "time_taken": time_taken,
+                        "moves": self.moves,
                     }
-                },
-                upsert=True,
-            )
+                }
+            },
+            upsert=True,
+        )
         self.moves = 0

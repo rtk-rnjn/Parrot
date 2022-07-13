@@ -30,12 +30,11 @@ CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS DOWN SIGN}",
 )
 
-from .Parrot import Parrot
 
-ParrotT = TypeVar("ParrotT", bound=Parrot)
+BotT = TypeVar("BotT", bound=commands.Bot)
 
 
-class Context(commands.Context["Parrot"], Generic[ParrotT]):
+class Context(commands.Context["Parrot"], Generic[BotT]):
     """A custom implementation of commands.Context class."""
 
     if TYPE_CHECKING:

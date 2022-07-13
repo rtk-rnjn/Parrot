@@ -2281,7 +2281,7 @@ class Games(Cog):
             await self.bot.invoke_help_command(ctx)
     
     @top.command()
-    async def sokoban(self, ctx: Context, user: Optional[discord.User] = None, *, flag: SokobanStatsFlag):
+    async def sokoban_stats(self, ctx: Context, user: Optional[discord.User] = None, *, flag: SokobanStatsFlag):
         """Sokoban Game"""
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard

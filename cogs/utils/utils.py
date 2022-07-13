@@ -20,7 +20,7 @@ from utilities.rankcard import rank_card
 from utilities.time import ShortTime
 
 
-class afkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
+class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     ignore_channel: Tuple[discord.TextChannel, ...] = []
     _global: Optional[convert_bool] = commands.flag(name="global", default=False)
     _for: Optional[ShortTime] = commands.flag(name="for", default=None)
@@ -500,7 +500,7 @@ class Utils(Cog):
         )
 
     @afk.command(name="custom")
-    async def custom_afk(self, ctx: Context, *, flags: afkFlags):
+    async def custom_afk(self, ctx: Context, *, flags: AfkFlags):
         """To set the custom AFK"""
         payload = {
             "_id": ctx.message.id,

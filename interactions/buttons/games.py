@@ -9,7 +9,6 @@ import random
 import re
 from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import dataclass
 from functools import cached_property, partial, wraps
 from pathlib import Path
 from random import choice, sample
@@ -33,12 +32,14 @@ from typing import (
 import discord
 import emojis
 from aiofile import async_open
+from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord.ext import boardgames, commands  # type: ignore
 from discord.ext import old_menus as menus  # type: ignore
 from discord.utils import MISSING
 from interactions.buttons.__2048 import Twenty48, Twenty48_Button
 from interactions.buttons.__aki import Akinator
+from interactions.buttons.__battleship import BetaBattleShip
 from interactions.buttons.__chess import Chess
 from interactions.buttons.__constants import (
     _2048_GAME,
@@ -55,11 +56,14 @@ from interactions.buttons.__country_guess import BetaCountryGuesser
 from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
-from interactions.buttons.__wordle import Wordle, BetaWordle
-from interactions.buttons.__battleship import BetaBattleShip
+from interactions.buttons.__wordle import BetaWordle
 from interactions.buttons.secret_hitler.ui.join import JoinUI
+from pymongo import ReturnDocument
+from pymongo.collection import Collection
 from utilities.constants import Colours
 from utilities.converters import convert_bool
+
+from .__command_flags import SokobanStatsFlag
 
 emoji = emojis  # Idk
 
@@ -2268,3 +2272,50 @@ class Games(Cog):
         await announcement.delete()
         bs = BetaBattleShip(player1=ctx.author, player2=user)
         await bs.start(ctx, timeout=120)
+    
+    @commands.group(invoke_without_command=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def top(self, ctx: Context):
+        """To display your statistics of games, WIP"""
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
+    
+    @top.command()
+    async def sokoban(self, ctx: Context, user: Optional[discord.User] = None, *, flag: SokobanStatsFlag):
+        """Sokoban Game"""
+        user = user or ctx.author
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+
+        sort_by = "time_taken" if flag.sort_by.lower() == "time" else flag.sort_by.lower()
+        FILTER = {"sokoban": {"$exists": True}}
+        FILTER["_id"] = user.id
+
+        data = await col.find_one_and_update(
+            FILTER,
+            {
+                "$push": {
+                    "sokoban": {
+                        "$each": [],
+                        "$sort": {
+                            sort_by: int(flag.sort)
+                        },
+                        "$slice": int(flag.limit),
+                    }
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )
+        if not data:
+            await ctx.send(
+                f"{ctx.author.mention + 'you' if user is ctx.author else user} haven't played Sokoban yet!"
+            )
+            return
+        entries = []
+        sokoban_data: List[Dict[str, Union[int, float]]] = data["sokoban"]
+        for i in sokoban_data:
+            entries.append(f"""`Level`: {i['level']}
+`Time Taken`: {i['time_taken']}
+`Moves`: {i['moves']}
+""")
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()

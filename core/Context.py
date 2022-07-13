@@ -34,7 +34,7 @@ CONFIRM_REACTIONS: Tuple[str, ...] = (
 BotT = TypeVar("BotT", bound=commands.Bot)
 
 
-class Context(commands.Context["Parrot"], Generic[BotT]):
+class Context(commands.Context["commands.Bot"], Generic[BotT]):
     """A custom implementation of commands.Context class."""
 
     if TYPE_CHECKING:

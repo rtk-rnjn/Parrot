@@ -63,7 +63,12 @@ from pymongo.collection import Collection
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 
-from .__command_flags import SokobanStatsFlag, TwentyFortyEightStatsFlag
+from .__command_flags import (
+    CountryGuessStatsFlag,
+    SokobanStatsFlag,
+    TwentyFortyEightStatsFlag,
+    ChessStatsFlag,
+)
 
 emoji = emojis  # Idk
 
@@ -2362,7 +2367,11 @@ class Games(Cog):
                     f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played 2048 yet!"
                 )
                 return
-
+            return await ctx.send(
+                f"{ctx.author.mention + ' you' if user is ctx.author else user}'s stats:\n"
+                f"`Games Played`: {data['twenty48']['games_played']}\n"
+                f"`Total Moves `: {data['twenty48']['total_moves']}\n"
+            )
         if flag._global:
             entries = []
             async for data in col.find_one(FILTER):
@@ -2384,3 +2393,110 @@ class Games(Cog):
 
             p = SimplePages(entries, ctx=ctx)
             await p.start()
+
+    @top.command(name="countryguess")
+    async def country_guess_stats(
+        self,
+        ctx: Context,
+        user: Optional[discord.User] = None,
+        *,
+        flag: CountryGuessStatsFlag,
+    ):
+        """Country Guess Game"""
+        user = user or ctx.author
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+
+        sort_by = (
+            "games_played" if flag.sort_by.lower() == "games" else flag.sort_by.lower()
+        )
+        sort_by = "games_won" if sort_by == "win" else sort_by
+
+        FILTER = {"countryguess": {"$exists": True}}
+
+        if flag.me and flag._global:
+            return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
+
+        if flag.me:
+            data = await col.find_one_and_update(
+                {"_id": user.id, **FILTER},
+                return_document=ReturnDocument.AFTER,
+            )
+            if not data:
+                await ctx.send(
+                    f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played Country Guess yet!"
+                )
+                return
+            return await ctx.send(
+                f"{ctx.author.mention + ' you' if user is ctx.author else user}'s stats: \n"
+                f"`Games Played`: {data['countryguess'].get('games_played')} games played\n"
+                f"`Games Won`: {data['countryguess'].get('games_won')} games won\n"
+            )
+
+        if flag._global:
+            entries = []
+            async for data in col.find_one(FILTER):
+                user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+                entries.append(
+                    f"""User: `{user or 'NA'}`
+`Games Played`: {data['countryguess'].get('games_played')} games played
+`Total Wins  `: {data['countryguess'].get('games_won')} Wins
+"""
+                )
+            if not entries:
+                await ctx.send(f"{ctx.author.mention} No one has played Country Guess yet!")
+                return
+
+            def func(e):
+                return e[sort_by]
+
+            entries.sort(reverse=bool(flag.sort), key=func)
+            p = SimplePages(entries, ctx=ctx)
+            await p.start()
+
+    @top.command(name="chess")
+    async def chess_stats(
+        self,
+        ctx: Context,
+        user: Optional[discord.User] = None,
+        *,
+        flag: ChessStatsFlag,
+    ):
+        """Chess Game"""
+        user = user or ctx.author
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+
+        sort_by = flag.sort_by
+
+        FILTER = {"chess": {"$exists": True}}
+
+        data = await col.find_one_and_update(
+            FILTER,
+            {
+                "$push": {
+                    "chess_games": {
+                        "$each": [],
+                        "$sort": {sort_by: int(flag.sort)},
+                        "$slice": int(flag.limit),
+                    }
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )
+        if not data:
+            await ctx.send(
+                f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played chess yet!"
+            )
+            return
+        entries = []
+        chess_data = data["chess_games"]
+        for i in chess_data:
+            user1 = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, i["white"])
+            user2 = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, i["black"])
+            entries.append(
+                f"""{user1 or 'NA'} vs {user2 or 'NA'}
+`Winner`: {i["winner"]}
+`Draw  `: {i["draw"]}
+"""
+            )
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()

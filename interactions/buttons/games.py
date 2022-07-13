@@ -2236,5 +2236,35 @@ class Games(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def battleship(self, ctx: Context):
         """Solo Battleship Game"""
-        bs = BetaBattleShip()
+        announcement: discord.Message = await ctx.send(
+            "**Battleship**: A new game is about to start!\n"
+            f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
+            f"(Cancel the game with {CROSS_EMOJI}.)"
+        )
+        self.waiting.append(ctx.author)
+        await announcement.add_reaction(HAND_RAISED_EMOJI)
+        await announcement.add_reaction(CROSS_EMOJI)
+
+        try:
+            reaction, user = await self.bot.wait_for(
+                "reaction_add",
+                check=partial(self.predicate, ctx, announcement),
+                timeout=60.0,
+            )
+        except asyncio.TimeoutError:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(
+                f"{ctx.author.mention} Seems like there's no one here to play..."
+            )
+            return
+
+        if str(reaction.emoji) == CROSS_EMOJI:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(f"{ctx.author.mention} Game cancelled.")
+            return
+
+        await announcement.delete()
+        bs = BetaBattleShip(player1=ctx.author, player2=user)
         await bs.start(ctx, timeout=120)

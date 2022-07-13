@@ -369,14 +369,25 @@ class SokobanGameView(discord.ui.View):
     async def db_update(self):
         col: Collection = self.ctx.bot.mongo.extra.games_leaderboard
         time_taken = time.perf_counter() - self.ini
-        await col.update_one(
-            {"_id": self.user.id, "sokoban.level": self.game.level},
-            {
-                "$set": {
-                    "sokoban.$.time_taken": time_taken,
-                    "sokoban.$.moves": self.moves,
-                }
-            },
-            upsert=True,
-        )
+        if data := await col.find_one({"_id": self.user.id, "sokoban": {"$exists": True}}):
+            for i in data['sokoban']:
+                if i['level'] == self.level and i['time_taken'] < time_taken:
+                    await col.update_one(
+                        {"_id": self.user.id, "sokoban.level": self.level},
+                        {"$set": {"sokoban.$.time_taken": time_taken}},
+                    )
+                    return
+            await col.update_one(
+                {"_id": self.user.id},
+                {
+                    "$addToSet": {
+                        "sokoban": {
+                            "level": self.level,
+                            "time_taken": time_taken,
+                            "moves": self.moves,
+                        }
+                    }
+                },
+                upsert=True,
+            )
         self.moves = 0

@@ -371,7 +371,7 @@ class SokobanGameView(discord.ui.View):
         time_taken = time.perf_counter() - self.ini
         if data := await col.find_one({"_id": self.user.id, "sokoban": {"$exists": True}}):
             for i in data['sokoban']:
-                if i['level'] == self.level and i['time_taken'] < time_taken:
+                if i['level'] == self.level and i['time_taken'] > time_taken:
                     await col.update_one(
                         {"_id": self.user.id, "sokoban.level": self.level},
                         {"$set": {"sokoban.$.time_taken": time_taken}},

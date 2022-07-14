@@ -107,6 +107,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
             return random.choice(songs)
         except IndexError:
             pass
+        return {}
 
     @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
     async def prideanthem(self, ctx: Context, genre: str = None) -> None:

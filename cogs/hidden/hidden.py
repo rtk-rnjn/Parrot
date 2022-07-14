@@ -19,7 +19,7 @@ class Hidden(Cog):
 
     @optout.command(name="gitlink", hidden=True)
     async def optout_gitlink(self, ctx: Context):
-        """Opt-out for gitlink to codeblock"""
+        """Opt-out for gitlink to codeblock."""
         await self.bot.mongo.extra.misc.update_one(
             {"_id": ctx.guild.id},
             {"$pull": {"gitlink": ctx.author.id}},

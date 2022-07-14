@@ -220,7 +220,6 @@ class SokobanGameView(discord.ui.View):
                 url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
             ),
         )
-        await self.db_update()
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
@@ -245,7 +244,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -259,7 +257,6 @@ class SokobanGameView(discord.ui.View):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
         self.stop()
-        await self.db_update()
         await interaction.message.delete()
 
     @discord.ui.button(
@@ -288,7 +285,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -318,7 +314,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -348,7 +343,6 @@ class SokobanGameView(discord.ui.View):
             await interaction.response.edit_message(
                 embed=self.make_win_embed(), view=None
             )
-            return await self.db_update()
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -366,29 +360,3 @@ class SokobanGameView(discord.ui.View):
             view=self,
         )
 
-    async def db_update(self):
-        col: Collection = self.ctx.bot.mongo.extra.games_leaderboard
-        time_taken = time.perf_counter() - self.ini
-        if data := await col.find_one({"_id": self.user.id, "sokoban": {"$exists": True}}):
-            for i in data['sokoban']:
-                if i['level'] == self.level and i['time_taken'] > time_taken:
-                    await col.update_one(
-                        {"_id": self.user.id, "sokoban.level": self.level},
-                        {"$set": {"sokoban.$.time_taken": time_taken}},
-                    )
-                    return
-            return
-        await col.update_one(
-            {"_id": self.user.id},
-            {
-                "$addToSet": {
-                    "sokoban": {
-                        "level": self.level,
-                        "time_taken": time_taken,
-                        "moves": self.moves,
-                    }
-                }
-            },
-            upsert=True,
-        )
-        self.moves = 0

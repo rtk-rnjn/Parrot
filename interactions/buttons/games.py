@@ -2290,60 +2290,6 @@ class Games(Cog):
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @top.command(name="sokoban")
-    async def sokoban_stats(
-        self,
-        ctx: Context,
-        user: Optional[discord.User] = None,
-        *,
-        flag: SokobanStatsFlag,
-    ):
-        """Sokoban Game stats
-
-        Flag Options:
-        `--sort_by`: Sort the list by any of the argument `level` `time` or `moves`
-        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
-        `--limit`: Limit the list to the top `limit` entries.
-        """
-        user = user or ctx.author
-        col: Collection = self.bot.mongo.extra.games_leaderboard
-
-        sort_by = (
-            "time_taken" if flag.sort_by.lower() == "time" else flag.sort_by.lower()
-        )
-        FILTER = {"sokoban": {"$exists": True}}
-        FILTER["_id"] = user.id
-
-        data = await col.find_one_and_update(
-            FILTER,
-            {
-                "$push": {
-                    "sokoban": {
-                        "$each": [],
-                        "$sort": {sort_by: int(flag.sort)},
-                        "$slice": int(flag.limit),
-                    }
-                }
-            },
-            return_document=ReturnDocument.AFTER,
-        )
-        if not data:
-            await ctx.send(
-                f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played Sokoban yet!"
-            )
-            return
-        entries = []
-        sokoban_data: List[Dict[str, Union[int, float]]] = data["sokoban"]
-        for i in sokoban_data:
-            entries.append(
-                f"""`Level`: {i['level']}
-`Time Taken`: {int(i['time_taken'])} seconds
-`Moves`: {i['moves']}
-"""
-            )
-        p = SimplePages(entries, ctx=ctx)
-        await p.start()
-
     @top.command(name="2048")
     async def twenty_four_eight_stats(
         self,

@@ -6,7 +6,7 @@ from contextlib import suppress
 from io import BytesIO
 from json import loads
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import discord
 from core import Cog, Context, Parrot
@@ -86,10 +86,10 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.winners = set()
+        self.winners: Set[str] = set()
         self.correct = ""
         self.current_channel = None
-        self.daily_fact_task = self.bot.loop.create_task(self.send_egg_fact_daily())
+        self.quiz_messages: Dict[int, List[str]] = {}
 
     @staticmethod
     def replace_invalid(colour: str) -> Optional[int]:
@@ -136,6 +136,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             new_name = re.sub(exp, vowel_sub, displayname)
             if new_name != displayname:
                 return new_name
+        return None
 
     @staticmethod
     def append_name(displayname: str) -> str:
@@ -263,7 +264,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         """
         if len(colours) < 2:
             await ctx.send("You must include at least 2 colours!")
-            return
+            return None
 
         invalid = []
         colours = list(colours)
@@ -278,10 +279,10 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         if len(invalid) > 1:
             await ctx.send(f"Sorry, I don't know these colours: {' '.join(invalid)}")
-            return
+            return None
         if len(invalid) == 1:
             await ctx.send(f"Sorry, I don't know the colour {invalid[0]}!")
-            return
+            return None
 
         async with ctx.typing():
             # Expand list to 8 colours
@@ -296,7 +297,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             data = list(im.getdata())
 
             replaceable = {x for x in data if x not in IRREPLACEABLE}
-            replaceable = sorted(replaceable, key=COLOURS.index)
+            replaceable = sorted(list(replaceable), key=COLOURS.index)
 
             replacing_colours = {
                 colour: colours[i] for i, colour in enumerate(replaceable)
@@ -331,14 +332,6 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         await ctx.send(file=file, embed=embed)
         return new_im
-
-    @seasonal_task(Month.APRIL)
-    async def send_egg_fact_daily(self) -> None:
-        """A background task that sends an easter egg fact in the event channel everyday."""
-        await self.bot.wait_until_guild_available()
-
-        channel = self.bot.get_channel(776420233832955934)  # umm, IDK... LOL
-        await channel.send(embed=self.make_embed())
 
     @commands.command(name="eggfact", aliases=("efact",))
     async def easter_facts(self, ctx: Context) -> None:
@@ -377,7 +370,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             title=question, description=description, colour=Colours.pink
         )
 
-        msg = await ctx.send(embed=q_embed)
+        msg: discord.Message = await ctx.send(embed=q_embed)
         for emoji in valid_emojis:
             await msg.add_reaction(emoji)
 
@@ -387,9 +380,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         del self.quiz_messages[msg.id]
 
-        msg = await self.bot.get_or_fetch_message(msg.channel, msg.id)
+        msg: discord.Message = await self.bot.get_or_fetch_message(msg.channel, msg.id, force_fetch=True)
 
-        total_no = sum([len(await r.users().flatten()) for r in msg.reactions]) - len(
+        total_no = sum(r.count for r in msg.reactions) - len(
             valid_emojis
         )  # - bot's reactions
 
@@ -399,7 +392,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         results = ["**VOTES:**"]
         for emoji, _ in answers:
             num = [
-                len(await r.users().flatten())
+                r.count
                 for r in msg.reactions
                 if str(r.emoji) == emoji
             ][0] - 1
@@ -412,7 +405,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             [
                 u.mention
                 for u in [
-                    await r.users().flatten()
+                    [i async for i in r.users()]
                     for r in msg.reactions
                     if str(r.emoji) == correct
                 ][0]
@@ -441,14 +434,14 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         """Returns whether a given user has reacted more than once to a given message."""
         users = [
             u.id
-            for reaction in [await r.users().flatten() for r in message.reactions]
+            for reaction in [[i async for i in r.users()] for r in message.reactions]
             for u in reaction
         ]
         return users.count(user.id) > 1  # Old reaction plus new reaction
 
     @commands.Cog.listener()
     async def on_reaction_add(
-        self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]
+        self, reaction: discord.Reaction, user: Union[discord.Member, discord.User, discord.abc.Snowflake]
     ) -> None:
         """Listener to listen specifically for reactions of quiz messages."""
         if user.bot:

@@ -247,7 +247,7 @@ class CountryGuesser:
 
 
 class CountryInput(discord.ui.Modal, title="Input your guess!"):
-    def __init__(self, view: CountryView, *, ctx: Context) -> None:
+    def __init__(self, view: CountryView,) -> None:
         super().__init__()
         self.view = view
 
@@ -261,6 +261,9 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
         self.add_item(self.guess)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
+        col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
+        assert interaction.message is not None
+
         guess = self.guess.value.strip().lower()
         game = self.view.game
 
@@ -273,44 +276,41 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             self.view.disable_all()
             game.embed.description = f"```fix\n{game.country.title()}\n```"
             await interaction.message.edit(view=self.view, embed=game.embed)
-            col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
             await col.update_one(
                 {"_id": self.view.ctx.author.id},
                 {"$inc": {"country_guess.games_won": 1}},
                 upsert=True,
             )
             return self.view.stop()
+        else:
+            game.guesses -= 1
 
-        game.guesses -= 1
+            if not game.guesses:
+                self.view.disable_all()
+                game.update_guesslog("- GAME OVER, you lost -")
 
-        if not game.guesses:
-            self.view.disable_all()
-            game.update_guesslog("- GAME OVER, you lost -")
-
-            await interaction.message.edit(embed=game.embed, view=self.view)
-            await interaction.response.send_message(
-                f"Game Over! you lost, The country was `{game.country.title()}`"
-            )
-            col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
-            await col.update_one(
-                {"_id": self.view.ctx.author.id},
-                {"$inc": {"country_guess.games_lost": 1}},
-                upsert=True,
-            )
-            return self.view.stop()
-
-        acc = game.get_accuracy(guess)
-        game.update_guesslog(
-            f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n"
-            f"+ You have {game.guesses} guesses left.\n"
-        )
-        col: Collection = self.view.ctx.bot.mongo.extra.games_leaderboard
-        await col.update_one(
-            {"_id": self.view.ctx.author.id},
-            {"$inc": {"country_guess.guesses_used": 1}},
-            upsert=True,
-        )
-        await interaction.response.edit_message(embed=game.embed)
+                await interaction.message.edit(embed=game.embed, view=self.view)
+                await interaction.response.send_message(
+                    f"Game Over! you lost, The country was `{game.country.title()}`"
+                )
+                await col.update_one(
+                    {"_id": self.view.ctx.author.id},
+                    {"$inc": {"country_guess.games_lost": 1}},
+                    upsert=True,
+                )
+                return self.view.stop()
+            else:
+                acc = game.get_accuracy(guess)
+                game.update_guesslog(
+                    f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n"
+                    f"+ You have {game.guesses} guesses left.\n"
+                )
+                await col.update_one(
+                    {"_id": self.view.ctx.author.id},
+                    {"$inc": {"country_guess.guesses_used": 1}},
+                    upsert=True,
+                )
+                await interaction.response.edit_message(embed=game.embed)
 
 
 class CountryView(discord.ui.View):

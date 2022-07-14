@@ -23,7 +23,7 @@ class Hanukkah(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.hanukkah_dates: List[datetime.date] = []
 
-    def _parse_time_to_datetime(self, date: List[str]) -> datetime.datetime:
+    def _parse_time_to_datetime(self, date: str) -> datetime.datetime:
         """Format the times provided by the api to datetime forms."""
         try:
             return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")

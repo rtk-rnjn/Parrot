@@ -2677,7 +2677,7 @@ class Fun(Cog):
         async def update():
             await self.bot.mongo.extra.games_leaderboard.update_one(
                 {"_id": ctx.author.id},
-                {"$set": {"reaction_test": {"speed": end - start}}},
+                {"$set": {"reaction_test": end - start}},
                 upsert=True,
             )
 

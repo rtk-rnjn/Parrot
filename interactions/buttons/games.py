@@ -2386,7 +2386,7 @@ class Games(Cog):
 """
             )
         if not entries:
-            await ctx.send(f"{ctx.author.mention} No one has played 2048 yet!")
+            await ctx.send(f"{ctx.author.mention} No results found")
             return
 
         def func(e):

@@ -2645,6 +2645,7 @@ class Fun(Cog):
             "\N{SMILING FACE WITH OPEN MOUTH}",
             "\N{FACE WITH TEARS OF JOY}",
             "\N{SMILING FACE WITH HALO}",
+            "\N{FACE WITH PLEADING EYES}",
         ]
         emoji = random.choice(EMOJIS)
         confirm: discord.Message = await ctx.send(
@@ -2662,7 +2663,7 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
-        await ctx.bulk_add_reactions(confirm, EMOJIS)
+        await ctx.bulk_add_reactions(confirm, *EMOJIS)
         await ctx.release(random.uniform(1.5, 2.5))
         await confirm.edit(
             content=f"{ctx.author.mention} React as fast as possible on {emoji} **NOW**."

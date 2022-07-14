@@ -143,7 +143,8 @@ POWERS: Dict[PlayerCount, List[Optional[Power]]] = {
     9: [None, Power.Investigate, Power.Investigate, Power.Election],
 }
 
-[POWERS[k].extend([Power.Execution] * 2) for k in POWERS]  # flake8: noqa
+for k in POWERS:
+    POWERS[k].extend([Power.Execution] * 2)
 
 
 POWERS[6] = POWERS[5]

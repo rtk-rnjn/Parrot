@@ -18,7 +18,7 @@ class SokobanStatsFlag(
 class TwentyFortyEightStatsFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
-    me: Optional[convert_bool] = True
+    me: Optional[convert_bool] = False
     _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
     sort_by: Literal["moves", "games", "games_played"] = "games_played"
     sort: Literal[1, 0] = 1
@@ -27,7 +27,7 @@ class TwentyFortyEightStatsFlag(
 class CountryGuessStatsFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
-    me: Optional[convert_bool] = True
+    me: Optional[convert_bool] = False
     _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
     sort_by: Literal["win", "games", "games_won", "games_played"] = "games_played"
     sort: Literal[1, 0] = 1
@@ -43,7 +43,7 @@ class ChessStatsFlag(
 class TypingStatsFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
-    me: Optional[convert_bool] = True
+    me: Optional[convert_bool] = False
     _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
     sort_by: Literal["speed", "accuracy", "wpm"] = "speed"
     sort: Literal[1, -1] = 1
@@ -52,7 +52,7 @@ class TypingStatsFlag(
 class ReactionStatsFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
-    me: Optional[convert_bool] = True
+    me: Optional[convert_bool] = False
     _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
     sort: Literal[1, -1] = 1
     limit: int = 100

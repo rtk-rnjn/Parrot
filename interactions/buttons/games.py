@@ -2421,7 +2421,7 @@ class Games(Cog):
         )
         sort_by = "games_won" if sort_by == "win" else sort_by
 
-        FILTER = {"countryguess": {"$exists": True}}
+        FILTER = {"country_guess": {"$exists": True}}
 
         if flag.me and flag._global:
             return await ctx.send(
@@ -2440,8 +2440,8 @@ class Games(Cog):
             )
             entries.append(
                 f"""User: `{user or 'NA'}`
-`Games Played`: {data['countryguess'].get('games_played', 0)} games played
-`Total Wins  `: {data['countryguess'].get('games_won', 0)} Wins
+`Games Played`: {data['country_guess'].get('games_played', 0)} games played
+`Total Wins  `: {data['country_guess'].get('games_won', 0)} Wins
 """
             )
         if not entries:

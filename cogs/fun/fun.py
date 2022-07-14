@@ -2593,7 +2593,7 @@ class Fun(Cog):
             return (
                 m.author == ctx.author
                 and m.channel == ctx.channel
-                and rapidfuzz.fuzz.partial_ratio(m.content, line) >= 55
+                and rapidfuzz.fuzz.ratio(m.content, line) >= 55
             )
 
         ini = time.perf_counter()
@@ -2608,7 +2608,7 @@ class Fun(Cog):
 
         fakecontent = msg.content.replace(",", "").replace(".", "").replace("!", "")
 
-        accuracy = rapidfuzz.fuzz.partial_ratio(msg.content, line)
+        accuracy = rapidfuzz.fuzz.ratio(msg.content, line)
         wpm = round(len(fakecontent.split(" ")) / (fin - ini) * 60, 2)
 
         await self.bot.mongo.extra.games_leaderboard.update_one(

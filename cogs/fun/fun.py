@@ -2661,14 +2661,14 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
-        await ctx.bulk_add_reactions(confirm, *[e.name for e in EMOJIS])
+        await ctx.bulk_add_reactions(confirm, *[e.emoji for e in EMOJIS])
         await ctx.release(random.uniform(1.5, 2.5))
         await confirm.edit(
-            content=f"{ctx.author.mention} React as fast as possible on {emoji.name} **NOW**."
+            content=f"{ctx.author.mention} React as fast as possible on {emoji.emoji} **NOW**."
         )
 
         def check(reaction: discord.Reaction, user: discord.Member) -> bool:
-            return str(reaction.emoji) == emoji.name and reaction.message == confirm and user.id == ctx.author.id
+            return str(reaction.emoji) == emoji.emoji and reaction.message == confirm and user.id == ctx.author.id
 
         start = time.perf_counter()
         await ctx.bot.wait_for("reaction_add", check=check)

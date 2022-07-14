@@ -2375,7 +2375,7 @@ class Games(Cog):
             )
         if flag._global:
             entries = []
-            async for data in col.find_one(FILTER):
+            async for data in col.find(FILTER):
                 user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
                 entries.append(
                     f"""User: `{user or 'NA'}`
@@ -2418,7 +2418,7 @@ class Games(Cog):
             return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
 
         if flag.me:
-            data = await col.find_one_and_update(
+            data = await col.find_one(
                 {"_id": user.id, **FILTER},
                 return_document=ReturnDocument.AFTER,
             )
@@ -2435,7 +2435,7 @@ class Games(Cog):
 
         if flag._global:
             entries = []
-            async for data in col.find_one(FILTER):
+            async for data in col.find(FILTER):
                 user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
                 entries.append(
                     f"""User: `{user or 'NA'}`

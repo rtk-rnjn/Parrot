@@ -30,6 +30,7 @@ from typing import (
 )
 
 import discord
+import pymongo
 import emojis
 from aiofile import async_open
 from cogs.meta.robopage import SimplePages
@@ -2507,9 +2508,14 @@ class Games(Cog):
         entries = []
         i = 1
         col: Collection = self.bot.mongo.extra.games_leaderboard
-        async for data in col.find({"reaction_test": {"$exists": True}}).sort({"reaction_test": -1}):
+        async for data in col.find({"reaction_test": {"$exists": True}}).sort("reaction_test", pymongo.ASCENDING):
             user = self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
-            entries.append(f"""{user or 'NA'}
+            if user.id == ctx.author.id:
+                entries.append(f"""**{user or 'NA'}**
+`Minimum Time`: {data['reaction_test']}
+""")
+            else:
+                entries.append(f"""{user or 'NA'}
 `Minimum Time`: {data['reaction_test']}
 """)
             if i >= 100:
@@ -2524,10 +2530,12 @@ class Games(Cog):
         entries = []
         i = 1
         col: Collection = self.bot.mongo.extra.games_leaderboard
-        async for data in col.find({"typing_test": {"$exists": True}}).sort({"typing_test": -1}):
+        async for data in col.find({"typing_test": {"$exists": True}}).sort("typing_test", pymongo.ASCENDING):
             user = self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
             entries.append(f"""{user or 'NA'}
-`Minimum Time`: {data['typing_test']}
+`Minimum Time`: {round(data["typing_test"]['speed'], 2)} seconds
+`Accuracy    `: {int(data["typing_test"]['accuracy'])} %
+`Word Per Min`: {data["typing_test"]['wpm']}
 """)
             if i >= 100:
                 break

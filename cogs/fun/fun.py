@@ -2626,14 +2626,27 @@ class Fun(Cog):
 
         fakecontent = msg.content.replace(",", "").replace(".", "").replace("!", "")
 
+        accuracy = rapidfuzz.fuzz.partial_ratio(msg.content, line)
+        wpm = round(len(fakecontent.split(" ")) / (fin - ini) * 60, 2)
+
         await self.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": ctx.author.id}, {"$set": {"typing_test": fin - ini}}, upsert=True
+            {"_id": ctx.author.id},
+            {
+                "$set": {
+                    "typing_test": {
+                        "speed": fin - ini,
+                        "accuracy": accuracy,
+                        "wpm": wpm,
+                    }
+                }
+            },
+            upsert=True,
         )
 
         await ctx.send(
-            f"{ctx.author.mention} your accuracy is `{rapidfuzz.fuzz.partial_ratio(msg.content, line)}`%. "
+            f"{ctx.author.mention} your accuracy is `{accuracy}`%. "
             f"You typed in `{round(fin - ini, 2)}` seconds. "
-            f"Words per minute: `{round(len(fakecontent.split(' ')) / (fin - ini) * 60, 2)}`"
+            f"Words per minute: `{wpm}`"
         )
 
     @commands.command(name="reactiontest")

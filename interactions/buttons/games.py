@@ -30,8 +30,8 @@ from typing import (
 )
 
 import discord
-import pymongo
 import emojis
+import pymongo
 from aiofile import async_open
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
@@ -67,8 +67,10 @@ from utilities.converters import convert_bool
 from .__command_flags import (
     ChessStatsFlag,
     CountryGuessStatsFlag,
+    ReactionStatsFlag,
     SokobanStatsFlag,
     TwentyFortyEightStatsFlag,
+    TypingStatsFlag,
 )
 
 emoji = emojis  # Idk
@@ -2296,7 +2298,13 @@ class Games(Cog):
         *,
         flag: SokobanStatsFlag,
     ):
-        """Sokoban Game stats"""
+        """Sokoban Game stats
+
+        Flag Options:
+        `--sort_by`: Sort the list by any of the argument `level` `time` or `moves`
+        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
+        `--limit`: Limit the list to the top `limit` entries.
+        """
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2344,7 +2352,14 @@ class Games(Cog):
         *,
         flag: TwentyFortyEightStatsFlag,
     ):
-        """2048 Game stats"""
+        """2048 Game stats
+
+        Flag Options:
+        `--me`: Only show your stats
+        `--global`: Show global stats
+        `--sort_by`: Sort the list either by `moves` or `games`
+        `--sort`: Sort the list either `1` (ascending) or `0` (descending)
+        """
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2356,7 +2371,9 @@ class Games(Cog):
         FILTER = {"twenty48": {"$exists": True}}
 
         if flag.me and flag._global:
-            return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
+            return await ctx.send(
+                f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!"
+            )
 
         if flag.me:
             data = await col.find_one(
@@ -2368,14 +2385,16 @@ class Games(Cog):
                 )
                 return
             return await ctx.send(
-                f"{ctx.author.mention + ' you' if user is ctx.author else user}'s stats:\n"
+                f"{ctx.author.mention + ' your' if user is ctx.author else user}'s stats:\n"
                 f"`Games Played`: {data['twenty48']['games_played']}\n"
                 f"`Total Moves `: {data['twenty48']['total_moves']}\n"
             )
         if flag._global:
             entries = []
             async for data in col.find(FILTER):
-                user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+                user = await self.bot.getch(
+                    self.bot.get_user, self.bot.fetch_user, data["_id"]
+                )
                 entries.append(
                     f"""User: `{user or 'NA'}`
 `Games Played`: {data['twenty48']['games_played']} games played
@@ -2402,7 +2421,14 @@ class Games(Cog):
         *,
         flag: CountryGuessStatsFlag,
     ):
-        """Country Guess Game stats"""
+        """Country Guess Game stats
+
+        Flag Options:
+        `--me`: Only show your stats
+        `--global`: Show global stats
+        `--sort_by`: Sort the list either by `win` or `games`
+        `--sort`: Sort the list either `1` (ascending) or `0` (descending)
+        """
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2414,7 +2440,9 @@ class Games(Cog):
         FILTER = {"countryguess": {"$exists": True}}
 
         if flag.me and flag._global:
-            return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
+            return await ctx.send(
+                f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!"
+            )
 
         if flag.me:
             data = await col.find_one(
@@ -2426,31 +2454,35 @@ class Games(Cog):
                 )
                 return
             return await ctx.send(
-                f"{ctx.author.mention + ' you' if user is ctx.author else user}'s stats: \n"
+                f"{ctx.author.mention + ' your' if user is ctx.author else user}'s stats: \n"
                 f"`Games Played`: {data['countryguess'].get('games_played')} games played\n"
                 f"`Games Won`: {data['countryguess'].get('games_won')} games won\n"
             )
 
-        if flag._global:
-            entries = []
-            async for data in col.find(FILTER):
-                user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
-                entries.append(
-                    f"""User: `{user or 'NA'}`
-`Games Played`: {data['countryguess'].get('games_played')} games played
-`Total Wins  `: {data['countryguess'].get('games_won')} Wins
+        if not flag._global:
+            FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
+
+        entries = []
+        async for data in col.find(FILTER):
+            user = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, data["_id"]
+            )
+            entries.append(
+                f"""User: `{user or 'NA'}`
+`Games Played`: {data['countryguess'].get('games_played', 0)} games played
+`Total Wins  `: {data['countryguess'].get('games_won', 0)} Wins
 """
-                )
-            if not entries:
-                await ctx.send(f"{ctx.author.mention} No one has played Country Guess yet!")
-                return
+            )
+        if not entries:
+            await ctx.send(f"{ctx.author.mention} No one has played Country Guess yet!")
+            return
 
-            def func(e):
-                return e[sort_by]
+        def func(e):
+            return e[sort_by]
 
-            entries.sort(reverse=bool(flag.sort), key=func)
-            p = SimplePages(entries, ctx=ctx)
-            await p.start()
+        entries.sort(reverse=bool(flag.sort), key=func)
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()
 
     @top.command(name="chess")
     async def chess_stats(
@@ -2460,7 +2492,13 @@ class Games(Cog):
         *,
         flag: ChessStatsFlag,
     ):
-        """Chess Game stats"""
+        """Chess Game stats
+
+        Flag Options:
+        `--sort_by`: Sort the list either by `winner` or `draw`
+        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--limit`: Limit the list to the top `limit` entries.
+        """
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2469,7 +2507,7 @@ class Games(Cog):
         FILTER = {"chess": {"$exists": True}}
 
         data = await col.find_one_and_update(
-            FILTER,
+            {"_id": user.id, **FILTER},
             {
                 "$push": {
                     "chess_games": {
@@ -2489,54 +2527,124 @@ class Games(Cog):
         entries = []
         chess_data = data["chess_games"]
         for i in chess_data:
-            user1 = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, i["white"])
-            user2 = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, i["black"])
-            entries.append(
-                f"""{user1 or 'NA'} vs {user2 or 'NA'}
-`Winner`: {i["winner"]}
-`Draw  `: {i["draw"]}
-"""
+            user1 = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, i["white"]
             )
+            user2 = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, i["black"]
+            )
+            if ctx.author.id in {user1.id, user2.id}:
+                entries.append(
+                    f"""**{user1 or 'NA'} vs {user2 or 'NA'}**
+    `Winner`: {i["winner"]}
+    `Draw  `: {i["draw"]}
+    """
+                )
+            else:
+                entries.append(
+                    f"""{user1 or 'NA'} vs {user2 or 'NA'}
+    `Winner`: {i["winner"]}
+    `Draw  `: {i["draw"]}
+    """
+                )
         p = SimplePages(entries, ctx=ctx)
         await p.start()
-    
+
     @top.command(name="reaction")
-    async def top_reaction(self, ctx: Context,):
+    async def top_reaction(self, ctx: Context, *, flag: ReactionStatsFlag):
         """Reaction Test Stats"""
         entries = []
         i = 1
+        FILTER = {}
+        if flag.me:
+            FILTER = {"_id": ctx.author.id}
+        if not flag._global:
+            FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
+
         col: Collection = self.bot.mongo.extra.games_leaderboard
-        async for data in col.find({"reaction_test": {"$exists": True}}).sort("reaction_test", pymongo.ASCENDING):
-            user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+        async for data in col.find(FILTER, {"reaction_test": {"$exists": True}}).sort(
+            "reaction_test", flag.sort
+        ):
+            user = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, data["_id"]
+            )
             if user.id == ctx.author.id:
-                entries.append(f"""**{user or 'NA'}**
+                entries.append(
+                    f"""**{user or 'NA'}**
 `Minimum Time`: {data['reaction_test']}
-""")
+"""
+                )
             else:
-                entries.append(f"""{user or 'NA'}
+                entries.append(
+                    f"""{user or 'NA'}
 `Minimum Time`: {data['reaction_test']}
-""")
-            if i >= 100:
+"""
+                )
+            if i >= flag.limit:
                 break
             i += 1
+
+        if not entries:
+            await ctx.send(f"{ctx.author.mention} No records found")
+            return
+
         p = SimplePages(entries, ctx=ctx)
         await p.start()
 
     @top.command("typing")
-    async def top_typing(self, ctx: Context,):
-        """Typing Test Stats"""
+    async def top_typing(self, ctx: Context, *, flag: TypingStatsFlag):
+        """Typing Test Stats
+
+        Flag Options:
+        `--sort_by`: Sort the list by any of the following: `speed`, `accuracy`, `wpm`
+        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--limit`: Limit the list to the top `limit` entries.
+        """
         entries = []
         i = 1
+        FILTER = {}
+        if flag.me:
+            FILTER["_id"] = ctx.author.id
+
+        if not flag._global:
+            FILTER = {"_id": {"$in": [m.id for m in ctx.guild.members]}}
+
         col: Collection = self.bot.mongo.extra.games_leaderboard
-        async for data in col.find({"typing_test": {"$exists": True}}).sort("typing_test", pymongo.ASCENDING):
-            user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
-            entries.append(f"""{user or 'NA'}
+
+        async for data in col.find(
+            FILTER,
+            {"typing_test": {"$exists": True}},
+        ).sort(f"typing_test.{flag.sort_by}", flag.sort):
+
+            user = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, data["_id"]
+            )
+
+            if user.id == ctx.author.id:
+                entries.append(
+                    f"""**{user or 'NA'}**
 `Minimum Time`: {round(data["typing_test"]['speed'], 2)} seconds
 `Accuracy    `: {int(data["typing_test"]['accuracy'])} %
 `Word Per Min`: {data["typing_test"]['wpm']}
-""")
-            if i >= 100:
+"""
+                )
+            else:
+                entries.append(
+                    f"""{user or 'NA'}
+`Minimum Time`: {round(data["typing_test"]['speed'], 2)} seconds
+`Accuracy    `: {int(data["typing_test"]['accuracy'])} %
+`Word Per Min`: {data["typing_test"]['wpm']}
+"""
+                )
+            if i >= flag.limit:
                 break
             i += 1
+
+        if not entries:
+            await ctx.send(
+                f"{ctx.author.mention} No records found"
+            )
+            return
+
         p = SimplePages(entries, ctx=ctx)
         await p.start()

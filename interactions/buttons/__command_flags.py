@@ -39,3 +39,20 @@ class ChessStatsFlag(
     sort_by: Literal["winner", "draw"] = "winner"
     sort: Literal[1, -1] = 1
     limit: int = 100
+
+class TypingStatsFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
+    me: Optional[convert_bool] = True
+    _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
+    sort_by: Literal["speed", "accuracy", "wpm"] = "speed"
+    sort: Literal[1, -1] = 1
+    limit: int = 100
+
+class ReactionStatsFlag(
+    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
+):
+    me: Optional[convert_bool] = True
+    _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
+    sort: Literal[1, -1] = 1
+    limit: int = 100

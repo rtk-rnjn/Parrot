@@ -2509,7 +2509,7 @@ class Games(Cog):
         i = 1
         col: Collection = self.bot.mongo.extra.games_leaderboard
         async for data in col.find({"reaction_test": {"$exists": True}}).sort("reaction_test", pymongo.ASCENDING):
-            user = self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+            user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
             if user.id == ctx.author.id:
                 entries.append(f"""**{user or 'NA'}**
 `Minimum Time`: {data['reaction_test']}
@@ -2531,7 +2531,7 @@ class Games(Cog):
         i = 1
         col: Collection = self.bot.mongo.extra.games_leaderboard
         async for data in col.find({"typing_test": {"$exists": True}}).sort("typing_test", pymongo.ASCENDING):
-            user = self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+            user = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
             entries.append(f"""{user or 'NA'}
 `Minimum Time`: {round(data["typing_test"]['speed'], 2)} seconds
 `Accuracy    `: {int(data["typing_test"]['accuracy'])} %

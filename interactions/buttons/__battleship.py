@@ -17,7 +17,6 @@ from typing import (
     List,
     Optional,
     Tuple,
-    TypeAlias,
     Union,
 )
 
@@ -32,8 +31,8 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
     Coords: TypeAlias = Tuple[int, int]
+    DiscordColor: TypeAlias = Union[discord.Color, int]
 
-DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 SHIPS: Dict[str, Tuple[int, Tuple[int, int, int]]] = {

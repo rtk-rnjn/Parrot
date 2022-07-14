@@ -42,7 +42,6 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]
-    bot: Parrot
     cog: Optional[Cog]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

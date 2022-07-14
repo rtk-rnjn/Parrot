@@ -5,16 +5,19 @@ import difflib
 import os
 import random
 from io import BytesIO
-from typing import Final, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Final, Optional, Union
 
 import discord
+from core import Context, Parrot
 from discord.ext import commands
 from PIL import Image, ImageFilter, ImageOps
-from core import Parrot, Context
 from pymongo.collection import Collection
 from utilities.converters import ToAsync
 
-DiscordColor: TypeAlias = Union[discord.Color, int]
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+    DiscordColor: TypeAlias = Union[discord.Color, int]
+
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 

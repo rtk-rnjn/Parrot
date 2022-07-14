@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from typing import Any, ClassVar, Dict, Final, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
 
 import discord
 from akinator import CantGoBackAnyFurther
@@ -14,6 +14,8 @@ from discord.ext import commands
 BACK = "\N{BLACK LEFT-POINTING TRIANGLE}"
 STOP = "\N{BLACK SQUARE FOR STOP}"
 
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)

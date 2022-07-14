@@ -12,7 +12,7 @@ dotenv_values(".env")
 with open("config.yml") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
 
-VERSION = "v4.7.4-beta"
+VERSION = "v4.8.0-beta"
 
 OWNER_IDS: list = data["owner_ids"]
 DEFAULT_PREFIX: str = data["prefix"]

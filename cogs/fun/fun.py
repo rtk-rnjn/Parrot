@@ -2670,7 +2670,7 @@ class Fun(Cog):
         end = time.perf_counter()
 
         await confirm.edit(content=f"{ctx.author.mention} reacted on {end-start:.2f}s")
-        data = self.bot.mongo.extra.games_leaderboard.find_one(
+        data = await self.bot.mongo.extra.games_leaderboard.find_one(
             {"_id": ctx.author.id, "reaction_test": {"$exists": True}},
         )
 

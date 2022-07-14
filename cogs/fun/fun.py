@@ -21,16 +21,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice, randint
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 import discord
 import rapidfuzz  # type: ignore
@@ -41,7 +32,7 @@ from discord.ext import commands, tasks
 from emojis.db.db import EMOJI_DB, Emoji
 from PIL import Image, ImageColor
 from utilities import spookifications
-from utilities.constants import Colours, EmbeddedActivity, NEGATIVE_REPLIES
+from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
 from utilities.regex import LINKS_RE
@@ -2651,13 +2642,13 @@ class Fun(Cog):
         )
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
-        def check(r: discord.Reaction, u: discord.User):
+        def check_1(r: discord.Reaction, u: discord.User):
             return (
                 u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
             )
 
         try:
-            await ctx.bot.wait_for("reaction_add", check=check, timeout=60)
+            await ctx.bot.wait_for("reaction_add", check=check_1, timeout=60)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
@@ -2667,21 +2658,36 @@ class Fun(Cog):
             content=f"{ctx.author.mention} React as fast as possible on {emoji.emoji} **NOW**."
         )
 
-        def check(reaction: discord.Reaction, user: discord.Member) -> bool:
-            return str(reaction.emoji) == emoji.emoji and reaction.message == confirm and user.id == ctx.author.id
+        def check_2(reaction: discord.Reaction, user: discord.Member) -> bool:
+            return (
+                (str(reaction.emoji) == emoji.emoji)
+                and (reaction.message.id == confirm.id)
+                and (user.id == ctx.author.id)
+            )
 
         start = time.perf_counter()
-        await ctx.bot.wait_for("reaction_add", check=check)
+        await ctx.bot.wait_for("reaction_add", check=check_2)
         end = time.perf_counter()
 
-        await self.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": ctx.author.id},
-            {"$set": {"reaction_test": end - start}},
-            upsert=True,
+        await confirm.edit(content=f"{ctx.author.mention} reacted on {end-start:.2f}s")
+        data = self.bot.mongo.extra.games_leaderboard.find_one(
+            {"_id": ctx.author.id, "reaction_test": {"$exists": True}},
         )
-        return await confirm.edit(
-            content=f"{ctx.author.mention} reacted on {end-start:.2f}s"
-        )
+
+        async def update():
+            await self.bot.mongo.extra.games_leaderboard.update_one(
+                {"_id": ctx.author.id},
+                {"$set": {"reaction_test": {"speed": end - start}}},
+                upsert=True,
+            )
+
+        if data is None:
+            await update()
+            return
+
+        if data["reaction_test"] > end - start:
+            await update()
+            return
 
     def jeyy_api_loader(self):
         for end_point in END_POINTS:

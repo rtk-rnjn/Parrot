@@ -318,7 +318,7 @@ class DiscordGame(GameBoogle):
 
     def setup(self):
         self.all_words: set[str] = set()
-        self.words: Dict[discord.Member, set[str]] = defaultdict(set)
+        self.words: Dict[Union[discord.Member, discord.User], set[str]] = defaultdict(set)
 
     async def check_message(self, message: discord.Message):
         word = message.content
@@ -422,9 +422,9 @@ class ClassicGame(GameBoogle):
     def setup(self):
         self.over = False
         self.used_words: set[str] = set()
-        self.word_lists: Dict[discord.Member, str] = {}
-        self.words: Dict[discord.Member, set[str]] = defaultdict(set)
-        self.unique_words: Dict[discord.Member, set[str]] = defaultdict(set)
+        self.word_lists: Dict[Union[discord.Member, discord.User], str] = {}
+        self.words: Dict[Union[discord.Member, discord.User], set[str]] = defaultdict(set)
+        self.unique_words: Dict[Union[discord.Member, discord.User], set[str]] = defaultdict(set)
 
     async def finalize(self, timed_out: bool):
         await super().finalize(timed_out)
@@ -480,6 +480,7 @@ class BoggleGame(ShuffflingGame, DiscordGame):
 
 
 def check_size(ctx: Context) -> int:
+    assert ctx.prefix is not None
     prefix = ctx.prefix.upper()
     if prefix.endswith("SUPER BIG "):
         return SUPER_BIG
@@ -2421,7 +2422,7 @@ class Games(Cog):
 
         sort_by = flag.sort_by
 
-        FILTER = {"chess": {"$exists": True}}
+        FILTER = {"chess_games": {"$exists": True}}
 
         data = await col.find_one_and_update(
             {"_id": user.id, **FILTER},
@@ -2530,7 +2531,7 @@ class Games(Cog):
         if flag.me:
             FILTER["_id"] = ctx.author.id
         elif not flag._global:
-            FILTER = {"_id": {"$in": [m.id for m in ctx.guild.members]}}
+            FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}  
 
         col: Collection = self.bot.mongo.extra.games_leaderboard
 

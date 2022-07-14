@@ -21,7 +21,16 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice, randint
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import discord
 import rapidfuzz  # type: ignore
@@ -29,9 +38,10 @@ from aiohttp import request  # type: ignore
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands, tasks
+from emojis.db.db import EMOJI_DB, Emoji
 from PIL import Image, ImageColor
 from utilities import spookifications
-from utilities.constants import Colours, EmbeddedActivity
+from utilities.constants import Colours, EmbeddedActivity, NEGATIVE_REPLIES
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
 from utilities.regex import LINKS_RE
@@ -119,26 +129,6 @@ response = [
     "Probably",
     "Can't say",
     "Well well...",
-]
-
-NEGATIVE_REPLIES = [
-    "Noooooo!!",
-    "Nope.",
-    "I'm sorry Dave, I'm afraid I can't do that.",
-    "I don't think so.",
-    "Not gonna happen.",
-    "Out of the question.",
-    "Huh? No.",
-    "Nah.",
-    "Naw.",
-    "Not likely.",
-    "No way, José.",
-    "Not in a million years.",
-    "Fat chance.",
-    "Certainly not.",
-    "NEGATORY.",
-    "Nuh-uh.",
-    "Not in my house!",
 ]
 
 UWU_WORDS = {
@@ -2581,12 +2571,13 @@ class Fun(Cog):
 
     @commands.command(name="typingtest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     async def typing_test(
         self,
         ctx: Context,
     ):
         """Test your typing skills"""
-        confirm = await ctx.send(
+        confirm: discord.Message = await ctx.send(
             f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start"
         )
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
@@ -2653,13 +2644,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def reaction_test(self, ctx: Context):
         """Reaction test, REACT AS FAST AS POSSIBLE"""
-        EMOJIS: List[str] = [
-            "\N{GRINNING FACE}",
-            "\N{SMILING FACE WITH OPEN MOUTH}",
-            "\N{FACE WITH TEARS OF JOY}",
-            "\N{SMILING FACE WITH HALO}",
-            "\N{FACE WITH PLEADING EYES}",
-        ]
+        EMOJIS: List[Emoji] = random.sample(EMOJI_DB, 5)
         emoji = random.choice(EMOJIS)
         confirm: discord.Message = await ctx.send(
             f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start."
@@ -2676,14 +2661,14 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
-        await ctx.bulk_add_reactions(confirm, *EMOJIS)
+        await ctx.bulk_add_reactions(confirm, *[e.name for e in EMOJIS])
         await ctx.release(random.uniform(1.5, 2.5))
         await confirm.edit(
-            content=f"{ctx.author.mention} React as fast as possible on {emoji} **NOW**."
+            content=f"{ctx.author.mention} React as fast as possible on {emoji.name} **NOW**."
         )
 
         def check(reaction: discord.Reaction, user: discord.Member) -> bool:
-            return str(reaction.emoji) == emoji and reaction.message == confirm
+            return str(reaction.emoji) == emoji.name and reaction.message == confirm and user.id == ctx.author.id
 
         start = time.perf_counter()
         await ctx.bot.wait_for("reaction_add", check=check)

@@ -2359,7 +2359,7 @@ class Games(Cog):
             return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
 
         if flag.me:
-            data = await col.find_one_and_update(
+            data = await col.find_one(
                 {"_id": user.id, **FILTER},
                 return_document=ReturnDocument.AFTER,
             )

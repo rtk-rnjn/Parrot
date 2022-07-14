@@ -64,10 +64,10 @@ from utilities.constants import Colours
 from utilities.converters import convert_bool
 
 from .__command_flags import (
+    ChessStatsFlag,
     CountryGuessStatsFlag,
     SokobanStatsFlag,
     TwentyFortyEightStatsFlag,
-    ChessStatsFlag,
 )
 
 emoji = emojis  # Idk
@@ -2295,7 +2295,7 @@ class Games(Cog):
         *,
         flag: SokobanStatsFlag,
     ):
-        """Sokoban Game"""
+        """Sokoban Game stats"""
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2343,7 +2343,7 @@ class Games(Cog):
         *,
         flag: TwentyFortyEightStatsFlag,
     ):
-        """2048 Game"""
+        """2048 Game stats"""
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2402,7 +2402,7 @@ class Games(Cog):
         *,
         flag: CountryGuessStatsFlag,
     ):
-        """Country Guess Game"""
+        """Country Guess Game stats"""
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2461,7 +2461,7 @@ class Games(Cog):
         *,
         flag: ChessStatsFlag,
     ):
-        """Chess Game"""
+        """Chess Game stats"""
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
 
@@ -2498,5 +2498,39 @@ class Games(Cog):
 `Draw  `: {i["draw"]}
 """
             )
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()
+    
+    @top.command(name="reaction")
+    async def top_reaction(self, ctx: Context,):
+        """Reaction Test Stats"""
+        entries = []
+        i = 1
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+        async for data in col.find({"reaction_test": {"$exists": True}}).sort({"reaction_test": -1}):
+            user = self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+            entries.append(f"""{user or 'NA'}
+`Minimum Time`: {data['reaction_test']}
+""")
+            if i >= 100:
+                break
+            i += 1
+        p = SimplePages(entries, ctx=ctx)
+        await p.start()
+
+    @top.command("typing")
+    async def top_typing(self, ctx: Context,):
+        """Typing Test Stats"""
+        entries = []
+        i = 1
+        col: Collection = self.bot.mongo.extra.games_leaderboard
+        async for data in col.find({"typing_test": {"$exists": True}}).sort({"typing_test": -1}):
+            user = self.bot.getch(self.bot.get_user, self.bot.fetch_user, data["_id"])
+            entries.append(f"""{user or 'NA'}
+`Minimum Time`: {data['typing_test']}
+""")
+            if i >= 100:
+                break
+            i += 1
         p = SimplePages(entries, ctx=ctx)
         await p.start()

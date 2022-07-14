@@ -2617,12 +2617,18 @@ class Fun(Cog):
         ini = time.perf_counter()
 
         try:
-            msg = await self.bot.wait_for("message", check=check, timeout=300)
+            msg: discord.Message = await self.bot.wait_for(
+                "message", check=check, timeout=300
+            )
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         fin = time.perf_counter()
 
         fakecontent = msg.content.replace(",", "").replace(".", "").replace("!", "")
+
+        await self.bot.mongo.extra.games_leaderboard.update_one(
+            {"_id": ctx.author.id}, {"$set": {"typing_test": fin - ini}}, upsert=True
+        )
 
         await ctx.send(
             f"{ctx.author.mention} your accuracy is `{rapidfuzz.fuzz.partial_ratio(msg.content, line)}`%. "
@@ -2656,8 +2662,8 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
-        await confirm.add_reaction(emoji)
-        await ctx.release(random.uniform(0.5, 1.5))
+        await ctx.bulk_add_reactions(confirm, EMOJIS)
+        await ctx.release(random.uniform(1.5, 2.5))
         await confirm.edit(
             content=f"{ctx.author.mention} React as fast as possible on {emoji} **NOW**."
         )
@@ -2669,6 +2675,11 @@ class Fun(Cog):
         await ctx.bot.wait_for("reaction_add", check=check)
         end = time.perf_counter()
 
+        await self.bot.mongo.extra.games_leaderboard.update_one(
+            {"_id": ctx.author.id},
+            {"$set": {"reaction_test": end - start}},
+            upsert=True,
+        )
         return await confirm.edit(
             content=f"{ctx.author.mention} reacted on {end-start:.2f}s"
         )

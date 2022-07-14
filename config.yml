@@ -1,7 +1,6 @@
 owner_ids:
   - 741614468546560092
   - 813647101392846848
-  - 857103603130302514
 prefix: $
 case_insensitive: true
 strip_after_prefix: true

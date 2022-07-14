@@ -2361,7 +2361,6 @@ class Games(Cog):
         if flag.me:
             data = await col.find_one(
                 {"_id": user.id, **FILTER},
-                return_document=ReturnDocument.AFTER,
             )
             if not data:
                 await ctx.send(
@@ -2420,7 +2419,6 @@ class Games(Cog):
         if flag.me:
             data = await col.find_one(
                 {"_id": user.id, **FILTER},
-                return_document=ReturnDocument.AFTER,
             )
             if not data:
                 await ctx.send(

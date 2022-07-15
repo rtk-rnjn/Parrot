@@ -21,7 +21,7 @@ class TwentyFortyEightStatsFlag(
     me: Optional[convert_bool] = False
     _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
     sort_by: Literal["moves", "games", "games_played"] = "games_played"
-    sort: Literal[1, 0] = 1
+    sort: Literal[1, -1] = 1
 
 
 class CountryGuessStatsFlag(
@@ -30,7 +30,7 @@ class CountryGuessStatsFlag(
     me: Optional[convert_bool] = False
     _global: Optional[convert_bool] = commands.flag(name="global", default=False, aliases=["g", "all"])
     sort_by: Literal["win", "games", "games_won", "games_played"] = "games_played"
-    sort: Literal[1, 0] = 1
+    sort: Literal[1, -1] = 1
 
 class ChessStatsFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "

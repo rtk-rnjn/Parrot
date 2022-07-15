@@ -2312,7 +2312,7 @@ class Games(Cog):
         `--me`: Only show your stats
         `--global`: Show global stats
         `--sort_by`: Sort the list either by `moves` or `games`
-        `--sort`: Sort the list either `1` (ascending) or `0` (descending)
+        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
         """
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
@@ -2329,7 +2329,7 @@ class Games(Cog):
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
         entries = []
-        async for data in col.find(FILTER):
+        async for data in col.find(FILTER).sort(sort_by, flag.sort):
             user = await self.bot.getch(
                 self.bot.get_user, self.bot.fetch_user, data["_id"]
             )
@@ -2342,11 +2342,6 @@ class Games(Cog):
         if not entries:
             await ctx.send(f"{ctx.author.mention} No results found")
             return
-
-        def func(e):
-            return e[sort_by]
-
-        entries.sort(reverse=bool(flag.sort), key=func)
 
         p = SimplePages(entries, ctx=ctx)
         await p.start()
@@ -2365,7 +2360,7 @@ class Games(Cog):
         `--me`: Only show your stats
         `--global`: Show global stats
         `--sort_by`: Sort the list either by `win` or `games`
-        `--sort`: Sort the list either `1` (ascending) or `0` (descending)
+        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
         """
         user = user or ctx.author
         col: Collection = self.bot.mongo.extra.games_leaderboard
@@ -2388,7 +2383,7 @@ class Games(Cog):
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
         entries = []
-        async for data in col.find(FILTER):
+        async for data in col.find(FILTER).sort(sort_by, flag.sort):
             user = await self.bot.getch(
                 self.bot.get_user, self.bot.fetch_user, data["_id"]
             )
@@ -2402,10 +2397,6 @@ class Games(Cog):
             await ctx.send(f"{ctx.author.mention} No records found")
             return
 
-        def func(e):
-            return e[sort_by]
-
-        entries.sort(reverse=bool(flag.sort), key=func)
         p = SimplePages(entries, ctx=ctx)
         await p.start()
 

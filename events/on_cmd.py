@@ -68,7 +68,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_mod_commands": {"$exists": True}}
             ):
-                webhook = discord.Webhook.from_url(
+                webhook: discord.Webhook = discord.Webhook.from_url(
                     data["on_mod_commands"], session=self.bot.http_session
                 )
                 with suppress(discord.HTTPException):
@@ -89,7 +89,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}
             ):
-                webhook = discord.Webhook.from_url(
+                webhook: discord.Webhook = discord.Webhook.from_url(
                     data["on_config_commands"], session=self.bot.http_session
                 )
                 with suppress(discord.HTTPException):
@@ -259,7 +259,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             (
                 commands.MissingRequiredArgument,
                 commands.BadUnionArgument,
-                commands.BadLiteralArgument,
                 commands.TooManyArguments,
             ),
         ):
@@ -267,6 +266,11 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
+            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+
+        if isinstance(error, commands.BadLiteralArgument):
+            ERROR_EMBED.description = f"Please use proper Literals. Please use proper literals `{'`, `'.join(str(i) for i in error.literals)}`"
+            ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.MaxConcurrencyReached):

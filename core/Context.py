@@ -11,10 +11,10 @@ from operator import attrgetter
 from typing import (
     TYPE_CHECKING,
     Any,
+    Awaitable,
     Callable,
     Generic,
     List,
-    Literal,
     Optional,
     Tuple,
     TypeVar,
@@ -22,15 +22,27 @@ from typing import (
 )
 
 import discord
+from cogs.meta.robopage import SimplePages
 from discord.ext import commands
 from utilities.emotes import emojis
+from utilities.paginator import PaginationView
 
 CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
 
+if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
 
+    P = ParamSpec("P")
+
+    MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]
+
+T = TypeVar("T")
+MaybeAwaitable = Union[T, Awaitable[T]]
+
+Callback = MaybeAwaitable
 BotT = TypeVar("BotT", bound=commands.Bot)
 
 
@@ -51,7 +63,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     def __repr__(self) -> str:
         # we need this for our cache key strategy
-        return f"<core.{self.bot.user.name} Context author={self.author} guild={self.guild} channel={self.channel}>"
+        return f"<core.Context author={self.author} guild={self.guild} channel={self.channel}>"
 
     @property
     def session(self) -> Any:
@@ -316,7 +328,19 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             if delete_after:
                 await message.delete(delay=0)
 
-    async def wait_for(self, event_name: str, *, timeout: float, **kwargs: Any) -> Any:
+    async def wait_for(
+        self,
+        event_name: str,
+        *,
+        timeout: Optional[float] = None,
+        check: Optional[Callable[[Any], bool]] = None,
+        before_function: Callback = None,
+        after_function: Callback = None,
+        error_function: Callback = None,
+        error_message: Optional[str] = None,
+        suppress_error: bool = False,
+        **kwargs: Any,
+    ) -> Any:
         """|coro|
 
         Waits for a given event to be triggered.
@@ -335,14 +359,13 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         asyncio.TimeoutError
             If the event is not triggered before the given timeout.
         """
-        error_message: Optional[str] = kwargs.pop("error", None) or kwargs.pop(
-            "error_message", None
-        )
+        if event_name.lower().startswith("on_"):
+            event_name = event_name[3:].lower()
 
-        def outer_check(**kw) -> Callable:
+        def outer_check(**kw) -> Callable[..., bool]:
             """Check function for the event"""
-            if callable(kw.get("check")):
-                return kw["check"]
+            if check is not None:
+                return check
 
             def __suppress_attr_error(
                 func: Callable, *args: Any, **kwargs: Any
@@ -353,7 +376,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                     return True
                 return False
 
-            def check(
+            def __check(
                 *args,
             ) -> bool:
                 """Main check function"""
@@ -365,16 +388,61 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                     for pred, val in convert_pred
                 )
 
-            return check
+            return __check
+
+        if before_function is not None:
+            await discord.utils.maybe_coroutine(before_function)
 
         try:
             return await self.bot.wait_for(
                 event_name, timeout=timeout, check=outer_check(**kwargs)
             )
         except asyncio.TimeoutError:
+            if error_function is not None:
+                await discord.utils.maybe_coroutine(error_function)
             if error_message:
                 await self.send(error_message)
+            if suppress_error:
+                return None
             raise
+        finally:
+            if after_function is not None:
+                await discord.utils.maybe_coroutine(after_function)
+
+    async def paginate(
+        self,
+        entries: List[Any],
+        *,
+        _type: str = "SimplePages",
+        **kwargs: Any,
+    ) -> None:
+        """|coro|
+
+        Paginates a list of entries.
+
+        Parameters
+        -----------
+        entries: List[str]
+            A list of entries to paginate.
+        _type: str
+            The type of paginator to use.
+        """
+        if _type == "SimplePages":
+            pages = SimplePages(
+                entries,
+                ctx=self,
+                **kwargs,
+            )
+            await pages.start()
+            return
+        if _type == "PaginationView":
+            pages = PaginationView(entries)
+            await pages.start(
+                ctx=self,
+            )
+            return
+
+        raise ValueError("Invalid paginator type")
 
 
 class ConfirmationView(discord.ui.View):

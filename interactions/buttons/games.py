@@ -2420,13 +2420,13 @@ class Games(Cog):
 
         sort_by = flag.sort_by
 
-        FILTER = {"chess_games": {"$exists": True}}
+        FILTER = {"chess": {"$exists": True}}
 
         data = await col.find_one_and_update(
             {"_id": user.id, **FILTER},
             {
                 "$push": {
-                    "chess_games": {
+                    "chess": {
                         "$each": [],
                         "$sort": {sort_by: int(flag.sort)},
                         "$slice": int(flag.limit),
@@ -2441,7 +2441,7 @@ class Games(Cog):
             )
             return
         entries = []
-        chess_data = data["chess_games"]
+        chess_data = data["chess"]
         for i in chess_data:
             user1 = await self.bot.getch(
                 self.bot.get_user, self.bot.fetch_user, i["white"]

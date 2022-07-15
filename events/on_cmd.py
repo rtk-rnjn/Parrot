@@ -269,7 +269,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         if isinstance(error, commands.BadLiteralArgument):
-            ERROR_EMBED.description = f"Please use proper Literals. Please use proper literals `{'`, `'.join(str(i) for i in error.literals)}`"
+            ERROR_EMBED.description = f"Please use proper Literals. Literal should be any one of the following: `{'`, `'.join(str(i) for i in error.literals)}`"
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}"
             return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 

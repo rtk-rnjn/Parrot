@@ -34,7 +34,7 @@ DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 
-def chunk(iterable: List[int], *, count: int) -> List[List[int]]:
+def chunk(iterable: List[Optional[int]], *, count: int) -> List[List[Optional[int]]]:
     return [iterable[i : i + count] for i in range(0, len(iterable), count)]
 
 
@@ -60,6 +60,7 @@ async def wait_for_delete(
             if isinstance(user, tuple):
                 return _user in user
             return _user == user
+        return False
 
     bot: Parrot = bot or ctx.bot
     try:
@@ -98,9 +99,9 @@ class BaseView(discord.ui.View):
 
 
 class SlideButton(discord.ui.Button["SlideView"]):
-    def __init__(self, label: str, *, style: discord.ButtonStyle, row: int) -> None:
+    def __init__(self, label: Union[int, str], *, style: discord.ButtonStyle, row: int) -> None:
         super().__init__(
-            label=label,
+            label=str(label),
             style=style,
             row=row,
         )
@@ -109,6 +110,9 @@ class SlideButton(discord.ui.Button["SlideView"]):
             self.disabled = True
 
     async def callback(self, interaction: discord.Interaction) -> None:
+
+        assert self.view is not None
+
         game = self.view.game
 
         if interaction.user != game.player:
@@ -150,7 +154,7 @@ class NumberSlider:
         if count not in range(1, 6):
             raise ValueError("Count must be an integer between 1 and 5")
 
-        self.all_numbers = list(range(1, count**2))
+        self.all_numbers: List[Optional[int]] = list(range(1, count**2))
 
         self.player: Optional[discord.Member] = None
 
@@ -170,7 +174,7 @@ class NumberSlider:
             if item == obj
         )
 
-    def beside_blank(self) -> List[int]:
+    def beside_blank(self) -> List[Optional[int]]:
         nx, ny = self.get_item()
 
         beside_item = [
@@ -234,7 +238,7 @@ class NumberSlider:
         )
         self.embed.add_field(name="\u200b", value="Moves: `0`")
 
-        self.message = await ctx.send(embed=self.embed, view=self.view)
+        self.message: discord.Message = await ctx.send(embed=self.embed, view=self.view)
 
         await double_wait(
             wait_for_delete(ctx, self.message),

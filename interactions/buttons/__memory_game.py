@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
+import time
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -17,7 +18,9 @@ from typing import (
 )
 
 import discord
+from core import Context, Parrot
 from discord.ext import commands
+from pymongo.collection import Collection
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
@@ -144,6 +147,7 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
                     await interaction.message.edit(
                         content="Game Over, Congrats!", view=self.view
                     )
+                    await self.update_to_db()
                     return self.view.stop()
 
             return await interaction.message.edit(view=self.view, embed=game.embed)
@@ -152,6 +156,27 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
             self.view.opened = self
             self.disabled = True
             return await interaction.response.edit_message(view=self.view)
+
+    async def update_to_db(self):
+        time_taken = time.perf_counter() - self.view.ini
+
+        async def internal_update():
+            await col.update_one(
+                {"_id": self.view.ctx.author.id},
+                {"$set": {"memory_test": time_taken}},
+            )
+
+        bot: Parrot = self.view.ctx.bot
+        col: Collection = bot.mongo.extra.games_leaderboard
+
+        if data := await col.find_one(
+            {"_id": self.view.ctx.guild.id, "memory_test": {"$exists": True}}
+        ):
+            if data["memory_test"] > time_taken:
+                await internal_update()
+                return
+            return
+        await internal_update()
 
 
 class MemoryView(BaseView):
@@ -178,7 +203,7 @@ class MemoryView(BaseView):
         *,
         button_style: discord.ButtonStyle,
         pause_time: float,
-        ctx: commands.Context,
+        ctx: Context,
         timeout: Optional[float] = None,
     ) -> None:
 
@@ -201,6 +226,7 @@ class MemoryView(BaseView):
         items.insert(12, None)
 
         self.board = chunk(items, count=5)
+        self.ini = time.perf_counter()
 
         for i, row in enumerate(self.board):
             for item in row:
@@ -212,7 +238,9 @@ class MemoryView(BaseView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.ctx.author.id:
-            await interaction.response.send_message("You can't interact with this game!", ephemeral=True)
+            await interaction.response.send_message(
+                "You can't interact with this game!", ephemeral=True
+            )
             return False
         return True
 
@@ -229,7 +257,7 @@ class MemoryGame:
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
         items: List[str] = [],

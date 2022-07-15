@@ -55,10 +55,10 @@ from interactions.buttons.__constants import (
 )
 from interactions.buttons.__country_guess import BetaCountryGuesser
 from interactions.buttons.__light_out import LightsOut
+from interactions.buttons.__memory_game import MemoryGame
 from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__wordle import BetaWordle
-from interactions.buttons.__memory_game import MemoryGame
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from pymongo import ReturnDocument
 from pymongo.collection import Collection
@@ -68,6 +68,7 @@ from utilities.converters import convert_bool
 from .__command_flags import (
     ChessStatsFlag,
     CountryGuessStatsFlag,
+    MemoryStatsFlag,
     ReactionStatsFlag,
     SokobanStatsFlag,
     TwentyFortyEightStatsFlag,
@@ -2474,29 +2475,44 @@ class Games(Cog):
         `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
+        await self.__test_stats("reaction_test", ctx, flag)
+
+    @top.command(name="memory")
+    async def top_memory(self, ctx: Context, *, flag: MemoryStatsFlag):
+        """Memory Test Stats
+
+        Flag Options:
+        `--me`: Only show your stats
+        `--global`: Show global stats
+        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--limit`: Limit the list to the top `limit` entries.
+        """
+        await self.__test_stats("memory_test", ctx, flag)
+    
+    async def __test_stats(self, name: str, ctx: Context, flag: ReactionStatsFlag):
         entries = []
         i = 1
-        FILTER = {"reaction_test": {"$exists": True}}
+        FILTER = {name: {"$exists": True}}
         if flag.me:
             FILTER["_id"] = ctx.author.id
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
         col: Collection = self.bot.mongo.extra.games_leaderboard
-        async for data in col.find(FILTER).sort("reaction_test", flag.sort):
+        async for data in col.find(FILTER).sort(name, flag.sort):
             user = await self.bot.getch(
                 self.bot.get_user, self.bot.fetch_user, data["_id"]
             )
             if user.id == ctx.author.id:
                 entries.append(
                     f"""**{user or 'NA'}**
-`Minimum Time`: {data['reaction_test']}
+`Minimum Time`: {data[name]}
 """
                 )
             else:
                 entries.append(
                     f"""{user or 'NA'}
-`Minimum Time`: {data['reaction_test']}
+`Minimum Time`: {data[name]}
 """
                 )
             if i >= flag.limit:

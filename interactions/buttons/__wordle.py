@@ -115,11 +115,11 @@ class Wordle:
         embed.description = "`QUIT` to end the game"
         embed.set_image(url="attachment://wordle.png")
 
-        message = await ctx.send(embed=embed, file=discord.File(buf, "wordle.png"))
+        message: discord.Message = await ctx.send(embed=embed, file=discord.File(buf, "wordle.png"))
 
         while True:
 
-            def check(m: discord.Message) -> None:
+            def check(m: discord.Message) -> bool:
                 return (
                     len(m.content) == 5
                     and m.author == ctx.author
@@ -160,8 +160,8 @@ class Wordle:
                     embed=embed, file=discord.File(buf, "wordle.png")
                 )
 
+                col: Collection = ctx.bot.mongo.extra.games_leaderboard
                 if won:
-                    col: Collection = ctx.bot.mongo.extra.games_leaderboard
                     await col.update_one(
                         {"_id": ctx.author.id},
                         {"$inc": {"wordle.games_won": 1}},
@@ -169,13 +169,18 @@ class Wordle:
                     )
                     return await ctx.send("Game Over! You won!")
                 if len(self.guesses) > 5:
+                    await col.update_one(
+                        {"_id": ctx.author.id},
+                        {"$inc": {"wordle.games_lost": 1}},
+                        upsert=True,
+                    )
                     return await ctx.send(
                         f"Game Over! You lose, the word was: **{self.word}**"
                     )
 
 
 class WordInput(discord.ui.Modal, title='Word Input'):
-    word = discord.ui.TextInput(
+    word: discord.ui.TextInput = discord.ui.TextInput(
         label=f'Input your guess', 
         style=discord.TextStyle.short,
         required=True,
@@ -188,7 +193,9 @@ class WordInput(discord.ui.Modal, title='Word Input'):
         self.view = view
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        content = self.word.value.lower()
+        assert interaction.message is not None
+
+        content = str(self.word.value).lower()
         game = self.view.game
 
         if content not in game._valid_words:
@@ -213,14 +220,16 @@ class WordInput(discord.ui.Modal, title='Word Input'):
             return await interaction.response.edit_message(embed=embed, attachments=[file], view=self.view)
 
 class WordInputButton(discord.ui.Button['WordleView']):
-
     def __init__(self, *, cancel_button: bool = False):
         super().__init__(
             label='Cancel' if cancel_button else 'Make a guess!',
             style=discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple,
         )
+        self.view.game: WordleView
     
     async def callback(self, interaction: discord.Interaction) -> None:
+        assert interaction.message is not None
+
         game = self.view.game
         if interaction.user != game.player:
             return await interaction.response.send_message("This isn't your game!", ephemeral=True)
@@ -228,7 +237,8 @@ class WordInputButton(discord.ui.Button['WordleView']):
             if self.label == 'Cancel':
                 await interaction.response.send_message(f'Game Over! the word was: **{game.word}**')
                 await interaction.message.delete()
-                return self.view.stop()
+                self.view.stop()
+                return
             else:
                 return await interaction.response.send_modal(WordInput(self.view))
 

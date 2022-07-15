@@ -1659,23 +1659,24 @@ class Fun(Cog):
     @Context.with_type
     async def meme(self, ctx: Context):
         """Random meme generator."""
-        link = "https://memes.blademaker.tv/api?lang=en"
+        link = "https://meme-api.herokuapp.com/gimme"
 
-        response = await self.bot.http_session.get(link)
-        if response.status == 200:
-            res = await response.json()
-        else:
-            return
+        while True:
+            response = await self.bot.http_session.get(link)
+            if response.status <= 300:
+                res = await response.json()
+                if not res["nsfw"]:
+                    break
+
         title = res["title"]
         ups = res["ups"]
-        downs = res["downs"]
         sub = res["subreddit"]
 
         embed = discord.Embed(
             title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow()
         )
-        embed.set_image(url=res["image"])
-        embed.set_footer(text=f"UP(s): {ups} | DOWN(s): {downs}")
+        embed.set_image(url=res["url"])
+        embed.set_footer(text=f"Upvotes: {ups}")
 
         await ctx.reply(embed=embed)
 

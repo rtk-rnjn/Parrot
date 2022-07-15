@@ -58,6 +58,7 @@ from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__wordle import BetaWordle
+from interactions.buttons.__memory_game import MemoryGame
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from pymongo import ReturnDocument
 from pymongo.collection import Collection
@@ -2282,6 +2283,12 @@ class Games(Cog):
         await announcement.delete()
         bs = BetaBattleShip(player1=ctx.author, player2=user)
         await bs.start(ctx, timeout=120)
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def memory(self, ctx: Context):
+        """Memory Game"""
+        await MemoryGame().start(ctx, timeout=120)
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)

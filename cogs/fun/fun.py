@@ -2563,6 +2563,7 @@ class Fun(Cog):
     @commands.command(name="typingtest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def typing_test(
         self,
         ctx: Context,
@@ -2633,6 +2634,8 @@ class Fun(Cog):
 
     @commands.command(name="reactiontest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def reaction_test(self, ctx: Context):
         """Reaction test, REACT AS FAST AS POSSIBLE"""
         EMOJIS: List[Emoji] = random.sample(EMOJI_DB, 5)

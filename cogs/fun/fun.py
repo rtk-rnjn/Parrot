@@ -2574,13 +2574,13 @@ class Fun(Cog):
         )
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
-        def check(r: discord.Reaction, u: discord.User):
+        def check1(r: discord.Reaction, u: discord.User):
             return (
                 u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
             )
 
         try:
-            await ctx.bot.wait_for("reaction_add", check=check, timeout=60)
+            await ctx.bot.wait_for("reaction_add", check=check1, timeout=60)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
@@ -2590,18 +2590,18 @@ class Fun(Cog):
             f"{ctx.author.mention} typing test started. Type the following phrase: ```ini\n[{main}]```"
         )
 
-        def check(m: discord.Message) -> bool:
+        def check2(m: discord.Message) -> bool:
             return (
-                m.author == ctx.author
-                and m.channel == ctx.channel
-                and rapidfuzz.fuzz.ratio(m.content, line) >= 55
+                m.author.id == ctx.author.id
+                and m.channel.id == ctx.channel.id
+                and (rapidfuzz.fuzz.ratio(m.content, line) >= 75)
             )
 
         ini = time.perf_counter()
 
         try:
             msg: discord.Message = await self.bot.wait_for(
-                "message", check=check, timeout=300
+                "message", check=check2, timeout=300
             )
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")

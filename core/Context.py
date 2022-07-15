@@ -22,10 +22,8 @@ from typing import (
 )
 
 import discord
-from cogs.meta.robopage import SimplePages
 from discord.ext import commands
 from utilities.emotes import emojis
-from utilities.paginator import PaginationView
 
 CONFIRM_REACTIONS: Tuple[str, ...] = (
     "\N{THUMBS UP SIGN}",
@@ -428,6 +426,8 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             The type of paginator to use.
         """
         if _type == "SimplePages":
+            from cogs.meta.robopage import SimplePages
+
             pages = SimplePages(
                 entries,
                 ctx=self,
@@ -436,6 +436,8 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             await pages.start()
             return
         if _type == "PaginationView":
+            from utilities.paginator import PaginationView
+
             pages = PaginationView(entries)
             await pages.start(
                 ctx=self,

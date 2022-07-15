@@ -1,10 +1,12 @@
 # AUTHOR: https://github.com/davidetacchini/
 
 from itertools import islice
-from typing import List, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, List, NamedTuple, Optional, Union
 
 import discord
-from core import Context
+
+if TYPE_CHECKING:
+    from core import Context
 
 
 def get_chunks(iterable, size):
@@ -76,7 +78,7 @@ class ParrotPaginator:
         self.show_page_count = show_page_count
         self.check_other_ids = check_other_ids
 
-        self.lines = []
+        self.lines: List[str] = []
         self.pages = None
         self.embed_url = embed_url
 
@@ -126,6 +128,7 @@ class ParrotPaginator:
 
 
 class PaginatorView(discord.ui.View):
+    message: discord.Message
     def __init__(
         self,
         ctx: Context,
@@ -292,11 +295,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self
+                embed=self.embed_list[self.current], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self
+                attachments=[self.embed_list[self.current]], view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -330,11 +333,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self
+                embed=self.embed_list[self.current], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self
+                attachments=[self.embed_list[self.current]], view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -343,6 +346,8 @@ class PaginationView(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.blurple)
     async def count(self, interaction: discord.Interaction, button: discord.ui.Button):
+        assert interaction.message is not None
+
         await interaction.message.delete()
         self.stop()
 
@@ -366,11 +371,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self
+                embed=self.embed_list[self.current], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self
+                attachments=[self.embed_list[self.current]], view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -394,11 +399,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self
+                embed=self.embed_list[self.current], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self
+                attachments=[self.embed_list[self.current]], view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -407,11 +412,11 @@ class PaginationView(discord.ui.View):
 
     async def start(self, ctx: Context):
         if isinstance(self.embed_list[0], discord.Embed):
-            self.message = await ctx.send(embed=self.embed_list[0], view=self)
+            self.message = await ctx.send(embed=self.embed_list[0], view=self)  # type: ignore
         elif isinstance(self.embed_list[0], discord.File):
-            self.message = await ctx.send(file=self.embed_list[0], view=self)
+            self.message = await ctx.send(file=self.embed_list[0], view=self)  # type: ignore
         else:
-            self.message = await ctx.send(self.embed_list[0], view=self)
+            self.message = await ctx.send(self.embed_list[0], view=self)  # type: ignore
         self.user = ctx.author
         return self.message
 

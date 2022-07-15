@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import discord
-from core import Context
-from discord.ext import old_menus
+from discord.ext import old_menus  # type: ignore
 from discord.ext.commands import Paginator as CommandPaginator  # type: ignore
+
+if TYPE_CHECKING:
+    from core import Context
 
 
 class RoboPages(discord.ui.View):

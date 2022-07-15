@@ -262,7 +262,7 @@ class MemoryGame:
         embed_color: DiscordColor = DEFAULT_COLOR,
         items: List[str] = [],
         pause_time: float = 0.7,
-        button_style: discord.ButtonStyle = discord.ButtonStyle.red,
+        button_style: discord.ButtonStyle = discord.ButtonStyle.gray,
         timeout: Optional[float] = None,
     ) -> discord.Message:
         """

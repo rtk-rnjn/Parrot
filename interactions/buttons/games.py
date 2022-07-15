@@ -2420,10 +2420,8 @@ class Games(Cog):
 
         sort_by = flag.sort_by
 
-        FILTER = {"chess": {"$exists": True}}
-
         data = await col.find_one_and_update(
-            {"_id": user.id, **FILTER},
+            {"_id": user.id, "chess": {"$exists": True}},
             {
                 "$push": {
                     "chess": {

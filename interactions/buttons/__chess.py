@@ -163,25 +163,25 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                     f"**Game over! **{self.turn}** wins by check-mate**"
                 )
                 self.game_stop = True
-                await self.add_db_as_draw()
+                await self.add_db(winner=self.turn.id, draw=False)
             elif self.board.is_stalemate():
                 await self.ctx.send("**Game over! Ended with draw!**")
                 self.game_stop = True
-                await self.add_db_as_draw()
+                await self.add_db(winner=None, draw=True)
             elif self.board.is_insufficient_material():
                 await self.ctx.send(
                     "**Game over! Insfficient material left to continue the game! Draw**!"
                 )
                 self.game_stop = True
-                await self.add_db_as_draw()
+                await self.add_db(winner=None, draw=True)
             elif self.board.is_seventyfive_moves():
                 await self.ctx.send("**Game over! 75-moves rule | Game Draw!**")
                 self.game_stop = True
-                await self.add_db_as_draw()
+                await self.add_db(winner=None, draw=True)
             elif self.board.is_fivefold_repetition():
                 await self.ctx.send("**Game over! Five-fold repitition. | Game Draw!**")
                 self.game_stop = True
-                await self.add_db_as_draw()
+                await self.add_db(winner=None, draw=True)
             else:
                 self.game_stop = False
         return self.game_stop
@@ -254,7 +254,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                     )
                     await msg_.add_reaction("\N{HANDSHAKE}")
                     self.game_stop = True  # this is imp. as the game wasn't stopping
-                    await self.add_db_as_draw()
+                    await self.add_db(winner=None, draw=True)
                     return
             else:
                 if self.react_on_success:
@@ -265,7 +265,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 await self.place_move(msg.content)
                 self.switch()
 
-    async def add_db_as_draw(self):
+    async def add_db(self, **kwargs):
         col: Collection = self.bot.mongo.extra.games_leaderboard
         await col.bulk_write(
             [
@@ -276,8 +276,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                             "chess": {
                                 "white": self.white.id,
                                 "black": self.black.id,
-                                "winner": None,
-                                "draw": True,
+                                **kwargs,
                             }
                         },
                     },

@@ -7,6 +7,8 @@ import discord
 
 if TYPE_CHECKING:
     from core import Context
+else:
+    Context = discord.ext.commands.Context  # type: ignore
 
 
 def get_chunks(iterable, size):

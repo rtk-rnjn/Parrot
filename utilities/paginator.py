@@ -255,7 +255,9 @@ class PaginationView(discord.ui.View):
     current = 0
 
     def __init__(self, embed_list: List[Union[str, discord.Embed, discord.File]]):
-        super().__init__()
+        super().__init__(timeout=300)
+        if not embed_list:
+            raise ValueError("No embeds provided")
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
@@ -412,3 +414,6 @@ class PaginationView(discord.ui.View):
             self.message = await ctx.send(self.embed_list[0], view=self)
         self.user = ctx.author
         return self.message
+
+    async def paginate(self, ctx: Context):
+        await self.start(ctx)

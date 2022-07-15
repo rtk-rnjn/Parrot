@@ -39,10 +39,12 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     if TYPE_CHECKING:
         from .Cog import Cog
+        from .Parrot import Parrot
 
     prefix: Optional[str]
     command: commands.Command[Any, ..., Any]
     cog: Optional[Cog]
+    bot: Parrot
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -123,10 +125,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
-                return await self.author.send(
+                await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
+                return None
 
         embed: Optional[discord.Embed] = kwargs.get(
             "embed",
@@ -142,10 +145,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
-                return await self.author.send(
+                await self.author.send(
                     "Bot don't have either Embed Links/Send Messages permission in that channel. "
                     "Please give sufficient permissions to the bot."
                 )
+                return None
 
         embed: Optional[discord.Embed] = kwargs.get(
             "embed",

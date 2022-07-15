@@ -27,7 +27,6 @@ import discord
 import rapidfuzz  # type: ignore
 from aiohttp import request  # type: ignore
 from core import Cog, Context, Parrot
-from discord import Embed
 from discord.ext import commands, tasks
 from emojis.db.db import EMOJI_DB, Emoji
 from PIL import Image, ImageColor
@@ -605,12 +604,12 @@ class Fun(Cog):
         self.get_latest_comic_info.cancel()
 
     @staticmethod
-    def create_embed(tries: int, user_guess: str) -> Embed:
+    def create_embed(tries: int, user_guess: str) -> discord.Embed:
         """
         Helper method that creates the embed where the game information is shown.
         This includes how many letters the user has guessed so far, and the hangman photo itself.
         """
-        hangman_embed = Embed(
+        hangman_embed = discord.Embed(
             title="Hangman",
             color=Colours.python_blue,
         )
@@ -644,7 +643,7 @@ class Fun(Cog):
 
     async def _get_text_and_embed(
         self, ctx: Context, text: str
-    ) -> Tuple[str, Optional[Embed]]:
+    ) -> Tuple[str, Optional[discord.Embed]]:
         embed = None
 
         msg = await self._get_discord_message(ctx, text)
@@ -667,8 +666,8 @@ class Fun(Cog):
             ],
             str,
         ],
-        embed: Embed,
-    ) -> Embed:
+        embed: discord.Embed,
+    ) -> discord.Embed:
         """
         Converts the text in an embed using a given conversion function, then return the embed.
         Only modifies the following fields: title, description, footer, fields
@@ -686,7 +685,7 @@ class Fun(Cog):
                 field["name"] = func(field.get("name", ""))
                 field["value"] = func(field.get("value", ""))
 
-        return Embed.from_dict(embed_dict)
+        return discord.Embed.from_dict(embed_dict)
 
     @tasks.loop(minutes=30)
     async def get_latest_comic_info(self) -> None:
@@ -775,7 +774,7 @@ class Fun(Cog):
         Getting an xkcd comic's information along with the image.
         To get a random comic, don't type any number as an argument. To get the latest, type 'latest'.
         """
-        embed = Embed(title=f"XKCD comic '{comic}'")
+        embed = discord.Embed(title=f"XKCD comic '{comic}'")
 
         embed.colour = Colours.soft_red
 
@@ -1158,7 +1157,7 @@ class Fun(Cog):
         ]
 
         if not filtered_words:
-            filter_not_found_embed = Embed(
+            filter_not_found_embed = discord.Embed(
                 title=choice(NEGATIVE_REPLIES),
                 description="No words could be found that fit all filters specified.",
                 color=Colours.soft_red,
@@ -1181,7 +1180,7 @@ class Fun(Cog):
 
         original_message = await ctx.send(
             content=f"{ctx.author.mention}",
-            embed=Embed(
+            embed=discord.Embed(
                 title="Hangman", description="Loading game...", color=Colours.soft_green
             ),
         )
@@ -1199,7 +1198,7 @@ class Fun(Cog):
                     "message", timeout=60.0, check=check
                 )
             except asyncio.TimeoutError:
-                timeout_embed = Embed(
+                timeout_embed = discord.Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",
                     color=Colours.soft_red,
@@ -1213,7 +1212,7 @@ class Fun(Cog):
             normalized_content = message.content.lower()
             # The user should only guess one letter per message
             if len(normalized_content) > 1:
-                letter_embed = Embed(
+                letter_embed = discord.Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="You can only send one letter at a time, try again!",
                     color=Colours.dark_green,
@@ -1225,7 +1224,7 @@ class Fun(Cog):
 
             # Checks for repeated guesses
             if normalized_content in guessed_letters:
-                already_guessed_embed = Embed(
+                already_guessed_embed = discord.Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description=f"You have already guessed `{normalized_content}`, try again!",
                     color=Colours.dark_green,
@@ -1255,7 +1254,7 @@ class Fun(Cog):
                 tries -= 1
 
                 if tries <= 0:
-                    losing_embed = Embed(
+                    losing_embed = discord.Embed(
                         title="You lost.",
                         description=f"The word was `{word}`.",
                         color=Colours.soft_red,
@@ -1273,7 +1272,7 @@ class Fun(Cog):
         await original_message.edit(
             content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess)
         )
-        win_embed = Embed(
+        win_embed = discord.Embed(
             title="You won!",
             description=f"The word was `{word}`.",
             color=Colours.grass_green,
@@ -1605,7 +1604,7 @@ class Fun(Cog):
                 if response.status == 200:
                     data = await response.json()
 
-                    embed = Embed(
+                    embed = discord.Embed(
                         title=f"{animal.title()} fact",
                         description=data["fact"],
                         colour=ctx.author.colour,
@@ -1657,28 +1656,44 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def meme(self, ctx: Context):
+    async def meme(self, ctx: Context, count: Optional[int] = 1, *, subreddit: str="memes"):
         """Random meme generator."""
-        link = "https://meme-api.herokuapp.com/gimme"
+        link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(
+            subreddit, count
+        )
 
         while True:
             response = await self.bot.http_session.get(link)
             if response.status <= 300:
                 res = await response.json()
+            if count == 1:
                 if not res["nsfw"]:
                     break
+            else:
+                if not any(x["nsfw"] for x in res["memes"]):
+                    break
+            await ctx.release(0)
 
-        title = res["title"]
-        ups = res["ups"]
-        sub = res["subreddit"]
+        def make_embed(res) -> discord.Embed:
+            title = res["title"]
+            ups = res["ups"]
+            sub = res["subreddit"]
 
-        embed = discord.Embed(
-            title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow()
-        )
-        embed.set_image(url=res["url"])
-        embed.set_footer(text=f"Upvotes: {ups}")
+            embed = discord.Embed(
+                title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow()
+            )
+            embed.set_image(url=res["url"])
+            embed.set_footer(text=f"Upvotes: {ups}")
+            return embed
 
-        await ctx.reply(embed=embed)
+        if count == 1:
+            await ctx.reply(embed=make_embed(res))
+        else:
+            em: List[discord.Embed] = []
+            for _res in res["memes"]:
+                em.append(make_embed(_res))
+            p = PaginationView(em)
+            await p.start(ctx)
 
     @commands.command(aliases=["fakeprofile"])
     @commands.bot_has_permissions(embed_links=True)

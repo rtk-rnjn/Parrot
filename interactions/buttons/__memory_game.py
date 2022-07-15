@@ -178,6 +178,7 @@ class MemoryView(BaseView):
         *,
         button_style: discord.ButtonStyle,
         pause_time: float,
+        ctx: commands.Context,
         timeout: Optional[float] = None,
     ) -> None:
 
@@ -188,6 +189,7 @@ class MemoryView(BaseView):
         self.button_style = button_style
         self.pause_time = pause_time
         self.opened: Optional[MemoryButton] = None
+        self.ctx = ctx
 
         if not items:
             items = self.DEFAULT_ITEMS[:]
@@ -207,6 +209,12 @@ class MemoryView(BaseView):
                 if not item:
                     button.disabled = True
                 self.add_item(button)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.ctx.author.id:
+            await interaction.response.send_message("You can't interact with this game!", ephemeral=True)
+            return False
+        return True
 
 
 class MemoryGame:
@@ -262,6 +270,7 @@ class MemoryGame:
             button_style=button_style,
             pause_time=pause_time,
             timeout=timeout,
+            ctx=ctx,
         )
         self.message = await ctx.send(embed=self.embed, view=self.view)
 

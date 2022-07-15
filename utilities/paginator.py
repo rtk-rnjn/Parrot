@@ -297,15 +297,15 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current], view=self
+                content=self.embed_list[self.current], embed=None, attachments=[], view=self
             )
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.green, disabled=True)
@@ -335,15 +335,15 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current], view=self
+                content=self.embed_list[self.current], embed=None, attachments=[], view=self
             )
 
     @discord.ui.button(style=discord.ButtonStyle.blurple)
@@ -373,15 +373,15 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current], view=self
+                content=self.embed_list[self.current], embed=None, attachments=[], view=self
             )
 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.red, disabled=False)
@@ -401,15 +401,15 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current], view=self
+                content=self.embed_list[self.current], embed=None, attachments=[], view=self
             )
 
     async def start(self, ctx: Context):

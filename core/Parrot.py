@@ -644,22 +644,22 @@ class Parrot(commands.AutoShardedBot):
         """
         if isinstance(channel, int):
             if force_fetch:
-                c = await self.getch(
+                channel = await self.getch(
                     self.get_channel, self.fetch_channel, channel, force_fetch=True
                 )
             else:
-                c = self.get_channel(channel)
+                channel = self.get_channel(channel)
         elif isinstance(channel, discord.Object):
             if force_fetch:
-                c = await self.getch(
+                channel = await self.getch(
                     self.get_channel, self.fetch_channel, channel.id, force_fetch=True
                 )
             else:
-                c = self.get_channel(channel.id)
+                channel = self.get_channel(channel.id)
 
-        main_channel: discord.TextChannel = c
+        channel: discord.TextChannel = channel
         if force_fetch:
-            msg = await main_channel.fetch_message(message)
+            msg = await channel.fetch_message(message)
             self.message_cache[message] = msg
             return msg
 
@@ -668,13 +668,13 @@ class Parrot(commands.AutoShardedBot):
             return msg
 
         if partial:
-            return main_channel.get_partial_message(message)
+            return channel.get_partial_message(message)
 
         try:
             return self.message_cache[message]
         except KeyError:
             if fetch:
-                async for msg in main_channel.history(
+                async for msg in channel.history(
                     limit=1,
                     before=discord.Object(message + 1),
                     after=discord.Object(message - 1),

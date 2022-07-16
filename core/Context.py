@@ -6,6 +6,7 @@ import asyncio
 import datetime
 import functools
 import io
+import time
 from contextlib import suppress
 from operator import attrgetter
 from typing import (
@@ -14,8 +15,11 @@ from typing import (
     Awaitable,
     Callable,
     Coroutine,
+    Dict,
     Generic,
+    Iterable,
     List,
+    Literal,
     Optional,
     Set,
     Tuple,
@@ -456,9 +460,13 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     async def multiple_wait_for(
         self,
-        events: List[Tuple[str, Callable[..., bool]]],
+        events: Union[
+            List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]
+        ],
         *,
-        return_when: str,
+        return_when: Literal[
+            "FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"
+        ] = "FIRST_COMPLETED",
         timeout: Optional[float] = None,
     ) -> Tuple[Set[asyncio.Task], Set[asyncio.Task]]:
         """|coro|
@@ -493,15 +501,49 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         asyncio.TimeoutError
             If the event is not triggered before the given timeout.
         """
+        if isinstance(events, dict):
+            events = list(events.items())  # type: ignore
+
         _events: Set[Coroutine[Any, Any, Any]] = {
             self.wait_for(event, check=check, timeout=timeout)
             for event, check in events
         }
+
         return await asyncio.wait(
             _events,
             timeout=timeout,
             return_when=getattr(asyncio, return_when, "FIRST_COMPLETED"),
         )
+
+    async def wait_for_till(
+        self,
+        events: Union[
+            List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]
+        ],
+        *,
+        _for: Union[float, int, None] = None,
+        after: Union[float, int] = None,
+        **kwargs: Any,
+    ) -> List[Any]:
+        await self.release(after)
+        done_result: List[Any] = []
+
+        now = time.time()
+        _for = _for or 0
+        
+        def __internal_appender(completed_result: Iterable[asyncio.Task]) -> None:
+            for task in completed_result:
+                done_result.append(task.result())
+
+        while time.time() - now <= _for:
+            done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
+            __internal_appender(done)
+
+        if not _for:
+            done, _ = await self.multiple_wait_for(events, return_when="ALL_COMPLETED", **kwargs)
+            __internal_appender(done)
+
+        return done_result
 
 
 class ConfirmationView(discord.ui.View):

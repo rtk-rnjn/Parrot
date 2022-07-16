@@ -13,9 +13,11 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    Coroutine,
     Generic,
     List,
     Optional,
+    Set,
     Tuple,
     TypeVar,
     Union,
@@ -60,7 +62,6 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         super().__init__(*args, **kwargs)
 
     def __repr__(self) -> str:
-        # we need this for our cache key strategy
         return f"<core.Context author={self.author} guild={self.guild} channel={self.channel}>"
 
     @property
@@ -424,6 +425,13 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             A list of entries to paginate.
         _type: str
             The type of paginator to use.
+        **kwargs: Any
+            The arguments to pass to the paginator.
+
+        Raises
+        -----------
+        ValueError
+            If the paginator type is not found.
         """
         if _type == "SimplePages":
             from cogs.meta.robopage import SimplePages
@@ -445,6 +453,55 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             return
 
         raise ValueError("Invalid paginator type")
+
+    async def multiple_wait_for(
+        self,
+        events: List[Tuple[str, Callable[..., bool]]],
+        *,
+        return_when: str,
+        timeout: Optional[float] = None,
+    ) -> Tuple[Set[asyncio.Task], Set[asyncio.Task]]:
+        """|coro|
+
+        To wait for multiple events at once.
+
+        Parameters
+        -----------
+        events: List[Tuple[str, Callable[..., bool]]]
+            A list of events to wait for.
+        return_when: str
+            `return_when` indicates when this function should return. It must be one of the following constants
+            +-----------------+--------------------------------------------------------------------+
+            | FIRST_COMPLETED | The function will return when any future finishes or is cancelled. |
+            +-----------------+--------------------------------------------------------------------+
+            | FIRST_EXCEPTION | The function will return when any future finishes by raising an    |
+            |                 | exception. If no future raises an exception then it is equivalent  |
+            |                 | to ALL_COMPLETED.                                                  |
+            +-----------------+--------------------------------------------------------------------+
+            |  ALL_COMPLETED  | The function will return when all futures finish or are cancelled. |
+            +-----------------+--------------------------------------------------------------------+
+        timeout: Optional[float]
+            The maximum amount of time in seconds to wait for the events to finish.
+
+        Returns
+        -----------
+        Tuple[Set[asyncio.Task], Set[asyncio.Task]]
+            A tuple of two sets of tasks, the first set is the finished tasks, the second set is the cancelled tasks.
+
+        Raises
+        -----------
+        asyncio.TimeoutError
+            If the event is not triggered before the given timeout.
+        """
+        _events: Set[Coroutine[Any, Any, Any]] = {
+            self.wait_for(event, check=check, timeout=timeout)
+            for event, check in events
+        }
+        return await asyncio.wait(
+            _events,
+            timeout=timeout,
+            return_when=getattr(asyncio, return_when, "FIRST_COMPLETED"),
+        )
 
 
 class ConfirmationView(discord.ui.View):

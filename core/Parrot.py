@@ -657,9 +657,9 @@ class Parrot(commands.AutoShardedBot):
             else:
                 channel = self.get_channel(channel.id)
 
-        channel: discord.TextChannel = channel
+        channel: discord.TextChannel = channel  # type: ignore
         if force_fetch:
-            msg = await channel.fetch_message(message)
+            msg = await channel.fetch_message(message)  # type: ignore
             self.message_cache[message] = msg
             return msg
 
@@ -668,13 +668,13 @@ class Parrot(commands.AutoShardedBot):
             return msg
 
         if partial:
-            return channel.get_partial_message(message)
+            return channel.get_partial_message(message)  # type: ignore
 
         try:
             return self.message_cache[message]
         except KeyError:
             if fetch:
-                async for msg in channel.history(
+                async for msg in channel.history(  # type: ignore
                     limit=1,
                     before=discord.Object(message + 1),
                     after=discord.Object(message - 1),

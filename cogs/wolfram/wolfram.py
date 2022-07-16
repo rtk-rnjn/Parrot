@@ -237,7 +237,6 @@ class Wolfram(Cog, command_attrs=dict(hidden=True)):
                 url="https://www.wolframalpha.com/",
             )
             embed.set_image(url=page[1])
-            embed.colour = 0x0279FD
             em_list.append(embed)
 
         await PaginationView(em_list).start(ctx=ctx)

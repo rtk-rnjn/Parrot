@@ -128,7 +128,7 @@ class Utils(Cog):
             try:
                 await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
                 await ctx.author.send(text)
-            except discord.Fobidden:
+            except discord.Forbidden:
                 await ctx.reply(text)
 
             await self.create_timer(

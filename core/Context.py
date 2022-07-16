@@ -468,6 +468,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             "FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"
         ] = "FIRST_COMPLETED",
         timeout: Optional[float] = None,
+        **kwargs: Any,
     ) -> Tuple[Set[asyncio.Task], Set[asyncio.Task]]:
         """|coro|
 
@@ -505,7 +506,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             events = list(events.items())  # type: ignore
 
         _events: Set[Coroutine[Any, Any, Any]] = {
-            self.wait_for(event, check=check, timeout=timeout)
+            self.wait_for(event, check=check, timeout=timeout, **kwargs)
             for event, check in events
         }
 
@@ -528,19 +529,19 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         await self.release(after)
         done_result: List[Any] = []
 
-        now = time.time()
         _for = _for or 0
-        
+        now = time.time() + _for
+
         def __internal_appender(completed_result: Iterable[asyncio.Task]) -> None:
             for task in completed_result:
                 done_result.append(task.result())
 
-        while time.time() - now <= _for:
+        while time.time() <= now:
             done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
             __internal_appender(done)
 
         if not _for:
-            done, _ = await self.multiple_wait_for(events, return_when="ALL_COMPLETED", **kwargs)
+            done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
             __internal_appender(done)
 
         return done_result

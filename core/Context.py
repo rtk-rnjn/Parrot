@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
     P = ParamSpec("P")
 
-    MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]
+    MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]  # type: ignore
 
 T = TypeVar("T")
 MaybeAwaitable = Union[T, Awaitable[T]]
@@ -215,6 +215,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         """|coro|
 
         An interactive reaction confirmation dialog.
+
         Parameters
         -----------
         message: str
@@ -480,6 +481,8 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             A list of events to wait for.
         return_when: str
             `return_when` indicates when this function should return. It must be one of the following constants
+
+            ```
             +-----------------+--------------------------------------------------------------------+
             | FIRST_COMPLETED | The function will return when any future finishes or is cancelled. |
             +-----------------+--------------------------------------------------------------------+
@@ -489,6 +492,8 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             +-----------------+--------------------------------------------------------------------+
             |  ALL_COMPLETED  | The function will return when all futures finish or are cancelled. |
             +-----------------+--------------------------------------------------------------------+
+            ```
+
         timeout: Optional[float]
             The maximum amount of time in seconds to wait for the events to finish.
 
@@ -526,7 +531,33 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         after: Union[float, int] = None,
         **kwargs: Any,
     ) -> List[Any]:
-        await self.release(after)
+        """|coro|
+
+        Returns multiple event record at given time.
+
+        Parameters
+        -----------
+        events: List[Tuple[str, Callable[..., bool]]]
+            A list of events to wait for.
+        _for: Union[float, int, None]
+            The amount of time to wait for the event to be triggered.
+        after: Union[float, int]
+            The amount of time to wait after the event is triggered.
+        **kwargs: Any
+            The arguments to pass to the event.
+
+        Raises
+        -----------
+        asyncio.TimeoutError
+            If the event is not triggered before the given timeout.
+
+        Returns
+        -----------
+        List[Any]
+            The list of discord Objects.
+        """
+        if after:
+            await self.release(after)
         done_result: List[Any] = []
 
         _for = _for or 0
@@ -537,11 +568,15 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                 done_result.append(task.result())
 
         while time.time() <= now:
-            done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
+            done, _ = await self.multiple_wait_for(
+                events, return_when="FIRST_COMPLETED", **kwargs
+            )
             __internal_appender(done)
 
         if not _for:
-            done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
+            done, _ = await self.multiple_wait_for(
+                events, return_when="FIRST_COMPLETED", **kwargs
+            )
             __internal_appender(done)
 
         return done_result

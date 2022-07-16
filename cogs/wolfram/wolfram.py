@@ -167,7 +167,7 @@ async def get_pod_pages(
         return pages
 
 
-class Wolfram(Cog, command_attrs=dict(hidden=True)):
+class Wolfram(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     """Commands for interacting with the Wolfram|Alpha API."""
 
     def __init__(self, bot: Parrot):

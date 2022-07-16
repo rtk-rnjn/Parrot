@@ -18,6 +18,7 @@ from typing import (
     Awaitable,
     Callable,
     Collection,
+    Coroutine,
     Dict,
     List,
     Mapping,

@@ -6,13 +6,13 @@ from contextlib import suppress
 from io import BytesIO
 from json import loads
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Union
 
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from PIL import Image
-from utilities.constants import Colours, Month
+from utilities.constants import Colours
 from utilities.deco import seasonal_task
 
 ALL_VIDS = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))

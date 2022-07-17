@@ -41,6 +41,7 @@ extensions:
   - interactions.slash
   - jishaku
   - cogs.holidays
+  - cogs.holidays.easter
   - cogs.cc
   - cogs.api
   - events.custom_events

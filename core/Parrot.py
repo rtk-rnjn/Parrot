@@ -171,7 +171,7 @@ class Parrot(commands.AutoShardedBot):
         self.banned_users: Dict[int, Dict[str, Union[str, bool, int]]] = {}
         self.afk: Set[int] = set()
 
-        self.opts: Dict[str, Any] = {}
+        self.opts: Dict[int, Any] = {}
         self.func: Callable = func
 
         # IPC
@@ -764,15 +764,15 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_banned_members(self):
+        self.banned_users = {}
         async for data in self.mongo.parrot_db.banned_users.find({}):
-            self.banned_users = {}
             self.banned_users[data["_id"]] = data
 
     @tasks.loop(count=1)
     async def update_opt_in_out(self):
+        self.opts = {}
         async for data in self.mongo.extra.misc.find({}):
             data: Dict[str, Any] = data
             _id: int = data.pop("_id")
-            self.opts = {}
             self.opts[_id] = data
             await asyncio.sleep(0)

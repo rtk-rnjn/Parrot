@@ -17,7 +17,6 @@ from typing import (
     Callable,
     Dict,
     List,
-    Literal,
     Match,
     Optional,
     Pattern,
@@ -109,11 +108,13 @@ class Delete(discord.ui.View):
     async def confirm(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        assert interaction.message is not None
+
         await interaction.message.delete()
         self.stop()
 
 
-class OnMsg(Cog, command_attrs=dict(hidden=True)):
+class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
@@ -324,12 +325,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         return "\n".join(map(lambda x: x[1], sorted(all_snippets)))
 
     def _check_gitlink_req(self, message: discord.Message):
+        assert message.guild is not None
+
         if self.bot.opts.get(message.guild.id):
             return message.author.id in self.bot.opts[message.guild.id].get(
                 "gitlink", []
             )
 
     def _check_equation_req(self, message: discord.Message):
+        assert message.guild is not None
+
         if self.bot.opts.get(message.guild.id):
             return message.author.id in self.bot.opts[message.guild.id].get(
                 "equation", []
@@ -344,6 +349,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return data.get("Abstract")
         if data["RelatedTopics"]:
             return data["RelatedTopics"][0]["Text"]
+        return None
 
     async def quick_answer(self, message: discord.Message):
         """This is good."""
@@ -378,10 +384,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def is_banned(self, user: Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
         try:
-            return self.bot.banned_users[user.id].get("global", False)
+            return self.bot.banned_users[user.id].get("global", False)  # type: ignore
         except KeyError:
             try:
-                return user.id in self.bot.opts[user.guild.id]["global"]
+                return user.id in self.bot.opts[user.guild.id]["global"]  # type: ignore
             except KeyError:
                 return False
 
@@ -399,7 +405,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if data := await self.log_collection.find_one(
             {"_id": message.guild.id, "on_invite_post": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_invite_post"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
@@ -490,8 +496,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         await self.bot.wait_until_ready()
-        if not message.guild:
+        if message.guild is None:
             return
+
+        assert isinstance(message.author, discord.Member)
 
         await self._scam_detection(message)
         await self._on_message_leveling(message)
@@ -672,6 +680,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await asyncio.sleep(0)
 
     def _msg_raw(self, message: discord.Message):
+        assert message.guild is not None
         return {
             "id": message.id,
             "author": message.author.id,
@@ -714,7 +723,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_message_delete"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
@@ -767,7 +776,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_bulk_message_delete"], session=self.bot.http_session
             )
             main = ""
@@ -809,6 +818,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             await self.equation_solver(after)
 
     async def _on_message_leveling(self, message: discord.Message):
+        assert isinstance(message.author, discord.Member)
+
         if not message.guild:
             return
         if message.author.bot:
@@ -953,6 +964,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     await asyncio.sleep(0)
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
+        assert isinstance(msg.author, discord.Member) and msg.guild is not None
+
         collection: Collection = self.bot.mongo.leveling[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
             {"_id": member.id},
@@ -964,6 +977,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await self.__add_role__xp(msg.guild.id, level, msg)
 
     async def __add_role__xp(self, guild_id: int, level: int, msg: discord.Message):
+        assert isinstance(msg.author, discord.Member)
         try:
             ls = self.bot.server_config[guild_id]["leveling"]["reward"]
         except KeyError:
@@ -989,10 +1003,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             pass
 
     async def _on_message_passive(self, message: discord.Message):
-        if not message.guild:
+        if message.guild is None:
             return
         if message.author.bot:
             return
+
+        assert isinstance(message.author, discord.Member)
 
         # code: when the AFK user messages
         if message.author.id in self.bot.afk:
@@ -1028,13 +1044,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         # code from someone mentions the AFK user
         if message.mentions:
             for user in message.mentions:
-                if data := await self.bot.mongo.parrot_db.afk.find_one(
-                    {
-                        "$or": [
-                            {"messageAuthor": user.id, "guild": user.guild.id},
-                            {"messageAuthor": user.id, "global": True},
-                        ]
-                    }
+                if hasattr(user, "guild") and (
+                    data := await self.bot.mongo.parrot_db.afk.find_one(
+                        {
+                            "$or": [
+                                {"messageAuthor": user.id, "guild": user.guild.id},  # type: ignore
+                                {"messageAuthor": user.id, "global": True},
+                            ]
+                        }
+                    )
                 ):
                     if message.channel.id in data["ignoredChannel"]:
                         return
@@ -1073,11 +1091,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_message_edit"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
-                if payload.cached_message:
+                if payload.cached_message is not None:
                     msg = payload.cached_message
                     message_author = msg.author
                     if message_author.bot:
@@ -1099,8 +1117,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 if any(
                     (
                         content,
-                        payload.cached_message.embeds,
-                        payload.cached_message.attachments,
+                        hasattr(payload.cached_message, "embeds"),
+                        hasattr(payload.cached_message, "attachments"),
                     )
                 ):
                     fp = io.BytesIO(

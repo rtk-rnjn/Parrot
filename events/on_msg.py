@@ -499,7 +499,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if message.guild is None:
             return
 
-        assert isinstance(message.author, discord.Member)
+        # assert isinstance(message.author, discord.Member)
 
         await self._scam_detection(message)
         await self._on_message_leveling(message)

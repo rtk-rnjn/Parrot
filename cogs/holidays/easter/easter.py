@@ -401,17 +401,24 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             string = f"{emoji} - {num} vote{s} ({percent}%)"
             results.append(string)
 
-        mentions = " ".join(
-            [
-                u.mention
-                for u in [
-                    [i async for i in r.users()]
-                    for r in msg.reactions
-                    if str(r.emoji) == correct
-                ][0]
-                if not u.bot
-            ]
-        )
+        # mentions = " ".join(
+        #     [
+        #         u.mention
+        #         for u in [
+        #             [i async for i in r.users()]
+        #             for r in msg.reactions
+        #             if str(r.emoji) == correct
+        #         ][0]
+        #         if not u.bot
+        #     ]
+        # )
+        mentions = ""
+
+        for r in msg.reactions:
+            async for u in r.users():
+                if str(r.emoji) == correct and not u.bot:
+                    mentions += f" {u.mention}"
+                    break
 
         content = (
             f"Well done {mentions} for getting it correct!"
@@ -432,11 +439,12 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         message: discord.Message, user: Union[discord.Member, discord.User]
     ) -> bool:
         """Returns whether a given user has reacted more than once to a given message."""
-        users = [
-            u.id
-            for reaction in [[i async for i in r.users()] for r in message.reactions]
-            for u in reaction
-        ]
+        users = []
+
+        for r in message.reactions:
+            async for i in r.users():
+                users.append(i.id)
+
         return users.count(user.id) > 1  # Old reaction plus new reaction
 
     @commands.Cog.listener()

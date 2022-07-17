@@ -499,8 +499,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if message.guild is None:
             return
 
-        # assert isinstance(message.author, discord.Member)
-
         await self._scam_detection(message)
         await self._on_message_leveling(message)
         await self._add_record_message_to_database(message)
@@ -818,7 +816,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             await self.equation_solver(after)
 
     async def _on_message_leveling(self, message: discord.Message):
-        assert isinstance(message.author, discord.Member)
 
         if not message.guild:
             return
@@ -1007,8 +1004,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
         if message.author.bot:
             return
-
-        assert isinstance(message.author, discord.Member)
 
         # code: when the AFK user messages
         if message.author.id in self.bot.afk:

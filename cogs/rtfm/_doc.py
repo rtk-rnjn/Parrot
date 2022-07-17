@@ -19,7 +19,7 @@ except ImportError:
 
 
 @ToAsync()
-def get_ele(soup, name, **kw: Any):
+def get_ele(soup: BeautifulSoup, name: str, **kw: Any):
     url = soup.find_all(name, **kw)
     return url
 
@@ -47,7 +47,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
             and tag.name == "li"
         )
 
-    elements = await get_ele(soup.find_all, soup_match, limit=10)
+    elements = await ctx.bot.func(soup.find_all, soup_match, limit=10)
     links = [tag.select_one("li > a") for tag in elements]
     links = [link for link in links if link is not None]
 
@@ -64,7 +64,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     )
     emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
-    await ctx.send(embed=emb)
+    return await ctx.send(embed=emb)
 
 
 async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.Message]:
@@ -110,7 +110,7 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
 
     emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
-    await ctx.send(embed=emb)
+    return await ctx.send(embed=emb)
 
 
 c_doc = partial(_cppreference, "C")
@@ -150,11 +150,11 @@ async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     )
 
     content = []
-    ls = await get_ele(ul.find_all, "li", limit=10)
+    ls = await ctx.bot.func(ul.find_all, "li", limit=10)
     for li in ls:
         a = li.find("div", class_="mw-search-result-heading").find("a")
         content.append(f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})")
 
     emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
-    await ctx.send(embed=emb)
+    return await ctx.send(embed=emb)

@@ -39,7 +39,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "7"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="8", style=discord.ButtonStyle.green, row=0)
@@ -47,7 +47,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "8"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="9", style=discord.ButtonStyle.green, row=0)
@@ -55,7 +55,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "9"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="/", style=discord.ButtonStyle.blurple, row=0)
@@ -63,7 +63,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "/"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
@@ -73,7 +73,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "sqrt("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="4", style=discord.ButtonStyle.green, row=1)
@@ -81,7 +81,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "4"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="5", style=discord.ButtonStyle.green, row=1)
@@ -89,7 +89,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "5"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="6", style=discord.ButtonStyle.green, row=1)
@@ -97,7 +97,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "6"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
@@ -107,7 +107,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "*"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="1/x", style=discord.ButtonStyle.blurple, row=1)
@@ -115,7 +115,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg = f"1/({self.arg})"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="1", style=discord.ButtonStyle.green, row=2)
@@ -123,7 +123,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "1"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="2", style=discord.ButtonStyle.green, row=2)
@@ -131,7 +131,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "2"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="3", style=discord.ButtonStyle.green, row=2)
@@ -139,7 +139,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "3"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="+", style=discord.ButtonStyle.blurple, row=2)
@@ -147,7 +147,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "+"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="%", style=discord.ButtonStyle.blurple, row=2)
@@ -155,7 +155,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg = f"{self.arg}/100"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="0", style=discord.ButtonStyle.green, row=3)
@@ -163,7 +163,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "0"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="00", style=discord.ButtonStyle.green, row=3)
@@ -171,7 +171,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "00"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label=".", style=discord.ButtonStyle.green, row=3)
@@ -179,7 +179,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "."
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="-", style=discord.ButtonStyle.blurple, row=3)
@@ -187,7 +187,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "-"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="=", style=discord.ButtonStyle.red, row=3)
@@ -195,7 +195,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         # TODO: Calculate the result
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
@@ -252,7 +252,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg = ""
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="Inv", style=discord.ButtonStyle.green, row=0)
@@ -266,7 +266,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "ln("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="(", style=discord.ButtonStyle.green, row=0)
@@ -274,7 +274,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label=")", style=discord.ButtonStyle.green, row=0)
@@ -282,17 +282,17 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += ")"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     # row 1
 
-    @discord.ui.button(label="gif", style=discord.ButtonStyle.green, row=1)
+    @discord.ui.button(label="[.]", style=discord.ButtonStyle.green, row=1)
     async def __button_gif(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "floor("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="sinh", style=discord.ButtonStyle.green, row=1)
@@ -300,7 +300,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "sinh("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="sin", style=discord.ButtonStyle.green, row=1)
@@ -308,7 +308,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "sin("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="x\N{SUPERSCRIPT TWO}", style=discord.ButtonStyle.green, row=1)
@@ -316,7 +316,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "^2"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="x!", style=discord.ButtonStyle.green, row=1)
@@ -324,7 +324,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "factorial("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     # row 2
@@ -334,7 +334,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "e"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="cosh", style=discord.ButtonStyle.green, row=2)
@@ -342,7 +342,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "cosh("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="cos", style=discord.ButtonStyle.green, row=2)
@@ -350,32 +350,32 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "cos("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(label="x^y", style=discord.ButtonStyle.green, row=2)
+    @discord.ui.button(label="x\N{MODIFIER LETTER SMALL Y}", style=discord.ButtonStyle.green, row=2)
     async def __button_x_power(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "^"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(label="x^(1/y)", style=discord.ButtonStyle.green, row=2)
+    @discord.ui.button(label="\N{MODIFIER LETTER SMALL Y}\N{SQUARE ROOT}x", style=discord.ButtonStyle.green, row=2)
     async def __button_x_power_1_over_y(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "^(1/"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     # row 3
-    @discord.ui.button(label="pi", style=discord.ButtonStyle.green, row=3)
+    @discord.ui.button(label="\N{GREEK SMALL LETTER PI}", style=discord.ButtonStyle.green, row=3)
     async def __button_pi(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "pi"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="tanh", style=discord.ButtonStyle.green, row=3)
@@ -383,7 +383,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "tanh("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="tan", style=discord.ButtonStyle.green, row=3)
@@ -391,7 +391,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "tan("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="x\N{SUPERSCRIPT THREE}", style=discord.ButtonStyle.green, row=3)
@@ -399,24 +399,24 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "^3"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(label="x^(1/3)", style=discord.ButtonStyle.green, row=3)
+    @discord.ui.button(label="\N{SUPERSCRIPT THREE}\N{SQUARE ROOT}x", style=discord.ButtonStyle.green, row=3)
     async def __button_x_power_1_over_3(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "^(1/3)"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     # row 4
-    @discord.ui.button(label="e^x", style=discord.ButtonStyle.green, row=4)
+    @discord.ui.button(label="e\N{MODIFIER LETTER SMALL X}", style=discord.ButtonStyle.green, row=4)
     async def __button_e_power(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "e^"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
     @discord.ui.button(label="mod", style=discord.ButtonStyle.green, row=4)
@@ -424,7 +424,7 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "mod("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="log", style=discord.ButtonStyle.green, row=4)
@@ -432,21 +432,20 @@ class ScientificCalculator(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg += "log("
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
     
-    @discord.ui.button(label="10^x", style=discord.ButtonStyle.green, row=4)
+    @discord.ui.button(label="10\N{MODIFIER LETTER SMALL X}", style=discord.ButtonStyle.green, row=4)
     async def __button_10_power(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.arg = f"10^{self.arg}"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="Back", style=discord.ButtonStyle.green, row=4)
+    @discord.ui.button(label="Back", style=discord.ButtonStyle.red, row=4)
     async def __button_back(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        self.arg = f"10^{self.arg}"
-        embed = discord.Embed(description=f"{self.arg}", color=self.ctx.bot.color)
+        embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color)
         await interaction.response.edit_message(embed=embed, view=CalculatorView(self.user, timeout=120, ctx=self.ctx))

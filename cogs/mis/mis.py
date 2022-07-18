@@ -333,7 +333,7 @@ class Misc(Cog):
                 self.snipes[before.channel.id] = [before, after]
 
     async def wiki_request(
-        self, channel: discord.TextChannel, search: str
+        self, _: discord.TextChannel, search: str
     ) -> List[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
         params = {**WIKI_PARAMS, **{"srlimit": 10, "srsearch": search}}

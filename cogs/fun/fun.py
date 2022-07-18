@@ -1656,22 +1656,22 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def meme(self, ctx: Context, count: Optional[int] = 1, *, subreddit: str="memes"):
+    async def meme(
+        self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"
+    ):
         """Random meme generator."""
-        link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(
-            subreddit, count
-        )
+        link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(subreddit, count)
 
         while True:
             response = await self.bot.http_session.get(link)
             if response.status <= 300:
                 res = await response.json()
-            if count == 1:
-                if not res["nsfw"]:
-                    break
-            else:
-                if not any(x["nsfw"] for x in res["memes"]):
-                    break
+                if "message" in res:
+                    await ctx.reply(res["message"])
+                    return
+            if not any(x["nsfw"] for x in res["memes"]):
+                break
+
             await ctx.release(0)
 
         def make_embed(res) -> discord.Embed:

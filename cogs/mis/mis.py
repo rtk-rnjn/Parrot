@@ -446,20 +446,32 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def calculator(self, ctx: Context, *, text: str):
+    async def calculator(self, ctx: Context, *, text: str = None):
         """This is basic calculator with all the expression supported. Syntax is similar to python math module"""
-        new_text = urllib.parse.quote(text)
-        link = f"http://twitch.center/customapi/math?expr={new_text}"
+        if text:
+            new_text = urllib.parse.quote(text)
+            link = f"http://twitch.center/customapi/math?expr={new_text}"
 
-        r = await self.bot.http_session.get(link)
-        embed = discord.Embed(
-            title="Calculated!!",
-            description=f"```ini\n[Answer is: {await r.text()}]```",
-            timestamp=discord.utils.utcnow(),
-        )
-        embed.set_footer(text=f"{ctx.author.name}")
+            r = await self.bot.http_session.get(link)
+            embed = discord.Embed(
+                title="Calculated!!",
+                description=f"```ini\n[Answer is: {await r.text()}]```",
+                timestamp=discord.utils.utcnow(),
+            )
+            embed.set_footer(text=f"{ctx.author.name}")
 
-        await ctx.reply(embed=embed)
+            await ctx.reply(embed=embed)
+        else:
+            from .__calc_view import CalculatorView
+
+            await ctx.send(
+                embed=discord.Embed(
+                    description="```\n \n```",
+                    color=ctx.bot.color,
+                    timestamp=discord.utils.utcnow(),
+                ),
+                view=CalculatorView(ctx.author, timeout=120, ctx=ctx, args=""),
+            )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

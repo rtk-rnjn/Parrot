@@ -1686,14 +1686,11 @@ class Fun(Cog):
             embed.set_footer(text=f"Upvotes: {ups}")
             return embed
 
-        if count == 1:
-            await ctx.reply(embed=make_embed(res))
-        else:
-            em: List[discord.Embed] = []
-            for _res in res["memes"]:
-                em.append(make_embed(_res))
-            p = PaginationView(em)
-            await p.start(ctx)
+        em: List[discord.Embed] = []
+        for _res in res["memes"]:
+            em.append(make_embed(_res))
+        p = PaginationView(em)
+        await p.start(ctx)
 
     @commands.command(aliases=["fakeprofile"])
     @commands.bot_has_permissions(embed_links=True)

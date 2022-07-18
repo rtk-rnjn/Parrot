@@ -470,7 +470,7 @@ class Misc(Cog):
                     color=ctx.bot.color,
                     timestamp=discord.utils.utcnow(),
                 ),
-                view=CalculatorView(ctx.author, timeout=120, ctx=ctx, args=""),
+                view=CalculatorView(ctx.author, timeout=120, ctx=ctx, arg=""),
             )
 
     @commands.command()

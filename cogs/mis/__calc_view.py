@@ -201,7 +201,7 @@ class CalculatorView(discord.ui.View):
     @discord.ui.button(
         label="\N{HEAVY LEFT-POINTING ANGLE QUOTATION MARK ORNAMENT}",
         style=discord.ButtonStyle.red,
-        row=3,
+        row=4,
         disabled=True,
     )
     async def __button_previous(
@@ -212,7 +212,7 @@ class CalculatorView(discord.ui.View):
     @discord.ui.button(
         label="\N{HEAVY RIGHT-POINTING ANGLE QUOTATION MARK ORNAMENT}",
         style=discord.ButtonStyle.red,
-        row=3,
+        row=4,
         disabled=True,
     )
     async def __button_next(
@@ -220,7 +220,7 @@ class CalculatorView(discord.ui.View):
     ):
         ...
 
-    @discord.ui.button(label="Change To Scientific Calculator", style=discord.ButtonStyle.red, row=3)
+    @discord.ui.button(label="Change To Scientific Calculator", style=discord.ButtonStyle.red, row=4)
     async def __button_scientific(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):

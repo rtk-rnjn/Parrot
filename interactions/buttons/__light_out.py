@@ -63,6 +63,7 @@ async def wait_for_delete(
                 return _user in user
             else:
                 return _user == user
+        return False
 
     bot: discord.Client = bot or ctx.bot
     try:

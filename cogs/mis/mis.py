@@ -462,7 +462,7 @@ class Misc(Cog):
 
             await ctx.reply(embed=embed)
         else:
-            from .__calc_view import CalculatorView
+            from cogs.mis.__calc_view import CalculatorView
 
             await ctx.send(
                 embed=discord.Embed(

@@ -195,7 +195,7 @@ class CalculatorView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         res = await self.ctx.bot.http_session.get(
-            "http://twitch.center/customapi/math?expr={self.arg}"
+            f"http://twitch.center/customapi/math?expr={self.arg}"
         )
         self.arg = await res.text()
         embed = discord.Embed(description=f"```\n{self.arg}\n```", color=self.ctx.bot.color, timestamp=discord.utils.utcnow(),)

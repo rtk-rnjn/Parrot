@@ -1,21 +1,42 @@
 from __future__ import annotations
 from queue import Queue
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, Union
 import discord
 
 import wavelink
 from discord.ext import commands
 from core import Context, Parrot, Cog
+import arrow
 
 
 class Music(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-        self._cache: Dict[int, Queue] = {}
+        self._cache: Dict[int, Queue[wavelink.Track]] = {}
+
+    def make_embed(self, ctx: Context, track: wavelink.Track) -> discord.Embed:
+        embed = discord.Embed(
+            description=track.title,
+            color=self.bot.color,
+            timestamp=discord.utils.utcnow(),
+        )
+        if track.uri is not None:
+            embed.url = track.uri
+        embed.add_field(name="Author", value=track.author, inline=True)
+        duration = (
+            arrow.utcnow().shift(seconds=track.duration).humanize(only_distance=True)
+        )
+        embed.add_field(name="Duration", value=duration, inline=True)
+        embed.set_footer(
+            text=f"Requested by {ctx.author.name}",
+            icon_url=ctx.author.display_avatar.url,
+        )
+        if hasattr(track, "thumbnail") and track.thumbnail is not None:
+            embed.set_thumbnail(url=track.thumbnail)
+        return embed
 
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
     @commands.bot_has_guild_permissions(connect=True)
     async def join(self, ctx: Context, channel: Optional[discord.VoiceChannel] = None):
         """Joins a voice channel. If no channel is given then it will connects to your channel"""
@@ -26,8 +47,9 @@ class Music(Cog):
                 "You must be in a voice channel or must provide the channel argument"
             )
 
-        await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
         await channel.connect(cls=wavelink.Player)
+        await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
+        self._cache[ctx.guild.id] = Queue()
 
     @commands.command()
     async def disconnect(self, ctx: Context):
@@ -41,9 +63,13 @@ class Music(Cog):
         await ctx.voice_client.disconnect()
 
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
     @commands.bot_has_guild_permissions(connect=True)
-    async def play(self, ctx: Context, *, search: wavelink.YouTubeTrack):
+    async def play(
+        self,
+        ctx: Context,
+        *,
+        search: Union[wavelink.SoundCloudTrack, wavelink.YouTubeTrack],
+    ):
         """Play a song with the given search query.
         If not connected, connect to our voice channel.
         """
@@ -54,12 +80,43 @@ class Music(Cog):
         else:
             vc: wavelink.Player = ctx.voice_client  # type: ignore
 
+        if vc.is_playing():
+            try:
+                self._cache[ctx.guild.id]
+            except KeyError:
+                self._cache[ctx.guild.id] = Queue()
+            else:
+                self._cache[ctx.guild.id].put(search)
+                await ctx.send(
+                    f"{ctx.author.mention} added {search.title} to the queue"
+                )
+                return
+
         await vc.play(search)
-        await ctx.send(f"{ctx.author.mention} Now playing: {search.title}")
+        await ctx.send(
+            f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search)
+        )
 
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
-    @commands.has_permissions(connect=True)
+    async def nowplaying(self, ctx: Context):
+        """Shows the currently playing song"""
+        if ctx.voice_client is None:
+            return await ctx.send(
+                f"{ctx.author.mention} bot is not connected to a voice channel."
+            )
+        
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(
+                f"{ctx.author.mention} bot is not playing anything."
+            )
+        await ctx.send(
+            f"{ctx.author.mention} Now playing",
+            embed=self.make_embed(ctx, channel.track),
+        )
+
+    @commands.command()
     async def stop(self, ctx: Context):
         """Stop the currently playing song."""
         if ctx.voice_client is None:
@@ -71,9 +128,30 @@ class Music(Cog):
         await channel.stop()
         await ctx.send(f"{ctx.author.mention} stopped the music.")
 
+        if queue := self._cache.get(ctx.guild.id):
+            if not queue.empty():
+                track = await queue.get(block=False)
+                await channel.play(track)
+                await ctx.send(
+                    f"{ctx.author.mention} Now playing",
+                    embed=self.make_embed(ctx, track),
+                )
+                return
+
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
-    @commands.has_permissions(connect=True)
+    async def clear(self, ctx: Context):
+        """Clear the queue"""
+        if ctx.voice_client is None:
+            return await ctx.send(
+                f"{ctx.author.mention} bot is not connected to a voice channel."
+            )
+
+        channel: wavelink.Player = ctx.voice_client
+        await channel.stop()
+        self._cache[ctx.guild.id] = Queue()
+        await ctx.send(f"{ctx.author.mention} cleared the queue.")
+
+    @commands.command()
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:
@@ -93,8 +171,6 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player is not playing.")
 
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
-    @commands.has_permissions(connect=True)
     async def resume(self, ctx: Context):
         """Resume the currently paused song."""
         if ctx.voice_client is None:
@@ -114,8 +190,6 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player is not playing.")
 
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
-    @commands.has_permissions(connect=True)
     async def volume(self, ctx: Context, volume: int):
         """Change the volume of the currently playing song."""
         if volume < 1 or volume > 100:
@@ -132,12 +206,10 @@ class Music(Cog):
         if not channel.is_playing():
             return await ctx.send(f"{ctx.author.mention} player is not playing.")
 
-        await channel.set_volume(volume/10)
+        await channel.set_volume(volume / 10)
         await ctx.send(f"{ctx.author.mention} player volume set to {volume/10}%.")
 
     @commands.command()
-    @commands.has_guild_permissions(connect=True)
-    @commands.has_permissions(connect=True)
     async def seek(self, ctx: Context, seconds: int):
         """Seek to a given position in the currently playing song."""
         if ctx.voice_client is None:
@@ -151,3 +223,14 @@ class Music(Cog):
 
         await channel.seek(seconds)
         await ctx.send(f"{ctx.author.mention} player seeked to {seconds} seconds.")
+
+    @Cog.listener()
+    async def on_wavelink_track_end(
+        self, player: wavelink.Player, track: wavelink.Track, reason: Any
+    ):
+        try:
+            queue = self._cache[player.guild.id]
+        except KeyError:
+            return
+        else:
+            await player.play(await queue.get(block=False))

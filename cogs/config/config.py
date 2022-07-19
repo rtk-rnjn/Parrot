@@ -16,6 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.collection import Collection
 from pymongo.results import UpdateResult
 from tabulate import tabulate
+import wavelink
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
@@ -364,7 +365,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} set 24/7 vc channel to **{channel.name}**"
             )
             try:
-                await channel.connect()
+                await channel.connect(cls=wavelink.Player)
             except Exception as e:
                 await ctx.send(f"{ctx.author.mention} something wrong: **{e}**")
             return

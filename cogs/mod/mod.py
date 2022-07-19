@@ -20,6 +20,7 @@ from core import Cog, Context, Parrot
 from discord.ext import commands
 from pymongo.collection import Collection
 from typing_extensions import Annotated
+import wavelink
 from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID
 from utilities.infraction import custom_delete_warn, delete_many_warn, show_warn, warn
@@ -1096,7 +1097,7 @@ class Moderator(Cog):
         if channel is None:
             if voicestate := ctx.author.voice:
                 if not ctx.guild.me.voice:
-                    await voicestate.channel.connect()
+                    await voicestate.channel.connect(cls=wavelink.Player)
                 else:
                     await ctx.guild.me.edit(voice_channel=voicestate.channel)
                 if not member:

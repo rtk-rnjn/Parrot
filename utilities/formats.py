@@ -1,13 +1,8 @@
 from __future__ import annotations
-from contextlib import suppress
 
 import datetime
 import re
-from typing import TYPE_CHECKING, Any
-
-import discord
-import asyncio
-from discord.ext import commands
+from typing import Any
 
 
 class plural:

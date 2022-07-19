@@ -268,7 +268,6 @@ class IPCRoutes(Cog):
                     port=port,
                     password=password,
                     identifier="MAIN",
-                    session=self.bot.http_session,
                 )
         except Exception as e:
             return {"status": f"error: {e}"}

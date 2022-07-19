@@ -1,4 +1,6 @@
 from __future__ import annotations
+from asyncio import QueueEmpty
+from contextlib import suppress
 from queue import Queue
 from typing import Any, Dict, Optional, Union
 import discord
@@ -17,7 +19,7 @@ class Music(Cog):
 
     def make_embed(self, ctx: Context, track: wavelink.Track) -> discord.Embed:
         embed = discord.Embed(
-            description=track.title,
+            title=track.title,
             color=self.bot.color,
             timestamp=discord.utils.utcnow(),
         )
@@ -97,7 +99,7 @@ class Music(Cog):
             f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search)
         )
 
-    @commands.command()
+    @commands.command(aliases=["np"])
     async def nowplaying(self, ctx: Context):
         """Shows the currently playing song"""
         if ctx.voice_client is None:
@@ -117,6 +119,65 @@ class Music(Cog):
         )
 
     @commands.command()
+    async def next(self, ctx: Context):
+        """Skips the currently playing song"""
+        if ctx.voice_client is None:
+            return await ctx.send(
+                f"{ctx.author.mention} bot is not connected to a voice channel."
+            )
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(
+                f"{ctx.author.mention} bot is not playing anything."
+            )
+        try:
+            queue = self._cache[ctx.guild.id]
+        except KeyError:
+            self._cache[ctx.guild.id] = Queue()
+        else:
+            if queue.empty():
+                return await ctx.send(
+                    f"{ctx.author.mention} There are no more songs in the queue."
+                )
+            with suppress(QueueEmpty):
+                next_song = queue.get_nowait()
+                await channel.play(next_song)
+                await ctx.send(
+                    f"{ctx.author.mention} Now playing",
+                    embed=self.make_embed(ctx, next_song),
+                )
+            return
+        await channel.stop()
+        await ctx.send(f"{ctx.author.mention} Skipped {channel.track}")
+
+    @commands.command()
+    async def queue(self, ctx: Context):
+        """Shows the current songs queue"""
+        try:
+            queue = self._cache[ctx.guild.id]
+        except KeyError:
+            self._cache[ctx.guild.id] = Queue()
+            return await ctx.send(
+                f"{ctx.author.mention} There are no songs in the queue."
+            )
+
+        if queue.empty():
+            return await ctx.send(
+                f"{ctx.author.mention} There are no songs in the queue."
+            )
+
+        entries = []
+        while not queue.empty():
+            track = queue.get_nowait()
+            if track.uri:
+                entries.append(f"[{track.title} - {track.author}]({track.uri})")
+            else:
+                entries.append(f"{track.title} - {track.author}")
+
+        await ctx.paginate(entries=entries, _type="SimplePages")
+
+    @commands.command()
     async def stop(self, ctx: Context):
         """Stop the currently playing song."""
         if ctx.voice_client is None:
@@ -129,8 +190,8 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} stopped the music.")
 
         if queue := self._cache.get(ctx.guild.id):
-            if not queue.empty():
-                track = await queue.get(block=False)
+            with suppress(QueueEmpty):
+                track = queue.get_nowait()
                 await channel.play(track)
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
@@ -233,4 +294,5 @@ class Music(Cog):
         except KeyError:
             return
         else:
-            await player.play(await queue.get(block=False))
+            with suppress(QueueEmpty):
+                await player.play(queue.get_nowait())

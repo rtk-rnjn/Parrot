@@ -58,7 +58,7 @@ class Music(commands.Cog):
     async def on_pomice_track_exception(self, player: Player, track, _):
         await player.do_next()
 
-    @commands.command(name="join", aliases=["join", "j"])
+    @commands.command(name="join", aliases=["j"])
     async def join(self, ctx: Context, *, channel: discord.VoiceChannel = None) -> None:
         if not channel:
             channel = getattr(ctx.author.voice, "channel", None)

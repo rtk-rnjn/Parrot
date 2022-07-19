@@ -511,7 +511,7 @@ class Moderator(Cog):
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     @Context.with_type
-    async def clear(
+    async def clean(
         self,
         ctx: Context,
         num: int = 100,

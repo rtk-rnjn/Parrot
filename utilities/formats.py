@@ -5,7 +5,6 @@ import datetime
 import re
 from typing import TYPE_CHECKING, Any
 
-import pomice
 import discord
 import asyncio
 from discord.ext import commands
@@ -120,73 +119,3 @@ def get_flag(
         else:
             ls.append(f"[{pref}{flag.name}{'|'.join(list(alis))}{deli}]")
     return ls
-
-
-class Player(pomice.Player):
-    """Custom pomice Player class."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if TYPE_CHECKING:
-            from core import Context
-
-        self.queue = asyncio.Queue()
-        self.controller: discord.Message = None
-        # Set context here so we can send a now playing embed
-        self.context: Context = None
-        self.dj: discord.Member = None
-
-        self.pause_votes = set()
-        self.resume_votes = set()
-        self.skip_votes = set()
-        self.shuffle_votes = set()
-        self.stop_votes = set()
-
-    async def do_next(self) -> None:
-        # Clear the votes for a new song
-        self.pause_votes.clear()
-        self.resume_votes.clear()
-        self.skip_votes.clear()
-        self.shuffle_votes.clear()
-        self.stop_votes.clear()
-
-        # Check if theres a controller still active and deletes it
-        if self.controller is not None:
-            with suppress(discord.HTTPException):
-                await self.controller.delete()
-
-        # Queue up the next track, else teardown the player
-        try:
-            track: pomice.Track = self.queue.get_nowait()
-        except asyncio.queues.QueueEmpty:
-            return await self.teardown()
-
-        await self.play(track)
-
-        # Call the controller (a.k.a: The "Now Playing" embed) and check if one exists
-
-        if track.is_stream:
-            embed = discord.Embed(
-                title="Now playing",
-                description=f":red_circle: **LIVE** [{track.title}]({track.uri}) [{track.requester.mention}]",
-            )
-            self.controller: discord.Message = await self.context.send(embed=embed)  # type: ignore
-        else:
-            embed = discord.Embed(
-                title=f"Now playing",
-                description=f"[{track.title}]({track.uri}) [{track.requester.mention}]",
-            )
-            self.controller: discord.Message = await self.context.send(embed=embed)  # type: ignore
-
-    async def teardown(self):
-        """Clear internal states, remove player controller and disconnect."""
-        with suppress((discord.HTTPException), (KeyError)):
-            await self.destroy()
-            if self.controller:
-                await self.controller.delete()
-
-    async def set_context(self, ctx: commands.Context):
-        """Set context for the player"""
-        self.context = ctx
-        self.dj = ctx.author

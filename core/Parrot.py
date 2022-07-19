@@ -36,7 +36,7 @@ from aiohttp import ClientSession  # type: ignore
 from discord import app_commands
 from discord.ext import commands, ipc, tasks  # type: ignore
 from lru import LRU
-import pomice
+import wavelink
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 try:
@@ -192,8 +192,8 @@ class Parrot(commands.AutoShardedBot):
         self._successfully_loaded: List[str] = []
         self._failed_to_load: Dict[str, str] = {}
 
-        # Pomice
-        self.pomice = pomice.NodePool()
+        # Wavelink
+        self.wavelink = wavelink.NodePool()
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -397,11 +397,15 @@ class Parrot(commands.AutoShardedBot):
             await asyncio.sleep(0)
 
         success = await self.ipc_client.request(
-            "start_pomice_nodes", host="127.0.0.1", port=1018, password="password"
+            "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
         )
-        if success['status'] == 'ok':
-            print("Pomice nodes started")
+        if success["status"] == "ok":
+            print("[Parrot] Wavelink nodes started")
         self._was_ready = True
+    
+    async def on_wavelink_node_ready(self, node: wavelink.Node):
+        """Event fired when a node has finished connecting."""
+        print(f'Node: <{node.identifier}> is ready!')
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")

@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Union
 import discord
 from core import Cog, Parrot
 from discord.ext.ipc import server
-import pomice
 
 
 class IPCRoutes(Cog):
@@ -255,22 +254,21 @@ class IPCRoutes(Cog):
         return MESSAGES
 
     @server.route()
-    async def start_pomice_nodes(
+    async def start_wavelink_nodes(
         self, data: server.IpcServerResponse
     ) -> Dict[str, str]:
         host = data.host
         port = data.port
         password = data.password
         try:
-            if hasattr(self.bot, "pomice"):
-                await self.bot.pomice.create_node(
+            if hasattr(self.bot, "wavelink"):
+                await self.bot.wavelink.create_node(
                     bot=self.bot,
                     host=host,
                     port=port,
                     password=password,
                     identifier="MAIN",
                     session=self.bot.http_session,
-
                 )
         except Exception as e:
             return {"status": f"error: {e}"}

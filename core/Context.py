@@ -438,6 +438,9 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         ValueError
             If the paginator type is not found.
         """
+        if not entries:
+            raise commands.BadArgument("Cannot paginate an empty list.")
+
         if _type == "SimplePages":
             from cogs.meta.robopage import SimplePages
 

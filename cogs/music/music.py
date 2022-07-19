@@ -70,7 +70,7 @@ class Music(Cog):
         self,
         ctx: Context,
         *,
-        search: Union[wavelink.SoundCloudTrack, wavelink.YouTubeTrack],
+        search: Union[wavelink.YouTubeTrack, wavelink.SoundCloudTrack, str],
     ):
         """Play a song with the given search query.
         If not connected, connect to our voice channel.
@@ -82,17 +82,20 @@ class Music(Cog):
         else:
             vc: wavelink.Player = ctx.voice_client  # type: ignore
 
+        if isinstance(search, str):
+            search = wavelink.PartialTrack(query=search)
+
         if vc.is_playing():
             try:
                 self._cache[ctx.guild.id]
             except KeyError:
                 self._cache[ctx.guild.id] = Queue()
-            else:
-                self._cache[ctx.guild.id].put(search)
-                await ctx.send(
-                    f"{ctx.author.mention} added {search.title} to the queue"
-                )
-                return
+
+            self._cache[ctx.guild.id].put(search)
+            await ctx.send(
+                f"{ctx.author.mention} added {search.title} to the queue"
+            )
+            return
 
         await vc.play(search)
         await ctx.send(
@@ -135,18 +138,18 @@ class Music(Cog):
             queue = self._cache[ctx.guild.id]
         except KeyError:
             self._cache[ctx.guild.id] = Queue()
-        else:
-            if queue.empty():
-                return await ctx.send(
-                    f"{ctx.author.mention} There are no more songs in the queue."
-                )
-            with suppress(QueueEmpty):
-                next_song = queue.get_nowait()
-                await channel.play(next_song)
-                await ctx.send(
-                    f"{ctx.author.mention} Now playing",
-                    embed=self.make_embed(ctx, next_song),
-                )
+
+        if queue.empty():
+            return await ctx.send(
+                f"{ctx.author.mention} There are no more songs in the queue."
+            )
+        with suppress(QueueEmpty):
+            next_song = queue.get_nowait()
+            await channel.play(next_song)
+            await ctx.send(
+                f"{ctx.author.mention} Now playing",
+                embed=self.make_embed(ctx, next_song),
+            )
             return
         await channel.stop()
         await ctx.send(f"{ctx.author.mention} Skipped {channel.track}")
@@ -293,6 +296,6 @@ class Music(Cog):
             queue = self._cache[player.guild.id]
         except KeyError:
             return
-        else:
-            with suppress(QueueEmpty):
-                await player.play(queue.get_nowait())
+
+        with suppress(QueueEmpty):
+            await player.play(queue.get_nowait())

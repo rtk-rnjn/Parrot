@@ -16,9 +16,6 @@ class Music(commands.Cog):
 
         # In order to initialize a node, or really do anything in this library,
         # you need to make a node pool
-        self.pomice = pomice.NodePool()
-
-        # Start the node
 
     async def start_nodes(self):
         # Waiting for the bot to get ready before connecting to nodes.
@@ -26,7 +23,7 @@ class Music(commands.Cog):
 
         # You can pass in Spotify credentials to enable Spotify querying.
         # If you do not pass in valid Spotify credentials, Spotify querying will not work
-        await self.pomice.create_node(
+        await self.bot.pomice.create_node(
             bot=self.bot,
             host="127.0.0.1",
             port="1018",
@@ -79,7 +76,7 @@ class Music(commands.Cog):
     async def on_pomice_track_exception(self, player: Player, track, _):
         await player.do_next()
 
-    @commands.command(aliases=["join", "joi", "j", "summon", "su", "con"])
+    @commands.command(aliases=["join", "j"])
     async def join(self, ctx: Context, *, channel: discord.VoiceChannel = None) -> None:
         if not channel:
             channel = getattr(ctx.author.voice, "channel", None)

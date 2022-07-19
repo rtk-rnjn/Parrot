@@ -197,7 +197,7 @@ class Music(commands.Cog):
                 delete_after=15,
             )
 
-    @commands.command(aliases=["n", "nex", "next", "sk"])
+    @commands.command(aliases=["nex", "next", "sk"])
     async def skip(self, ctx: Context):
         """Skip the currently playing song."""
         if not (player := ctx.voice_client):

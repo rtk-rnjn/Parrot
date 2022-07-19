@@ -38,7 +38,10 @@ class Music(commands.Cog):
     async def cog_load(
         self,
     ):
-        await self.start_nodes()
+        try:
+            await self.start_nodes()
+        except pomice.NodeCreationError:
+            self.pomice.get_node("MAIN")
 
     async def required(self, ctx: Context):
         """Method which returns required votes based on amount of members in a channel."""

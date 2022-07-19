@@ -17,28 +17,10 @@ class Music(commands.Cog):
         # In order to initialize a node, or really do anything in this library,
         # you need to make a node pool
 
-    async def start_nodes(self):
-        # Waiting for the bot to get ready before connecting to nodes.
-        await self.bot.wait_until_ready()
-
-        # You can pass in Spotify credentials to enable Spotify querying.
-        # If you do not pass in valid Spotify credentials, Spotify querying will not work
-        await self.bot.pomice.create_node(
-            bot=self.bot,
-            host="127.0.0.1",
-            port="1018",
-            password="password",
-            identifier="MAIN",
-        )
-        print(f"Node is ready!")
-
     async def cog_load(
         self,
     ):
-        try:
-            await self.start_nodes()
-        except pomice.NodeCreationError:
-            self.pomice.get_node("MAIN")
+        self.pomice = self.bot.pomice
 
     async def required(self, ctx: Context):
         """Method which returns required votes based on amount of members in a channel."""

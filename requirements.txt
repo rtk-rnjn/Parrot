@@ -11,6 +11,7 @@ PyNacl
 akinator.py
 opuslib
 git+https://github.com/mongodb/mongo-python-driver
+git+https://github.com/cloudwithax/pomice
 dnspython
 motor
 aiofile

@@ -36,6 +36,7 @@ from aiohttp import ClientSession  # type: ignore
 from discord import app_commands
 from discord.ext import commands, ipc, tasks  # type: ignore
 from lru import LRU
+import pomice
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 try:
@@ -190,6 +191,9 @@ class Parrot(commands.AutoShardedBot):
         # Extensions
         self._successfully_loaded: List[str] = []
         self._failed_to_load: Dict[str, str] = {}
+
+        # Pomice
+        self.pomice = pomice.NodePool()
 
     def __repr__(self):
         return f"<core.{self.user.name}>"
@@ -368,7 +372,6 @@ class Parrot(commands.AutoShardedBot):
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )
-        self._was_ready = True
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
@@ -392,6 +395,11 @@ class Parrot(commands.AutoShardedBot):
                 except (discord.HTTPException, asyncio.TimeoutError):
                     pass
             await asyncio.sleep(0)
+
+        await self.ipc_client.request(
+            "start_pomice_nodes",
+        )
+        self._was_ready = True
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")

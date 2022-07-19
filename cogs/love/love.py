@@ -99,8 +99,7 @@ class Love(Cog):
     def zodiac_build_embed(self, zodiac: str) -> discord.Embed:
         """Gives informative zodiac embed."""
         zodiac = zodiac.capitalize()
-        embed = discord.Embed()
-        embed.color = discord.Color.dark_purple()
+        embed = discord.Embed(color=self.bot.color)
         if zodiac in self.zodiac_fact:
             embed.title = f"__{zodiac}__"
             embed.description = self.zodiac_fact[zodiac]["About"]
@@ -127,7 +126,7 @@ class Love(Cog):
             embed = self.generate_invalidname_embed(zodiac)
         return embed
 
-    def zodiac_date_verifier(self, query_date: datetime) -> str:
+    def zodiac_date_verifier(self, query_date: datetime) -> Optional[str]:
         """Returns zodiac sign by checking date."""
         for zodiac_name, zodiac_data in self.zodiac_fact.items():
             if (
@@ -136,6 +135,7 @@ class Love(Cog):
                 <= zodiac_data["end_at"].date()
             ):
                 return zodiac_name
+        return None
 
     @in_month(Month.FEBRUARY)
     @commands.command(aliases=["saintvalentine"])
@@ -197,14 +197,13 @@ class Love(Cog):
                 )
 
             except ValueError as e:
-                final_embed = discord.Embed()
-                final_embed.color = discord.Color.dark_purple()
+                final_embed = discord.Embed(color=self.bot.color)
                 final_embed.description = (
                     f"Zodiac sign could not be found because.\n```\n{e}\n```"
                 )
 
             else:
-                final_embed = self.zodiac_build_embed(zodiac_sign_based_on_date)
+                final_embed = self.zodiac_build_embed(zodiac_sign_based_on_date)  # type: ignore
 
         await ctx.send(embed=final_embed)
 
@@ -212,8 +211,7 @@ class Love(Cog):
     @zodiac.command(name="partnerzodiac", aliases=("partner",))
     async def partner_zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides a random counter compatible zodiac sign to the given user's zodiac sign."""
-        embed = discord.Embed()
-        embed.color = discord.Color.dark_purple()
+        embed = discord.Embed(color=self.bot.color)
         zodiac_check = self.zodiacs.get(zodiac_sign.capitalize())
         if zodiac_check:
             compatible_zodiac = random.choice(self.zodiacs[zodiac_sign.capitalize()])
@@ -339,7 +337,7 @@ class Love(Cog):
         # Hash inputs to guarantee consistent results (hashing algorithm choice arbitrary)
         #
         # hashlib is used over the builtin hash() to guarantee same result over multiple runtimes
-        m = hashlib.sha256(who.encode() + whom.encode())
+        m = hashlib.sha256(who.encode() + whom.encode())  # type: ignore
         # Mod 101 for [0, 100]
         love_percent = sum(m.digest()) % 101
 

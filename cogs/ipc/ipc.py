@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 import discord
 from core import Cog, Parrot
 from discord.ext.ipc import server
+import pomice
 
 
 class IPCRoutes(Cog):
@@ -41,12 +42,12 @@ class IPCRoutes(Cog):
 
     @server.route()
     async def db_exec_update_one(self, data: server.IpcServerResponse) -> Any:
-        db = data.db
-        collection = data.collection
+        db: str = data.db
+        collection: str = data.collection
 
-        query = getattr(data, "query", {})
-        update = getattr(data, "update", {})
-        upsert = getattr(data, "upsert", False)
+        query: Dict[str, Any] = getattr(data, "query", {})
+        update: Dict[str, Any] = getattr(data, "update", {})
+        upsert: bool = getattr(data, "upsert", False)
 
         return await self.bot.mongo[db][collection].update_one(
             query, update, upsert=upsert
@@ -252,3 +253,24 @@ class IPCRoutes(Cog):
                         }
                     )
         return MESSAGES
+
+    @server.route()
+    async def start_pomice_nodes(
+        self, data: server.IpcServerResponse
+    ) -> Dict[str, str]:
+        host = data.host
+        port = data.port
+        password = data.password
+        try:
+            if hasattr(self.bot, "pomice"):
+                await self.bot.pomice.create_node(
+                    bot=self.bot,
+                    host=host,
+                    port=port,
+                    password=password,
+                    identifier="MAIN",
+                )
+        except Exception as e:
+            return {"status": f"error: {e}"}
+        else:
+            return {"status": "ok"}

@@ -530,14 +530,14 @@ class Moderator(Cog):
 
             await mt.do_removal(ctx, num, check)
 
-    @clear.command()
+    @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def embeds(self, ctx: Context, search: int = 100):
         """Removes messages that have embeds in them."""
         await mt.do_removal(ctx, search, lambda e: len(e.embeds))
 
-    @clear.command(name="regex")
+    @clean.command(name="regex")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _regex(
@@ -551,28 +551,28 @@ class Moderator(Cog):
 
         await mt.do_removal(ctx, search, check)
 
-    @clear.command()
+    @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def files(self, ctx: Context, search: int = 100):
         """Removes messages that have attachments in them."""
         await mt.do_removal(ctx, search, lambda e: len(e.attachments))
 
-    @clear.command()
+    @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def images(self, ctx: Context, search: int = 100):
         """Removes messages that have embeds or attachments."""
         await mt.do_removal(ctx, search, lambda e: len(e.embeds) or len(e.attachments))
 
-    @clear.command()
+    @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def user(self, ctx: Context, member: discord.Member, search: int = 100):
         """Removes all messages by the member."""
         await mt.do_removal(ctx, search, lambda e: e.author == member)
 
-    @clear.command()
+    @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def contains(self, ctx: Context, *, substr: str):
@@ -584,7 +584,7 @@ class Moderator(Cog):
         else:
             await mt.do_removal(ctx, 100, lambda e: substr in e.content)
 
-    @clear.command(name="bot", aliases=["bots"])
+    @clean.command(name="bot", aliases=["bots"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: int = 100):
@@ -597,7 +597,7 @@ class Moderator(Cog):
 
         await mt.do_removal(ctx, search, predicate)
 
-    @clear.command(name="emoji", aliases=["emojis"])
+    @clean.command(name="emoji", aliases=["emojis"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _emoji(self, ctx: Context, search: int = 100):
@@ -609,7 +609,7 @@ class Moderator(Cog):
 
         await mt.do_removal(ctx, search, predicate)
 
-    @clear.command(name="reactions")
+    @clean.command(name="reactions")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _reactions(self, ctx: Context, search: int = 100):
@@ -649,7 +649,7 @@ class Moderator(Cog):
             reason=reason,
         )
 
-    @clear.command()
+    @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def custom(self, ctx: Context, *, arguments: str):

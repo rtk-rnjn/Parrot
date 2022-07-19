@@ -386,12 +386,12 @@ class Parrot(commands.AutoShardedBot):
         await self.update_opt_in_out.start()
         for channel in VCS:
             if channel is not None:
-                channel = await self.getch(
+                channel: discord.VoiceChannel = await self.getch(  # type: ignore
                     self.get_channel, self.fetch_channel, channel, force_fetch=False
                 )
                 try:
                     if channel is not None:
-                        await channel.connect()
+                        await channel.connect(cls=wavelink.Player)
                 except (discord.HTTPException, asyncio.TimeoutError):
                     pass
             await asyncio.sleep(0)
@@ -400,12 +400,12 @@ class Parrot(commands.AutoShardedBot):
             "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
         )
         if success["status"] == "ok":
-            print("[Parrot] Wavelink nodes started")
+            print("[Parrot] Wavelink node connected successfully")
         self._was_ready = True
     
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f'Node: <{node.identifier}> is ready!')
+        print(f'[Parrot] Wavelink Node {node.identifier} is ready!')
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")

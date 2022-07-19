@@ -1,10 +1,12 @@
 from __future__ import annotations
+import os
 
 from typing import Any, Dict, List, Optional, Union
 
 import discord
 from core import Cog, Parrot
 from discord.ext.ipc import server
+from wavelink.ext import spotify
 
 
 class IPCRoutes(Cog):
@@ -268,6 +270,10 @@ class IPCRoutes(Cog):
                     port=port,
                     password=password,
                     identifier="MAIN",
+                    spotify_client=spotify.SpotifyClient(
+                        client_id=os.environ.get("SPOTIFY_CLIENT_ID"),
+                        client_secret=os.environ.get("SPOTIFY_CLIENT_SECRET"),
+                    ),
                 )
         except Exception as e:
             return {"status": f"error: {e}"}

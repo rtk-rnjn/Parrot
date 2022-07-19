@@ -67,3 +67,8 @@ IBM_END_POINT=""
 
 # Internal IPC
 IPC_KEY = ""
+
+# Spotify
+# https://developer.spotify.com/
+SPOTIFY_CLIENT_ID=""
+SPOTIFY_CLIENT_SECRET=""

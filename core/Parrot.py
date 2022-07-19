@@ -396,9 +396,11 @@ class Parrot(commands.AutoShardedBot):
                     pass
             await asyncio.sleep(0)
 
-        await self.ipc_client.request(
-            "start_pomice_nodes",
+        success = await self.ipc_client.request(
+            "start_pomice_nodes", host="127.0.0.1", port=1018, password="password"
         )
+        if success['status'] == 'ok':
+            print("Pomice nodes started")
         self._was_ready = True
 
     async def on_connect(self) -> None:

@@ -1,6 +1,9 @@
-server:
+server: # REST and WS server
   port: 1018
   address: 127.0.0.1
+spring:
+  main:
+    banner-mode: log
 lavalink:
   server:
     password: "password"
@@ -10,12 +13,11 @@ lavalink:
       soundcloud: true
       twitch: true
       vimeo: true
+      mixer: true
       http: true
       local: false
     bufferDurationMs: 400
-    frameBufferDurationMs: 5000
-    youtubePlaylistLoadLimit: 6
-    playerUpdateInterval: 5
+    youtubePlaylistLoadLimit: 6 # Number of pages at 100 each
     youtubeSearchEnabled: true
     soundcloudSearchEnabled: true
     gc-warnings: true
@@ -27,7 +29,9 @@ metrics:
 
 sentry:
   dsn: ""
-  environment: ""
+#  tags:
+#    some_key: some_value
+#    another_key: another_value
 
 logging:
   file:

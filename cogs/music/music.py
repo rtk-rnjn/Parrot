@@ -59,7 +59,7 @@ class Music(Cog):
         self._cache[ctx.guild.id] = Queue()
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def disconnect(self, ctx: Context):
         """Disconnects from the voice channel"""
         if ctx.voice_client is None:
@@ -260,7 +260,7 @@ class Music(Cog):
         await ctx.paginate(entries=entries, _type="SimplePages")
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def stop(self, ctx: Context):
         """Stop the currently playing song."""
         if ctx.voice_client is None:
@@ -283,7 +283,7 @@ class Music(Cog):
                 return
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def clear(self, ctx: Context):
         """Clear the queue"""
         if ctx.voice_client is None:
@@ -297,7 +297,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} cleared the queue.")
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:
@@ -317,7 +317,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player is not playing.")
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def resume(self, ctx: Context):
         """Resume the currently paused song."""
         if ctx.voice_client is None:
@@ -337,7 +337,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player is not playing.")
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def volume(self, ctx: Context, volume: int):
         """Change the volume of the currently playing song."""
         if volume < 1 or volume > 100:
@@ -358,7 +358,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player volume set to {volume/10}%.")
 
     @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def seek(self, ctx: Context, seconds: int):
         """Seek to a given position in the currently playing song."""
         if ctx.voice_client is None:

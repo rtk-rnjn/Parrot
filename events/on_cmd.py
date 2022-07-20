@@ -18,9 +18,7 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 
 class ErrorView(discord.ui.View):
-    def __init__(
-        self, author_id, *, ctx: Context = None, error: commands.CommandError = None
-    ):
+    def __init__(self, author_id, *, ctx: Context = None, error: commands.CommandError = None):
         super().__init__(timeout=300.0)
         self.author_id = author_id
         self.ctx = ctx
@@ -35,9 +33,7 @@ class ErrorView(discord.ui.View):
         return False
 
     @discord.ui.button(label="Show full error", style=discord.ButtonStyle.green)
-    async def show_full_traceback(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
+    async def show_full_traceback(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_message(str(self.error), ephemeral=True)
 
 
@@ -139,12 +135,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.description = (
                 f"Please provide the following permission(s) to the bot.```\n{fmt}```"
             )
-            ERROR_EMBED.title = (
-                f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"
-            )
+            ERROR_EMBED.title = f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"
 
         elif isinstance(error, commands.CommandOnCooldown):
-            ERROR_EMBED.description = f"You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
+            ERROR_EMBED.description = (
+                f"You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}"
 
         elif isinstance(error, commands.MissingPermissions):
@@ -156,7 +152,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
             else:
                 fmt = " and ".join(missing)
-            ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
+            ERROR_EMBED.description = (
+                f"You need the following permission(s) to the run the command.```\n{fmt}```"
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}"
             ctx.command.reset_cooldown(ctx)
 
@@ -199,11 +197,15 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 ERROR_EMBED.title = f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}"
 
             elif isinstance(error, commands.MemberNotFound):
-                ERROR_EMBED.description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
+                ERROR_EMBED.description = (
+                    "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
+                )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}"
 
             elif isinstance(error, commands.UserNotFound):
-                ERROR_EMBED.description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
+                ERROR_EMBED.description = (
+                    "User ID/Mention/Name you provided is invalid or bot can not see that User"
+                )
                 ERROR_EMBED.title = f"{QUESTION_MARK} User Not Found {QUESTION_MARK}"
 
             elif isinstance(error, commands.ChannelNotFound):
@@ -211,11 +213,15 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 ERROR_EMBED.title = f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}"
 
             elif isinstance(error, commands.RoleNotFound):
-                ERROR_EMBED.description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
+                ERROR_EMBED.description = (
+                    "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
+                )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}"
 
             elif isinstance(error, commands.EmojiNotFound):
-                ERROR_EMBED.description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
+                ERROR_EMBED.description = (
+                    "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
+                )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}"
 
             ERROR_EMBED.description = f"{error}"
@@ -247,9 +253,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif isinstance(error, commands.MaxConcurrencyReached):
             ERROR_EMBED.description = "This command is already running in this server/channel by you. You have wait for it to finish"
-            ERROR_EMBED.title = (
-                f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
-            )
+            ERROR_EMBED.title = f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
 
         elif isinstance(error, ParrotCheckFailure):
             ctx.command.reset_cooldown(ctx)
@@ -269,9 +273,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         else:
             ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
-            ERROR_EMBED.title = (
-                f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
-            )
+            ERROR_EMBED.title = f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
 
         msg = await ctx.reply(
             random.choice(quote),

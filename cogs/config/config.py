@@ -7,6 +7,7 @@ import re
 from typing import Any, Dict, List, Optional, Union
 
 import discord
+import wavelink
 from cogs.config import method as mt_
 from cogs.meta.robopage import SimplePages
 from cogs.ticket import method as mt
@@ -16,7 +17,6 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.collection import Collection
 from pymongo.results import UpdateResult
 from tabulate import tabulate
-import wavelink
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView

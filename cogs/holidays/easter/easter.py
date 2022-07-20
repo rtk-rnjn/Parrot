@@ -23,9 +23,7 @@ TIMELIMIT = 10
 HTML_COLOURS = loads(Path(r"extra/html_colours.json").read_text("utf8"))
 EGG_FACTS = loads(Path(r"extra/easter/easter_egg_facts.json").read_text("utf8"))
 XKCD_COLOURS = loads(Path(r"extra/xkcd_colours.json").read_text("utf8"))
-EGGHEAD_QUESTIONS = loads(
-    Path(r"extra/easter/egghead_questions.json").read_text("utf8")
-)
+EGGHEAD_QUESTIONS = loads(Path(r"extra/easter/egghead_questions.json").read_text("utf8"))
 traditions = loads(Path(r"extra/easter/traditions.json").read_text("utf8"))
 
 COLOURS = [
@@ -195,9 +193,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         The duration of the hint interval can be configured by changing the TIMELIMIT constant in this file.
         """
         if self.current_channel:
-            await ctx.send(
-                f"A riddle is already being solved in {self.current_channel.mention}!"
-            )
+            await ctx.send(f"A riddle is already being solved in {self.current_channel.mention}!")
             return
 
         self.current_channel = ctx.channel
@@ -209,9 +205,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         description = f"You have {TIMELIMIT} seconds before the first hint."
 
-        riddle_embed = discord.Embed(
-            title=question, description=description, colour=0xCF84E0
-        )
+        riddle_embed = discord.Embed(title=question, description=description, colour=0xCF84E0)
 
         await ctx.send(embed=riddle_embed)
         await ctx.release(TIMELIMIT)
@@ -232,9 +226,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         else:
             content = "Nobody got it right..."
 
-        answer_embed = discord.Embed(
-            title=f"The answer is: {self.correct}!", colour=0xCF84E0
-        )
+        answer_embed = discord.Embed(title=f"The answer is: {self.correct}!", colour=0xCF84E0)
 
         await ctx.send(content, embed=answer_embed)
 
@@ -291,17 +283,13 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
                 q, r = divmod(8, colours_n)
                 colours = colours * q + colours[:r]
             num = random.randint(1, 6)
-            im = Image.open(
-                Path(f"bot/resources/holidays/easter/easter_eggs/design{num}.png")
-            )
+            im = Image.open(Path(f"bot/resources/holidays/easter/easter_eggs/design{num}.png"))
             data = list(im.getdata())
 
             replaceable = {x for x in data if x not in IRREPLACEABLE}
             replaceable = sorted(list(replaceable), key=COLOURS.index)
 
-            replacing_colours = {
-                colour: colours[i] for i, colour in enumerate(replaceable)
-            }
+            replacing_colours = {colour: colours[i] for i, colour in enumerate(replaceable)}
             new_data = []
             for x in data:
                 if x in replacing_colours:
@@ -317,9 +305,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
             bufferedio.seek(0)
 
-            file = discord.File(
-                bufferedio, filename="egg.png"
-            )  # Creates file to be used in embed
+            file = discord.File(bufferedio, filename="egg.png")  # Creates file to be used in embed
             embed = discord.Embed(
                 title="Your Colourful Easter Egg",
                 description="Here is your pretty little egg. Hope you like it!",
@@ -362,13 +348,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         valid_emojis = [emoji for emoji, _ in answers]
 
         description = f"You have {TIMELIMIT} seconds to vote.\n\n"
-        description += "\n".join(
-            [f"{emoji} -> **{answer}**" for emoji, answer in answers]
-        )
+        description += "\n".join([f"{emoji} -> **{answer}**" for emoji, answer in answers])
 
-        q_embed = discord.Embed(
-            title=question, description=description, colour=Colours.pink
-        )
+        q_embed = discord.Embed(title=question, description=description, colour=Colours.pink)
 
         msg: discord.Message = await ctx.send(embed=q_embed)
         for emoji in valid_emojis:
@@ -380,22 +362,18 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         del self.quiz_messages[msg.id]
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(msg.channel, msg.id, force_fetch=True)
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            msg.channel, msg.id, force_fetch=True
+        )
 
-        total_no = sum(r.count for r in msg.reactions) - len(
-            valid_emojis
-        )  # - bot's reactions
+        total_no = sum(r.count for r in msg.reactions) - len(valid_emojis)  # - bot's reactions
 
         if total_no == 0:
             return await msg.delete()  # To avoid ZeroDivisionError if nobody reacts
 
         results = ["**VOTES:**"]
         for emoji, _ in answers:
-            num = [
-                r.count
-                for r in msg.reactions
-                if str(r.emoji) == emoji
-            ][0] - 1
+            num = [r.count for r in msg.reactions if str(r.emoji) == emoji][0] - 1
             percent = round(100 * num / total_no)
             s = "" if num == 1 else "s"
             string = f"{emoji} - {num} vote{s} ({percent}%)"
@@ -449,7 +427,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
     @commands.Cog.listener()
     async def on_reaction_add(
-        self, reaction: discord.Reaction, user: Union[discord.Member, discord.User, discord.abc.Snowflake]
+        self,
+        reaction: discord.Reaction,
+        user: Union[discord.Member, discord.User, discord.abc.Snowflake],
     ) -> None:
         """Listener to listen specifically for reactions of quiz messages."""
         if user.bot:

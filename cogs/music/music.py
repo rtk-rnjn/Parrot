@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from asyncio import QueueEmpty
-from contextlib import suppress
-from queue import Queue
-from typing import Any, Dict, Optional, Union
-import discord
 import asyncio
-import wavelink
-from wavelink.ext import spotify
-from discord.ext import commands
-from core import Context, Parrot, Cog
-import arrow
+from asyncio import Queue, QueueEmpty
+from contextlib import suppress
+from typing import Any, Dict, Optional, Union
 
+import arrow
+import discord
+import wavelink
+from core import Cog, Context, Parrot
+from discord.ext import commands
 from utilities.checks import in_voice, is_dj
+from wavelink.ext import spotify
 
 
 class Music(Cog):
@@ -21,7 +20,7 @@ class Music(Cog):
 
         self._cache: Dict[int, Queue[wavelink.Track]] = {}
         self._skip_votes: Dict[int, int] = {}
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{MULTIPLE MUSICAL NOTES}")
@@ -189,7 +188,9 @@ class Music(Cog):
         channel: discord.VoiceChannel = vc.channel
         members = len(channel.members)
 
-        async def __interal_skip(*, ctx: Context, vc: wavelink.Player, queue: Queue[wavelink.Track]):
+        async def __interal_skip(
+            *, ctx: Context, vc: wavelink.Player, queue: Queue[wavelink.Track]
+        ):
             with suppress(QueueEmpty):
                 next_song = queue.get_nowait()
                 await vc.play(next_song)

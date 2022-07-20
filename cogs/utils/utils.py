@@ -10,9 +10,9 @@ from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
+from events.custom_events import EventCustom
 from pymongo import ReturnDocument  # type: ignore
 from pymongo.collection import Collection  # type: ignore
-from events.custom_events import EventCustom
 from utilities.checks import is_mod
 from utilities.converters import convert_bool
 from utilities.formats import TabularData

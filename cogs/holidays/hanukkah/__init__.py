@@ -77,9 +77,7 @@ class Hanukkah(Cog, command_attrs=dict(hidden=True)):
             number_suffixes = ["st", "nd", "rd", "th"]
             suffix = number_suffixes[festival_day - 1 if festival_day <= 3 else 3]
             message = ":menorah:" * festival_day
-            embed.description = (
-                f"It is the {festival_day}{suffix} day of Hanukkah!\n{message}"
-            )
+            embed.description = f"It is the {festival_day}{suffix} day of Hanukkah!\n{message}"
         elif today < start_day:
             format_start = start_day.strftime("%d of %B")
             embed.description = (

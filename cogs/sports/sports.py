@@ -13,6 +13,7 @@ STAFF_ROLES = [771025632184369152, 793531029184708639]
 
 class Sports(Cog):
     """Sports related commands. This category is only for requested servers."""
+
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
@@ -57,14 +58,10 @@ class Sports(Cog):
 {extra}
 """
         if data.get("batting"):
-            embed.add_field(
-                name="Batting - Stats", value=f"```\n{table1}```", inline=False
-            )
+            embed.add_field(name="Batting - Stats", value=f"```\n{table1}```", inline=False)
 
         if data.get("bowling"):
-            embed.add_field(
-                name="Bowling - Stats", value=f"```\n{table2}```", inline=False
-            )
+            embed.add_field(name="Bowling - Stats", value=f"```\n{table2}```", inline=False)
 
         embed.add_field(
             name="Recent Commentry",

@@ -31,9 +31,7 @@ class Telephone(Cog):
         To dial to other server. Do not misuse this. Else you RIP :|
         """
         if not server:
-            await ctx.send(
-                "That server no longer exists or bot is being removed from that server"
-            )
+            await ctx.send("That server no longer exists or bot is being removed from that server")
         self.redial[ctx.guild.id] = server.id
         self.redial[server.id] = ctx.guild.id
         ini = time()
@@ -72,9 +70,7 @@ class Telephone(Cog):
                     f"`Can Redial?     :` **True**\n"
                     f"`Call log saved? :` **False**\n"
                 )
-            await ctx.send(
-                "That server no longer exists or bot is being removed from that server"
-            )
+            await ctx.send("That server no longer exists or bot is being removed from that server")
 
     @commands.command(aliases=["reversecall"])
     @commands.max_concurrency(1, commands.BucketType.guild)
@@ -83,9 +79,7 @@ class Telephone(Cog):
     async def reversedial(self, ctx: Context, *, server: discord.Guild):
         """To make the calls but contents are reverted"""
         if not server:
-            await ctx.send(
-                "That server no longer exists or bot is being removed from that server"
-            )
+            await ctx.send("That server no longer exists or bot is being removed from that server")
         self.redial[ctx.guild.id] = server.id
         self.redial[server.id] = ctx.guild.id
         ini = time()

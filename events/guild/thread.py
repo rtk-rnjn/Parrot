@@ -119,9 +119,7 @@ class OnThread(Cog):
                 data["on_member_join_thread"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
-                guild_member = await self.bot.get_or_fetch_member(
-                    member.thread.guild, member.id
-                )
+                guild_member = await self.bot.get_or_fetch_member(member.thread.guild, member.id)
                 content = f"""**On Member Thread Join**
 
 `Member    :` **{guild_member}** **(`{member.id}`)**
@@ -147,9 +145,7 @@ class OnThread(Cog):
                 data["on_member_leave_thread"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
-                guild_member = await self.bot.get_or_fetch_member(
-                    member.thread.guild, member.id
-                )
+                guild_member = await self.bot.get_or_fetch_member(member.thread.guild, member.id)
                 content = f"""**On Member Thread Leave**
 
 `Member    :` **{guild_member}** **(`{member.id}`)**
@@ -174,9 +170,7 @@ class OnThread(Cog):
         return ls
 
     @Cog.listener()
-    async def on_thread_update(
-        self, before: discord.Thread, after: discord.Thread
-    ) -> None:
+    async def on_thread_update(self, before: discord.Thread, after: discord.Thread) -> None:
         await self.bot.wait_until_ready()
         if data := await self.collection.find_one(
             {"_id": after.guild.id, "on_thread_update": {"$exists": True}}
@@ -212,9 +206,7 @@ class OnThread(Cog):
         pass
 
     @Cog.listener()
-    async def on_raw_thread_member_remove(
-        self, payload: discord.RawThreadMembersUpdate
-    ) -> None:
+    async def on_raw_thread_member_remove(self, payload: discord.RawThreadMembersUpdate) -> None:
         pass
 
 

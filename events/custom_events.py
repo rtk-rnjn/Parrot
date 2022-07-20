@@ -151,9 +151,7 @@ class EventCustom(Cog):
 
         joiner = ">, <@".join([str(i) for i in member_ids])
 
-        await channel.send(
-            f"Congrats <@{joiner}> you won {kw.get('prize')}\n" f"> {msg_link}"
-        )
+        await channel.send(f"Congrats <@{joiner}> you won {kw.get('prize')}\n" f"> {msg_link}")
 
 
 async def setup(bot: Parrot) -> None:

@@ -79,9 +79,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         if perms.manage_guild or perms.manage_channels:
             return self.guild.default_role
         try:
-            dj_role = self.guild.get_role(
-                self.bot.server_config[self.guild.id]["dj_role"] or 0
-            )
+            dj_role = self.guild.get_role(self.bot.server_config[self.guild.id]["dj_role"] or 0)
             author_dj_role = discord.utils.find(
                 lambda r: r.name.lower() == "dj",
                 self.author.roles,
@@ -109,9 +107,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                 lambda m: m.name.lower() == "muted", self.guild.roles
             )
             return (
-                self.guild.get_role(
-                    self.bot.server_config[self.guild.id]["mute_role"] or 0
-                )
+                self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"] or 0)
                 or global_muted
                 or author_muted
             )
@@ -126,9 +122,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         self,
     ) -> Optional[discord.Role]:
         try:
-            return self.guild.get_role(
-                self.bot.server_config[self.guild.id]["mod_role"] or 0
-            )
+            return self.guild.get_role(self.bot.server_config[self.guild.id]["mod_role"] or 0)
         except KeyError:
             if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
@@ -200,9 +194,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
-    async def entry_to_code(
-        self, entries: List[Tuple[Any, Any]]
-    ) -> Optional[discord.Message]:
+    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         for name, entry in entries:
@@ -295,10 +287,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         message: discord.Message,
         *reactions: Union[discord.Emoji, discord.PartialEmoji, str],
     ) -> None:
-        coros = [
-            asyncio.ensure_future(message.add_reaction(reaction))
-            for reaction in reactions
-        ]
+        coros = [asyncio.ensure_future(message.add_reaction(reaction)) for reaction in reactions]
         await asyncio.wait(coros)
 
     async def confirm(
@@ -343,9 +332,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             )
 
         try:
-            payload = await self.bot.wait_for(
-                "raw_reaction_add", check=check, timeout=timeout
-            )
+            payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
             return str(payload.emoji) == "\N{THUMBS UP SIGN}"
         except asyncio.TimeoutError:
             return None
@@ -392,9 +379,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             if check is not None:
                 return check
 
-            def __suppress_attr_error(
-                func: Callable, *args: Any, **kwargs: Any
-            ) -> bool:
+            def __suppress_attr_error(func: Callable, *args: Any, **kwargs: Any) -> bool:
                 """Suppress attribute error for the function."""
                 with suppress(AttributeError):
                     func(*args, **kwargs)
@@ -405,9 +390,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                 *args,
             ) -> bool:
                 """Main check function"""
-                convert_pred = [
-                    (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
-                ]
+                convert_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kw.items()]
                 return all(
                     all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
                     for pred, val in convert_pred
@@ -485,9 +468,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     async def multiple_wait_for(
         self,
-        events: Union[
-            List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]
-        ],
+        events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
         *,
         return_when: Literal[
             "FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"
@@ -535,8 +516,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             events = list(events.items())  # type: ignore
 
         _events: Set[Coroutine[Any, Any, Any]] = {
-            self.wait_for(event, check=check, timeout=timeout, **kwargs)
-            for event, check in events
+            self.wait_for(event, check=check, timeout=timeout, **kwargs) for event, check in events
         }
 
         return await asyncio.wait(
@@ -547,9 +527,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     async def wait_for_till(
         self,
-        events: Union[
-            List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]
-        ],
+        events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
         *,
         _for: Union[float, int, None] = None,
         after: Union[float, int] = None,
@@ -592,15 +570,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                 done_result.append(task.result())
 
         while time.time() <= now:
-            done, _ = await self.multiple_wait_for(
-                events, return_when="FIRST_COMPLETED", **kwargs
-            )
+            done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
             __internal_appender(done)
 
         if not _for:
-            done, _ = await self.multiple_wait_for(
-                events, return_when="FIRST_COMPLETED", **kwargs
-            )
+            done, _ = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
             __internal_appender(done)
 
         return done_result

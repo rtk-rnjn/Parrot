@@ -59,16 +59,12 @@ def is_mod() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
         bot: Parrot = ctx.bot
         try:
-            role = (
-                bot.server_config[ctx.guild.id]["mod_role"] or 0
-            )  # role could be `None`
+            role = bot.server_config[ctx.guild.id]["mod_role"] or 0  # role could be `None`
             return ctx.author._roles.has(role)
         except KeyError:
             pass
 
-        if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": ctx.guild.id}
-        ):
+        if data := await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id}):
             role = ctx.guild.get_role(data["mod_role"])
             if not role:
                 return False
@@ -81,9 +77,7 @@ def is_mod() -> Callable:
 
 def in_temp_channel() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
-        data = await ctx.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": ctx.guild.id}
-        )
+        data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
         if not data:
             return False
 
@@ -151,9 +145,7 @@ def is_dj() -> Callable:
         if role := await ctx.dj_role():
             return role in ctx.author.roles
 
-        raise commands.CheckFailure(
-            "You must have DJ role to use this command."
-        )
+        raise commands.CheckFailure("You must have DJ role to use this command.")
 
     return commands.check(preficate)
 
@@ -162,9 +154,7 @@ def in_voice() -> Callable:
     async def predicate(ctx: Context) -> bool:
         if ctx.author.voice:
             return True
-        raise commands.CheckFailure(
-            "You must be in a voice channel to use this command."
-        )
+        raise commands.CheckFailure("You must be in a voice channel to use this command.")
 
     return commands.check(predicate)
 
@@ -195,9 +185,7 @@ def cooldown_with_role_bypass(
             return
 
         # Cooldown logic, taken from discord.py internals.
-        current = ctx.message.created_at.replace(
-            tzinfo=datetime.timezone.utc
-        ).timestamp()
+        current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
         bucket = buckets.get_bucket(ctx.message)
         retry_after = bucket.update_rate_limit(current)
         if retry_after:
@@ -305,9 +293,7 @@ class InWhitelistCheckFailure(ex.ParrotCheckFailure):
         self.redirect_channel = redirect_channel
 
         if redirect_channel:
-            redirect_message = (
-                f" here. Please use the <#{redirect_channel}> channel instead"
-            )
+            redirect_message = f" here. Please use the <#{redirect_channel}> channel instead"
         else:
             redirect_message = ""
 

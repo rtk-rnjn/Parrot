@@ -8,9 +8,7 @@ import discord
 from core import Context, Parrot
 
 
-async def chat_exporter(
-    channel: discord.TextChannel, limit: Optional[int] = 100
-) -> None:
+async def chat_exporter(channel: discord.TextChannel, limit: Optional[int] = 100) -> None:
 
     st = ""
     async for msg in channel.history(limit=limit, oldest_first=True):

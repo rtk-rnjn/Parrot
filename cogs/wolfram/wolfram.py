@@ -69,10 +69,7 @@ def custom_cooldown(*ignore: int) -> Callable:
             )  # if guild is on cooldown
             # check the message is in a guild, and check user bucket if user is not ignored
             if ctx.guild and not any(r.id in ignore for r in ctx.author.roles):
-                return (
-                    guild_cooldown
-                    and not usercd.get_bucket(ctx.message).get_tokens() == 0
-                )
+                return guild_cooldown and not usercd.get_bucket(ctx.message).get_tokens() == 0
             return guild_cooldown
 
         user_bucket = usercd.get_bucket(ctx.message)
@@ -83,9 +80,7 @@ def custom_cooldown(*ignore: int) -> Callable:
             if user_rate:
                 # Can't use api; cause: member limit
                 cooldown = (
-                    arrow.utcnow()
-                    .shift(seconds=int(user_rate))
-                    .humanize(only_distance=True)
+                    arrow.utcnow().shift(seconds=int(user_rate)).humanize(only_distance=True)
                 )
                 message = (
                     "You've used up your limit for Wolfram|Alpha requests.\n"
@@ -113,9 +108,7 @@ def custom_cooldown(*ignore: int) -> Callable:
     return check(predicate)
 
 
-async def get_pod_pages(
-    ctx: Context, bot: Parrot, query: str
-) -> Optional[List[Tuple[str, str]]]:
+async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> Optional[List[Tuple[str, str]]]:
     """Get the Wolfram API pod pages for the provided query."""
     async with ctx.typing():
         params = {
@@ -192,9 +185,7 @@ class Wolfram(Cog):  # type: ignore
 
         # Give feedback that the bot is working.
         async with ctx.typing():
-            async with self.bot.http_session.get(
-                url=request_url, params=params
-            ) as response:
+            async with self.bot.http_session.get(url=request_url, params=params) as response:
                 status = response.status
                 image_bytes = await response.read()
 
@@ -279,9 +270,7 @@ class Wolfram(Cog):  # type: ignore
 
         # Give feedback that the bot is working.
         async with ctx.typing():
-            async with self.bot.http_session.get(
-                url=request_url, params=params
-            ) as response:
+            async with self.bot.http_session.get(url=request_url, params=params) as response:
                 status = response.status
                 response_text = await response.text()
 

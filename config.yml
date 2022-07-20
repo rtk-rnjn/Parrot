@@ -49,6 +49,7 @@ extensions:
   - cogs.ipc
   - cogs.wolfram
   - cogs.sector_17
+  - cogs.music
 invite: >-
   https://discord.com/oauth2/authorize?client_id=800780974274248764&scope=bot+applications.commands&permissions=1099780451414
 dev_logo: >-

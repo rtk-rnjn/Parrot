@@ -186,7 +186,7 @@ class Music(Cog):
             )
 
         channel: discord.VoiceChannel = vc.channel
-        members = len(channel.members)
+        members = sum(1 for m in channel.members if not m.bot)
 
         async def __interal_skip(
             *, ctx: Context, vc: wavelink.Player, queue: Queue[wavelink.Track]
@@ -208,7 +208,7 @@ class Music(Cog):
 
         if members > 2:
             vote = 1
-            required_vote = int(members / 2) + 1
+            required_vote = int(members / 2)
             msg: discord.Message = await ctx.send(  # type: ignore
                 f"{ctx.author.mention} wants to skip the current song need {required_vote} votes to skip"
             )
@@ -226,7 +226,7 @@ class Music(Cog):
 
             try:
                 reaction, user = await self.bot.wait_for(
-                    "reaction_add", check=check, timeout=vc.track.duration
+                    "reaction_add", check=check, timeout=abs(vc.track.duration - vc.last_position)
                 )
             except asyncio.TimeoutError:
                 await msg.delete()
@@ -257,8 +257,7 @@ class Music(Cog):
             )
 
         entries = []
-        while not queue.empty():
-            track = queue.get_nowait()
+        for track in queue._queue:  # type: ignore
             if track.uri:
                 entries.append(f"[{track.title} - {track.author}]({track.uri})")
             else:
@@ -366,8 +365,8 @@ class Music(Cog):
         if not channel.is_playing():
             return await ctx.send(f"{ctx.author.mention} player is not playing.")
 
-        await channel.set_volume(volume / 10)
-        await ctx.send(f"{ctx.author.mention} player volume set to {volume/10}%.")
+        await channel.set_volume(volume / 100)
+        await ctx.send(f"{ctx.author.mention} player volume set to {volume}%.")
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())

@@ -84,7 +84,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                         username=self.bot.user.name,
                     )
 
-        if ctx.cog.qualified_name.lower() == "configuration":
+        elif ctx.cog.qualified_name.lower() == "configuration":
             await self.bot.update_server_config_cache(ctx.guild.id)
             if data := await self.collection.find_one(
                 {"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}
@@ -108,14 +108,20 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: commands.CommandError):
         await self.bot.wait_until_ready()
-        # if command has local error handler, return
+        # elif command has local error handler, return
         if hasattr(ctx.command, "on_error"):
             return
 
         # get the original exception
         error = getattr(error, "original", error)
 
-        ignore = (commands.CommandNotFound, discord.NotFound, discord.Forbidden)
+        ignore = (
+            commands.CommandNotFound,
+            discord.NotFound,
+            discord.Forbidden,
+            commands.PrivateMessageOnly,
+            commands.NotOwner,
+        )
 
         if isinstance(error, ignore):
             return
@@ -136,19 +142,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"
             )
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        # if isinstance(error, commands.DisabledCommand):
-        #     ERROR_EMBED.description = f"This command has been disabled. Consider asking your Server Manager to fix this out"
-        #     ERROR_EMBED.title = f"{QUESTION_MARK} Command Disabled {QUESTION_MARK}"
-        #     return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-
-        if isinstance(error, commands.CommandOnCooldown):
+        elif isinstance(error, commands.CommandOnCooldown):
             ERROR_EMBED.description = f"You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
             ERROR_EMBED.title = f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.MissingPermissions):
+        elif isinstance(error, commands.MissingPermissions):
             missing = [
                 perm.replace("_", " ").replace("guild", "server").title()
                 for perm in error.missing_permissions
@@ -160,9 +159,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}"
             ctx.command.reset_cooldown(ctx)
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.MissingRole):
+        elif isinstance(error, commands.MissingRole):
             missing = list(error.missing_role)
             if len(missing) > 2:
                 fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
@@ -173,9 +171,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
             ctx.command.reset_cooldown(ctx)
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.MissingAnyRole):
+        elif isinstance(error, commands.MissingAnyRole):
             missing = list(error.missing_roles)
             if len(missing) > 2:
                 fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
@@ -186,75 +183,45 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
             ctx.command.reset_cooldown(ctx)
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        # if isinstance(error, commands.NoPrivateMessage):
-        #     ERROR_EMBED.description = f"This command cannot be used in direct messages. It can only be used in server"
-        #     ERROR_EMBED.title = f"{QUESTION_MARK} No Private Message {QUESTION_MARK}"
-        #     try:
-        #         return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-        #     except discord.Forbidden:
-        #         pass
-        #     return
-
-        if isinstance(error, commands.NSFWChannelRequired):
+        elif isinstance(error, commands.NSFWChannelRequired):
             ERROR_EMBED.description = "This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
             ERROR_EMBED.title = f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}"
             ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
             ctx.command.reset_cooldown(ctx)
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.NotOwner):
-            return
-            # ERROR_EMBED.description = f"You must have ownership of the bot to run `{ctx.command.qualified_name}`"
-            # ERROR_EMBED.title = f"{QUESTION_MARK} Not Owner {QUESTION_MARK}"
-            # return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-
-        if isinstance(error, commands.PrivateMessageOnly):
-            return
-            # ERROR_EMBED.description = "This comamnd will only work in DM messages"
-            # ERROR_EMBED.title = f"{QUESTION_MARK} Private Message Only {QUESTION_MARK}"
-            # return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
-
-        if isinstance(error, commands.BadArgument):
+        elif isinstance(error, commands.BadArgument):
             ctx.command.reset_cooldown(ctx)
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = (
                     "Message ID/Link you provied is either invalid or deleted"
                 )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}"
-                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-            if isinstance(error, commands.MemberNotFound):
+            elif isinstance(error, commands.MemberNotFound):
                 ERROR_EMBED.description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}"
-                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-            if isinstance(error, commands.UserNotFound):
+            elif isinstance(error, commands.UserNotFound):
                 ERROR_EMBED.description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
                 ERROR_EMBED.title = f"{QUESTION_MARK} User Not Found {QUESTION_MARK}"
-                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-            if isinstance(error, commands.ChannelNotFound):
+            elif isinstance(error, commands.ChannelNotFound):
                 ERROR_EMBED.description = "Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}"
-                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-            if isinstance(error, commands.RoleNotFound):
+            elif isinstance(error, commands.RoleNotFound):
                 ERROR_EMBED.description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}"
-                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-            if isinstance(error, commands.EmojiNotFound):
+            elif isinstance(error, commands.EmojiNotFound):
                 ERROR_EMBED.description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
                 ERROR_EMBED.title = f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}"
-                return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
             ERROR_EMBED.description = f"{error}"
             ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(
+        elif isinstance(
             error,
             (
                 commands.MissingRequiredArgument,
@@ -264,51 +231,63 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         ):
             command = ctx.command
             ctx.command.reset_cooldown(ctx)
-            ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
+            ERROR_EMBED.description = (
+                f"Please use proper syntax.```\n{ctx.clean_prefix}"
+                f"{command.qualified_name}{'|' if command.aliases else ''}"
+                f"{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.BadLiteralArgument):
-            ERROR_EMBED.description = f"Please use proper Literals. Literal should be any one of the following: `{'`, `'.join(str(i) for i in error.literals)}`"
+        elif isinstance(error, commands.BadLiteralArgument):
+            ERROR_EMBED.description = (
+                f"Please use proper Literals."
+                f"Literal should be any one of the following: `{'`, `'.join(str(i) for i in error.literals)}`"
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.MaxConcurrencyReached):
+        elif isinstance(error, commands.MaxConcurrencyReached):
             ERROR_EMBED.description = "This command is already running in this server/channel by you. You have wait for it to finish"
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
             )
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, ParrotCheckFailure):
+        elif isinstance(error, ParrotCheckFailure):
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, commands.CheckAnyFailure):
+        elif isinstance(error, commands.CheckAnyFailure):
             ctx.command.reset_cooldown(ctx)
-            ERROR_EMBED.description = " or ".join(
+            ERROR_EMBED.description = " or\n".join(
                 [error.__str__().format(ctx=ctx) for error in error.errors]
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        if isinstance(error, asyncio.TimeoutError):
+        elif isinstance(error, asyncio.TimeoutError):
             ERROR_EMBED.description = "Command took too long to respond"
             ERROR_EMBED.title = f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}"
-            return await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
-        ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
-        ERROR_EMBED.title = (
-            f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
-        )
-        await ctx.reply(
+        else:
+            ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
+            ERROR_EMBED.title = (
+                f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
+            )
+
+        msg = await ctx.reply(
             random.choice(quote),
             embed=ERROR_EMBED,
         )
 
-        raise error
+        try:
+            await ctx.wait_for(
+                "message_delete", timeout=10, check=lambda m: m.id == ctx.message.id
+            )
+        except asyncio.TimeoutError:
+            pass
+        else:
+            await msg.delete()
+        finally:
+            raise error
 
 
 async def setup(bot: Parrot) -> None:

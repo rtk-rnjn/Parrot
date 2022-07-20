@@ -150,11 +150,23 @@ def is_dj() -> Callable:
         """Returns True if the user is a DJ."""
         if role := await ctx.dj_role():
             return role in ctx.author.roles
-        
-        raise commands.CheckFailure("You must have DJ role or Manage Channel permission to use this command.")
-    
+
+        raise commands.CheckFailure(
+            "You must have DJ role to use this command."
+        )
+
     return commands.check(preficate)
 
+
+def in_voice() -> Callable:
+    async def predicate(ctx: Context) -> bool:
+        if ctx.author.voice:
+            return True
+        raise commands.CheckFailure(
+            "You must be in a voice channel to use this command."
+        )
+
+    return commands.check(predicate)
 
 
 def cooldown_with_role_bypass(

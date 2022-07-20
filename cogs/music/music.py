@@ -12,7 +12,7 @@ from discord.ext import commands
 from core import Context, Parrot, Cog
 import arrow
 
-from utilities.checks import is_dj
+from utilities.checks import in_voice, is_dj
 
 
 class Music(Cog):
@@ -75,6 +75,7 @@ class Music(Cog):
         await ctx.voice_client.disconnect()
 
     @commands.group(invoke_without_command=True)
+    @commands.check(in_voice())
     @commands.bot_has_guild_permissions(connect=True)
     async def play(
         self,
@@ -164,6 +165,7 @@ class Music(Cog):
         )
 
     @commands.command(aliases=["skip"])
+    @commands.check(in_voice())
     async def next(self, ctx: Context):
         """Skips the currently playing song"""
         if ctx.voice_client is None:
@@ -187,7 +189,7 @@ class Music(Cog):
         channel: discord.VoiceChannel = vc.channel
         members = len(channel.members)
 
-        async def __interal_skip(*, ctx: Context, vc: wavelink.Player, queue: Queue):
+        async def __interal_skip(*, ctx: Context, vc: wavelink.Player, queue: Queue[wavelink.Track]):
             with suppress(QueueEmpty):
                 next_song = queue.get_nowait()
                 await vc.play(next_song)
@@ -206,7 +208,7 @@ class Music(Cog):
         if members > 2:
             vote = 1
             required_vote = int(members / 2) + 1
-            msg: discord.Message = await ctx.send(
+            msg: discord.Message = await ctx.send(  # type: ignore
                 f"{ctx.author.mention} wants to skip the current song need {required_vote} votes to skip"
             )
             emoji = "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}"
@@ -265,6 +267,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @commands.check(in_voice())
     async def stop(self, ctx: Context):
         """Stop the currently playing song."""
         if ctx.voice_client is None:
@@ -288,6 +291,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @commands.check(in_voice())
     async def clear(self, ctx: Context):
         """Clear the queue"""
         if ctx.voice_client is None:
@@ -302,6 +306,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @commands.check(in_voice())
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:
@@ -322,6 +327,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @commands.check(in_voice())
     async def resume(self, ctx: Context):
         """Resume the currently paused song."""
         if ctx.voice_client is None:
@@ -342,6 +348,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @commands.check(in_voice())
     async def volume(self, ctx: Context, volume: int):
         """Change the volume of the currently playing song."""
         if volume < 1 or volume > 100:
@@ -363,6 +370,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @commands.check(in_voice())
     async def seek(self, ctx: Context, seconds: int):
         """Seek to a given position in the currently playing song."""
         if ctx.voice_client is None:
@@ -384,6 +392,7 @@ class Music(Cog):
         try:
             queue = self._cache[player.guild.id]
         except KeyError:
+            self._cache[player.guild.id] = Queue()
             return
 
         with suppress(QueueEmpty):

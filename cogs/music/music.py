@@ -51,7 +51,7 @@ class Music(Cog):
             color=self.bot.color,
             timestamp=discord.utils.utcnow(),
         )
-        _id = track.id
+
         if track.uri is not None:
             embed.url = track.uri
         embed.add_field(name="Author", value=track.author, inline=True)
@@ -63,7 +63,7 @@ class Music(Cog):
         )
         if hasattr(track, "thumbnail") and track.thumbnail is not None:
             embed.set_thumbnail(url=track.thumbnail)
-        embed.add_field(name="ID", value=_id, inline=False)
+
         return embed
 
     @commands.command()
@@ -733,7 +733,7 @@ class Music(Cog):
 
     @Cog.listener()
     async def on_wavelink_track_end(
-        self, player: wavelink.Player, original_track: wavelink.Track, reason: Any
+        self, player: wavelink.Player, track: wavelink.Track, reason: Any
     ):
         try:
             queue = self._cache[player.guild.id]
@@ -753,7 +753,7 @@ class Music(Cog):
                 if self._config[player.guild.id].get("loop_type", "all") == "all":
                     await player.play(itertools.cycle(q))
                 else:
-                    await player.play(original_track)
+                    await player.play(track)
             else:
                 track = queue.get_nowait()
                 await player.play(track)

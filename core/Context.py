@@ -72,15 +72,41 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
     def session(self) -> Any:
         return self.bot.http_session
 
+    async def dj_role(
+        self,
+    ) -> Optional[discord.Role]:
+        perms = self.author.guild_permissions
+        if perms.manage_guild or perms.manage_channels:
+            return self.guild.default_role
+        try:
+            dj_role = self.guild.get_role(
+                self.bot.server_config[self.guild.id]["dj_role"] or 0
+            )
+            author_dj_role = discord.utils.find(
+                lambda r: r.name.lower() == "dj",
+                self.author.roles,
+            )
+            server_dj_role = discord.utils.find(
+                lambda r: r.name.lower() == "dj",
+                self.guild.roles,
+            )
+            return dj_role or author_dj_role or server_dj_role
+        except KeyError:
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+                {"_id": self.guild.id}
+            ):
+                return self.guild.get_role(data["dj_role"] or 0)
+        return None
+
     async def muterole(
         self,
     ) -> Optional[discord.Role]:
         try:
-            global_muted = discord.utils.find(
-                lambda m: m.name.lower() == "muted", self.guild.roles
-            )
             author_muted = discord.utils.find(
                 lambda m: m.name.lower() == "muted", self.author.roles
+            )
+            global_muted = discord.utils.find(
+                lambda m: m.name.lower() == "muted", self.guild.roles
             )
             return (
                 self.guild.get_role(
@@ -90,12 +116,10 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                 or author_muted
             )
         except KeyError:
-            if await self.bot.mongo.parrot_db.server_config.find_one(
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
             ):
-                return self.guild.get_role(
-                    self.bot.server_config[self.guild.id]["mute_role"] or 0
-                )
+                return self.guild.get_role(data["mute_role"] or 0)
         return None
 
     async def modrole(
@@ -106,12 +130,10 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                 self.bot.server_config[self.guild.id]["mod_role"] or 0
             )
         except KeyError:
-            if await self.bot.mongo.parrot_db.server_config.find_one(
+            if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
             ):
-                return self.guild.get_role(
-                    self.bot.server_config[self.guild.id]["mod_role"] or 0
-                )
+                return self.guild.get_role(data["mod_role"] or 0)
         return None
 
     @discord.utils.cached_property
@@ -135,9 +157,23 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         return wrapped
 
     async def send(
-        self, content: Optional[str] = None, **kwargs: Any
+        self,
+        content: Optional[str] = None,
+        *,
+        bold: bool = False,
+        italic: bool = False,
+        underline: bool = False,
+        **kwargs: Any,
     ) -> Optional[discord.Message]:
         perms: discord.Permissions = self.channel.permissions_for(self.me)
+        if content is not None:
+            if bold:
+                content = f"**{content}**"
+            if italic:
+                content = f"*{content}*"
+            if underline:
+                content = f"__{content}__"
+
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
                 await self.author.send(
@@ -157,21 +193,6 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
     async def reply(
         self, content: Optional[str] = None, **kwargs: Any
     ) -> Optional[discord.Message]:
-        perms: discord.Permissions = self.channel.permissions_for(self.me)
-        if not (perms.send_messages and perms.embed_links):
-            with suppress(discord.Forbidden):
-                await self.author.send(
-                    "Bot don't have either Embed Links/Send Messages permission in that channel. "
-                    "Please give sufficient permissions to the bot."
-                )
-                return None
-
-        embed: Optional[discord.Embed] = kwargs.get(
-            "embed",
-        )
-        if isinstance(embed, discord.Embed) and not embed.color:
-            embed.color = self.bot.color
-
         try:
             return await self.send(
                 content, reference=kwargs.get("reference") or self.message, **kwargs

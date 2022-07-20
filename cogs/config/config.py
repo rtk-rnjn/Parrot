@@ -508,7 +508,8 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def modrole(self, ctx: Context, *, role: discord.Role = None):
-        """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot. By default the mod functionality works on the basis of permission"""
+        """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot.
+        By default the mod functionality works on the basis of permission"""
         post = {"mod_role": role.id if role else None}
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": post}
@@ -519,6 +520,21 @@ class Configuration(Cog):
             f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
         )
 
+    @config.command(aliases=["dj-role"])
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def djrole(self, ctx: Context, *, role: discord.Role = None):
+        """To set dj role of the server. People with dj role can accesss the DJ power of Parrot.
+        By default the dj functionality works on the basis of permission that is (Manage Channel)"""
+        post = {"dj_role": role.id if role else None}
+        await self.bot.mongo.parrot_db.server_config.update_one(
+            {"_id": ctx.guild.id}, {"$set": post}
+        )
+        if not role:
+            return await ctx.reply(f"{ctx.author.mention} dj role reseted! or removed")
+        await ctx.reply(
+            f"{ctx.author.mention} success! DJ role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
+        )
     @config.command(aliases=["g-setup", "g_setup"])
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(

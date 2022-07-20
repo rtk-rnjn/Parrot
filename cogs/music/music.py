@@ -1,14 +1,18 @@
 from __future__ import annotations
+
 from asyncio import QueueEmpty
 from contextlib import suppress
 from queue import Queue
 from typing import Any, Dict, Optional, Union
 import discord
-
+import asyncio
 import wavelink
+from wavelink.ext import spotify
 from discord.ext import commands
 from core import Context, Parrot, Cog
 import arrow
+
+from utilities.checks import is_dj
 
 
 class Music(Cog):
@@ -16,6 +20,7 @@ class Music(Cog):
         self.bot = bot
 
         self._cache: Dict[int, Queue[wavelink.Track]] = {}
+        self._skip_votes: Dict[int, int] = {}
 
     def make_embed(self, ctx: Context, track: wavelink.Track) -> discord.Embed:
         embed = discord.Embed(
@@ -54,6 +59,7 @@ class Music(Cog):
         self._cache[ctx.guild.id] = Queue()
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def disconnect(self, ctx: Context):
         """Disconnects from the voice channel"""
         if ctx.voice_client is None:
@@ -64,7 +70,7 @@ class Music(Cog):
 
         await ctx.voice_client.disconnect()
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @commands.bot_has_guild_permissions(connect=True)
     async def play(
         self,
@@ -75,6 +81,37 @@ class Music(Cog):
         """Play a song with the given search query.
         If not connected, connect to our voice channel.
         """
+        if ctx.invoked_subcommand is None:
+            if ctx.voice_client is None:
+                vc: wavelink.Player = await ctx.author.voice.channel.connect(
+                    cls=wavelink.Player
+                )
+            else:
+                vc: wavelink.Player = ctx.voice_client  # type: ignore
+
+            if isinstance(search, str):
+                search = wavelink.PartialTrack(query=search)
+
+            if vc.is_playing():
+                try:
+                    self._cache[ctx.guild.id]
+                except KeyError:
+                    self._cache[ctx.guild.id] = Queue()
+
+                self._cache[ctx.guild.id].put(search)
+                await ctx.send(
+                    f"{ctx.author.mention} added **{search.title}** to the queue"
+                )
+                return
+
+            await vc.play(search)
+            await ctx.send(
+                f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search)
+            )
+
+    @play.command(name="spotify")
+    async def play_spotify(self, ctx: Context, *, link: str):
+        """Play a song from spotify with the given link"""
         if ctx.voice_client is None:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(
                 cls=wavelink.Player
@@ -82,25 +119,28 @@ class Music(Cog):
         else:
             vc: wavelink.Player = ctx.voice_client  # type: ignore
 
-        if isinstance(search, str):
-            search = wavelink.PartialTrack(query=search)
-
-        if vc.is_playing():
+        with suppress(spotify.SpotifyRequestError):
+            tracks = await spotify.SpotifyTrack.search(link)
             try:
-                self._cache[ctx.guild.id]
+                q = self._cache[ctx.guild.id]
             except KeyError:
                 self._cache[ctx.guild.id] = Queue()
+                q = self._cache[ctx.guild.id]
 
-            self._cache[ctx.guild.id].put(search)
-            await ctx.send(
-                f"{ctx.author.mention} added {search.title} to the queue"
-            )
+            for track in tracks:
+                q.put_nowait(track)
+
+            if not vc.is_playing():
+                np_track = q.get_nowait()
+                await vc.play(np_track)
+                await ctx.send(
+                    f"{ctx.author.mention} Now playing",
+                    embed=self.make_embed(ctx, np_track),
+                )
+                return
+            await ctx.send(f"{ctx.author.mention} added **{len(tracks)}** to the queue")
             return
-
-        await vc.play(search)
-        await ctx.send(
-            f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search)
-        )
+        await ctx.send(f"{ctx.author.mention} Invalid link")
 
     @commands.command(aliases=["np"])
     async def nowplaying(self, ctx: Context):
@@ -109,31 +149,27 @@ class Music(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} bot is not connected to a voice channel."
             )
-        
+
         channel: wavelink.Player = ctx.voice_client
 
         if not channel.is_playing():
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not playing anything."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
         await ctx.send(
             f"{ctx.author.mention} Now playing",
             embed=self.make_embed(ctx, channel.track),
         )
 
-    @commands.command()
+    @commands.command(aliases=["skip"])
     async def next(self, ctx: Context):
         """Skips the currently playing song"""
         if ctx.voice_client is None:
             return await ctx.send(
                 f"{ctx.author.mention} bot is not connected to a voice channel."
             )
-        channel: wavelink.Player = ctx.voice_client
+        vc: wavelink.Player = ctx.voice_client
 
-        if not channel.is_playing():
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not playing anything."
-            )
+        if not vc.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
         try:
             queue = self._cache[ctx.guild.id]
         except KeyError:
@@ -143,19 +179,62 @@ class Music(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} There are no more songs in the queue."
             )
-        with suppress(QueueEmpty):
-            next_song = queue.get_nowait()
-            await channel.play(next_song)
-            await ctx.send(
-                f"{ctx.author.mention} Now playing",
-                embed=self.make_embed(ctx, next_song),
-            )
-            return
-        await channel.stop()
-        await ctx.send(f"{ctx.author.mention} Skipped {channel.track}")
 
-    @commands.command()
-    async def queue(self, ctx: Context):
+        channel: discord.VoiceChannel = vc.channel
+        members = len(channel.members)
+
+        async def __interal_skip(*, ctx: Context, vc: wavelink.Player, queue: Queue):
+            with suppress(QueueEmpty):
+                next_song = queue.get_nowait()
+                await vc.play(next_song)
+                await ctx.send(
+                    f"{ctx.author.mention} Now playing",
+                    embed=self.make_embed(ctx, next_song),
+                )
+                return
+            await ctx.send(
+                f"{ctx.author.mention} There are no more songs in the queue."
+            )
+
+        if members <= 2:
+            return await __interal_skip(ctx=ctx, vc=vc, queue=queue)
+
+        if members > 2:
+            vote = 1
+            required_vote = int(members / 2) + 1
+            msg: discord.Message = await ctx.send(
+                f"{ctx.author.mention} wants to skip the current song need {required_vote} votes to skip"
+            )
+            emoji = "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}"
+            await msg.add_reaction(emoji)
+
+            def check(reaction: discord.Reaction, user: discord.User) -> bool:
+                return (
+                    reaction.message.id == msg.id
+                    and user.id != ctx.author.id
+                    and str(reaction.emoji) == emoji
+                    and user.bot is False
+                    and user.id in [m.id for m in channel.members]
+                )
+
+            try:
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", check=check, timeout=vc.track.duration
+                )
+            except asyncio.TimeoutError:
+                await msg.delete()
+                return
+            else:
+                vote += 1
+
+            if vote >= required_vote:
+                await msg.delete()
+                return await __interal_skip(ctx=ctx, vc=vc, queue=queue)
+
+        await __interal_skip(ctx=ctx, vc=vc, queue=queue)
+
+    @commands.command(name="queue")
+    async def _queue(self, ctx: Context):
         """Shows the current songs queue"""
         try:
             queue = self._cache[ctx.guild.id]
@@ -181,6 +260,7 @@ class Music(Cog):
         await ctx.paginate(entries=entries, _type="SimplePages")
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def stop(self, ctx: Context):
         """Stop the currently playing song."""
         if ctx.voice_client is None:
@@ -203,6 +283,7 @@ class Music(Cog):
                 return
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def clear(self, ctx: Context):
         """Clear the queue"""
         if ctx.voice_client is None:
@@ -216,6 +297,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} cleared the queue.")
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:
@@ -235,6 +317,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player is not playing.")
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def resume(self, ctx: Context):
         """Resume the currently paused song."""
         if ctx.voice_client is None:
@@ -254,6 +337,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player is not playing.")
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def volume(self, ctx: Context, volume: int):
         """Change the volume of the currently playing song."""
         if volume < 1 or volume > 100:
@@ -274,6 +358,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player volume set to {volume/10}%.")
 
     @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channel=True), is_dj())
     async def seek(self, ctx: Context, seconds: int):
         """Seek to a given position in the currently playing song."""
         if ctx.voice_client is None:

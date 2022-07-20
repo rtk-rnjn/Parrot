@@ -140,9 +140,21 @@ def guild_premium() -> Callable:
         if not ctx.guild:  # Return False in a DM
             return False
 
-        return ctx.bot.server_config[ctx.guild.id].get("premium")
+        return ctx.bot.server_config[ctx.guild.id].get("premium", False)
 
     return commands.check(predicate)
+
+
+def is_dj() -> Callable:
+    async def preficate(ctx: Context) -> bool:
+        """Returns True if the user is a DJ."""
+        if role := await ctx.dj_role():
+            return role in ctx.author.roles
+        
+        raise commands.CheckFailure("You must have DJ role or Manage Channel permission to use this command.")
+    
+    return commands.check(preficate)
+
 
 
 def cooldown_with_role_bypass(

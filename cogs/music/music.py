@@ -1,26 +1,34 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
+import random
 from asyncio import Queue, QueueEmpty
 from contextlib import suppress
-from typing import Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
 
 import arrow
 import discord
 import wavelink
-from core import Cog, Context, Parrot
+from core import Cog
 from discord.ext import commands
 from utilities.checks import in_voice, is_dj
 from wavelink.ext import spotify
 
+if TYPE_CHECKING:
+    from collections import deque
+
+    from core import Context, Parrot
+
 
 class Music(Cog):
     """Music related commands."""
+
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
         self._cache: Dict[int, Queue[wavelink.Track]] = {}
-        self._skip_votes: Dict[int, int] = {}
+        self._config: Dict[int, dict] = {}
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -84,6 +92,63 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def loop(self, ctx: Context, info: Optional[Literal["all", "current"]] = "all"):
+        """To loop the current song or the queue"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        try:
+            self._config[ctx.guild.id]
+        except KeyError:
+            self._config[ctx.guild.id] = {}
+
+        self._config[ctx.guild.id]["loop"] = not self._config[ctx.guild.id].get("loop", False)
+        self._config[ctx.guild.id]["loop_type"] = info
+        await ctx.send(
+            f"{ctx.author.mention} looping is now **{'enabled' if self._config[ctx.guild.id]['loop'] else 'disabled'}**"
+        )
+
+    @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def shuffle(self, ctx: Context):
+        """Shuffles the queue"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        try:
+            self._cache[ctx.guild.id]
+        except KeyError:
+            self._cache[ctx.guild.id] = Queue()
+
+        if queue := self._cache[ctx.guild.id]:
+            if queue.empty():
+                await ctx.send(f"{ctx.author.mention} queue is empty.")
+                return
+
+            random.shuffle(queue._queue)  # type: ignore
+
+            await ctx.send(f"{ctx.author.mention} queue has been shuffled.")
+            return
+
+    @commands.command(name="filter")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    async def _filter(self, ctx: Context):
+        """Set filter for the song"""
+
+    @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def disconnect(self, ctx: Context):
         """Disconnects from the voice channel"""
         if ctx.voice_client is None:
@@ -101,9 +166,7 @@ class Music(Cog):
         *,
         search: Union[wavelink.YouTubeTrack, wavelink.SoundCloudTrack, str],
     ):
-        """Play a song with the given search query.
-        If not connected, connect to our voice channel.
-        """
+        """Play a song with the given search query. If not connected, connect to your voice channel."""
         if ctx.invoked_subcommand is None:
             if ctx.voice_client is None:
                 vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
@@ -374,7 +437,7 @@ class Music(Cog):
 
     @Cog.listener()
     async def on_wavelink_track_end(
-        self, player: wavelink.Player, track: wavelink.Track, reason: Any
+        self, player: wavelink.Player, original_track: wavelink.Track, reason: Any
     ):
         try:
             queue = self._cache[player.guild.id]
@@ -383,4 +446,18 @@ class Music(Cog):
             return
 
         with suppress(QueueEmpty):
-            await player.play(queue.get_nowait())
+            try:
+                self._config[player.guild.id]
+            except KeyError:
+                self._config[player.guild.id] = {}
+
+            q: deque = queue._queue  # type: ignore
+
+            if self._config[player.guild.id].get("loop", False):
+                if self._config[player.guild.id].get("loop_type", "all") == "all":
+                    await player.play(itertools.cycle(q))
+                else:
+                    await player.play(original_track)
+            else:
+                track = queue.get_nowait()
+                await player.play(track)

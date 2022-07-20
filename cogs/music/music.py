@@ -397,7 +397,7 @@ class Music(Cog):
                 f"{ctx.author.mention} set the channelmix filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
             )
 
-    @_filter_channelmix.command(name="builtin", aliases=["builtin"])
+    @_filter_channelmix.command(name="builtin", aliases=["built-in"])
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @in_voice()
     async def _filter_channelmix_builtin(

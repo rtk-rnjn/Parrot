@@ -51,6 +51,7 @@ class Music(Cog):
             color=self.bot.color,
             timestamp=discord.utils.utcnow(),
         )
+        _id = track.id
         if track.uri is not None:
             embed.url = track.uri
         embed.add_field(name="Author", value=track.author, inline=True)
@@ -62,6 +63,7 @@ class Music(Cog):
         )
         if hasattr(track, "thumbnail") and track.thumbnail is not None:
             embed.set_thumbnail(url=track.thumbnail)
+        embed.add_field(name="ID", value=_id, inline=False)
         return embed
 
     @commands.command()

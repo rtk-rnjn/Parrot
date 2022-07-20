@@ -102,7 +102,7 @@ class Music(Cog):
                 except KeyError:
                     self._cache[ctx.guild.id] = Queue()
 
-                self._cache[ctx.guild.id].put(search)
+                self._cache[ctx.guild.id].put_nowait(search)
                 await ctx.send(
                     f"{ctx.author.mention} added **{search.title}** to the queue"
                 )

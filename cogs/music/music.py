@@ -15,6 +15,7 @@ from wavelink.ext import spotify
 
 
 class Music(Cog):
+    """Music related commands."""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
@@ -34,9 +35,7 @@ class Music(Cog):
         if track.uri is not None:
             embed.url = track.uri
         embed.add_field(name="Author", value=track.author, inline=True)
-        duration = (
-            arrow.utcnow().shift(seconds=track.duration).humanize(only_distance=True)
-        )
+        duration = arrow.utcnow().shift(seconds=track.duration).humanize(only_distance=True)
         embed.add_field(name="Duration", value=duration, inline=True)
         embed.set_footer(
             text=f"Requested by {ctx.author.name}",
@@ -50,25 +49,45 @@ class Music(Cog):
     @commands.bot_has_guild_permissions(connect=True)
     async def join(self, ctx: Context, channel: Optional[discord.VoiceChannel] = None):
         """Joins a voice channel. If no channel is given then it will connects to your channel"""
-        channel = getattr(ctx.author.voice, "channel", channel)
+        dj_role = await ctx.dj_role()
+        if ctx.voice_client is None or dj_role in ctx.author.roles:
+            channel = getattr(ctx.author.voice, "channel", channel)
 
-        if channel is None:
-            raise commands.BadArgument(
-                "You must be in a voice channel or must provide the channel argument"
+            if channel is None:
+                raise commands.BadArgument(
+                    "You must be in a voice channel or must provide the channel argument"
+                )
+
+            await channel.connect(cls=wavelink.Player)
+            await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
+            self._cache[ctx.guild.id] = Queue()
+            return
+
+        vc: wavelink.Player = ctx.voice_client
+        if vc.is_playing():
+            await ctx.send(
+                f"{ctx.author.mention} bot is already already playing music in {vc.channel.mention}"
             )
+            return
 
-        await channel.connect(cls=wavelink.Player)
-        await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
-        self._cache[ctx.guild.id] = Queue()
+    @commands.command()
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    async def move(self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None):
+        """Moves the bot to a different voice channel"""
+        if ctx.voice_client is None:
+            return self.join(ctx, channel)
+
+        vc: wavelink.Player = ctx.voice_client
+
+        await vc.move_to(channel)
+        await ctx.send(f"{ctx.author.mention} moved to {vc.channel.mention}")
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def disconnect(self, ctx: Context):
         """Disconnects from the voice channel"""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         await ctx.send(f"{ctx.author.mention} disconnected")
 
         await ctx.voice_client.disconnect()
@@ -87,9 +106,7 @@ class Music(Cog):
         """
         if ctx.invoked_subcommand is None:
             if ctx.voice_client is None:
-                vc: wavelink.Player = await ctx.author.voice.channel.connect(
-                    cls=wavelink.Player
-                )
+                vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
             else:
                 vc: wavelink.Player = ctx.voice_client  # type: ignore
 
@@ -103,23 +120,17 @@ class Music(Cog):
                     self._cache[ctx.guild.id] = Queue()
 
                 self._cache[ctx.guild.id].put_nowait(search)
-                await ctx.send(
-                    f"{ctx.author.mention} added **{search.title}** to the queue"
-                )
+                await ctx.send(f"{ctx.author.mention} added **{search.title}** to the queue")
                 return
 
             await vc.play(search)
-            await ctx.send(
-                f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search)
-            )
+            await ctx.send(f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search))
 
     @play.command(name="spotify")
     async def play_spotify(self, ctx: Context, *, link: str):
         """Play a song from spotify with the given link"""
         if ctx.voice_client is None:
-            vc: wavelink.Player = await ctx.author.voice.channel.connect(
-                cls=wavelink.Player
-            )
+            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
         else:
             vc: wavelink.Player = ctx.voice_client  # type: ignore
 
@@ -150,9 +161,7 @@ class Music(Cog):
     async def nowplaying(self, ctx: Context):
         """Shows the currently playing song"""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client
 
@@ -168,9 +177,7 @@ class Music(Cog):
     async def next(self, ctx: Context):
         """Skips the currently playing song"""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client
 
         if not vc.is_playing():
@@ -181,9 +188,7 @@ class Music(Cog):
             self._cache[ctx.guild.id] = Queue()
 
         if queue.empty():
-            return await ctx.send(
-                f"{ctx.author.mention} There are no more songs in the queue."
-            )
+            return await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")
 
         channel: discord.VoiceChannel = vc.channel
         members = sum(1 for m in channel.members if not m.bot)
@@ -199,9 +204,7 @@ class Music(Cog):
                     embed=self.make_embed(ctx, next_song),
                 )
                 return
-            await ctx.send(
-                f"{ctx.author.mention} There are no more songs in the queue."
-            )
+            await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")
 
         if members <= 2:
             return await __interal_skip(ctx=ctx, vc=vc, queue=queue)
@@ -247,14 +250,10 @@ class Music(Cog):
             queue = self._cache[ctx.guild.id]
         except KeyError:
             self._cache[ctx.guild.id] = Queue()
-            return await ctx.send(
-                f"{ctx.author.mention} There are no songs in the queue."
-            )
+            return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
 
         if queue.empty():
-            return await ctx.send(
-                f"{ctx.author.mention} There are no songs in the queue."
-            )
+            return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
 
         entries = []
         for track in queue._queue:  # type: ignore
@@ -271,9 +270,7 @@ class Music(Cog):
     async def stop(self, ctx: Context):
         """Stop the currently playing song."""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client  # type: ignore
         await channel.stop()
@@ -295,9 +292,7 @@ class Music(Cog):
     async def clear(self, ctx: Context):
         """Clear the queue"""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client
         await channel.stop()
@@ -310,9 +305,7 @@ class Music(Cog):
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client
         if channel.is_paused():
@@ -331,9 +324,7 @@ class Music(Cog):
     async def resume(self, ctx: Context):
         """Resume the currently paused song."""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client
         if not channel.is_paused():
@@ -357,9 +348,7 @@ class Music(Cog):
             )
 
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client
         if not channel.is_playing():
@@ -374,9 +363,7 @@ class Music(Cog):
     async def seek(self, ctx: Context, seconds: int):
         """Seek to a given position in the currently playing song."""
         if ctx.voice_client is None:
-            return await ctx.send(
-                f"{ctx.author.mention} bot is not connected to a voice channel."
-            )
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client
         if not channel.is_playing():

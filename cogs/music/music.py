@@ -20,6 +20,17 @@ if TYPE_CHECKING:
 
     from core import Context, Parrot
 
+from .__flags import (
+    ChannelMixFlag,
+    DistortionFlag,
+    KaraokeFlag,
+    LowPassFlag,
+    RotationFlag,
+    TimescaleFlag,
+    TremoloFlag,
+    VibratoFlag,
+)
+
 
 class Music(Cog):
     """Music related commands."""
@@ -142,10 +153,293 @@ class Music(Cog):
             await ctx.send(f"{ctx.author.mention} queue has been shuffled.")
             return
 
-    @commands.command(name="filter")
+    @commands.group(name="filter", invoke_without_command=True)
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def _filter(self, ctx: Context):
         """Set filter for the song"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        if ctx.invoked_subcommand is None:
+            return await self.bot.invoke_help_command(ctx)
+
+    @_filter.command(name="equalizer", invoke_without_command=True)
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_equalizer(
+        self,
+        ctx: Context,
+        *,
+        equalizer: Literal["boost", "flat", "metal", "piano"],
+    ):
+        """Set the Equalizer filter. Available options: `boost`, `flat`, `metal`, `piano`"""
+        if ctx.invoked_subcommand is None:
+            _equalizer: wavelink.Equalizer = getattr(wavelink.Equalizer, equalizer)()
+            if ctx.voice_client is None:
+                return await ctx.send(
+                    f"{ctx.author.mention} bot is not connected to a voice channel."
+                )
+
+            channel: wavelink.Player = ctx.voice_client
+            await channel.set_filter(_equalizer)
+            await ctx.send(f"{ctx.author.mention} set the equalizer to **{equalizer}**")
+            return
+
+        await self.bot.invoke_help_command(ctx)
+
+    @_filter.command(name="karaoke")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_karaoke(self, ctx: Context, *, flag: KaraokeFlag):
+        """To configure Karaoke filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if flag.level:
+            PAYLOAD["level"] = flag.level
+        if flag.mono_level:
+            PAYLOAD["mono_level"] = flag.mono_level
+        if flag.filter_band:
+            PAYLOAD["filter_band"] = flag.filter_band
+        if flag.filter_width:
+            PAYLOAD["filter_width"] = flag.filter_width
+
+        _filter = wavelink.Karaoke(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the karaoke filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
+
+    @_filter.command(name="timescale")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_timescale(self, ctx: Context, *, timescale: TimescaleFlag):
+        """To configure the timescale filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if timescale.rate:
+            PAYLOAD["rate"] = timescale.rate
+        if timescale.pitch:
+            PAYLOAD["pitch"] = timescale.pitch
+        if timescale.speed:
+            PAYLOAD["speed"] = timescale.speed
+
+        _filter = wavelink.TimeScale(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the timescale filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
+
+    @_filter.command(name="tremolo")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_tremolo(self, ctx: Context, *, tremolo: TremoloFlag):
+        """To configure the tremolo filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if tremolo.depth:
+            PAYLOAD["depth"] = tremolo.depth
+        if tremolo.frequency:
+            PAYLOAD["frequency"] = tremolo.frequency
+
+        _filter = wavelink.Tremolo(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the tremolo filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
+
+    @_filter.command(name="vibrato")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_vibrato(self, ctx: Context, *, flag: VibratoFlag):
+        """To configure the vibrato filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if flag.depth:
+            PAYLOAD["depth"] = flag.depth
+        if flag.frequency:
+            PAYLOAD["frequency"] = flag.frequency
+
+        _filter = wavelink.Vibrato(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the vibrato filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
+
+    @_filter.command(name="rotation")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_rotation(self, ctx: Context, *, flag: RotationFlag):
+        """To configure the rotation filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if flag.speed:
+            PAYLOAD["speed"] = flag.speed
+
+        _filter = wavelink.Rotation(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the rotation filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
+
+    @_filter.command(name="distortion")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_distortion(self, ctx: Context, *, flag: DistortionFlag):
+        """To configure the distortion filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if flag.sin_offset:
+            PAYLOAD["sin_offset"] = flag.sin_offset
+        if flag.cos_offset:
+            PAYLOAD["cos_offset"] = flag.cos_offset
+        if flag.tan_offset:
+            PAYLOAD["tan_offset"] = flag.tan_offset
+        if flag.sin_scale:
+            PAYLOAD["sin_scale"] = flag.sin_scale
+        if flag.cos_scale:
+            PAYLOAD["cos_scale"] = flag.cos_scale
+        if flag.tan_scale:
+            PAYLOAD["tan_scale"] = flag.tan_scale
+        if flag.offset:
+            PAYLOAD["offset"] = flag.offset
+        if flag.scale:
+            PAYLOAD["scale"] = flag.scale
+
+        _filter = wavelink.Distortion(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the distortion filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
+
+    @_filter.group(name="channelmix", invoke_without_command=True)
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_channelmix(
+        self,
+        ctx: Context,
+        *,
+        flag: ChannelMixFlag,
+    ):
+        """To configure the channelmix filter"""
+        if ctx.invoked_subcommand is None:
+            if ctx.voice_client is None:
+                return await ctx.send(
+                    f"{ctx.author.mention} bot is not connected to a voice channel."
+                )
+
+            channel: wavelink.Player = ctx.voice_client
+
+            if not channel.is_playing():
+                return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+            PAYLOAD = {}
+            if flag.left_to_left:
+                PAYLOAD["left_to_left"] = flag.left_to_left
+            if flag.left_to_right:
+                PAYLOAD["left_to_right"] = flag.left_to_right
+            if flag.right_to_left:
+                PAYLOAD["right_to_left"] = flag.right_to_left
+            if flag.right_to_right:
+                PAYLOAD["right_to_right"] = flag.right_to_right
+
+            _filter = wavelink.ChannelMix(**PAYLOAD)
+            await channel.set_filter(_filter)
+            await ctx.send(
+                f"{ctx.author.mention} set the channelmix filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            )
+
+    @_filter_channelmix.command(name="builtin", aliases=["builtin"])
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_channelmix_builtin(
+        self,
+        ctx: Context,
+        *,
+        mix: Literal["full_left", "full_right", "mono", "only_left", "only_right", "switch"],
+    ):
+        """To configure the channelmix filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        _filter = getattr(wavelink.ChannelMix, mix)()
+
+        await channel.set_filter(_filter)
+        await ctx.send(f"{ctx.author.mention} set the channelmix filter to **{mix}**")
+
+    @_filter.command(name="lowpass")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _filter_lowpass(self, ctx: Context, *, flag: LowPassFlag):
+        """To configure the lowpass filter"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if flag.smoothing:
+            PAYLOAD["smoothing"] = flag.smoothing
+
+        _filter = wavelink.LowPass(**PAYLOAD)
+        await channel.set_filter(_filter)
+        await ctx.send(
+            f"{ctx.author.mention} set the lowpass filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        )
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())

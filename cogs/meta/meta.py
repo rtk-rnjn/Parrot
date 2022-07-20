@@ -22,27 +22,6 @@ from .robopage import RoboPages
 SUPPORT_SERVER_ID = 741614680652644382
 
 
-class plural:
-    def __init__(self, value):
-        self.value = value
-
-    def __format__(self, format_spec):
-        v = self.value
-        singular, _, plural = format_spec.partition("|")
-        plural = plural or f"{singular}s"
-        if abs(v) != 1:
-            return f"{v} {plural}"
-        return f"{v} {singular}"
-
-
-class Prefix(commands.Converter):
-    async def convert(self, ctx, argument):
-        user_id = ctx.bot.user.id
-        if argument.startswith((f"<@{user_id}>", f"<@!{user_id}>")):
-            raise commands.BadArgument("That is a reserved prefix already in use.")
-        return argument
-
-
 class GroupHelpPageSource(menus.ListPageSource):
     def __init__(
         self,

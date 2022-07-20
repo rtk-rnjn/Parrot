@@ -152,7 +152,7 @@ def is_dj() -> Callable:
 
 def in_voice() -> Callable:
     async def predicate(ctx: Context) -> bool:
-        if ctx.author.voice:
+        if getattr(ctx.author.voice, "channel", None):
             return True
         raise commands.CheckFailure("You must be in a voice channel to use this command.")
 

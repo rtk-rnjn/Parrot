@@ -12,7 +12,7 @@ STAFF_ROLES = [771025632184369152, 793531029184708639]
 
 
 class Sports(Cog):
-    """Sports related commands. This category is only for requested servers. You know more DM the owner or ask in support server"""
+    """Sports related commands. This category is only for requested servers."""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 

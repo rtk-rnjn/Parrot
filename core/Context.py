@@ -95,7 +95,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             if data := await self.bot.mongo.parrot_db.server_config.find_one(
                 {"_id": self.guild.id}
             ):
-                return self.guild.get_role(data["dj_role"] or 0)
+                return self.guild.get_role(data.get("dj_role") or 0)
         return None
 
     async def muterole(

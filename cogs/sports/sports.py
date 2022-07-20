@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import discord
 from core import Cog, Context, Parrot
@@ -12,6 +12,7 @@ STAFF_ROLES = [771025632184369152, 793531029184708639]
 
 
 class Sports(Cog):
+    """Sports related commands. This category is only for requested servers. You know more DM the owner or ask in support server"""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
@@ -20,10 +21,14 @@ class Sports(Cog):
         self.url = None
 
         # list of channels
-        self.channels = []
+        self.channels: List[discord.TextChannel] = []
         self.annouce_task.start()
 
         self.data = None
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{CRICKET BAT AND BALL}")
 
     def create_embed_ipl(
         self,
@@ -73,9 +78,10 @@ class Sports(Cog):
         """To get the IPL score"""
         if ctx.invoked_subcommand is None:
             if not self.url:
-                return await ctx.send(
+                await ctx.send(
                     f"{ctx.author.mention} No IPL score page set | Ask for it in support server"
                 )
+                return
 
             if self.data is None:
                 url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"

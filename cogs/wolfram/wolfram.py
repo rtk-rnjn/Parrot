@@ -167,11 +167,15 @@ async def get_pod_pages(
         return pages
 
 
-class Wolfram(Cog, command_attrs=dict(hidden=True)):  # type: ignore
+class Wolfram(Cog):  # type: ignore
     """Commands for interacting with the Wolfram|Alpha API."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{RIBBON}")
 
     @group(name="wolfram", aliases=("wolf", "wa"), invoke_without_command=True)
     @custom_cooldown(*STAFF_ROLES)

@@ -96,6 +96,10 @@ class CustomCommand(Cog):
             return 0
 
         self.data = {}
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{COPYRIGHT SIGN}")
 
     async def cog_load(self):
         async for data in self.bot.mongo.cc.commands.find({}):
@@ -254,8 +258,7 @@ class CustomCommand(Cog):
             payload["trigger_type"] = flags.trigger_type.lower()
 
         if flags.code:
-            code = ContentCode(flags.code)
-            code = code.source
+            code = ContentCode(flags.code).source
 
             if flags.trigger_type.lower() in ("on_message", "on_message_edit"):
                 code = indent(code, "MESSAGE")

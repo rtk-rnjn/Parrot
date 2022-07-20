@@ -21,6 +21,10 @@ class Music(Cog):
 
         self._cache: Dict[int, Queue[wavelink.Track]] = {}
         self._skip_votes: Dict[int, int] = {}
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{MULTIPLE MUSICAL NOTES}")
 
     def make_embed(self, ctx: Context, track: wavelink.Track) -> discord.Embed:
         embed = discord.Embed(

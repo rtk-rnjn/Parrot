@@ -10,7 +10,7 @@ from .method import dial
 
 
 class Telephone(Cog):
-    """To Make calls"""
+    """To Make calls over other server."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

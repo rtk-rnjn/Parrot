@@ -8,16 +8,21 @@ from discord.ext import commands
 
 
 class Hidden(Cog):
+    """This category is for you. You can opt-in or opt-out certain feature of the bot"""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    @commands.group(hidden=True, invoke_without_command=True)
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{KEY}")
+
+    @commands.group(invoke_without_command=True)
     async def optout(self, ctx: Context):
         """Opt-out to the certain configuration"""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @optout.command(name="gitlink", hidden=True)
+    @optout.command(name="gitlink")
     async def optout_gitlink(self, ctx: Context):
         """Opt-out for gitlink to codeblock."""
         await self.bot.mongo.extra.misc.update_one(
@@ -29,7 +34,7 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-out to the use of gitlink in codeblocks."
         )
 
-    @optout.command(name="global", hidden=True)
+    @optout.command(name="global")
     async def optout_global(self, ctx: Context):
         """Opt-out for global chat"""
         await self.bot.mongo.extra.misc.update_one(
@@ -39,9 +44,11 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-out to the use of global chat."
         )
 
-    @optout.command(name="command", aliases=["commands", "cmd"], hidden=True)
+    @optout.command(name="command", aliases=["commands", "cmd"])
     async def optout_command(self, ctx: Context):
-        """Opt-out for command usage"""
+        """Opt-out for command usage.
+        Beware after opting-out, you will not be able to use commands anymore.
+        It is similar to self banning from using the bot"""
         await self.bot.mongo.extra.misc.update_one(
             {"_id": ctx.guild.id},
             {"$addToSet": {"command": ctx.author.id}},
@@ -51,7 +58,7 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-out to the use of Parrot commands."
         )
 
-    @optout.command(name="equation", hidden=True)
+    @optout.command(name="equation")
     async def optout_equation(self, ctx: Context):
         """Opt-out for equation usage"""
         await self.bot.mongo.extra.misc.update_one(
@@ -63,13 +70,13 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-out to the use of equations."
         )
 
-    @commands.group(hidden=True, invoke_without_command=True)
+    @commands.group(invoke_without_command=True)
     async def optin(self, ctx: Context):
         """Opt-in to the certain configuration"""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @optin.command(name="gitlink", hidden=True)
+    @optin.command(name="gitlink")
     async def optin_gitlink(self, ctx: Context):
         """Opt-in for gitlink to codeblock"""
         await self.bot.mongo.extra.misc.update_one(
@@ -81,7 +88,7 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-in to the use of gitlink in codeblocks."
         )
 
-    @optin.command(name="global", hidden=True)
+    @optin.command(name="global")
     async def optin_global(self, ctx: Context):
         """Opt-in for global chat"""
         await self.bot.mongo.extra.misc.update_one(
@@ -91,7 +98,7 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-in to the use of global chat."
         )
 
-    @optin.command(name="command", aliases=["commands", "cmd"], hidden=True)
+    @optin.command(name="command", aliases=["commands", "cmd"])
     async def optin_command(self, ctx: Context):
         """Opt-in for command usage"""
         await self.bot.mongo.extra.misc.update_one(
@@ -101,7 +108,7 @@ class Hidden(Cog):
             f"{ctx.author.mention} You have opted-in to the use of Parrot commands."
         )
 
-    @optin.command(name="equation", hidden=True)
+    @optin.command(name="equation")
     async def optin_equation(self, ctx: Context):
         """Opt-in for equation usage"""
         await self.bot.mongo.extra.misc.update_one(

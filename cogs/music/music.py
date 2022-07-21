@@ -50,7 +50,7 @@ class Music(Cog):
             timestamp=discord.utils.utcnow(),
         )
 
-        if track.uri is not None:
+        if getattr(track, "uri", None) is not None:
             embed.url = track.uri
         embed.add_field(name="Author", value=track.author, inline=True)
         duration = arrow.utcnow().shift(seconds=track.duration).humanize(only_distance=True)
@@ -647,7 +647,7 @@ class Music(Cog):
 
             entries = []
             for track in vc.queue._queue:  # type: ignore
-                if track.uri:
+                if hasattr(track, "uri"):
                     entries.append(f"[{track.title} - {track.author}]({track.uri})")
                 else:
                     entries.append(f"{track.title} - {track.author}")

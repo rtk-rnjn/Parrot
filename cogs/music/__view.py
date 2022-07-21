@@ -43,10 +43,10 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
     async def __send_interal_error_response(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             "Running `loop` command from the context failed. Possible reasons:\n"
-            "• The bot is not in a voice channel.\n"
-            "• The bot is not in the same voice channel as you.\n"
-            "• The bot is not playing music.\n"
-            f"• You are missing DJ role or Manage Channels permission.\n",
+            "\N{BULLET} The bot is not in a voice channel.\n"
+            "\N{BULLET} The bot is not in the same voice channel as you.\n"
+            "\N{BULLET} The bot is not playing music.\n"
+            "\N{BULLET} You are missing DJ role or Manage Channels permission.\n",
             ephemeral=True,
         )
 
@@ -69,7 +69,7 @@ class MusicView(discord.ui.View):
         return True
 
     async def __like(self, user: Union[discord.User, discord.Member]):
-        await self.bot.mongo.extra.user_misc.update_one(
+        result = await self.bot.mongo.extra.user_misc.update_one(
             {"_id": user.id},
             {
                 "$addToSet": {
@@ -82,14 +82,21 @@ class MusicView(discord.ui.View):
             },
             upsert=True,
         )
+        if result.modified_count != 0:
+            await self.bot.mongo.extra.songs.update_one(
+                {"id": self.player.track.id},
+                {"$inc": {"likes": 1}},
+                upsert=True,
+            )
         await self.bot.mongo.extra.songs.update_one(
             {"id": self.player.track.id},
-            {"$inc": {"likes": 1}},
+            {"$addToSet": {"liked_by": user.id}},
             upsert=True,
         )
 
+
     async def __dislike(self, user: Union[discord.User, discord.Member]):
-        await self.bot.mongo.extra.user_misc.update_one(
+        result = await self.bot.mongo.extra.user_misc.update_one(
             {"_id": user.id},
             {
                 "$addToSet": {
@@ -102,9 +109,15 @@ class MusicView(discord.ui.View):
             },
             upsert=True,
         )
+        if result.modified_count != 0:
+            await self.bot.mongo.extra.songs.update_one(
+                {"id": self.player.track.id},
+                {"$inc": {"dislikes": 1}},
+                upsert=True,
+            )
         await self.bot.mongo.extra.songs.update_one(
             {"id": self.player.track.id},
-            {"$inc": {"dislikes": 1}},
+            {"$addToSet": {"disliked_by": user.id}},
             upsert=True,
         )
 

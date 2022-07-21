@@ -172,7 +172,7 @@ class Twenty48_Button(discord.ui.View):
         return False
 
     async def update_to_db(self) -> None:
-        await self.bot.mongo.extra.games_leaderboard.update_one(
+        await self.bot.mongo.extra.games_leaderboard.games_leaderboard(
             {"_id": self.user.id,},
             {"$inc": {"twenty48.games_played": 1, "twenty48.total_moves": self._moves}},
             upsert=True,
@@ -212,7 +212,7 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed = (
+        embed: discord.Embed = (
             discord.Embed(
                 title="2048 Game",
                 description=f"{board_string}",
@@ -251,7 +251,7 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed = (
+        embed: discord.Embed = (
             discord.Embed(
                 title="2048 Game",
                 description=f"{board_string}",
@@ -278,7 +278,7 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed = (
+        embed: discord.Embed = (
             discord.Embed(
                 title="2048 Game",
                 description=f"{board_string}",
@@ -304,7 +304,7 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed = (
+        embed: discord.Embed = (
             discord.Embed(
                 title="2048 Game",
                 description=f"{board_string}",

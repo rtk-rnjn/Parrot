@@ -83,9 +83,7 @@ def suppress_links(message: str) -> str:
 
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
-GENDER_OPTIONS: Dict[str, Any] = json.loads(
-    Path(r"extra/gender_options.json").read_text("utf8")
-)
+GENDER_OPTIONS: Dict[str, Any] = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
 
 IMAGES = {
     6: "https://cdn.discordapp.com/attachments/859123972884922418/888133201497837598/hangman0.png",
@@ -174,9 +172,7 @@ def file_safe_name(effect: str, display_name: str) -> str:
     file_name = file_name.replace(" ", "_")
 
     # Normalize unicode characters
-    cleaned_filename = (
-        unicodedata.normalize("NFKD", file_name).encode("ASCII", "ignore").decode()
-    )
+    cleaned_filename = unicodedata.normalize("NFKD", file_name).encode("ASCII", "ignore").decode()
 
     # Remove invalid filename characters
     cleaned_filename = "".join(c for c in cleaned_filename if c in valid_filename_chars)
@@ -292,9 +288,7 @@ class DynamicQuestionGen:
             random.randint(10, 20),
             random.randint(200, 350),
         )
-        ans = random.randint(
-            0, 9
-        )  # max remainder is 9, since the minimum modulus is 10
+        ans = random.randint(0, 9)  # max remainder is 9, since the minimum modulus is 10
         a = quotient * m + ans - b
 
         question = q_format.format(a, b, m)
@@ -397,9 +391,7 @@ def replace_many(
 ) -> str:
 
     if ignore_case:
-        replacements = {
-            word.lower(): replacement for word, replacement in replacements.items()
-        }
+        replacements = {word.lower(): replacement for word, replacement in replacements.items()}
 
     words_to_replace = sorted(replacements, key=lambda s: (-len(s), s))
 
@@ -448,9 +440,7 @@ class Fun(Cog):
         self.player_scores = defaultdict(
             int
         )  # A variable to store all player's scores for a bot session.
-        self.game_player_scores = (
-            {}
-        )  # A variable to store temporary game player's scores.
+        self.game_player_scores = {}  # A variable to store temporary game player's scores.
         self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.categories = {
             "general": "Test your general knowledge.",
@@ -467,9 +457,7 @@ class Fun(Cog):
         self.jeyy_api_loader()
         self.some_random_api_loader()
 
-    async def send_colour_response(
-        self, ctx: commands.Context, rgb: Tuple[int, int, int]
-    ) -> None:
+    async def send_colour_response(self, ctx: commands.Context, rgb: Tuple[int, int, int]) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
         try:
@@ -576,17 +564,13 @@ class Fun(Cog):
                 score_cutoff=80,
             )
             colour_name = [
-                name
-                for name, hex_code in self.colour_mapping.items()
-                if hex_code == match
+                name for name, hex_code in self.colour_mapping.items() if hex_code == match
             ][0]
         except TypeError:
             colour_name = None
         return colour_name
 
-    def match_colour_name(
-        self, ctx: commands.Context, input_colour_name: str
-    ) -> Optional[str]:
+    def match_colour_name(self, ctx: commands.Context, input_colour_name: str) -> Optional[str]:
         """Convert a colour name to HEX code."""
         try:
             match, certainty, _ = rapidfuzz.process.extractOne(
@@ -618,9 +602,7 @@ class Fun(Cog):
             name=f"You've guessed `{user_guess}` so far.",
             value="Guess the word by sending a message with a letter!",
         )
-        hangman_embed.set_footer(
-            text=f"Tries remaining: {tries} | You have 60s to guess."
-        )
+        hangman_embed.set_footer(text=f"Tries remaining: {tries} | You have 60s to guess.")
         return hangman_embed
 
     @property
@@ -779,31 +761,21 @@ class Fun(Cog):
         embed.colour = Colours.soft_red
 
         if comic and (comic := re.match(COMIC_FORMAT, comic)) is None:
-            embed.description = (
-                "Comic parameter should either be an integer or 'latest'."
-            )
+            embed.description = "Comic parameter should either be an integer or 'latest'."
             await ctx.send(embed=embed)
             return
 
-        comic = (
-            randint(1, self.latest_comic_info["num"])
-            if comic is None
-            else comic.group(0)
-        )
+        comic = randint(1, self.latest_comic_info["num"]) if comic is None else comic.group(0)
 
         if comic == "latest":
             info = self.latest_comic_info
         else:
-            async with self.bot.http_session.get(
-                f"{BASE_URL}/{comic}/info.0.json"
-            ) as resp:
+            async with self.bot.http_session.get(f"{BASE_URL}/{comic}/info.0.json") as resp:
                 if resp.status == 200:
                     info = await resp.json()
                 else:
                     embed.title = f"XKCD comic #{comic}"
-                    embed.description = (
-                        f"{resp.status}: Could not retrieve xkcd comic #{comic}."
-                    )
+                    embed.description = f"{resp.status}: Could not retrieve xkcd comic #{comic}."
                     await ctx.send(embed=embed)
                     return
 
@@ -959,9 +931,7 @@ class Fun(Cog):
             # Exit quiz if number of questions for a round are already sent.
             if len(done_questions) == self.question_limit and hint_no == 0:
                 await ctx.send("The round has ended.")
-                await self.declare_winner(
-                    ctx.channel, self.game_player_scores[ctx.channel.id]
-                )
+                await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 self.game_status[ctx.channel.id] = False
                 del self.game_owners[ctx.channel.id]
@@ -988,9 +958,7 @@ class Fun(Cog):
                         STANDARD_VARIATION_TOLERANCE,
                     )
                 else:
-                    format_func = DYNAMIC_QUESTIONS_FORMAT_FUNCS[
-                        question_dict["dynamic_id"]
-                    ]
+                    format_func = DYNAMIC_QUESTIONS_FORMAT_FUNCS[question_dict["dynamic_id"]]
                     quiz_entry = format_func(
                         question_dict["question"],
                         question_dict["answer"],
@@ -1018,8 +986,7 @@ class Fun(Cog):
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
-                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower())
-                    > quiz_entry.var_tol
+                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
                     for answer in quiz_entry.answers
                 )
 
@@ -1061,9 +1028,7 @@ class Fun(Cog):
 
                     hint_no = 0  # Reset the hint counter so that on the next round, it's in the initial state
 
-                    await self.send_score(
-                        ctx.channel, self.game_player_scores[ctx.channel.id]
-                    )
+                    await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
                     await ctx.release(2)
             else:
                 if self.game_status[ctx.channel.id] is False:
@@ -1094,17 +1059,13 @@ class Fun(Cog):
                     question_dict,
                     self.question_limit - len(done_questions),
                 )
-                await self.send_score(
-                    ctx.channel, self.game_player_scores[ctx.channel.id]
-                )
+                await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 await ctx.release(2)
 
     def make_start_embed(self, category: str) -> discord.Embed:
         """Generate a starting/introduction embed for the quiz."""
-        rules = "\n".join(
-            [f"{index}: {rule}" for index, rule in enumerate(RULES, start=1)]
-        )
+        rules = "\n".join([f"{index}: {rule}" for index, rule in enumerate(RULES, start=1)])
 
         start_embed = discord.Embed(
             title="Quiz game Starting!!",
@@ -1162,9 +1123,7 @@ class Fun(Cog):
                 description="No words could be found that fit all filters specified.",
                 color=Colours.soft_red,
             )
-            await ctx.send(
-                content=f"{ctx.author.mention}", embed=filter_not_found_embed
-            )
+            await ctx.send(content=f"{ctx.author.mention}", embed=filter_not_found_embed)
             return
 
         word = choice(filtered_words)
@@ -1178,7 +1137,7 @@ class Fun(Cog):
         def check(msg: discord.Message) -> bool:
             return msg.author == ctx.author and msg.channel == ctx.channel
 
-        original_message = await ctx.send(
+        original_message: discord.Message = await ctx.send(
             content=f"{ctx.author.mention}",
             embed=discord.Embed(
                 title="Hangman", description="Loading game...", color=Colours.soft_green
@@ -1203,9 +1162,7 @@ class Fun(Cog):
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",
                     color=Colours.soft_red,
                 )
-                await original_message.edit(
-                    content=f"{ctx.author.mention}", embed=timeout_embed
-                )
+                await original_message.edit(content=f"{ctx.author.mention}", embed=timeout_embed)
                 return
 
             # If the user enters a capital letter as their guess, it is automatically converted to a lowercase letter
@@ -1217,9 +1174,7 @@ class Fun(Cog):
                     description="You can only send one letter at a time, try again!",
                     color=Colours.dark_green,
                 )
-                await ctx.send(
-                    content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4
-                )
+                await ctx.send(content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4)
                 continue
 
             # Checks for repeated guesses
@@ -1239,9 +1194,7 @@ class Fun(Cog):
             # Checks for correct guesses from the user
             if normalized_content in word:
                 positions = {
-                    idx
-                    for idx, letter in enumerate(pretty_word)
-                    if letter == normalized_content
+                    idx for idx, letter in enumerate(pretty_word) if letter == normalized_content
                 }
                 user_guess = "".join(
                     [
@@ -1264,6 +1217,9 @@ class Fun(Cog):
                         embed=self.create_embed(tries, user_guess),
                     )
                     await ctx.send(content=f"{ctx.author.mention}", embed=losing_embed)
+                    await self.bot.mongo.extra.games_leaderboard.update_one(
+                        {"_id": ctx.author.id}, {"$inc": {"hangman.games_played": 1}}, upsert=True
+                    )
                     return
 
             guessed_letters.add(normalized_content)
@@ -1277,7 +1233,13 @@ class Fun(Cog):
             description=f"The word was `{word}`.",
             color=Colours.grass_green,
         )
-        return await ctx.send(content=f"{ctx.author.mention}", embed=win_embed)
+        await ctx.send(content=f"{ctx.author.mention}", embed=win_embed)
+        await self.bot.mongo.extra.games_leaderboard.update_one(
+            {"_id": ctx.author.id},
+            {"$inc": {"hangman.games_won": 1, "hangman.games_played": 1}},
+            upsert=True,
+        )
+        return
 
     @quiz_game.command(name="stop")
     async def stop_quiz(self, ctx: Context) -> None:
@@ -1292,9 +1254,7 @@ class Fun(Cog):
                     self.game_player_scores[ctx.channel.id] = {}
 
                     await ctx.send("Quiz stopped.")
-                    await self.declare_winner(
-                        ctx.channel, self.game_player_scores[ctx.channel.id]
-                    )
+                    await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 else:
                     await ctx.send(
@@ -1324,11 +1284,9 @@ class Fun(Cog):
         )
         embed.set_thumbnail(url=TRIVIA_QUIZ_ICON)
 
-        sorted_dict = sorted(
-            player_data.items(), key=operator.itemgetter(1), reverse=True
-        )
+        sorted_dict = sorted(player_data.items(), key=operator.itemgetter(1), reverse=True)
         for item in sorted_dict:
-            embed.description += f"{item[0]}: {item[1]}\n"
+            embed.description += f"{item[0]}: {item[1]}\n"  # type: ignore
 
         await channel.send(embed=embed)
 
@@ -1368,14 +1326,10 @@ class Fun(Cog):
             description="",
         )
 
-        embed.set_footer(
-            text="If a category is not chosen, a random one will be selected."
-        )
+        embed.set_footer(text="If a category is not chosen, a random one will be selected.")
 
         for cat, description in self.categories.items():
-            embed.description += (
-                f"**- {cat.capitalize()}**\n" f"{description.capitalize()}\n"
-            )
+            embed.description += f"**- {cat.capitalize()}**\n" f"{description.capitalize()}\n"
 
         return embed
 
@@ -1415,9 +1369,7 @@ class Fun(Cog):
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question: commands.clean_content):
         """8ball Magic, nothing to say much"""
-        await ctx.reply(
-            f"Question: **{question}**\nAnswer: **{random.choice(response)}**"
-        )
+        await ctx.reply(f"Question: **{question}**\nAnswer: **{random.choice(response)}**")
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1428,9 +1380,7 @@ class Fun(Cog):
         await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 
     @commands.group(aliases=("color",), invoke_without_command=True)
-    async def colour(
-        self, ctx: commands.Context, *, colour_input: Optional[str] = None
-    ) -> None:
+    async def colour(self, ctx: commands.Context, *, colour_input: Optional[str] = None) -> None:
         """
         Create an embed that displays colour information.
 
@@ -1457,13 +1407,9 @@ class Fun(Cog):
         await self.send_colour_response(ctx, rgb_tuple)
 
     @colour.command()
-    async def hsv(
-        self, ctx: commands.Context, hue: int, saturation: int, value: int
-    ) -> None:
+    async def hsv(self, ctx: commands.Context, hue: int, saturation: int, value: int) -> None:
         """Create an embed from an HSV input."""
-        if (hue not in range(361)) or any(
-            c not in range(101) for c in (saturation, value)
-        ):
+        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, value}`."
@@ -1472,13 +1418,9 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
-    async def hsl(
-        self, ctx: commands.Context, hue: int, saturation: int, lightness: int
-    ) -> None:
+    async def hsl(self, ctx: commands.Context, hue: int, saturation: int, lightness: int) -> None:
         """Create an embed from an HSL input."""
-        if (hue not in range(361)) or any(
-            c not in range(101) for c in (saturation, lightness)
-        ):
+        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, lightness}`."
@@ -1516,9 +1458,7 @@ class Fun(Cog):
 
         hex_tuple = ImageColor.getrgb(hex_code)
         if len(hex_tuple) == 4:
-            hex_tuple = hex_tuple[
-                :-1
-            ]  # Colour must be RGB. If RGBA, we remove the alpha value
+            hex_tuple = hex_tuple[:-1]  # Colour must be RGB. If RGBA, we remove the alpha value
         await self.send_colour_response(ctx, hex_tuple)
 
     @colour.command()
@@ -1628,9 +1568,7 @@ class Fun(Cog):
         """Insult your enemy, Ugh!"""
         member = member or ctx.author
 
-        response = await self.bot.http_session.get(
-            "https://insult.mattbas.org/api/insult"
-        )
+        response = await self.bot.http_session.get("https://insult.mattbas.org/api/insult")
         insult = await response.text()
         await ctx.reply(f"**{member.name}** {insult}")
 
@@ -1648,17 +1586,13 @@ class Fun(Cog):
         ) as itssostupid:  # get users avatar as png with 1024 size
             imageData = io.BytesIO(await itssostupid.read())  # read the image/bytes
 
-            await ctx.reply(
-                file=discord.File(imageData, "itssostupid.png")
-            )  # replying the file
+            await ctx.reply(file=discord.File(imageData, "itssostupid.png"))  # replying the file
 
     @commands.command(name="meme")
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def meme(
-        self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"
-    ):
+    async def meme(self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"):
         """Random meme generator."""
         link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(subreddit, count)
 
@@ -1746,9 +1680,9 @@ class Fun(Cog):
         data = await resp.json()
 
         return await ctx.send(
-            embed=discord.Embed(
-                description=data["responseData"]["translatedText"]
-            ).set_footer(text="This command is work in progress")
+            embed=discord.Embed(description=data["responseData"]["translatedText"]).set_footer(
+                text="This command is work in progress"
+            )
         )
 
     @commands.command(aliases=["def", "urban"])
@@ -1825,9 +1759,7 @@ class Fun(Cog):
         ) as ytcomment:  # get users avatar as png with 1024 size
             imageData = io.BytesIO(await ytcomment.read())  # read the image/bytes
 
-            await ctx.reply(
-                file=discord.File(imageData, "ytcomment.png")
-            )  # replying the file
+            await ctx.reply(file=discord.File(imageData, "ytcomment.png"))  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1950,9 +1882,7 @@ class Fun(Cog):
         """To understand HTTP Errors, try: `http 404`"""
         if not ctx.invoked_subcommand:
             await ctx.reply(
-                embed=discord.Embed(
-                    timestamp=discord.utils.utcnow(), color=ctx.author.color
-                )
+                embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
                 .set_image(url=f"https://http.cat/{status_code}")
                 .set_footer(text=f"{ctx.author}")
             )
@@ -1964,9 +1894,7 @@ class Fun(Cog):
     async def http_dog(self, ctx: Context, *, status_code: int):
         """To understand HTTP Errors, in dog format"""
         await ctx.reply(
-            embed=discord.Embed(
-                timestamp=discord.utils.utcnow(), color=ctx.author.color
-            )
+            embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
             .set_image(url=f"https://httpstatusdogs.com/img/{status_code}.jpg")
             .set_footer(text=f"{ctx.author}")
         )
@@ -1975,18 +1903,14 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def shear(
-        self, ctx: Context, member: discord.Member = None, axis: str = None
-    ):
+    async def shear(self, ctx: Context, member: discord.Member = None, axis: str = None):
         """Shear image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url, "axis": axis if axis else "X"}
         r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
-        file_obj = discord.File(
-            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
-        )
+        file_obj = discord.File(io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif")
         await ctx.reply(file=file_obj)
 
     @commands.command()
@@ -1999,9 +1923,7 @@ class Fun(Cog):
         r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
-        file_obj = discord.File(
-            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
-        )
+        file_obj = discord.File(io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif")
         await ctx.reply(file=file_obj)
 
     @commands.command()
@@ -2051,9 +1973,7 @@ class Fun(Cog):
             "\N{HUNDRED POINTS SYMBOL}",
             "\N{GEM STONE}",
         ]
-        e = discord.PartialEmoji(
-            name="SlotsEmoji", id=923478531873325076, animated=True
-        )
+        e = discord.PartialEmoji(name="SlotsEmoji", id=923478531873325076, animated=True)
         msg: discord.Message = await ctx.send(
             f"""{ctx.author.mention} your slots results:
 > {e} {e} {e}"""
@@ -2130,9 +2050,7 @@ class Fun(Cog):
         If no text is provided, the user's profile picture will be reversed.
         """
         if text:
-            await ctx.send(
-                f"> {text[::-1]}", allowed_mentions=discord.AllowedMentions.none()
-            )
+            await ctx.send(f"> {text[::-1]}", allowed_mentions=discord.AllowedMentions.none())
             return
 
         async with ctx.typing():
@@ -2394,9 +2312,7 @@ class Fun(Cog):
                 title = "Your mosaic avatar"
                 description = f"Here is your avatar. I think it looks a bit *puzzling*\nMade with {squares} squares."
 
-            embed = discord.Embed(
-                title=title, description=description, colour=Colours.blue
-            )
+            embed = discord.Embed(title=title, description=description, colour=Colours.blue)
 
             embed.set_image(url=f"attachment://{file_name}")
             embed.set_footer(
@@ -2588,9 +2504,7 @@ class Fun(Cog):
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
         def check1(r: discord.Reaction, u: discord.User):
-            return (
-                u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
-            )
+            return u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
         try:
             await ctx.bot.wait_for("reaction_add", check=check1, timeout=60)
@@ -2613,9 +2527,7 @@ class Fun(Cog):
         ini = time.perf_counter()
 
         try:
-            msg: discord.Message = await self.bot.wait_for(
-                "message", check=check2, timeout=300
-            )
+            msg: discord.Message = await self.bot.wait_for("message", check=check2, timeout=300)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         fin = time.perf_counter()
@@ -2659,9 +2571,7 @@ class Fun(Cog):
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
         def check_1(r: discord.Reaction, u: discord.User):
-            return (
-                u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
-            )
+            return u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
         try:
             await ctx.bot.wait_for("reaction_add", check=check_1, timeout=60)
@@ -2743,9 +2653,7 @@ class Fun(Cog):
                 r = await self.bot.http_session.get(
                     f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
                 )
-                file = discord.File(
-                    io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
-                )
+                file = discord.File(io.BytesIO(await r.read()), f"{ctx.command.name}.gif")
                 embed = (
                     discord.Embed(timestamp=discord.utils.utcnow()).set_image(
                         url=f"attachment://{ctx.command.name}.gif"
@@ -2782,8 +2690,6 @@ class Fun(Cog):
                 )
                 imageData = io.BytesIO(await response.read())  # read the image/bytes
 
-                await ctx.reply(
-                    file=discord.File(imageData, "gay.png")
-                )  # replying the file
+                await ctx.reply(file=discord.File(imageData, "gay.png"))  # replying the file
 
             self.bot.add_command(callback)

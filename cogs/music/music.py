@@ -526,6 +526,41 @@ class Music(Cog):
             return
         await ctx.send(f"{ctx.author.mention} Invalid link")
 
+    @play.command(
+        name="myplaylist", aliases=["playlist", "myplaylists", "playlists", "mysongs", "mysong"]
+    )
+    async def play_myplaylist(self, ctx: Context, *, playlist: str):
+        """Play a playlist from spotify with the given link"""
+        if ctx.voice_client is None:
+            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+        else:
+            vc: wavelink.Player = ctx.voice_client
+
+        data = await self.bot.mongo.extra.user_misc.find_one(
+            {"_id": ctx.author.id}, {"playlists": 1, "_id": 0}
+        )
+        if data is None or len(data["playlists"]) == 0:
+            return await ctx.send(
+                f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
+            )
+
+        try:
+            self._cache[ctx.guild.id]
+        except KeyError:
+            self._cache[ctx.guild.id] = Queue()
+
+        countr = 0
+
+        for i, song in enumerate(data["playlists"], start=1):
+            if i == 1 and not vc.is_playing():
+                await self.play(ctx, search=song["song_name"])
+            else:
+                track = wavelink.PartialTrack(query=song["song_name"])
+                self._cache[ctx.guild.id].put_nowait(track)
+                countr += 1
+
+        await ctx.send(f"{ctx.author.mention} added **{countr}** to the queue")
+
     @commands.command(aliases=["np"])
     async def nowplaying(self, ctx: Context):
         """Shows the currently playing song"""
@@ -622,26 +657,78 @@ class Music(Cog):
 
         await __interal_skip(ctx=ctx, vc=vc, queue=queue)
 
-    @commands.command(name="queue")
+    @commands.group(name="queue", invoke_without_command=True)
     async def _queue(self, ctx: Context):
         """Shows the current songs queue"""
+        if ctx.invoked_subcommand is None:
+            try:
+                queue = self._cache[ctx.guild.id]
+            except KeyError:
+                self._cache[ctx.guild.id] = Queue()
+                return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
+
+            if queue.empty():
+                return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
+
+            entries = []
+            for track in queue._queue:  # type: ignore
+                if track.uri:
+                    entries.append(f"[{track.title} - {track.author}]({track.uri})")
+                else:
+                    entries.append(f"{track.title} - {track.author}")
+
+            await ctx.paginate(entries=entries, _type="SimplePages")
+
+    @_queue.command(name="clear")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _queue_clear(self, ctx: Context):
+        """Clears the current songs queue"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+        vc: wavelink.Player = ctx.voice_client
+
+        if not vc.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
         try:
             queue = self._cache[ctx.guild.id]
         except KeyError:
             self._cache[ctx.guild.id] = Queue()
-            return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
 
         if queue.empty():
             return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
 
-        entries = []
-        for track in queue._queue:  # type: ignore
-            if track.uri:
-                entries.append(f"[{track.title} - {track.author}]({track.uri})")
-            else:
-                entries.append(f"{track.title} - {track.author}")
+        while not queue.empty():
+            queue.get_nowait()  # type: ignore
 
-        await ctx.paginate(entries=entries, _type="SimplePages")
+        await ctx.send(f"{ctx.author.mention} Cleared the queue.")
+
+    @_queue.command(name="remove")
+    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
+    @in_voice()
+    async def _queue_remove(self, ctx: Context, *, index: int):
+        """Removes a song from the current songs queue"""
+        if ctx.voice_client is None:
+            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
+        vc: wavelink.Player = ctx.voice_client
+
+        if not vc.is_playing():
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+        try:
+            queue = self._cache[ctx.guild.id]
+        except KeyError:
+            self._cache[ctx.guild.id] = Queue()
+
+        if queue.empty():
+            return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
+        q: deque = queue._queue  # type: ignore
+        for i, _ in enumerate(q, start=1):
+            if i == index:
+                q.remove(_)
+                await ctx.send(f"{ctx.author.mention} Removed {_.title} from the queue.")
+                return
+
+        await ctx.send(f"{ctx.author.mention} no track at index {index}")
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())

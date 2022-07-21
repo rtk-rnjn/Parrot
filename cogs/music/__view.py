@@ -80,6 +80,12 @@ class MusicView(discord.ui.View):
                     }
                 }
             },
+            upsert=True,
+        )
+        await self.bot.mongo.extra.songs.update_one(
+            {"id": self.player.track.id},
+            {"$inc": {"likes": 1}},
+            upsert=True,
         )
 
     async def __dislike(self, user: Union[discord.User, discord.Member]):
@@ -94,6 +100,12 @@ class MusicView(discord.ui.View):
                     }
                 }
             },
+            upsert=True,
+        )
+        await self.bot.mongo.extra.songs.update_one(
+            {"id": self.player.track.id},
+            {"$inc": {"dislikes": 1}},
+            upsert=True,
         )
 
     async def __add_to_playlist(self, user: Union[discord.User, discord.Member]):
@@ -108,6 +120,7 @@ class MusicView(discord.ui.View):
                     }
                 }
             },
+            upsert=True,
         )
 
     async def __remove_from_playlist(self, user: Union[discord.User, discord.Member]):
@@ -122,6 +135,7 @@ class MusicView(discord.ui.View):
                     }
                 }
             },
+            upsert=True,
         )
 
     async def __send_interal_error_response(self, interaction: discord.Interaction) -> None:
@@ -179,7 +193,7 @@ class MusicView(discord.ui.View):
     async def downvote(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await self.__dislike(interaction.user)
-        await interaction.response.send_message("Added song to disliked songs.", ephemeral=True)
+        await interaction.response.send_message("Removed song to liked songs.", ephemeral=True)
 
     @discord.ui.button(
         custom_id="PLAY_PAUSE",
@@ -234,7 +248,7 @@ class MusicView(discord.ui.View):
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await self.__add_to_playlist(interaction.user)
-        await interaction.response.send_message("Added song to loved songs.", ephemeral=True)
+        await interaction.response.send_message("Added song to loved songs (Playlist).", ephemeral=True)
 
     @discord.ui.button(
         label="Filter",

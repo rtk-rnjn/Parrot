@@ -29,7 +29,7 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
         await interaction.response.send_message(f"Recieved `{self.name.value}`", ephemeral=True)
 
         try:
-            await self.ctx.invoke(cmd, self.name.value)
+            await self.ctx.invoke(cmd, search=self.name.value)
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
 
@@ -242,10 +242,8 @@ class MusicView(discord.ui.View):
         row=1,
     )
     async def _filter(self, interaction: discord.Interaction, button: discord.ui.Button):
-        msg = await interaction.original_message()
-        embed = msg.embeds[0]
-        await interaction.response.send_message(
-            embed=embed, view=MusicViewFilter(self.vc, timeout=self.timeout, ctx=self.ctx)
+        await interaction.response.edit_message(
+            view=MusicViewFilter(self.vc, timeout=self.timeout, ctx=self.ctx)
         )
 
 

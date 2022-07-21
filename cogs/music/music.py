@@ -764,7 +764,7 @@ class Music(Cog):
             self._cache[player.guild.id] = Queue()
             return
 
-        with suppress(QueueEmpty):
+        with suppress(QueueEmpty, IndexError):
             try:
                 self._config[player.guild.id]
             except KeyError:

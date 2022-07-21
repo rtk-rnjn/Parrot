@@ -276,6 +276,8 @@ class MusicViewFilter(discord.ui.View):
                 _type="Equalizer",
                 timeout=self.timeout,
                 player=self.player,
+                vc=self.vc,
+                ctx=self.ctx,
             )
         )
 
@@ -287,17 +289,40 @@ class MusicViewFilter(discord.ui.View):
                 _type="ChannelMix",
                 timeout=self.timeout,
                 player=self.player,
+                vc=self.vc,
+                ctx=self.ctx,
             )
+        )
+
+    @discord.ui.button(custom_id="BACK", label="Back", style=discord.ButtonStyle.red)
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(
+            view=MusicView(self.vc, timeout=self.timeout, ctx=self.ctx)
         )
 
 
 class _InternalMusicFilterView(discord.ui.View):
     def __init__(
-        self, *, options: List[str], timeout: Optional[float], _type: str, player: wavelink.Player
+        self,
+        *,
+        options: List[str],
+        timeout: Optional[float],
+        _type: str,
+        player: wavelink.Player,
+        vc: discord.VoiceChannel,
+        ctx: Context,
     ):
         super().__init__(timeout=timeout)
         for option in options:
             self.add_item(_InternalMusicFilterButton(_type=_type, label=option, player=player))
+        self.vc = vc
+        self.ctx = ctx
+
+    @discord.ui.button(custom_id="BACK", label="Back", style=discord.ButtonStyle.red)
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(
+            view=MusicViewFilter(self.vc, timeout=self.timeout, ctx=self.ctx)
+        )
 
 
 class _InternalMusicFilterButton(discord.ui.Button["_InternalMusicFilterView"]):
@@ -313,7 +338,7 @@ class _InternalMusicFilterButton(discord.ui.Button["_InternalMusicFilterView"]):
     async def callback(self, interaction: discord.Interaction) -> Any:
         _class = getattr(wavelink, self._type.title())
         _filter = getattr(_class, self._label)
-        await self.player.set_filter(**{self._type: _filter})
+        await self.player.set_filter(wavelink.Filter(**{self._type: _filter}))
 
         await interaction.response.send_message(
             f"Filter added of Type: {self._type}.", ephemeral=True

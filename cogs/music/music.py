@@ -650,7 +650,7 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client  # type: ignore
-        if not (channel.is_playing() or channel.is_paused()):
+        if not channel.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
         await channel.stop()

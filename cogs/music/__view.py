@@ -24,7 +24,7 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
         self.bot = self.ctx.bot
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        await interaction.response.defer()
+
         cmd: commands.Command = self.bot.get_command("play")
         await interaction.response.send_message(f"Recieved `{self.name.value}`", ephemeral=True)
 
@@ -138,7 +138,6 @@ class MusicView(discord.ui.View):
         custom_id="LOOP", emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
     )
     async def loop(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         cmd: commands.Command = self.bot.get_command("loop")
         try:
@@ -152,7 +151,6 @@ class MusicView(discord.ui.View):
         emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY}",
     )
     async def loop_current(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         cmd: commands.Command = self.bot.get_command("loop")
         try:
@@ -163,7 +161,6 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="SHUFFLE", emoji="\N{TWISTED RIGHTWARDS ARROWS}")
     async def shuffle(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         cmd: commands.Command = self.bot.get_command("shuffle")
         try:
@@ -174,14 +171,12 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="UPVOTE", emoji="\N{UPWARDS BLACK ARROW}")
     async def upvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         await self.__like(interaction.user)
         await interaction.response.send_message("Added song to liked songs.", ephemeral=True)
 
     @discord.ui.button(custom_id="DOWNVOTE", emoji="\N{DOWNWARDS BLACK ARROW}")
     async def downvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         await self.__dislike(interaction.user)
         await interaction.response.send_message("Added song to disliked songs.", ephemeral=True)
@@ -192,16 +187,8 @@ class MusicView(discord.ui.View):
         row=1,
     )
     async def play_pause(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        if self.player.is_playing():
-            cmd: commands.Command = self.bot.get_command("pause")
-            try:
-                await self.ctx.invoke(cmd)
-            except commands.CommandError as e:
-                return await self.__send_interal_error_response(interaction)
-            await interaction.response.send_message("Invoked `pause` command.", ephemeral=True)
 
-        elif self.player.is_paused():
+        if self.player.is_paused():
             cmd: commands.Command = self.bot.get_command("resume")  # type: ignore
             try:
                 await self.ctx.invoke(cmd)
@@ -209,12 +196,18 @@ class MusicView(discord.ui.View):
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message("Invoked `resume` command.", ephemeral=True)
 
-        else:
-            await interaction.response.send_modal(ModalInput(self.player, ctx=self.ctx))
+        if self.player.is_playing():
+            cmd: commands.Command = self.bot.get_command("pause")  # type: ignore
+            try:
+                await self.ctx.invoke(cmd)
+            except commands.CommandError as e:
+                return await self.__send_interal_error_response(interaction)
+            await interaction.response.send_message("Invoked `pause` command.", ephemeral=True)
+
+        await interaction.response.send_modal(ModalInput(self.player, ctx=self.ctx))
 
     @discord.ui.button(custom_id="STOP", emoji="\N{BLACK SQUARE FOR STOP}", row=1)
     async def _stop(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         cmd: commands.Command = self.bot.get_command("stop")
         try:
@@ -227,7 +220,6 @@ class MusicView(discord.ui.View):
         custom_id="SKIP", emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}", row=1
     )
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         cmd: commands.Command = self.bot.get_command("skip")
         try:
@@ -238,7 +230,6 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
         await self.__add_to_playlist(interaction.user)
         await interaction.response.send_message("Added song to loved songs.", ephemeral=True)

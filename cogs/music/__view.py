@@ -61,9 +61,9 @@ class MusicView(discord.ui.View):
         self.player: wavelink.Player = self.ctx.voice_client
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user not in self.vc.members:
+        if interaction.user.id not in [i.id for i in self.vc.members]:
             await interaction.response.send_message(
-                "You must be in the bot's voice channel to use this command."
+                "You must be in the bot's voice channel to use this command.", ephemeral=True
             )
             return False
         return True

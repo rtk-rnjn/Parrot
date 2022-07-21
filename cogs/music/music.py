@@ -465,12 +465,8 @@ class Music(Cog):
                 search = wavelink.PartialTrack(query=search)
 
             if vc.is_playing():
-                try:
-                    self._cache[ctx.guild.id]
-                except KeyError:
-                    self._cache[ctx.guild.id] = Queue()
 
-                self._cache[ctx.guild.id].put_nowait(search)
+                vc.queue.put(search)
                 await ctx.send(f"{ctx.author.mention} added **{search.title}** to the queue")
                 return
 
@@ -706,22 +702,21 @@ class Music(Cog):
         if ctx.voice_client is None:
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
-        channel: wavelink.Player = ctx.voice_client  # type: ignore
-        if not channel.is_playing():
+        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
-        await channel.stop()
+        await vc.stop()
         await ctx.send(f"{ctx.author.mention} stopped the music.")
 
-        if queue := self._cache.get(ctx.guild.id):
-            with suppress(QueueEmpty):
-                track = queue.get_nowait()
-                await channel.play(track)
-                await ctx.send(
-                    f"{ctx.author.mention} Now playing",
-                    embed=self.make_embed(ctx, track),
-                )
-                return
+        with suppress(QueueEmpty):
+            track = vc.queue.get()
+            await vc.play(track)
+            await ctx.send(
+                f"{ctx.author.mention} Now playing",
+                embed=self.make_embed(ctx, track),
+            )
+            return
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
@@ -733,7 +728,6 @@ class Music(Cog):
 
         channel: wavelink.Player = ctx.voice_client
         await channel.stop()
-        self._cache[ctx.guild.id] = Queue()
         await ctx.send(f"{ctx.author.mention} cleared the queue.")
 
     @commands.command()

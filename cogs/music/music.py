@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-
 import random
 from asyncio import Queue, QueueEmpty
 from contextlib import suppress
@@ -62,6 +61,27 @@ class Music(Cog):
         if hasattr(track, "thumbnail") and track.thumbnail is not None:
             embed.set_thumbnail(url=track.thumbnail)
 
+        return embed
+
+    async def like_dislike(
+        self,
+        track: wavelink.Track,
+    ) -> Dict[str, int]:
+        data = self.bot.mongo.extra.songs.find_one(
+            {"_id": track.id},
+        )
+        if data is None:
+            return {"likes": 0, "dislikes": 0}
+        return {
+            "likes": data.get("likes", 0),
+            "dislikes": data.get("dislikes", 0),
+        }
+
+    async def make_final_embed(self, *, track: wavelink.Track, ctx: Context) -> discord.Embed:
+        embed = self.make_embed(ctx, track)
+        like_dislike = await self.like_dislike(track)
+        ratio = (like_dislike["likes"] / (like_dislike["likes"] + like_dislike["dislikes"])) * 100
+        embed.add_field(name="Like Rate", value=f"{round(ratio, 2)}%", inline=False)
         return embed
 
     @commands.command()
@@ -474,7 +494,7 @@ class Music(Cog):
             await vc.play(search)
             await ctx.send(
                 f"{ctx.author.mention} Now playing",
-                embed=self.make_embed(ctx, search),
+                embed=await self.make_final_embed(ctx=ctx, track=vc.track),
                 view=MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx),
             )
 
@@ -494,9 +514,10 @@ class Music(Cog):
             if not vc.is_playing():
                 np_track = q.get()
                 await vc.play(np_track)
+
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
-                    embed=self.make_embed(ctx, np_track),
+                    embed=await self.make_final_embed(ctx=ctx, track=vc.track),
                     view=MusicView(
                         ctx.author.voice.channel,
                         timeout=abs(vc.last_position - vc.track.duration),
@@ -522,16 +543,16 @@ class Music(Cog):
             vc: wavelink.Player = ctx.voice_client  # type: ignore
 
         data = await self.bot.mongo.extra.user_misc.find_one(
-            {"_id": ctx.author.id}, {"playlists": 1, "_id": 0}
+            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0}
         )
-        if data is None or len(data["playlists"]) == 0:
+        if data is None or len(data["playlist"]) == 0:
             return await ctx.send(
                 f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
             )
 
         countr = 0
 
-        for i, song in enumerate(data["playlists"], start=1):
+        for i, song in enumerate(data["playlist"], start=1):
             if i == 1 and not vc.is_playing():
                 await self.play(ctx, search=song["song_name"])
             else:
@@ -553,13 +574,31 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
         await ctx.send(
             f"{ctx.author.mention} Now playing",
-            embed=self.make_embed(ctx, vc.track),
+            embed=await self.make_final_embed(ctx=ctx, track=vc.track),
             view=MusicView(
                 ctx.author.voice.channel,
                 timeout=abs(vc.last_position - vc.track.duration),
                 ctx=ctx,
             ),
         )
+
+    @commands.command(name="myplaylist")
+    async def myplaylist(self, ctx: Context):
+        """Shows the songs you loved."""
+        data = await self.bot.mongo.extra.user_misc.find_one(
+            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0}
+        )
+        if data is None or len(data["playlist"]) == 0:
+            return await ctx.send(
+                f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
+            )
+
+        entries = []
+        for song in data["playlist"]:
+            entries.append(
+                f"**[{song['song_name'] or 'Fetching song name Failed'}]({song['url']})**"
+            )
+        await ctx.paginate(entries, per_page=5)
 
     @commands.command(name="next", aliases=["skip"])
     @in_voice()
@@ -584,7 +623,7 @@ class Music(Cog):
                 await vc.play(next_song)
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
-                    embed=self.make_embed(ctx, next_song),
+                    embed=await self.make_final_embed(ctx=ctx, track=vc.track),
                     view=MusicView(
                         ctx.author.voice.channel,
                         timeout=abs(vc.last_position - vc.track.duration),
@@ -715,7 +754,7 @@ class Music(Cog):
             await vc.play(track)
             await ctx.send(
                 f"{ctx.author.mention} Now playing",
-                embed=self.make_embed(ctx, track),
+                embed=await self.make_final_embed(ctx=ctx, track=vc.track),
             )
             return
 
@@ -813,21 +852,21 @@ class Music(Cog):
 
         if reason == "FINISHED":
             try:
-                try:
-                    self._config[player.guild.id]
-                except KeyError:
-                    self._config[player.guild.id] = {}
+                self._config[player.guild.id]
+            except KeyError:
+                self._config[player.guild.id] = {}
 
+            if self._config[player.guild.id].get("loop", False):
                 q: Deque[wavelink.Track] = player.queue._queue  # type: ignore
                 q.rotate(-1)
 
-                if self._config[player.guild.id].get("loop", False):
-                    if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:
-                        await player.play(q[0])
-                    elif self._config[player.guild.id].get("loop_type") == "current":
-                        await player.play(track)
-                else:
+                if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:
+                    await player.play(q[0])
+                elif self._config[player.guild.id].get("loop_type") == "current":
+                    await player.play(track)
+            else:
+                try:
                     track = player.queue.get()
                     await player.play(track)
-            except (QueueEmpty, IndexError):
-                pass
+                except QueueEmpty:
+                    pass

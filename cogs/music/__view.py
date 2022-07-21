@@ -352,7 +352,7 @@ class _InternalMusicFilterButton(discord.ui.Button["_InternalMusicFilterView"]):
     async def callback(self, interaction: discord.Interaction) -> Any:
         _class = getattr(wavelink, self._type.title())
         _filter = getattr(_class, self._label)
-        await self.player.set_filter(wavelink.Filter(**{self._type: _filter}))
+        await self.player.set_filter(wavelink.Filter(**{self._type: _filter()}))
 
         await interaction.response.send_message(
             f"Filter added of Type: {self._type}.", ephemeral=True

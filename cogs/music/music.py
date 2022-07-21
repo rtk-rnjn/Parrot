@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import itertools
+
 import random
 from asyncio import Queue, QueueEmpty
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
+from typing import TYPE_CHECKING, Deque, Dict, Literal, Optional, Union
 
 import arrow
 import discord
@@ -16,8 +16,6 @@ from utilities.checks import in_voice, is_dj
 from wavelink.ext import spotify
 
 if TYPE_CHECKING:
-    from collections import deque
-
     from core import Context, Parrot
 
 from .__flags import (
@@ -39,7 +37,6 @@ class Music(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-        self._cache: Dict[int, Queue[wavelink.Track]] = {}
         self._config: Dict[int, dict] = {}
 
     @property
@@ -82,7 +79,6 @@ class Music(Cog):
 
             await channel.connect(cls=wavelink.Player)
             await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
-            self._cache[ctx.guild.id] = Queue()
             return
 
         vc: wavelink.Player = ctx.voice_client
@@ -136,18 +132,13 @@ class Music(Cog):
         if ctx.voice_client is None:
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
-        channel: wavelink.Player = ctx.voice_client
+        vc: wavelink.Player = ctx.voice_client
 
-        if not channel.is_playing():
+        if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
-        try:
-            self._cache[ctx.guild.id]
-        except KeyError:
-            self._cache[ctx.guild.id] = Queue()
-
-        if queue := self._cache[ctx.guild.id]:
-            if queue.empty():
+        if queue := vc.queue:
+            if queue.is_empty:
                 await ctx.send(f"{ctx.author.mention} queue is empty.")
                 return
 
@@ -500,17 +491,11 @@ class Music(Cog):
 
         with suppress(spotify.SpotifyRequestError):
             tracks = await spotify.SpotifyTrack.search(link)
-            try:
-                q = self._cache[ctx.guild.id]
-            except KeyError:
-                self._cache[ctx.guild.id] = Queue()
-                q = self._cache[ctx.guild.id]
-
-            for track in tracks:
-                q.put_nowait(track)
+            q = vc.queue
+            q.extend(tracks)
 
             if not vc.is_playing():
-                np_track = q.get_nowait()
+                np_track = q.get()
                 await vc.play(np_track)
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
@@ -529,7 +514,10 @@ class Music(Cog):
     @play.command(
         name="myplaylist", aliases=["playlist", "myplaylists", "playlists", "mysongs", "mysong"]
     )
-    async def play_myplaylist(self, ctx: Context, *, playlist: str):
+    async def play_myplaylist(
+        self,
+        ctx: Context,
+    ):
         """Play a playlist from spotify with the given link"""
         if ctx.voice_client is None:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
@@ -544,11 +532,6 @@ class Music(Cog):
                 f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
             )
 
-        try:
-            self._cache[ctx.guild.id]
-        except KeyError:
-            self._cache[ctx.guild.id] = Queue()
-
         countr = 0
 
         for i, song in enumerate(data["playlists"], start=1):
@@ -556,7 +539,7 @@ class Music(Cog):
                 await self.play(ctx, search=song["song_name"])
             else:
                 track = wavelink.PartialTrack(query=song["song_name"])
-                self._cache[ctx.guild.id].put_nowait(track)
+                vc.queue.put(track)
                 countr += 1
 
         await ctx.send(f"{ctx.author.mention} added **{countr}** to the queue")
@@ -591,22 +574,16 @@ class Music(Cog):
 
         if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
-        try:
-            queue = self._cache[ctx.guild.id]
-        except KeyError:
-            self._cache[ctx.guild.id] = Queue()
 
-        if queue.empty():
+        if vc.queue.is_empty:
             return await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")
 
         channel: discord.VoiceChannel = vc.channel
         members = sum(1 for m in channel.members if not m.bot)
 
-        async def __interal_skip(
-            *, ctx: Context, vc: wavelink.Player, queue: Queue[wavelink.Track]
-        ):
+        async def __interal_skip(*, ctx: Context, vc: wavelink.Player):
             with suppress(QueueEmpty):
-                next_song = queue.get_nowait()
+                next_song = vc.queue.get()
                 await vc.play(next_song)
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
@@ -621,7 +598,7 @@ class Music(Cog):
             await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")
 
         if members <= 2:
-            return await __interal_skip(ctx=ctx, vc=vc, queue=queue)
+            return await __interal_skip(ctx=ctx, vc=vc)
 
         if members > 2:
             vote = 1
@@ -653,25 +630,27 @@ class Music(Cog):
 
             if vote >= required_vote:
                 await msg.delete()
-                return await __interal_skip(ctx=ctx, vc=vc, queue=queue)
+                return await __interal_skip(
+                    ctx=ctx,
+                    vc=vc,
+                )
 
-        await __interal_skip(ctx=ctx, vc=vc, queue=queue)
+        await __interal_skip(ctx=ctx, vc=vc)
 
     @commands.group(name="queue", invoke_without_command=True)
     async def _queue(self, ctx: Context):
         """Shows the current songs queue"""
         if ctx.invoked_subcommand is None:
-            try:
-                queue = self._cache[ctx.guild.id]
-            except KeyError:
-                self._cache[ctx.guild.id] = Queue()
-                return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
-
-            if queue.empty():
+            if ctx.voice_client is None:
+                return await ctx.send(
+                    f"{ctx.author.mention} bot is not connected to a voice channel."
+                )
+            vc: wavelink.Player = ctx.voice_client
+            if vc.queue.is_empty:
                 return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
 
             entries = []
-            for track in queue._queue:  # type: ignore
+            for track in vc.queue._queue:  # type: ignore
                 if track.uri:
                     entries.append(f"[{track.title} - {track.author}]({track.uri})")
                 else:
@@ -690,17 +669,10 @@ class Music(Cog):
 
         if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
-        try:
-            queue = self._cache[ctx.guild.id]
-        except KeyError:
-            self._cache[ctx.guild.id] = Queue()
 
-        if queue.empty():
+        if vc.queue.is_empty:
             return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
-
-        while not queue.empty():
-            queue.get_nowait()  # type: ignore
-
+        vc.queue.clear()
         await ctx.send(f"{ctx.author.mention} Cleared the queue.")
 
     @_queue.command(name="remove")
@@ -714,18 +686,14 @@ class Music(Cog):
 
         if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
-        try:
-            queue = self._cache[ctx.guild.id]
-        except KeyError:
-            self._cache[ctx.guild.id] = Queue()
 
-        if queue.empty():
+        if vc.queue.is_empty:
             return await ctx.send(f"{ctx.author.mention} There are no songs in the queue.")
-        q: deque = queue._queue  # type: ignore
-        for i, _ in enumerate(q, start=1):
+        q: Deque[wavelink.Track] = vc.queue._queue  # type: ignore
+        for i, track in enumerate(q, start=1):
             if i == index:
-                q.remove(_)
-                await ctx.send(f"{ctx.author.mention} Removed {_.title} from the queue.")
+                q.remove(track)
+                await ctx.send(f"{ctx.author.mention} Removed **{track.title}** from the queue.")
                 return
 
         await ctx.send(f"{ctx.author.mention} no track at index {index}")
@@ -845,26 +813,26 @@ class Music(Cog):
     async def on_wavelink_track_end(
         self, player: wavelink.Player, track: wavelink.Track, reason: str
     ):
-        try:
-            queue = self._cache[player.guild.id]
-        except KeyError:
-            self._cache[player.guild.id] = Queue()
+        if reason == "STOPPED":
             return
 
-        with suppress(QueueEmpty):
+        if reason == "FINISHED":
             try:
-                self._config[player.guild.id]
-            except KeyError:
-                self._config[player.guild.id] = {}
+                try:
+                    self._config[player.guild.id]
+                except KeyError:
+                    self._config[player.guild.id] = {}
 
-            q: deque = queue._queue  # type: ignore
-            q.rotate(-1)
+                q: Deque[wavelink.Track] = player.queue._queue  # type: ignore
+                q.rotate(-1)
 
-            if self._config[player.guild.id].get("loop", False):
-                if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:
-                    await player.play(q[0])
-                elif self._config[player.guild.id].get("loop_type") == "current":
+                if self._config[player.guild.id].get("loop", False):
+                    if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:
+                        await player.play(q[0])
+                    elif self._config[player.guild.id].get("loop_type") == "current":
+                        await player.play(track)
+                else:
+                    track = player.queue.get()
                     await player.play(track)
-            else:
-                track = queue.get_nowait()
-                await player.play(track)
+            except (QueueEmpty, IndexError):
+                pass

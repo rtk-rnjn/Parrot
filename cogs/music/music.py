@@ -30,6 +30,7 @@ from .__flags import (
     TremoloFlag,
     VibratoFlag,
 )
+from .__view import MusicView
 
 
 class Music(Cog):
@@ -188,7 +189,7 @@ class Music(Cog):
                 )
 
             channel: wavelink.Player = ctx.voice_client
-            await channel.set_filter(_equalizer)
+            await channel.set_filter(wavelink.Filter(equalizer=_equalizer))
             await ctx.send(f"{ctx.author.mention} set the equalizer to **{equalizer}**")
             return
 
@@ -218,7 +219,7 @@ class Music(Cog):
             PAYLOAD["filter_width"] = flag.filter_width
 
         _filter = wavelink.Karaoke(**PAYLOAD)
-        await channel.set_filter(_filter)
+        await channel.set_filter(wavelink.Filter(karaoke=_filter))
         await ctx.send(
             f"{ctx.author.mention} set the karaoke filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
         )
@@ -244,7 +245,7 @@ class Music(Cog):
         if timescale.speed:
             PAYLOAD["speed"] = timescale.speed
 
-        _filter = wavelink.TimeScale(**PAYLOAD)
+        _filter = wavelink.Timescale(**PAYLOAD)
         await channel.set_filter(_filter)
         await ctx.send(
             f"{ctx.author.mention} set the timescale filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
@@ -270,7 +271,7 @@ class Music(Cog):
             PAYLOAD["frequency"] = tremolo.frequency
 
         _filter = wavelink.Tremolo(**PAYLOAD)
-        await channel.set_filter(_filter)
+        await channel.set_filter(wavelink.Filter(tremolo=_filter))
         await ctx.send(
             f"{ctx.author.mention} set the tremolo filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
         )
@@ -295,7 +296,7 @@ class Music(Cog):
             PAYLOAD["frequency"] = flag.frequency
 
         _filter = wavelink.Vibrato(**PAYLOAD)
-        await channel.set_filter(_filter)
+        await channel.set_filter(wavelink.Filter(vibrato=_filter))
         await ctx.send(
             f"{ctx.author.mention} set the vibrato filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
         )
@@ -318,7 +319,7 @@ class Music(Cog):
             PAYLOAD["speed"] = flag.speed
 
         _filter = wavelink.Rotation(**PAYLOAD)
-        await channel.set_filter(_filter)
+        await channel.set_filter(wavelink.Filter(rotation=_filter))
         await ctx.send(
             f"{ctx.author.mention} set the rotation filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
         )
@@ -355,7 +356,7 @@ class Music(Cog):
             PAYLOAD["scale"] = flag.scale
 
         _filter = wavelink.Distortion(**PAYLOAD)
-        await channel.set_filter(_filter)
+        await channel.set_filter(wavelink.Filter(distortion=_filter))
         await ctx.send(
             f"{ctx.author.mention} set the distortion filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
         )
@@ -392,7 +393,7 @@ class Music(Cog):
                 PAYLOAD["right_to_right"] = flag.right_to_right
 
             _filter = wavelink.ChannelMix(**PAYLOAD)
-            await channel.set_filter(_filter)
+            await channel.set_filter(wavelink.Filter(channel_mix=_filter))
             await ctx.send(
                 f"{ctx.author.mention} set the channelmix filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
             )
@@ -438,7 +439,7 @@ class Music(Cog):
             PAYLOAD["smoothing"] = flag.smoothing
 
         _filter = wavelink.LowPass(**PAYLOAD)
-        await channel.set_filter(_filter)
+        await channel.set_filter(wavelink.Filter(low_pass=_filter))
         await ctx.send(
             f"{ctx.author.mention} set the lowpass filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
         )
@@ -510,6 +511,11 @@ class Music(Cog):
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
                     embed=self.make_embed(ctx, np_track),
+                    view=MusicView(
+                        ctx.author.voice.channel,
+                        timeout=vc.last_position - vc.track.duration,
+                        ctx=ctx,
+                    ),
                 )
                 return
             await ctx.send(f"{ctx.author.mention} added **{len(tracks)}** to the queue")
@@ -522,13 +528,16 @@ class Music(Cog):
         if ctx.voice_client is None:
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
-        channel: wavelink.Player = ctx.voice_client
+        vc: wavelink.Player = ctx.voice_client
 
-        if not channel.is_playing():
+        if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
         await ctx.send(
             f"{ctx.author.mention} Now playing",
-            embed=self.make_embed(ctx, channel.track),
+            embed=self.make_embed(ctx, vc.track),
+            view=MusicView(
+                ctx.author.voice.channel, timeout=vc.last_position - vc.track.duration, ctx=ctx
+            ),
         )
 
     @commands.command(aliases=["skip"])

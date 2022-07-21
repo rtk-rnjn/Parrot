@@ -5,7 +5,7 @@ from contextlib import suppress
 import discord
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
-from discord.ext import commands
+from discord.ext import commands, tasks
 from pymongo.collection import Collection
 
 
@@ -13,6 +13,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.collection: Collection = bot.mongo.parrot_db["logging"]
+        self.clear_user_misc.start()
 
     @Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):
@@ -126,6 +127,21 @@ Discriminator: {change.get('before_discriminator')} -> {change('after_discrimina
         )
         await p.start()
 
+    @tasks.loop(hours=1)
+    async def clear_user_misc(self):
+        await self.bot.mongo.extra.user_misc.update_many(
+            {},
+            {
+                "$pull": {
+                    "change": {
+                        "at": {"$lt": discord.utils.utcnow().timestamp() - 43200}
+                    }
+                }
+            },
+        )
 
-async def setup(bot):
+    async def cog_unload(self) -> None:
+        self.clear_user_misc.cancel()
+
+async def setup(bot: Parrot):
     await bot.add_cog(User(bot))

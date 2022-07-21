@@ -443,11 +443,12 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         await ctx.send(f"{ctx.author.mention} disconnected")
 
-        await ctx.voice_client.disconnect()
+        vc: wavelink.Player = ctx.voice_client
+        await vc.disconnect()
 
     @commands.group(invoke_without_command=True)
-    @commands.check_any(in_voice())
     @commands.bot_has_guild_permissions(connect=True)
+    @in_voice()
     async def play(
         self,
         ctx: Context,
@@ -538,7 +539,7 @@ class Music(Cog):
                 vc.queue.put(track)
                 countr += 1
 
-        await ctx.send(f"{ctx.author.mention} added **{countr}** to the queue")
+        await ctx.send(f"{ctx.author.mention} added **{countr} songs** to the queue")
 
     @commands.command(aliases=["np"])
     async def nowplaying(self, ctx: Context):

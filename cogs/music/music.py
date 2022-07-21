@@ -517,7 +517,7 @@ class Music(Cog):
                     embed=self.make_embed(ctx, np_track),
                     view=MusicView(
                         ctx.author.voice.channel,
-                        timeout=vc.last_position - vc.track.duration,
+                        timeout=abs(vc.last_position - vc.track.duration),
                         ctx=ctx,
                     ),
                 )
@@ -540,7 +540,7 @@ class Music(Cog):
             f"{ctx.author.mention} Now playing",
             embed=self.make_embed(ctx, vc.track),
             view=MusicView(
-                ctx.author.voice.channel, timeout=vc.last_position - vc.track.duration, ctx=ctx
+                ctx.author.voice.channel, timeout=abs(vc.last_position - vc.track.duration), ctx=ctx
             ),
         )
 
@@ -574,6 +574,11 @@ class Music(Cog):
                 await ctx.send(
                     f"{ctx.author.mention} Now playing",
                     embed=self.make_embed(ctx, next_song),
+                    view=MusicView(
+                        ctx.author.voice.channel,
+                        timeout=abs(vc.last_position - vc.track.duration),
+                        ctx=ctx,
+                    ),
                 )
                 return
             await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")

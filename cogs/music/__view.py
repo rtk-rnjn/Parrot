@@ -94,7 +94,6 @@ class MusicView(discord.ui.View):
             upsert=True,
         )
 
-
     async def __dislike(self, user: Union[discord.User, discord.Member]):
         result = await self.bot.mongo.extra.user_misc.update_one(
             {"_id": user.id},
@@ -261,7 +260,9 @@ class MusicView(discord.ui.View):
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await self.__add_to_playlist(interaction.user)
-        await interaction.response.send_message("Added song to loved songs (Playlist).", ephemeral=True)
+        await interaction.response.send_message(
+            "Added song to loved songs (Playlist).", ephemeral=True
+        )
 
     @discord.ui.button(
         label="Filter",
@@ -355,7 +356,7 @@ class _InternalMusicFilterView(discord.ui.View):
 class _InternalMusicFilterButton(discord.ui.Button["_InternalMusicFilterView"]):
     def __init__(self, *, _type: str, label: str, player: wavelink.Player):
         super().__init__(
-            label=label.title(),
+            label=label.replace("_", " ").title(),
             style=discord.ButtonStyle.blurple,
         )
         self._type = _type
@@ -363,9 +364,11 @@ class _InternalMusicFilterButton(discord.ui.Button["_InternalMusicFilterView"]):
         self.player = player
 
     async def callback(self, interaction: discord.Interaction) -> Any:
-        _class = getattr(wavelink, self._type.title())
-        _filter = getattr(_class, self._label)
-        await self.player.set_filter(wavelink.Filter(**{self._type: _filter()}))
+        _class = getattr(wavelink, self._type)
+        _filter = getattr(_class, self._label.lower())
+        __type = self._type.lower() if self._type.lower() != "equalizer" else "channel_mix"
+
+        await self.player.set_filter(wavelink.Filter(**{__type: _filter()}))
 
         await interaction.response.send_message(
             f"Filter added of Type: {self._type}.", ephemeral=True

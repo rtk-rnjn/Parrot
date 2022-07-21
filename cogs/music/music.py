@@ -125,7 +125,7 @@ class Music(Cog):
         self._config[ctx.guild.id]["loop"] = not self._config[ctx.guild.id].get("loop", False)
         self._config[ctx.guild.id]["loop_type"] = info
         await ctx.send(
-            f"{ctx.author.mention} looping is now **{'enabled' if self._config[ctx.guild.id]['loop'] else 'disabled'}**"
+            f"{ctx.author.mention} looping is now **{'enabled' if self._config[ctx.guild.id]['loop'] else 'disabled'}**. Type: `{info}`"
         )
 
     @commands.command()
@@ -461,7 +461,7 @@ class Music(Cog):
         self,
         ctx: Context,
         *,
-        search: Union[wavelink.YouTubeTrack, wavelink.SoundCloudTrack, str],
+        search: Union[wavelink.SoundCloudTrack, str],
     ):
         """Play a song with the given search query. If not connected, connect to your voice channel."""
         if ctx.invoked_subcommand is None:
@@ -534,7 +534,7 @@ class Music(Cog):
         if ctx.voice_client is None:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
         else:
-            vc: wavelink.Player = ctx.voice_client
+            vc: wavelink.Player = ctx.voice_client  # type: ignore
 
         data = await self.bot.mongo.extra.user_misc.find_one(
             {"_id": ctx.author.id}, {"playlists": 1, "_id": 0}
@@ -843,7 +843,7 @@ class Music(Cog):
 
     @Cog.listener()
     async def on_wavelink_track_end(
-        self, player: wavelink.Player, track: wavelink.Track, reason: Any
+        self, player: wavelink.Player, track: wavelink.Track, reason: str
     ):
         try:
             queue = self._cache[player.guild.id]
@@ -851,7 +851,7 @@ class Music(Cog):
             self._cache[player.guild.id] = Queue()
             return
 
-        with suppress(QueueEmpty, IndexError):
+        with suppress(QueueEmpty):
             try:
                 self._config[player.guild.id]
             except KeyError:
@@ -861,9 +861,9 @@ class Music(Cog):
             q.rotate(-1)
 
             if self._config[player.guild.id].get("loop", False):
-                if self._config[player.guild.id].get("loop_type", "all") == "all":
+                if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:
                     await player.play(q[0])
-                else:
+                elif self._config[player.guild.id].get("loop_type") == "current":
                     await player.play(track)
             else:
                 track = queue.get_nowait()

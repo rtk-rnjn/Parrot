@@ -540,13 +540,15 @@ class Music(Cog):
             f"{ctx.author.mention} Now playing",
             embed=self.make_embed(ctx, vc.track),
             view=MusicView(
-                ctx.author.voice.channel, timeout=abs(vc.last_position - vc.track.duration), ctx=ctx
+                ctx.author.voice.channel,
+                timeout=abs(vc.last_position - vc.track.duration),
+                ctx=ctx,
             ),
         )
 
-    @commands.command(aliases=["skip"])
+    @commands.command(name="next", aliases=["skip"])
     @in_voice()
-    async def next(self, ctx: Context):
+    async def _next(self, ctx: Context):
         """Skips the currently playing song"""
         if ctx.voice_client is None:
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
@@ -769,10 +771,11 @@ class Music(Cog):
                 self._config[player.guild.id] = {}
 
             q: deque = queue._queue  # type: ignore
+            q.rotate(-1)
 
             if self._config[player.guild.id].get("loop", False):
                 if self._config[player.guild.id].get("loop_type", "all") == "all":
-                    await player.play(itertools.cycle(q))
+                    await player.play(q[0])
                 else:
                     await player.play(track)
             else:

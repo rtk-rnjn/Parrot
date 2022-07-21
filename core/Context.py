@@ -75,6 +75,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
     async def dj_role(
         self,
     ) -> Optional[discord.Role]:
+        if channel := getattr(self.author.voice, "channel"):
+            members = sum(1 for m in channel.members if not m.bot)
+            if members < 2:
+                return self.guild.default_role
+
         perms = self.author.guild_permissions
         if perms.manage_guild or perms.manage_channels:
             return self.guild.default_role

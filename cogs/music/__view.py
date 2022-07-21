@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 import discord
 import wavelink
@@ -195,6 +195,7 @@ class MusicView(discord.ui.View):
             except commands.CommandError as e:
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message("Invoked `resume` command.", ephemeral=True)
+            return
 
         if self.player.is_playing():
             cmd: commands.Command = self.bot.get_command("pause")  # type: ignore
@@ -203,6 +204,7 @@ class MusicView(discord.ui.View):
             except commands.CommandError as e:
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message("Invoked `pause` command.", ephemeral=True)
+            return
 
         await interaction.response.send_modal(ModalInput(self.player, ctx=self.ctx))
 
@@ -234,6 +236,87 @@ class MusicView(discord.ui.View):
         await self.__add_to_playlist(interaction.user)
         await interaction.response.send_message("Added song to loved songs.", ephemeral=True)
 
-    @discord.ui.button(label="Filter", custom_id="FILTER", row=1, disabled=True)
+    @discord.ui.button(
+        label="Filter",
+        custom_id="FILTER",
+        row=1,
+    )
     async def _filter(self, interaction: discord.Interaction, button: discord.ui.Button):
-        ...
+        msg = await interaction.original_message()
+        embed = msg.embeds[0]
+        await interaction.response.send_message(
+            embed=embed, view=MusicViewFilter(self.vc, timeout=self.timeout, ctx=self.ctx)
+        )
+
+
+class MusicViewFilter(discord.ui.View):
+    def __init__(self, vc: discord.VoiceChannel, *, timeout: Optional[float] = None, ctx: Context):
+        super().__init__(timeout=timeout)
+        self.vc = vc
+        self.ctx = ctx
+
+        self.bot: Parrot = self.ctx.bot
+        self.player: wavelink.Player = self.ctx.voice_client
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        dj_role = await self.ctx.dj_role()
+
+        assert hasattr(interaction.user, "roles")
+
+        if dj_role not in interaction.user.roles:  # type: ignore
+            await interaction.response.send_message(
+                "You must have the `DJ` role to use this command.", ephemeral=True
+            )
+            return False
+        return True
+
+    @discord.ui.button(custom_id="EQUALIZER", label="Equalizer", style=discord.ButtonStyle.red)
+    async def equalizer(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(
+            view=_InternalMusicFilterView(
+                options=["boost", "flat", "metal", "piano"],
+                _type="Equalizer",
+                timeout=self.timeout,
+                player=self.player,
+            )
+        )
+
+    @discord.ui.button(custom_id="CHANNELMIX", label="Channel Mix", style=discord.ButtonStyle.red)
+    async def channel_mix(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(
+            view=_InternalMusicFilterView(
+                options=["full_left", "full_right", "mono", "only_left", "only_right", "switch"],
+                _type="ChannelMix",
+                timeout=self.timeout,
+                player=self.player,
+            )
+        )
+
+
+class _InternalMusicFilterView(discord.ui.View):
+    def __init__(
+        self, *, options: List[str], timeout: Optional[float], _type: str, player: wavelink.Player
+    ):
+        super().__init__(timeout=timeout)
+        for option in options:
+            self.add_item(_InternalMusicFilterButton(_type=_type, label=option, player=player))
+
+
+class _InternalMusicFilterButton(discord.ui.Button["_InternalMusicFilterView"]):
+    def __init__(self, *, _type: str, label: str, player: wavelink.Player):
+        super().__init__(
+            label=label.title(),
+            style=discord.ButtonStyle.blurple,
+        )
+        self._type = _type
+        self._label = label
+        self.player = player
+
+    async def callback(self, interaction: discord.Interaction) -> Any:
+        _class = getattr(wavelink, self._type.title())
+        _filter = getattr(_class, self._label)
+        await self.player.set_filter(**{self._type: _filter})
+
+        await interaction.response.send_message(
+            f"Filter added of Type: {self._type}.", ephemeral=True
+        )

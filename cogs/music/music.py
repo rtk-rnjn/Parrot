@@ -484,7 +484,11 @@ class Music(Cog):
                 return
 
             await vc.play(search)
-            await ctx.send(f"{ctx.author.mention} Now playing", embed=self.make_embed(ctx, search))
+            await ctx.send(
+                f"{ctx.author.mention} Now playing",
+                embed=self.make_embed(ctx, search),
+                view=MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx),
+            )
 
     @play.command(name="spotify")
     async def play_spotify(self, ctx: Context, *, link: str):
@@ -641,6 +645,9 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         channel: wavelink.Player = ctx.voice_client  # type: ignore
+        if not (channel.is_playing() and channel.is_paused()):
+            return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
+
         await channel.stop()
         await ctx.send(f"{ctx.author.mention} stopped the music.")
 

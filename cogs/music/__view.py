@@ -243,6 +243,6 @@ class MusicView(discord.ui.View):
         await self.__add_to_playlist(interaction.user)
         await interaction.response.send_message("Added song to loved songs.", ephemeral=True)
 
-    @discord.ui.button(custom_id="FILTER", row=1, disabled=True)
+    @discord.ui.button(label="Filter", custom_id="FILTER", row=1, disabled=True)
     async def _filter(self, interaction: discord.Interaction, button: discord.ui.Button):
         ...

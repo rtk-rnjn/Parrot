@@ -289,7 +289,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             if name != "\U0010ffff":
 
                 cog = bot.get_cog(name)
-                all_commands[cog] = sorted(children)
+                all_commands[cog] = sorted(children, key=lambda c: c.qualified_name)
 
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
         menu.add_categories(all_commands)

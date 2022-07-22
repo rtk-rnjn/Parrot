@@ -20,6 +20,19 @@ from utilities.config import PRIVACY_POLICY, SUPPORT_SERVER, VERSION
 from .robopage import RoboPages
 
 SUPPORT_SERVER_ID = 741614680652644382
+DISPLAY_COG = (
+    "CONFIGURATION",
+    "FUN",
+    "META",
+    "MISC",
+    "MODERATOR",
+    "MUSIC",
+    "NASA",
+    "UTILS",
+    "GAMES",
+    "RTFM",
+    "LOVE",
+)
 
 
 class GroupHelpPageSource(menus.ListPageSource):
@@ -58,19 +71,6 @@ class GroupHelpPageSource(menus.ListPageSource):
             )
 
         return embed
-
-
-DISPLAY_COG = (
-    "CONFIGURATION",
-    "FUN",
-    "META",
-    "MISC",
-    "MODERATOR",
-    "MUSIC",
-    "NASA",
-    "UTILS",
-    "GAMES",
-)
 
 
 class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
@@ -291,7 +291,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 _cmds = [c for c in cog.get_commands() if not c.hidden]
                 if cog is not None and _cmds:
                     all_commands[cog] = sorted(cog.get_commands(), key=lambda c: c.qualified_name)
-            
+
             self.__all_commands = all_commands
 
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)

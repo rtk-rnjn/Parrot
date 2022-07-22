@@ -89,7 +89,7 @@ class Music(Cog):
         data = await self.bot.mongo.extra.songs.find_one(
             {"_id": track.id},
         )
-        if data is None:
+        if not data:
             return {"likes": 0, "dislikes": 0}
         return {
             "likes": data.get("likes", 0),

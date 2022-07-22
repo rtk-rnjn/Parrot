@@ -151,6 +151,7 @@ class MusicView(discord.ui.View):
         )
 
     async def __send_interal_error_response(self, interaction: discord.Interaction) -> None:
+        self.disable_all()
         await interaction.response.send_message(
             "Running `loop` command from the context failed. Possible reasons:\n"
             "• The bot is not in a voice channel.\n"
@@ -233,6 +234,7 @@ class MusicView(discord.ui.View):
             return
 
         await interaction.response.send_modal(ModalInput(self.player, ctx=self.ctx))
+        self.disable_all()
 
     @discord.ui.button(custom_id="STOP", emoji="\N{BLACK SQUARE FOR STOP}", row=1)
     async def _stop(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -242,6 +244,7 @@ class MusicView(discord.ui.View):
             await self.ctx.invoke(cmd)
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
+        self.disable_all()
         await interaction.response.send_message("Invoked `stop` command.", ephemeral=True)
 
     @discord.ui.button(
@@ -263,3 +266,8 @@ class MusicView(discord.ui.View):
         await interaction.response.send_message(
             "Added song to loved songs (Playlist).", ephemeral=True
         )
+    
+    def disable_all(self) -> None:
+        for button in self.children:
+            if isinstance(button, discord.ui.Button):
+                button.disabled = True

@@ -227,8 +227,8 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}")
     async def play(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
         if self.player.is_paused():
+            await interaction.response.defer()
             cmd: commands.Command = self.bot.get_command("resume")  # type: ignore
             try:
                 await self.ctx.invoke(cmd)
@@ -249,6 +249,7 @@ class MusicView(discord.ui.View):
             return await self.__send_interal_error_response(interaction)
         self.disable_all()
         await interaction.response.send_message("Invoked `stop` command.", ephemeral=True)
+        await interaction.edit_original_message(view=self)
 
     @discord.ui.button(
         custom_id="SKIP", emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}", row=1

@@ -248,6 +248,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 "help": "Shows help about the bot, a command, or a category",
             }
         )
+        self.__all_commands: Dict[Cog, List[commands.Command]] = {}
 
     async def on_help_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
@@ -282,17 +283,19 @@ class PaginatedHelpCommand(commands.HelpCommand):
         # entries: List[commands.Command] = await self.filter_commands(
         #     bot.commands, sort=True, key=key
         # )
-        entries = bot.commands
-
-        all_commands: Dict[Cog, List[commands.Command]] = {}
-        for name, children in itertools.groupby(entries, key=key):
-            if name != "\U0010ffff":
-
-                cog = bot.get_cog(name)
-                all_commands[cog] = sorted(children, key=lambda c: c.qualified_name)
+        if not self.__all_commands:
+            entries = bot.cogs
+            all_commands: Dict[Cog, List[commands.Command]] = {}
+            for cog in entries:
+                cog = bot.get_cog(cog)
+                _cmds = [c for c in cog.get_commands() if not c.hidden]
+                if cog is not None and _cmds:
+                    all_commands[cog] = sorted(cog.get_commands(), key=lambda c: c.qualified_name)
+            
+            self.__all_commands = all_commands
 
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
-        menu.add_categories(all_commands)
+        menu.add_categories(self.__all_commands)
         await menu.start()
 
     async def send_cog_help(self, cog: Cog):

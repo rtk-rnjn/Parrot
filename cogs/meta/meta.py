@@ -60,7 +60,17 @@ class GroupHelpPageSource(menus.ListPageSource):
         return embed
 
 
-DISPLAY_COG = ("CONFIG", "FUN", "META", "MISC", "MODERATOR", "MUSIC", "NASA", "UTILS")
+DISPLAY_COG = (
+    "CONFIGURATION",
+    "FUN",
+    "META",
+    "MISC",
+    "MODERATOR",
+    "MUSIC",
+    "NASA",
+    "UTILS",
+    "GAMES",
+)
 
 
 class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
@@ -84,7 +94,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
         )
         for cog, command_ in self.commands.items():
             if (
-                cog.qualified_name.upper() not in DISPLAY_COG
+                cog.qualified_name.upper() in DISPLAY_COG
                 and command_
                 and len(cog.get_commands()) != 0
             ):

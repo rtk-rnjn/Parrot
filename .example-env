@@ -72,3 +72,9 @@ IPC_KEY = ""
 # https://developer.spotify.com/
 SPOTIFY_CLIENT_ID=""
 SPOTIFY_CLIENT_SECRET=""
+
+# Redis
+# https://redislabs.com/
+REDIS_DATABASE=""
+REDIS_ENDPOINT=""
+REDIS_PASSWORD=""

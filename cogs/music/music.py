@@ -30,6 +30,24 @@ from .__flags import (
 from .__view import MusicView
 
 
+def get_emoji_from_like_rate(like_rate: float) -> str:
+    if like_rate <= 0:
+        return "\N{CONFUSED FACE}"
+    if like_rate <= 10:
+        return "\N{SLIGHTLY SMILING FACE}"
+    if like_rate <= 20:
+        return "\N{GRINNING FACE}"
+    if like_rate <= 40:
+        return "\N{SMILING FACE WITH OPEN MOUTH AND SMILING EYES}"
+    if like_rate <= 60:
+        return "\N{RELIEVED FACE}"
+    if like_rate <= 80:
+        return "\N{SMILING FACE WITH SMILING EYES}"
+    if like_rate <= 100:
+        return "\N{SMILING FACE WITH SMILING EYES AND THREE HEARTS}"
+    return ""
+
+
 class Music(Cog):
     """Music related commands."""
 
@@ -55,7 +73,8 @@ class Music(Cog):
         duration = arrow.utcnow().shift(seconds=track.duration).humanize(only_distance=True)
         embed.add_field(name="Duration", value=duration, inline=True)
         embed.set_footer(
-            text=f"Requested by {ctx.author.name}",
+            text="Like ratio is ONLY on bot personal usage. Owner of the bot is nothing to do with"
+            + " it the actual song. We respect every Artist.\nThe ratio updation may be slow",
             icon_url=ctx.author.display_avatar.url,
         )
         if hasattr(track, "thumbnail") and track.thumbnail is not None:
@@ -81,10 +100,16 @@ class Music(Cog):
         embed = self.make_embed(ctx, track)
         like_dislike = await self.like_dislike(track)
         try:
-            ratio = (like_dislike["likes"] / (like_dislike["likes"] + like_dislike["dislikes"])) * 100
+            ratio = (
+                like_dislike["likes"] / (like_dislike["likes"] + like_dislike["dislikes"])
+            ) * 100
         except ZeroDivisionError:
             ratio = 0.0
-        embed.add_field(name="Like Rate", value=f"{round(ratio, 2)}%", inline=False)
+        embed.add_field(
+            name="Like Rate",
+            value=f"{round(ratio, 2)}% {get_emoji_from_like_rate(ratio)}",
+            inline=False,
+        )
         return embed
 
     @commands.command()
@@ -605,8 +630,12 @@ class Music(Cog):
 
     @commands.command(name="next", aliases=["skip"])
     @in_voice()
-    async def _next(self, ctx: Context):
-        """Skips the currently playing song"""
+    async def _next(self, ctx: Context, *, flag: Optional[Literal["--force"]] = None):
+        """Skips the currently playing song
+
+        To force the skip use `$skip --force`. This will skip the song without voting.
+        Force skip can only be used by member with DJ role.
+        """
         if ctx.voice_client is None:
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client
@@ -635,6 +664,17 @@ class Music(Cog):
                 )
                 return
             await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")
+
+        dj_role = await ctx.dj_role()
+        if str(flag).lower() == "--force":
+            if dj_role is not None and dj_role in ctx.author.roles:
+                await __interal_skip(ctx=ctx, vc=vc)
+                return
+            else:
+                await ctx.send(
+                    f"{ctx.author.mention} You don't have the DJ role. You can't force skip."
+                )
+                return
 
         if members <= 2:
             return await __interal_skip(ctx=ctx, vc=vc)
@@ -693,7 +733,7 @@ class Music(Cog):
                 if hasattr(track, "uri"):
                     entries.append(f"[{track.title} - {track.author}]({track.uri})")
                 else:
-                    entries.append(f"{track.title} - {track.author}")
+                    entries.append(f"{track.title} - {getattr(track, 'author', 'Unknown')}")
 
             await ctx.paginate(entries=entries, _type="SimplePages")
 
@@ -752,12 +792,16 @@ class Music(Cog):
         await vc.stop()
         await ctx.send(f"{ctx.author.mention} stopped the music.")
 
-        with suppress(QueueEmpty):
+        if not vc.queue.is_empty:
             track = vc.queue.get()
             await vc.play(track)
             await ctx.send(
                 f"{ctx.author.mention} Now playing",
                 embed=await self.make_final_embed(ctx=ctx, track=vc.track),
+                view=MusicView(
+                    ctx=ctx,
+                    vc=vc,
+                ),
             )
             return
 

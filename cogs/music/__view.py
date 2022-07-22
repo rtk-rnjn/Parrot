@@ -53,7 +53,7 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
 
 class MusicView(discord.ui.View):
     def __init__(self, vc: discord.VoiceChannel, *, timeout: Optional[float] = None, ctx: Context):
-        super().__init__(timeout=timeout)
+        super().__init__(timeout=timeout or 300)
         self.vc = vc
         self.ctx = ctx
 

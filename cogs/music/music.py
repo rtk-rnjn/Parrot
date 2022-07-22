@@ -521,10 +521,11 @@ class Music(Cog):
                 return
 
             await vc.play(search)
-            await ctx.send(
+            view = MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx)
+            view.message = await ctx.send(
                 f"{ctx.author.mention} Now playing",
                 embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-                view=MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx),
+                view=view,
             )
 
     @play.command(name="spotify")
@@ -543,16 +544,17 @@ class Music(Cog):
             if not vc.is_playing():
                 np_track = q.get()
                 await vc.play(np_track)
-
-                await ctx.send(
+                view = MusicView(
+                    ctx.author.voice.channel,
+                    timeout=abs(vc.last_position - vc.track.duration),
+                    ctx=ctx,
+                )
+                view.message = await ctx.send(
                     f"{ctx.author.mention} Now playing",
                     embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-                    view=MusicView(
-                        ctx.author.voice.channel,
-                        timeout=abs(vc.last_position - vc.track.duration),
-                        ctx=ctx,
-                    ),
+                    view=view,
                 )
+
                 return
             await ctx.send(f"{ctx.author.mention} added **{len(tracks)}** to the queue")
             return
@@ -601,14 +603,15 @@ class Music(Cog):
 
         if not vc.is_playing():
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
-        await ctx.send(
+        view = MusicView(
+            ctx.author.voice.channel,
+            timeout=abs(vc.last_position - vc.track.duration),
+            ctx=ctx,
+        )
+        view.message = await ctx.send(
             f"{ctx.author.mention} Now playing",
             embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-            view=MusicView(
-                ctx.author.voice.channel,
-                timeout=abs(vc.last_position - vc.track.duration),
-                ctx=ctx,
-            ),
+            view=view,
         )
 
     @commands.group(name="myplaylist")
@@ -616,7 +619,8 @@ class Music(Cog):
         """Shows the songs you loved."""
         col: Collection = self.bot.mongo.extra.user_misc
         data = await col.find_one(  # type: ignore
-            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0},
+            {"_id": ctx.author.id, "playlist": {"$exists": True}},
+            {"playlist": 1, "_id": 0},
         )
         if data is None or len(data["playlist"]) == 0:
             return await ctx.send(
@@ -635,7 +639,8 @@ class Music(Cog):
         """Removes the song from your playlist"""
         col: Collection = self.bot.mongo.extra.user_misc
         data = await col.find_one(  # type: ignore
-            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0},
+            {"_id": ctx.author.id, "playlist": {"$exists": True}},
+            {"playlist": 1, "_id": 0},
         )
         if data is None or len(data["playlist"]) == 0:
             return await ctx.send(
@@ -659,9 +664,9 @@ class Music(Cog):
                 },
                 return_document=True,
             )
-            for index, song in enumerate(data['playlist'], start=1):
+            for index, song in enumerate(data["playlist"], start=1):
                 if index == index_or_name:
-                    data['playlist'].pop(index - 1)
+                    data["playlist"].pop(index - 1)
                     return await ctx.send(
                         f"{ctx.author.mention} Removed **{song['song_name']}** from your playlist"
                     )
@@ -696,14 +701,12 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} Failed to add song to playlist")
 
         await ctx.send(f"{ctx.author.mention} Added song to playlist")
-    
+
     @myplaylist.command(name="clear", aliases=["deleteall", "delall"])
     async def myplaylist_clear(self, ctx: Context):
         """Clears the playlist"""
         data = await self.bot.mongo.extra.user_misc.update_one(
-            {"_id": ctx.author.id},
-            {"$set": {"playlist": []}},
-            upsert=True
+            {"_id": ctx.author.id}, {"$set": {"playlist": []}}, upsert=True
         )
         if data.modified_count == 0:
             return await ctx.send(f"{ctx.author.mention} Failed to clear playlist")
@@ -735,14 +738,15 @@ class Music(Cog):
             with suppress(QueueEmpty):
                 next_song = vc.queue.get()
                 await vc.play(next_song)
-                await ctx.send(
+                view = MusicView(
+                    ctx.author.voice.channel,
+                    timeout=abs(vc.last_position - vc.track.duration),
+                    ctx=ctx,
+                )
+                view.message = await ctx.send(
                     f"{ctx.author.mention} Now playing",
                     embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-                    view=MusicView(
-                        ctx.author.voice.channel,
-                        timeout=abs(vc.last_position - vc.track.duration),
-                        ctx=ctx,
-                    ),
+                    view=view,
                 )
                 return
             await ctx.send(f"{ctx.author.mention} There are no more songs in the queue.")
@@ -877,13 +881,15 @@ class Music(Cog):
         if not vc.queue.is_empty:
             track = vc.queue.get()
             await vc.play(track)
-            await ctx.send(
+            view = MusicView(
+                ctx.author.voice.channel,
+                timeout=abs(vc.last_position - vc.track.duration),
+                ctx=ctx,
+            )
+            view.message = await ctx.send(
                 f"{ctx.author.mention} Now playing",
                 embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-                view=MusicView(
-                    ctx=ctx,
-                    vc=vc,
-                ),
+                view=view,
             )
             return
 

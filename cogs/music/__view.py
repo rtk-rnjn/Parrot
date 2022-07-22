@@ -52,6 +52,8 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
 
 
 class MusicView(discord.ui.View):
+    message: Optional[discord.Message]
+
     def __init__(self, vc: discord.VoiceChannel, *, timeout: Optional[float] = None, ctx: Context):
         super().__init__(timeout=timeout or 300)
         self.vc = vc
@@ -257,6 +259,7 @@ class MusicView(discord.ui.View):
             await self.ctx.invoke(cmd)
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
+        self.disable_all()
         await interaction.response.send_message("Invoked `skip` command.", ephemeral=True)
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)
@@ -266,8 +269,13 @@ class MusicView(discord.ui.View):
         await interaction.response.send_message(
             "Added song to loved songs (Playlist).", ephemeral=True
         )
-    
+
     def disable_all(self) -> None:
         for button in self.children:
             if isinstance(button, discord.ui.Button):
                 button.disabled = True
+
+    async def on_timeout(self) -> None:
+        self.disable_all()
+        if hasattr(self, "message"):
+            await self.message.edit(view=self)  # type: ignore

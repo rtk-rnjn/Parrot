@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from asyncio import QueueEmpty
+from wavelink import QueueEmpty
 from contextlib import suppress
 from typing import TYPE_CHECKING, Deque, Dict, Literal, Optional, Union
 
@@ -666,6 +666,9 @@ class Music(Cog):
             for index, song in enumerate(data["playlist"], start=1):
                 if index == index_or_name:
                     data["playlist"].pop(index - 1)
+                    await col.update_one(
+                        {"_id": ctx.author.id}, {"$set": {"playlist": data["playlist"]}}
+                    )
                     return await ctx.send(
                         f"{ctx.author.mention} Removed **{song['song_name']}** from your playlist"
                     )

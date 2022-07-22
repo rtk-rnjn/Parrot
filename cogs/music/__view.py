@@ -190,6 +190,11 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="SHUFFLE", emoji="\N{TWISTED RIGHTWARDS ARROWS}")
     async def shuffle(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.player.queue.is_empty:
+            return await interaction.response.send_message(
+                "There is no music to shuffle.", ephemeral=True
+            )
+
         await interaction.response.defer()
         cmd: commands.Command = self.bot.get_command("shuffle")
         try:
@@ -200,13 +205,11 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="UPVOTE", emoji="\N{THUMBS UP SIGN}")
     async def upvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
         await self.__like(interaction.user)
         await interaction.response.send_message("Added song to liked songs.", ephemeral=True)
 
     @discord.ui.button(custom_id="DOWNVOTE", emoji="\N{THUMBS DOWN SIGN}")
     async def downvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
         await self.__dislike(interaction.user)
         await interaction.response.send_message("Removed song to liked songs.", ephemeral=True)
 
@@ -217,19 +220,21 @@ class MusicView(discord.ui.View):
     )
     async def play_pause(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.player.is_playing():
-            cmd: commands.Command = self.bot.get_command("pause")  # type: ignore
+            await interaction.response.defer()
+            cmd: commands.Command = self.bot.get_command("pause")
             try:
                 await self.ctx.invoke(cmd)
             except commands.CommandError as e:
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message("Invoked `pause` command.", ephemeral=True)
             return
+        await interaction.response.send_message("There is no music to pause.", ephemeral=True)
 
     @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}")
     async def play(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.player.is_paused():
             await interaction.response.defer()
-            cmd: commands.Command = self.bot.get_command("resume")  # type: ignore
+            cmd: commands.Command = self.bot.get_command("resume")
             try:
                 await self.ctx.invoke(cmd)
             except commands.CommandError as e:
@@ -248,22 +253,22 @@ class MusicView(discord.ui.View):
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
         self.disable_all()
-        await interaction.response.send_message("Invoked `stop` command.", ephemeral=True)
         await interaction.edit_original_message(view=self)
 
     @discord.ui.button(
         custom_id="SKIP", emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}", row=1
     )
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
-
         cmd: commands.Command = self.bot.get_command("skip")
         try:
             await self.ctx.invoke(cmd)
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
-        self.disable_all()
+        if self.player.queue.is_empty:
+            self.stop()
+            await interaction.delete_original_message()
+            return
         await interaction.response.send_message("Invoked `skip` command.", ephemeral=True)
-        await interaction.edit_original_message(view=self)
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):

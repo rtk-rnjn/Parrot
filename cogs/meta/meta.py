@@ -80,7 +80,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
             description="The help page showing how to use the bot.",
         )
         for cog, command_ in self.commands.items():
-            if not command_:
+            if not command_ or len(cog.get_commands()) == 0:
                 continue
             description = cog.description.split("\n", 1)[0] or None
             emoji = getattr(cog, "display_emoji", None)

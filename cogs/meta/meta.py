@@ -60,6 +60,9 @@ class GroupHelpPageSource(menus.ListPageSource):
         return embed
 
 
+DISPLAY_COG = ("CONFIG", "FUN", "META", "MISC", "MODERATOR", "MUSIC", "NASA", "UTILS")
+
+
 class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
     def __init__(self, commands_list: Dict[Cog, List[commands.Command]], bot: Parrot):
         super().__init__(
@@ -80,7 +83,11 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
             description="The help page showing how to use the bot.",
         )
         for cog, command_ in self.commands.items():
-            if not command_ or len(cog.get_commands()) == 0:
+            if (
+                cog.qualified_name.upper() not in DISPLAY_COG
+                and not command_
+                or len(cog.get_commands()) == 0
+            ):
                 continue
             description = cog.description.split("\n", 1)[0] or None
             emoji = getattr(cog, "display_emoji", None)

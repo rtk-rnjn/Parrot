@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from asyncio import Queue, QueueEmpty
+from asyncio import QueueEmpty
 from contextlib import suppress
 from typing import TYPE_CHECKING, Deque, Dict, Literal, Optional, Union
 
@@ -11,6 +11,7 @@ import discord
 import wavelink
 from core import Cog
 from discord.ext import commands
+from pymongo.collection import Collection
 from utilities.checks import in_voice, is_dj
 from wavelink.ext import spotify
 
@@ -610,11 +611,12 @@ class Music(Cog):
             ),
         )
 
-    @commands.command(name="myplaylist")
+    @commands.group(name="myplaylist")
     async def myplaylist(self, ctx: Context):
         """Shows the songs you loved."""
-        data = await self.bot.mongo.extra.user_misc.find_one(
-            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0}
+        col: Collection = self.bot.mongo.extra.user_misc
+        data = await col.find_one(  # type: ignore
+            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0},
         )
         if data is None or len(data["playlist"]) == 0:
             return await ctx.send(
@@ -627,6 +629,86 @@ class Music(Cog):
                 f"**[{song['song_name'] or 'Fetching song name Failed'}]({song['url']})**"
             )
         await ctx.paginate(entries, per_page=5)
+
+    @myplaylist.command(name="remove", aliases=["delete", "del"])
+    async def myplaylist_remove(self, ctx: Context, index_or_name: Union[int, str]):
+        """Removes the song from your playlist"""
+        col: Collection = self.bot.mongo.extra.user_misc
+        data = await col.find_one(  # type: ignore
+            {"_id": ctx.author.id, "playlist": {"$exists": True}}, {"playlist": 1, "_id": 0},
+        )
+        if data is None or len(data["playlist"]) == 0:
+            return await ctx.send(
+                f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
+            )
+        if isinstance(index_or_name, int):
+            if index_or_name > len(data["playlist"]) or index_or_name < 1:
+                return await ctx.send(f"{ctx.author.mention} Invalid index")
+            col = self.bot.mongo.extra.user_misc
+            data = await col.find_one_and_update(
+                {
+                    "_id": ctx.author.id,
+                },
+                {
+                    "$push": {
+                        "playlist": {
+                            "$each": [],
+                            "$sort": {"song_name": 1},
+                        }
+                    }
+                },
+                return_document=True,
+            )
+            for index, song in enumerate(data['playlist'], start=1):
+                if index == index_or_name:
+                    data['playlist'].pop(index - 1)
+                    return await ctx.send(
+                        f"{ctx.author.mention} Removed **{song['song_name']}** from your playlist"
+                    )
+
+        if isinstance(index_or_name, str):
+            await col.update_one(  # type: ignore
+                {"_id": ctx.author.id},
+                {"$pull": {"playlist": {"_id": index_or_name}}},
+            )
+            await ctx.send(f"{ctx.author.mention} Removed song from playlist")
+
+    @myplaylist.command(name="add", aliases=["addsong", "add_song"])
+    async def myplaylist_add(self, ctx: Context, *, track: Union[wavelink.SoundCloudTrack, str]):
+        """Add song in the playlist"""
+        if isinstance(track, str):
+            track = wavelink.PartialTrack(query=track)
+
+        data = await self.bot.mongo.extra.user_misc.update_one(
+            {"_id": ctx.author.id},
+            {
+                "$addToSet": {
+                    "playlist": {
+                        "id": track.id,
+                        "song_name": getattr(track, "title"),
+                        "url": getattr(track, "uri"),
+                    }
+                }
+            },
+            upsert=True,
+        )
+        if data.modified_count == 0:
+            return await ctx.send(f"{ctx.author.mention} Failed to add song to playlist")
+
+        await ctx.send(f"{ctx.author.mention} Added song to playlist")
+    
+    @myplaylist.command(name="clear", aliases=["deleteall", "delall"])
+    async def myplaylist_clear(self, ctx: Context):
+        """Clears the playlist"""
+        data = await self.bot.mongo.extra.user_misc.update_one(
+            {"_id": ctx.author.id},
+            {"$set": {"playlist": []}},
+            upsert=True
+        )
+        if data.modified_count == 0:
+            return await ctx.send(f"{ctx.author.mention} Failed to clear playlist")
+
+        await ctx.send(f"{ctx.author.mention} Cleared playlist")
 
     @commands.command(name="next", aliases=["skip"])
     @in_voice()

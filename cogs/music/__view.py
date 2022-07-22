@@ -216,19 +216,6 @@ class MusicView(discord.ui.View):
         row=1,
     )
     async def play_pause(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        if self.player.is_paused():
-            cmd: commands.Command = self.bot.get_command("resume")  # type: ignore
-            try:
-                await self.ctx.invoke(cmd)
-            except commands.CommandError as e:
-                return await self.__send_interal_error_response(interaction)
-            await interaction.response.send_message("Invoked `resume` command.", ephemeral=True)
-            return
-
-    @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}")
-    async def play(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
         if self.player.is_playing():
             cmd: commands.Command = self.bot.get_command("pause")  # type: ignore
             try:
@@ -236,6 +223,18 @@ class MusicView(discord.ui.View):
             except commands.CommandError as e:
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message("Invoked `pause` command.", ephemeral=True)
+            return
+
+    @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}")
+    async def play(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        if self.player.is_paused():
+            cmd: commands.Command = self.bot.get_command("resume")  # type: ignore
+            try:
+                await self.ctx.invoke(cmd)
+            except commands.CommandError as e:
+                return await self.__send_interal_error_response(interaction)
+            await interaction.response.send_message("Invoked `resume` command.", ephemeral=True)
             return
 
         await interaction.response.send_modal(ModalInput(self.player, ctx=self.ctx))

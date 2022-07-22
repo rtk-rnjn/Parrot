@@ -277,8 +277,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         def key(command: commands.Command) -> str:
             cog: Cog = command.cog
-            if str(cog).lower() == "jishaku":
-                return "\U0010ffff"
             return cog.qualified_name if cog else "\U0010ffff"
 
         # entries: List[commands.Command] = await self.filter_commands(
@@ -292,8 +290,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 continue
 
             cog = bot.get_cog(name)
-            if cog.get_commands():
-                all_commands[cog] = sorted(children, key=lambda c: c.qualified_name)
+            all_commands[cog] = sorted(children, key=lambda c: c.qualified_name)
 
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
         menu.add_categories(all_commands)

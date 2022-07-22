@@ -310,7 +310,7 @@ class CalculatorView(discord.ui.View):
         ...
 
     @discord.ui.button(
-        label="Change To Scientific Calculator", style=discord.ButtonStyle.red, row=4
+        label="Change to Scientific Calculator", style=discord.ButtonStyle.red, row=4
     )
     async def __button_scientific(
         self, interaction: discord.Interaction, button: discord.ui.Button
@@ -344,7 +344,7 @@ class ScientificCalculator(discord.ui.View):
             return False
         return True
 
-    @discord.ui.button(label="Clear", style=discord.ButtonStyle.red, row=0)
+    @discord.ui.button(label="C", style=discord.ButtonStyle.red, row=0)
     async def __button_c(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):

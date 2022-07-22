@@ -67,7 +67,7 @@ class Music(Cog):
         self,
         track: wavelink.Track,
     ) -> Dict[str, int]:
-        data = self.bot.mongo.extra.songs.find_one(
+        data = await self.bot.mongo.extra.songs.find_one(
             {"_id": track.id},
         )
         if data is None:

@@ -26,7 +26,6 @@ parsedatetime
 brotli
 aiodns
 orjson
-cchardet
 topggpy
 rapidfuzz
 chess

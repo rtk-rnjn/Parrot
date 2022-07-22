@@ -198,21 +198,21 @@ class MusicView(discord.ui.View):
             return await self.__send_interal_error_response(interaction)
         await interaction.response.send_message("Invoked `shuffle` command.", ephemeral=True)
 
-    @discord.ui.button(custom_id="UPVOTE", emoji="\N{UPWARDS BLACK ARROW}")
+    @discord.ui.button(custom_id="UPVOTE", emoji="\N{THUMBS UP SIGN}")
     async def upvote(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         await self.__like(interaction.user)
         await interaction.response.send_message("Added song to liked songs.", ephemeral=True)
 
-    @discord.ui.button(custom_id="DOWNVOTE", emoji="\N{DOWNWARDS BLACK ARROW}")
+    @discord.ui.button(custom_id="DOWNVOTE", emoji="\N{THUMBS DOWN SIGN}")
     async def downvote(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         await self.__dislike(interaction.user)
         await interaction.response.send_message("Removed song to liked songs.", ephemeral=True)
 
     @discord.ui.button(
-        custom_id="PLAY_PAUSE",
-        emoji="\N{BLACK RIGHT-POINTING TRIANGLE WITH DOUBLE VERTICAL BAR}",
+        custom_id="PAUSE",
+        emoji="\N{DOUBLE VERTICAL BAR}",
         row=1,
     )
     async def play_pause(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -226,6 +226,9 @@ class MusicView(discord.ui.View):
             await interaction.response.send_message("Invoked `resume` command.", ephemeral=True)
             return
 
+    @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}")
+    async def play(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         if self.player.is_playing():
             cmd: commands.Command = self.bot.get_command("pause")  # type: ignore
             try:
@@ -236,7 +239,6 @@ class MusicView(discord.ui.View):
             return
 
         await interaction.response.send_modal(ModalInput(self.player, ctx=self.ctx))
-        self.disable_all()
 
     @discord.ui.button(custom_id="STOP", emoji="\N{BLACK SQUARE FOR STOP}", row=1)
     async def _stop(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -261,6 +263,7 @@ class MusicView(discord.ui.View):
             return await self.__send_interal_error_response(interaction)
         self.disable_all()
         await interaction.response.send_message("Invoked `skip` command.", ephemeral=True)
+        await interaction.edit_original_message(view=self)
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):

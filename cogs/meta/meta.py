@@ -261,7 +261,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         def key(command: commands.Command) -> str:
             cog: Cog = command.cog
-            if cog.qulified_name.lower() == "jishaku":
+            if str(cog).lower() == "jishaku":
                 return "\U0010ffff"
             return cog.qualified_name if cog else "\U0010ffff"
 

@@ -80,7 +80,10 @@ class Music(Cog):
     async def make_final_embed(self, *, track: wavelink.Track, ctx: Context) -> discord.Embed:
         embed = self.make_embed(ctx, track)
         like_dislike = await self.like_dislike(track)
-        ratio = (like_dislike["likes"] / (like_dislike["likes"] + like_dislike["dislikes"])) * 100
+        try:
+            ratio = (like_dislike["likes"] / (like_dislike["likes"] + like_dislike["dislikes"])) * 100
+        except ZeroDivisionError:
+            ratio = 0.0
         embed.add_field(name="Like Rate", value=f"{round(ratio, 2)}%", inline=False)
         return embed
 

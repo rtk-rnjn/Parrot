@@ -74,8 +74,7 @@ class Music(Cog):
         duration = arrow.utcnow().shift(seconds=track.duration).humanize(only_distance=True)
         embed.add_field(name="Duration", value=duration, inline=True)
         embed.set_footer(
-            text="Like ratio is ONLY on bot personal usage. Owner of the bot is nothing to do with"
-            + " it the actual song. We respect every Artist.\nThe ratio updation may be slow",
+            text=f"Requested by {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
         if hasattr(track, "thumbnail") and track.thumbnail is not None:

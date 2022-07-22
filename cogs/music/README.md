@@ -1,6 +1,6 @@
 # `Lavalink.jar`
 
-Install the latest release of [lavalink](https://github.com/freyacodes/Lavalink/releases) from there official repository.
+Download the latest release of [lavalink](https://github.com/freyacodes/Lavalink/releases) from there official repository.
 
 ---
 

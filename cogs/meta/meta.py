@@ -286,11 +286,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         all_commands: Dict[Cog, List[commands.Command]] = {}
         for name, children in itertools.groupby(entries, key=key):
-            if name == "\U0010ffff":
-                continue
+            if name != "\U0010ffff":
 
-            cog = bot.get_cog(name)
-            all_commands[cog] = sorted(children, key=lambda c: c.qualified_name)
+                cog = bot.get_cog(name)
+                all_commands[cog] = sorted(children)
 
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
         menu.add_categories(all_commands)

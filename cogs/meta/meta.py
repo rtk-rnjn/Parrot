@@ -85,18 +85,17 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
         for cog, command_ in self.commands.items():
             if (
                 cog.qualified_name.upper() not in DISPLAY_COG
-                and not command_
-                or len(cog.get_commands()) == 0
+                and command_
+                and len(cog.get_commands()) != 0
             ):
-                continue
-            description = cog.description.split("\n", 1)[0] or None
-            emoji = getattr(cog, "display_emoji", None)
-            self.add_option(
-                label=cog.qualified_name,
-                value=cog.qualified_name,
-                description=description,
-                emoji=emoji,
-            )
+                description = cog.description.split("\n", 1)[0] or None
+                emoji = getattr(cog, "display_emoji", None)
+                self.add_option(
+                    label=cog.qualified_name,
+                    value=cog.qualified_name,
+                    description=description,
+                    emoji=emoji,
+                )
 
     async def callback(self, interaction: discord.Interaction):
         if self.view is None:

@@ -112,9 +112,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
                 )
                 return
 
-            source = GroupHelpPageSource(
-                cog, commands, prefix=self.view.ctx.clean_prefix
-            )
+            source = GroupHelpPageSource(cog, commands, prefix=self.view.ctx.clean_prefix)
             await self.view.rebind(source, interaction)
 
 
@@ -213,9 +211,7 @@ class HelpMenu(RoboPages):
         self.add_item(HelpSelectMenu(commands_list, self.ctx.bot))
         self.fill_items()
 
-    async def rebind(
-        self, source: menus.PageSource, interaction: discord.Interaction
-    ) -> None:
+    async def rebind(self, source: menus.PageSource, interaction: discord.Interaction) -> None:
         self.source = source
         self.current_page = 0
 
@@ -240,17 +236,14 @@ class PaginatedHelpCommand(commands.HelpCommand):
     async def on_help_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             # Ignore missing permission errors
-            if (
-                isinstance(error.original, discord.HTTPException)
-                and error.original.code == 50013
-            ):
+            if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
                 return
 
             await ctx.send(
                 f"Well this is embarrassing. Please tell this to developer {error.original}"
             )
 
-    def get_command_signature(self, command):
+    def get_command_signature(self, command: commands.Command):
         parent = command.full_parent_name
         if len(command.aliases) > 0:
             aliases = "|".join(command.aliases)
@@ -266,13 +259,14 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await self.context.typing()
         bot = self.context.bot
 
-        def key(command) -> str:
+        def key(command: commands.Command) -> str:
             cog = command.cog
             return cog.qualified_name if cog else "\U0010ffff"
 
-        entries: List[commands.Command] = await self.filter_commands(
-            bot.commands, sort=True, key=key
-        )
+        # entries: List[commands.Command] = await self.filter_commands(
+        #     bot.commands, sort=True, key=key
+        # )
+        entries = bot.commands
 
         all_commands: Dict[Cog, List[commands.Command]] = {}
         for name, children in itertools.groupby(entries, key=key):
@@ -286,9 +280,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
         menu.add_categories(all_commands)
         await menu.start()
 
-    async def send_cog_help(self, cog):
+    async def send_cog_help(self, cog: Cog):
         await self.context.typing()
-        entries = await self.filter_commands(cog.get_commands(), sort=True)
+        # entries = await self.filter_commands(cog.get_commands(), sort=True)
+        entries = cog.get_commands()
         menu = HelpMenu(
             GroupHelpPageSource(cog, entries, prefix=self.context.clean_prefix),
             ctx=self.context,
@@ -333,9 +328,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
     async def send_command_help(self, command):
         await self.context.typing()
         # No pagination necessary for a single command.
-        embed = discord.Embed(
-            colour=discord.Color.blue(), timestamp=discord.utils.utcnow()
-        )
+        embed = discord.Embed(colour=discord.Color.blue(), timestamp=discord.utils.utcnow())
         embed.set_thumbnail(url=self.context.me.display_avatar.url)
         embed.set_footer(
             text=f"{self.context.author}",
@@ -344,18 +337,16 @@ class PaginatedHelpCommand(commands.HelpCommand):
         self.common_command_formatting(embed, command, message=self.context.message)
         await self.context.send(embed=embed)
 
-    async def send_group_help(self, group):
+    async def send_group_help(self, group: commands.Group):
         try:
             await self.context.typing()
         except discord.Forbidden:
-            await self.context.reply(
-                f"{self.context.author.mention} preparing help menu..."
-            )
+            await self.context.reply(f"{self.context.author.mention} preparing help menu...")
         subcommands = group.commands
         if len(subcommands) == 0:
             return await self.send_command_help(group)
-
-        entries = await self.filter_commands(subcommands, sort=True)
+        entries = subcommands
+        # entries = await self.filter_commands(subcommands, sort=True)
         if len(entries) == 0:
             return await self.send_command_help(group)
 
@@ -535,12 +526,8 @@ class Meta(Cog):
             embed.add_field(name="Features", value="\n".join(info))
 
         if guild.premium_tier != 0:
-            boosts = (
-                f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"
-            )
-            last_boost = max(
-                guild.members, key=lambda m: m.premium_since or guild.created_at
-            )
+            boosts = f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"
+            last_boost = max(guild.members, key=lambda m: m.premium_since or guild.created_at)
             if last_boost.premium_since is not None:
                 boosts = f"{boosts}\nLast Boost: {last_boost} ({discord.utils.format_dt(last_boost.premium_since, 'R')})"
             embed.add_field(name="Boosts", value=boosts, inline=True)
@@ -573,9 +560,7 @@ class Meta(Cog):
                 inline=True,
             )
         if ctx.guild.me.guild_permissions.manage_guild:
-            embed.add_field(
-                name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True
-            )
+            embed.add_field(name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True)
 
         if ctx.guild.banner:
             embed.set_image(url=ctx.guild.banner.url)
@@ -585,25 +570,17 @@ class Meta(Cog):
     def format_commit(self, commit):
         short, _, _ = commit.message.partition("\n")
         short_sha2 = commit.hex[0:6]
-        commit_tz = datetime.timezone(
-            datetime.timedelta(minutes=commit.commit_time_offset)
-        )
-        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(
-            commit_tz
-        )
+        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
+        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
 
         # [`hash`](url) message (offset)
-        offset = discord.utils.format_dt(
-            commit_time.astimezone(datetime.timezone.utc), "R"
-        )
+        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
         return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})"
 
     def get_last_commits(self, count=3):
         repo = pygit2.Repository(".git")
         commits = list(
-            itertools.islice(
-                repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count
-            )
+            itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count)
         )
         return "\n".join(self.format_commit(c) for c in commits)
 
@@ -646,25 +623,17 @@ class Meta(Cog):
                 elif isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
                     voice += 1
 
-        embed.add_field(
-            name="Members", value=f"{total_members} total\n{total_unique} unique"
-        )
-        embed.add_field(
-            name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice"
-        )
+        embed.add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
+        embed.add_field(name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice")
         process = psutil.Process()
         memory_usage = process.memory_full_info().uss / 1024**2
         cpu_usage = process.cpu_percent() / psutil.cpu_count()
-        embed.add_field(
-            name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU"
-        )
+        embed.add_field(name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
 
         version = discord_version
         embed.add_field(name="Guilds", value=guilds)
         embed.add_field(name="Bot Version", value=VERSION)
-        embed.add_field(
-            name="Uptime", value=discord.utils.format_dt(self.bot.uptime, "R")
-        )
+        embed.add_field(name="Uptime", value=discord.utils.format_dt(self.bot.uptime, "R"))
         embed.set_footer(
             text=f"Made with discord.py v{version}",
             icon_url="http://i.imgur.com/5BFecvA.png",
@@ -896,9 +865,7 @@ class Meta(Cog):
     @commands.command(hidden=True)
     async def hello(self, ctx: Context):
         """Displays my intro message."""
-        await ctx.reply(
-            f"Hello! {self.bot.user} is a robot. `{self.bot.author_name}` made me."
-        )
+        await ctx.reply(f"Hello! {self.bot.user} is a robot. `{self.bot.author_name}` made me.")
 
     @commands.command(rest_is_raw=True, hidden=True)
     @commands.is_owner()
@@ -927,7 +894,9 @@ class Meta(Cog):
         )
         embed.set_footer(text=f"{ctx.author}")
         change_log = await self.bot.change_log()
-        embed.description = f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
+        embed.description = (
+            f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
+        )
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -959,9 +928,7 @@ class Meta(Cog):
             return await ctx.send(
                 f"{ctx.author.mention} invalid invite or invite link is not of server"
             )
-        embed = discord.Embed(
-            title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url
-        )
+        embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
         embed.description = f"""`Member Count?  :` **{invite.approximate_member_count}**
 `Presence Count?:` **{invite.approximate_presence_count}**
 `Channel     :` **<#{invite.channel.id}>**
@@ -981,19 +948,13 @@ class Meta(Cog):
     async def stickerinfo(self, ctx: Context, sticker: discord.GuildSticker = None):
         """Get the info regarding the Sticker"""
         if sticker is None and not ctx.message.stickers:
-            return await ctx.send(
-                f"{ctx.author.mention} you did not provide any sticker"
-            )
+            return await ctx.send(f"{ctx.author.mention} you did not provide any sticker")
         sticker = sticker or await ctx.message.stickers[0].fetch()
         if sticker.guild and sticker.guild.id != ctx.guild.id:
-            return await ctx.send(
-                f"{ctx.author.mention} this sticker is not from this server"
-            )
+            return await ctx.send(f"{ctx.author.mention} this sticker is not from this server")
 
         embed = (
-            discord.Embed(
-                title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url
-            )
+            discord.Embed(title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url)
             .add_field(
                 name="Name",
                 value=sticker.name,

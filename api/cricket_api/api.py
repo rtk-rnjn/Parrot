@@ -20,6 +20,9 @@ async def root():
 
 @app.get("/cricket_api")
 async def cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    return await _cricket_api(url)
+
+async def _cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
     if not url:
         raise HTTPException(status_code=400, detail="URL not provided")
 

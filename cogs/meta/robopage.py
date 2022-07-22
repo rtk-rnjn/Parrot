@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import discord
 from discord.ext import old_menus  # type: ignore
@@ -58,7 +58,7 @@ class RoboPages(discord.ui.View):
             self.add_item(self.stop_pages)  # flake8: noqa
 
     async def _get_kwargs_from_page(self, page: int) -> Dict[str, Any]:
-        value = await discord.utils.maybe_coroutine(self.source.format_page, self, page)
+        value: Union[dict, str, discord.Embed] = await discord.utils.maybe_coroutine(self.source.format_page, self, page)
         if isinstance(value, dict):
             return value
         if isinstance(value, str):
@@ -227,7 +227,7 @@ class RoboPages(discord.ui.View):
                 "What page do you want to go to?", ephemeral=True
             )
 
-            def message_check(m):
+            def message_check(m: discord.Message):
                 return (
                     m.author.id == author_id
                     and channel == m.channel

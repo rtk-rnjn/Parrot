@@ -164,7 +164,7 @@ class MusicView(discord.ui.View):
         custom_id="LOOP", emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
     )
     async def loop(self, interaction: discord.Interaction, button: discord.ui.Button):
-
+        await interaction.response.defer()
         cmd: commands.Command = self.bot.get_command("loop")
         try:
             await self.ctx.invoke(cmd)
@@ -177,7 +177,7 @@ class MusicView(discord.ui.View):
         emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY}",
     )
     async def loop_current(self, interaction: discord.Interaction, button: discord.ui.Button):
-
+        await interaction.response.defer()
         cmd: commands.Command = self.bot.get_command("loop")
         try:
             await self.ctx.invoke(cmd, "current")
@@ -187,7 +187,7 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="SHUFFLE", emoji="\N{TWISTED RIGHTWARDS ARROWS}")
     async def shuffle(self, interaction: discord.Interaction, button: discord.ui.Button):
-
+        await interaction.response.defer()
         cmd: commands.Command = self.bot.get_command("shuffle")
         try:
             await self.ctx.invoke(cmd)
@@ -197,13 +197,13 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="UPVOTE", emoji="\N{UPWARDS BLACK ARROW}")
     async def upvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-
+        await interaction.response.defer()
         await self.__like(interaction.user)
         await interaction.response.send_message("Added song to liked songs.", ephemeral=True)
 
     @discord.ui.button(custom_id="DOWNVOTE", emoji="\N{DOWNWARDS BLACK ARROW}")
     async def downvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-
+        await interaction.response.defer()
         await self.__dislike(interaction.user)
         await interaction.response.send_message("Removed song to liked songs.", ephemeral=True)
 

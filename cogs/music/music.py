@@ -31,7 +31,7 @@ from .__view import MusicView
 
 
 def get_emoji_from_like_rate(like_rate: float) -> str:
-    if like_rate <= 0:
+    if like_rate == 0:
         return "\N{CONFUSED FACE}"
     if like_rate <= 10:
         return "\N{SLIGHTLY SMILING FACE}"

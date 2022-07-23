@@ -148,7 +148,7 @@ def is_dj() -> Callable:
         if role := await ctx.dj_role():
             return role in ctx.author.roles
 
-        raise commands.CheckFailure("You must have DJ role to use this command.")
+        raise commands.BadArgument("You must have DJ role to use this command.")
 
     return commands.check(predicate)
 
@@ -157,7 +157,7 @@ def in_voice() -> Callable:
     def predicate(ctx: Context) -> bool:
         if ctx.author.voice:
             return True
-        raise commands.CheckFailure("You must be in a voice channel to use this command.")
+        raise commands.BadArgument("You must be in a voice channel to use this command.")
 
     return commands.check(predicate)
 

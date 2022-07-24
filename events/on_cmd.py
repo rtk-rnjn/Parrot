@@ -289,7 +289,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         else:
             await msg.delete(delay=0)
         finally:
-            if embed.title == f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}":
+            if ERROR_EMBED.title == f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}":
                 raise error
 
 

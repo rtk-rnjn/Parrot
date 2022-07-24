@@ -275,7 +275,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
             ERROR_EMBED.title = f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
 
-        msg = await ctx.reply(
+        msg: discord.Message = await ctx.reply(
             random.choice(quote),
             embed=ERROR_EMBED,
         )
@@ -287,9 +287,10 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         except asyncio.TimeoutError:
             pass
         else:
-            await msg.delete()
+            await msg.delete(delay=0)
         finally:
-            raise error
+            if embed.title == f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}":
+                raise error
 
 
 async def setup(bot: Parrot) -> None:

@@ -999,13 +999,16 @@ class Fun(Cog):
                     check=check,
                 )
             except asyncio.TimeoutError:
+                if not self.game_status[ctx.channel.id]:
+                    break
+
                 embed = discord.Embed(
                     title="Correct answere is `{}`".format(question_data["correct_answer"]),
                 )
                 await ctx.send(embed=embed)
                 continue
 
-            embed = discord.Embed(
+            embed: discord.Embed = discord.Embed(
                 title="You got it! The correct answer is `{}`".format(
                     question_data["correct_answer"]
                 )
@@ -1028,8 +1031,11 @@ class Fun(Cog):
             await ctx.release()
 
         self.game_status[ctx.channel.id] = False
-        del self.game_owners[ctx.channel.id]
         self.game_player_scores[ctx.channel.id] = {}
+        try:
+            del self.game_owners[ctx.channel.id]
+        except KeyError:
+            pass
 
     @triva_quiz.command(name="reset_token", aliases=["reset", "reset-token"])
     async def trivia_token(self, ctx: Context, *, token: str) -> None:

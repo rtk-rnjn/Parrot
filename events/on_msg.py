@@ -1103,6 +1103,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         self.msg_db_bulkwrite.cancel()
         self.msg_db_bulkdelete.cancel()
 
+    # Internal Message Cache Updater Events
+    # caching variable `Parrot.message_cache`
+
     @Cog.listener("on_message")
     async def on_message_updater(self, message: discord.Message) -> None:
         if message.author.id in self.bot.message_cache:

@@ -39,6 +39,16 @@ class InHubVoice(ParrotCheckFailure):
         super().__init__("You must be in your own Hub channel to use this command")
 
 
+class NoDJRole(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__("You must have DJ role to use this command.")
+
+
+class NotInVoice(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__("You must be in a voice channel to use this command.")
+
+
 class NotGuildOwner(ParrotCheckFailure):
     def __init__(self):
         super().__init__("You must be the owner of the Server to use this command")

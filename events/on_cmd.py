@@ -223,9 +223,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                     "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
                 )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}"
-
-            ERROR_EMBED.description = f"{error}"
-            ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
+            else:
+                ERROR_EMBED.description = f"{error}"
+                ERROR_EMBED.title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
 
         elif isinstance(
             error,
@@ -282,7 +282,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         try:
             await ctx.wait_for(
-                "message_delete", timeout=10, check=lambda m: m.id == ctx.message.id
+                "message_delete", timeout=30, check=lambda m: m.id == ctx.message.id
             )
         except asyncio.TimeoutError:
             pass

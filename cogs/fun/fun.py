@@ -914,6 +914,7 @@ class Fun(Cog):
 
         if flag.number:
             PAYLOAD["amount"] = flag.number
+            self.question_limit = flag.number
 
         res = await self.bot.http_session.get(
             "https://opentdb.com/api.php",
@@ -964,7 +965,7 @@ class Fun(Cog):
                 )
                 .add_field(
                     name="Options",
-                    value=f'`{"`, `".join(options)}`',
+                    value=f'`{"`, `".join(html.escape(i) for i in options)}`',
                     inline=False,
                 )
                 .set_footer(text=f"{ctx.author.name}")

@@ -878,12 +878,20 @@ class Fun(Cog):
 
         return token
 
-    @commands.command(
+    @commands.group(
         name="trivia",
         invoke_without_command=True,
     )
     async def triva_quiz(self, ctx: Context, *, flag: TriviaFlag) -> None:
-        """Trivia quiz commands."""
+        """Trivia quiz commands.
+
+        Available flags:
+            `--token`: Token to use in the quiz.
+            `--category`: Category to use in the quiz.
+            `--difficulty`: Difficulty to use in the quiz.
+            `--type`: Type of question to use in the quiz.
+            `--amount`: Amount of questions to use in the quiz.`
+        """
         if ctx.channel.id not in self.game_status:
             self.game_status[ctx.channel.id] = False
 
@@ -1016,6 +1024,25 @@ class Fun(Cog):
         self.game_status[ctx.channel.id] = False
         del self.game_owners[ctx.channel.id]
         self.game_player_scores[ctx.channel.id] = {}
+
+    @triva_quiz.command(name="reset")
+    async def trivia_token(self, ctx: Context, *, token: str) -> None:
+        """Reset a token.
+
+        This will reset the token to be used in the quiz.
+        """
+        res = await self.bot.http_session.get(
+            f"https://opentdb.com/api_token.php?command=reset&token={token}",
+        )
+        data = res.json()
+        if data is None:
+            await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
+        if data["response_code"] == 0:
+            await ctx.send(
+                f"{ctx.author.mention} Token reset successfully. You can now use it in the quiz."
+            )
+        else:
+            await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
 
     @commands.group(name="quiz", invoke_without_command=True, hidden=True)
     async def quiz_game(

@@ -430,7 +430,7 @@ class Fun(Cog):
         self.game_status: Dict[
             int, bool
         ] = {}  # A variable to store the game status: either running or not running.
-        self.game_owners = (
+        self.game_owners: Dict[int, discord.Member] = (
             {}
         )  # A variable to store the person's ID who started the quiz game in a channel.
         with open(Path(r"extra/ryanzec_colours.json")) as f:
@@ -867,14 +867,20 @@ class Fun(Cog):
             return None
         _data = await request_token.json()
         token = _data["token"]
-        with suppress(discord.Forbidden):
+        try:
             await ctx.author.send(
                 f"Your session Token: `{token}`\n"
                 "Session Tokens are unique keys that will help keep track of the questions.\n"
                 "Bot will never give you the same question twice. If you use token as flag.\n"
                 f"> Usage: `{ctx.clean_prefix}trivia --token {token}`\n"
-                "Token will be reset in 6hour of inactivity"
+                "Token will be reset in 6hour of inactivity",
+                delete_after=300,
             )
+        except discord.Forbidden:
+            await ctx.send(
+                f"{ctx.author.mention} Could not send you a message. Please check your privacy settings."
+            )
+            return None
 
         return token
 
@@ -903,12 +909,12 @@ class Fun(Cog):
             await ctx.send(f"Game is already running... do `{ctx.prefix}quiz stop`")
             return
 
-        token = flag.token or await self.__issue_trivia_token(ctx)
+        # token = flag.token or await self.__issue_trivia_token(ctx)
 
-        PAYLOAD = {}
+        PAYLOAD: Dict[str, Any] = {}
 
-        if token is not None:
-            PAYLOAD["token"] = token
+        # if token is not None:
+        #     PAYLOAD["token"] = token
 
         if flag.category:
             if cat := getattr(Category, flag.category.replace(" ", "_").title()):
@@ -950,9 +956,9 @@ class Fun(Cog):
                 f"{ctx.author.mention} no questions found (possible reason: Invalid Parameter(s)). Please try again."
             )
 
-        if not self.game_status[ctx.channel.id]:
-            self.game_owners[ctx.channel.id] = ctx.author
-            self.game_status[ctx.channel.id] = True
+        self.game_status[ctx.channel.id] = True
+        self.game_owners[ctx.channel.id] = ctx.author
+
         embed = self.make_start_embed(PAYLOAD.get("category", "Any"))
         await ctx.send(embed=embed)
         await ctx.release(10)
@@ -1025,7 +1031,7 @@ class Fun(Cog):
         del self.game_owners[ctx.channel.id]
         self.game_player_scores[ctx.channel.id] = {}
 
-    @triva_quiz.command(name="reset")
+    @triva_quiz.command(name="reset_token", aliases=["reset", "reset-token"])
     async def trivia_token(self, ctx: Context, *, token: str) -> None:
         """Reset a token.
 
@@ -1043,6 +1049,16 @@ class Fun(Cog):
             )
         else:
             await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
+
+    @triva_quiz.command(name="new_token", aliases=["new", "new-token", "token"])
+    async def new_trivia_token(self, ctx: Context) -> None:
+        """Register a new token for trivia"""
+        await self.__issue_trivia_token(ctx)
+
+    @triva_quiz.command(name="stop", aliases=["end", "cancel"])
+    async def trivia_stop(self, ctx: Context) -> None:
+        """Stop the quiz."""
+        await self.stop_quiz(ctx)
 
     @commands.group(name="quiz", invoke_without_command=True, hidden=True)
     async def quiz_game(

@@ -362,7 +362,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             await self.context.typing()
         except discord.Forbidden:
             await self.context.reply(f"{self.context.author.mention} preparing help menu...")
-        subcommands = group.commands
+        subcommands = list(group.commands)
         if len(subcommands) == 0:
             return await self.send_command_help(group)
         entries = subcommands

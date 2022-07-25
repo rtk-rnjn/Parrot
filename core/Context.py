@@ -66,7 +66,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         super().__init__(*args, **kwargs)
 
     def __repr__(self) -> str:
-        return f"<core.Context author={self.author} guild={self.guild} channel={self.channel}>"
+        return f"<core.Context author={self.author} guild={self.guild} channel={self.channel} command={self.command}>"
 
     @property
     def session(self) -> Any:
@@ -413,7 +413,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                     return True
                 return False
 
-            def __check(
+            def __internal_check(
                 *args,
             ) -> bool:
                 """Main check function"""
@@ -423,7 +423,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
                     for pred, val in convert_pred
                 )
 
-            return __check
+            return __internal_check
 
         if before_function is not None:
             await discord.utils.maybe_coroutine(before_function)
@@ -482,6 +482,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             )
             await pages.start()
             return
+
         if _type == "PaginationView":
             from utilities.paginator import PaginationView
 

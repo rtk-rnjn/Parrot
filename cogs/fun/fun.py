@@ -1034,7 +1034,7 @@ class Fun(Cog):
         res = await self.bot.http_session.get(
             f"https://opentdb.com/api_token.php?command=reset&token={token}",
         )
-        data = res.json()
+        data = await res.json()
         if data is None:
             await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
         if data["response_code"] == 0:

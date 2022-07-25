@@ -6,6 +6,7 @@ import binascii
 import colorsys
 import datetime
 import functools
+import html
 import io
 import json
 import math
@@ -18,6 +19,7 @@ import unicodedata
 import urllib
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice, randint
@@ -37,6 +39,7 @@ from utilities.paginator import PaginationView
 from utilities.regex import LINKS_RE
 
 from ._effects import PfpEffects
+from ._flags import Category, TriviaFlag
 from ._jeyy_api_endpoints import END_POINTS
 
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
@@ -424,9 +427,9 @@ class Fun(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-        self.game_status = (
-            {}
-        )  # A variable to store the game status: either running or not running.
+        self.game_status: Dict[
+            int, bool
+        ] = {}  # A variable to store the game status: either running or not running.
         self.game_owners = (
             {}
         )  # A variable to store the person's ID who started the quiz game in a channel.
@@ -440,7 +443,9 @@ class Fun(Cog):
         self.player_scores = defaultdict(
             int
         )  # A variable to store all player's scores for a bot session.
-        self.game_player_scores = {}  # A variable to store temporary game player's scores.
+        self.game_player_scores: Dict[
+            int, Dict[discord.Member, int]
+        ] = {}  # A variable to store temporary game player's scores.
         self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.categories = {
             "general": "Test your general knowledge.",
@@ -765,7 +770,7 @@ class Fun(Cog):
             await ctx.send(embed=embed)
             return
 
-        comic = randint(1, self.latest_comic_info["num"]) if comic is None else comic.group(0)
+        comic = randint(1, self.latest_comic_info["num"]) if comic is None else comic.group(0)  # type: ignore
 
         if comic == "latest":
             info = self.latest_comic_info
@@ -851,9 +856,169 @@ class Fun(Cog):
 
         await game.message_creation(message)
 
-    @commands.group(name="quiz", invoke_without_command=True)
+    async def __issue_trivia_token(self, ctx: Context) -> Optional[str]:
+        request_token = await self.bot.http_session.get(
+            "https://opentdb.com/api_token.php?command=request"
+        )
+        if request_token.status != 200:
+            await ctx.send(
+                f"{ctx.author.mention} Could not get a token from the API. Please try again later"
+            )
+            return None
+        _data = await request_token.json()
+        token = _data["token"]
+        with suppress(discord.Forbidden):
+            await ctx.author.send(
+                f"Your session Token: `{token}`\n"
+                "Session Tokens are unique keys that will help keep track of the questions.\n"
+                "Bot will never give you the same question twice. If you use token as flag.\n"
+                f"> Usage: `{ctx.clean_prefix}trivia --token {token}`\n"
+                "Token will be reset in 6hour of inactivity"
+            )
+
+        return token
+
+    @commands.command(
+        name="trivia",
+        invoke_without_command=True,
+    )
+    async def triva_quiz(self, ctx: Context, *, flag: TriviaFlag) -> None:
+        """Trivia quiz commands."""
+        if ctx.channel.id not in self.game_status:
+            self.game_status[ctx.channel.id] = False
+
+        if ctx.channel.id not in self.game_player_scores:
+            self.game_player_scores[ctx.channel.id] = {}
+
+        # Stop game if running.
+        if self.game_status[ctx.channel.id]:
+            await ctx.send(f"Game is already running... do `{ctx.prefix}quiz stop`")
+            return
+
+        token = flag.token or await self.__issue_trivia_token(ctx)
+
+        PAYLOAD = {}
+
+        if token is not None:
+            PAYLOAD["token"] = token
+
+        if flag.category:
+            if cat := getattr(Category, flag.category.replace(" ", "_").title()):
+                PAYLOAD["category"] = cat
+
+        if flag.difficulty:
+            PAYLOAD["difficulty"] = flag.difficulty
+
+        if flag._type:
+            PAYLOAD["type"] = flag._type
+
+        if flag.number:
+            PAYLOAD["amount"] = flag.number
+
+        res = await self.bot.http_session.get(
+            "https://opentdb.com/api.php",
+            params=PAYLOAD,
+            headers={
+                "Accept": "application/json",
+                "User-Agent": f"Discord Bot '{self.bot.user}' @ {self.bot.github}",
+            },
+        )
+        if res.status != 200:
+            return await ctx.error(
+                f"{ctx.author.mention} Could not get a question from the API. Please try again later"
+            )
+
+        data = await res.json()
+        if data["response_code"] in {3, 4}:
+            # token expired or invalid
+            return await ctx.error(
+                f"{ctx.author.mention} Token expired or invalid. Please try again."
+            )
+
+        if data["response_code"] in {1, 2}:
+            # invalid parameter(s) or no questions found
+            return await ctx.error(
+                f"{ctx.author.mention} no questions found (possible reason: Invalid Parameter(s)). Please try again."
+            )
+
+        if not self.game_status[ctx.channel.id]:
+            self.game_owners[ctx.channel.id] = ctx.author
+            self.game_status[ctx.channel.id] = True
+
+        for index, question_data in enumerate(data["results"], start=1):
+            if not self.game_status[ctx.channel.id]:
+                break
+
+            _option: List[str] = question_data["incorrect_answers"]
+            options = _option.append(question_data["correct_answer"])
+            random.shuffle(options)
+            question = html.escape(question_data["question"])
+
+            embed = (
+                discord.Embed(
+                    title=f"Question #{index}",
+                    description=question,
+                )
+                .add_field(
+                    name="Options",
+                    value="\n".join(options),
+                    inline=False,
+                )
+                .set_footer(text=f"{ctx.author.name}")
+                .set_thumbnail(url=TRIVIA_QUIZ_ICON)
+            )
+            await ctx.send(embed=embed)
+
+            def check(m: discord.Message) -> bool:
+                return (m.channel.id == ctx.channel.id) and any(
+                    rapidfuzz.fuzz.ratio(
+                        question_data["correct_answer"].lower(), m.content.lower()
+                    )
+                    > 80
+                )
+
+            try:
+                msg: discord.Message = await ctx.wait_for(
+                    "message",
+                    timeout=30,
+                    check=check,
+                )
+            except asyncio.TimeoutError:
+                embed = discord.Embed(
+                    title="Correct answere is `{}`".format(question_data["correct_answer"]),
+                )
+                await ctx.send(embed=embed)
+                continue
+
+            embed = discord.Embed(
+                title="You got it! The correct answer is `{}`".format(
+                    question_data["correct_answer"]
+                )
+            )
+            if ctx.channel.id in self.game_player_scores:
+                if msg.author in self.game_player_scores[ctx.channel.id]:
+                    self.game_player_scores[ctx.channel.id][msg.author] += 100
+                else:
+                    self.game_player_scores[ctx.channel.id][msg.author] = 100
+            else:
+                self.game_player_scores[ctx.channel.id] = {msg.author: 100}
+
+            if msg.author in self.player_scores:
+                self.player_scores[msg.author] += 100
+            else:
+                self.player_scores[msg.author] = 100
+
+            await ctx.send(embed=embed)
+            await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
+            await ctx.release()
+
+        self.game_status[ctx.channel.id] = False
+        del self.game_owners[ctx.channel.id]
+        self.game_player_scores[ctx.channel.id] = {}
+
+    @commands.group(name="quiz", invoke_without_command=True, hidden=True)
     async def quiz_game(
-        self, ctx: Context, category: Optional[str], questions: Optional[int]
+        self, ctx: Context, category: Optional[str] = None, questions: Optional[int] = None
     ) -> None:
         """
         Start a quiz!
@@ -923,9 +1088,9 @@ class Fun(Cog):
             await ctx.send(embed=start_embed)  # send an embed with the rules
             await ctx.release(5)
 
-        done_questions = []
+        done_questions: List[int] = []
         hint_no = 0
-        quiz_entry = None
+        quiz_entry: QuizEntry = None  # type: ignore
 
         while self.game_status[ctx.channel.id]:
             # Exit quiz if number of questions for a round are already sent.
@@ -947,7 +1112,7 @@ class Fun(Cog):
                     if question_dict["id"] not in done_questions:
                         done_questions.append(question_dict["id"])
                         break
-                    await asyncio.sleep(0)
+                    await ctx.release(0)
 
                 if "dynamic_id" not in question_dict:
                     quiz_entry = QuizEntry(
@@ -975,15 +1140,6 @@ class Fun(Cog):
 
                 await ctx.send(embed=embed)
 
-            # def check_func(variation_tolerance: int) -> Callable[[discord.Message], bool]:
-            #     def contains_correct_answer(m: discord.Message) -> bool:
-            #         return (m.channel == ctx.channel) and any(
-            #             fuzz.ratio(answer.lower(), m.content.lower()) > variation_tolerance
-            #             for answer in quiz_entry.answers
-            #         )
-
-            #     return contains_correct_answer
-
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
                     rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
@@ -991,7 +1147,7 @@ class Fun(Cog):
                 )
 
             try:
-                msg = await self.bot.wait_for("message", check=check, timeout=10)
+                msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=10)
             except asyncio.TimeoutError:
                 # In case of TimeoutError and the game has been stopped, then do nothing.
                 if not self.game_status[ctx.channel.id]:
@@ -1062,6 +1218,7 @@ class Fun(Cog):
                 await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 await ctx.release(2)
+            await ctx.release()
 
     def make_start_embed(self, category: str) -> discord.Embed:
         """Generate a starting/introduction embed for the quiz."""
@@ -1096,10 +1253,10 @@ class Fun(Cog):
     async def hangman(
         self,
         ctx: Context,
-        min_length: int = 0,
-        max_length: int = 25,
-        min_unique_letters: int = 0,
-        max_unique_letters: int = 25,
+        min_length: Optional[int] = 0,
+        max_length: Optional[int] = 25,
+        min_unique_letters: Optional[int] = 0,
+        max_unique_letters: Optional[int] = 25,
     ) -> None:
         """
         Play hangman against the bot, where you have to guess the word it has provided!

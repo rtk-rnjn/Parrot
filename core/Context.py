@@ -199,6 +199,28 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
+    async def error(self, *args: Any, **kwargs: Any) -> Optional[discord.Message]:
+        """Similar to send, but if the original message is deleted, it will delete the error message as well."""
+        embed: discord.Embed = kwargs.get("embed")
+        if isinstance(embed, discord.Embed) and not embed.color:
+            # if no color is set, set it to red
+            embed.color = discord.Color.red()
+
+        msg: Optional[discord.Message] = await self.send(
+            *args,
+            **kwargs,
+        )
+        if isinstance(msg, discord.Message):
+            try:
+                await self.wait_for(
+                    "message_delete", check=lambda m: m.id == self.message.id, timeout=30
+                )
+            except asyncio.TimeoutError:
+                return msg
+            else:
+                return await msg.delete(delay=0)
+        return msg
+
     async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]

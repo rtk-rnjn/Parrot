@@ -950,7 +950,8 @@ class Fun(Cog):
                 break
 
             _option: List[str] = question_data["incorrect_answers"]
-            options = _option.append(question_data["correct_answer"])
+            _option.append(question_data["correct_answer"])
+            options = _option.copy()
             random.shuffle(options)
             question = html.escape(question_data["question"])
 

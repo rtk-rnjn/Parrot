@@ -36,7 +36,7 @@ def upper_split(ini_str: str) -> str:
 
 
 class NASA(Cog):
-    """Incridible NASA API Integration"""
+    """Incredible NASA API Integration"""
 
     def __init__(self, bot: Parrot):
         self.bot = bot

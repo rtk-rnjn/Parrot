@@ -944,7 +944,9 @@ class Fun(Cog):
         if not self.game_status[ctx.channel.id]:
             self.game_owners[ctx.channel.id] = ctx.author
             self.game_status[ctx.channel.id] = True
-
+        embed = self.make_start_embed(PAYLOAD.get("category", "Any"))
+        await ctx.send(embed=embed)
+        await ctx.release(10)
         for index, question_data in enumerate(data["results"], start=1):
             if not self.game_status[ctx.channel.id]:
                 break
@@ -962,7 +964,7 @@ class Fun(Cog):
                 )
                 .add_field(
                     name="Options",
-                    value="\n".join(options),
+                    value=f'`{"`, `".join(options)}`',
                     inline=False,
                 )
                 .set_footer(text=f"{ctx.author.name}")
@@ -971,12 +973,9 @@ class Fun(Cog):
             await ctx.send(embed=embed)
 
             def check(m: discord.Message) -> bool:
-                return (m.channel.id == ctx.channel.id) and any(
-                    rapidfuzz.fuzz.ratio(
-                        question_data["correct_answer"].lower(), m.content.lower()
-                    )
-                    > 80
-                )
+                return (m.channel.id == ctx.channel.id) and rapidfuzz.fuzz.ratio(
+                    question_data["correct_answer"].lower(), m.content.lower()
+                ) > 80
 
             try:
                 msg: discord.Message = await ctx.wait_for(

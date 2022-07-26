@@ -155,9 +155,9 @@ def is_dj() -> Callable:
 
 def in_voice() -> Callable:
     def predicate(ctx: Context) -> bool:
-        if ctx.author.voice:
-            return True
-        raise ex.NotInVoice()
+        if ctx.author.voice is None:
+            raise ex.NotInVoice()
+        return True
 
     return commands.check(predicate)
 

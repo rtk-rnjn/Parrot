@@ -393,8 +393,16 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         **kwargs: Any
             The arguments to pass to the event.
 
+        Examples
+        -----------
+
+        ```python
+        # Wait for the message to be sent
+        await ctx.wait_for("message", timeout=10, author__id=741614468546560092)
+        ```
+
         Raises
-        -------
+        -----------
         asyncio.TimeoutError
             If the event is not triggered before the given timeout.
         """

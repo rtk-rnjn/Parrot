@@ -159,9 +159,10 @@ class MusicView(discord.ui.View):
             "• The bot is not in a voice channel.\n"
             "• The bot is not in the same voice channel as you.\n"
             "• The bot is not playing music.\n"
-            f"• You are missing DJ role or Manage Channels permission.\n",
+            "• You are missing DJ role or Manage Channels permission.\n",
             ephemeral=True,
         )
+        await self.on_timeout()
 
     @discord.ui.button(
         custom_id="LOOP", emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
@@ -267,6 +268,7 @@ class MusicView(discord.ui.View):
         try:
             await self.ctx.invoke(cmd)
             await interaction.response.send_message("Invoked `skip` command.", ephemeral=True)
+            await self.on_timeout()
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
 

@@ -890,11 +890,12 @@ class Utils(Cog):
         await ctx.send(content=msg.jump_url, embed=embed)
 
     @suggest.command(name="resolved")
+    @commands.bot_has_guild_permissions(manage_threads=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    async def suggest_resolved(self, ctx: Context, *, threadID: int):
+    async def suggest_resolved(self, ctx: Context, *, thread_id: int):
         """To mark the suggestion as resolved"""
         msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            threadID, guild=ctx.guild
+            thread_id, guild=ctx.guild
         )
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
@@ -903,11 +904,11 @@ class Utils(Cog):
             )
 
         thread: discord.Thread = await self.bot.getch(
-            ctx.guild.get_channel, ctx.guild.fetch_channel, threadID
+            ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id
         )
         if not msg or not thread:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{threadID}`. Probably already deleted, or `{threadID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid"
             )
         await thread.edit(
             archived=True,

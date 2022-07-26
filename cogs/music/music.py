@@ -613,25 +613,26 @@ class Music(Cog):
             view=view,
         )
 
-    @commands.group(name="myplaylist")
+    @commands.group(name="myplaylist", invoke_without_command=True)
     async def myplaylist(self, ctx: Context):
         """Shows the songs you loved."""
-        col: Collection = self.bot.mongo.extra.user_misc
-        data = await col.find_one(  # type: ignore
-            {"_id": ctx.author.id, "playlist": {"$exists": True}},
-            {"playlist": 1, "_id": 0},
-        )
-        if data is None or len(data["playlist"]) == 0:
-            return await ctx.send(
-                f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
+        if ctx.invoked_subcommand is None:
+            col: Collection = self.bot.mongo.extra.user_misc
+            data = await col.find_one(  # type: ignore
+                {"_id": ctx.author.id, "playlist": {"$exists": True}},
+                {"playlist": 1, "_id": 0},
             )
+            if data is None or len(data["playlist"]) == 0:
+                return await ctx.send(
+                    f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
+                )
 
-        entries = []
-        for song in data["playlist"]:
-            entries.append(
-                f"**[{song['song_name'] or 'Fetching song name Failed'}]({song['url']})**"
-            )
-        await ctx.paginate(entries, per_page=5)
+            entries = []
+            for song in data["playlist"]:
+                entries.append(
+                    f"**[{song['song_name'] or 'Fetching song name Failed'}]({song['url']})**"
+                )
+            await ctx.paginate(entries, per_page=5)
 
     @myplaylist.command(name="remove", aliases=["delete", "del"])
     async def myplaylist_remove(self, ctx: Context, index_or_name: Union[int, str]):
@@ -676,7 +677,7 @@ class Music(Cog):
         if isinstance(index_or_name, str):
             await col.update_one(  # type: ignore
                 {"_id": ctx.author.id},
-                {"$pull": {"playlist": {"_id": index_or_name}}},
+                {"$pull": {"playlist": {"song_name": index_or_name}}},
             )
             await ctx.send(f"{ctx.author.mention} Removed song from playlist")
 
@@ -869,7 +870,7 @@ class Music(Cog):
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @in_voice()
     async def stop(self, ctx: Context):
-        """Stop the currently playing song."""
+        """Stop the currently playing song. Queue will be cleared."""
         if ctx.voice_client is None:
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -881,18 +882,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} stopped the music.")
 
         if not vc.queue.is_empty:
-            track = vc.queue.get()
-            await vc.play(track)
-            view = MusicView(
-                ctx.author.voice.channel,
-                timeout=abs(vc.last_position - vc.track.duration),
-                ctx=ctx,
-            )
-            view.message = await ctx.send(
-                f"{ctx.author.mention} Now playing",
-                embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-                view=view,
-            )
+            vc.queue.clear()
             return
 
     @commands.command()

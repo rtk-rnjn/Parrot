@@ -81,34 +81,8 @@ class Music(Cog):
 
         return embed
 
-    async def like_dislike(
-        self,
-        track: wavelink.Track,
-    ) -> Dict[str, int]:
-        data = await self.bot.mongo.extra.songs.find_one(
-            {"_id": track.id},
-        )
-        if not data:
-            return {"likes": 0, "dislikes": 0}
-        return {
-            "likes": len(data.get("liked_by", [])),
-            "dislikes": len(data.get("dislikes", [])),
-        }
-
     async def make_final_embed(self, *, track: wavelink.Track, ctx: Context) -> discord.Embed:
         embed = self.make_embed(ctx, track)
-        like_dislike = await self.like_dislike(track)
-        try:
-            ratio = (
-                like_dislike["likes"] / (like_dislike["likes"] + like_dislike["dislikes"])
-            ) * 100
-        except ZeroDivisionError:
-            ratio = 0.0
-        embed.add_field(
-            name="Like Rate",
-            value=f"{round(ratio, 2)}% {get_emoji_from_like_rate(ratio)}",
-            inline=False,
-        )
         return embed
 
     @commands.command()

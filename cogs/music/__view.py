@@ -70,64 +70,6 @@ class MusicView(discord.ui.View):
             return False
         return True
 
-    async def __like(self, user: Union[discord.User, discord.Member]):
-        await self.bot.mongo.extra.user_misc.update_one(
-            {"_id": user.id},
-            {
-                "$addToSet": {
-                    "songs_liked": {
-                        "id": self.player.track.id,
-                        "song_name": getattr(self.player.track, "title"),
-                        "url": getattr(self.player.track, "uri"),
-                        "author": getattr(self.player.track, "author"),
-                        "duration": getattr(self.player.track, "duration"),
-                    }
-                }
-            },
-            upsert=True,
-        )
-
-        await self.bot.mongo.extra.songs.update_one(
-            {
-                "id": self.player.track.id,
-                "song_name": getattr(self.player.track, "title"),
-                "url": getattr(self.player.track, "uri"),
-                "author": getattr(self.player.track, "author"),
-                "duration": getattr(self.player.track, "duration"),
-            },
-            {"$addToSet": {"liked_by": user.id}},
-            upsert=True,
-        )
-
-    async def __dislike(self, user: Union[discord.User, discord.Member]):
-        await self.bot.mongo.extra.user_misc.update_one(
-            {"_id": user.id},
-            {
-                "$addToSet": {
-                    "songs_disliked": {
-                        "id": self.player.track.id,
-                        "song_name": getattr(self.player.track, "title"),
-                        "url": getattr(self.player.track, "uri"),
-                        "author": getattr(self.player.track, "author"),
-                        "duration": getattr(self.player.track, "duration"),
-                    }
-                }
-            },
-            upsert=True,
-        )
-
-        await self.bot.mongo.extra.songs.update_one(
-            {
-                "id": self.player.track.id,
-                "song_name": getattr(self.player.track, "title"),
-                "url": getattr(self.player.track, "uri"),
-                "author": getattr(self.player.track, "author"),
-                "duration": getattr(self.player.track, "duration"),
-            },
-            {"$addToSet": {"disliked_by": user.id}},
-            upsert=True,
-        )
-
     async def __add_to_playlist(self, user: Union[discord.User, discord.Member]):
         await self.bot.mongo.extra.user_misc.update_one(
             {"_id": user.id},
@@ -209,16 +151,6 @@ class MusicView(discord.ui.View):
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
         await interaction.response.send_message("Invoked `shuffle` command.", ephemeral=True)
-
-    @discord.ui.button(custom_id="UPVOTE", emoji="\N{THUMBS UP SIGN}")
-    async def upvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Added song to liked songs.", ephemeral=True)
-        await self.__like(interaction.user)
-
-    @discord.ui.button(custom_id="DOWNVOTE", emoji="\N{THUMBS DOWN SIGN}")
-    async def downvote(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Removed song to liked songs.", ephemeral=True)
-        await self.__dislike(interaction.user)
 
     @discord.ui.button(
         custom_id="PAUSE",

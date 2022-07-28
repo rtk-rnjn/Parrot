@@ -82,7 +82,13 @@ class Music(Cog):
         return embed
 
     async def make_final_embed(self, *, track: wavelink.Track, ctx: Context) -> discord.Embed:
-        embed = self.make_embed(ctx, track)
+        embed: discord.Embed = self.make_embed(ctx, track)
+        col = self.bot.mongo.extra.user_misc
+        i = 0
+        async for data in col.find({"playlist.id": track.id}):
+            i += 1
+        
+        embed.add_field(name="Likes", value=i, inline=True)
         return embed
 
     @commands.command()

@@ -182,7 +182,7 @@ class Music(Cog):
 
         vc: wavelink.Player = ctx.voice_client
 
-        if not vc.is_playing():
+        if vc.is_playing() is False:
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
         if queue := vc.queue:
@@ -542,12 +542,12 @@ class Music(Cog):
             q = vc.queue
             q.extend(tracks)
 
-            if not vc.is_playing():
+            if vc.is_playing() is False:
                 np_track = q.get()
                 await vc.play(np_track)
                 view = MusicView(
                     ctx.author.voice.channel,
-                    timeout=abs(vc.last_position - vc.track.duration),
+                    timeout=abs(vc.last_position - vc.track.duration) + 1,
                     ctx=ctx,
                 )
                 view.message = await ctx.send(
@@ -585,7 +585,7 @@ class Music(Cog):
         countr = 0
 
         for i, song in enumerate(data["playlist"], start=1):
-            if i == 1 and not vc.is_playing():
+            if i == 1 and vc.is_playing() is False:
                 await self.play(ctx, search=song["song_name"])
             else:
                 track = wavelink.PartialTrack(query=song["song_name"])
@@ -602,11 +602,11 @@ class Music(Cog):
 
         vc: wavelink.Player = ctx.voice_client
 
-        if not vc.is_playing():
+        if vc.is_playing() is False:
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
         view = MusicView(
             ctx.author.voice.channel,
-            timeout=abs(vc.last_position - vc.track.duration),
+            timeout=abs(vc.last_position - vc.track.duration) + 1,
             ctx=ctx,
         )
         view.message = await ctx.send(
@@ -730,7 +730,7 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client
 
-        if not vc.is_playing():
+        if vc.is_playing() is False:
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
         if vc.queue.is_empty:
@@ -745,7 +745,7 @@ class Music(Cog):
                 await vc.play(next_song)
                 view = MusicView(
                     ctx.author.voice.channel,
-                    timeout=abs(vc.last_position - vc.track.duration),
+                    timeout=abs(vc.last_position - vc.track.duration) + 1,
                     ctx=ctx,
                 )
                 view.message = await ctx.send(
@@ -837,7 +837,7 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client
 
-        if not vc.is_playing():
+        if vc.is_playing() is False:
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
         if vc.queue.is_empty:
@@ -854,7 +854,7 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client
 
-        if not vc.is_playing():
+        if vc.is_playing() is False:
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
         if vc.queue.is_empty:
@@ -877,7 +877,7 @@ class Music(Cog):
             return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
-        if not vc.is_playing():
+        if vc.is_playing() is False:
             return await ctx.send(f"{ctx.author.mention} bot is not playing anything.")
 
         await vc.stop()

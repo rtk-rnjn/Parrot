@@ -87,7 +87,7 @@ class Music(Cog):
         i = 0
         async for data in col.find({"playlist.id": track.id}):
             i += 1
-        
+
         embed.add_field(name="Likes", value=i, inline=True)
         return embed
 
@@ -105,7 +105,12 @@ class Music(Cog):
                     "You must be in a voice channel or must provide the channel argument"
                 )
 
-            await channel.connect(cls=wavelink.Player)
+            try:
+                await channel.connect(cls=wavelink.Player, timeout=10)
+            except discord.ClientException:
+                return await ctx.send(
+                    f"{ctx.author.mention} seems bot already connected to voice channel, consider using `disconnect` command"
+                )
             await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
             return
 
@@ -657,10 +662,12 @@ class Music(Cog):
                     )
 
         if isinstance(index_or_name, str):
-            await col.update_one(  # type: ignore
+            result = await col.update_one(  # type: ignore
                 {"_id": ctx.author.id},
                 {"$pull": {"playlist": {"song_name": index_or_name}}},
             )
+            if result.modified_count == 0:
+                return await ctx.send(f"{ctx.author.mention} Song not found")
             await ctx.send(f"{ctx.author.mention} Removed song from playlist")
 
     @myplaylist.command(name="add", aliases=["addsong", "add_song"])
@@ -675,8 +682,8 @@ class Music(Cog):
                 "$addToSet": {
                     "playlist": {
                         "id": track.id,
-                        "song_name": getattr(track, "title"),
-                        "url": getattr(track, "uri"),
+                        "song_name": getattr(track, "title", None),
+                        "url": getattr(track, "uri", None),
                     }
                 }
             },

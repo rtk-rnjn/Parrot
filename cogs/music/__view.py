@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, List, Literal, Optional, Union
 
 import discord
-import wavelink
+import wavelink 
 from core import Context, Parrot
 from discord.ext import commands
 
@@ -151,6 +151,14 @@ class MusicView(discord.ui.View):
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
         await interaction.response.send_message("Invoked `shuffle` command.", ephemeral=True)
+
+    @discord.ui.button(emoji="\N{THUMBS UP SIGN}", disabled=True)
+    async def __like(self, interaction: discord.Interaction, button: discord.ui.Button):
+        ...
+    
+    @discord.ui.Button(emoji="\N{THUMBS DOWN SIGN}", disabled=True)
+    async def __dislike(self, interaction: discord.Interaction, button: discord.ui.Button):
+        ...
 
     @discord.ui.button(
         custom_id="PAUSE",

@@ -890,18 +890,6 @@ class Music(Cog):
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
-    async def clear(self, ctx: Context):
-        """Clear the queue"""
-        if ctx.voice_client is None:
-            return await ctx.send(f"{ctx.author.mention} bot is not connected to a voice channel.")
-
-        channel: wavelink.Player = ctx.voice_client
-        await channel.stop()
-        await ctx.send(f"{ctx.author.mention} cleared the queue.")
-
-    @commands.command()
-    @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @same_voice()
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:

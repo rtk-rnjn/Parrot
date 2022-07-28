@@ -140,7 +140,7 @@ class RoboPages(discord.ui.View):
         if self.message:
             try:
                 await self.message.edit(view=None)
-            except Exception:
+            except discord.HTTPException:
                 return
 
     async def on_error(
@@ -171,7 +171,7 @@ class RoboPages(discord.ui.View):
         self._update_labels(0)
         self.message = await self.ctx.send(**kwargs, view=self)
 
-    @discord.ui.button(label="≪", style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="\N{MUCH LESS-THAN}", style=discord.ButtonStyle.grey)
     async def go_to_first_page(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -198,7 +198,7 @@ class RoboPages(discord.ui.View):
         """go to the next page"""
         await self.show_checked_page(interaction, self.current_page + 1)
 
-    @discord.ui.button(label="≫", style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="\N{MUCH GREATER-THAN}", style=discord.ButtonStyle.grey)
     async def go_to_last_page(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -235,7 +235,7 @@ class RoboPages(discord.ui.View):
                 )
 
             try:
-                msg = await self.ctx.bot.wait_for(
+                msg: discord.Message = await self.ctx.bot.wait_for(
                     "message", check=message_check, timeout=30.0
                 )
             except asyncio.TimeoutError:

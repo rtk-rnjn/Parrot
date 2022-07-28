@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import time
 from typing import Any, List, Literal, Optional, Union
 
 import discord
-import wavelink 
+import wavelink
 from core import Context, Parrot
 from discord.ext import commands
 
@@ -102,7 +103,7 @@ class MusicView(discord.ui.View):
 
     async def __send_interal_error_response(self, interaction: discord.Interaction) -> None:
         self.disable_all()
-        await interaction.response.send_message(
+        await interaction.followup.send(
             "Running `loop` command from the context failed. Possible reasons:\n"
             "• The bot is not in a voice channel.\n"
             "• The bot is not in the same voice channel as you.\n"
@@ -155,7 +156,7 @@ class MusicView(discord.ui.View):
     @discord.ui.button(emoji="\N{THUMBS UP SIGN}", disabled=True)
     async def __like(self, interaction: discord.Interaction, button: discord.ui.Button):
         ...
-    
+
     @discord.ui.button(emoji="\N{THUMBS DOWN SIGN}", disabled=True)
     async def __dislike(self, interaction: discord.Interaction, button: discord.ui.Button):
         ...
@@ -193,38 +194,47 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="STOP", emoji="\N{BLACK SQUARE FOR STOP}", row=1)
     async def _stop(self, interaction: discord.Interaction, button: discord.ui.Button):
-
+        await interaction.response.send_message("Invoking `stop` command.", ephemeral=True)
         cmd: commands.Command = self.bot.get_command("stop")
+        ini = time.perf_counter()
         try:
             await self.ctx.invoke(cmd)
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
-        await interaction.response.send_message("Invoked `stop` command.", ephemeral=True)
+
+        await interaction.response.edit_message(
+            f"Invoked `stop` command. Time: {round(time.perf_counter() - ini, 2)} seconds",
+            ephemeral=True,
+        )
         await self.on_timeout()
 
     @discord.ui.button(
         custom_id="SKIP", emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}", row=1
     )
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Invoking `skip` command.", ephemeral=True)
         if self.player.queue.is_empty:
             return await interaction.response.send_message(
                 "There is no music to skip.", ephemeral=True
             )
         cmd: commands.Command = self.bot.get_command("skip")
+        ini = time.perf_counter()
         try:
             await self.ctx.invoke(cmd)
-            await interaction.response.send_message("Invoked `skip` command.", ephemeral=True)
+            await interaction.response.edit_message(
+                "Invoked `skip` command. Time: {round(time.perf_counter() - ini, 2)} seconds",
+                ephemeral=True,
+            )
             await self.on_timeout()
         except commands.CommandError as e:
             return await self.__send_interal_error_response(interaction)
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await self.__add_to_playlist(interaction.user)
         await interaction.response.send_message(
             "Added song to loved songs (Playlist).", ephemeral=True
         )
+        await self.__add_to_playlist(interaction.user)
 
     def disable_all(self) -> None:
         for button in self.children:

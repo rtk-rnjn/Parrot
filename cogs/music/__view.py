@@ -169,7 +169,7 @@ class MusicView(discord.ui.View):
             return
         await interaction.response.send_message("There is no music to pause.", ephemeral=True)
 
-    @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}")
+    @discord.ui.button(custom_id="PLAY", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}", row=1)
     async def play(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.player.is_paused():
             await interaction.response.defer()

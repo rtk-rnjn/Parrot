@@ -1,3 +1,24 @@
+# Bot owner details
+OWNER_ID = ""
+OWNER_DISCRIMINATOR = ""
+OWNER_NAME = ""
+OWNER_IDS = ""
+
+# Bot settings
+BOT_PREFIX = ""
+COMMAND_CASE_INSENSITIVE = ""
+STRIP_AFTER_PREFIX = ""
+
+# Misc settings
+WEBHOOK_JOIN_LEAVE_ID = ""
+GITHUB_ID = ""
+GITHUB_PROJECT_NAME = ""
+SUPPORT_SERVER = ""
+SUPPORT_SERVER_ID = ""
+PRIVACY_POLICY = ""
+
+MEME_PASS = ""
+
 # Your Discord Bot Token
 # https://discord.com/developers/applications
 TOKEN=""

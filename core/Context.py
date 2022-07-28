@@ -295,22 +295,6 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         else:
             await asyncio.sleep(_for or 0)
 
-    async def edit(
-        self,
-        message: discord.Message,
-        content: Optional[str] = None,
-        *args: Any,
-        overwrite: Optional[bool] = False,
-        **kwargs: Any,
-    ) -> Optional[discord.Message]:
-        if overwrite:
-            content = (message.content or "") + (content or "")
-
-        if content == "":
-            content = "\u200b"
-
-        return await message.edit(content=content, **kwargs)
-
     async def safe_send(
         self, content: str, *, escape_mentions: bool = True, **kwargs: Any
     ) -> Optional[discord.Message]:

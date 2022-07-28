@@ -1,7 +1,7 @@
 owner_ids:
   - 741614468546560092
   - 813647101392846848
-prefix: $
+prefix: $ 
 case_insensitive: true
 strip_after_prefix: true
 super_user: 741614468546560092

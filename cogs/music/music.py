@@ -77,7 +77,7 @@ class Music(Cog):
             text=f"Requested by {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
-        embed.set_thumbnail(url=getattr(track, "thumbnail"))
+        embed.set_thumbnail(url=getattr(track, "thumbnail", None))
 
         return embed
 

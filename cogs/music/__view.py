@@ -156,7 +156,7 @@ class MusicView(discord.ui.View):
     async def __like(self, interaction: discord.Interaction, button: discord.ui.Button):
         ...
     
-    @discord.ui.Button(emoji="\N{THUMBS DOWN SIGN}", disabled=True)
+    @discord.ui.button(emoji="\N{THUMBS DOWN SIGN}", disabled=True)
     async def __dislike(self, interaction: discord.Interaction, button: discord.ui.Button):
         ...
 

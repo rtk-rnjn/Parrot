@@ -382,25 +382,13 @@ class Parrot(commands.AutoShardedBot):
             "messageAuthor"
         )
         self.afk = set(ls)
-        VCS = await self.mongo.parrot_db.server_config.distinct("vc")
+
         await self.update_opt_in_out.start()
         success = await self.ipc_client.request(
             "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
         )
         if success["status"] == "ok":
             print("[Parrot] Wavelink node connected successfully")
-
-        for channel in VCS:
-            if channel is not None:
-                channel: discord.VoiceChannel = await self.getch(  # type: ignore
-                    self.get_channel, self.fetch_channel, channel, force_fetch=False
-                )
-                try:
-                    if channel is not None:
-                        await channel.connect(cls=wavelink.Player, timeout=10)
-                except (discord.HTTPException, asyncio.TimeoutError):
-                    pass
-            await asyncio.sleep(0)
 
         self._was_ready = True
     

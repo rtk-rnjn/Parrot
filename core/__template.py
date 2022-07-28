@@ -21,7 +21,6 @@ post: Dict[str, Any] = {
     "oneword": None,
     "warn_count": 0,
     "suggestion_channel": None,
-    "vc": None,
     "giveaway": [],
     "hub": None,
     "stats_channels": {

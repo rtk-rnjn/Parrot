@@ -57,7 +57,6 @@ class Configuration(Cog):
                     data.get("suggestion_channel", 0)
                 )
                 hub = ctx.guild.get_channel(data.get("hub", 0))
-                vc = ctx.guild.get_channel(data.get("vc", 0))
 
                 await ctx.reply(
                     f"Configuration of this server [server_config]\n\n"
@@ -68,7 +67,6 @@ class Configuration(Cog):
                     f"`Premium :` **{'Enabled' if data.get('premium') else 'Disabled'}**\n\n"
                     f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n\n"
                     f"`Hub     :` **{hub.mention if hub else 'None'} ({data.get('hub')})**\n"
-                    f"`VC(24/7):` **{vc.mention if vc else 'None'} ({data.get('vc')})**\n"
                 )
 
     @config.group(name="hub", invoke_without_command=True)
@@ -349,32 +347,6 @@ class Configuration(Cog):
             {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}}
         )
         await ctx.reply(f"{ctx.author.mention} removed suggestion channel")
-
-    @config.command(name="24/7", aliases=["vc247", "247vc"])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def vc_247(
-        self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None
-    ):
-        """To set 24/7 VC"""
-        if channel:
-            await self.bot.mongo.parrot_db.server_config.update_one(
-                {"_id": ctx.guild.id}, {"$set": {"vc": channel.id}}
-            )
-            await ctx.reply(
-                f"{ctx.author.mention} set 24/7 vc channel to **{channel.name}**"
-            )
-            try:
-                await channel.connect(cls=wavelink.Player)
-            except Exception as e:
-                await ctx.send(f"{ctx.author.mention} something wrong: **{e}**")
-            return
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"vc": None}}
-        )
-        await ctx.reply(f"{ctx.author.mention} removed vc channel")
-        if ctx.guild.me.voice:
-            await ctx.guild.me.edit(voice_channel=None)
 
     @config.group(name="warn")
     @commands.has_permissions(administrator=True)

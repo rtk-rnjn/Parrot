@@ -162,6 +162,20 @@ def in_voice() -> Callable:
     return commands.check(predicate)
 
 
+def same_voice() -> Callable:
+    async def predicate(ctx: Context) -> bool:
+        if ctx.me.voice is None:
+            raise ex.NotBotInVoice()
+        if ctx.author.voice is None:
+            raise ex.NotInVoice()
+        if ctx.me.voice.channel != ctx.author.voice.channel:
+            raise ex.NotSameVoice()
+
+        return True
+
+    return commands.check(predicate)
+
+
 def cooldown_with_role_bypass(
     rate: int,
     per: float,

@@ -71,7 +71,7 @@ class MusicView(discord.ui.View):
         return True
 
     async def __like(self, user: Union[discord.User, discord.Member]):
-        result = await self.bot.mongo.extra.user_misc.update_one(
+        await self.bot.mongo.extra.user_misc.update_one(
             {"_id": user.id},
             {
                 "$addToSet": {
@@ -79,25 +79,28 @@ class MusicView(discord.ui.View):
                         "id": self.player.track.id,
                         "song_name": getattr(self.player.track, "title"),
                         "url": getattr(self.player.track, "uri"),
+                        "author": getattr(self.player.track, "author"),
+                        "duration": getattr(self.player.track, "duration"),
                     }
                 }
             },
             upsert=True,
         )
-        if result.modified_count != 0:
-            await self.bot.mongo.extra.songs.update_one(
-                {"id": self.player.track.id},
-                {"$inc": {"likes": 1}},
-                upsert=True,
-            )
+
         await self.bot.mongo.extra.songs.update_one(
-            {"id": self.player.track.id},
+            {
+                "id": self.player.track.id,
+                "song_name": getattr(self.player.track, "title"),
+                "url": getattr(self.player.track, "uri"),
+                "author": getattr(self.player.track, "author"),
+                "duration": getattr(self.player.track, "duration"),
+            },
             {"$addToSet": {"liked_by": user.id}},
             upsert=True,
         )
 
     async def __dislike(self, user: Union[discord.User, discord.Member]):
-        result = await self.bot.mongo.extra.user_misc.update_one(
+        await self.bot.mongo.extra.user_misc.update_one(
             {"_id": user.id},
             {
                 "$addToSet": {
@@ -105,19 +108,22 @@ class MusicView(discord.ui.View):
                         "id": self.player.track.id,
                         "song_name": getattr(self.player.track, "title"),
                         "url": getattr(self.player.track, "uri"),
+                        "author": getattr(self.player.track, "author"),
+                        "duration": getattr(self.player.track, "duration"),
                     }
                 }
             },
             upsert=True,
         )
-        if result.modified_count != 0:
-            await self.bot.mongo.extra.songs.update_one(
-                {"id": self.player.track.id},
-                {"$inc": {"dislikes": 1}},
-                upsert=True,
-            )
+
         await self.bot.mongo.extra.songs.update_one(
-            {"id": self.player.track.id},
+            {
+                "id": self.player.track.id,
+                "song_name": getattr(self.player.track, "title"),
+                "url": getattr(self.player.track, "uri"),
+                "author": getattr(self.player.track, "author"),
+                "duration": getattr(self.player.track, "duration"),
+            },
             {"$addToSet": {"disliked_by": user.id}},
             upsert=True,
         )

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import random
-from wavelink import QueueEmpty
 from contextlib import suppress
 from typing import TYPE_CHECKING, Deque, Dict, Literal, Optional, Union
 
@@ -12,7 +11,8 @@ import wavelink
 from core import Cog
 from discord.ext import commands
 from pymongo.collection import Collection
-from utilities.checks import in_voice, is_dj
+from utilities.checks import in_voice, is_dj, same_voice
+from wavelink import QueueEmpty
 from wavelink.ext import spotify
 
 if TYPE_CHECKING:
@@ -77,8 +77,7 @@ class Music(Cog):
             text=f"Requested by {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
-        if hasattr(track, "thumbnail") and track.thumbnail is not None:
-            embed.set_thumbnail(url=track.thumbnail)
+        embed.set_thumbnail(url=getattr(track, "thumbnail"))
 
         return embed
 
@@ -92,8 +91,8 @@ class Music(Cog):
         if not data:
             return {"likes": 0, "dislikes": 0}
         return {
-            "likes": data.get("likes", 0),
-            "dislikes": data.get("dislikes", 0),
+            "likes": len(data.get("liked_by", [])),
+            "dislikes": len(data.get("dislikes", [])),
         }
 
     async def make_final_embed(self, *, track: wavelink.Track, ctx: Context) -> discord.Embed:
@@ -114,6 +113,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.bot_has_guild_permissions(connect=True)
+    @in_voice()
     async def join(self, ctx: Context, channel: Optional[discord.VoiceChannel] = None):
         """Joins a voice channel. If no channel is given then it will connects to your channel"""
         dj_role = await ctx.dj_role()
@@ -150,7 +150,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def loop(self, ctx: Context, info: Optional[Literal["all", "current"]] = "all"):
         """To loop the current song or the queue"""
         if ctx.voice_client is None:
@@ -174,7 +174,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def shuffle(self, ctx: Context):
         """Shuffles the queue"""
         if ctx.voice_client is None:
@@ -212,7 +212,7 @@ class Music(Cog):
 
     @_filter.command(name="equalizer", invoke_without_command=True)
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_equalizer(
         self,
         ctx: Context,
@@ -236,7 +236,7 @@ class Music(Cog):
 
     @_filter.command(name="karaoke")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_karaoke(self, ctx: Context, *, flag: KaraokeFlag):
         """To configure Karaoke filter"""
         if ctx.voice_client is None:
@@ -265,7 +265,7 @@ class Music(Cog):
 
     @_filter.command(name="timescale")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_timescale(self, ctx: Context, *, timescale: TimescaleFlag):
         """To configure the timescale filter"""
         if ctx.voice_client is None:
@@ -292,7 +292,7 @@ class Music(Cog):
 
     @_filter.command(name="tremolo")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_tremolo(self, ctx: Context, *, tremolo: TremoloFlag):
         """To configure the tremolo filter"""
         if ctx.voice_client is None:
@@ -317,7 +317,7 @@ class Music(Cog):
 
     @_filter.command(name="vibrato")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_vibrato(self, ctx: Context, *, flag: VibratoFlag):
         """To configure the vibrato filter"""
         if ctx.voice_client is None:
@@ -342,7 +342,7 @@ class Music(Cog):
 
     @_filter.command(name="rotation")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_rotation(self, ctx: Context, *, flag: RotationFlag):
         """To configure the rotation filter"""
         if ctx.voice_client is None:
@@ -365,7 +365,7 @@ class Music(Cog):
 
     @_filter.command(name="distortion")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_distortion(self, ctx: Context, *, flag: DistortionFlag):
         """To configure the distortion filter"""
         if ctx.voice_client is None:
@@ -402,7 +402,7 @@ class Music(Cog):
 
     @_filter.group(name="channelmix", invoke_without_command=True)
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_channelmix(
         self,
         ctx: Context,
@@ -439,7 +439,7 @@ class Music(Cog):
 
     @_filter_channelmix.command(name="builtin", aliases=["built-in"])
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_channelmix_builtin(
         self,
         ctx: Context,
@@ -462,7 +462,7 @@ class Music(Cog):
 
     @_filter.command(name="lowpass")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _filter_lowpass(self, ctx: Context, *, flag: LowPassFlag):
         """To configure the lowpass filter"""
         if ctx.voice_client is None:
@@ -496,7 +496,7 @@ class Music(Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.bot_has_guild_permissions(connect=True)
-    @in_voice()
+    @same_voice()
     async def play(
         self,
         ctx: Context,
@@ -511,6 +511,8 @@ class Music(Cog):
                 vc: wavelink.Player = ctx.voice_client  # type: ignore
 
             if isinstance(search, str):
+                if search.startswith("https://open.spotify.com/"):
+                    return await self.play_spotify(ctx, link=search)
                 search = wavelink.PartialTrack(query=search)
 
             if vc.is_playing():
@@ -717,7 +719,7 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} Cleared playlist")
 
     @commands.command(name="next", aliases=["skip"])
-    @in_voice()
+    @same_voice()
     async def _next(self, ctx: Context, *, flag: Optional[Literal["--force"]] = None):
         """Skips the currently playing song
 
@@ -828,7 +830,7 @@ class Music(Cog):
 
     @_queue.command(name="clear")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _queue_clear(self, ctx: Context):
         """Clears the current songs queue"""
         if ctx.voice_client is None:
@@ -845,7 +847,7 @@ class Music(Cog):
 
     @_queue.command(name="remove")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def _queue_remove(self, ctx: Context, *, index: int):
         """Removes a song from the current songs queue"""
         if ctx.voice_client is None:
@@ -868,7 +870,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def stop(self, ctx: Context):
         """Stop the currently playing song. Queue will be cleared."""
         if ctx.voice_client is None:
@@ -887,7 +889,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def clear(self, ctx: Context):
         """Clear the queue"""
         if ctx.voice_client is None:
@@ -899,7 +901,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def pause(self, ctx: Context):
         """Pause the currently playing song."""
         if ctx.voice_client is None:
@@ -918,7 +920,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def resume(self, ctx: Context):
         """Resume the currently paused song."""
         if ctx.voice_client is None:
@@ -937,7 +939,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def volume(self, ctx: Context, volume: int):
         """Change the volume of the currently playing song."""
         if volume < 1 or volume > 100:
@@ -957,7 +959,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    @in_voice()
+    @same_voice()
     async def seek(self, ctx: Context, seconds: int):
         """Seek to a given position in the currently playing song."""
         if ctx.voice_client is None:

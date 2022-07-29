@@ -6,6 +6,7 @@ import asyncio
 import datetime
 import io
 import logging
+import logging.handlers
 import os
 import re
 import sys
@@ -19,7 +20,6 @@ from typing import (
     Awaitable,
     Callable,
     Collection,
-    Coroutine,
     Dict,
     List,
     Mapping,

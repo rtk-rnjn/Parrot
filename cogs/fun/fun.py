@@ -970,7 +970,11 @@ class Fun(Cog):
             _option.append(question_data["correct_answer"])
             options = _option.copy()
             random.shuffle(options)
-            question = html.escape(question_data["question"])
+            question = html.escape(question_data["question"], quote=False)
+
+            _value_str = ""
+            for i in options:
+                _value_str += f"\N{BULLET}`{html.escape(i, quote=False)}`\n"
 
             embed = (
                 discord.Embed(
@@ -979,7 +983,7 @@ class Fun(Cog):
                 )
                 .add_field(
                     name="Options",
-                    value=f'`{"`, `".join(html.escape(i) for i in options)}`',
+                    value=_value_str,
                     inline=False,
                 )
                 .set_footer(text=f"{ctx.author.name}")
@@ -990,7 +994,7 @@ class Fun(Cog):
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and rapidfuzz.fuzz.ratio(
                     question_data["correct_answer"].lower(), m.content.lower()
-                ) > 80
+                ) > 75
 
             try:
                 msg: discord.Message = await ctx.wait_for(
@@ -1027,8 +1031,13 @@ class Fun(Cog):
                 self.player_scores[msg.author] = 100
 
             await ctx.send(embed=embed)
+            await ctx.send(
+                f"{msg.author.mention} got the correct answer :tada: 100 points!"
+            )
             await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
             await ctx.release()
+        else:
+            await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
 
         self.game_status[ctx.channel.id] = False
         self.game_player_scores[ctx.channel.id] = {}
@@ -1506,7 +1515,7 @@ class Fun(Cog):
 
             # Check if more than 1 player has highest points.
             if no_of_winners > 1:
-                winners = []
+                winners: List[discord.Member] = []
                 points_copy = list(player_data.values()).copy()
 
                 for _ in range(no_of_winners):
@@ -1582,7 +1591,8 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def choose(self, ctx: Context, *, options: commands.clean_content):
-        """Confuse something with your decision? Let Parrot choose from your choice. NOTE: The `Options` should be seperated by commas `,`."""
+        """Confuse something with your decision? Let Parrot choose from your choice.
+        NOTE: The `Options` should be seperated by commas `,`."""
         options = options.split(",")
         await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 

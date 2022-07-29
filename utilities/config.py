@@ -23,7 +23,7 @@ def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, fl
     """
     Parse an environment variable into a Python type.
     """
-    value = os.environ.get(key, default)
+    value = os.environ.get(str(key), default)
     if value is None:
         raise ValueError(f"{key} is not set")
     if "|" in value:

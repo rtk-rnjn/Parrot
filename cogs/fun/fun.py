@@ -97,7 +97,7 @@ IMAGES = {
 }
 
 
-response = [
+RESPONSES = [
     "All signs point to yes...",
     "Yes!",
     "My sources say nope.",
@@ -1573,7 +1573,7 @@ class Fun(Cog):
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question: commands.clean_content):
         """8ball Magic, nothing to say much"""
-        await ctx.reply(f"Question: **{question}**\nAnswer: **{random.choice(response)}**")
+        await ctx.reply(f"Question: **{question}**\nAnswer: **{random.choice(RESPONSES)}**")
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)

@@ -1039,3 +1039,4 @@ class Music(Cog):
                     await player.play(track)
                 except QueueEmpty:
                     pass
+# TODO: use `_cache` and `_config` in `Player` to have a better control over the player.

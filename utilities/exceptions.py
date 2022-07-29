@@ -51,7 +51,7 @@ class NotInVoice(ParrotCheckFailure):
 
 class NotBotInVoice(ParrotCheckFailure):
     def __init__(self):
-        super().__init__("Bot is not is voice channel")
+        super().__init__("Bot is not in the voice channel")
 
 
 class NotSameVoice(ParrotCheckFailure):

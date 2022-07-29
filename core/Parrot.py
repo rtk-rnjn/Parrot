@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import io
+import logging
 import os
 import re
 import sys
@@ -75,14 +76,29 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
+intents.members = True  # type: ignore
+intents.message_content = True  # type: ignore
 
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
 ERROR_LOG_WEBHOOK_ID = 924513442273054730
 STARTUP_LOG_WEBHOOK_ID = 985926507530690640
+
+logger = logging.getLogger("discord")
+logger.setLevel(logging.WARNING)
+logging.getLogger("discord.http").setLevel(logging.WARNING)
+
+handler = logging.handlers.RotatingFileHandler(
+    filename="discord.log",
+    encoding="utf-8",
+    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    backupCount=5,  # Rotate through 5 files
+)
+dt_fmt = "%Y-%m-%d %H:%M:%S"
+formatter = logging.Formatter("[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 @ToAsync()
@@ -126,9 +142,7 @@ class Parrot(commands.AutoShardedBot):
             status=discord.Status.dnd,
             strip_after_prefix=STRIP_AFTER_PREFIX,
             owner_ids=set(OWNER_IDS),
-            allowed_mentions=discord.AllowedMentions(
-                everyone=False, replied_user=False
-            ),
+            allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=1,
             max_messages=5000,
@@ -147,9 +161,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.error_channel: Optional[discord.TextChannel] = None
         self.persistent_views_added: bool = False
-        self.spam_control = commands.CooldownMapping.from_cooldown(
-            3, 5, commands.BucketType.user
-        )
+        self.spam_control = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.user)
 
         self._was_ready = False
 
@@ -306,9 +318,7 @@ class Parrot(commands.AutoShardedBot):
                     username=self.user.name,
                 )
 
-    async def before_identify_hook(
-        self, shard_id: int, *, initial: bool = False
-    ) -> None:
+    async def before_identify_hook(self, shard_id: int, *, initial: bool = False) -> None:
         self._clear_gateway_data()
         self.identifies[shard_id].append(discord.utils.utcnow())
         await super().before_identify_hook(shard_id, initial=initial)
@@ -364,9 +374,7 @@ class Parrot(commands.AutoShardedBot):
             fail_msg = ""
             if self._failed_to_load:
                 for k, v in self._failed_to_load.items():
-                    fail_msg += (
-                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
-                    )
+                    fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
                 await webhook.send(
                     f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
                     avatar_url=self.user.avatar.url,
@@ -374,13 +382,9 @@ class Parrot(commands.AutoShardedBot):
                 )
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
-        print(
-            f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
-        )
+        print(f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}")
 
-        ls: List[Optional[int]] = await self.mongo.parrot_db.afk.distinct(
-            "messageAuthor"
-        )
+        ls: List[Optional[int]] = await self.mongo.parrot_db.afk.distinct("messageAuthor")
         self.afk = set(ls)
 
         await self.update_opt_in_out.start()
@@ -391,10 +395,10 @@ class Parrot(commands.AutoShardedBot):
             print("[Parrot] Wavelink node connected successfully")
 
         self._was_ready = True
-    
+
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f'[Parrot] Wavelink Node {node.identifier} is ready!')
+        print(f"[Parrot] Wavelink Node {node.identifier} is ready!")
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")
@@ -489,16 +493,12 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
-            await message.channel.send(
-                f"Prefix: `{await self.get_guild_prefixes(message.guild)}`"
-            )
+            await message.channel.send(f"Prefix: `{await self.get_guild_prefixes(message.guild)}`")
             return
 
         await self.process_commands(message)
 
-    async def on_message_edit(
-        self, before: discord.Message, after: discord.Message
-    ) -> None:
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if after.guild is None or after.author.bot:
             return
 
@@ -549,25 +549,19 @@ class Parrot(commands.AutoShardedBot):
                 else:
                     yield member
             else:
-                members = await guild.query_members(
-                    limit=1, user_ids=needs_resolution, cache=True
-                )
+                members = await guild.query_members(limit=1, user_ids=needs_resolution, cache=True)
                 if members:
                     yield members[0]
         elif total_need_resolution <= 100 and total_need_resolution > 1:
             # Only a single resolution call needed here
-            resolved = await guild.query_members(
-                limit=100, user_ids=needs_resolution, cache=True
-            )
+            resolved = await guild.query_members(limit=100, user_ids=needs_resolution, cache=True)
             for member in resolved:
                 yield member
         else:
             # We need to chunk these in bits of 100...
             for index in range(0, total_need_resolution, 100):
                 to_resolve = needs_resolution[index : index + 100]
-                members = await guild.query_members(
-                    limit=100, user_ids=to_resolve, cache=True
-                )
+                members = await guild.query_members(limit=100, user_ids=to_resolve, cache=True)
                 for member in members:
                     yield member
 
@@ -590,9 +584,7 @@ class Parrot(commands.AutoShardedBot):
         Optional[Member]
             The member or None if not found.
         """
-        member_id = (
-            member_id.id if isinstance(member_id, discord.Object) else int(member_id)
-        )
+        member_id = member_id.id if isinstance(member_id, discord.Object) else int(member_id)
 
         member = guild.get_member(member_id)
         if member is not None:
@@ -614,9 +606,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_or_fetch_message(
         self,
-        channel: Union[
-            discord.TextChannel, discord.PartialMessageable, discord.Object, int
-        ],
+        channel: Union[discord.TextChannel, discord.PartialMessageable, discord.Object, int],
         message: int,
         *,
         fetch: bool = True,
@@ -688,9 +678,7 @@ class Parrot(commands.AutoShardedBot):
 
         return None
 
-    async def get_prefix(
-        self, message: discord.Message
-    ) -> Union[str, Callable, List[str]]:
+    async def get_prefix(self, message: discord.Message) -> Union[str, Callable, List[str]]:
         """Dynamic prefixing"""
         if message.guild is None:
             return commands.when_mentioned_or("$")(self, message)
@@ -723,10 +711,8 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await self.mongo.parrot_db.server_config.find_one(
-                {"_id": guild.id}
-            ):
-                return data.get("prefix")
+            if data := await self.mongo.parrot_db.server_config.find_one({"_id": guild.id}):
+                return data.get("prefix", "$")
         return "$"
 
     async def invoke_help_command(self, ctx: Context) -> None:
@@ -744,11 +730,7 @@ class Parrot(commands.AutoShardedBot):
             something = None
             if not callable(get_function):
                 something = get_function
-            if (
-                isinstance(fetch_function, Awaitable)
-                and something is None
-                and force_fetch
-            ):
+            if isinstance(fetch_function, Awaitable) and something is None and force_fetch:
                 return await fetch_function
             return something
         with suppress(discord.HTTPException):

@@ -69,8 +69,6 @@ with open(Path("extra/anagram.json"), "r") as l:
 with open(Path("extra/random_sentences.txt"), "r") as m:
     _random_sentences = m.read().split("\n")
 
-_EXECUTOR = ThreadPoolExecutor(10)
-
 FILENAME_STRING = "{effect}_{author}.png"
 THUMBNAIL_SIZE = (80, 80)
 
@@ -153,16 +151,6 @@ RULES = (
 
 WIKI_FEED_API_URL = "https://en.wikipedia.org/api/rest_v1/feed/featured/{date}"
 TRIVIA_QUIZ_ICON = "https://raw.githubusercontent.com/python-discord/branding/main/icons/trivia_quiz/trivia-quiz-dist.png"
-
-
-async def in_executor(func: Callable[..., T], *args) -> T:
-    """
-    Runs the given synchronous function `func` in an executor.
-    This is useful for running slow, blocking code within async
-    functions, so that they don't block the bot.
-    """
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(_EXECUTOR, func, *args)
 
 
 def file_safe_name(effect: str, display_name: str) -> str:
@@ -896,7 +884,7 @@ class Fun(Cog):
             `--category`: Category to use in the quiz.
             `--difficulty`: Difficulty to use in the quiz.
             `--type`: Type of question to use in the quiz.
-            `--amount`: Amount of questions to use in the quiz.`
+            `--amount`: Amount of questions to use in the quiz.
         """
         if ctx.channel.id not in self.game_status:
             self.game_status[ctx.channel.id] = False
@@ -2238,7 +2226,7 @@ class Fun(Cog):
         image_bytes = await user.display_avatar.replace(size=1024).read()
         file_name = file_safe_name("eightbit_avatar", ctx.author.display_name)
 
-        file = await in_executor(
+        file = await self.bot.func(
             PfpEffects.apply_effect,
             image_bytes,
             PfpEffects.eight_bitify_effect,
@@ -2279,7 +2267,7 @@ class Fun(Cog):
             image_bytes = await user.display_avatar.replace(size=1024).read()
             filename = file_safe_name("reverse_avatar", ctx.author.display_name)
 
-            file = await in_executor(
+            file = await self.bot.func(
                 PfpEffects.apply_effect, image_bytes, PfpEffects.flip_effect, filename
             )
 
@@ -2336,7 +2324,7 @@ class Fun(Cog):
             image_bytes = await user.display_avatar.replace(size=256).read()
             file_name = file_safe_name("easterified_avatar", ctx.author.display_name)
 
-            file = await in_executor(
+            file = await self.bot.func(
                 PfpEffects.apply_effect,
                 image_bytes,
                 PfpEffects.easterify_effect,
@@ -2364,7 +2352,7 @@ class Fun(Cog):
         async with ctx.typing():
             file_name = file_safe_name("pride_avatar", ctx.author.display_name)
 
-            file = await in_executor(
+            file = await ctx.bot.func(
                 PfpEffects.apply_effect,
                 image_bytes,
                 PfpEffects.pridify_effect,
@@ -2437,7 +2425,7 @@ class Fun(Cog):
 
             file_name = file_safe_name("spooky_avatar", ctx.author.display_name)
 
-            file = await in_executor(
+            file = await self.bot.func(
                 PfpEffects.apply_effect,
                 image_bytes,
                 spookifications.get_random_effect,
@@ -2511,7 +2499,7 @@ class Fun(Cog):
 
             img_bytes = await user.display_avatar.replace(size=1024).read()
 
-            file = await in_executor(
+            file = await self.bot.func(
                 PfpEffects.apply_effect,
                 img_bytes,
                 PfpEffects.mosaic_effect,

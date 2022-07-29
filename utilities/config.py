@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -19,7 +19,7 @@ with open("config.yml") as f:
 VERSION = "v4.9.5-beta"
 
 
-def parse_env_var(key: str, default: Any = None) -> Union[str, int, float, bool, List[Any]]:
+def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, float, bool, List[Any]]:
     """
     Parse an environment variable into a Python type.
     """
@@ -27,7 +27,7 @@ def parse_env_var(key: str, default: Any = None) -> Union[str, int, float, bool,
     if value is None:
         raise ValueError(f"{key} is not set")
     if "|" in value:
-        return [parse_env_var(key) for key in value.split("|")]
+        return [parse_env_var(None, key) for key in value.split("|")]
     if value.isdigit():
         return int(value)
     if value.replace(".", "", 1).isdigit():

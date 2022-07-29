@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import io
 import json
 import random
 import re
@@ -54,6 +55,20 @@ from interactions.buttons.__constants import (
     Emojis,
 )
 from interactions.buttons.__country_guess import BetaCountryGuesser
+from interactions.buttons.__duckgame import (
+    ANSWER_REGEX,
+    CORRECT_GOOSE,
+    CORRECT_SOLN,
+    EMOJI_WRONG,
+    GAME_DURATION,
+    HELP_IMAGE_PATH,
+    HELP_TEXT,
+    INCORRECT_GOOSE,
+    INCORRECT_SOLN,
+    SOLN_DISTR,
+    DuckGame,
+    assemble_board_image,
+)
 from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__memory_game import MemoryGame
 from interactions.buttons.__number_slider import NumberSlider
@@ -97,8 +112,8 @@ class MadlibsTemplate(TypedDict):
     """Structure of a template in the madlibs JSON file."""
 
     title: str
-    blanks: list[str]
-    value: list[str]
+    blanks: List[str]
+    value: List[str]
 
 
 class BoardBoogle:
@@ -1410,9 +1425,10 @@ class Games(Cog):
         self.templates = self._load_templates()
         self.edited_content: Dict[int, str] = {}
         self.checks: Set[Callable] = set()
+        self.current_games: Dict[int, DuckGame] = {}
 
     @staticmethod
-    def _load_templates() -> list[MadlibsTemplate]:
+    def _load_templates() -> List[MadlibsTemplate]:
         madlibs_stories = Path("extra/madlibs_templates.json")
 
         with open(madlibs_stories) as file:
@@ -1449,7 +1465,7 @@ class Games(Cog):
 
     def predicate(
         self,
-        ctx: commands.Context,
+        ctx: Context,
         announcement: discord.Message,
         reaction: discord.Reaction,
         user: discord.Member,
@@ -1520,7 +1536,7 @@ class Games(Cog):
             await message.delete()
         return None
 
-    async def check_author(self, ctx: commands.Context, board_size: int) -> bool:
+    async def check_author(self, ctx: Context, board_size: int) -> bool:
         """Check if the requester is free and the board size is correct."""
         if self.already_playing_cf(ctx.author):
             await ctx.send("You're already playing a game!")
@@ -1541,7 +1557,7 @@ class Games(Cog):
 
     def get_player(
         self,
-        ctx: commands.Context,
+        ctx: Context,
         announcement: discord.Message,
         reaction: discord.Reaction,
         user: discord.Member,
@@ -1598,7 +1614,7 @@ class Games(Cog):
 
     async def _play_game(
         self,
-        ctx: commands.Context,
+        ctx: Context,
         user: Optional[discord.Member],
         board_size: int,
         emoji1: Any,
@@ -1630,7 +1646,7 @@ class Games(Cog):
     @commands.bot_has_permissions(manage_messages=True, embed_links=True, add_reactions=True)
     async def connect_four(
         self,
-        ctx: commands.Context,
+        ctx: Context,
         board_size: Optional[int] = None,
         emoji1: Optional[EMOJI_CHECK] = None,
         emoji2: Optional[EMOJI_CHECK] = None,
@@ -1692,7 +1708,7 @@ class Games(Cog):
     @connect_four.command(aliases=("bot", "computer", "cpu"))
     async def ai(
         self,
-        ctx: commands.Context,
+        ctx: Context,
         board_size: int = 7,
         emoji1: EMOJI_CHECK = "\N{LARGE BLUE CIRCLE}",
         emoji2: EMOJI_CHECK = "\N{LARGE RED CIRCLE}",
@@ -2061,7 +2077,7 @@ class Games(Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_message(self, message: discord.Message):
         # Check if channel has a game going
         if message.channel not in self.games_boogle:
@@ -2082,7 +2098,7 @@ class Games(Cog):
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def madlibs(self, ctx: commands.Context) -> None:
+    async def madlibs(self, ctx: Context) -> None:
         """
         Play Madlibs with the bot!
         Madlibs is a game where the player is asked to enter a word that
@@ -2520,3 +2536,172 @@ class Games(Cog):
 
         p = SimplePages(entries, ctx=ctx)
         await p.start()
+
+    @commands.group(
+        name="duckduckduckgoose",
+        aliases=["dddg", "ddg", "duckduckgoose", "duckgoose"],
+        invoke_without_command=True,
+    )
+    @commands.cooldown(rate=1, per=2, type=commands.BucketType.channel)
+    async def duck_start_game(self, ctx: Context) -> None:
+        """Start a new Duck Duck Duck Goose game."""
+        if ctx.channel.id in self.current_games:
+            await ctx.send("There's already a game running!")
+            return
+
+        (minimum_solutions,) = random.choices(range(len(SOLN_DISTR)), weights=SOLN_DISTR)
+        game = DuckGame(minimum_solutions=minimum_solutions)
+        game.running = True
+        self.current_games[ctx.channel.id] = game
+
+        game.board_msg = await self.send_board_embed(ctx, game)
+        game.found_msg = await self.send_found_embed(ctx)
+        await asyncio.sleep(GAME_DURATION)
+
+        # Checking for the channel ID in the currently running games is not sufficient.
+        # The game could have been ended by a player, and a new game already started in the same channel.
+        if game.running:
+            try:
+                del self.current_games[ctx.channel.id]
+                await self.end_game(ctx.channel, game, end_message="Time's up!")
+            except KeyError:
+                pass
+
+    @Cog.listener("on_message")
+    async def duck_game_on_message(self, msg: discord.Message) -> None:
+        """Listen for messages and process them as answers if appropriate."""
+        if msg.author.bot:
+            return
+
+        channel = msg.channel
+        if channel.id not in self.current_games:
+            return
+
+        game = self.current_games[channel.id]
+        if msg.content.strip().lower() == "goose":
+            # If all of the solutions have been claimed, i.e. the "goose" call is correct.
+            if len(game.solutions) == len(game.claimed_answers):
+                try:
+                    del self.current_games[channel.id]
+                    game.scores[msg.author] += CORRECT_GOOSE
+                    await self.end_game(
+                        channel, game, end_message=f"{msg.author.display_name} GOOSED!"
+                    )
+                except KeyError:
+                    pass
+            else:
+                await msg.add_reaction(EMOJI_WRONG)
+                game.scores[msg.author] += INCORRECT_GOOSE
+            return
+
+        # Valid answers contain 3 numbers.
+        if not (match := re.match(ANSWER_REGEX, msg.content)):
+            return
+        answer = tuple(sorted(int(m) for m in match.groups()))
+
+        # Be forgiving for answers that use indices not on the board.
+        if not all(0 <= n < len(game.board) for n in answer):
+            return
+
+        # Also be forgiving for answers that have already been claimed (and avoid penalizing for racing conditions).
+        if answer in game.claimed_answers:
+            return
+
+        if answer in game.solutions:
+            game.claimed_answers[answer] = msg.author
+            game.scores[msg.author] += CORRECT_SOLN
+            await self.append_to_found_embed(
+                game, f"{str(answer):12s}  -  {msg.author.display_name}"
+            )
+        else:
+            await msg.add_reaction(EMOJI_WRONG)
+            game.scores[msg.author] += INCORRECT_SOLN
+
+    async def send_board_embed(self, ctx: Context, game: DuckGame) -> discord.Message:
+        """Create and send an embed to display the board."""
+        image = assemble_board_image(game.board, game.rows, game.columns)
+        with io.BytesIO() as image_stream:
+            image.save(image_stream, format="png")
+            image_stream.seek(0)
+            file = discord.File(fp=image_stream, filename="board.png")
+        embed = discord.Embed(
+            title="Duck Duck Duck Goose!",
+            color=discord.Color.dark_purple(),
+        )
+        embed.set_image(url="attachment://board.png")
+        return await ctx.send(embed=embed, file=file)
+
+    async def send_found_embed(self, ctx: Context) -> discord.Message:
+        """Create and send an embed to display claimed answers. This will be edited as the game goes on."""
+        # Can't be part of the board embed because of discord.py limitations with editing an embed with an image.
+        embed = discord.Embed(
+            title="Flights Found",
+            color=discord.Color.dark_purple(),
+        )
+        return await ctx.send(embed=embed)
+
+    async def append_to_found_embed(self, game: DuckGame, text: str) -> None:
+        """Append text to the claimed answers embed."""
+        async with game.editing_embed:
+            (found_embed,) = game.found_msg.embeds
+            old_desc = found_embed.description or ""
+            found_embed.description = f"{old_desc.rstrip()}\n{text}"
+            await game.found_msg.edit(embed=found_embed)
+
+    async def end_game(
+        self, channel: discord.TextChannel, game: DuckGame, end_message: str
+    ) -> None:
+        """Edit the game embed to reflect the end of the game and mark the game as not running."""
+        game.running = False
+
+        scoreboard_embed = discord.Embed(
+            title=end_message,
+            color=discord.Color.dark_purple(),
+        )
+        scores = sorted(
+            game.scores.items(),
+            key=lambda item: item[1],
+            reverse=True,
+        )
+        scoreboard = "Final scores:\n\n"
+        scoreboard += "\n".join(f"{member.display_name}: {score}" for member, score in scores)
+        scoreboard_embed.description = scoreboard
+        await channel.send(embed=scoreboard_embed)
+
+        missed = [ans for ans in game.solutions if ans not in game.claimed_answers]
+        if missed:
+            missed_text = "Flights everyone missed:\n" + "\n".join(f"{ans}" for ans in missed)
+        else:
+            missed_text = "All the flights were found!"
+        await self.append_to_found_embed(game, f"\n{missed_text}")
+
+    @duck_start_game.command(name="help")
+    async def show_rules(self, ctx: Context) -> None:
+        """Explain the rules of the game."""
+        await self.send_help_embed(ctx)
+
+    @duck_start_game.command(name="stop")
+    @commands.has_permissions(manage_messages=True)
+    async def stop_game(self, ctx: Context) -> None:
+        """Stop a currently running game. Only available to mods."""
+        try:
+            game = self.current_games.pop(ctx.channel.id)
+        except KeyError:
+            await ctx.send("No game currently running in this channel")
+            return
+        await self.end_game(ctx.channel, game, end_message="Game canceled.")
+
+    @staticmethod
+    async def send_help_embed(ctx: Context) -> discord.Message:
+        """Send rules embed."""
+        embed = discord.Embed(
+            title="Compete against other players to find valid flights!",
+            color=discord.Color.dark_purple(),
+        )
+        embed.description = HELP_TEXT
+        file = discord.File(HELP_IMAGE_PATH, filename="help.png")
+        embed.set_image(url="attachment://help.png")
+        embed.set_footer(
+            text="Tip: using Discord's compact message display mode can help keep the board on the screen"
+        )
+        return await ctx.send(file=file, embed=embed)

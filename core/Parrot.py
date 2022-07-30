@@ -86,13 +86,13 @@ ERROR_LOG_WEBHOOK_ID = 924513442273054730
 STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 
 logger = logging.getLogger("discord")
-logger.setLevel(logging.WARNING)
-logging.getLogger("discord.http").setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
+logging.getLogger("discord.http").setLevel(logging.DEBUG)
 
 handler = logging.handlers.RotatingFileHandler(
     filename="discord.log",
     encoding="utf-8",
-    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    maxBytes=1 * 1024 * 1024,  # 1 MiB
     backupCount=5,  # Rotate through 5 files
 )
 dt_fmt = "%Y-%m-%d %H:%M:%S"

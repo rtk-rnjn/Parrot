@@ -8,8 +8,7 @@ import discord
 from core import Cog, Parrot
 from pymongo import UpdateOne
 
-# collection = parrot_db["server_config"]
-# log = parrot_db["logging"]
+from .__member import _MemberJoin
 
 
 class Member(Cog, command_attrs=dict(hidden=True)):
@@ -378,3 +377,4 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Member(bot))
+    await bot.add_cog(_MemberJoin(bot))

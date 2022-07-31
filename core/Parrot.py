@@ -75,7 +75,7 @@ os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
 os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.members = True  # type: ignore
 intents.message_content = True  # type: ignore
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import discord
@@ -26,7 +25,7 @@ class _MemberJoin(Cog):
             return
 
         if self.bot.is_ws_ratelimited:
-            return
+            await self.bot.wait_until_ready()
 
         while RETRY != 0:
             try:
@@ -57,7 +56,7 @@ class _MemberJoin(Cog):
             return
 
         if self.bot.is_ws_ratelimited:
-            return
+            await self.bot.wait_until_ready()
 
         new_invites: List[discord.Invite] = []
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any, Dict
 
 import discord
 from core import Cog, Parrot
@@ -22,7 +23,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
 
     async def guild_join(self, guild_id: int):
         collection = self.bot.mongo.parrot_db["telephone"]
-        post = {
+        post: Dict[str, Any] = {
             "channel": None,
             "pingrole": None,
             "is_line_busy": False,
@@ -32,7 +33,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         await collection.update_one({"_id": guild_id}, {"$set": post}, upsert=True)
 
         collection = self.bot.mongo.parrot_db["ticket"]
-        post = {
+        post: Dict[str, Any] = {
             "ticket_counter": 0,
             "valid_roles": [],
             "pinged_roles": [],
@@ -70,7 +71,7 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
             CONTENT = f"""
 `Joined       `: {guild.name} (`{guild.id}`)
 `Total member `: {len(guild.members)}
-`Server Owner `: `{guild.owner}` | {guild.owner.id}
+`Server Owner `: `{guild.owner}` | {getattr(guild.owner, "id")}
 `Bots         `: {len(guild.members) - len([m for m in guild.members if not m.bot])}
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
@@ -95,7 +96,7 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
             CONTENT = f"""
 `Removed      `: {guild.name} (`{guild.id}`)
 `Total member `: {len(guild.members)}
-`Server Owner `: `{guild.owner}` | {guild.owner.id}
+`Server Owner `: `{guild.owner}` | {getattr(guild.owner, "id")}
 `Bots         `: {len(guild.members) - len([m for m in guild.members if not m.bot])}
 
 Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
@@ -117,5 +118,5 @@ Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(s
         pass
 
 
-async def setup(bot) -> None:
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(GuildJoin(bot))

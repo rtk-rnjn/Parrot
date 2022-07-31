@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import time
 from contextlib import suppress
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 
 import discord
 from core import Cog, Parrot
 from pymongo import UpdateOne
 
-from .__member import _MemberJoin
+from ._member import _MemberJoin as MemberJoin
 
 
 class Member(Cog, command_attrs=dict(hidden=True)):
@@ -22,7 +22,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": member.guild.id, "on_member_join": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_member_join"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
@@ -44,7 +44,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
         try:
             role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
-            role = member.guild.get_role(role)
+            role: Optional[discord.Role] = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
 
@@ -65,7 +65,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": member.guild.id, "on_member_leave": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_member_leave"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
@@ -131,7 +131,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if data := await self.bot.mongo.parrot_db.logging.find_one(
             {"_id": after.guild.id, "on_member_update": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_member_update"], session=self.bot.http_session
             )
             ch = ""
@@ -170,7 +170,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if data := await self.bot.mongo.parrot_db.logging.find_one(
                 {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
             ):
-                webhook = discord.Webhook.from_url(
+                webhook: discord.Webhook = discord.Webhook.from_url(
                     data["on_vc_join"], session=self.bot.http_session
                 )
                 with suppress(discord.HTTPException):
@@ -195,7 +195,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if data := await self.bot.mongo.parrot_db.logging.find_one(
                 {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
             ):
-                webhook = discord.Webhook.from_url(
+                webhook: discord.Webhook = discord.Webhook.from_url(
                     data["on_vc_leave"], session=self.bot.http_session
                 )
                 with suppress(discord.HTTPException):
@@ -220,7 +220,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             if data := await self.bot.mongo.parrot_db.logging.find_one(
                 {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
             ):
-                webhook = discord.Webhook.from_url(
+                webhook: discord.Webhook = discord.Webhook.from_url(
                     data["on_vc_move"], session=self.bot.http_session
                 )
                 with suppress(discord.HTTPException):
@@ -377,4 +377,4 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Member(bot))
-    await bot.add_cog(_MemberJoin(bot))
+    await bot.add_cog(MemberJoin(bot))

@@ -86,8 +86,8 @@ ERROR_LOG_WEBHOOK_ID = 924513442273054730
 STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 
 logger = logging.getLogger("discord")
-logger.setLevel(logging.DEBUG)
-logging.getLogger("discord.http").setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
+logging.getLogger("discord.http").setLevel(logging.WARNING)
 
 handler = logging.handlers.RotatingFileHandler(
     filename="discord.log",

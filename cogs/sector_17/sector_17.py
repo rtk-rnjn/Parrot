@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import unicodedata
 from time import time
 from typing import TYPE_CHECKING, Dict, Optional
 
@@ -28,7 +29,9 @@ class Sector1729(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
-        if payload.message_id == MESSAGE_ID and str(payload.emoji) == EMOJI:
+        if payload.message_id == MESSAGE_ID and (
+            str(payload.emoji) == EMOJI or unicodedata.name(payload.emoji) == "WASTEBASKET"
+        ):
             msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
 
             async def __remove_reaction(msg: discord.Message) -> None:
@@ -51,7 +54,11 @@ class Sector1729(Cog):
                     await __remove_reaction(msg)
                     return
 
-            self._cache[payload.user_id] = time()
+            self._cache[payload.user_id] = time() + 60
+
+            _msg: discord.Message = await channel.send(
+                f"<@{payload.user_id}> deleting messages..."
+            )
 
             user_id: int = payload.user_id
             user: Optional[discord.User] = await self.bot.getch(
@@ -67,3 +74,4 @@ class Sector1729(Cog):
                     await msg.delete()
 
             await __remove_reaction(msg)
+            await _msg.edit(content=f"<@{payload.user_id}> done!", delete_after=7)

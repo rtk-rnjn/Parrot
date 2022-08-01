@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import random
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 import discord
 from cogs.mod.method import instant_action_parser
-from core import Cog, Context, Parrot
+from core import Cog, Context
 from utilities.infraction import warn
+
+if TYPE_CHECKING:
+    from core import Parrot
+
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")
@@ -29,9 +33,7 @@ class MentionProt(Cog):
 
         if data := self.bot.server_config.get(message.guild.id):
             try:
-                ignore: List[int] = data[message.guild.id]["automod"]["mention"][
-                    "channel"
-                ]
+                ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
             except KeyError:
                 ignore: List[int] = []
 
@@ -39,9 +41,7 @@ class MentionProt(Cog):
                 return
 
             try:
-                count: Optional[int] = data[message.guild.id]["automod"]["mention"][
-                    "count"
-                ]
+                count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
             except KeyError:
                 count = None
 
@@ -63,9 +63,7 @@ class MentionProt(Cog):
             ctx: Context = await self.bot.get_context(message, cls=Context)
 
             try:
-                instant_action: str = data["automod"]["mention"]["autowarn"]["punish"][
-                    "type"
-                ]
+                instant_action: str = data["automod"]["mention"]["autowarn"]["punish"]["type"]
             except KeyError:
                 instant_action = False
             else:
@@ -88,9 +86,7 @@ class MentionProt(Cog):
                     ctx=ctx,
                 )
 
-                await self.bot.get_cog("Moderator").warn_task(
-                    target=message.author, ctx=ctx
-                )
+                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
 
             if len(message.mentions) >= count:
                 await message.channel.send(

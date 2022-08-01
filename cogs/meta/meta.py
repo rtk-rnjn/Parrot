@@ -6,7 +6,7 @@ import io
 import itertools
 from collections import Counter
 from time import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import discord
 import psutil
@@ -496,22 +496,39 @@ class Meta(Cog):
             ("Created at", f"{discord.utils.format_dt(ctx.guild.created_at)}", True),
             (
                 "Total Members",
-                f"Members: {len(ctx.guild.members)}\nHumans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\nBots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))} ",
+                (
+                    f"Members: {len(ctx.guild.members)}\n"
+                    f"Humans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\n"
+                    f"Bots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))}"
+                ),
                 True,
             ),
             (
                 "Total channels",
-                f"Categories: {len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}",
+                (
+                    f"Categories: {len(ctx.guild.categories)}\n"
+                    f"Text: {len(ctx.guild.text_channels)}\n"
+                    f"Voice:{len(ctx.guild.voice_channels)}"
+                ),
                 True,
             ),
             (
                 "General",
-                f"Roles: {len(ctx.guild.roles)}\nEmojis: {len(ctx.guild.emojis)}\nBoost Level: {ctx.guild.premium_tier}",
+                (
+                    f"Roles: {len(ctx.guild.roles)}\n"
+                    f"Emojis: {len(ctx.guild.emojis)}\n"
+                    f"Boost Level: {ctx.guild.premium_tier}"
+                ),
                 True,
             ),
             (
                 "Statuses",
-                f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]",
+                (
+                    f":green_circle: {statuses[0]}\n"
+                    f":yellow_circle: {statuses[1]}\n"
+                    f":red_circle: {statuses[2]}\n"
+                    f":black_circle: {statuses[3]} [Blame Discord]"
+                ),
                 True,
             ),
         ]
@@ -643,7 +660,7 @@ class Meta(Cog):
                 elif isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
                     voice += 1
 
-        embed.add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
+        embed.add_field(name="Members", value=f"{total_members} total{total_unique} unique")
         embed.add_field(name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice")
         process = psutil.Process()
         memory_usage = process.memory_full_info().uss / 1024**2
@@ -810,7 +827,7 @@ class Meta(Cog):
             ("Server ID", emoji.guild_id, True),
             ("Created By", emoji.user if emoji.user else "User Not Found", True),
             ("Available?", emoji.available, True),
-            ("Managed by Twitch?", emoji.managed, True),
+            ("Managed by Twitch/YouTube?", emoji.managed, True),
             ("Require Colons?", emoji.require_colons, True),
         ]
         em.set_footer(text=f"{ctx.author}")
@@ -949,23 +966,48 @@ class Meta(Cog):
                 f"{ctx.author.mention} invalid invite or invite link is not of server"
             )
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
-        embed.description = f"""`Member Count?  :` **{invite.approximate_member_count}**
-`Presence Count?:` **{invite.approximate_presence_count}**
-`Channel     :` **<#{invite.channel.id}>**
-`Created At  :` **{'Can not determinded' if invite.created_at is None else discord.utils.format_dt(invite.created_at)}**
-`Expires At  :` **{'Invite' if invite.expires_at is None else discord.utils.format_dt(invite.expires_at)}**
-`Temporary?  :` **{bool(invite.temporary)}**
-`Max Uses    :` **{invite.max_uses if invite.max_uses else 'Infinte'}**
-`Link        :` **{invite.url}**
-`Inviter?    :` **{invite.inviter}**
-"""
+        fields: List[Tuple[str, str, bool]] = [
+            ("Member count?", invite.approximate_member_count, True),
+            ("Presence Count?", invite.approximate_presence_count, True),
+            ("Channel", f"<#{invite.channel.id}>", True),
+            (
+                "Created At",
+                discord.utils.format_dt(invite.created_at, "R")
+                if invite.created_at is not None
+                else "Can not determine",
+                True,
+            ),
+            (
+                "Expires At",
+                discord.utils.format_dt(invite.expires_at, "R")
+                if invite.expires_at is not None
+                else "Can not determine",
+                True,
+            ),
+            (
+                "Temporary?",
+                invite.temporary if invite.temporary is not None else "Can not determine",
+                True,
+            ),
+            (
+                "Max Age",
+                invite.max_age or "Infinite"
+                if invite.max_age is not None
+                else "Can not determine",
+                True,
+            ),
+            ("Link", invite.url, True),
+            ("Inviter?", invite.inviter, True),
+        ]
+        for name, value, inline in fields:
+            embed.add_field(name=name, value=f"**{value}**", inline=inline)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["sticker-info"])
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def stickerinfo(self, ctx: Context, sticker: discord.GuildSticker = None):
+    async def stickerinfo(self, ctx: Context, sticker: Union[discord.GuildSticker, None] = None):
         """Get the info regarding the Sticker"""
         if sticker is None and not ctx.message.stickers:
             return await ctx.send(f"{ctx.author.mention} you did not provide any sticker")
@@ -973,31 +1015,37 @@ class Meta(Cog):
         if sticker.guild and sticker.guild.id != ctx.guild.id:
             return await ctx.send(f"{ctx.author.mention} this sticker is not from this server")
 
-        embed = (
+        embed: discord.Embed = (
             discord.Embed(title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url)
             .add_field(
                 name="Name",
                 value=sticker.name,
+                inline=True,
             )
             .add_field(
                 name="ID",
                 value=sticker.id,
+                inline=True,
             )
             .add_field(
                 name="Created At",
                 value=discord.utils.format_dt(sticker.created_at),
+                inline=True,
             )
             .add_field(
                 name="User",
-                value=sticker.user.mention,
+                value=getattr(sticker.user, "mention"),
+                inline=True,
             )
             .add_field(
                 name="Available",
                 value=sticker.available,
+                inline=True,
             )
             .add_field(
                 name="Emoji",
                 value=sticker.emoji,
+                inline=True,
             )
             .set_thumbnail(
                 url=sticker.url,

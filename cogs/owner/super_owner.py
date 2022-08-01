@@ -26,9 +26,7 @@ from utilities.time import ShortTime
 from . import fuzzy
 
 
-class AuditFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     guild: typing.Optional[discord.Guild] = None
     limit: typing.Optional[int] = 100
     action: typing.Optional[str] = None
@@ -38,18 +36,14 @@ class AuditFlag(
     user: typing.Union[discord.User, discord.Member] = None
 
 
-class BanFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
-    reason: str = None
+class BanFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+    reason: typing.Optional[str] = None
     _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
     command: typing.Optional[convert_bool] = False
 
 
-class SubscriptionFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
-    code: str = None
+class SubscriptionFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+    code: typing.Optional[str] = None
     expiry: typing.Optional[ShortTime] = None
     guild: typing.Optional[discord.Guild] = None
     uses: typing.Optional[int] = 0
@@ -57,35 +51,29 @@ class SubscriptionFlag(
 
 
 class nitro(discord.ui.View):
-    def __init__(self, ctx):
+    def __init__(self, ctx: Context):
         super().__init__(timeout=None)
-        self.ctx = ctx
-        self.bot = ctx.bot
+        self.ctx: Context = ctx
+        self.bot: Parrot = ctx.bot
 
     @discord.ui.button(
         custom_id="fun (nitro)",
-        label="\N{BRAILLE PATTERN BLANK}" * 16
-        + "Claim"
-        + "\N{BRAILLE PATTERN BLANK}" * 16,
+        label="\N{BRAILLE PATTERN BLANK}" * 16 + "Claim" + "\N{BRAILLE PATTERN BLANK}" * 16,
         style=discord.ButtonStyle.green,
     )
     async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         i = discord.Embed()
         i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
-        await interaction.response.send_message(
-            "https://imgur.com/NQinKJB", ephemeral=True
-        )
+        await interaction.response.send_message("https://imgur.com/NQinKJB", ephemeral=True)
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
         button.label = (
-            "\N{BRAILLE PATTERN BLANK}" * 16
-            + "Claimed"
-            + "\N{BRAILLE PATTERN BLANK}" * 16,
+            "\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,
         )
 
-        ni = discord.Embed(
+        ni: discord.Embed = discord.Embed(
             title="You received a gift, but...",
             description="The gift link has either expired or has been\nrevoked.",
         )
@@ -106,14 +94,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(
-            name="early_verified_bot_developer", id=892433993537032262
-        )
+        return discord.PartialEmoji(name="early_verified_bot_developer", id=892433993537032262)
 
     @commands.command()
     @commands.is_owner()
     @Context.with_type
-    async def gitload(self, ctx: Context, *, link: str):
+    async def gitload(self, ctx: Context, *, link: str) -> None:
         """To load the cog extension from github"""
         r = await self.bot.http_session.get(link)
         data = await r.read()
@@ -125,9 +111,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(
-                f"[ERROR] Could not create file `{name}.py`: ```py\n{tbe}\n```"
-            )
+            await ctx.send(f"[ERROR] Could not create file `{name}.py`: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
 
@@ -136,9 +120,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(
-                f"[ERROR] Could not load extension {name_cog}.py: ```py\n{tbe}\n```"
-            )
+            await ctx.send(f"[ERROR] Could not load extension {name_cog}.py: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] Extension loaded `{name_cog}.py`")
 
@@ -147,7 +129,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     @Context.with_type
-    async def makefile(self, ctx: Context, name: str, *, text: str):
+    async def makefile(self, ctx: Context, name: str, *, text: str) -> None:
         """To make a file in ./temp/ directly"""
         try:
             async with async_open(f"{name}", "w+") as f:
@@ -200,9 +182,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To ban the user"""
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
-        await self.bot.mongo.parrot_db.banned_users.insert_one(
-            {"_id": user.id, **payload}
-        )
+        await self.bot.mongo.parrot_db.banned_users.insert_one({"_id": user.id, **payload})
         await self.bot.update_banned_members.start()
         try:
             await user.send(
@@ -218,6 +198,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def unban_user(
         self,
         ctx: Context,
+        *,
         user: discord.User,
     ):
         """To ban the user"""
@@ -228,9 +209,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         )
         await self.bot.update_banned_members.start()
         try:
-            await user.send(
-                f"{user.mention} you are unbanned. You can now use Parrot bot."
-            )
+            await user.send(f"{user.mention} you are unbanned. You can now use Parrot bot.")
             await ctx.send("User unbanned and DM-ed")
         except discord.Forbidden:
             await ctx.send("User unbanned, unable to DM as their DMs are locked")
@@ -289,7 +268,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         channel_member = channel_member or "members"
         URL = f"https://discord.com/api/guilds/{guild.id if isinstance(guild, discord.Guild) else guild}/widget.json"
         data = await self.bot.http_session.get(URL)
-        json = await data.json()
+        json: typing.Dict[str, typing.Any] = await data.json()
         if "message" in json:
             return await ctx.reply(f"{ctx.author.mention} can not spy that server")
         name = json["name"]
@@ -418,9 +397,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async for webhook in collection.find({"webhook": {"$exists": True}}):
             hook = webhook["webhook"]
             if hook:
-                webhook = discord.Webhook.from_url(
-                    f"{hook}", session=self.bot.http_session
-                )
+                webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
                 if webhook:
                     await webhook.send(
                         content=announcement,
@@ -432,9 +409,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     async def python(self, ctx: Context, *, text: str):
         try:
-            async with async_open(
-                f"extra/tutorials/python/{text.replace(' ', '-')}.md"
-            ) as f:
+            async with async_open(f"extra/tutorials/python/{text.replace(' ', '-')}.md") as f:
                 data = await f.read()
         except Exception as e:
             return await ctx.send(e)
@@ -455,9 +430,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         PAYLOAD["guild"] = args.guild.id if args.guild else ctx.guild.id
         PAYLOAD["expiry"] = (
-            args.expiry.dt.timestamp()
-            if args.expiry
-            else ShortTime("2d").dt.timestamp()
+            args.expiry.dt.timestamp() if args.expiry else ShortTime("2d").dt.timestamp()
         )
         PAYLOAD["uses"] = args.uses
         PAYLOAD["limit"] = args.limit
@@ -577,9 +550,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if data["premium_since"]:
             date = data["premium_since"].replace("T", " ").replace("+00:00", " ")
             em.add_field(name="Premium Since", value=date)
-        em.add_field(
-            name="Created At", value=discord.utils.format_dt(user.created_at, "R")
-        )
+        em.add_field(name="Created At", value=discord.utils.format_dt(user.created_at, "R"))
         if data["public_flags_array"]:
             em.add_field(
                 name="Public Flags Array",
@@ -749,9 +720,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
 
-        e = discord.Embed(
-            title="Read the Fucking Documentation", timestamp=discord.utils.utcnow()
-        )
+        e = discord.Embed(title="Read the Fucking Documentation", timestamp=discord.utils.utcnow())
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
@@ -901,7 +870,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         await ctx.send("\n".join(messages), delete_after=10)
 
-    async def _basic_cleanup_strategy(self, ctx, search):
+    async def _basic_cleanup_strategy(self, ctx: Context, search: int):
         count = 0
         async for msg in ctx.history(limit=search, before=ctx.message):
             if msg.author == ctx.me and not (msg.mentions or msg.role_mentions):
@@ -909,21 +878,19 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
                 count += 1
         return {"Bot": count}
 
-    async def _complex_cleanup_strategy(self, ctx, search):
-        prefixes = tuple(
-            await self.bot.get_guild_prefixes(ctx.guild)
-        )  # thanks startswith
+    async def _complex_cleanup_strategy(self, ctx: Context, search: int):
+        prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))  # thanks startswith
 
-        def check(m):
+        def check(m: discord.Message):
             return m.author == ctx.me or m.content.startswith(prefixes)
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)
 
-    async def _regular_user_cleanup_strategy(self, ctx, search):
+    async def _regular_user_cleanup_strategy(self, ctx: Context, search: int):
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
-        def check(m):
+        def check(m: discord.Message):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not (
                 m.mentions or m.role_mentions
             )

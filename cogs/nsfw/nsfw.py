@@ -47,7 +47,9 @@ class NSFW(Cog):
                 if embed is not None:
                     await ctx.reply(embed=embed)
                 else:
-                    await ctx.reply("{ctx.author.mention} something not right? This is not use but the API")
+                    await ctx.reply(
+                        f"{ctx.author.mention} something not right? This is not use but the API"
+                    )
 
             self.bot.add_command(callback)
 
@@ -88,9 +90,7 @@ class NSFW(Cog):
         """
         Best command I guess. It return random ^^
         """
-        r = await self.bot.http_session.get(
-            "https://scathach.redsplit.org/v3/nsfw/gif/"
-        )
+        r = await self.bot.http_session.get("https://scathach.redsplit.org/v3/nsfw/gif/")
         if r.status == 200:
             res = await r.json()
         else:

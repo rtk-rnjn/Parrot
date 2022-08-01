@@ -30,7 +30,7 @@ class Sector1729(Cog):
     @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         if payload.message_id == MESSAGE_ID and (
-            str(payload.emoji) == EMOJI or unicodedata.name(payload.emoji) == "WASTEBASKET"
+            str(payload.emoji) == EMOJI or unicodedata.name(str(payload.emoji)) == "WASTEBASKET"
         ):
             user_id: int = payload.user_id
             user: Optional[discord.User] = await self.bot.getch(
@@ -64,7 +64,7 @@ class Sector1729(Cog):
             self._cache[payload.user_id] = time() + 60
 
             _msg: discord.Message = await channel.send(
-                f"<@{payload.user_id}> deleting messages..."
+                f"<@{payload.user_id}> deleting messages - 0/100"
             )
 
             if user is None or user.bot:
@@ -72,9 +72,13 @@ class Sector1729(Cog):
 
             dm: discord.DMChannel = await user.create_dm()
 
+            i = 1
             async for msg in dm.history(limit=100):
                 if msg.author.id == self.bot.user.id:
                     await msg.delete()
+                if i % 10 == 0:
+                    await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/100")
+                i += 1
 
             await __remove_reaction(msg)
             await _msg.edit(content=f"<@{payload.user_id}> done!", delete_after=7)

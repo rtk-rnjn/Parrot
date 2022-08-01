@@ -40,11 +40,12 @@ class Sector1729(Cog):
             msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
 
             async def __remove_reaction(msg: discord.Message) -> None:
-                try:
-                    await msg.remove_reaction(EMOJI, user)
-                except discord.HTTPException:
-                    pass
-
+                for reaction in msg.reactions:
+                    if unicodedata.name(reaction.emoji) == "WASTEBASKET":
+                        try:
+                            await msg.remove_reaction(reaction.emoji, user)
+                        except discord.HTTPException:
+                            pass
 
             if then := self._cache.get(payload.user_id):
                 if abs(time() - then) < 60:

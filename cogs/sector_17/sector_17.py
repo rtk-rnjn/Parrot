@@ -22,12 +22,12 @@ class Sector1729(Cog):
         self.bot = bot
         self._cache: Dict[int, int] = {}
 
-    async def cog_check(self, ctx: Context) -> bool:
-        return ctx.guild is not None and ctx.guild.id == getattr(
-            ctx.bot.server, "id", SUPPORT_SERVER_ID
-        )
+    # async def cog_check(self, ctx: Context) -> bool:
+    #     return ctx.guild is not None and ctx.guild.id == getattr(
+    #         ctx.bot.server, "id", SUPPORT_SERVER_ID
+    #     )
 
-    @Cog.listener()
+    @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         if payload.message_id == MESSAGE_ID and (
             str(payload.emoji) == EMOJI or unicodedata.name(payload.emoji) == "WASTEBASKET"

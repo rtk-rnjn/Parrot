@@ -268,9 +268,28 @@ class IPCRoutes(Cog):
             return {"status": "ok"}
 
     @server.route()
-    async def cricket_api(self, data: server.IpcServerResponse) -> Optional[Dict[str, Any]]:
+    async def start_cricket_api(self, data: server.IpcServerResponse) -> Optional[Dict[str, Any]]:
         url = data.url
         if not url:
             return None
 
         return cricket_api(url)
+
+    @server.route()
+    async def start_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
+        port = data.port or 1019
+        end_point = data.end_point or "/dblwebhook"
+
+        authentication = os.environ["TOPGG_AUTH"]
+        try:
+            self.bot.topgg_webhook.dbl_webhook(end_point, authentication)
+            self.bot.topgg_webhook.run(port)
+        except Exception as e:
+            return {"status": f"error: {e}"}
+        else:
+            return {"status": "ok"}
+    
+    @server.route()
+    async def stop_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
+        self.bot.topgg_webhook.close()
+        return {"status": "ok"}

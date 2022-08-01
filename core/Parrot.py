@@ -280,8 +280,6 @@ class Parrot(commands.AutoShardedBot):
                 session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)
-            self.topgg_webhook.dbl_webhook("/dblwebhook", os.environ["TOPGG_AUTH"])
-            self.topgg_webhook.run(1019)
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -369,6 +367,7 @@ class Parrot(commands.AutoShardedBot):
 
             webhook: discord.Webhook = discord.Webhook.from_url(
                 f"https://discordapp.com/api/webhooks/{VOTE_LOG_WEBHOOK_ID}/{self._vote_log_token}",
+                session=self.http_session,
             )
             if webhook is not None:
                 with suppress(discord.HTTPException):
@@ -384,6 +383,7 @@ class Parrot(commands.AutoShardedBot):
     async def on_dbl_test(self, data: BotVoteData) -> None:
         webhook: discord.Webhook = discord.Webhook.from_url(
             f"https://discordapp.com/api/webhooks/{VOTE_LOG_WEBHOOK_ID}/{self._vote_log_token}",
+            session=self.http_session,
         )
         if webhook is not None:
             with suppress(discord.HTTPException):
@@ -396,6 +396,13 @@ class Parrot(commands.AutoShardedBot):
     def run(self) -> None:
         """To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
+
+    async def close(self) -> None:
+        """To close the bot"""
+        if HAS_TOP_GG:
+            await self.topgg_webhook.close()
+
+        return await super().close()
 
     async def on_ready(self) -> None:
         if not hasattr(self, "uptime"):
@@ -438,17 +445,26 @@ class Parrot(commands.AutoShardedBot):
         self.afk = set(ls)
 
         await self.update_opt_in_out.start()
+
+        # connect to Lavalink server
         success = await self.ipc_client.request(
             "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
         )
         if success["status"] == "ok":
-            print("[Parrot] Wavelink node connected successfully")
+            print(f"[{self.user.name}] Wavelink node connected successfully")
+
+        # start webserver to receive Top.GG webhooks
+        success = await self.ipc_client.request(
+            "start_dbl_server", port=1019, end_point="/dblwebhook"
+        )
+        if success["status"] == "ok":
+            print(f"[{self.user.name}] DBL server started successfully")
 
         self._was_ready = True
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f"[Parrot] Wavelink Node {node.identifier} is ready!")
+        print(f"[{self.user.name}] Wavelink Node {node.identifier} is ready!")
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")
@@ -498,7 +514,7 @@ class Parrot(commands.AutoShardedBot):
 
         bucket = self.spam_control.get_bucket(message)
         current = message.created_at.timestamp()
-        retry_after = bucket.update_rate_limit(current)
+        retry_after: Optional[float] = bucket.update_rate_limit(current)
         author_id = message.author.id
         if retry_after:
             self._auto_spam_count[author_id] += 1
@@ -515,11 +531,11 @@ class Parrot(commands.AutoShardedBot):
             except KeyError:
                 pass
             else:
-                true = self.banned_users[ctx.author.id].get("command")
+                true: Optional[bool] = self.banned_users[ctx.author.id].get("command")
                 if true:
                     return
 
-            can_run = await _can_run(ctx)
+            can_run: Optional[bool] = await _can_run(ctx)
             if not can_run:
                 await ctx.reply(
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in "

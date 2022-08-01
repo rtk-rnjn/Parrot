@@ -7,7 +7,7 @@ from asyncio import Lock
 from collections.abc import Container, Iterable
 from datetime import datetime
 from functools import wraps
-from typing import Callable, Optional, Union
+from typing import Callable, Dict, Optional, Set, Union
 from weakref import WeakValueDictionary
 
 import discord
@@ -361,7 +361,7 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
             return result
 
         # Raise error if the check did not pass
-        channels = set(kwargs.get("channels") or {})
+        channels: Set[int] = set(kwargs.get("channels") or {})
         categories = kwargs.get("categories")
 
         # Only output override channels + community_bot_commands

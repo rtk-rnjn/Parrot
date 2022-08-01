@@ -35,16 +35,19 @@ from discord import Webhook
 from discord.ext import commands, tasks
 from discord.utils import MISSING  # type: ignore
 from pymongo import ReturnDocument, UpdateOne
-from pymongo.collection import Collection
-from pymongo.typings import _DocumentType as DocumentType
+from pymongo.typings import _DocumentType
 from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, INVITE_RE, LINKS_NO_PROTOCOLS
 
 if TYPE_CHECKING:
-    from core import Cog, Parrot
-else:
-    Parrot = commands.Bot
-    Cog = commands.Cog
+    from core import Parrot
+    from discord.ext.commands.cooldowns import CooldownMapping
+    from pymongo.collection import Collection
+    from typing_extensions import TypeAlias
+
+    DocumentType: TypeAlias = _DocumentType
+
+from core import Cog
 
 with open("extra/profanity.json") as f:
     bad_dict = json.load(f)
@@ -124,7 +127,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             (BITBUCKET_RE, self._fetch_bitbucket_snippet),
         ]
         self.message_append: List[discord.Message] = []
-        self.message_cooldown = commands.CooldownMapping.from_cooldown(
+        self.message_cooldown: CooldownMapping = commands.CooldownMapping.from_cooldown(
             1,
             60,
             commands.BucketType.member,

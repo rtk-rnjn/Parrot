@@ -23,7 +23,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
         if data := await self.collection.find_one(
             {"_id": guild.id, "on_member_ban": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_member_ban"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
@@ -33,10 +33,10 @@ class User(Cog, command_attrs=dict(hidden=True)):
                     if entry.target.id == user.id:
                         content = f"""**Member Banned**
 
-`Name (ID)  :` **{user} [`{user.id}`]**
-`Created At :` **{discord.utils.format_dt(user.created_at)}**
-`Reason     :` **{entry.reason if entry.reason else None}**
-`Banned by  :` **{entry.user}**
+`Name (ID) :` **{user} [`{user.id}`]**
+`Created At:` **{discord.utils.format_dt(user.created_at)}**
+`Reason    :` **{entry.reason if entry.reason else None}**
+`Banned by :` **{entry.user}**
 """
                         await webhook.send(
                             content=content,
@@ -53,7 +53,7 @@ class User(Cog, command_attrs=dict(hidden=True)):
         if data := await self.collection.find_one(
             {"_id": guild.id, "on_member_unban": {"$exists": True}}
         ):
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_member_unban"], session=self.bot.http_session
             )
             with suppress(discord.HTTPException):
@@ -143,5 +143,5 @@ Discriminator: {change.get('before_discriminator')} -> {change('after_discrimina
     async def cog_unload(self) -> None:
         self.clear_user_misc.cancel()
 
-async def setup(bot: Parrot):
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(User(bot))

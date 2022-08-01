@@ -15,12 +15,14 @@ import types
 from collections import Counter, defaultdict, deque
 from contextlib import suppress
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncGenerator,
     Awaitable,
     Callable,
     Collection,
     Dict,
+    Iterable,
     List,
     Mapping,
     Optional,
@@ -67,8 +69,15 @@ from utilities.converters import ToAsync
 from utilities.paste import Client
 
 from .__template import post as POST
-from .Cog import Cog
 from .Context import Context
+
+if TYPE_CHECKING:
+    from discord.ext.commands.cooldowns import CooldownMapping
+
+    from .Cog import Cog
+
+    if HAS_TOP_GG:
+        from topgg.types import BotVoteData
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -84,6 +93,7 @@ dbl_token = os.environ["TOPGG"]
 CHANGE_LOG_ID = 796932292458315776
 ERROR_LOG_WEBHOOK_ID = 924513442273054730
 STARTUP_LOG_WEBHOOK_ID = 985926507530690640
+VOTE_LOG_WEBHOOK_ID = 897741476006592582
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.WARNING)
@@ -150,20 +160,23 @@ class Parrot(commands.AutoShardedBot):
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._CogMixin__cogs = commands.core._CaseInsensitiveDict()  # pycord be like
-        self._seen_messages = 0
+        self._seen_messages: int = 0
         self._change_log: List[discord.Message] = []
 
         self._error_log_token = os.environ["CHANNEL_TOKEN2"]
         self._startup_log_token = os.environ["CHANNEL_TOKEN3"]
+        self._vote_log_token = os.environ["CHANNEL_TOKEN4"]
 
         self.color = 0x87CEEB
         self.colour = self.color
 
         self.error_channel: Optional[discord.TextChannel] = None
         self.persistent_views_added: bool = False
-        self.spam_control = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.user)
+        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(
+            3, 5, commands.BucketType.user
+        )
 
-        self._was_ready = False
+        self._was_ready: bool = False
 
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
@@ -267,12 +280,13 @@ class Parrot(commands.AutoShardedBot):
                 session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)
+            self.topgg_webhook.dbl_webhook("/dblwebhook", os.environ["TOPGG_AUTH"])
+            self.topgg_webhook.run(1019)
 
     async def db_latency(self) -> float:
         ini = perf_counter()
         await self.mongo.parrot_db.server_config.find_one({})
-        fin = perf_counter()
-        return fin - ini
+        return perf_counter() - ini
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
@@ -293,30 +307,35 @@ class Parrot(commands.AutoShardedBot):
         print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()
         trace = traceback.format_exc()
-        webhook = discord.Webhook.from_url(
+        webhook: discord.Webhook = discord.Webhook.from_url(
             f"https://discordapp.com/api/webhooks/{ERROR_LOG_WEBHOOK_ID}/{self._error_log_token}",
             session=self.http_session,
         )
+
+        _CONTENT = f"```py\nIgnoring exception in {event}\n{trace}\n``````py\nArgs: {args}\nKwargs: {kwargs}```"
+        _FILE = discord.utils.MISSING
+
+        if len(_CONTENT) > 1990:
+            _FILE: discord.File = discord.File(
+                io.BytesIO(
+                    f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode(
+                        "utf-8"
+                    )
+                ),
+                filename="traceback.py",
+            )
+            _CONTENT = discord.utils.MISSING
+
         if webhook is not None:
             try:
                 await webhook.send(
-                    f"```py\nIgnoring exception in {event}\n{trace}\n``````py\nArgs: {args}\nKwargs: {kwargs}```",
+                    _CONTENT,
+                    file=_FILE,
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )
             except discord.HTTPException:
-                await webhook.send(
-                    file=discord.File(
-                        io.BytesIO(
-                            f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode(
-                                "utf-8"
-                            )
-                        ),
-                        filename="traceback.txt",
-                    ),
-                    avatar_url=self.user.avatar.url,
-                    username=self.user.name,
-                )
+                pass
 
     async def before_identify_hook(self, shard_id: int, *, initial: bool = False) -> None:
         self._clear_gateway_data()
@@ -328,7 +347,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_autopost_success(self) -> None:
         if self.HAS_TOP_GG:
-            webhook = discord.Webhook.from_url(
+            webhook: discord.Webhook = discord.Webhook.from_url(
                 f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
                 session=self.http_session,
             )
@@ -343,6 +362,37 @@ class Parrot(commands.AutoShardedBot):
             st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
             print(st)
 
+    async def on_dbl_vote(self, data: BotVoteData) -> None:
+        if self.HAS_TOP_GG:
+            if data.type == "test":
+                return self.dispatch("dbl_test", data)
+
+            webhook: discord.Webhook = discord.Webhook.from_url(
+                f"https://discordapp.com/api/webhooks/{VOTE_LOG_WEBHOOK_ID}/{self._vote_log_token}",
+            )
+            if webhook is not None:
+                with suppress(discord.HTTPException):
+                    user: discord.User = await self.getch(
+                        self.get_user, self.fetch_user, data.user
+                    )
+                    await webhook.send(
+                        f"Received a vote from {user} ({user.id})",
+                        avatar_url=self.user.avatar.url,
+                        username=self.user.name,
+                    )
+
+    async def on_dbl_test(self, data: BotVoteData) -> None:
+        webhook: discord.Webhook = discord.Webhook.from_url(
+            f"https://discordapp.com/api/webhooks/{VOTE_LOG_WEBHOOK_ID}/{self._vote_log_token}",
+        )
+        if webhook is not None:
+            with suppress(discord.HTTPException):
+                await webhook.send(
+                    f"Received a test vote of data: {data}",
+                    avatar_url=self.user.avatar.url,
+                    username=self.user.name,
+                )
+
     def run(self) -> None:
         """To run connect and login into discord"""
         super().run(TOKEN, reconnect=True)
@@ -353,33 +403,33 @@ class Parrot(commands.AutoShardedBot):
 
         if self._was_ready:
             return
-        webhook = discord.Webhook.from_url(
+
+        webhook: discord.Webhook = discord.Webhook.from_url(
             f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
             session=self.http_session,
         )
-        if webhook is None:
-            return
-        await webhook.send(
-            f"```py\n{self.user.name.title()} is online!\n```",
-            avatar_url=self.user.avatar.url,
-            username=self.user.name,
-        )
-        with suppress(discord.HTTPException):
+        if webhook is not None:
             await webhook.send(
-                f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
+                f"```py\n{self.user.name.title()} is online!\n```",
                 avatar_url=self.user.avatar.url,
                 username=self.user.name,
             )
-        with suppress(discord.HTTPException):
-            fail_msg = ""
-            if self._failed_to_load:
-                for k, v in self._failed_to_load.items():
-                    fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+            with suppress(discord.HTTPException):
                 await webhook.send(
-                    f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
+                    f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )
+            with suppress(discord.HTTPException):
+                fail_msg = ""
+                if self._failed_to_load:
+                    for k, v in self._failed_to_load.items():
+                        fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                    await webhook.send(
+                        f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
+                        avatar_url=self.user.avatar.url,
+                        username=self.user.name,
+                    )
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}")
@@ -405,7 +455,7 @@ class Parrot(commands.AutoShardedBot):
         return
 
     async def on_disconnect(self) -> None:
-        webhook = discord.Webhook.from_url(
+        webhook: discord.Webhook = discord.Webhook.from_url(
             f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
             session=self.http_session,
         )
@@ -420,7 +470,7 @@ class Parrot(commands.AutoShardedBot):
         return
 
     async def on_shard_resumed(self, shard_id: int) -> None:
-        webhook = discord.Webhook.from_url(
+        webhook: discord.Webhook = discord.Webhook.from_url(
             f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
             session=self.http_session,
         )
@@ -506,7 +556,7 @@ class Parrot(commands.AutoShardedBot):
             await self.process_commands(after)
 
     async def resolve_member_ids(
-        self, guild: discord.Guild, member_ids: List[int]
+        self, guild: discord.Guild, member_ids: Iterable[int]
     ) -> AsyncGenerator[discord.Member, None]:
         """|coro|
 

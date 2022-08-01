@@ -2,12 +2,18 @@ from __future__ import annotations
 
 import datetime
 from time import time
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import discord
 from core import Cog, Parrot
 from pymongo.collection import Collection
-from pymongo.typings import _DocumentType as DocumentType
+from pymongo.typings import _DocumentType
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
+    DocumentType: TypeAlias = _DocumentType
+
 
 TWO_WEEK = 1209600
 # 60 * 60 * 24 * 7 * 2
@@ -25,7 +31,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 payload.channel_id
                 in self.bot.server_config[payload.guild_id]["starboard"]["ignore_channel"]
             ):
-                return False
+                return
         except KeyError:
             pass
 
@@ -252,7 +258,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not ch:
             return False
 
-        msg = await self.bot.get_or_fetch_message(ch, payload.message_id)
+        msg: discord.Message = await self.bot.get_or_fetch_message(ch, payload.message_id)
         try:
             limit = server_config[payload.guild_id]["starboard"]["limit"] or 0
         except KeyError:
@@ -343,7 +349,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         guild = self.bot.get_guild(payload.guild_id)
         member = await self.bot.get_or_fetch_member(guild, payload.user_id)
 
-        if member.bot:
+        if member is not None and member.bot:
             return
 
         try:

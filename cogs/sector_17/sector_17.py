@@ -32,6 +32,11 @@ class Sector1729(Cog):
         if payload.message_id == MESSAGE_ID and (
             str(payload.emoji) == EMOJI or unicodedata.name(payload.emoji) == "WASTEBASKET"
         ):
+            user_id: int = payload.user_id
+            user: Optional[discord.User] = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, user_id
+            )
+
             channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)
 
             if channel is None:
@@ -62,10 +67,6 @@ class Sector1729(Cog):
                 f"<@{payload.user_id}> deleting messages..."
             )
 
-            user_id: int = payload.user_id
-            user: Optional[discord.User] = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, user_id
-            )
             if user is None or user.bot:
                 return
 

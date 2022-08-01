@@ -1,11 +1,12 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
+from time import time
 from typing import TYPE_CHECKING, Dict, Optional
 
 import discord
 from core import Cog
-from time import time
+
 if TYPE_CHECKING:
     from core import Parrot, Context
 
@@ -27,7 +28,7 @@ class Sector1729(Cog):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
-        if payload.message_id == MESSAGE_ID and payload.emoji == EMOJI:
+        if payload.message_id == MESSAGE_ID and str(payload.emoji) == EMOJI:
             msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
 
             async def __remove_reaction(msg: discord.Message) -> None:
@@ -36,16 +37,16 @@ class Sector1729(Cog):
                 except discord.HTTPException:
                     pass
 
-
             channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)
-            
+
             if channel is None:
                 return
 
             if then := self._cache.get(payload.user_id):
                 if abs(time() - then) < 60:
                     await channel.send(
-                        f"<@{payload.user_id}> You can only use the emoji once every minute.", delete_after=7
+                        f"<@{payload.user_id}> You can only use the emoji once every minute.",
+                        delete_after=7,
                     )
                     await __remove_reaction(msg)
                     return

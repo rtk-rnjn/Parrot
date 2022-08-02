@@ -12,6 +12,7 @@ from core import Cog
 from discord.ext import commands
 from pymongo.collection import Collection
 from utilities.checks import in_voice, is_dj, same_voice
+from utilities.exceptions import NotVoter
 from wavelink import QueueEmpty
 from wavelink.ext import spotify
 
@@ -61,6 +62,11 @@ class Music(Cog):
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{MULTIPLE MUSICAL NOTES}")
+
+    async def cog_check(self, ctx: Context) -> bool:
+        if not bool(await ctx.is_voter()):
+            raise NotVoter()
+        return True
 
     def make_embed(self, ctx: Context, track: wavelink.Track) -> discord.Embed:
         embed = discord.Embed(

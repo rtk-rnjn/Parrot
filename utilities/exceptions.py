@@ -1,5 +1,7 @@
 from discord.ext import commands as cmd
 
+from utilities.config import SUPPORT_SERVER
+
 
 class ParrotCheckFailure(cmd.CheckFailure):
     pass
@@ -49,9 +51,25 @@ class NotInVoice(ParrotCheckFailure):
         super().__init__("You must be in a voice channel to use this command.")
 
 
-class NotBotInVoice(ParrotCheckFailure):
+class NotInVoice(ParrotCheckFailure):
     def __init__(self):
-        super().__init__("Bot is not in the voice channel")
+        super().__init__("You must be in a voice channel to use this command.")
+
+
+class NotVoter(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__(
+            "You must be a voter to use this command. To vote should be on top.gg (<https://top.gg/bot/800780974274248764/vote>)"
+        )
+
+
+class NotInSupportServer(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__(
+            "You must be in the support server to use this command. To join the support server ({})".format(
+                SUPPORT_SERVER
+            )
+        )
 
 
 class NotSameVoice(ParrotCheckFailure):

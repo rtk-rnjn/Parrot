@@ -49,6 +49,8 @@ MaybeAwaitable = Union[T, Awaitable[T]]
 Callback = MaybeAwaitable
 BotT = TypeVar("BotT", bound=commands.Bot)
 
+VOTER_ROLE_ID = 836492413312040990
+
 
 class Context(commands.Context["commands.Bot"], Generic[BotT]):
     """A custom implementation of commands.Context class."""
@@ -71,6 +73,18 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
     @property
     def session(self) -> Any:
         return self.bot.http_session
+
+    async def is_voter(self) -> Optional[bool]:
+        if self.bot.server.get_member(self.author.id):
+            return self.author._roles.has(VOTER_ROLE_ID)
+
+        if data := await self.bot.mongo.extra.user_misc.find_one(
+            {"_id": self.author.id, "topgg_vote_expires": {"$lte": discord.utils.utcnow()}}
+        ):
+            return True
+
+        if self.bot.HAS_TOP_GG:
+            return await self.bot.topgg.get_user_vote(self.author.id)
 
     async def dj_role(
         self,

@@ -18,6 +18,46 @@ from discord.ext.commands import (  # type: ignore
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
 
+__all__ = (
+    "_can_run",
+    "cooldown_with_role_bypass",
+    "guild_premium",
+    "guild_premium",
+    "has_verified_role_ticket",
+    "in_support_server",
+    "in_temp_channel",
+    "in_voice",
+    "in_whitelist_check",
+    "is_dj",
+    "is_guild_owner",
+    "is_me",
+    "is_mod",
+    "same_voice",
+    "voter_only",
+    "with_role_check",
+    "without_role_check",
+)
+
+
+def in_support_server() -> Callable:
+    def predicate(ctx: Context) -> bool:
+        """Returns True if the guild is support server itself (SECTOR 17-29)."""
+        if ctx.guild.id == getattr(ctx.bot.server, "id"):
+            return True
+
+    return commands.check(predicate)
+
+
+def voter_only() -> Callable:
+    async def predicate(ctx: Context) -> Optional[bool]:
+        """Returns True if the user is a voter."""
+        if is_voter := await ctx.is_voter():
+            return is_voter
+
+        raise ex.NotVoter()
+
+    return commands.check(predicate)
+
 
 def is_guild_owner() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:

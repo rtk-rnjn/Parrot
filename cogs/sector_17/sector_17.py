@@ -64,11 +64,11 @@ class Sector1729(Cog):
 
             async def __remove_reaction(msg: discord.Message) -> None:
                 for reaction in msg.reactions:
-                    if unicodedata.name(reaction.emoji) == "WASTEBASKET":
-                        try:
-                            await msg.remove_reaction(reaction.emoji, user)
-                        except discord.HTTPException:
-                            pass
+                    try:
+                        await msg.remove_reaction(reaction.emoji, user)
+                    except discord.HTTPException:
+                        pass
+                    return
 
             if then := self._cache.get(payload.user_id):
                 if abs(time() - then) < 60:
@@ -82,7 +82,7 @@ class Sector1729(Cog):
             self._cache[payload.user_id] = time() + 60
 
             _msg: discord.Message = await channel.send(
-                f"<@{payload.user_id}> deleting messages - 0/100"
+                f"<@{payload.user_id}> deleting messages - 0/50"
             )
 
             if user is None or user.bot:
@@ -93,11 +93,13 @@ class Sector1729(Cog):
             i = 1
             async for msg in dm.history(limit=50):
                 if msg.author.id == self.bot.user.id:
-                    await msg.delete(delay=0)
+                    await msg.delete()
                 i += 1
+                if i % 10 == 0:
+                    await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")
 
             await __remove_reaction(msg)
-            await _msg.edit(content=f"<@{payload.user_id}> done!", delete_after=7)
+            await _msg.edit(content=f"<@{payload.user_id}> deleting messages - 50/50! Done!", delete_after=2)
 
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):

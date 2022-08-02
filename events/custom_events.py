@@ -103,7 +103,7 @@ class EventCustom(Cog):
 
     @Cog.listener("on_timer_complete")
     async def extra_parser(self, extra: Dict[str, Any] = None, **kw: Any) -> None:
-        if name is None:
+        if extra is None:
             return
 
         name = extra.get("name")

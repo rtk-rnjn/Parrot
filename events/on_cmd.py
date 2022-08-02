@@ -267,6 +267,11 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
 
+        elif isinstance(error, commands.CheckFailure):
+            ctx.command.reset_cooldown(ctx)
+            ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
+            ERROR_EMBED.description = "You don't have the required permissions to use this command."
+
         elif isinstance(error, asyncio.TimeoutError):
             ERROR_EMBED.description = "Command took too long to respond"
             ERROR_EMBED.title = f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}"

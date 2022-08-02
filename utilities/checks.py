@@ -44,6 +44,7 @@ def in_support_server() -> Callable:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
         if ctx.guild.id == getattr(ctx.bot.server, "id"):
             return True
+        raise ex.NotInSupportServer()
 
     return commands.check(predicate)
 

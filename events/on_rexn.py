@@ -133,7 +133,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def get_star_count(
         self, message: Optional[discord.Message] = None, *, from_db: bool = True
     ) -> int:
-        if not message:
+        if message is None:
             return 0
 
         if from_db:

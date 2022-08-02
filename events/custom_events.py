@@ -18,55 +18,24 @@ class FakeMessage:
 class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        if self.bot.get_cog("Utils"):
-            self.create_timer: Callable = self.bot.get_cog("Utils").create_timer  # type: ignore
-        else:
-            self.create_timer = None
 
-    async def on_timer_complete(self, **kw: Any) -> None:
-        await self.bot.wait_until_ready()
-        if data := kw.get("mod_action"):
-            await self.mod_action_parser(**data)
+    @Cog.listener("on_timer_complete")
+    async def mod_parser(
+        self,
+        *,
+        mod_action: Dict[str, Any] = None,
+        **kwargs: Any,
+    ) -> None:
+        if mod_action is None:
+            return
 
-        if kw.get("embed"):
-            embed: discord.Embed = discord.Embed.from_dict(kw.get("embed"))
-        else:
-            embed = discord.utils.MISSING
+        kw = mod_action
 
-        if (kw.get("dm_notify") or kw.get("is_todo")) and kw.get("content"):
-            user: discord.User = self.bot.get_user(kw["messageAuthor"])
-            if user:
-                try:
-                    await user.send(
-                        content=f"{user.mention} this is reminder for: **{kw['content']}**\n>>> {kw['messageURL']}",
-                        embed=embed,
-                    )
-                except discord.Forbidden:
-                    pass  # I don't know whytf user blocks the DM
-
-        elif kw.get("content"):
-            channel: discord.TextChannel = self.bot.get_channel(kw["messageChannel"])
-            if channel:
-                try:
-                    await channel.send(
-                        content=f"<@{kw['messageAuthor']}> this is reminder for: **{kw['content']}**\n>>> {kw['messageURL']}",
-                        embed=embed,
-                    )
-                except discord.Forbidden:
-                    # bot is not having permissions to send messages
-                    pass
-
-        if kw.get("extra"):
-            data: Dict[str, Any] = kw.get("extra")
-            if data.get("name") == "SET_TIMER_LOOP":
-                return await self._parse_timer(**kw)
-            await self.extra_action_parser(data.get("name"), **data.get("main"))
-
-    async def mod_action_parser(self, **kw: Any) -> None:
         action: str = kw.get("action")
         guild: discord.Guild = self.bot.get_guild(kw.get("guild"))
         if guild is None:
             return
+
         target: int = kw.get("member") or kw.get("target")
 
         if action.upper() == "UNBAN":
@@ -90,6 +59,57 @@ class EventCustom(Cog):
                 await guild.kick(member, reason=kw.get("reason"))
             except (discord.NotFound, discord.HTTPException, discord.Forbidden):
                 pass
+
+    @Cog.listener("on_timer_complete")
+    async def normal_parser(
+        self,
+        *,
+        embed: Dict[str, Any] = {},
+        content: str = None,
+        dm_notify: bool = False,
+        is_todo: bool = False,
+        messageChannel: int = None,
+        messageAuthor: int = None,
+        messageURL: str = None,
+        **kw: Any,
+    ):
+        if embed:
+            embed: discord.Embed = discord.Embed.from_dict(embed)
+        else:
+            embed = discord.utils.MISSING
+
+        if (dm_notify or is_todo) and content:
+            user: discord.User = self.bot.get_user(messageAuthor)
+            if user:
+                try:
+                    await user.send(
+                        content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}",
+                        embed=embed,
+                    )
+                except discord.Forbidden:
+                    pass  # I don't know whytf user blocks the DM
+
+        elif content:
+            channel: discord.TextChannel = self.bot.get_channel(messageChannel)
+            if channel:
+                try:
+                    await channel.send(
+                        content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}",
+                        embed=embed,
+                    )
+                except discord.Forbidden:
+                    # bot is not having permissions to send messages
+                    pass
+
+    @Cog.listener("on_timer_complete")
+    async def extra_parser(self, extra: Dict[str, Any] = None, **kw: Any) -> None:
+        name = extra.get("name")
+        if name == "SET_TIMER_LOOP":
+            return await self._parse_timer(**kw)
+
+        main = extra.get("main")
+
+        await self.extra_action_parser(name, **main)
 
     async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "REMOVE_AFK":

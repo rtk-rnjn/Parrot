@@ -73,11 +73,14 @@ from .Context import Context
 
 if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
+    from pymongo.collection import Collection as PyMongoCollection
+    from typing_extensions import TypeAlias
 
     from .Cog import Cog
-
     if HAS_TOP_GG:
         from topgg.types import BotVoteData
+
+    MongoCollection: TypeAlias = PyMongoCollection
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -177,6 +180,7 @@ class Parrot(commands.AutoShardedBot):
         )
 
         self._was_ready: bool = False
+        self.lock: "asyncio.Lock" = asyncio.Lock()
 
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
@@ -268,7 +272,7 @@ class Parrot(commands.AutoShardedBot):
                 await self.load_extension(ext)
                 print(f"[{self.user.name.title()}] {ext} loaded successfully")
                 self._successfully_loaded.append(ext)
-            except Exception as e:
+            except commands.ExtensionFailed as e:
                 self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
         if self.HAS_TOP_GG:
@@ -280,6 +284,8 @@ class Parrot(commands.AutoShardedBot):
                 session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)
+        
+        self.reminder_task.start()
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -401,6 +407,8 @@ class Parrot(commands.AutoShardedBot):
         """To close the bot"""
         if HAS_TOP_GG:
             await self.topgg_webhook.close()
+
+        self.reminder_task.cancel()
 
         return await super().close()
 
@@ -792,6 +800,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         force_fetch: bool = True,
     ) -> Any:
+
         if _id is None:
             something = None
             if not callable(get_function):
@@ -799,6 +808,7 @@ class Parrot(commands.AutoShardedBot):
             if isinstance(fetch_function, Awaitable) and something is None and force_fetch:
                 return await fetch_function
             return something
+
         with suppress(discord.HTTPException):
             _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
@@ -827,3 +837,17 @@ class Parrot(commands.AutoShardedBot):
             _id: int = data.pop("_id")
             self.opts[_id] = data
             await asyncio.sleep(0)
+
+    @tasks.loop(seconds=3)
+    async def reminder_task(self):
+        collection: MongoCollection = self.mongo.parrot_db["timers"]
+        async with self.lock:
+            async for data in collection.find(
+                {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
+            ):
+                await collection.delete_one({"_id": data["_id"]})
+                self.dispatch("timer_complete", **data)
+
+    @reminder_task.before_loop
+    async def before_reminder_task(self):
+        await self.wait_until_ready()

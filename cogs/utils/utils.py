@@ -10,7 +10,6 @@ from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
-from events.custom_events import EventCustom
 from pymongo import ReturnDocument  # type: ignore
 from pymongo.collection import Collection  # type: ignore
 from utilities.checks import is_mod
@@ -50,8 +49,13 @@ class Utils(Cog):
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
 
-        self.reminder_task.start()
         self.server_stats_updater.start()
+
+        if not hasattr(self.bot, "create_timer"):
+            self.bot.create_timer = self.create_timer
+
+        if not hasattr(self.bot, "delete_timer"):
+            self.bot.delete_timer = self.delete_timer
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -549,22 +553,13 @@ class Utils(Cog):
         self.bot.afk.add(ctx.author.id)
         await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 
-    @tasks.loop(seconds=3)
-    async def reminder_task(self):
-        async with self.lock:
-            async for data in self.collection.find(
-                {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
-            ):
-                cog: EventCustom = self.bot.get_cog("EventCustom")
-                await self.collection.delete_one({"_id": data["_id"]})
-                await cog.on_timer_complete(**data)  # type: ignore
-
-    @reminder_task.before_loop
-    async def before_reminder_task(self):
-        await self.bot.wait_until_ready()
-
     async def cog_unload(self):
-        self.reminder_task.cancel()
+        if hasattr(self.bot, "create_timer"):
+            delattr(self.bot, "create_timer")
+
+        if hasattr(self.bot, "delete_timer"):
+            delattr(self.bot, "delete_timer")
+
         self.server_stats_updater.cancel()
 
     @commands.command(aliases=["level"])

@@ -184,8 +184,15 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         embed: Optional[discord.Embed] = kwargs.get(
             "embed",
         )
-        if isinstance(embed, discord.Embed) and not embed.color:
-            embed.color = self.bot.color
+        if isinstance(embed, discord.Embed):
+            if not embed.color:
+                embed.color = self.bot.color
+            if not embed.timestamp:
+                embed.timestamp = discord.utils.utcnow()
+            if not embed.footer:
+                embed.set_footer(
+                    text=f"Requested by {self.author}", icon_url=self.author.display_avatar.url
+                )
 
         return await super().send(content, **kwargs)
 

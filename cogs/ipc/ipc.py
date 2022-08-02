@@ -277,19 +277,23 @@ class IPCRoutes(Cog):
 
     @server.route()
     async def start_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
-        port = data.port or 1019
-        end_point = data.end_point or "/dblwebhook"
+        if self.bot.HAS_TOP_GG:
+            port = data.port or 1019
+            end_point = data.end_point or "/dblwebhook"
 
-        authentication = os.environ["TOPGG_AUTH"]
-        try:
-            self.bot.topgg_webhook.dbl_webhook(end_point, authentication)
-            self.bot.topgg_webhook.run(port)
-        except Exception as e:
-            return {"status": f"error: {e}"}
-        else:
-            return {"status": "ok"}
+            authentication = os.environ["TOPGG_AUTH"]
+            try:
+                self.bot.topgg_webhook.dbl_webhook(end_point, authentication)
+                self.bot.topgg_webhook.run(port)
+            except Exception as e:
+                return {"status": f"error: {e}"}
+            else:
+                return {"status": "ok"}
+        return {"status": "error: top.gg not installed"}
     
     @server.route()
     async def stop_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
-        self.bot.topgg_webhook.close()
-        return {"status": "ok"}
+        if self.bot.HAS_TOP_GG:
+            self.bot.topgg_webhook.close()
+            return {"status": "ok"}
+        return {"status": "error: no top.gg webhook"}

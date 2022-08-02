@@ -16,6 +16,14 @@ class _MemberJoin(Cog):
 
     @Cog.listener("on_member_remove")
     async def on_member_kick(self, member: discord.Member) -> None:
+        try:
+            premium: bool = self.bot.server_config[member.guild.id]["premium"]
+        except KeyError:
+            premium: bool = False  # type: ignore
+
+        if not premium:
+            return
+
         RETRY = 3
 
         guild: discord.Guild = member.guild
@@ -25,7 +33,7 @@ class _MemberJoin(Cog):
             return
 
         if self.bot.is_ws_ratelimited:
-            await self.bot.wait_until_ready()
+            return
 
         while RETRY != 0:
             try:

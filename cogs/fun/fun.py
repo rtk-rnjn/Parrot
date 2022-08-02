@@ -355,7 +355,7 @@ class DynamicQuestionGen:
         """Generate a SI base units conversion question."""
         unit = random.choice(list(cls.UNITS_TO_BASE_UNITS))
 
-        question = q_format.format(unit + " " + cls.UNITS_TO_BASE_UNITS[unit][0])
+        question = q_format.format(f"{unit} {cls.UNITS_TO_BASE_UNITS[unit][0]}")
         answer = a_format.format(cls.UNITS_TO_BASE_UNITS[unit][1])
 
         return QuizEntry(question, [answer], DYNAMICALLY_GEN_VARIATION_TOLERANCE)
@@ -392,7 +392,7 @@ def replace_many(
 
     def _repl(match: re.Match) -> str:
         """Returns replacement depending on `ignore_case` and `match_case`."""
-        word = match.group(0)
+        word = match[0]
         replacement = replacements[word.lower() if ignore_case else word]
 
         if not match_case:
@@ -469,7 +469,7 @@ class Fun(Cog):
         elif colour_mode == "hex":
             input_colour = ctx.args[2:][0]
             if len(input_colour) > 7:
-                input_colour = input_colour[0:-2]
+                input_colour = input_colour[:-2]
         else:
             input_colour = tuple(ctx.args[2:])
 
@@ -516,16 +516,14 @@ class Fun(Cog):
         """Convert RGB values to HSV values."""
         rgb_list = [val / 255 for val in rgb]
         h, s, v = colorsys.rgb_to_hsv(*rgb_list)
-        hsv = (round(h * 360), round(s * 100), round(v * 100))
-        return hsv
+        return round(h * 360), round(s * 100), round(v * 100)
 
     @staticmethod
     def _rgb_to_hsl(rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
         """Convert RGB values to HSL values."""
         rgb_list = [val / 255.0 for val in rgb]
         h, l, s = colorsys.rgb_to_hls(*rgb_list)
-        hsl = (round(h * 360), round(s * 100), round(l * 100))
-        return hsl
+        return round(h * 360), round(s * 100), round(l * 100)
 
     @staticmethod
     def _rgb_to_cmyk(rgb: Tuple[int, int, int]) -> Tuple[int, int, int, int]:
@@ -537,15 +535,13 @@ class Fun(Cog):
         c = round((1 - rgb_list[0] - k) * 100 / (1 - k))
         m = round((1 - rgb_list[1] - k) * 100 / (1 - k))
         y = round((1 - rgb_list[2] - k) * 100 / (1 - k))
-        cmyk = (c, m, y, round(k * 100))
-        return cmyk
+        return c, m, y, round(k * 100)
 
     @staticmethod
     def _rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
         """Convert RGB values to HEX code."""
         hex_ = "".join([hex(val)[2:].zfill(2) for val in rgb])
-        hex_code = f"#{hex_}".upper()
-        return hex_code
+        return f"#{hex_}".upper()
 
     def _rgb_to_name(self, rgb: Tuple[int, int, int]) -> Optional[str]:
         """Convert RGB values to a fuzzy matched name."""
@@ -758,7 +754,12 @@ class Fun(Cog):
             await ctx.send(embed=embed)
             return
 
-        comic = randint(1, self.latest_comic_info["num"]) if comic is None else comic.group(0)  # type: ignore
+        comic = (
+            randint(1, self.latest_comic_info["num"])
+            if comic is None
+            else comic[0]
+        )
+
 
         if comic == "latest":
             info = self.latest_comic_info
@@ -838,11 +839,10 @@ class Fun(Cog):
         if message.author.bot or not message.guild:
             return
 
-        game = self.games.get(message.channel.id)
-        if not game:
+        if game := self.games.get(message.channel.id):
+            await game.message_creation(message)
+        else:
             return
-
-        await game.message_creation(message)
 
     async def __issue_trivia_token(self, ctx: Context) -> Optional[str]:
         request_token = await self.bot.http_session.get(
@@ -1029,10 +1029,8 @@ class Fun(Cog):
 
         self.game_status[ctx.channel.id] = False
         self.game_player_scores[ctx.channel.id] = {}
-        try:
+        with suppress(KeyError):
             del self.game_owners[ctx.channel.id]
-        except KeyError:
-            pass
 
     @triva_quiz.command(name="reset_token", aliases=["reset", "reset-token"])
     async def trivia_token(self, ctx: Context, *, token: str) -> None:
@@ -1287,13 +1285,11 @@ class Fun(Cog):
     @staticmethod
     def make_error_embed(desc: str) -> discord.Embed:
         """Generate an error embed with the given description."""
-        error_embed = discord.Embed(
+        return discord.Embed(
             colour=Colours.soft_red,
             title=random.choice(NEGATIVE_REPLIES),
             description=f"{desc}",  # fuck you pycord
         )
-
-        return error_embed
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1477,7 +1473,7 @@ class Fun(Cog):
     @staticmethod
     async def send_score(channel: discord.TextChannel, player_data: dict) -> None:
         """Send the current scores of players in the game channel."""
-        if len(player_data) == 0:
+        if not player_data:
             await channel.send("No one has made it onto the leaderboard yet.")
             return
 
@@ -1729,7 +1725,7 @@ class Fun(Cog):
         """Return a random Fact. It's useless command, I know
 
         NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala"""
-        if (animal := animal.lower()) in (
+        if (animal := animal.lower()) not in (
             "dog",
             "cat",
             "panda",
@@ -1737,34 +1733,35 @@ class Fun(Cog):
             "bird",
             "koala",
         ):
-            fact_url = f"https://some-random-api.ml/facts/{animal}"
-            image_url = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
+            return
+        fact_url = f"https://some-random-api.ml/facts/{animal}"
+        image_url = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
 
-            async with request("GET", image_url, headers={}) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    image_link = data.get("link")
+        async with request("GET", image_url, headers={}) as response:
+            if response.status == 200:
+                data = await response.json()
+                image_link = data.get("link")
 
-            async with request("GET", fact_url, headers={}) as response:
-                if response.status == 200:
-                    data = await response.json()
+        async with request("GET", fact_url, headers={}) as response:
+            if response.status == 200:
+                data = await response.json()
 
-                    embed = discord.Embed(
-                        title=f"{animal.title()} fact",
-                        description=data["fact"],
-                        colour=ctx.author.colour,
-                    )
-                    if image_link is not None:
-                        embed.set_image(url=image_link)
-                        return await ctx.reply(embed=embed)
-
-                    return await ctx.reply(
-                        f"{ctx.author.mention} API returned a {response.status} status."
-                    )
+                embed = discord.Embed(
+                    title=f"{animal.title()} fact",
+                    description=data["fact"],
+                    colour=ctx.author.colour,
+                )
+                if image_link is not None:
+                    embed.set_image(url=image_link)
+                    return await ctx.reply(embed=embed)
 
                 return await ctx.reply(
-                    f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
+                    f"{ctx.author.mention} API returned a {response.status} status."
                 )
+
+            return await ctx.reply(
+                f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
+            )
 
     @commands.command(aliases=["insult"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1905,9 +1902,7 @@ class Fun(Cog):
                 return f'[{word}](http://{word.replace(" ", "-")}.urbanup.com)'
 
             ret = regex.sub(repl, definition)
-            if len(ret) >= 2048:
-                return ret[0:2000] + " [...]"
-            return ret
+            return ret[:2000] + " [...]" if len(ret) >= 2048 else ret
 
         # Thanks Danny
 
@@ -1923,7 +1918,7 @@ class Fun(Cog):
                 f"{ctx.author.mention} **{t}** means nothings. Try something else"
             )
         em_list = []
-        for i in range(0, len(res["list"])):
+        for i in range(len(res["list"])):
             _def = res["list"][i]["definition"]
             _link = res["list"][i]["permalink"]
             thumbs_up = res["list"][i]["thumbs_up"]
@@ -1955,10 +1950,7 @@ class Fun(Cog):
         member = ctx.author
         if len(comment) > 1000:
             comment = comment[:999:]
-        if len(member.name) > 20:
-            name = member.name[:20:]
-        else:
-            name = member.name
+        name = member.name[:20:] if len(member.name) > 20 else member.name
         async with self.bot.http_session.get(
             f"https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}"
         ) as ytcomment:  # get users avatar as png with 1024 size
@@ -2046,14 +2038,13 @@ class Fun(Cog):
                 description=f"{random.choice(t)}",
                 timestamp=discord.utils.utcnow(),
             )
-            em.set_footer(text=f"{ctx.author.name}")
         else:
             em = discord.Embed(
                 title=f"{member.name} reply!",
                 description=f"{random.choice(t)}",
                 timestamp=discord.utils.utcnow(),
             )
-            em.set_footer(text=f"{ctx.author.name}")
+        em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
     @commands.command()
@@ -2069,14 +2060,13 @@ class Fun(Cog):
                 description=f"{random.choice(t)}",
                 timestamp=discord.utils.utcnow(),
             )
-            em.set_footer(text=f"{ctx.author}")
         else:
             em = discord.Embed(
                 title=f"{member} reply!",
                 description=f"{random.choice(t)}",
                 timestamp=discord.utils.utcnow(),
             )
-            em.set_footer(text=f"{ctx.author}")
+        em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)
 
     @commands.group(aliases=["https"], invoke_without_command=True)
@@ -2111,7 +2101,7 @@ class Fun(Cog):
     async def shear(self, ctx: Context, member: discord.Member = None, axis: str = None):
         """Shear image generation"""
         member = member or ctx.author
-        params = {"image_url": member.display_avatar.url, "axis": axis if axis else "X"}
+        params = {"image_url": member.display_avatar.url, "axis": axis or "X"}
         r = await self.bot.http_session.get(
             f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
         )
@@ -2157,7 +2147,7 @@ class Fun(Cog):
     @Context.with_type
     async def coinflip(self, ctx: Context, *, choose: str = None):
         """Coin Flip, It comes either HEADS or TAILS"""
-        choose = "tails" if str(choose).lower() in ("tails", "tail", "t") else "heads"
+        choose = "tails" if choose.lower() in {"tails", "tail", "t"} else "heads"
         msg: discord.Message = await ctx.send(
             f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
         )

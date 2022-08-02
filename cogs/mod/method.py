@@ -36,9 +36,7 @@ async def _add_roles_bot(
         return await destination.send(f"{ctx.author.mention} can not assign/remove/edit mod role")
     for member in guild.members:
         try:
-            if not member.bot:
-                pass
-            else:
+            if member.bot:
                 if operator.lower() in ["+", "add", "give"]:
                     await member.add_roles(role, reason=reason)
                 elif operator.lower() in ["-", "remove", "take"]:
@@ -73,9 +71,7 @@ async def _add_roles_humans(
         return await destination.send(f"{ctx.author.mention} can not assign/remove/edit mod role")
     for member in guild.members:
         try:
-            if member.bot:
-                pass
-            else:
+            if not member.bot:
                 if operator.lower() in ["+", "add", "give"]:
                     await member.add_roles(role, reason=reason)
                 elif operator.lower() in ["-", "remove", "take"]:
@@ -249,10 +245,7 @@ async def _change_role_color(
     if is_mod and (is_mod.id == role.id):
         return await destination.send(f"{ctx.author.mention} can not assign/remove/edit mod role")
     try:
-        await role.edit(
-            color=discord.Color.value(int(int_)),
-            reason=reason,
-        )
+        await role.edit(color=discord.Color.value(int_), reason=reason)
         await destination.send(
             f"{ctx.author.mention} **{role.name} ({role.id})** color changed successfully"
         )
@@ -316,7 +309,7 @@ async def _mass_ban(
     reason: str,
     **kwargs: Any,
 ):
-    members = [members] if not isinstance(members, list) else members
+    members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
@@ -353,7 +346,7 @@ async def _softban(
     reason: str,
     **kwargs: Any,
 ):
-    members = [members] if not isinstance(members, list) else members
+    members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
@@ -395,7 +388,7 @@ async def _temp_ban(
     **kwargs: Any,
 ):
     bot = bot or ctx.bot
-    members = [members] if not isinstance(members, list) else members
+    members = members if isinstance(members, list) else [members]
     for member in members:
         try:
             if member.id in (ctx.author.id, guild.me.id) and not silent:
@@ -656,7 +649,7 @@ async def _mass_kick(
     reason: str,
     **kwargs: Any,
 ):
-    members = [members] if not isinstance(members, list) else members
+    members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
             return await destination.send(
@@ -695,7 +688,7 @@ async def _block(
     silent: bool = False,
     **kwargs: Any,
 ):
-    members = [members] if not isinstance(members, list) else members
+    members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
             return await destination.send(
@@ -747,7 +740,7 @@ async def _unblock(
     reason: str,
     **kwargs: Any,
 ):
-    members = [members] if not isinstance(members, list) else members
+    members = members if isinstance(members, list) else [members]
     for member in members:
         try:
             if channel.permissions_for(member).send_messages:
@@ -1429,16 +1422,8 @@ async def do_removal(
     if limit > 2000:
         return await ctx.send(f"Too many messages to search given ({limit}/2000)")
 
-    if before is None:
-        passed_before = ctx.message
-    else:
-        passed_before = discord.Object(id=before)
-
-    if after is not None:
-        passed_after = discord.Object(id=after)
-    else:
-        passed_after = None
-
+    passed_before = ctx.message if before is None else discord.Object(id=before)
+    passed_after = discord.Object(id=after) if after is not None else None
     try:
         deleted = await ctx.channel.purge(
             limit=limit, before=passed_before, after=passed_after, check=predicate
@@ -1522,7 +1507,13 @@ async def instant_action_parser(*, name: str, ctx: Context, message: discord.Mes
         except (discord.Forbidden, discord.NotFound):
             pass
 
-    if name == "tempban":
+    elif name == "kick":
+        try:
+            await message.author.kick(reason="Auto mod: Mention protection")
+        except (discord.Forbidden, discord.NotFound):
+            pass
+
+    elif name == "tempban":
         try:
             await ctx.guild.ban(message.author, reason="Auto mod: Mention protection")
         except (discord.Forbidden, discord.NotFound):
@@ -1542,13 +1533,7 @@ async def instant_action_parser(*, name: str, ctx: Context, message: discord.Mes
                 mod_action=mod_action,
             )
 
-    if name == "kick":
-        try:
-            await message.author.kick(reason="Auto mod: Mention protection")
-        except (discord.Forbidden, discord.NotFound):
-            pass
-
-    if name in ("timeout", "mute"):
+    if name in {"timeout", "mute"}:
         try:
             if duration:
                 await message.author.edit(

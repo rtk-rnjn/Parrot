@@ -84,11 +84,7 @@ class Chess:
         self.timeout = timeout
         self.react_on_success = react_on_success
 
-        if custom:
-            self.board = chess.Board(custom)
-        else:
-            self.board = chess.Board()
-
+        self.board = chess.Board(custom) if custom else chess.Board()
         self.turn = white
         self.alternate_turn = black
 

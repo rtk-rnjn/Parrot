@@ -59,10 +59,11 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Position  :` **{channel.position}**
 `Category  :` **{channel.category.mention if channel.category else None}**
 `Caterogy Synced?:` **{channel.permissions_synced}**
-`Reason    :` **{reason if reason else 'No reason provided'}**
+`Reason    :` **{reason or 'No reason provided'}**
 `Deleted at:` **{discord.utils.format_dt(deleted_at) if deleted_at else 'Not available'}**
 `Deleted by:` **{user}**
 """
+
                         fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
                         await webhook.send(
                             content=content,
@@ -100,10 +101,11 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Position  :` **{channel.position}**
 `Category  :` **{channel.category.mention if channel.category else None}**
 `Caterogy Synced?:` **{channel.permissions_synced}**
-`Reason    :` **{reason if reason else 'No reason provided'}**
-`Entry ID  :` **{entryID if entryID else None}**
+`Reason    :` **{reason or 'No reason provided'}**
+`Entry ID  :` **{entryID or None}**
 `Deleted by:` **{user}**
 """
+
                         fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
                         await webhook.send(
                             content=content,
@@ -123,11 +125,10 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         await channel.set_permissions(
                             role, send_messages=False, add_reactions=False
                         )
-                else:
-                    if role := discord.utils.get(channel.guild.roles, name="Muted"):
-                        await channel.set_permissions(
-                            role, send_messages=False, add_reactions=False
-                        )
+                elif role := discord.utils.get(channel.guild.roles, name="Muted"):
+                    await channel.set_permissions(
+                        role, send_messages=False, add_reactions=False
+                    )
 
     @Cog.listener()
     async def on_guild_channel_update(
@@ -154,20 +155,19 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id
                         ls = self._channel_change(before, after, TYPE=channel_type)
-                        ext = ""
-                        for i, j in ls:
-                            ext += f"{i} **{j}**\n"
+                        ext = "".join(f"{i} **{j}**\n" for i, j in ls)
                         content = f"""**Channel Update Event**
 
 `Name (ID) :` **{channel.name} [`{TYPE}`] ({channel.id})**
 `Created at:` **{discord.utils.format_dt(channel.created_at)}**
-`Reason    :` **{reason if reason else 'No reason provided'}**
-`Entry ID  :` **{entryID if entryID else None}**
+`Reason    :` **{reason or 'No reason provided'}**
+`Entry ID  :` **{entryID or None}**
 `Updated by:` **{user}**
 
 **Change/Update (Before)**
 {ext}
 """
+
                         fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
                         await webhook.send(
                             content=content,
@@ -212,17 +212,13 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                         "`Slowmode Delay Changed:`"
                         if after.slowmode_delay
                         else "`Slowmode Delay Removed:`",
-                        after.slowmode_delay if after.slowmode_delay else None,
+                        after.slowmode_delay or None,
                     )
                 )
+
         if "vc" in TYPE.lower():
             if before.user_limit != after.user_limit:
-                ls.append(
-                    (
-                        "`Limit Updated    :`",
-                        before.user_limit if before.user_limit else None,
-                    )
-                )
+                ls.append(("`Limit Updated    :`", before.user_limit or None))
             if before.rtc_region != after.rtc_region:
                 ls.append(
                     (

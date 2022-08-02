@@ -58,8 +58,7 @@ class IpcServerResponse:
         self.__refresh()
 
     def __iter__(self) -> Iterable[Tuple[str, Any]]:
-        for k, v in self._json["data"].items():
-            yield (k, v)
+        yield from self._json["data"].items()
 
     def get(self, k: Any, default: Any = None) -> Any:
         return self._json.get(k, default)
@@ -180,37 +179,37 @@ class Server:
 
             if not headers or headers.get("Authorization") != self.secret_key:
                 response = {"error": "Invalid or no token provided.", "code": 403}
-            else:
-                if not endpoint or endpoint not in self.endpoints:
-                    response = {"error": "Invalid or no endpoint given.", "code": 400}
-                else:
-                    server_response = IpcServerResponse(request)
-                    try:
-                        attempted_cls = self.bot.cogs.get(
-                            self.endpoints[endpoint].__qualname__.split(".")[0]
+            elif endpoint and endpoint in self.endpoints:
+                server_response = IpcServerResponse(request)
+                try:
+                    arguments = (
+                        (attempted_cls, server_response)
+                        if (
+                            attempted_cls := self.bot.cogs.get(
+                                self.endpoints[endpoint].__qualname__.split(".")[0]
+                            )
                         )
+                        else (server_response,)
+                    )
 
-                        if attempted_cls:
-                            arguments = (attempted_cls, server_response)
-                        else:
-                            arguments = (server_response,)
-                    except AttributeError:
-                        # Support base Client
-                        arguments = (server_response,)
+                except AttributeError:
+                    # Support base Client
+                    arguments = (server_response,)
 
-                    try:
-                        ret = await self.endpoints[endpoint](*arguments)
-                        response = ret
-                    except Exception as error:
-                        self.bot.dispatch("ipc_error", endpoint, error)
+                try:
+                    ret = await self.endpoints[endpoint](*arguments)
+                    response = ret
+                except Exception as error:
+                    self.bot.dispatch("ipc_error", endpoint, error)
 
-                        response = {
-                            "error": "IPC route raised error of type {}".format(
-                                type(error).__name__
-                            ),
-                            "code": 500,
-                        }
+                    response = {
+                        "error": f"IPC route raised error of type {type(error).__name__}",
+                        "code": 500,
+                    }
 
+
+            else:
+                response = {"error": "Invalid or no endpoint given.", "code": 400}
             try:
                 await websocket.send_json(response)
             except TypeError as error:

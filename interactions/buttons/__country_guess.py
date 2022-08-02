@@ -47,11 +47,7 @@ class CountryGuesser:
         self.is_flags = is_flags
         self.hard_mode = hard_mode
 
-        if self.is_flags:
-            self.light_mode: bool = False
-        else:
-            self.light_mode: bool = light_mode
-
+        self.light_mode: bool = False if self.is_flags else light_mode
         folder = "extra/country-flags" if self.is_flags else "extra/country-data"
         self._countries_path = folder
 
@@ -147,9 +143,8 @@ class CountryGuesser:
         )
         content = message.content.strip().lower()
 
-        if options:
-            if not content in options:
-                return
+        if options and content not in options:
+            return
 
         return message, content
 
@@ -329,13 +324,13 @@ class CountryView(discord.ui.View):
         self.ctx: Context = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.user:
-            await interaction.response.send_message(
-                f"This is not your game!", ephemeral=True
-            )
-            return False
-        else:
+        if interaction.user == self.user:
             return True
+        await interaction.response.send_message(
+            "This is not your game!", ephemeral=True
+        )
+
+        return False
 
     def disable_all(self) -> None:
         for button in self.children:

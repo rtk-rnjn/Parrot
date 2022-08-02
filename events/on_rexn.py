@@ -147,10 +147,14 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ):
                 return len(data["starrer"])
 
-        for reaction in message.reactions:
-            if str(reaction.emoji) == "\N{WHITE MEDIUM STAR}":
-                return reaction.count
-        return 0
+        return next(
+            (
+                reaction.count
+                for reaction in message.reactions
+                if str(reaction.emoji) == "\N{WHITE MEDIUM STAR}"
+            ),
+            0,
+        )
 
     def star_gradient_colour(self, stars: int) -> int:
         p = stars / 13
@@ -165,9 +169,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return "\N{WHITE MEDIUM STAR}"
         if 10 > stars >= 5:
             return "\N{GLOWING STAR}"
-        if 25 > stars >= 10:
-            return "\N{DIZZY SYMBOL}"
-        return "\N{SPARKLES}"
+        return "\N{DIZZY SYMBOL}" if 25 > stars >= 10 else "\N{SPARKLES}"
 
     async def star_post(
         self, *, starboard_channel: discord.TextChannel, message: discord.Message
@@ -332,10 +334,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     ):
         if (
             str(reaction.emoji)
-            in (
+            in {
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
-            )
+            }
             and user.id in self.bot.owner_ids
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
@@ -369,10 +371,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     ):
         if (
             str(reaction.emoji)
-            in (
+            in {
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
-            )
+            }
             and user.id in self.bot.owner_ids
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)

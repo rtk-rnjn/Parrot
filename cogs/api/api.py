@@ -63,7 +63,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         req_url = yarl.URL("https://api.github.com") / url
 
         if headers is not None and isinstance(headers, dict):
-            hdrs.update(headers)
+            hdrs |= headers
 
         await self._req_lock.acquire()
         try:

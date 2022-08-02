@@ -36,11 +36,10 @@ class Twenty48:
         return new_board
 
     def merge(self, board: List[List[int]]) -> List[List[int]]:
-        for i in range(self.size):
-            for j in range(self.size - 1):
-                if board[i][j] == board[i][j + 1] and board[i][j] != 0:
-                    board[i][j] += board[i][j]
-                    board[i][j + 1] = 0
+        for i, j in itertools.product(range(self.size), range(self.size - 1)):
+            if board[i][j] == board[i][j + 1] and board[i][j] != 0:
+                board[i][j] += board[i][j]
+                board[i][j + 1] = 0
         return board
 
     def compress(self, board: List[List[int]]) -> List[List[int]]:
@@ -99,11 +98,8 @@ class Twenty48:
 
     def number_to_emoji(self) -> str:
         board = self.board
-        GameString = ""
         emoji_array = [[self._conversion[str(l)] for l in row] for row in board]
-        for row in emoji_array:
-            GameString += "".join(row) + "\n"
-        return GameString
+        return "".join("".join(row) + "\n" for row in emoji_array)
 
     def lost(self) -> Optional[bool]:
         if self.has_empty:
@@ -122,9 +118,7 @@ class Twenty48:
         if self.board != board:
             return restore()
         self.move_right()
-        if self.board != board:
-            return restore()
-        return True
+        return restore() if self.board != board else True
 
     def start(self) -> None:
 

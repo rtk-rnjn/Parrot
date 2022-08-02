@@ -136,7 +136,7 @@ class BoardBoogle:
         if passed is None:
             passed = []
         # Empty words
-        if len(word) == 0:
+        if not word:
             return True
 
         # When starting out
@@ -186,9 +186,7 @@ class BoardBoogle:
         if len(word) < 3:
             return False
         word = word.upper()
-        if word not in DICTIONARY:
-            return False
-        return self.board_contains(word)
+        return False if word not in DICTIONARY else self.board_contains(word)
 
     def points(self, word: str) -> int:
         return POINTS[len(word)] if self.is_legal(word) else 0
@@ -211,9 +209,10 @@ class GameBoogle(menus.Menu):
         state = ""
 
         for row in range(self.board.size):
-            emoji = []
-            for column in range(self.board.size):
-                emoji.append(LETTERS_EMOJI[self.board.columns[column][row]])
+            emoji = [
+                LETTERS_EMOJI[self.board.columns[column][row]]
+                for column in range(self.board.size)
+            ]
 
             state = " ".join(emoji) + "\n" + state
 
@@ -290,8 +289,7 @@ class ShuffflingGame(GameBoogle):
         points = 0
         for word in words:
             for board in self.boards:
-                pts = board.points(word)
-                if pts:
+                if pts := board.points(word):
                     points += pts
                     break
 
@@ -526,57 +524,56 @@ def boggle_game(game_type: type[Game]):
 
 
 def fenPass(fen: str) -> bool:
-    regexMatch = re.match(
-        r"\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
-        fen,
-    )
-    if regexMatch:
-        regexList = regexMatch.groups()
-        fen = regexList[0].split("/")
-        if len(fen) != 8:
-            raise commands.BadArgument(
-                "Expected 8 rows in position part of FEN: `{0}`".format(repr(fen))
-            )
-
-        for fenPart in fen:
-            field_sum = 0
-            previous_was_digit, previous_was_piece = False, False
-
-            for c in fenPart:
-                if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
-                    if previous_was_digit:
-                        raise commands.BadArgument(
-                            "Two subsequent digits in position part of FEN: `{0}`".format(
-                                repr(fen)
-                            )
-                        )
-                    field_sum += int(c)
-                    previous_was_digit = True
-                    previous_was_piece = False
-                elif c == "~":
-                    if not previous_was_piece:
-                        raise commands.BadArgument(
-                            "~ not after piece in position part of FEN: `{0}`".format(repr(fen))
-                        )
-                    previous_was_digit, previous_was_piece = False, False
-                elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
-                    field_sum += 1
-                    previous_was_digit = False
-                    previous_was_piece = True
-                else:
-                    raise commands.BadArgument(
-                        "Invalid character in position part of FEN: `{0}`".format(repr(fen))
-                    )
-
-            if field_sum != 8:
-                raise commands.BadArgument(
-                    "Expected 8 columns per row in position part of FEN: `{0}`".format(repr(fen))
-                )
-
-    else:
+    if not (
+        regexMatch := re.match(
+            r"\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
+            fen,
+        )
+    ):
         raise commands.BadArgument(
             "FEN doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "
         )
+    regexList = regexMatch.groups()
+    fen = regexList[0].split("/")
+    if len(fen) != 8:
+        raise commands.BadArgument(
+            "Expected 8 rows in position part of FEN: `{0}`".format(repr(fen))
+        )
+
+    for fenPart in fen:
+        field_sum = 0
+        previous_was_digit, previous_was_piece = False, False
+
+        for c in fenPart:
+            if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+                if previous_was_digit:
+                    raise commands.BadArgument(
+                        "Two subsequent digits in position part of FEN: `{0}`".format(
+                            repr(fen)
+                        )
+                    )
+                field_sum += int(c)
+                previous_was_digit = True
+                previous_was_piece = False
+            elif c == "~":
+                if not previous_was_piece:
+                    raise commands.BadArgument(
+                        "~ not after piece in position part of FEN: `{0}`".format(repr(fen))
+                    )
+                previous_was_digit, previous_was_piece = False, False
+            elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
+                field_sum += 1
+                previous_was_digit = False
+                previous_was_piece = True
+            else:
+                raise commands.BadArgument(
+                    "Invalid character in position part of FEN: `{0}`".format(repr(fen))
+                )
+
+        if field_sum != 8:
+            raise commands.BadArgument(
+                "Expected 8 columns per row in position part of FEN: `{0}`".format(repr(fen))
+            )
 
 
 BoardState = List[List[Optional[bool]]]
@@ -635,7 +632,7 @@ class GameC4:
         )
 
         rows = [" ".join(str(self.tokens[s]) for s in row) for row in self.grid]
-        first_row = " ".join(x for x in NUMBERS[: self.grid_size])
+        first_row = " ".join(NUMBERS[: self.grid_size])
         formatted_grid = "\n".join([first_row] + rows)
         embed = discord.Embed(title=title, description=formatted_grid)
 
@@ -759,13 +756,14 @@ class GameC4:
                 row += row_incr
                 column += column_incr
 
-                while 0 <= row < self.grid_size and 0 <= column < self.grid_size:
-                    if self.grid[row][column] == player_num:
-                        counters_in_a_row += 1
-                        row += row_incr
-                        column += column_incr
-                    else:
-                        break
+                while (
+                    0 <= row < self.grid_size
+                    and 0 <= column < self.grid_size
+                    and self.grid[row][column] == player_num
+                ):
+                    counters_in_a_row += 1
+                    row += row_incr
+                    column += column_incr
             if counters_in_a_row >= 4:
                 return True
         return False
@@ -797,10 +795,10 @@ class AI_C4:
         """
         if random.randint(1, 10) == 1:
             return None
-        for coords in coord_list:
-            if self.game.check_win(coords, 2):
-                return coords
-        return None
+        return next(
+            (coords for coords in coord_list if self.game.check_win(coords, 2)),
+            None,
+        )
 
     def check_player_win(self, coord_list: List[Coordinate]) -> Optional[Coordinate]:
         """
@@ -810,10 +808,10 @@ class AI_C4:
         """
         if random.randint(1, 4) == 1:
             return None
-        for coords in coord_list:
-            if self.game.check_win(coords, 1):
-                return coords
-        return None
+        return next(
+            (coords for coords in coord_list if self.game.check_win(coords, 1)),
+            None,
+        )
 
     @staticmethod
     def random_coords(coord_list: List[Coordinate]) -> Coordinate:
@@ -935,18 +933,11 @@ class NegamaxAI(AI):
         super().__init__(player)
 
     def heuristic(self, game: Board, sign: int) -> float:
-        if sign == -1:
-            player = not self.player
-        else:
-            player = self.player
-
+        player = not self.player if sign == -1 else self.player
         if game.over:
             if game.winner is None:
                 return 0
-            if game.winner == player:
-                return 1_000_000
-            return -1_000_000
-
+            return 1_000_000 if game.winner == player else -1_000_000
         return random.randint(-10, 10)
 
     @overload
@@ -996,9 +987,7 @@ class NegamaxAI(AI):
             if alpha >= beta:
                 break
 
-        if depth == 0:
-            return move
-        return score
+        return move if depth == 0 else score
 
     def move(self, game: Board) -> Board:
         return game.move(*self.negamax(game))
@@ -1184,11 +1173,7 @@ class Cell:
     def __str__(self):
         if self.clicked:
 
-            if self.number == 0:
-                number = "\u200b"
-            else:
-                number = boardgames.keycap_digit(self.number)
-
+            number = "\u200b" if self.number == 0 else boardgames.keycap_digit(self.number)
             return "\N{COLLISION SYMBOL}" if self.mine else number
         return "\N{TRIANGULAR FLAG ON POST}" if self.flagged else "\N{WHITE LARGE SQUARE}"
 
@@ -1356,13 +1341,12 @@ class GameUI(discord.ui.View):
     async def update(self):
         if self.offset != 0:
             content = "\u200b"
+        elif self.meta.board.lost:
+            content = "💥"
+        elif self.meta.board.solved:
+            content = ":tada:"
         else:
-            if self.meta.board.lost:
-                content = "💥"
-            elif self.meta.board.solved:
-                content = ":tada:"
-            else:
-                content = "Minesweeper!"
+            content = "Minesweeper!"
         await self.message.edit(content=content, view=self)
 
 
@@ -1498,13 +1482,11 @@ class Games(Cog):
 
             return True
 
-        if (
+        return (
             user.id == ctx.author.id
             and str(reaction.emoji) == CROSS_EMOJI
             and reaction.message.id == announcement.id
-        ):
-            return True
-        return False
+        )
 
     def already_playing(self, player: discord.Member) -> bool:
         """Check if someone is already in a game."""
@@ -1521,11 +1503,7 @@ class Games(Cog):
         def check(reaction, user):
             if reaction.emoji != "\N{WHITE HEAVY CHECK MARK}":
                 return False
-            if user.bot:
-                return False
-            if user == ctx.author:
-                return False
-            return True
+            return False if user.bot else user != ctx.author
 
         try:
             _, opponent = await self.bot.wait_for("reaction_add", check=check, timeout=60)
@@ -1591,13 +1569,11 @@ class Games(Cog):
 
             return True
 
-        if (
+        return (
             user.id == ctx.author.id
             and str(reaction.emoji) == CROSS_EMOJI
             and reaction.message.id == announcement.id
-        ):
-            return True
-        return False
+        )
 
     def already_playing_cf(self, player: discord.Member) -> bool:
         """Check if someone is already in a game."""
@@ -1817,7 +1793,7 @@ class Games(Cog):
                 await game.last_state.delete()
             except Exception:
                 pass
-        game.last_state = await ctx.send(f">>> {game}" + message)
+        game.last_state = await ctx.send(f">>> {game}{message}")
 
         # If game over delete the game.
         if game.lost or game.solved:
@@ -1878,21 +1854,20 @@ class Games(Cog):
         level: Optional[int] = None,
     ):
         """A classic sokoban game"""
-        if not ctx.invoked_subcommand:
-            level = level or 1
-            if not 10 >= level >= 1:
-                return await ctx.send(
-                    f"{ctx.author.mention} for now existing levels are from range 1-10"
-                )
-            ls = []
-            async with async_open(rf"extra/sokoban/level{level if level else 1}.txt", "r") as fp:
-                lvl_str = await fp.read()
-            for i in lvl_str.split("\n"):
-                ls.append(list(list(i)))
-            game = SokobanGame(ls)
-            game._get_cords()
-            main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
-            await main_game.start(ctx)
+        if ctx.invoked_subcommand:
+            return
+        level = level or 1
+        if not 10 >= level >= 1:
+            return await ctx.send(
+                f"{ctx.author.mention} for now existing levels are from range 1-10"
+            )
+        async with async_open(f"extra/sokoban/level{level or 1}.txt", "r") as fp:
+            lvl_str = await fp.read()
+        ls = [list(list(i)) for i in lvl_str.split("\n")]
+        game = SokobanGame(ls)
+        game._get_cords()
+        main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
+        await main_game.start(ctx)
 
     @sokoban.command(name="custom")
     async def custom_sokoban(self, ctx: Context, *, text: str):
@@ -1902,10 +1877,8 @@ class Games(Cog):
         - Your level must have only and only 1 character (`@`)
         - There should be equal number of `.` (target) and `$` (box)
         """
-        ls = []
         level = text.strip("```")
-        for i in level.split("\n"):
-            ls.append(list(list(i)))
+        ls = [list(list(i)) for i in level.split("\n")]
         game = SokobanGame(ls)
         game._get_cords()
         main_game = SokobanGameView(game, ctx.author, level=None, ctx=ctx)
@@ -1939,42 +1912,43 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def chess(self, ctx: Context):
         """Chess game. In testing"""
-        if not ctx.invoked_subcommand:
-            announcement: discord.Message = await ctx.send(
-                "**Chess**: A new game is about to start!\n"
-                f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
-                f"(Cancel the game with {CROSS_EMOJI}.)"
+        if ctx.invoked_subcommand:
+            return
+        announcement: discord.Message = await ctx.send(
+            "**Chess**: A new game is about to start!\n"
+            f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
+            f"(Cancel the game with {CROSS_EMOJI}.)"
+        )
+        self.waiting.append(ctx.author)
+        await announcement.add_reaction(HAND_RAISED_EMOJI)
+        await announcement.add_reaction(CROSS_EMOJI)
+
+        try:
+            reaction, user = await self.bot.wait_for(
+                "reaction_add",
+                check=partial(self.predicate, ctx, announcement),
+                timeout=60.0,
             )
-            self.waiting.append(ctx.author)
-            await announcement.add_reaction(HAND_RAISED_EMOJI)
-            await announcement.add_reaction(CROSS_EMOJI)
-
-            try:
-                reaction, user = await self.bot.wait_for(
-                    "reaction_add",
-                    check=partial(self.predicate, ctx, announcement),
-                    timeout=60.0,
-                )
-            except asyncio.TimeoutError:
-                self.waiting.remove(ctx.author)
-                await announcement.delete()
-                await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
-                return
-
-            if str(reaction.emoji) == CROSS_EMOJI:
-                self.waiting.remove(ctx.author)
-                await announcement.delete()
-                await ctx.send(f"{ctx.author.mention} Game cancelled.")
-                return
-
+        except asyncio.TimeoutError:
+            self.waiting.remove(ctx.author)
             await announcement.delete()
-            game = Chess(
-                white=ctx.author,
-                black=user,
-                bot=self.bot,
-                ctx=ctx,
-            )
-            await game.start()
+            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
+            return
+
+        if str(reaction.emoji) == CROSS_EMOJI:
+            self.waiting.remove(ctx.author)
+            await announcement.delete()
+            await ctx.send(f"{ctx.author.mention} Game cancelled.")
+            return
+
+        await announcement.delete()
+        game = Chess(
+            white=ctx.author,
+            black=user,
+            bot=self.bot,
+            ctx=ctx,
+        )
+        await game.start()
 
     @chess.command()
     async def custom_chess(self, ctx: Context, board: fenPass):  # type: ignore
@@ -2399,8 +2373,9 @@ class Games(Cog):
         )
         if not data:
             await ctx.send(
-                f"{ctx.author.mention + ' you' if user is ctx.author else user} haven't played chess yet!"
+                f"{f'{ctx.author.mention} you' if user is ctx.author else user} haven't played chess yet!"
             )
+
             return
         entries = []
         chess_data = data["chess"]
@@ -2600,7 +2575,7 @@ class Games(Cog):
         answer = tuple(sorted(int(m) for m in match.groups()))
 
         # Be forgiving for answers that use indices not on the board.
-        if not all(0 <= n < len(game.board) for n in answer):
+        if any((0 <= n < len(game.board) for n in answer)):
             return
 
         # Also be forgiving for answers that have already been claimed (and avoid penalizing for racing conditions).
@@ -2663,13 +2638,16 @@ class Games(Cog):
             key=lambda item: item[1],
             reverse=True,
         )
-        scoreboard = "Final scores:\n\n"
-        scoreboard += "\n".join(f"{member.display_name}: {score}" for member, score in scores)
+        scoreboard = "Final scores:\n\n" + "\n".join(
+            f"{member.display_name}: {score}" for member, score in scores
+        )
+
         scoreboard_embed.description = scoreboard
         await channel.send(embed=scoreboard_embed)
 
-        missed = [ans for ans in game.solutions if ans not in game.claimed_answers]
-        if missed:
+        if missed := [
+            ans for ans in game.solutions if ans not in game.claimed_answers
+        ]:
             missed_text = "Flights everyone missed:\n" + "\n".join(f"{ans}" for ans in missed)
         else:
             missed_text = "All the flights were found!"

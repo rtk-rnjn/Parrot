@@ -38,21 +38,20 @@ IGNORE = [
 async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: discord.Message = None):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
-        if not data["nsfw"]:
-            if msg_ref is not None:
-                await msg_ref.reply(data["text"])
-            else:
-                await ctx.send(data["text"])
+        if (
+            not data["nsfw"]
+            and msg_ref is not None
+            or data["nsfw"]
+            and ctx.channel.nsfw
+            and msg_ref is not None
+        ):
+            await msg_ref.reply(data["text"])
+        elif not data["nsfw"] or ctx.channel.nsfw:
+            await ctx.send(data["text"])
         else:
-            if ctx.channel.nsfw:
-                if msg_ref is not None:
-                    await msg_ref.reply(data["text"])
-                else:
-                    await ctx.send(data["text"])
-            else:
-                await ctx.reply(
-                    f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
-                )
+            await ctx.reply(
+                f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
+            )
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
     await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
@@ -63,15 +62,12 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
     if data := await collection.find_one({"_id": tag}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mentions(first)
-        if not data["nsfw"]:
+        if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:
             await ctx.safe_send(main)
         else:
-            if ctx.channel.nsfw:
-                await ctx.safe_send(main)
-            else:
-                await ctx.reply(
-                    f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
-                )
+            await ctx.reply(
+                f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
+            )
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
@@ -364,13 +360,12 @@ async def _create_giveaway_post(
         "required_guild": required_guild,
         "required_level": required_level,
     }
-    post = {
+    return {
         "message": message,
         "created_at": message.created_at.timestamp(),
         "expires_at": endtime,
         "extra": {"name": "GIVEAWAY_END", "main": post_extra},
     }
-    return post
 
 
 async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
@@ -506,22 +501,22 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
             CHANNEL = channel
             payload["giveaway_channel"] = channel.id
 
-        if index == 2:
+        elif index == 2:
             await ctx.reply(embed=discord.Embed(description=question))
             duration = ShortTime(await __wait_for__message(ctx))
             payload["endtime"] = duration.dt.timestamp()
 
-        if index == 3:
+        elif index == 3:
             await ctx.reply(embed=discord.Embed(description=question))
             prize = await __wait_for__message(ctx)
             payload["prize"] = prize
 
-        if index == 4:
+        elif index == 4:
             await ctx.reply(embed=discord.Embed(description=question))
             winners = __is_int(await __wait_for__message(ctx), "Winner must be a whole number")
             payload["winners"] = winners
 
-        if index == 5:
+        elif index == 5:
             await ctx.reply(embed=discord.Embed(description=question))
             arg = await __wait_for__message(ctx)
             if arg.lower() not in ("skip", "no", "none"):
@@ -530,12 +525,12 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
             else:
                 payload["required_role"] = None
 
-        if index == 6:
+        elif index == 6:
             await ctx.reply(embed=discord.Embed(description=question))
             level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
             payload["required_level"] = level
 
-        if index == 7:
+        elif index == 7:
             await ctx.reply(embed=discord.Embed(description=question))
             server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
             payload["required_guild"] = server
@@ -600,7 +595,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
 
 
 def __is_int(st: str, error: str) -> Optional[int]:
-    if st.lower() in ("skip", "none", "no"):
+    if st.lower() in {"skip", "none", "no"}:
         return None
     try:
         main = int(st)

@@ -134,9 +134,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             webhook: discord.Webhook = discord.Webhook.from_url(
                 data["on_member_update"], session=self.bot.http_session
             )
-            ch = ""
-            for i, j in self._member_change(before, after):
-                ch += f"{i} {j}\n"
+            ch = "".join(f"{i} {j}\n" for i, j in self._member_change(before, after))
             with suppress(discord.HTTPException):
                 content = f"""**On Member Update**
 
@@ -242,10 +240,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                     return
 
     async def __notify_member(self, error: str, *, member: discord.Member):
-        try:
+        with suppress(discord.Forbidden):
             await member.send(error)
-        except discord.Forbidden:
-            pass
 
     async def _get_index(self, guild: discord.Guild) -> int:
         if data := await self.bot.mongo.parrot_db.server_config.find_one(
@@ -362,15 +358,14 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             self.muted[data["_id"]] = set(data["muted"])
 
     async def cog_unload(self):
-        operations = []
-        for guild_id, set_member_muted in self.muted.items():
-            operations.append(
-                UpdateOne(
-                    {"_id": guild_id},
-                    {"$set": {"muted": list(set_member_muted)}},
-                    upsert=True,
-                )
+        operations = [
+            UpdateOne(
+                {"_id": guild_id},
+                {"$set": {"muted": list(set_member_muted)}},
+                upsert=True,
             )
+            for guild_id, set_member_muted in self.muted.items()
+        ]
 
         await self.bot.mongo.parrot_db.server_config.write_bulk(operations)
 

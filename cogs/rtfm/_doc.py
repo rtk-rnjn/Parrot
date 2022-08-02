@@ -20,8 +20,7 @@ except ImportError:
 
 @ToAsync()
 def get_ele(soup: BeautifulSoup, name: str, **kw: Any):
-    url = soup.find_all(name, **kw)
-    return url
+    return soup.find_all(name, **kw)
 
 
 async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
@@ -29,7 +28,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     text = text.strip("`")
 
     url = "https://docs.python.org/3/genindex-all.html"
-    alphabet = "_" + ascii_uppercase
+    alphabet = f"_{ascii_uppercase}"
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
@@ -71,9 +70,8 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
     """Search something on cppreference"""
     text = text.strip("`")
 
-    base_url = (
-        "https://cppreference.com/w/cpp/index.php?title=Special:Search&search=" + text
-    )
+    base_url = f"https://cppreference.com/w/cpp/index.php?title=Special:Search&search={text}"
+
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
     response = await ctx.bot.http_session.get(url)

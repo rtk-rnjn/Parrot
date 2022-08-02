@@ -53,12 +53,12 @@ class Love(Cog):
         """Calculates the Levenshtein Distance between source and goal."""
         if len(source) < len(goal):
             return self.levenshtein(goal, source)
-        if len(source) == 0:
+        if not source:
             return len(goal)
-        if len(goal) == 0:
+        if not goal:
             return len(source)
 
-        pre_row = list(range(0, len(source) + 1))
+        pre_row = list(range(len(source) + 1))
         for i, source_c in enumerate(source):
             cur_row = [i + 1]
             for j, goal_c in enumerate(goal):
@@ -128,14 +128,18 @@ class Love(Cog):
 
     def zodiac_date_verifier(self, query_date: datetime) -> Optional[str]:
         """Returns zodiac sign by checking date."""
-        for zodiac_name, zodiac_data in self.zodiac_fact.items():
-            if (
-                zodiac_data["start_at"].date()
-                <= query_date.date()
-                <= zodiac_data["end_at"].date()
-            ):
-                return zodiac_name
-        return None
+        return next(
+            (
+                zodiac_name
+                for zodiac_name, zodiac_data in self.zodiac_fact.items()
+                if (
+                    zodiac_data["start_at"].date()
+                    <= query_date.date()
+                    <= zodiac_data["end_at"].date()
+                )
+            ),
+            None,
+        )
 
     @in_month(Month.FEBRUARY)
     @commands.command(aliases=["saintvalentine"])
@@ -212,8 +216,7 @@ class Love(Cog):
     async def partner_zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides a random counter compatible zodiac sign to the given user's zodiac sign."""
         embed = discord.Embed(color=self.bot.color)
-        zodiac_check = self.zodiacs.get(zodiac_sign.capitalize())
-        if zodiac_check:
+        if zodiac_check := self.zodiacs.get(zodiac_sign.capitalize()):
             compatible_zodiac = random.choice(self.zodiacs[zodiac_sign.capitalize()])
             emoji1 = random.choice(HEART_EMOJIS)
             emoji2 = random.choice(HEART_EMOJIS)

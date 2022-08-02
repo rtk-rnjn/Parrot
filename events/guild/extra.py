@@ -46,12 +46,13 @@ class Extra(Cog, command_attrs=dict(hidden=True)):
 `Channel        :` **<#{invite.channel.id}>**
 `Created At     :` **<t:{int(invite.created_at.timestamp())}>**
 `Temporary?     :` **{invite.temporary}**
-`Max Uses       :` **{invite.max_uses if invite.max_uses else 'Infinte'}**
+`Max Uses       :` **{invite.max_uses or 'Infinte'}**
 `Link           :` **{invite.url}**
 `Inviter?       :` **{invite.inviter}**
 `Reason?        :` **{reason}**
 `Created By     :` **{entry.user}**
 """
+
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,

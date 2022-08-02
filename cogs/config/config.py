@@ -117,36 +117,37 @@ class Configuration(Cog):
         ctx: Context,
     ):
         """To setup the starboard in your server"""
-        if not ctx.invoked_subcommand:
-            try:
-                starboard_data: Dict[
-                    str, Union[str, int, List[int], bool, None]
-                ] = self.bot.server_config[ctx.guild.id]["starboard"]
-            except KeyError:
-                return await self.bot.invoke_help_command(ctx)
+        if ctx.invoked_subcommand:
+            return
+        try:
+            starboard_data: Dict[
+                str, Union[str, int, List[int], bool, None]
+            ] = self.bot.server_config[ctx.guild.id]["starboard"]
+        except KeyError:
+            return await self.bot.invoke_help_command(ctx)
 
-            channel: Optional[discord.TextChannel] = ctx.guild.get_channel(
-                starboard_data.get("channel", 0)
-            )
-            limit: Optional[int] = starboard_data.get("limit")
-            is_locked: Optional[bool] = starboard_data.get("is_locked")
+        channel: Optional[discord.TextChannel] = ctx.guild.get_channel(
+            starboard_data.get("channel", 0)
+        )
+        limit: Optional[int] = starboard_data.get("limit")
+        is_locked: Optional[bool] = starboard_data.get("is_locked")
 
-            ignore_channel = ", ".join(
-                [
-                    f"{ctx.guild.get_channel(c)} ({c})"
-                    for c in starboard_data.get("ignore_channel", [])
-                ]
-            )
-            max_duration: Optional[str] = starboard_data.get("max_duration")
+        ignore_channel = ", ".join(
+            [
+                f"{ctx.guild.get_channel(c)} ({c})"
+                for c in starboard_data.get("ignore_channel", [])
+            ]
+        )
+        max_duration: Optional[str] = starboard_data.get("max_duration")
 
-            return await ctx.reply(
-                f"Configuration of this server [starboard]\n\n"
-                f"`Channel :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
-                f"`Limit   :` **{limit}**\n"
-                f"`Locked  :` **{is_locked}**\n"
-                f"`Ignore  :` **{ignore_channel or 'None'}**\n"
-                f"`Duration:` **{max_duration}**\n"
-            )
+        return await ctx.reply(
+            f"Configuration of this server [starboard]\n\n"
+            f"`Channel :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
+            f"`Limit   :` **{limit}**\n"
+            f"`Locked  :` **{is_locked}**\n"
+            f"`Ignore  :` **{ignore_channel or 'None'}**\n"
+            f"`Duration:` **{max_duration}**\n"
+        )
 
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
@@ -235,39 +236,41 @@ class Configuration(Cog):
         self, ctx: Context, event: str, *, channel: discord.TextChannel = None
     ):
         """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
-        if not ctx.invoked_subcommand:
-            chn: discord.TextChannel = channel or ctx.channel
-            if event.lower() not in events:
-                return await ctx.reply(
-                    f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
-                )
-            hooks: List[discord.Webhook] = await chn.webhooks()
-            if len(hooks) >= 10:
-                for hook in hooks:
-                    if hook is not None and hook.user.id == self.bot.user.id:  # type: ignore
-                        webhook = hook
-                        post = {str(event.lower()): str(webhook.url)}
-                        await self.bot.mongo.parrot_db.logging.update_one(
-                            {"_id": ctx.guild.id}, {"$set": post}, upsert=True
-                        )
-                        break
-                else:
-                    return await ctx.reply(
-                        f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {chn.mention}. This happens when channel has already 10 webhooks created."
-                    )
-            else:
-                webhook: discord.Webhook = await chn.create_webhook(
-                    name=self.bot.user.name,
-                    reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
-                )
-                await self.bot.mongo.parrot_db.logging.update_one(
-                    {"_id": ctx.guild.id},
-                    {"$set": {str(event): str(webhook.url)}},
-                    upsert=True,
-                )
-            await ctx.reply(
-                f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {chn.mention}"
+        if ctx.invoked_subcommand:
+            return
+        chn: discord.TextChannel = channel or ctx.channel
+        if event.lower() not in events:
+            return await ctx.reply(
+                f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
             )
+        hooks: List[discord.Webhook] = await chn.webhooks()
+        if len(hooks) >= 10:
+            for hook in hooks:
+                if hook is not None and hook.user.id == self.bot.user.id:  # type: ignore
+                    webhook = hook
+                    post = {event.lower(): str(webhook.url)}
+                    await self.bot.mongo.parrot_db.logging.update_one(
+                        {"_id": ctx.guild.id}, {"$set": post}, upsert=True
+                    )
+                    break
+            else:
+                return await ctx.reply(
+                    f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {chn.mention}. This happens when channel has already 10 webhooks created."
+                )
+        else:
+            webhook: discord.Webhook = await chn.create_webhook(
+                name=self.bot.user.name,
+                reason=f"On request from {ctx.author} ({ctx.author.id}) | Reason: Setting Up Logging",
+            )
+            await self.bot.mongo.parrot_db.logging.update_one(
+                {"_id": ctx.guild.id},
+                {"$set": {event: str(webhook.url)}},
+                upsert=True,
+            )
+
+        await ctx.reply(
+            f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {chn.mention}"
+        )
 
     @logging.command(name="remove", aliases=["delete", "removeevent"])
     @commands.has_permissions(administrator=True)
@@ -278,8 +281,9 @@ class Configuration(Cog):
                 f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
             )
         await self.bot.mongo.parrot_db.logging.update_one(
-            {"_id": ctx.guild.id}, {"$set": {str(event.lower()): ""}}
+            {"_id": ctx.guild.id}, {"$set": {event.lower(): ""}}
         )
+
         await ctx.reply(
             f"{ctx.author.mention} removed `{event.replace('_', ' ').title()}` from the logging list"
         )
@@ -389,11 +393,12 @@ class Configuration(Cog):
                     "warn_auto": {
                         "count": count,
                         "action": action.lower(),
-                        "duration": duration if duration else None,
+                        "duration": duration or None,
                     }
                 }
             },
         )
+
         await ctx.send(f"{ctx.author.mention} updated")
 
     @config_warn.command(name="del", aliases=["remove", "delete"])
@@ -552,7 +557,12 @@ class Configuration(Cog):
                 f"{ctx.author.mention} success! Global chat is now setup {channel.mention}"
             )
 
-        if setting.lower() in ("ignore-role", "ignore_role", "ignorerole", "ignore"):
+        if setting.lower() in {
+            "ignore-role",
+            "ignore_role",
+            "ignorerole",
+            "ignore",
+        }:
             post = {"ignore-role": role.id if role else None}
             await self.bot.mongo.parrot_db.global_chat.update_one(
                 {"_id": ctx.guild.id}, {"$set": post}, upsert=True
@@ -1561,50 +1571,51 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     async def serverstats(self, ctx: Context):
         """Creates Fancy counters that everyone can see"""
+        if ctx.invoked_subcommand is not None:
+            return
+        try:
+            server_stats: Dict[str, Any] = self.bot.server_config[ctx.guild.id][
+                "stats_channels"
+            ]
+        except KeyError:
+            return await self.bot.invoke_help_command(ctx)
         table = []
-        table_role = []
-        if ctx.invoked_subcommand is None:
-            try:
-                server_stats: Dict[str, Any] = self.bot.server_config[ctx.guild.id][
-                    "stats_channels"
-                ]
-            except KeyError:
-                return await self.bot.invoke_help_command(ctx)
-            for key, value in server_stats.items():
-                if key != "role":
-                    chn = (
-                        self.bot.get_channel(value["channel_id"])
-                        if value.get("channel_id")
-                        else 0
-                    )
-                    table.append(
-                        [
-                            key.title(),
-                            f"#{chn.name}" if chn else "None",
-                            value.get("channel_type"),
-                            value.get("template"),
-                        ]
-                    )
-            for _role in server_stats.get("role", {}):
-                role = ctx.guild.get_role(_role.get("role_id", 0))
-                channel = ctx.guild.get_channel(_role.get("channel_id", 0))
-                template = _role.get("template")
-                channel_type = _role.get("channel_type")
-                table_role.append(
+        for key, value in server_stats.items():
+            if key != "role":
+                chn = (
+                    self.bot.get_channel(value["channel_id"])
+                    if value.get("channel_id")
+                    else 0
+                )
+                table.append(
                     [
-                        role.name if role else "None",
-                        channel.name if channel else "None",
-                        channel_type,
-                        template,
+                        key.title(),
+                        f"#{chn.name}" if chn else "None",
+                        value.get("channel_type"),
+                        value.get("template"),
                     ]
                 )
-            await ctx.send(
-                f"""```
+        table_role = []
+        for _role in server_stats.get("role", {}):
+            role = ctx.guild.get_role(_role.get("role_id", 0))
+            channel = ctx.guild.get_channel(_role.get("channel_id", 0))
+            template = _role.get("template")
+            channel_type = _role.get("channel_type")
+            table_role.append(
+                [
+                    role.name if role else "None",
+                    channel.name if channel else "None",
+                    channel_type,
+                    template,
+                ]
+            )
+        await ctx.send(
+            f"""```
 {str(tabulate(table, headers=["Name", "Channel", "Type", "Template"], tablefmt="pretty"))}
 ``````
 {str(tabulate(table_role, headers=["Role", "Channel", "Type", "Template"], tablefmt="pretty"))}
 ```"""
-            )
+        )
 
     @serverstats.command(name="create")
     @commands.has_permissions(administrator=True)

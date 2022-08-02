@@ -57,7 +57,7 @@ class GroupHelpPageSource(menus.ListPageSource):
             timestamp=discord.utils.utcnow(),
         )
 
-        for index, command in enumerate(commands_list):
+        for command in commands_list:
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
                 name=f"\N{BULLET} {command.qualified_name}",
@@ -269,7 +269,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 fmt = f"{parent} {fmt}"
             alias = fmt
         else:
-            alias = command.name if not parent else f"{parent} {command.name}"
+            alias = f"{parent} {command.name}" if parent else command.name
         return f"{alias} {command.signature}"
 
     async def send_bot_help(self, mapping):
@@ -314,8 +314,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
     ):
         embed_like.title = command.qualified_name.upper()
         if isinstance(embed_like, discord.Embed):
-            syntax = self.get_command_signature(command)
-            if syntax:
+            if syntax := self.get_command_signature(command):
                 embed_like.add_field(
                     name="Syntax",
                     value=f"`{self.get_command_signature(command)}`",
@@ -363,11 +362,11 @@ class PaginatedHelpCommand(commands.HelpCommand):
         except discord.Forbidden:
             await self.context.reply(f"{self.context.author.mention} preparing help menu...")
         subcommands = list(group.commands)
-        if len(subcommands) == 0:
+        if not subcommands:
             return await self.send_command_help(group)
         entries = subcommands
         # entries = await self.filter_commands(subcommands, sort=True)
-        if len(entries) == 0:
+        if not entries:
             return await self.send_command_help(group)
 
         source = GroupHelpPageSource(group, entries, prefix=self.context.clean_prefix)
@@ -536,7 +535,6 @@ class Meta(Cog):
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
 
-        info = []
         features = set(ctx.guild.features)
         all_features = {
             "PARTNERED": "Partnered",
@@ -555,11 +553,11 @@ class Meta(Cog):
             "BANNER": "Banner",
         }
 
-        for feature, label in all_features.items():
-            if feature in features:
-                info.append(f":ballot_box_with_check: {label}")
-
-        if info:
+        if info := [
+            f":ballot_box_with_check: {label}"
+            for feature, label in all_features.items()
+            if feature in features
+        ]:
             embed.add_field(name="Features", value="\n".join(info))
 
         if guild.premium_tier != 0:
@@ -606,7 +604,7 @@ class Meta(Cog):
 
     def format_commit(self, commit):
         short, _, _ = commit.message.partition("\n")
-        short_sha2 = commit.hex[0:6]
+        short_sha2 = commit.hex[:6]
         commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
         commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
 
@@ -728,7 +726,7 @@ class Meta(Cog):
             perms.append("Role Manager")
         if target.guild_permissions.moderate_members:
             perms.append("Can Timeout Members")
-        embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
+        embed.description = f"Key perms: {', '.join(perms or ['NA'])}"
         if target.banner:
             embed.set_image(url=target.banner.url)
         await ctx.reply(ctx.author.mention, embed=embed)
@@ -797,7 +795,7 @@ class Meta(Cog):
             perms.append("Channel Manager")
         if role.permissions.manage_emojis:
             perms.append("Emoji Manager")
-        embed.description = f"Key perms: {', '.join(perms if perms else ['NA'])}"
+        embed.description = f"Key perms: {', '.join(perms or ['NA'])}"
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
             embed.set_thumbnail(
@@ -825,11 +823,12 @@ class Meta(Cog):
             ("Created At", f"{discord.utils.format_dt(emoji.created_at)}", True),
             ("Server Owned", emoji.guild.name, True),
             ("Server ID", emoji.guild_id, True),
-            ("Created By", emoji.user if emoji.user else "User Not Found", True),
+            ("Created By", emoji.user or "User Not Found", True),
             ("Available?", emoji.available, True),
             ("Managed by Twitch/YouTube?", emoji.managed, True),
             ("Require Colons?", emoji.require_colons, True),
         ]
+
         em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=emoji.url)
         for name, value, inline in data:

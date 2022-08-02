@@ -65,18 +65,14 @@ class Position:
 
     def __le__(self, other):
         r = Position.__lt__(other, self)
-        if r is NotImplemented:
-            return NotImplemented
-        return not r
+        return NotImplemented if r is NotImplemented else not r
 
     def __gt__(self, other):
         return Position.__lt__(other, self)
 
     def __ge__(self, other):
         r = Position.__lt__(self, other)
-        if r is NotImplemented:
-            return NotImplemented
-        return not r
+        return NotImplemented if r is NotImplemented else not r
 
     def __repr__(self):
         return "<{0.__class__.__name__}: {0.number}>".format(self)
@@ -264,8 +260,7 @@ class _MenuMeta(type):
         buttons = []
         new_cls = super().__new__(cls, name, bases, attrs)
 
-        inherit_buttons = kwargs.pop("inherit_buttons", True)
-        if inherit_buttons:
+        if inherit_buttons := kwargs.pop("inherit_buttons", True):
             # walk MRO to get all buttons even in subclasses
             for base in reversed(new_cls.__mro__):
                 for elem, value in base.__dict__.items():
@@ -287,9 +282,9 @@ class _MenuMeta(type):
         new_cls.__menu_buttons__ = buttons
         return new_cls
 
-    def get_buttons(cls):
+    def get_buttons(self):
         buttons = OrderedDict()
-        for func in cls.__menu_buttons__:
+        for func in self.__menu_buttons__:
             emoji = func.__menu_button__
             buttons[emoji] = Button(emoji, func, **func.__menu_button_kwargs__)
         return buttons
@@ -447,11 +442,7 @@ class Menu(metaclass=_MenuMeta):
             Removing the reaction failed.
         """
 
-        if isinstance(emoji, Button):
-            emoji = emoji.emoji
-        else:
-            emoji = _cast_emoji(emoji)
-
+        emoji = emoji.emoji if isinstance(emoji, Button) else _cast_emoji(emoji)
         self._buttons.pop(emoji, None)
 
         if react:
@@ -1008,10 +999,8 @@ class MenuPages(Menu):
     async def show_checked_page(self, page_number):
         max_pages = self._source.get_max_pages()
         try:
-            if max_pages is None:
+            if max_pages is None or max_pages > page_number >= 0:
                 # If it doesn't give maximum pages, it cannot be checked
-                await self.show_page(page_number)
-            elif max_pages > page_number >= 0:
                 await self.show_page(page_number)
         except IndexError:
             # An error happened that can be handled, so ignore it.
@@ -1023,9 +1012,7 @@ class MenuPages(Menu):
 
     def _skip_double_triangle_buttons(self):
         max_pages = self._source.get_max_pages()
-        if max_pages is None:
-            return True
-        return max_pages <= 2
+        return True if max_pages is None else max_pages <= 2
 
     @button(
         "\N{BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f",
@@ -1137,7 +1124,7 @@ class GroupByPageSource(ListPageSource):
     """
 
     def __init__(self, entries, *, key, per_page, sort=True):
-        self.__entries = entries if not sort else sorted(entries, key=key)
+        self.__entries = sorted(entries, key=key) if sort else entries
         nested = []
         self.nested_per_page = per_page
         for k, g in itertools.groupby(self.__entries, key=key):
@@ -1217,7 +1204,7 @@ class AsyncIteratorPageSource(PageSource):
     async def _iterate(self, n):
         it = self.iterator
         cache = self._cache
-        for i in range(0, n):
+        for _ in range(n):
             try:
                 elem = await it.__anext__()
             except StopAsyncIteration:

@@ -57,8 +57,7 @@ class Telephone(Cog):
         except KeyError:
             return await ctx.send("No call logs found")
         else:
-            server = self.bot.get_guild(serverid)
-            if server:
+            if server := self.bot.get_guild(serverid):
                 ini = time()
                 await dial(self.bot, ctx, server, False)
                 fin = time()

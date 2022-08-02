@@ -64,8 +64,9 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             cat = guild.get_channel(data["category"])
 
             ticket_channel = await guild.create_text_channel(
-                "ticket-{}".format(ticket_number), category=cat
+                f"ticket-{ticket_number}", category=cat
             )
+
             await ticket_channel.set_permissions(
                 guild.get_role(guild.id),
                 send_messages=False,
@@ -99,25 +100,24 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             )
 
             em = discord.Embed(
-                title="New ticket from {}#{}".format(member.name, member.discriminator),
-                description="{}".format("Pls wait while you reach you"),
+                title=f"New ticket from {member.name}#{member.discriminator}",
+                description='Pls wait while you reach you',
                 color=0x00A8FF,
             )
+
 
             await ticket_channel.send(embed=em, content=f"{member.mention}")
             await ticket_channel.send(
                 "To close the ticket, type `[p]close`\nTo save the ticket transcript, type `[p]save`"
             )
-            pinged_msg_content = ""
             non_mentionable_roles = []
             if data["pinged_roles"]:
+                pinged_msg_content = ""
                 for role_id in data["pinged_roles"]:
                     role = guild.get_role(role_id)
                     pinged_msg_content += role.mention
                     pinged_msg_content += " "
-                    if role.mentionable:
-                        pass
-                    else:
+                    if not role.mentionable:
                         await role.edit(mentionable=True)
                         non_mentionable_roles.append(role)
                 await ticket_channel.send(pinged_msg_content)

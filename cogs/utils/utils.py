@@ -623,7 +623,7 @@ class Utils(Cog):
             xp += 12
             lvl = int((xp // 42) ** 0.55)
             if lvl == level:
-                return int(xp)
+                return xp
             await asyncio.sleep(0)
 
     async def __get_rank(self, *, collection: Collection, member: discord.Member):
@@ -676,10 +676,7 @@ class Utils(Cog):
         else:
             msg = self.message[msg_id]["message"]
 
-        if msg.author.id == self.bot.user.id:
-            return msg
-
-        return None
+        return msg if msg.author.id == self.bot.user.id else None
 
     async def __fetch_message_from_channel(self, *, message: int, channel: discord.TextChannel):
         async for msg in channel.history(
@@ -1167,8 +1164,7 @@ class Utils(Cog):
                 for k, v in stats_channels.items():
                     if k != "role":
                         v: Dict[str, Any]
-                        channel = guild.get_channel(v["channel_id"])
-                        if channel:
+                        if channel := guild.get_channel(v["channel_id"]):
                             await channel.edit(
                                 name=v["template"].format(PAYLOAD[k]),
                                 reason="Updating server stats",

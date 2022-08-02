@@ -149,10 +149,8 @@ class PfpEffects:
 
         data = image.getdata()
         data_set = set(data)
-        easterified_data_set = {}
+        easterified_data_set = {x: PfpEffects.closest(x) for x in data_set}
 
-        for x in data_set:
-            easterified_data_set[x] = PfpEffects.closest(x)
         new_pixel_data = [
             (*easterified_data_set[x], alpha[i]) if x in easterified_data_set else x
             for i, x in enumerate(data)
@@ -294,6 +292,4 @@ class PfpEffects:
         the image into. This should be a square number.
         """
         img_squares = PfpEffects.split_image(image, squares)
-        new_img = PfpEffects.join_images(img_squares)
-
-        return new_img
+        return PfpEffects.join_images(img_squares)

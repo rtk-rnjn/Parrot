@@ -115,8 +115,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         Sends a message with a video of a random pride anthem.
         If `genre` is supplied, it will select from that genre only.
         """
-        anthem = self.get_video(genre)
-        if anthem:
+        if anthem := self.get_video(genre):
             await ctx.send(anthem["url"])
         else:
             await ctx.send("I couldn't find a video, sorry!")
@@ -132,11 +131,12 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         command to execute.
         """
         embed = discord.Embed(color=Colours.soft_red)
-        valid_names = []
         pride_leader = pride_leader.title()
-        for name in PRIDE_RESOURCE:
-            if fuzz.ratio(pride_leader, name) >= MINIMUM_FUZZ_RATIO:
-                valid_names.append(name)
+        valid_names = [
+            name
+            for name in PRIDE_RESOURCE
+            if fuzz.ratio(pride_leader, name) >= MINIMUM_FUZZ_RATIO
+        ]
 
         if not valid_names:
             valid_names = ", ".join(PRIDE_RESOURCE)

@@ -189,11 +189,9 @@ async def execute_run(bot: Parrot, language: str, code: str,) -> str:
                 i += 1
                 if i == 10:
                     break
-        matches = "\n".join(matches)
-
         output = f"`{lang}` not available."
-        if matches:
-            output = output + f" Did you mean:\n{matches}"
+        if matches := "\n".join(matches):
+            output = f"{output} Did you mean:\n{matches}"
 
         return output
 
@@ -286,6 +284,4 @@ def get_raw(link: str) -> str:
         return f"https://hastebin.com/raw/{token}"
     # Github uses redirection so raw -> usercontent and no raw -> normal
     # We still need to ensure we get a raw version after this potential redirection
-    if "/raw" in link:
-        return link
-    return link + "/raw"
+    return link if "/raw" in link else f"{link}/raw"

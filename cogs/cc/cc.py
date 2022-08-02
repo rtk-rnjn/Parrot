@@ -272,9 +272,7 @@ class CustomCommand(Cog):
                 code = indent(code, "MEMBER")
             payload["code"] = code
 
-            review_needed = bool(re.findall(MAGICAL_WORD_REGEX, code))
-
-            if review_needed:
+            if review_needed := bool(re.findall(MAGICAL_WORD_REGEX, code)):
                 await self.bot.author_obj.send(
                     f"There is an request from `{ctx.author}` to create a custom command with the name `{flags.name}` in the guild {ctx.guild.name} (`{ctx.guild.id}`).\n"
                     f"Potential breach detected in the code. Please review the code and confirm the request.\n",
@@ -370,7 +368,7 @@ class CustomCommand(Cog):
         if not message.guild:
             return
 
-        if before.content == after.content:
+        if before.content == message.content:
             return
 
         if data := await self.bot.mongo.cc.commands.find_one(
@@ -531,10 +529,4 @@ class CustomCommand(Cog):
         if message.author._roles.has(ignored_role or 0):
             return False
 
-        if message.channel.id == (ignored_channel or 0):
-            return False
-
-        if message.channel.id == (required_channel or 0):
-            return True
-
-        return True
+        return message.channel.id != ((ignored_channel or 0))

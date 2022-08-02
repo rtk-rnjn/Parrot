@@ -331,15 +331,13 @@ class Parrot(commands.AutoShardedBot):
             _CONTENT = discord.utils.MISSING
 
         if webhook is not None:
-            try:
+            with suppress(discord.HTTPException):
                 await webhook.send(
                     _CONTENT,
                     file=_FILE,
                     avatar_url=self.user.avatar.url,
                     username=self.user.name,
                 )
-            except discord.HTTPException:
-                pass
 
     async def before_identify_hook(self, shard_id: int, *, initial: bool = False) -> None:
         self._clear_gateway_data()
@@ -436,10 +434,12 @@ class Parrot(commands.AutoShardedBot):
                     username=self.user.name,
                 )
             with suppress(discord.HTTPException):
-                fail_msg = ""
                 if self._failed_to_load:
-                    for k, v in self._failed_to_load.items():
-                        fail_msg += f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                    fail_msg = "".join(
+                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
+                        for k, v in self._failed_to_load.items()
+                    )
+
                     await webhook.send(
                         f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
                         avatar_url=self.user.avatar.url,
@@ -674,9 +674,7 @@ class Parrot(commands.AutoShardedBot):
                 return member
 
         members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
-        if not members:
-            return None
-        return members[0]
+        return members[0] if members else None
 
     async def get_or_fetch_message(
         self,
@@ -778,7 +776,7 @@ class Parrot(commands.AutoShardedBot):
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
         if match is not None:
-            prefix = match.group(1)
+            prefix = match[1]
         return commands.when_mentioned_or(prefix)(self, message)
 
     async def get_guild_prefixes(self, guild: discord.Guild) -> str:

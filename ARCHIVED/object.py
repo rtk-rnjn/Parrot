@@ -206,10 +206,9 @@ class Object(dict):
         Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         (*) Invertible so long as collection contents are each repr-invertible.
         """
-        keys = list(iterkeys(self))
-        keys.sort()
+        keys = sorted(iterkeys(self))
         args = ", ".join(["%s=%r" % (key, self[key]) for key in keys])
-        return "%s(%s)" % (self.__class__.__name__, args)
+        return f"{self.__class__.__name__}({args})"
 
     def __dir__(self):
         return list(iterkeys(self))
@@ -252,9 +251,7 @@ def objectify(x):
     """
     if isinstance(x, dict):
         return Object((k, objectify(v)) for k, v in iteritems(x))
-    if isinstance(x, (list, tuple)):
-        return type(x)(objectify(v) for v in x)
-    return x
+    return type(x)(objectify(v) for v in x) if isinstance(x, (list, tuple)) else x
 
 
 def unobjectify(x):
@@ -368,8 +365,7 @@ try:
         >>> b.toYAML(Dumper=yaml.Dumper, default_flow_style=True)
         '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
         """
-        opts = dict(indent=4, default_flow_style=False)
-        opts.update(options)
+        opts = dict(indent=4, default_flow_style=False) | options
         if "Dumper" not in opts:
             return yaml.safe_dump(self, **opts)
         return yaml.dump(self, **opts)

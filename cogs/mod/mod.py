@@ -748,13 +748,11 @@ class Moderator(Cog):
         if args.ends:
             predicates.append(lambda m: any(m.content.endswith(s) for s in args.ends))
 
-        op = all if not args._or else any
+        op = any if args._or else all
 
         def predicate(m):
             r = op(p(m) for p in predicates)
-            if args._not:
-                return not r
-            return r
+            return not r if args._not else r
 
         if args.after and args.search is None:
             args.search = 2000

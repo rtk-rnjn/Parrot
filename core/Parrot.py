@@ -106,7 +106,7 @@ handler = logging.handlers.RotatingFileHandler(
     filename="discord.log",
     encoding="utf-8",
     maxBytes=1 * 1024 * 1024,  # 1 MiB
-    backupCount=5,  # Rotate through 5 files
+    backupCount=1,  # Rotate through 1 files
 )
 dt_fmt = "%Y-%m-%d %H:%M:%S"
 formatter = logging.Formatter("[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{")

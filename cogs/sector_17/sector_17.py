@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 import discord
 from core import Cog
-from discord.ext import commands
+from discord.ext import commands, tasks
 from utilities.checks import in_support_server
 
 try:
@@ -36,6 +36,7 @@ class Sector1729(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self._cache: Dict[int, int] = {}
+        self.vote_reseter.start()
 
     async def cog_check(self, ctx: Context) -> bool:
         return ctx.guild is not None and ctx.guild.id == getattr(
@@ -128,7 +129,7 @@ class Sector1729(Cog):
             return await ctx.send("You already have the vote role.")
 
         if await self.bot.mongo.extra.user_misc.find_one(
-            {"_id": ctx.author.id, "topgg_vote_expires": {"$lte": time()}}
+            {"_id": ctx.author.id, "topgg_vote_expires": {"$gte": time()}}
         ) or await self.bot.topgg.get_user_vote(ctx.author.id):
             role = discord.Object(id=VOTER_ROLE_ID)
             await ctx.author.add_roles(role, reason="Voted for the bot on Top.gg")
@@ -139,6 +140,20 @@ class Sector1729(Cog):
             "Seems you haven't voted for the bot on Top.gg Yet. This might be error. "
             f"Consider asking the owner of the bot ({self.bot.author_obj})"
         )
+
+    @commands.command(name="myvotes", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @in_support_server()
+    async def my_votes(self, ctx: Context):
+        if data := await self.bot.mongo.user_misc.find_one(
+            {"_id": ctx.author.id, "topgg_votes": {"$exists": True}}
+        ):
+            await ctx.send(
+                f"You voted for **{self.bot.user}** for **{len(data['topgg_votes'])}** times on Top.gg"
+            )
+        else:
+            await ctx.send("You haven't voted for the bot on Top.gg yet.")
+
 
     async def __add_to_db(self, member: discord.Member) -> None:
         col: Collection = self.bot.mongo.extra.user_misc
@@ -154,3 +169,16 @@ class Sector1729(Cog):
             },
             upsert=True,
         )
+
+    @tasks.loop(minutes=5)
+    async def vote_reseter(self):
+        col: Collection = self.bot.mongo.extra.user_misc
+        async with self.lock:
+            now_plus_12_hours = time() + 43200
+            await col.update_many(
+                {"topgg_vote_expires": {"$lte": now_plus_12_hours}},
+                {"$unset": {"topgg_vote_expires": 1}},
+            )
+
+    async def cog_unload(self) -> None:
+        self.vote_reseter.cancel()

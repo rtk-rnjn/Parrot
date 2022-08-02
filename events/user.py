@@ -35,9 +35,10 @@ class User(Cog, command_attrs=dict(hidden=True)):
 
 `Name (ID) :` **{user} [`{user.id}`]**
 `Created At:` **{discord.utils.format_dt(user.created_at)}**
-`Reason    :` **{entry.reason if entry.reason else None}**
+`Reason    :` **{entry.reason or None}**
 `Banned by :` **{entry.user}**
 """
+
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,
@@ -65,9 +66,10 @@ class User(Cog, command_attrs=dict(hidden=True)):
 
 `Name (ID)  :` **{user} [`{user.id}`]**
 `Created At :` **{discord.utils.format_dt(user.created_at)}**
-`Reason     :` **{entry.reason if entry.reason else None}**
+`Reason     :` **{entry.reason or None}**
 `Unbanned by:` **{entry.user}**
 """
+
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,

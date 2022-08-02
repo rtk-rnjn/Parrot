@@ -101,11 +101,7 @@ class Delete(discord.ui.View):
         self.value = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if self.user.bot:
-            return True
-        if self.user.id != interaction.user.id:
-            return False
-        return True
+        return True if self.user.bot else self.user.id == interaction.user.id
 
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -198,10 +194,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     ) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json = await self._fetch_response(
-            f'https://api.github.com/gists/{gist_id}{f"/{revision}" if len(revision) > 0 else ""}',
+            f'https://api.github.com/gists/{gist_id}{f"/{revision}" if revision != "" else ""}',
             "json",
             headers=GITHUB_HEADERS,
         )
+
 
         # Check each file in the gist for the specified file
         for gist_file in gist_json["files"]:
@@ -326,45 +323,40 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return message.author.id in self.bot.opts[message.guild.id].get("equation", [])
 
     async def query_ddg(self, query: str) -> Optional[str]:
-        link = "https://api.duckduckgo.com/?q={}&format=json&pretty=1".format(query)
+        link = f"https://api.duckduckgo.com/?q={query}&format=json&pretty=1"
         # saying `ok google`, and querying from ddg LOL.
         res = await self.bot.http_session.get(link)
         data: Dict = json.loads(await res.text())
         if data.get("Abstract"):
             return data.get("Abstract")
-        if data["RelatedTopics"]:
-            return data["RelatedTopics"][0]["Text"]
-        return None
+        return data["RelatedTopics"][0]["Text"] if data["RelatedTopics"] else None
 
     async def quick_answer(self, message: discord.Message):
         """This is good."""
-        if message.content.lower().startswith(TRIGGER):
-            if message.content.lower().startswith("ok google"):
-                query = message.content.lower()[10:]
-                res = await self.query_ddg(query)
-                if not res:
-                    return
-                try:
-                    return await message.channel.send(res)
-                except discord.Forbidden:
-                    pass
-            if message.content.lower().startswith("hey google"):
-                query = message.content.lower()[11:]
-                res = await self.query_ddg(query)
-                if not res:
-                    return
-                try:
-                    return await message.channel.send(res)
-                except discord.Forbidden:
-                    pass
+        if not message.content.lower().startswith(TRIGGER):
+            return
+        if message.content.lower().startswith("ok google"):
+            query = message.content.lower()[10:]
+            res = await self.query_ddg(query)
+            if not res:
+                return
+            with suppress(discord.Forbidden):
+                return await message.channel.send(res)
+        if message.content.lower().startswith("hey google"):
+            query = message.content.lower()[11:]
+            res = await self.query_ddg(query)
+            if not res:
+                return
+            with suppress(discord.Forbidden):
+                return await message.channel.send(res)
 
     def refrain_message(self, msg: str):
         if "chod" in msg.replace(",", "").split(" "):
             return False
-        for bad_word in bad_dict:
-            if bad_word.lower() in msg.replace(",", "").split(" "):
-                return False
-        return True
+        return all(
+            bad_word.lower() not in msg.replace(",", "").split(" ")
+            for bad_word in bad_dict
+        )
 
     def is_banned(self, user: Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
@@ -406,8 +398,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 msg = message
                 if content:
                     fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                        f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
+
                 else:
                     fp = None
                 await webhook.send(
@@ -443,7 +436,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if len(message.content) < 3:
             return
 
-        if not any(i in message.content for i in OP):
+        if all(i not in message.content for i in OP):
             return
 
         if self._check_equation_req(message):
@@ -514,9 +507,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         if data:
             bucket = self.cd_mapping.get_bucket(message)
-            retry_after = bucket.update_rate_limit()
-
-            if retry_after:
+            if retry_after := bucket.update_rate_limit():
                 return await message.channel.send(
                     f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**",
                     delete_after=10,
@@ -592,8 +583,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             async for webhook in collection.find(
                 {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
             ):
-                hook = webhook["webhook"]
-                if hook:
+                if hook := webhook["webhook"]:
                     try:
                         async with aiohttp.ClientSession() as session:
                             webhook = Webhook.from_url(f"{hook}", session=session)
@@ -719,8 +709,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     """
                     if any((content, msg.attachments, msg.embeds)):
                         fp = io.BytesIO(
-                            f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                            f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                         )
+
                     else:
                         fp = None
                     await webhook.send(
@@ -758,11 +749,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
                 for msg in msgs:
                     if not msg.author.bot:
-                        main += f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
-                if msgs:
-                    fp = io.BytesIO(main.encode())
-                else:
-                    fp = None
+                        main += f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
+
+                fp = io.BytesIO(main.encode()) if msgs else None
                 main_content = f"""**Bulk Message Delete**
 
 `Total Messages:` **{len(msg_ids)}**
@@ -957,10 +946,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         role: discord.abc.Snowflake,
         reason: Optional[str] = None,
     ):
-        try:
+        with suppress(discord.Forbidden, discord.HTTPException):
             await member.add_roles(role, reason=reason)
-        except (discord.Forbidden, discord.HTTPException):
-            pass
 
     async def _on_message_passive(self, message: discord.Message):
         if message.guild is None:
@@ -984,15 +971,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
                     f"> You were mentioned **{len(data['pings'])}** times"
                 )
-                try:
+                with suppress(discord.Forbidden):
                     if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
                         name = message.author.display_name[5:]
                         if len(name) != 0 or name not in (" ", ""):
                             await message.author.edit(
                                 nick=name, reason=f"{message.author} came after AFK"
                             )
-                except discord.Forbidden:
-                    pass
                 await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
                 await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
                 self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
@@ -1076,8 +1061,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     )
                 ):
                     fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author} | {msg.content if msg.content else ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                        f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
                     )
+
                 else:
                     fp = None
                 await webhook.send(

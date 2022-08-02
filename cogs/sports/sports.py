@@ -43,13 +43,11 @@ class Sports(Cog):
 
         table1 = tabulate(data["batting"], headers="keys")
         table2 = tabulate(data["bowling"], headers="keys")
-        crr = "\n".join(data["crr"])
-
         extra = ""
         if extra_ := data.get("extra"):
             for temp in extra_:
                 extra += "".join(temp) + "\n"
-        if crr:
+        if crr := "\n".join(data["crr"]):
             embed.description = f"""
 > `{data['team_one']} | {data['team_two']}`
 ```
@@ -73,24 +71,25 @@ class Sports(Cog):
     @commands.group(name="ipl", invoke_without_command=True)
     async def ipl(self, ctx: Context) -> None:
         """To get the IPL score"""
-        if ctx.invoked_subcommand is None:
-            if not self.url:
-                await ctx.send(
-                    f"{ctx.author.mention} No IPL score page set | Ask for it in support server"
+        if ctx.invoked_subcommand is not None:
+            return
+        if not self.url:
+            await ctx.send(
+                f"{ctx.author.mention} No IPL score page set | Ask for it in support server"
+            )
+            return
+
+        if self.data is None:
+            url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
+            response = await self.bot.http_session.get(url)
+            if response.status != 200:
+                return await ctx.send(
+                    f"{ctx.author.mention} Could not get IPL score | Ask for it in support server | Status code: {response.status}"
                 )
-                return
+            self.data = await response.json()
 
-            if self.data is None:
-                url = f"http://127.0.0.1:1729/cricket_api?url={self.url}"
-                response = await self.bot.http_session.get(url)
-                if response.status != 200:
-                    return await ctx.send(
-                        f"{ctx.author.mention} Could not get IPL score | Ask for it in support server | Status code: {response.status}"
-                    )
-                self.data = await response.json()
-
-            embed = self.create_embed_ipl(data=self.data)
-            await ctx.send(embed=embed)
+        embed = self.create_embed_ipl(data=self.data)
+        await ctx.send(embed=embed)
 
     @with_role(*STAFF_ROLES)
     @ipl.command(name="set")

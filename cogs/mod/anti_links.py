@@ -97,9 +97,7 @@ class LinkProt(Cog):
                 await self.bot.get_cog("Moderator").warn_task(
                     target=message.author, ctx=ctx
                 )
-            has_links = self.has_links(message.content)
-
-            if has_links:
+            if has_links := self.has_links(message.content):
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,

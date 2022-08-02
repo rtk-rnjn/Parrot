@@ -290,14 +290,11 @@ class BaseCustomCommand:
 
         with suppress(asyncio.TimeoutError):
             msg = await self.__bot.wait_for(
-                "message",
-                check=check_outer(**kwargs),
-                timeout=10 if timeout > 10 else timeout,
+                "message", check=check_outer(**kwargs), timeout=min(timeout, 10)
             )
 
-        if msg.guild != self.__guild:
-            return None
-        return CustomMessage(msg)
+
+        return None if msg.guild != self.__guild else CustomMessage(msg)
 
     async def message_send(
         self,
@@ -388,15 +385,11 @@ class BaseCustomCommand:
 
     async def get_member(self, member_id: int) -> Optional[CustomMember]:
         member = self.__guild.get_member(member_id)
-        if member is not None:
-            return CustomMember(member)
-        return None
+        return CustomMember(member) if member is not None else None
 
     async def get_role(self, role_id: int) -> Optional[CustomRole]:
         role = self.__guild.get_role(role_id)
-        if role is not None:
-            return CustomRole(role)
-        return None
+        return CustomRole(role) if role is not None else None
 
     async def get_channel(
         self, channel_id: int
@@ -420,9 +413,7 @@ class BaseCustomCommand:
             return "CATEGORY"
         if isinstance(channel, discord.Thread):
             return "THREAD"
-        if isinstance(channel, discord.StageChannel):
-            return "STAGE"
-        return None
+        return "STAGE" if isinstance(channel, discord.StageChannel) else None
 
     def __get_role_or_user(
         self, obj: Union[CustomMember, CustomRole, int], need_user: bool = False
@@ -437,9 +428,6 @@ class BaseCustomCommand:
             if obj is None:
                 return self.__guild.get_role(obj)
 
-            if obj is None and need_user:
-                return self.__bot.get_user(obj)
-
         return None
 
     async def get_permissions_for(
@@ -452,8 +440,7 @@ class BaseCustomCommand:
         if obj is None:
             return None
 
-        chn = self.__guild.get_channel(channel)
-        if chn:
+        if chn := self.__guild.get_channel(channel):
             return chn.permissions_for(obj)
         return None
 
@@ -465,8 +452,7 @@ class BaseCustomCommand:
         if obj is None:
             return None
 
-        chn = self.__guild.get_channel(channel)
-        if chn:
+        if chn := self.__guild.get_channel(channel):
             return chn.overwrites_for(obj)
         return None
 
@@ -541,14 +527,18 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
         return
 
     async def reactions_users(self, emoji: Any) -> List[CustomMember]:
-        for reaction in self.__message.reactions:
-            if str(reaction.emoji) == emoji:
-                return [
+        return next(
+            (
+                [
                     CustomMember(member)
                     async for member in reaction.users()
                     if isinstance(member, discord.Member)
                 ]
-        return []
+                for reaction in self.__message.reactions
+                if str(reaction.emoji) == emoji
+            ),
+            [],
+        )
 
 
 class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):

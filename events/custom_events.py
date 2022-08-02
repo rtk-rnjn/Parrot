@@ -73,11 +73,7 @@ class EventCustom(Cog):
         messageURL: str = None,
         **kw: Any,
     ):
-        if embed:
-            embed: discord.Embed = discord.Embed.from_dict(embed)
-        else:
-            embed = discord.utils.MISSING
-
+        embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
         if (dm_notify or is_todo) and content:
             user: discord.User = self.bot.get_user(messageAuthor)
             if user:

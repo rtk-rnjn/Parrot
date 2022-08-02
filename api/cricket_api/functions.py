@@ -74,9 +74,7 @@ def get_batting(soup: BeautifulSoup) -> Dict[str, Any]:
         [__parse_text(i.text) for i in mini_table.find_all("td")]
         for mini_table in soup.find_all("table", {"class": "table table-condensed"})
     ]
-    if not data:
-        return {}
-    return dict(zip(data[0], zip(data[0][10:], data[0][5:10])))
+    return dict(zip(data[0], zip(data[0][10:], data[0][5:10]))) if data else {}
 
 
 @ToAsync()
@@ -85,6 +83,4 @@ def get_bowling(soup: BeautifulSoup) -> Dict[str, Any]:
         [__parse_text(i.text) for i in mini_table.find_all("td")]
         for mini_table in soup.find_all("table", {"class": "table table-condensed"})
     ]
-    if not data:
-        return {}
-    return dict(zip(data[1], zip(data[1][10:], data[1][5:10])))
+    return dict(zip(data[1], zip(data[1][10:], data[1][5:10]))) if data else {}

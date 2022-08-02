@@ -30,7 +30,7 @@ class CalculatorView(discord.ui.View):
         self.ctx: Context = ctx
         self.bot: Parrot = ctx.bot
 
-        self.arg = arg if arg else ""
+        self.arg = arg or ""
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user.id:
@@ -334,7 +334,7 @@ class ScientificCalculator(discord.ui.View):
         self.user = user
         self.ctx = ctx
 
-        self.arg = arg if arg else ""
+        self.arg = arg or ""
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user.id:

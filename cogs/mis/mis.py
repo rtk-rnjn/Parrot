@@ -364,7 +364,7 @@ class Misc(Cog):
 
     def sanitise(self, st: str) -> str:
         if len(st) > 1024:
-            st = st[0:1021] + "..."
+            st = st[:1021] + "..."
         st = re.sub(invitere2, "[INVITE REDACTED]", st)
         return st
 
@@ -557,7 +557,7 @@ class Misc(Cog):
             return await ctx.send(f"{ctx.author.mention} something not right!")
 
         em_list = []
-        for data in range(0, len(res["articles"])):
+        for data in range(len(res["articles"])):
 
             source = res["articles"][data]["source"]["name"]
             # url = res['articles'][data]['url']
@@ -593,40 +593,38 @@ class Misc(Cog):
     @Context.with_type
     async def search(self, ctx: Context, *, search: str):
         """Simple google search Engine"""
-        if not ctx.invoked_subcommand:
-            search = urllib.parse.quote(search)
-            if ctx.channel.nsfw:
-                safe = "off"
-            else:
-                safe = "active"
-            url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
+        if ctx.invoked_subcommand:
+            return
+        search = urllib.parse.quote(search)
+        safe = "off" if ctx.channel.nsfw else "active"
+        url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
 
-            response = await self.bot.http_session.get(url)
-            json_ = await response.json()
-            if response.status != 200:
-                return await ctx.reply(
-                    f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
-                )
+        response = await self.bot.http_session.get(url)
+        json_ = await response.json()
+        if response.status != 200:
+            return await ctx.reply(
+                f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
+            )
 
-            pages = []
+        pages = []
 
-            for item in json_.get("items", []):
-                title = item["title"]
-                link = item["link"]
-                snippet = item.get("snippet")
+        for item in json_.get("items", []):
+            title = item["title"]
+            link = item["link"]
+            snippet = item.get("snippet")
 
-                pages.append(
-                    f"""**[Title: {title}]({link})**
+            pages.append(
+                f"""**[Title: {title}]({link})**
     > {snippet}
 
     """
-                )
-            if not pages:
-                return await ctx.reply(
-                    f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
-                )
-            page = SimplePages(entries=pages, ctx=ctx, per_page=3)
-            await page.start()
+            )
+        if not pages:
+            return await ctx.reply(
+                f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
+            )
+        page = SimplePages(entries=pages, ctx=ctx, per_page=3)
+        await page.start()
 
     @search.command()
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -834,7 +832,7 @@ class Misc(Cog):
 
         em_list = []
 
-        for i in range(0, len(main["videos"])):
+        for i in range(len(main["videos"])):
             _1_title = main["videos"][i]["title"]
             _1_descr = main["videos"][i]["long_desc"]
             _1_chann = main["videos"][i]["channel"]
@@ -947,11 +945,7 @@ class Misc(Cog):
         first = discord.utils.snowflake_time(snowflake1)
         second = discord.utils.snowflake_time(snowflake2)
 
-        if snowflake2 > snowflake1:
-            timedelta = second - first
-        else:
-            timedelta = first - second
-
+        timedelta = second - first if snowflake2 > snowflake1 else first - second
         await ctx.reply(
             f"{ctx.author.mention} total seconds between **{snowflake1}** and **{snowflake2}** is **{timedelta.total_seconds()}**"
         )

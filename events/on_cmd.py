@@ -129,7 +129,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 for perm in error.missing_permissions
             ]
             if len(missing) > 2:
-                fmt = "{}, and {}".format(", ".join(missing[:-1]), missing[-1])
+                fmt = f'{", ".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = (
@@ -149,7 +149,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 for perm in error.missing_permissions
             ]
             if len(missing) > 2:
-                fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = (
@@ -161,7 +161,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.MissingRole):
             missing = list(error.missing_role)
             if len(missing) > 2:
-                fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = (
@@ -173,7 +173,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.MissingAnyRole):
             missing = list(error.missing_roles)
             if len(missing) > 2:
-                fmt = "{}, and {}".format("**, **".join(missing[:-1]), missing[-1])
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = (
@@ -237,11 +237,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         ):
             command = ctx.command
             ctx.command.reset_cooldown(ctx)
-            ERROR_EMBED.description = (
-                f"Please use proper syntax.```\n{ctx.clean_prefix}"
-                f"{command.qualified_name}{'|' if command.aliases else ''}"
-                f"{'|'.join(command.aliases if command.aliases else '')} {command.signature}```"
-            )
+            ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases or '')} {command.signature}```"
+
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
 
         elif isinstance(error, commands.BadLiteralArgument):

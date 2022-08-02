@@ -194,22 +194,23 @@ class IPCRoutes(Cog):
             data.message_id,
             partial=False,
         )
-        if not isinstance(message, discord.Message):
-            return {}
-
-        return {
-            "id": message.id,
-            "author": {
-                "id": message.author.id,
-                "name": message.author.name,
-                "discriminator": message.author.discriminator,
-                "avatar_url": message.author.display_avatar.url,
-                "bot": message.author.bot,
-                "system": message.author.system,
-            },
-            "content": message.content,
-            "embeds": [embed.to_dict() for embed in message.embeds],
-        }
+        return (
+            {
+                "id": message.id,
+                "author": {
+                    "id": message.author.id,
+                    "name": message.author.name,
+                    "discriminator": message.author.discriminator,
+                    "avatar_url": message.author.display_avatar.url,
+                    "bot": message.author.bot,
+                    "system": message.author.system,
+                },
+                "content": message.content,
+                "embeds": [embed.to_dict() for embed in message.embeds],
+            }
+            if isinstance(message, discord.Message)
+            else {}
+        )
 
     @server.route()
     async def announce_global(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
@@ -217,8 +218,7 @@ class IPCRoutes(Cog):
         async for webhook in self.bot.mongo.parrot_db.global_chat.find(
             {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
         ):
-            hook = webhook["webhook"]
-            if hook:
+            if hook := webhook["webhook"]:
                 try:
                     webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
                     msg = await webhook.send(
@@ -270,10 +270,7 @@ class IPCRoutes(Cog):
     @server.route()
     async def start_cricket_api(self, data: server.IpcServerResponse) -> Optional[Dict[str, Any]]:
         url = data.url
-        if not url:
-            return None
-
-        return cricket_api(url)
+        return cricket_api(url) if url else None
 
     @server.route()
     async def start_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:

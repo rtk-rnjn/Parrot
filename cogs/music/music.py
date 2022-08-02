@@ -263,7 +263,7 @@ class Music(Cog):
         _filter = wavelink.Karaoke(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(karaoke=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the karaoke filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the karaoke filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @_filter.command(name="timescale")
@@ -292,7 +292,7 @@ class Music(Cog):
         _filter = wavelink.Timescale(**PAYLOAD)
         await channel.set_filter(_filter)
         await ctx.send(
-            f"{ctx.author.mention} set the timescale filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the timescale filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @_filter.command(name="tremolo")
@@ -319,7 +319,7 @@ class Music(Cog):
         _filter = wavelink.Tremolo(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(tremolo=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the tremolo filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the tremolo filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @_filter.command(name="vibrato")
@@ -346,7 +346,7 @@ class Music(Cog):
         _filter = wavelink.Vibrato(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(vibrato=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the vibrato filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the vibrato filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @_filter.command(name="rotation")
@@ -371,7 +371,7 @@ class Music(Cog):
         _filter = wavelink.Rotation(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(rotation=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the rotation filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the rotation filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @_filter.command(name="distortion")
@@ -410,7 +410,7 @@ class Music(Cog):
         _filter = wavelink.Distortion(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(distortion=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the distortion filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the distortion filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @_filter.group(name="channelmix", invoke_without_command=True)
@@ -423,32 +423,33 @@ class Music(Cog):
         flag: ChannelMixFlag,
     ):
         """To configure the channelmix filter"""
-        if ctx.invoked_subcommand is None:
-            if ctx.voice_client is None:
-                return await ctx.error(
-                    f"{ctx.author.mention} bot is not connected to a voice channel."
-                )
-
-            channel: wavelink.Player = ctx.voice_client
-
-            if not channel.is_playing():
-                return await ctx.error(f"{ctx.author.mention} bot is not playing anything.")
-
-            PAYLOAD = {}
-            if flag.left_to_left:
-                PAYLOAD["left_to_left"] = flag.left_to_left
-            if flag.left_to_right:
-                PAYLOAD["left_to_right"] = flag.left_to_right
-            if flag.right_to_left:
-                PAYLOAD["right_to_left"] = flag.right_to_left
-            if flag.right_to_right:
-                PAYLOAD["right_to_right"] = flag.right_to_right
-
-            _filter = wavelink.ChannelMix(**PAYLOAD)
-            await channel.set_filter(wavelink.Filter(channel_mix=_filter))
-            await ctx.send(
-                f"{ctx.author.mention} set the channelmix filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+        if ctx.invoked_subcommand is not None:
+            return
+        if ctx.voice_client is None:
+            return await ctx.error(
+                f"{ctx.author.mention} bot is not connected to a voice channel."
             )
+
+        channel: wavelink.Player = ctx.voice_client
+
+        if not channel.is_playing():
+            return await ctx.error(f"{ctx.author.mention} bot is not playing anything.")
+
+        PAYLOAD = {}
+        if flag.left_to_left:
+            PAYLOAD["left_to_left"] = flag.left_to_left
+        if flag.left_to_right:
+            PAYLOAD["left_to_right"] = flag.left_to_right
+        if flag.right_to_left:
+            PAYLOAD["right_to_left"] = flag.right_to_left
+        if flag.right_to_right:
+            PAYLOAD["right_to_right"] = flag.right_to_right
+
+        _filter = wavelink.ChannelMix(**PAYLOAD)
+        await channel.set_filter(wavelink.Filter(channel_mix=_filter))
+        await ctx.send(
+            f"{ctx.author.mention} set the channelmix filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+        )
 
     @_filter_channelmix.command(name="builtin", aliases=["built-in"])
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
@@ -497,7 +498,7 @@ class Music(Cog):
         _filter = wavelink.LowPass(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(low_pass=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the lowpass filter to **{' '.join(k + '=' + str(v) for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the lowpass filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
         )
 
     @commands.command()
@@ -523,31 +524,32 @@ class Music(Cog):
         search: Union[wavelink.SoundCloudTrack, str],
     ):
         """Play a song with the given search query. If not connected, connect to your voice channel."""
-        if ctx.invoked_subcommand is None:
-            if ctx.voice_client is None:
-                vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-            else:
-                vc: wavelink.Player = ctx.voice_client  # type: ignore
+        if ctx.invoked_subcommand is not None:
+            return
+        if ctx.voice_client is None:
+            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+        else:
+            vc: wavelink.Player = ctx.voice_client  # type: ignore
 
-            if isinstance(search, str):
-                if search.startswith("https://open.spotify.com/"):
-                    return await self.play_spotify(ctx, link=search)
-                search = wavelink.PartialTrack(query=search)
+        if isinstance(search, str):
+            if search.startswith("https://open.spotify.com/"):
+                return await self.play_spotify(ctx, link=search)
+            search = wavelink.PartialTrack(query=search)
 
-            if vc.is_playing():
+        if vc.is_playing():
 
-                vc.queue.put(search)
-                await ctx.send(f"{ctx.author.mention} added **{search.title}** to the queue")
-                return
+            vc.queue.put(search)
+            await ctx.send(f"{ctx.author.mention} added **{search.title}** to the queue")
+            return
 
-            await vc.play(search)
-            view = MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx)
-            view.message = await ctx.send(
-                f"{ctx.author.mention} Now playing",
-                embed=await self.make_final_embed(ctx=ctx, track=vc.track),
-                view=view,
-            )
-            self._cache[ctx.guild.id] = view
+        await vc.play(search)
+        view = MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx)
+        view.message = await ctx.send(
+            f"{ctx.author.mention} Now playing",
+            embed=await self.make_final_embed(ctx=ctx, track=vc.track),
+            view=view,
+        )
+        self._cache[ctx.guild.id] = view
 
     @play.command(name="spotify")
     async def play_spotify(self, ctx: Context, *, link: str):
@@ -658,11 +660,11 @@ class Music(Cog):
                     f"{ctx.author.mention} You don't have a playlist. You haven't like any songs yet."
                 )
 
-            entries = []
-            for song in data["playlist"]:
-                entries.append(
-                    f"**[{song['song_name'] or 'Fetching song name Failed'}]({song['url']})**"
-                )
+            entries = [
+                f"**[{song['song_name'] or 'Fetching song name Failed'}]({song['url']})**"
+                for song in data["playlist"]
+            ]
+
             await ctx.paginate(entries, per_page=5)
 
     @myplaylist.command(name="remove", aliases=["delete", "del"])
@@ -770,7 +772,7 @@ class Music(Cog):
             return await ctx.error(f"{ctx.author.mention} There are no more songs in the queue.")
 
         channel: discord.VoiceChannel = vc.channel
-        members = sum(1 for m in channel.members if not m.bot)
+        members = sum(not m.bot for m in channel.members)
 
         async def __interal_skip(*, ctx: Context, vc: wavelink.Player):
             with suppress(QueueEmpty):
@@ -849,23 +851,24 @@ class Music(Cog):
     @commands.group(name="queue", invoke_without_command=True)
     async def _queue(self, ctx: Context):
         """Shows the current songs queue"""
-        if ctx.invoked_subcommand is None:
-            if ctx.voice_client is None:
-                return await ctx.error(
-                    f"{ctx.author.mention} bot is not connected to a voice channel."
-                )
-            vc: wavelink.Player = ctx.voice_client
-            if vc.queue.is_empty:
-                return await ctx.error(f"{ctx.author.mention} There are no songs in the queue.")
+        if ctx.invoked_subcommand is not None:
+            return
+        if ctx.voice_client is None:
+            return await ctx.error(
+                f"{ctx.author.mention} bot is not connected to a voice channel."
+            )
+        vc: wavelink.Player = ctx.voice_client
+        if vc.queue.is_empty:
+            return await ctx.error(f"{ctx.author.mention} There are no songs in the queue.")
 
-            entries = []
-            for track in vc.queue._queue:  # type: ignore
-                if hasattr(track, "uri"):
-                    entries.append(f"[{track.title} - {track.author}]({track.uri})")
-                else:
-                    entries.append(f"{track.title} - {getattr(track, 'author', 'Unknown')}")
+        entries = []
+        for track in vc.queue._queue:  # type: ignore
+            if hasattr(track, "uri"):
+                entries.append(f"[{track.title} - {track.author}]({track.uri})")
+            else:
+                entries.append(f"{track.title} - {getattr(track, 'author', 'Unknown')}")
 
-            await ctx.paginate(entries=entries, _type="SimplePages")
+        await ctx.paginate(entries=entries, _type="SimplePages")
 
     @_queue.command(name="clear")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
@@ -1040,9 +1043,7 @@ class Music(Cog):
                 elif self._config[player.guild.id].get("loop_type") == "current":
                     await player.play(track)
             else:
-                try:
+                with suppress(QueueEmpty):
                     track = player.queue.get()
                     await player.play(track)
-                except QueueEmpty:
-                    pass
 # TODO: use `_cache` and `_config` in `Player` to have a better control over the player.

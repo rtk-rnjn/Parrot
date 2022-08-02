@@ -315,8 +315,7 @@ class RTFM(Cog):
         )[0].split("\n")
 
         for header in list(map(str.strip, table_of_contents)):
-            match = re.search(r"\[▶ (.*)\]\((.*)\)", header)
-            if match:
+            if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):
                 hyper_link = match[0].split("(")[1].replace(")", "")
                 self.headers[match[0]] = f"{BASE_URL}/{hyper_link}"
 
@@ -340,7 +339,7 @@ class RTFM(Cog):
             siblings.append(elem.text)
         content = "\n".join(siblings)
         if len(content) >= 1024:
-            content = content[:1021] + "..."
+            content = f"{content[:1021]}..."
 
         return content
 
@@ -379,11 +378,10 @@ class RTFM(Cog):
         If the cht.sh search returned 404, overwrite it to send a custom error embed.
         link -> https://github.com/chubin/cheat.sh/issues/198
         """
-        embed = discord.Embed(
+        return discord.Embed(
             title="! You done? !",
             description=ERROR_MESSAGE_CHEAT_SHEET,
         )
-        return embed
 
     def result_fmt(
         self, url: str, body_text: str
@@ -679,7 +677,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """Returns element reference from given language"""
         lang = language.strip("`")
 
-        if not lang.lower() in self.referred:
+        if lang.lower() not in self.referred:
             return await ctx.reply(
                 f"{lang} not available. See `[p]list references` for available ones."
             )
@@ -692,7 +690,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """Returns element reference from given language"""
         lang = language.strip("`")
 
-        if not lang.lower() in self.documented:
+        if lang.lower() not in self.documented:
             return await ctx.reply(
                 f"{lang} not available. See `{ctx.prefix}list documentations` for available ones."
             )
@@ -834,11 +832,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         algo = algorithm.lower()
 
         if algo not in self.algos:
-            matches = "\n".join(
-                [supported for supported in self.algos if algo in supported][:10]
-            )
             message = f"`{algorithm}` not available."
-            if matches:
+            if matches := "\n".join(
+                [supported for supported in self.algos if algo in supported][:10]
+            ):
                 message += f" Did you mean:\n{matches}"
             return await ctx.reply(message)
 
@@ -1337,12 +1334,12 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """
         async with self.bot.http_session.get(search_link, params=params) as response:
             if response.status != 200:
-                error_embed = Embed(
+                return Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="We ran into an error when getting the kata from codewars.com, try again later.",
                     color=0xCD6D6D,
                 )
-                return error_embed
+
 
             soup = BeautifulSoup(
                 await response.text(), features=HTML_PARSER
@@ -1362,9 +1359,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             else:
                 first_kata_div = first_kata_div[0]
 
-            # There are numerous divs before arriving at the id of the kata, which can be used for the link.
-            first_kata_id = first_kata_div.a["href"].split("/")[-1]
-            return first_kata_id
+            return first_kata_div.a["href"].split("/")[-1]
 
     async def kata_information(self, kata_id: str) -> Union[Dict[str, Any], Embed]:
         """
@@ -1372,15 +1367,15 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Uses the codewars.com API to get information about the kata using `kata_id`.
         """
         async with self.bot.http_session.get(
-            API_ROOT.format(kata_id=kata_id)
-        ) as response:
+                API_ROOT.format(kata_id=kata_id)
+            ) as response:
             if response.status != 200:
-                error_embed = Embed(
+                return Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="We ran into an error when getting the kata information, try again later.",
                     color=0xCD6D6D,
                 )
-                return error_embed
+
 
             return await response.json()
 
@@ -1419,12 +1414,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
         languages = "\n".join(map(str.title, kata_information["languages"]))
-        language_embed = Embed(
+        return Embed(
             title=kata_information["name"],
             description=f"```yaml\nSupported Languages:\n{languages}\n```",
             url=kata_url,
         )
-        return language_embed
 
     @staticmethod
     def tags_embed(kata_information: Dict[str, Any]) -> Embed:
@@ -1435,13 +1429,12 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
         tags = "\n".join(kata_information["tags"])
-        tags_embed = Embed(
+        return Embed(
             title=kata_information["name"],
             description=f"```yaml\nTags:\n{tags}\n```",
             color=0xCD6D6D,
             url=kata_url,
         )
-        return tags_embed
 
     @staticmethod
     def miscellaneous_embed(kata_information: dict) -> Embed:

@@ -34,42 +34,43 @@ class EmojiCapsProt(Cog):
         return int(str_count + dis_count)
 
     def get_caps_count(self, message_content: str) -> int:
-        caps_count = len(re.findall(r"[A-Z]", message_content))
-        return int(caps_count)
+        return len(re.findall(r"[A-Z]", message_content))
 
     def is_caps_infilterated(self, message: discord.Message) -> Optional[bool]:
-        if data_c := self.bot.server_config.get(message.guild.id):
-            if not data_c["automod"]["caps"]["enable"]:
-                return False
-            try:
-                ignore: List[int] = data_c["automod"]["caps"]["channel"]
-            except KeyError:
-                ignore = []
-            if message.channel.id in ignore:
-                return False
-            try:
-                limit: int = data_c["automod"]["caps"]["limit"]
-            except KeyError:
-                return False
-            if limit <= (self.get_caps_count(message.content)):
-                return True
+        if not (data_c := self.bot.server_config.get(message.guild.id)):
+            return
+        if not data_c["automod"]["caps"]["enable"]:
+            return False
+        try:
+            ignore: List[int] = data_c["automod"]["caps"]["channel"]
+        except KeyError:
+            ignore = []
+        if message.channel.id in ignore:
+            return False
+        try:
+            limit: int = data_c["automod"]["caps"]["limit"]
+        except KeyError:
+            return False
+        if limit <= (self.get_caps_count(message.content)):
+            return True
 
     def is_emoji_infilterated(self, message: discord.Message) -> Optional[bool]:
-        if data_c := self.bot.server_config.get(message.guild.id):
-            if not data_c["automod"]["emoji"]["enable"]:
-                return False
-            try:
-                ignore: List[int] = data_c["automod"]["emoji"]["channel"]
-            except KeyError:
-                ignore = []
-            if message.channel.id in ignore:
-                return False
-            try:
-                limit: int = data_c["automod"]["emoji"]["limit"]
-            except KeyError:
-                return False
-            if limit <= (self.get_emoji_count(message.content)):
-                return True
+        if not (data_c := self.bot.server_config.get(message.guild.id)):
+            return
+        if not data_c["automod"]["emoji"]["enable"]:
+            return False
+        try:
+            ignore: List[int] = data_c["automod"]["emoji"]["channel"]
+        except KeyError:
+            ignore = []
+        if message.channel.id in ignore:
+            return False
+        try:
+            limit: int = data_c["automod"]["emoji"]["limit"]
+        except KeyError:
+            return False
+        if limit <= (self.get_emoji_count(message.content)):
+            return True
 
     async def _on_message_passive(self, message: discord.Message):
         if message.author.bot or (not message.guild):
@@ -82,8 +83,8 @@ class EmojiCapsProt(Cog):
         caps_: bool = self.is_caps_infilterated(message)
         emoj_: bool = self.is_emoji_infilterated(message)
         ctx: Context = await self.bot.get_context(message, cls=Context)
-        if data := self.bot.server_config.get(message.guild.id):
-            if emoj_:
+        if emoj_:
+            if data := self.bot.server_config.get(message.guild.id):
                 try:
                     to_delete: bool = data["automod"]["emoji"]["autowarn"]["to_delete"]
                 except KeyError:
@@ -130,8 +131,8 @@ class EmojiCapsProt(Cog):
                     f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,
                 )
-        if data := self.bot.server_config.get(message.guild.id):
-            if caps_:
+        if caps_:
+            if data := self.bot.server_config.get(message.guild.id):
                 try:
                     to_delete: bool = data["automod"]["caps"]["autowarn"]["to_delete"]
                 except KeyError:

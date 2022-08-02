@@ -110,9 +110,7 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
         while True:
 
             def check_in_channel(m: discord.Message) -> bool:
-                if m.author.bot:
-                    return False
-                return m.channel in (target_channel, channel)
+                return False if m.author.bot else m.channel in (target_channel, channel)
 
             try:
                 talk_message = await bot.wait_for("message", check=check_in_channel, timeout=60.0)

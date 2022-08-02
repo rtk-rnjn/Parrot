@@ -47,59 +47,62 @@ class Sector1729(Cog):
 
     @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
-        if payload.message_id == MESSAGE_ID and (
-            str(payload.emoji) == EMOJI or unicodedata.name(str(payload.emoji)) == "WASTEBASKET"
+        if (
+            payload.message_id != MESSAGE_ID
+            or str(payload.emoji) != EMOJI
+            and unicodedata.name(str(payload.emoji)) != "WASTEBASKET"
         ):
-            user_id: int = payload.user_id
-            user: Optional[discord.User] = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, user_id
-            )
+            return
+        user_id: int = payload.user_id
+        user: Optional[discord.User] = await self.bot.getch(
+            self.bot.get_user, self.bot.fetch_user, user_id
+        )
 
-            channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)
+        channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)
 
-            if channel is None:
+        if channel is None:
+            return
+
+        msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
+
+        async def __remove_reaction(msg: discord.Message) -> None:
+            for reaction in msg.reactions:
+                try:
+                    await msg.remove_reaction(reaction.emoji, user)
+                except discord.HTTPException:
+                    pass
                 return
 
-            msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
-
-            async def __remove_reaction(msg: discord.Message) -> None:
-                for reaction in msg.reactions:
-                    try:
-                        await msg.remove_reaction(reaction.emoji, user)
-                    except discord.HTTPException:
-                        pass
-                    return
-
-            if then := self._cache.get(payload.user_id):
-                if abs(time() - then) < 60:
-                    await channel.send(
-                        f"<@{payload.user_id}> You can only use the emoji once every minute.",
-                        delete_after=7,
-                    )
-                    await __remove_reaction(msg)
-                    return
-
-            self._cache[payload.user_id] = time() + 60
-
-            _msg: discord.Message = await channel.send(
-                f"<@{payload.user_id}> deleting messages - 0/50"
-            )
-
-            if user is None or user.bot:
+        if then := self._cache.get(payload.user_id):
+            if abs(time() - then) < 60:
+                await channel.send(
+                    f"<@{payload.user_id}> You can only use the emoji once every minute.",
+                    delete_after=7,
+                )
+                await __remove_reaction(msg)
                 return
 
-            dm: discord.DMChannel = await user.create_dm()
+        self._cache[payload.user_id] = time() + 60
 
-            i = 1
-            async for msg in dm.history(limit=50):
-                if msg.author.id == self.bot.user.id:
-                    await msg.delete()
-                i += 1
-                if i % 10 == 0:
-                    await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")
+        _msg: discord.Message = await channel.send(
+            f"<@{payload.user_id}> deleting messages - 0/50"
+        )
 
-            await __remove_reaction(msg)
-            await _msg.edit(content=f"<@{payload.user_id}> deleting messages - 50/50! Done!", delete_after=2)
+        if user is None or user.bot:
+            return
+
+        dm: discord.DMChannel = await user.create_dm()
+
+        i = 1
+        async for msg in dm.history(limit=50):
+            if msg.author.id == self.bot.user.id:
+                await msg.delete()
+            i += 1
+            if i % 10 == 0:
+                await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")
+
+        await __remove_reaction(msg)
+        await _msg.edit(content=f"<@{payload.user_id}> deleting messages - 50/50! Done!", delete_after=2)
 
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):

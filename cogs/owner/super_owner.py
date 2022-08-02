@@ -321,7 +321,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 .set_footer(text=f"{id_}")
                 .set_thumbnail(url=avatar_url)
             )
-            em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({'<#'+str(vc)+'>' if vc else None})"
+            em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({f'<#{str(vc)}>' if vc else None})"
+
             if vc:
                 em.add_field(name="VC Channel ID", value=str(vc), inline=True)
                 em.add_field(name="Suppress?", value=suppress, inline=True)
@@ -382,9 +383,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async for entry in guild.audit_logs(**kwargs):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
-`Responsible Moderator`: {'<@' + str(entry.user.id) + '>' if entry.user else 'Can not determine the Moderator'}
+`Responsible Moderator`: {f'<@{str(entry.user.id)}>' if entry.user else 'Can not determine the Moderator'}
 `Action performed on  `: {entry.target or 'Can not determine the Target'}
 """
+
             ls.append(st)
 
         p = SimplePages(ls, ctx=ctx, per_page=5)
@@ -395,10 +397,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def announce_global(self, ctx: Context, *, announcement: str):
         collection = self.bot.mongo.parrot_db["global_chat"]
         async for webhook in collection.find({"webhook": {"$exists": True}}):
-            hook = webhook["webhook"]
-            if hook:
-                webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
-                if webhook:
+            if hook := webhook["webhook"]:
+                if webhook := discord.Webhook.from_url(
+                    f"{hook}", session=self.bot.http_session
+                ):
                     await webhook.send(
                         content=announcement,
                         username="SERVER - SECTOR 17-29",
@@ -455,13 +457,15 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         # fmt: off
         identifies = {
-            shard_id: sum(1 for dt in dates if dt > yesterday)
+            shard_id: sum(dt > yesterday for dt in dates)
             for shard_id, dates in self.bot.identifies.items()
         }
+
         resumes = {
-            shard_id: sum(1 for dt in dates if dt > yesterday)
+            shard_id: sum(dt > yesterday for dt in dates)
             for shard_id, dates in self.bot.resumes.items()
         }
+
         # fmt: on
 
         total_identifies = sum(identifies.values())
@@ -683,7 +687,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         cache = {}
         for key, page in page_types.items():
             sub = cache[key] = {}
-            resp = await self.bot.http_session.get(page + "/objects.inv")
+            resp = await self.bot.http_session.get(f"{page}/objects.inv")
             if resp.status != 200:
                 raise RuntimeError("Cannot build rtfm lookup table, try again later.")
 
@@ -855,11 +859,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             else:
                 strategy = self._regular_user_cleanup_strategy
 
-        if is_mod:
-            search = min(max(2, search), 1000)
-        else:
-            search = min(max(2, search), 25)
-
+        search = min(max(2, search), 1000) if is_mod else min(max(2, search), 25)
         spammers = await strategy(ctx, search)
         deleted = sum(spammers.values())
         messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
@@ -873,7 +873,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     async def _basic_cleanup_strategy(self, ctx: Context, search: int):
         count = 0
         async for msg in ctx.history(limit=search, before=ctx.message):
-            if msg.author == ctx.me and not (msg.mentions or msg.role_mentions):
+            if msg.author == ctx.me and not msg.mentions and not msg.role_mentions:
                 await msg.delete()
                 count += 1
         return {"Bot": count}

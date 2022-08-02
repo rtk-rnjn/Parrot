@@ -40,8 +40,7 @@ class SpamProt(Cog):
         #     return
 
         bucket = self.cd_mapping.get_bucket(message)
-        retry_after = bucket.update_rate_limit()
-        if retry_after:
+        if retry_after := bucket.update_rate_limit():
             if data := self.bot.server_config.get(message.guild.id):
                 if not data["automod"]["spam"]["enable"]:
                     return

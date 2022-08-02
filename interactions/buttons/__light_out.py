@@ -59,10 +59,7 @@ async def wait_for_delete(
 
     def check(reaction: discord.Reaction, _user: discord.User) -> bool:
         if reaction.emoji == emoji and reaction.message == message:
-            if isinstance(user, tuple):
-                return _user in user
-            else:
-                return _user == user
+            return _user in user if isinstance(user, tuple) else _user == user
         return False
 
     bot: discord.Client = bot or ctx.bot
@@ -114,28 +111,27 @@ class LightsOutButton(discord.ui.Button["LightsOutView"]):
             return await interaction.response.send_message(
                 "This is not your game!", ephemeral=True
             )
-        else:
-            row, col = self.row, self.col
+        row, col = self.row, self.col
 
-            beside_item = game.beside_item(row, col)
-            game.toggle(row, col)
+        beside_item = game.beside_item(row, col)
+        game.toggle(row, col)
 
-            for i, j in beside_item:
-                game.toggle(i, j)
+        for i, j in beside_item:
+            game.toggle(i, j)
 
-            self.view.update_board(clear=True)
+        self.view.update_board(clear=True)
 
-            game.moves += 1
-            game.embed.set_field_at(0, name="\u200b", value=f"Moves: `{game.moves}`")
+        game.moves += 1
+        game.embed.set_field_at(0, name="\u200b", value=f"Moves: `{game.moves}`")
 
-            if game.tiles == game.completed:
-                self.view.disable_all()
-                self.view.stop()
-                game.embed.description = "**Congrats! You won!**"
+        if game.tiles == game.completed:
+            self.view.disable_all()
+            self.view.stop()
+            game.embed.description = "**Congrats! You won!**"
 
-            return await interaction.response.edit_message(
-                embed=game.embed, view=self.view
-            )
+        return await interaction.response.edit_message(
+            embed=game.embed, view=self.view
+        )
 
 
 class LightsOutView(SlideView):
@@ -190,12 +186,11 @@ class LightsOut:
             (row, col + 1),
         ]
 
-        data = [
+        return [
             (i, j)
             for i, j in beside
             if i in range(self.count) and j in range(self.count)
         ]
-        return data
 
     async def start(
         self,

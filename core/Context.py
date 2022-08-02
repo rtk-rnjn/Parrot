@@ -90,7 +90,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         self,
     ) -> Optional[discord.Role]:
         if channel := getattr(self.author.voice, "channel"):
-            members = sum(1 for m in channel.members if not m.bot)
+            members = sum(not m.bot for m in channel.members)
             if members < 2:
                 return self.guild.default_role
 
@@ -161,11 +161,9 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         async def wrapped(*args: Any, **kwargs: Any):
 
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
-            try:
+            with suppress(discord.Forbidden):
                 async with context.typing():
                     return await func(*args, **kwargs)
-            except discord.Forbidden:
-                pass  # thanks cloudflare
 
         return wrapped
 
@@ -245,8 +243,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
     async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
-        for name, entry in entries:
-            output.append(f"{name:<{width}}: {entry}")
+        output.extend(f"{name:<{width}}: {entry}" for name, entry in entries)
         output.append("```")
         return await self.send("\n".join(output))
 
@@ -255,8 +252,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
     ) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
-        for name, entry in entries:
-            output.append(f"\u200b{name:>{width}}: {entry}")
+        output.extend(f"\u200b{name:>{width}}: {entry}" for name, entry in entries)
         output.append("```")
         return await self.send("\n".join(output))
 

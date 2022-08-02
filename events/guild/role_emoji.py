@@ -148,20 +148,19 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                         user = entry.user or "UNKNOWN#0000"
                         entryID = entry.id
                         ls = self._update_role(before, after)
-                        ext = ""
-                        for i, j in ls:
-                            ext += f"{i} **{j}**\n"
+                        ext = "".join(f"{i} **{j}**\n" for i, j in ls)
                         content = f"""**Role Update Event**
 
 `Name (ID) :` **{after.name} ({after.id})**
 `Created at:` **{discord.utils.format_dt(after.created_at)}**
-`Reason    :` **{reason if reason else 'No reason provided'}**
-`Entry ID  :` **{entryID if entryID else None}**
+`Reason    :` **{reason or 'No reason provided'}**
+`Entry ID  :` **{entryID or None}**
 `Updated by:` **{user}**
 
 **Change/Update**
 {ext}
 """
+
                         fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
                         await webhook.send(
                             content=content,
@@ -194,12 +193,11 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
                     emoji_name = entry.name
                     if isinstance(entry.target, discord.Emoji):
                         animated = entry.target.animated
-                        _id = entry.target.id
                         url = entry.target.url
                     else:
                         animated = None
-                        _id = entry.target.id
                         url = None
+                    _id = entry.target.id
                 content = f"""**On Emoji Create**
 
 `Name    `: **{emoji_name}**

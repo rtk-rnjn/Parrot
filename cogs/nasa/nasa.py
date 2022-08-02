@@ -30,7 +30,7 @@ def date_parser(arg: Optional[str] = None) -> str:
 
 def upper_split(ini_str: str) -> str:
     """To split the the given string by camel case"""
-    res_pos = [i for i, e in enumerate(ini_str + "A") if e.isupper()]
+    res_pos = [i for i, e in enumerate(f"{ini_str}A") if e.isupper()]
     res_list = [ini_str[res_pos[j] : res_pos[j + 1]] for j in range(len(res_pos) - 1)]
     return " ".join(res_list)
 
@@ -133,12 +133,12 @@ class NASA(Cog):
             return
 
         em_list = []
-        for index in range(0, len(res)):
+        for index in range(len(res)):
             caption = res[index]["caption"]
             im = res[index]["image"]
             lat = res[index]["centroid_coordinates"]["lat"]
             lon = res[index]["centroid_coordinates"]["lon"]
-            link = "https://epic.gsfc.nasa.gov/epic-archive/jpg/" + im + ".jpg"
+            link = f"https://epic.gsfc.nasa.gov/epic-archive/jpg/{im}.jpg"
             embed = discord.Embed(
                 title=f"{caption}",
                 colour=discord.Colour.blue(),
@@ -171,7 +171,7 @@ class NASA(Cog):
         em_list = []
 
         for date in res["near_earth_objects"]:
-            for index in range(0, len(res["near_earth_objects"][date])):
+            for index in range(len(res["near_earth_objects"][date])):
                 link_self = res["near_earth_objects"][date][index]["nasa_jpl_url"]
                 name_end = res["near_earth_objects"][date][index]["name"]
                 id_end = res["near_earth_objects"][date][index]["neo_reference_id"]
@@ -296,7 +296,7 @@ class NASA(Cog):
 
         em_list = []
 
-        for index in range(0, len(res["photos"])):
+        for index in range(len(res["photos"])):
             img = res["photos"][index]["img_src"]
             date_ = res["photos"][index]["earth_date"]
             status = res["photos"][index]["rover"]["status"].capitalize()
@@ -339,7 +339,7 @@ class NASA(Cog):
                 f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library."
             )
         em_list = []
-        for index in range(0, len(res["collection"]["items"])):
+        for index in range(len(res["collection"]["items"])):
             if data := res["collection"]["items"][index]:
                 try:
                     title = data["data"][0]["title"]
@@ -353,13 +353,10 @@ class NASA(Cog):
                     r = await self.bot.http_session.get(
                         media_url, headers={"User-Agent": AGENT}
                     )
-                    if r.status == 200:
-                        media = await r.json()
-                    else:
-                        media = None
+                    media = await r.json() if r.status == 200 else None
                     img, vid, srt = [], [], []
-                    i, j, k = 1, 1, 1
                     if media:
+                        i, j, k = 1, 1, 1
                         for link in media[:10]:
                             if link.endswith(".jpg") or link.endswith(".png"):
                                 img.append(f"[Image {i}]({link.replace(' ', '%20')})")

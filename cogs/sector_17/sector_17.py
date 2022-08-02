@@ -38,6 +38,8 @@ class Sector1729(Cog):
         self._cache: Dict[int, int] = {}
         self.vote_reseter.start()
 
+        self.lock: "asyncio.Lock" = asyncio.Lock()
+
     async def cog_check(self, ctx: Context) -> bool:
         return ctx.guild is not None and ctx.guild.id == getattr(
             ctx.bot.server, "id", SUPPORT_SERVER_ID
@@ -154,7 +156,6 @@ class Sector1729(Cog):
         else:
             await ctx.send("You haven't voted for the bot on Top.gg yet.")
 
-
     async def __add_to_db(self, member: discord.Member) -> None:
         col: Collection = self.bot.mongo.extra.user_misc
         now = time()
@@ -175,10 +176,14 @@ class Sector1729(Cog):
         col: Collection = self.bot.mongo.extra.user_misc
         async with self.lock:
             now_plus_12_hours = time() + 43200
-            await col.update_many(
-                {"topgg_vote_expires": {"$lte": now_plus_12_hours}},
-                {"$unset": {"topgg_vote_expires": 1}},
-            )
+
+            async for doc in col.find({"topgg_vote_expires": {"$lte": now_plus_12_hours}}):
+                guild = self.bot.server
+                role = discord.Object(id=VOTER_ROLE_ID)
+
+                if member := guild.get_member(doc[id]):
+                    await member.remove_roles(role, reason="Top.gg vote expired")
+                    await col.update_one({"_id": doc[id]}, {"$unset": {"topgg_vote_expires": 1}})
 
     async def cog_unload(self) -> None:
         self.vote_reseter.cancel()

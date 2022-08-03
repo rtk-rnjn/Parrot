@@ -13,7 +13,6 @@ from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import discord
-from discord.utils import MISSING
 from async_timeout import timeout  # type: ignore
 from core import Parrot
 from discord import (
@@ -30,16 +29,16 @@ from discord import (
 )
 
 # Example
-"""
-async def function(message: Message):
-    if message.content == "!ping":
-        return await message_send(message.channel.id, "Pong!")
-"""
-"""
-async def function(message: Message):
-    if message.author.id == 123456789:
-        return await message_add_reaction("\N{THINKING FACE}")
-"""
+
+# async def function(message: Message):
+#     if message.content == "!ping":
+#         return await message_send(message.channel.id, "Pong!")
+
+
+# async def function(message: Message):
+#     if message.author.id == 123456789:
+#         return await message_add_reaction("\N{THINKING FACE}")
+
 
 ERROR_MESSAGE = """```ini
 [Failed executing the custom command template in {} at: {}]
@@ -479,7 +478,7 @@ class BaseCustomCommand:
                 "_id": self.__guild.id,
             }
         )
-        return
+        return None
 
 
 class BaseCustomCommandOnMsg(BaseCustomCommand):
@@ -500,31 +499,31 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
 
     async def message_pin(self) -> None:
         await self.__message.pin()
-        return
+        return None
 
     async def message_unpin(self) -> None:
         await self.__message.unpin()
-        return
+        return None
 
     async def message_publish(self) -> None:
         await self.__message.publish()
-        return
+        return None
 
     async def message_create_thread(self) -> None:
         await self.__message.create_thread()
-        return
+        return None
 
     async def message_add_reaction(self, emoji: str) -> None:
         await self.__message.add_reaction(emoji)
-        return
+        return None
 
     async def message_remove_reaction(self, emoji: str, member: CustomMember) -> None:
         await self.__message.remove_reaction(emoji, discord.Object(id=member.id))
-        return
+        return None
 
     async def message_clear_reactions(self) -> None:
         await self.__message.clear_reactions()
-        return
+        return None
 
     async def reactions_users(self, emoji: Any) -> List[CustomMember]:
         # sourcery skip: use-next

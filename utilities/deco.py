@@ -292,10 +292,7 @@ def with_role(*role_ids: int) -> Callable:
     """Check to see whether the invoking user has any of the roles specified in role_ids."""
 
     async def predicate(ctx: Context) -> bool:
-        if not ctx.guild:  # Return False in a DM
-            return False
-
-        return any(ctx.author._roles.has(role_id) for role_id in role_ids)
+        return any(ctx.author._roles.has(role_id) for role_id in role_ids) if ctx.guild else False
 
     return commands.check(predicate)
 

@@ -32,9 +32,7 @@ def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, fl
         return int(value)
     if value.replace(".", "", 1).isdigit():
         return float(value)
-    if value.lower() in ("true", "false"):
-        return value.lower() == "true"
-    return value
+    return value.lower() == "true" if value.lower() in ("true", "false") else value
 
 
 OWNER_IDS: list = parse_env_var("OWNER_IDS")

@@ -82,13 +82,13 @@ def has_verified_role_ticket() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         if not data:
-            return False
+            raise ex.NoVerifiedRoleTicket()
         data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         roles = data["verified_roles"]
         if not roles:
-            return False
+            raise ex.NoVerifiedRoleTicket()
 
-        if any(ctx.author._roles.has(role.id) for role in roles):
+        if any(ctx.author._roles.has(role) for role in roles):
             return True
 
         raise ex.NoVerifiedRoleTicket()
@@ -101,14 +101,17 @@ def is_mod() -> Callable:
         bot: Parrot = ctx.bot
         try:
             role = bot.server_config[ctx.guild.id]["mod_role"] or 0  # role could be `None`
-            return ctx.author._roles.has(role)
+            if true := ctx.author._roles.has(role):
+                return true
+            else:
+                raise ex.NoModRole()
         except KeyError:
             pass
 
         if data := await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id}):
             role = ctx.guild.get_role(data["mod_role"])
             if not role:
-                return False
+                raise ex.NoModRole()
             if role in ctx.author.roles:
                 return True
         raise ex.NoModRole()
@@ -120,10 +123,10 @@ def in_temp_channel() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
         if not data:
-            return False
+            raise ex.InHubVoice()
 
         if not ctx.author.voice:
-            return False
+            raise ex.InHubVoice()
 
         if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
             {
@@ -175,10 +178,10 @@ async def _can_run(ctx: Context) -> Optional[bool]:
 def guild_premium() -> Callable:
     def predicate(ctx: Context) -> bool:
         """Returns True if the guild is premium."""
-        if not ctx.guild:  # Return False in a DM
-            return False
+        if ctx.guild is not None and ctx.bot.server_config[ctx.guild.id].get("premium", False):
+            return True
 
-        return ctx.bot.server_config[ctx.guild.id].get("premium", False)
+        raise ex.NotPremiumServer()
 
     return commands.check(predicate)
 
@@ -322,11 +325,7 @@ def in_whitelist_check(
         return True
 
     # Only check the category id if we have a category whitelist and the channel has a `category_id`
-    if (
-        categories
-        and hasattr(ctx.channel, "category_id")
-        and ctx.channel.category_id in categories
-    ):
+    if categories and hasattr(ctx.channel, "category_id") and ctx.channel.category_id in categories:
         return True
 
     # category = getattr(ctx.channel, "category", None)

@@ -12,9 +12,7 @@ from discord.ext import commands
 
 def convert_bool(text: Union[str, bool]) -> bool:
     """True/False converter"""
-    if str(text).lower() in ("yes", "y", "true", "t", "1", "enable", "on", "o"):
-        return True
-    return False
+    return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o"}
 
 
 class ActionReason(commands.Converter):

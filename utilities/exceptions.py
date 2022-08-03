@@ -47,9 +47,9 @@ class NotInVoice(ParrotCheckFailure):
         super().__init__("You must be in a voice channel to use this command.")
 
 
-class NotInVoice(ParrotCheckFailure):
+class NotBotInVoice(ParrotCheckFailure):
     def __init__(self):
-        super().__init__("You must be in a voice channel to use this command.")
+        super().__init__("Bot must in voice channel to use this command.")
 
 
 class NotVoter(ParrotCheckFailure):
@@ -57,6 +57,11 @@ class NotVoter(ParrotCheckFailure):
         super().__init__(
             "You must be a voter to use this command. To vote should be on [top.gg](https://top.gg/bot/800780974274248764/vote)"
         )
+
+
+class NotPremiumServer(ParrotCheckFailure):
+    def __init__(self):
+        super().__init__("This command is only available on the premium server.")
 
 
 class NotInSupportServer(ParrotCheckFailure):

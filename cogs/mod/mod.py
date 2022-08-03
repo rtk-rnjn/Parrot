@@ -1757,7 +1757,7 @@ class Moderator(Cog):
             payload["warn_id"] = flags.warn_id
         data = await show_warn(ctx, ctx.guild, **payload)
         # page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
-        page = SimplePages(data)
+        page = SimplePages(data, ctx=ctx)
         await page.start()
 
     async def warn_task(

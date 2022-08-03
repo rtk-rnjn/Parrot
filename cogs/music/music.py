@@ -10,7 +10,6 @@ import discord
 import wavelink
 from core import Cog
 from discord.ext import commands
-from pymongo.collection import Collection
 from utilities.checks import in_voice, is_dj, same_voice
 from utilities.exceptions import NotVoter
 from wavelink import QueueEmpty
@@ -18,6 +17,8 @@ from wavelink.ext import spotify
 
 if TYPE_CHECKING:
     from core import Context, Parrot
+    from pymongo.collection import Collection
+    from pymongo.results import UpdateResult
 
 from .__flags import (
     ChannelMixFlag,
@@ -708,7 +709,7 @@ class Music(Cog):
                     )
 
         if isinstance(index_or_name, str):
-            result = await col.update_one(  # type: ignore
+            result: UpdateResult = await col.update_one(  # type: ignore
                 {"_id": ctx.author.id},
                 {"$pull": {"playlist": {"song_name": index_or_name}}},
             )
@@ -722,7 +723,7 @@ class Music(Cog):
         if isinstance(track, str):
             track = wavelink.PartialTrack(query=track)
 
-        data = await self.bot.mongo.extra.user_misc.update_one(
+        data: UpdateResult = await self.bot.mongo.extra.user_misc.update_one(
             {"_id": ctx.author.id},
             {
                 "$addToSet": {
@@ -743,7 +744,7 @@ class Music(Cog):
     @myplaylist.command(name="clear", aliases=["deleteall", "delall"])
     async def myplaylist_clear(self, ctx: Context):
         """Clears the playlist"""
-        data = await self.bot.mongo.extra.user_misc.update_one(
+        data: UpdateResult = await self.bot.mongo.extra.user_misc.update_one(
             {"_id": ctx.author.id}, {"$set": {"playlist": []}}, upsert=True
         )
         if data.modified_count == 0:
@@ -794,6 +795,18 @@ class Music(Cog):
                     embed=await self.make_final_embed(ctx=ctx, track=vc.track),
                     view=view,
                 )
+
+                def check(player: wavelink.Player, track: wavelink.Track, reason: str):
+                    return player.channel.id == vc.channel.id and reason == "REPLACED"
+
+                try:
+                    await ctx.wait_for("wavelink_track_end", check=check, timeout=5)
+                except asyncio.TimeoutError:
+                    pass
+                else:
+                    if vc._source is None:
+                        vc._source = next_song
+
                 return
             await ctx.error(f"{ctx.author.mention} There are no more songs in the queue.")
 
@@ -1023,7 +1036,11 @@ class Music(Cog):
         if _previous_view := self._cache.get(player.channel.guild.id):
             _previous_view.stop()
             await _previous_view.on_timeout()
-            await _previous_view.message.delete(delay=10)
+            if hasattr(_previous_view, "message"):
+                try:
+                    await _previous_view.message.delete(delay=10)
+                except discord.NotFound:
+                    pass
 
         if reason == "STOPPED":
             return
@@ -1039,11 +1056,15 @@ class Music(Cog):
                 q.rotate(-1)
 
                 if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:
-                    await player.play(q[0])
+                    track = q[0]
+                    await player.play(track)
                 elif self._config[player.guild.id].get("loop_type") == "current":
                     await player.play(track)
             else:
                 with suppress(QueueEmpty):
                     track = player.queue.get()
                     await player.play(track)
+        
+        if reason == "REPLACED":
+            return
 # TODO: use `_cache` and `_config` in `Player` to have a better control over the player.

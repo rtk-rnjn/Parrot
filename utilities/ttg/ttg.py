@@ -114,10 +114,7 @@ class Truths:
         self.ints = ints
 
         # generate the sets of booleans for the bases
-        if ascending:
-            order = [False, True]
-        else:
-            order = [True, False]
+        order = [False, True] if ascending else [True, False]
 
         self.base_conditions = list(itertools.product(order, repeat=len(bases)))
 
@@ -130,7 +127,7 @@ class Truths:
         for item in itertools.chain(
             self.bases, [key for key, val in OPERATIONS.items()]
         ):
-            self.to_match |= item
+            self.to_match = {**self.to_match, **item}
         self.parens = pyparsing.nestedExpr("(", ")", content=self.to_match)
 
     def calculate(self, *args):

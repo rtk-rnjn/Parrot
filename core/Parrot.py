@@ -24,6 +24,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Mapping,
     Optional,
     Sequence,
@@ -62,7 +63,6 @@ from utilities.config import (
     OWNER_IDS,
     STRIP_AFTER_PREFIX,
     SUPPORT_SERVER,
-    SUPPORT_SERVER_ID,
     TOKEN,
 )
 from utilities.converters import ToAsync
@@ -77,6 +77,7 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
     from .Cog import Cog
+
     if HAS_TOP_GG:
         from topgg.types import BotVoteData
 
@@ -112,6 +113,9 @@ dt_fmt = "%Y-%m-%d %H:%M:%S"
 formatter = logging.Formatter("[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+
+SUPPORT_SERVER_ID: Literal[741614680652644382] = 741614680652644382
 
 
 @ToAsync()
@@ -175,9 +179,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.error_channel: Optional[discord.TextChannel] = None
         self.persistent_views_added: bool = False
-        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(
-            3, 5, commands.BucketType.user
-        )
+        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.user)
 
         self._was_ready: bool = False
         self.lock: "asyncio.Lock" = asyncio.Lock()
@@ -251,9 +253,7 @@ class Parrot(commands.AutoShardedBot):
     async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
         if not self._change_log:
-            self._change_log = [
-                msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)
-            ]
+            self._change_log = [msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)]
 
         return self._change_log[0]
 
@@ -284,7 +284,7 @@ class Parrot(commands.AutoShardedBot):
                 session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)
-        
+
         self.reminder_task.start()
 
     async def db_latency(self) -> float:
@@ -321,11 +321,7 @@ class Parrot(commands.AutoShardedBot):
 
         if len(_CONTENT) > 1990:
             _FILE: discord.File = discord.File(
-                io.BytesIO(
-                    f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode(
-                        "utf-8"
-                    )
-                ),
+                io.BytesIO(f"Ignoring exception in {event}\n{trace}\nArgs: {args}\nKwargs: {kwargs}".encode("utf-8")),
                 filename="traceback.py",
             )
             _CONTENT = discord.utils.MISSING
@@ -375,9 +371,7 @@ class Parrot(commands.AutoShardedBot):
             )
             if webhook is not None:
                 with suppress(discord.HTTPException):
-                    user: discord.User = await self.getch(
-                        self.get_user, self.fetch_user, data.user
-                    )
+                    user: discord.User = await self.getch(self.get_user, self.fetch_user, data.user)
                     await webhook.send(
                         f"Received a vote from {user} ({user.id})",
                         avatar_url=self.user.avatar.url,
@@ -436,8 +430,7 @@ class Parrot(commands.AutoShardedBot):
             with suppress(discord.HTTPException):
                 if self._failed_to_load:
                     fail_msg = "".join(
-                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n"
-                        for k, v in self._failed_to_load.items()
+                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n" for k, v in self._failed_to_load.items()
                     )
 
                     await webhook.send(
@@ -455,16 +448,12 @@ class Parrot(commands.AutoShardedBot):
         await self.update_opt_in_out.start()
 
         # connect to Lavalink server
-        success = await self.ipc_client.request(
-            "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
-        )
+        success = await self.ipc_client.request("start_wavelink_nodes", host="127.0.0.1", port=1018, password="password")
         if success["status"] == "ok":
             print(f"[{self.user.name}] Wavelink node connected successfully")
 
         # start webserver to receive Top.GG webhooks
-        success = await self.ipc_client.request(
-            "start_dbl_server", port=1019, end_point="/dblwebhook"
-        )
+        success = await self.ipc_client.request("start_dbl_server", port=1019, end_point="/dblwebhook")
         if success["status"] == "ok":
             print(f"[{self.user.name}] DBL server started successfully")
 
@@ -579,9 +568,7 @@ class Parrot(commands.AutoShardedBot):
         if before.content != after.content and before.author.id in OWNER_IDS:
             await self.process_commands(after)
 
-    async def resolve_member_ids(
-        self, guild: discord.Guild, member_ids: Iterable[int]
-    ) -> AsyncGenerator[discord.Member, None]:
+    async def resolve_member_ids(self, guild: discord.Guild, member_ids: Iterable[int]) -> AsyncGenerator[discord.Member, None]:
         """|coro|
 
         Bulk resolves member IDs to member instances, if possible.
@@ -639,9 +626,7 @@ class Parrot(commands.AutoShardedBot):
                 for member in members:
                     yield member
 
-    async def get_or_fetch_member(
-        self, guild: discord.Guild, member_id: Union[int, discord.Object]
-    ) -> Optional[discord.Member]:
+    async def get_or_fetch_member(self, guild: discord.Guild, member_id: Union[int, discord.Object]) -> Optional[discord.Member]:
         """|coro|
 
         Looks up a member in cache or fetches if not found.
@@ -710,16 +695,12 @@ class Parrot(commands.AutoShardedBot):
         """
         if isinstance(channel, int):
             if force_fetch:
-                channel = await self.getch(
-                    self.get_channel, self.fetch_channel, channel, force_fetch=True
-                )
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
             else:
                 channel = self.get_channel(channel)
         elif isinstance(channel, discord.Object):
             if force_fetch:
-                channel = await self.getch(
-                    self.get_channel, self.fetch_channel, channel.id, force_fetch=True
-                )
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
             else:
                 channel = self.get_channel(channel.id)
 
@@ -757,9 +738,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix: str = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await self.mongo.parrot_db.server_config.find_one(
-                {"_id": message.guild.id}
-            ):
+            if data := await self.mongo.parrot_db.server_config.find_one({"_id": message.guild.id}):
                 prefix = data["prefix"]
                 post = data
                 self.server_config[message.guild.id] = post
@@ -840,9 +819,7 @@ class Parrot(commands.AutoShardedBot):
     async def reminder_task(self):
         collection: MongoCollection = self.mongo.parrot_db["timers"]
         async with self.lock:
-            async for data in collection.find(
-                {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
-            ):
+            async for data in collection.find({"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}):
                 await collection.delete_one({"_id": data["_id"]})
                 self.dispatch("timer_complete", **data)
 

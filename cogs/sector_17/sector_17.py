@@ -190,5 +190,9 @@ class Sector1729(Cog):
                 if member := guild.get_member(doc["_id"]):
                     await member.remove_roles(role, reason="Top.gg vote expired")
 
+    @vote_reseter.before_loop
+    async def before_vote_reseter(self):
+        await self.bot.wait_until_ready()
+
     async def cog_unload(self) -> None:
         self.vote_reseter.cancel()

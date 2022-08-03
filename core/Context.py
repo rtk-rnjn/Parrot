@@ -75,11 +75,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         return self.bot.http_session
 
     async def is_voter(self) -> Optional[bool]:
-        if self.bot.server.get_member(self.author.id):
-            return self.author._roles.has(VOTER_ROLE_ID)
+        if member := self.bot.server.get_member(self.author.id):
+            return member._roles.has(VOTER_ROLE_ID)
 
         if data := await self.bot.mongo.extra.user_misc.find_one(
-            {"_id": self.author.id, "topgg_vote_expires": {"$lte": discord.utils.utcnow()}}
+            {"_id": self.author.id, "topgg_vote_expires": {"$gte": discord.utils.utcnow()}}
         ):
             return True
 

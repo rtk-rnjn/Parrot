@@ -527,18 +527,11 @@ class BaseCustomCommandOnMsg(BaseCustomCommand):
         return
 
     async def reactions_users(self, emoji: Any) -> List[CustomMember]:
-        return next(
-            (
-                [
-                    CustomMember(member)
-                    async for member in reaction.users()
-                    if isinstance(member, discord.Member)
-                ]
-                for reaction in self.__message.reactions
-                if str(reaction.emoji) == emoji
-            ),
-            [],
-        )
+        # sourcery skip: use-next
+        for reaction in self.__message.reactions:
+            if str(reaction.emoji) == str(emoji):
+                return [CustomMember(user) async for user in reaction.users()]
+        return []
 
 
 class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):

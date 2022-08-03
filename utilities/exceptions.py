@@ -59,7 +59,7 @@ class NotInVoice(ParrotCheckFailure):
 class NotVoter(ParrotCheckFailure):
     def __init__(self):
         super().__init__(
-            "You must be a voter to use this command. To vote should be on top.gg (<https://top.gg/bot/800780974274248764/vote>)"
+            "You must be a voter to use this command. To vote should be on [top.gg](https://top.gg/bot/800780974274248764/vote)"
         )
 
 

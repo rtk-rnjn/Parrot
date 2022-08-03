@@ -186,9 +186,9 @@ class Sector1729(Cog):
                 guild = self.bot.server
                 role = discord.Object(id=VOTER_ROLE_ID)
 
-                if member := guild.get_member(doc[id]):
+                await col.update_one({"_id": doc["_id"]}, {"$unset": {"topgg_vote_expires": 1}})
+                if member := guild.get_member(doc["_id"]):
                     await member.remove_roles(role, reason="Top.gg vote expired")
-                    await col.update_one({"_id": doc[id]}, {"$unset": {"topgg_vote_expires": 1}})
 
     async def cog_unload(self) -> None:
         self.vote_reseter.cancel()

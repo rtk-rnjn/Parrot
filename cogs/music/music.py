@@ -784,6 +784,8 @@ class Music(Cog):
                     timeout=abs(vc.last_position - vc.track.duration) + 1,
                     ctx=ctx,
                 )
+                if vc._source is None:
+                    vc._source = next_song
                 if _previous_view := self._cache.get(ctx.guild.id, None):
                     _previous_view.stop()
                     await _previous_view.on_timeout()
@@ -795,18 +797,6 @@ class Music(Cog):
                     embed=await self.make_final_embed(ctx=ctx, track=vc.track),
                     view=view,
                 )
-
-                def check(player: wavelink.Player, track: wavelink.Track, reason: str):
-                    return player.channel.id == vc.channel.id and reason == "REPLACED"
-
-                try:
-                    await ctx.wait_for("wavelink_track_end", check=check, timeout=5)
-                except asyncio.TimeoutError:
-                    pass
-                else:
-                    if vc._source is None:
-                        vc._source = next_song
-
                 return
             await ctx.error(f"{ctx.author.mention} There are no more songs in the queue.")
 

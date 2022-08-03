@@ -658,7 +658,7 @@ class Meta(Cog):
                 elif isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
                     voice += 1
 
-        embed.add_field(name="Members", value=f"{total_members} total{total_unique} unique")
+        embed.add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
         embed.add_field(name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice")
         process = psutil.Process()
         memory_usage = process.memory_full_info().uss / 1024**2

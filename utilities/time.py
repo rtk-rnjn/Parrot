@@ -34,9 +34,7 @@ class ShortTime:
         self.argument = argument
         match = self.compiled.fullmatch(argument.lower())
         if match is None or not match.group(0):
-            raise commands.BadArgument(
-                "Invalid time provided. Try something like this: `5m`, `2h` or `60s`"
-            )
+            raise commands.BadArgument("Invalid time provided. Try something like this: `5m`, `2h` or `60s`")
 
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
         now = now or datetime.datetime.now(datetime.timezone.utc)
@@ -60,9 +58,7 @@ class HumanTime:
         now = now or discord.utils.utcnow()
         dt, status = self.calendar.parseDT(argument, sourceTime=now)
         if not status.hasDateOrTime:
-            raise commands.BadArgument(
-                'Invalid time provided, try e.g. "tomorrow" or "3 days"'
-            )
+            raise commands.BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days"')
 
         if not status.hasTime:
             # replace it with the current time
@@ -136,6 +132,7 @@ class UserFriendlyTime(commands.Converter):
         return obj
 
     async def convert(self, ctx, argument: str):
+        # sourcery skip: de-morgan, low-code-quality, merge-nested-ifs, remove-redundant-slice-index
         # Create a copy of ourselves to prevent race conditions from two
         # events modifying the same instance of a converter
         result = self.copy()
@@ -163,9 +160,7 @@ class UserFriendlyTime(commands.Converter):
 
             elements = calendar.nlp(argument, sourceTime=now)
             if elements is None or len(elements) == 0:
-                raise commands.BadArgument(
-                    'Invalid time provided, try e.g. "tomorrow" or "3 days".'
-                )
+                raise commands.BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days".')
 
             # handle the following cases:
             # "date time" foo
@@ -176,9 +171,7 @@ class UserFriendlyTime(commands.Converter):
             dt, status, begin, end, _ = elements[0]
 
             if not status.hasDateOrTime:
-                raise commands.BadArgument(
-                    'Invalid time provided, try e.g. "tomorrow" or "3 days".'
-                )
+                raise commands.BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days".')
 
             if begin not in (0, 1) and end != len(argument):
                 raise commands.BadArgument(
@@ -206,14 +199,10 @@ class UserFriendlyTime(commands.Converter):
                 if begin == 1:
                     # check if it's quoted:
                     if argument[0] != '"':
-                        raise commands.BadArgument(
-                            "Expected quote before time input..."
-                        )
+                        raise commands.BadArgument("Expected quote before time input...")
 
                     if not (end < len(argument) and argument[end] == '"'):
-                        raise commands.BadArgument(
-                            "If the time is quoted, you must unquote it."
-                        )
+                        raise commands.BadArgument("If the time is quoted, you must unquote it.")
 
                     remaining = argument[end + 1 :].lstrip(" ,.!")
                 else:
@@ -264,13 +253,12 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
 
     output = []
     for attr, brief_attr in attrs:
-        elem = getattr(delta, attr + "s")
+        elem = getattr(delta, f"{attr}s")
         if not elem:
             continue
 
         if attr == "day":
-            weeks = delta.weeks
-            if weeks:
+            if weeks := delta.weeks:
                 elem -= weeks * 7
                 if not brief:
                     output.append(format(plural(weeks), "week"))
@@ -290,6 +278,4 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
 
     if len(output) == 0:
         return "now"
-    if not brief:
-        return human_join(output, final="and") + suffix
-    return " ".join(output) + suffix
+    return " ".join(output) + suffix if brief else human_join(output, final="and") + suffix

@@ -66,9 +66,7 @@ class GroupHelpPageSource(menus.ListPageSource):
             )
         maximum = self.get_max_pages()
         if maximum > 1:
-            embed.set_footer(
-                text=f"Page {menu.current_page + 1}/{maximum} ({len(self.entries)} commands)"
-            )
+            embed.set_footer(text=f"Page {menu.current_page + 1}/{maximum} ({len(self.entries)} commands)")
 
         return embed
 
@@ -93,11 +91,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
             description="The help page showing how to use the bot.",
         )
         for cog, command_ in self.commands.items():
-            if (
-                cog.qualified_name.upper() in DISPLAY_COG
-                and command_
-                and len(cog.get_commands()) != 0
-            ):
+            if cog.qualified_name.upper() in DISPLAY_COG and command_ and len(cog.get_commands()) != 0:
                 description = cog.description.split("\n", 1)[0] or None
                 emoji = getattr(cog, "display_emoji", None)
                 self.add_option(
@@ -116,16 +110,12 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
         else:
             cog = self.bot.get_cog(value)
             if cog is None:
-                await interaction.response.send_message(
-                    "Somehow this category does not exist?", ephemeral=True
-                )
+                await interaction.response.send_message("Somehow this category does not exist?", ephemeral=True)
                 return
 
             commands = self.commands[cog]
             if not commands:
-                await interaction.response.send_message(
-                    "This category has no commands for you", ephemeral=True
-                )
+                await interaction.response.send_message("This category has no commands for you", ephemeral=True)
                 return
 
             source = GroupHelpPageSource(cog, commands, prefix=self.view.ctx.clean_prefix)
@@ -242,9 +232,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__(
             command_attrs={
-                "cooldown": commands.CooldownMapping.from_cooldown(
-                    1, 3.0, commands.BucketType.member
-                ),
+                "cooldown": commands.CooldownMapping.from_cooldown(1, 3.0, commands.BucketType.member),
                 "help": "Shows help about the bot, a command, or a category",
             }
         )
@@ -256,9 +244,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
                 return
 
-            await ctx.send(
-                f"Well this is embarrassing. Please tell this to developer {error.original}"
-            )
+            await ctx.send(f"Well this is embarrassing. Please tell this to developer {error.original}")
 
     def get_command_signature(self, command: commands.Command):
         parent = command.full_parent_name
@@ -309,9 +295,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         await menu.start()
 
-    def common_command_formatting(
-        self, embed_like, command: commands.Command, *, message: discord.Message
-    ):
+    def common_command_formatting(self, embed_like, command: commands.Command, *, message: discord.Message):
         embed_like.title = command.qualified_name.upper()
         if isinstance(embed_like, discord.Embed):
             if syntax := self.get_command_signature(command):
@@ -474,7 +458,7 @@ class Meta(Cog):
         Get the basic stats about the server
         """
         guild = ctx.guild
-        embed = discord.Embed(
+        embed: discord.Embed = discord.Embed(
             title=f"Server Info: {ctx.guild.name}",
             colour=ctx.guild.owner.colour,
             timestamp=discord.utils.utcnow(),
@@ -553,11 +537,7 @@ class Meta(Cog):
             "BANNER": "Banner",
         }
 
-        if info := [
-            f":ballot_box_with_check: {label}"
-            for feature, label in all_features.items()
-            if feature in features
-        ]:
+        if info := [f":ballot_box_with_check: {label}" for feature, label in all_features.items() if feature in features]:
             embed.add_field(name="Features", value="\n".join(info))
 
         if guild.premium_tier != 0:
@@ -614,9 +594,7 @@ class Meta(Cog):
 
     def get_last_commits(self, count=3):
         repo = pygit2.Repository(".git")
-        commits = list(
-            itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count)
-        )
+        commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
         return "\n".join(self.format_commit(c) for c in commits)
 
     @commands.command(name="stats", aliases=["about"])
@@ -740,15 +718,16 @@ class Meta(Cog):
         Get the invite of the bot! Thanks for seeing this command
         """
         url = self.bot.invite
-        em = discord.Embed(
-            title="Click here to add",
-            description=f"```ini\n[Default Prefix: `@{self.bot.user}`]\n```\n**Bot Owned and created by `{self.bot.author_name}`**",
-            url=url,
-            timestamp=discord.utils.utcnow(),
+        em: discord.Embed = (
+            discord.Embed(
+                title="Click here to add",
+                description=f"```ini\n[Default Prefix: `@{self.bot.user}`]\n```\n**Bot Owned and created by `{self.bot.author_name}`**",
+                url=url,
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_footer(text=f"{ctx.author}")
+            .set_thumbnail(url=ctx.guild.me.avatar.url)
         )
-
-        em.set_footer(text=f"{ctx.author}")
-        em.set_thumbnail(url=ctx.guild.me.avatar.url)
         await ctx.reply(embed=em)
 
     @commands.command()
@@ -779,11 +758,7 @@ class Meta(Cog):
         perms = []
         if role.permissions.administrator:
             perms.append("Administrator")
-        if (
-            role.permissions.kick_members
-            and role.permissions.ban_members
-            and role.permissions.manage_messages
-        ):
+        if role.permissions.kick_members and role.permissions.ban_members and role.permissions.manage_messages:
             perms.append("Server Moderator")
         if role.permissions.manage_guild:
             perms.append("Server Manager")
@@ -882,14 +857,10 @@ class Meta(Cog):
             f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue"
         )
         if view is None:
-            await ctx.reply(
-                f"{ctx.author.mention} you did not responds on time. No request is being sent!"
-            )
+            await ctx.reply(f"{ctx.author.mention} you did not responds on time. No request is being sent!")
         elif view:
             if self.bot.author_obj:
-                await self.bot.author_obj.send(
-                    f"**{ctx.author}** [`{ctx.author.id}`]\n>>> {text[:1800:]}"
-                )  # pepole spams T_T
+                await self.bot.author_obj.send(f"**{ctx.author}** [`{ctx.author.id}`]\n>>> {text[:1800:]}")  # pepole spams T_T
             else:
                 from utilities.config import SUPER_USER
 
@@ -930,9 +901,7 @@ class Meta(Cog):
         )
         embed.set_footer(text=f"{ctx.author}")
         change_log = await self.bot.change_log()
-        embed.description = (
-            f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
-        )
+        embed.description = f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -961,9 +930,7 @@ class Meta(Cog):
         """Get the info regarding the Invite Link"""
         invite = await self.bot.fetch_invite(f"https://discord.gg/{code}")
         if (not invite.guild) or (not invite):
-            return await ctx.send(
-                f"{ctx.author.mention} invalid invite or invite link is not of server"
-            )
+            return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
         fields: List[Tuple[str, str, bool]] = [
             ("Member count?", invite.approximate_member_count, True),
@@ -971,16 +938,12 @@ class Meta(Cog):
             ("Channel", f"<#{invite.channel.id}>", True),
             (
                 "Created At",
-                discord.utils.format_dt(invite.created_at, "R")
-                if invite.created_at is not None
-                else "Can not determine",
+                discord.utils.format_dt(invite.created_at, "R") if invite.created_at is not None else "Can not determine",
                 True,
             ),
             (
                 "Expires At",
-                discord.utils.format_dt(invite.expires_at, "R")
-                if invite.expires_at is not None
-                else "Can not determine",
+                discord.utils.format_dt(invite.expires_at, "R") if invite.expires_at is not None else "Can not determine",
                 True,
             ),
             (
@@ -990,9 +953,7 @@ class Meta(Cog):
             ),
             (
                 "Max Age",
-                invite.max_age or "Infinite"
-                if invite.max_age is not None
-                else "Can not determine",
+                invite.max_age or "Infinite" if invite.max_age is not None else "Can not determine",
                 True,
             ),
             ("Link", invite.url, True),

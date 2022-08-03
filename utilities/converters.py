@@ -104,7 +104,7 @@ def can_execute_action(
 class MemberID(commands.Converter):
     """A converter that handles user mentions and user IDs."""
 
-    async def convert(self, ctx: Context, argument: str):
+    async def convert(self, ctx: Context, argument: str) -> discord.Member:
         """Convert a user mention or ID to a member object."""
         try:
             m = await commands.MemberConverter().convert(ctx, argument)

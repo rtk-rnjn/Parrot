@@ -36,7 +36,7 @@ from qrcode.image.styles.moduledrawers import (  # type: ignore
     SquareModuleDrawer,
     VerticalBarsDrawer,
 )
-from utilities.converters import ToAsync, convert_bool
+from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
 from utilities.ttg import Truths
 from utilities.youtube_search import YoutubeSearch
@@ -254,7 +254,6 @@ class InvalidLatexError(Exception):
         self.logs = logs
 
 
-@ToAsync()
 def _create_qr(
     text: str,
     *,
@@ -364,7 +363,7 @@ class Misc(Cog):
 
     def sanitise(self, st: str) -> str:
         if len(st) > 1024:
-            st = st[:1021] + "..."
+            st = f"{st[:1021]}..."
         st = re.sub(invitere2, "[INVITE REDACTED]", st)
         return st
 
@@ -1114,7 +1113,7 @@ class Misc(Cog):
             payload["image_factory"] = StyledPilImage
         payload["board_size"] = flags.board_size
         payload["border"] = flags.border
-        file = await _create_qr(text, **payload)
+        file = await self.bot.func(_create_qr, text, **payload)
         e = discord.Embed().set_image(url="attachment://qr.png")
         await ctx.reply(embed=e, file=file)
 

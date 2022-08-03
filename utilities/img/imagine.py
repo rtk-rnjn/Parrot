@@ -71,21 +71,15 @@ def draw_text(
 def imagine(text: str) -> discord.File:
     image = Image.open(IMAGE)
     draw = cast(ImageDraw.ImageDraw, ImageDraw.Draw(image))
-
-    title, _, byline = str(text).upper().partition("\n")
-
+    title, _, byline = text.upper().partition("\n")
     if "\n" in byline:
         raise commands.BadArgument("Too many lines in input.")
-
     title = f"IMAGINE\n{title.strip()}"
     byline = byline.strip()
-
     draw_text(draw, title, TITLE_FONT, WHITE, TITLE_BOUND, TITLE_OFFSET, 300, 0.95)
     if byline:
         draw_text(draw, byline, BYLINE_FONT, WHITE, BYLINE_BOUND, BYLINE_OFFSET, 100)
-
     out_fp = io.BytesIO()
     image.save(out_fp, "PNG")
     out_fp.seek(0)
-
     return discord.File(out_fp, "imagine.png")

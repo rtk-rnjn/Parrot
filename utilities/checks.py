@@ -103,16 +103,13 @@ def is_mod() -> Callable:
             role = bot.server_config[ctx.guild.id]["mod_role"] or 0  # role could be `None`
             if true := ctx.author._roles.has(role):
                 return true
-            else:
-                raise ex.NoModRole()
+            raise ex.NoModRole()
         except KeyError:
             pass
 
         if data := await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id}):
             role = ctx.guild.get_role(data["mod_role"])
-            if not role:
-                raise ex.NoModRole()
-            if role in ctx.author.roles:
+            if role and role in ctx.author.roles:
                 return True
         raise ex.NoModRole()
 
@@ -143,6 +140,8 @@ def in_temp_channel() -> Callable:
 
 
 async def _can_run(ctx: Context) -> Optional[bool]:
+    # sourcery skip: assign-if-exp, boolean-if-exp-identity
+    # sourcery skip: reintroduce-else, remove-redundant-if, remove-unnecessary-cast
     """Return True is the command is whitelisted in specific channel, also with specific role"""
     if not hasattr(ctx, "channel"):
         return True
@@ -272,24 +271,15 @@ def cooldown_with_role_bypass(
 
 def without_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user does not have any of the roles in role_ids."""
-    if not ctx.guild:  # Return False in a DM
+    if not ctx.guild:
         return False
-
     author_roles = [role.id for role in ctx.author.roles]
-    check = all(role not in author_roles for role in role_ids)
-    return check
+    return all(role not in author_roles for role in role_ids)
 
 
 def with_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user has any one of the roles in role_ids."""
-    if not ctx.guild:  # Return False in a DM
-        return False
-
-    for role in ctx.author.roles:
-        if role.id in role_ids:
-            return True
-
-    return False
+    return any(role.id in role_ids for role in ctx.author.roles) if ctx.guild else False
 
 
 def in_whitelist_check(

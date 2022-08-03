@@ -54,7 +54,7 @@ class YoutubeSearch:
             res = {}
             if "videoRenderer" in video.keys():
                 video_data: Dict[str, Any] = video.get("videoRenderer", {})
-                res["id"] = video_data.get("videoId", None)
+                res["id"] = video_data.get("videoId")
                 res["thumbnails"] = [
                     thumb.get("url", None)
                     for thumb in video_data.get("thumbnail", {}).get("thumbnails", [{}])
@@ -87,5 +87,4 @@ class YoutubeSearch:
     async def to_json(self, s: str) -> str:
         if result := self._cache.get(s):
             return json.dumps({"videos": result})
-        result = json.dumps({"videos": await self._search(s)})
-        return result
+        return json.dumps({"videos": await self._search(s)})

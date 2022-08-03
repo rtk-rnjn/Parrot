@@ -56,7 +56,7 @@ def rank_card(
 
     d.text((260, 100), member.name, (255, 255, 255), font=font)
     d.text((740, 130), f"{current_xp}/{next_level_xp} XP", (255, 255, 255), font=font2)
-    d.text((650, 50), f"LEVEL {level}", xp_color, font=font)
+    d.text((650, 50), f"LEVEL {level}", fg, font=font)
     d.text((260, 50), f"RANK #{rank}", (255, 255, 255), font=font2)
 
     bufferIO = BytesIO()

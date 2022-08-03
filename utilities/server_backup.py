@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import traceback
 
 import discord
@@ -44,10 +45,7 @@ class BackupSaver:
     @staticmethod
     def _overwrites_to_json(overwrites):
         try:
-            return {
-                str(target.id): overwrite._values
-                for target, overwrite in overwrites.items()
-            }
+            return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}
         except Exception:
             return {}
 
@@ -58,9 +56,7 @@ class BackupSaver:
                     {
                         "name": category.name,
                         "position": category.position,
-                        "category": None
-                        if category.category is None
-                        else str(category.category.id),
+                        "category": None if category.category is None else str(category.category.id),
                         "id": str(category.id),
                         "overwrites": self._overwrites_to_json(category.overwrites),
                     }
@@ -76,9 +72,7 @@ class BackupSaver:
                     {
                         "name": tchannel.name,
                         "position": tchannel.position,
-                        "category": None
-                        if tchannel.category is None
-                        else str(tchannel.category.id),
+                        "category": None if tchannel.category is None else str(tchannel.category.id),
                         "id": str(tchannel.id),
                         "overwrites": self._overwrites_to_json(tchannel.overwrites),
                         "topic": tchannel.topic,
@@ -107,9 +101,7 @@ class BackupSaver:
                     {
                         "name": vchannel.name,
                         "position": vchannel.position,
-                        "category": None
-                        if vchannel.category is None
-                        else str(vchannel.category.id),
+                        "category": None if vchannel.category is None else str(vchannel.category.id),
                         "id": str(vchannel.id),
                         "overwrites": self._overwrites_to_json(vchannel.overwrites),
                         "bitrate": vchannel.bitrate,
@@ -156,11 +148,7 @@ class BackupSaver:
                         "name": member.name,
                         "discriminator": member.discriminator,
                         "nick": member.nick,
-                        "roles": [
-                            str(role.id)
-                            for role in member.roles[1:]
-                            if not role.managed
-                        ],
+                        "roles": [str(role.id) for role in member.roles[1:] if not role.managed],
                     }
                 )
             except Exception:
@@ -171,9 +159,7 @@ class BackupSaver:
     async def _save_bans(self):
         async for entry in self.guild.bans():
             try:
-                self.data["bans"].append(
-                    {"user": str(entry.user.id), "reason": entry.reason}
-                )
+                self.data["bans"].append({"user": str(entry.user.id), "reason": entry.reason})
             except Exception:
                 pass
 
@@ -188,9 +174,7 @@ class BackupSaver:
             "member_count": self.guild.member_count,
             "system_channel": str(self.guild.system_channel),
             "afk_timeout": self.guild.afk_timeout,
-            "afk_channel": None
-            if self.guild.afk_channel is None
-            else str(self.guild.afk_channel.id),
+            "afk_channel": None if self.guild.afk_channel is None else str(self.guild.afk_channel.id),
             "mfa_level": self.guild.mfa_level,
             "verification_level": str(self.guild.verification_level),
             "explicit_content_filter": str(self.guild.explicit_content_filter),
@@ -237,16 +221,16 @@ class BackupLoader:
             try:
                 union = await self.guild.fetch_member(int(union_id))
             except discord.NotFound:
-                roles = list(
+                if roles := list(
                     filter(
                         lambda r: r.id == self.id_translator.get(union_id),
                         self.guild.roles,
                     )
-                )
-                if len(roles) == 0:
-                    continue
+                ):
+                    union = roles[0]
 
-                union = roles[0]
+                else:
+                    continue
 
             overwrites[union] = discord.PermissionOverwrite(**overwrite)
 
@@ -255,12 +239,9 @@ class BackupLoader:
     def _translate_mentions(self, text):
         if not text:
             return text
-
         formats = ["<#%s>", "<@&%s>"]
-        for key, value in self.id_translator.items():
-            for _format in formats:
-                text = text.replace(_format % str(key), _format % str(value))
-
+        for (key, value), _format in itertools.product(self.id_translator.items(), formats):
+            text = text.replace(_format % str(key), _format % str(value))
         return text
 
     async def run_tasks(self, coros, wait=True):
@@ -285,26 +266,19 @@ class BackupLoader:
     async def _prepare_guild(self):
         if self.options.roles:
             existing_roles = list(
-                filter(
-                    lambda r: not r.managed
-                    and self.guild.me.top_role.position > r.position,
-                    self.guild.roles,
-                )
+                filter(lambda r: not r.managed and self.guild.me.top_role.position > r.position, self.guild.roles)
             )
+
             difference = len(self.data["roles"]) - len(existing_roles)
             for role in existing_roles:
-                if difference < 0:
-                    try:
-                        await role.delete(reason=self.reason)
-                    except Exception:
-                        pass
-
-                    else:
-                        difference += 1
-
-                else:
+                if difference >= 0:
                     break
-
+                try:
+                    await role.delete(reason=self.reason)
+                except Exception:
+                    pass
+                else:
+                    difference += 1
         if self.options.channels:
             for channel in self.guild.channels:
                 try:
@@ -316,14 +290,10 @@ class BackupLoader:
         await self.guild.edit(
             name=self.data["name"],
             # region=discord.VoiceRegion(self.data["region"]),
-            afk_channel=self.guild.get_channel(
-                self.id_translator.get(self.data["afk_channel"])
-            ),
+            afk_channel=self.guild.get_channel(self.id_translator.get(self.data["afk_channel"])),
             afk_timeout=self.data["afk_timeout"],
             # verification_level=discord.VerificationLevel(self.data["verification_level"]),
-            system_channel=self.guild.get_channel(
-                self.id_translator.get(self.data["system_channel"])
-            ),
+            system_channel=self.guild.get_channel(self.id_translator.get(self.data["system_channel"])),
             reason=self.reason,
         )
 
@@ -332,20 +302,18 @@ class BackupLoader:
             reversed(
                 list(
                     filter(
-                        lambda r: not r.managed
-                        and not r.is_default()
-                        and self.guild.me.top_role.position > r.position,
+                        lambda r: not r.managed and not r.is_default() and self.guild.me.top_role.position > r.position,
                         self.guild.roles,
                     )
                 )
             )
         )
+
         for role in reversed(self.data["roles"]):
             try:
                 if role["default"]:
-                    await self.guild.default_role.edit(
-                        permissions=discord.Permissions(role["permissions"])
-                    )
+                    await self.guild.default_role.edit(permissions=discord.Permissions(role["permissions"]))
+
                     new_role = self.guild.default_role
                 else:
                     kwargs = {
@@ -357,18 +325,14 @@ class BackupLoader:
                         "reason": self.reason,
                     }
 
-                    if len(existing_roles) == 0:
+                    if not existing_roles:
                         try:
-                            new_role = await asyncio.wait_for(
-                                self.guild.create_role(**kwargs), 10
-                            )
+                            new_role = await asyncio.wait_for(self.guild.create_role(**kwargs), 10)
                         except asyncio.TimeoutError:
-                            # Probably hit the 24h rate limit. Just skip roles
                             break
                     else:
                         new_role = existing_roles.pop(0)
                         await new_role.edit(**kwargs)
-
                 self.id_translator[role["id"]] = new_role.id
             except Exception:
                 pass
@@ -376,11 +340,8 @@ class BackupLoader:
     async def _load_role_permissions(self):
         tasks = []
         for role in self.data["roles"]:
-            to_edit = self.guild.get_role(self.id_translator.get(role["id"]))
-            if to_edit:
-                tasks.append(
-                    to_edit.edit(permissions=discord.Permissions(role["permissions"]))
-                )
+            if to_edit := self.guild.get_role(self.id_translator.get(role["id"])):
+                tasks.append(to_edit.edit(permissions=discord.Permissions(role["permissions"])))
 
         await self.run_tasks(tasks)
 
@@ -402,9 +363,7 @@ class BackupLoader:
                 created = await self.guild.create_text_channel(
                     name=tchannel["name"],
                     overwrites=await self._overwrites_from_json(tchannel["overwrites"]),
-                    category=discord.Object(
-                        self.id_translator.get(tchannel["category"])
-                    ),
+                    category=discord.Object(self.id_translator.get(tchannel["category"])),
                     reason=self.reason,
                 )
 
@@ -422,14 +381,10 @@ class BackupLoader:
                 created = await self.guild.create_voice_channel(
                     name=vchannel["name"],
                     overwrites=await self._overwrites_from_json(vchannel["overwrites"]),
-                    category=discord.Object(
-                        self.id_translator.get(vchannel["category"])
-                    ),
+                    category=discord.Object(self.id_translator.get(vchannel["category"])),
                     reason=self.reason,
                 )
-                await created.edit(
-                    bitrate=vchannel["bitrate"], user_limit=vchannel["user_limit"]
-                )
+                await created.edit(bitrate=vchannel["bitrate"], user_limit=vchannel["user_limit"])
                 self.id_translator[vchannel["id"]] = created.id
             except Exception:
                 pass
@@ -441,19 +396,12 @@ class BackupLoader:
 
     async def _load_bans(self):
 
-        tasks = [
-            self.guild.ban(user=discord.Object(int(ban["user"])), reason=ban["reason"])
-            for ban in self.data["bans"]
-        ]
+        tasks = [self.guild.ban(user=discord.Object(int(ban["user"])), reason=ban["reason"]) for ban in self.data["bans"]]
         await self.run_tasks(tasks)
 
     async def _load_members(self):
         async def edit_member(member, member_data):
-            roles = [
-                discord.Object(self.id_translator.get(role))
-                for role in member_data["roles"]
-                if role in self.id_translator
-            ]
+            roles = [discord.Object(self.id_translator.get(role)) for role in member_data["roles"] if role in self.id_translator]
 
             if self.guild.me.top_role.position > member.top_role.position:
                 try:
@@ -480,9 +428,7 @@ class BackupLoader:
         tasks = []
         default_data = {"nick": None, "roles": []}
         async for member in self.guild.fetch_members(limit=self.guild.member_count):
-            fits = list(
-                filter(lambda m: m["id"] == str(member.id), self.data["members"])
-            )
+            fits = list(filter(lambda m: m["id"] == str(member.id), self.data["members"]))
             if fits:
                 tasks.append(edit_member(member, fits[0]))
 
@@ -536,32 +482,26 @@ class BackupInfo:
         for channel in self.data["text_channels"]:
             if channel.get("category") is None:
                 ret += "\n#\u200a" + channel["name"]
-
         for channel in self.data["voice_channels"]:
             if channel.get("category") is None:
                 ret += "\n \u200a" + channel["name"]
-
         ret += "\n"
         for category in self.data["categories"]:
-            ret += "\n⯆\u200a" + category["name"]
+            ret += "\n\N{BLACK MEDIUM DOWN-POINTING TRIANGLE}\u200a" + category["name"]
             for channel in self.data["text_channels"]:
                 if channel.get("category") == category["id"]:
                     ret += "\n  #\u200a" + channel["name"]
-
             for channel in self.data["voice_channels"]:
                 if channel.get("category") == category["id"]:
                     ret += "\n   \u200a" + channel["name"]
-
             ret += "\n"
-
-        return ret[: limit - 10] + "```"
+        return f"{ret[:limit - 10]}```"
 
     def roles(self, limit=1000):
         ret = "```"
         for role in reversed(self.data["roles"]):
             ret += "\n" + role["name"]
-
-        return ret[: limit - 10] + "```"
+        return f"{ret[:limit - 10]}```"
 
     @property
     def member_count(self):

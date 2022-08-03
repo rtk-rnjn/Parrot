@@ -8,7 +8,6 @@ from typing import Any, Dict, Optional
 import discord
 from bs4 import BeautifulSoup
 from core import Context
-from utilities.converters import ToAsync
 
 try:
     import lxml
@@ -18,7 +17,6 @@ except ImportError:
     HTML_PARSER = "html.parser"
 
 
-@ToAsync()
 def get_ele(soup: BeautifulSoup, name: str, **kw: Any):
     return soup.find_all(name, **kw)
 
@@ -81,7 +79,7 @@ async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.M
         )
 
     soup = BeautifulSoup(await response.text(), HTML_PARSER)
-    uls = await get_ele(soup, "ul", class_="mw-search-results")
+    uls = await ctx.bot.func(soup.find_all, "ul", class_="mw-search-results")
 
     if not uls:
         return await ctx.send(f"{ctx.author.mention} no results")

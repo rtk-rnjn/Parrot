@@ -1,6 +1,8 @@
 
 # Parrot Discord Bot
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/96d160ec5c744129b7ef277f28f18e7c)](https://app.codacy.com/gh/rtk-rnjn/Parrot?utm_source=github.com&utm_medium=referral&utm_content=rtk-rnjn/Parrot&utm_campaign=Badge_Grade_Settings)
+
 *Imagine a Discord bot with Mini Ticket System, Moderation tools for admins and lots of fun commands for the users. And International Global Chat.*
 
 ---

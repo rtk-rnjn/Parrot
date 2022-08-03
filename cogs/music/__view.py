@@ -32,24 +32,15 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
         try:
             await self.ctx.invoke(cmd, search=self.name.value)
         except commands.CommandError as e:
-            return await self.__send_interal_error_response(interaction)
+            return
 
         await interaction.response.edit_message(
             content="Invoked `play` command",
         )
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:  # type: ignore
-        await interaction.response.send_message("Oops! Something went wrong.", ephemeral=True)
-
-    async def __send_interal_error_response(self, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-            "Running `loop` command from the context failed. Possible reasons:\n"
-            "\N{BULLET} The bot is not in a voice channel.\n"
-            "\N{BULLET} The bot is not in the same voice channel as you.\n"
-            "\N{BULLET} The bot is not playing music.\n"
-            "\N{BULLET} You are missing DJ role or Manage Channels permission.\n",
-            ephemeral=True,
-        )
+        if interaction.response.is_done():
+            await interaction.response.edit_message(content="Oops! Something went wrong.")
 
 
 class MusicView(discord.ui.View):
@@ -113,9 +104,7 @@ class MusicView(discord.ui.View):
         )
         await self.on_timeout()
 
-    @discord.ui.button(
-        custom_id="LOOP", emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"
-    )
+    @discord.ui.button(custom_id="LOOP", emoji="\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}")
     async def loop(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         cmd: commands.Command = self.bot.get_command("loop")
@@ -141,9 +130,7 @@ class MusicView(discord.ui.View):
     @discord.ui.button(custom_id="SHUFFLE", emoji="\N{TWISTED RIGHTWARDS ARROWS}")
     async def shuffle(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.player.queue.is_empty:
-            return await interaction.response.send_message(
-                "There is no music to shuffle.", ephemeral=True
-            )
+            return await interaction.response.send_message("There is no music to shuffle.", ephemeral=True)
 
         await interaction.response.defer()
         cmd: commands.Command = self.bot.get_command("shuffle")
@@ -208,15 +195,11 @@ class MusicView(discord.ui.View):
         )
         await self.on_timeout()
 
-    @discord.ui.button(
-        custom_id="SKIP", emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}", row=1
-    )
+    @discord.ui.button(custom_id="SKIP", emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}", row=1)
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message("Invoking `skip` command.", ephemeral=True)
         if self.player.queue.is_empty:
-            return await interaction.response.send_message(
-                "There is no music to skip.", ephemeral=True
-            )
+            return await interaction.response.send_message("There is no music to skip.", ephemeral=True)
         cmd: commands.Command = self.bot.get_command("skip")
         ini = time.perf_counter()
         try:
@@ -231,9 +214,7 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)
     async def love(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "Added song to loved songs (Playlist).", ephemeral=True
-        )
+        await interaction.response.send_message("Added song to loved songs (Playlist).", ephemeral=True)
         await self.__add_to_playlist(interaction.user)
 
     def disable_all(self) -> None:

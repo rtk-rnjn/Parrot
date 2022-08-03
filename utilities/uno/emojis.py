@@ -52,9 +52,9 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
         if card.color is not Color.wild:
             _ = Image.new('RGBA', image.size, COLORS[card.color])
         elif card.type is CardType.plus_4:
-            _ = Image.open('./bot/assets/wild.png').resize(image.size)
+            _ = Image.open('./utilities/uno/assets/wild.png').resize(image.size)
         elif card.type is CardType.wild:
-            _ = Image.open('./bot/assets/full_wild.png').resize(image.size)
+            _ = Image.open('./utilities/uno/assets/full_wild.png').resize(image.size)
         else:
             return
 

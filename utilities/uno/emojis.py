@@ -23,7 +23,7 @@ COLORS = {
 }
 
 
-def _create_rounded_mask(size: Tuple[int, int], radius: int) -> Image.Image:
+def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
     factor = 5
     radius *= factor  # For anti-alias
 

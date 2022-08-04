@@ -1,12 +1,11 @@
 # Code from https://gist.github.com/egocarib/ea022799cca8a102d14c54a22c45efe0
 
-from PIL.Image import Image
-
 from collections import defaultdict
-from random import randrange
 from itertools import chain
+from random import randrange
+from typing import List, Tuple, Union
 
-from typing import Union
+from PIL.Image import Image
 
 
 class TransparentAnimatedGifConverter:
@@ -69,7 +68,7 @@ class TransparentAnimatedGifConverter:
 
         del self._img_p_parsedpalette[0]
 
-    def _get_unused_color(self) -> tuple[int, int, int]:
+    def _get_unused_color(self) -> Tuple[int, int, int]:
         used_colors = set(self._img_p_parsedpalette.values())
         while True:
             new_color = randrange(256), randrange(256), randrange(256)
@@ -116,9 +115,9 @@ class TransparentAnimatedGifConverter:
         return self._img_p
 
 
-def _create_animated_gif(images: list[Image], durations: Union[int, list[int]]) -> tuple[Image, dict]:
+def _create_animated_gif(images: List[Image], durations: Union[int, List[int]]) -> Tuple[Image, dict]:
     save_kwargs = {}
-    new_images: list[Image] = []
+    new_images: List[Image] = []
 
     for frame in images:
         thumbnail = frame.copy()
@@ -141,6 +140,6 @@ def _create_animated_gif(images: list[Image], durations: Union[int, list[int]]) 
     return output_image, save_kwargs
 
 
-def save_transparent_gif(images: list[Image], durations: Union[int, list[int]], save_file) -> None:
+def save_transparent_gif(images: List[Image], durations: Union[int, List[int]], save_file) -> None:
     root_frame, save_args = _create_animated_gif(images, durations)
     root_frame.save(save_file, **save_args)

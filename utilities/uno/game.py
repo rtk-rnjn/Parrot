@@ -747,10 +747,10 @@ class UNO:
 
         embed = discord.Embed(color=discord.Color.from_rgb(*color), timestamp=discord.utils.utcnow())
 
-        embed.set_thumbnail(url=self.current.image_url)
+        embed.set_thumbnail(url=getattr(self.current, "image_url"))
         embed.description = "\n".join(map(self._embed_format, self.hands))
 
-        embed.set_author(name=f"{self.current_player.name}'s turn!", icon_url=self.current_player.avatar.url)
+        embed.set_author(name=f"{self.current_player.name}'s turn!", icon_url=self.current_player.display_avatar.url)
 
         if self.draw_queue > 0:
             if self.rule_set.progressive:
@@ -778,6 +778,7 @@ class UNO:
         return [originator]
 
     async def play(self, interaction: discord.Interaction, hand: Hand, card: Card) -> None:
+        # sourcery skip: low-code-quality
         if self.current_player != hand.player:
             if self.rule_set.jump_in and self.current == card:
                 await self.handle_jump_in(hand, card)

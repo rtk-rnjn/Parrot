@@ -31,68 +31,69 @@ class MentionProt(Cog):
         if perms.administrator or perms.manage_messages or perms.manage_channels:
             return
 
-        if data := self.bot.server_config.get(message.guild.id):
-            try:
-                ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
-            except KeyError:
-                ignore: List[int] = []
+        data = self.bot.server_config.get(message.guild.id)
+        if not data:
+            return
 
-            if message.channel.id in ignore:
-                return
+        try:
+            ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
+        except KeyError:
+            ignore: List[int] = []
 
-            try:
-                count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
-            except KeyError:
-                count = None
+        if message.channel.id in ignore:
+            return
 
-            if not count:
-                return
-            try:
-                to_delete: bool = data["automod"]["mention"]["autowarn"]["to_delete"]
-            except KeyError:
-                to_delete: bool = True
+        try:
+            count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
+        except KeyError:
+            return
 
-            if to_delete:
-                await message.delete(delay=0)
+        try:
+            to_delete: bool = data["automod"]["mention"]["autowarn"]["to_delete"]
+        except KeyError:
+            to_delete: bool = True
 
-            try:
-                to_warn: bool = data["automod"]["mention"]["autowarn"]["enable"]
-            except KeyError:
-                to_warn: bool = False
+        if to_delete:
+            await message.delete(delay=0)
 
-            ctx: Context = await self.bot.get_context(message, cls=Context)
+        try:
+            to_warn: bool = data["automod"]["mention"]["autowarn"]["enable"]
+        except KeyError:
+            to_warn: bool = False
 
-            try:
-                instant_action: str = data["automod"]["mention"]["autowarn"]["punish"]["type"]
-            except KeyError:
-                instant_action = False
-            else:
-                if instant_action and to_warn:
-                    await self.__instant_action_parser(
-                        name=instant_action,
-                        ctx=ctx,
-                        message=message,
-                        **data["automod"]["mention"]["autowarn"]["punish"],
-                    )
+        ctx: Context = await self.bot.get_context(message, cls=Context)
 
-            if to_warn and not instant_action:
-                await warn(
-                    message.guild,
-                    message.author,
-                    "Automod: Mass Mention",
-                    moderator=self.bot.user,
-                    message=message,
-                    at=message.created_at,
+        try:
+            instant_action: str = data["automod"]["mention"]["autowarn"]["punish"]["type"]
+        except KeyError:
+            instant_action = False
+        else:
+            if instant_action and to_warn:
+                await self.__instant_action_parser(
+                    name=instant_action,
                     ctx=ctx,
+                    message=message,
+                    **data["automod"]["mention"]["autowarn"]["punish"],
                 )
 
-                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+        if to_warn and not instant_action:
+            await warn(
+                message.guild,
+                message.author,
+                "Automod: Mass Mention",
+                moderator=self.bot.user,
+                message=message,
+                at=message.created_at,
+                ctx=ctx,
+            )
 
-            if len(message.mentions) >= count:
-                await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] {'[Warning]' if to_warn else ''}**",
-                    delete_after=10,
-                )
+            await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+
+        if len(message.mentions) >= count:
+            await message.channel.send(
+                f"{message.author.mention} *{random.choice(quotes)}* **[Mass Mention] {'[Warning]' if to_warn else ''}**",
+                delete_after=10,
+            )
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

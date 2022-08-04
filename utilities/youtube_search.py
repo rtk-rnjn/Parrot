@@ -79,10 +79,7 @@ class YoutubeSearch:
         return results
 
     async def to_dict(self, s: str) -> dict:
-        if result := self._cache.get(s):
-            return result
-        result = await self._search(s)
-        return result
+        return result if (result := self._cache.get(s)) else await self._search(s)
 
     async def to_json(self, s: str) -> str:
         if result := self._cache.get(s):

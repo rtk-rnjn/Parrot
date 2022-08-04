@@ -540,16 +540,20 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         return_when: str
             `return_when` indicates when this function should return. It must be one of the following constants
 
-            ```
-            +-----------------+--------------------------------------------------------------------+
-            | FIRST_COMPLETED | The function will return when any future finishes or is cancelled. |
-            +-----------------+--------------------------------------------------------------------+
-            | FIRST_EXCEPTION | The function will return when any future finishes by raising an    |
-            |                 | exception. If no future raises an exception then it is equivalent  |
-            |                 | to ALL_COMPLETED.                                                  |
-            +-----------------+--------------------------------------------------------------------+
-            |  ALL_COMPLETED  | The function will return when all futures finish or are cancelled. |
-            +-----------------+--------------------------------------------------------------------+
+            ```ini
+            +-----------------+-----------------------------------+
+            | FIRST_COMPLETED | The function will return when any |
+            |                 | future finishes or is cancelled.  |
+            +-----------------+-----------------------------------+
+            |                 | The function will return when any |
+            |                 | future finishes by raising an     |
+            | FIRST_EXCEPTION | exception. If no future raises an |
+            |                 | exception then it is equivalent   |
+            |                 | to ALL_COMPLETED.                 |
+            +-----------------+-----------------------------------+
+            |  ALL_COMPLETED  | The function will return when all | 
+            |                 | futures finish or are cancelled.  |
+            +-----------------+-----------------------------------+
             ```
 
         timeout: Optional[float]

@@ -1,84 +1,85 @@
-from .enums import Color, CardType
 from typing import Optional, TypeVar
 
-E = TypeVar('E', bound='Card')
+from .enums import CardType, Color
+
+E = TypeVar("E", bound="Card")
 
 
 class Emojis:
     class red:
         numbers = [
-            '<:red_0:875131307586355212>',
-            '<:red_1:875131309004054579>',
-            '<:red_2:875131309578649701>',
-            '<:red_3:875131310782435329>',
-            '<:red_4:875131312074276904>',
-            '<:red_5:875131312984453230>',
-            '<:red_6:875131313848451092>',
-            '<:red_7:875131314863480832>',
-            '<:red_8:875131316318908446>',
-            '<:red_9:875131317417836584>'
+            "<:red_0:1004449477068869713>",
+            "<:red_1:1004449477999992915>",
+            "<:red_2:1004449479430262925>",
+            "<:red_3:1004449481997172828>",
+            "<:red_4:1004449483104465057>",
+            "<:red_5:1004449484639588402>",
+            "<:red_6:1004449485642022933>",
+            "<:red_7:1004449486501851246>",
+            "<:red_8:1004449487776911400>",
+            "<:red_9:1004449489580458085>",
         ]
 
-        plus_2 = '<:red_plus_2:875131318483185664>'
-        reverse = '<:red_reverse:875131319389143090>'
-        skip = '<:red_skip:875131320660029451>'
+        plus_2 = "<:red_plus_2:1004449490373197855>"
+        reverse = "<:red_reverse:1004449491434344528>"
+        skip = "<:red_skip:1004449492243853443>"
 
     class yellow:
         numbers = [
-            '<:yellow_0:875131321914118174>',
-            '<:yellow_1:875131322773942292>',
-            '<:yellow_2:875131323738652762>',
-            '<:yellow_3:875131324648808520>',
-            '<:yellow_4:875131325529595945>',
-            '<:yellow_5:875131327039537212>',
-            '<:yellow_6:875131328222359582>',
-            '<:yellow_7:875131329216393246>',
-            '<:yellow_8:875131330147532830>',
-            '<:yellow_9:875131331057704990>'
+            "<:yellow_0:1004449493170786384>",
+            "<:yellow_1:1004449494206779483>",
+            "<:yellow_2:1004449495083384863>",
+            "<:yellow_3:1004449496320708668>",
+            "<:yellow_4:1004449497486741566>",
+            "<:yellow_5:1004449498703069184>",
+            "<:yellow_6:1004449499558723595>",
+            "<:yellow_7:1004449501026713742>",
+            "<:yellow_8:1004449502280818758>",
+            "<:yellow_9:1004449503765594263>",
         ]
 
-        plus_2 = '<:yellow_plus_2:875131331963666452>'
-        reverse = '<:yellow_reverse:875131333045805076>'
-        skip = '<:yellow_skip:875131334371184640>'
+        plus_2 = "<:yellow_plus_2:1004449504919044136>"
+        reverse = "<:yellow_reverse:1004449506122793000>"
+        skip = "<:yellow_skip:1004449507523690587>"
 
     class blue:
         numbers = [
-            '<:blue_0:875131335088435232>',
-            '<:blue_1:875131336346722374>',
-            '<:blue_2:875131337240113192>',
-            '<:blue_3:875131338213175317>',
-            '<:blue_4:875131339022663720>',
-            '<:blue_5:875131339769262101>',
-            '<:blue_6:875131340650057769>',
-            '<:blue_7:875131341761544213>',
-            '<:blue_8:875131342730448946>',
-            '<:blue_9:875131343523172382>'
+            "<:blue_0:1004449508698116157>",
+            "<:blue_1:1004449510031892631>",
+            "<:blue_2:1004449511034343544>",
+            "<:blue_3:1004449512179376209>",
+            "<:blue_4:1004449512888225834>",
+            "<:blue_5:1004449514167472168>",
+            "<:blue_6:1004449515480289410>",
+            "<:blue_7:1004449516499501086>",
+            "<:blue_8:1004449517338370160>",
+            "<:blue_9:1004449518437281822>",
         ]
 
-        plus_2 = '<:blue_plus_2:875131344701779968>'
-        reverse = '<:blue_reverse:875131345532252170>'
-        skip = '<:blue_skip:875131346387869736>'
+        plus_2 = "<:blue_plus_2:1004449519385202778>"
+        reverse = "<:blue_reverse:1004449520291160135>"
+        skip = "<:blue_skip:1004449521234890795>"
 
     class green:
         numbers = [
-            '<:green_0:875131347155447818>',
-            '<:green_1:875131348308885524>',
-            '<:green_2:875131349235814490>',
-            '<:green_3:875131350166953994>',
-            '<:green_4:875131350842212383>',
-            '<:green_5:875131351538487368>',
-            '<:green_6:875131352914202684>',
-            '<:green_7:875131353690161203>',
-            '<:green_8:875131354302513213>',
-            '<:green_9:875131355191709779>'
+            "<:green_0:1004449522136653844>",
+            "<:green_1:1004449523046821889>",
+            "<:green_2:1004449524502233149>",
+            "<:green_3:1004449525483704410>",
+            "<:green_4:1004449526523891785>",
+            "<:green_5:1004449527576658052>",
+            "<:green_6:1004449528507801600>",
+            "<:green_7:1004449529438949376>",
+            "<:green_8:1004449530386854003>",
+            "<:green_9:1004449531565453413>",
         ]
 
-        plus_2 = '<:green_plus_2:875131356496150578>'
-        reverse = '<a:green_reverse:875146408766881832>'
-        skip = '<a:green_skip:875146409869971497>'
+        plus_2 = "<:green_plus_2:1004449532601454653>"
+        reverse = "<a:green_reverse:1004619745322094662>"
+        skip = "<a:green_skip:1004619620805771294>"
 
-    wild = '<a:wild_wild:875146410985672744>'
-    plus_4 = '<a:wild_plus_4:875146412084572181>'
+    wild = "<a:wild_wild:1004620353349357597>"
+    plus_4 = "<a:wild_plus_4:1004620536346857502>"
 
 
 class Card:
@@ -97,7 +98,7 @@ class Card:
         return hash((self.color, self.type, self.value))
 
     def __repr__(self) -> str:
-        return f'<Card color={self.color.name} type={self.type.name} value={self.value}>'
+        return f"<Card color={self.color.name} type={self.type.name} value={self.value}>"
 
     def __eq__(self: E, other: E) -> bool:
         return (
@@ -126,27 +127,23 @@ class Card:
 
     @property
     def image_url(self) -> str:
-        _id = self.emoji.split(':')[-1].rstrip('>')
-        return f'https://cdn.discordapp.com/emojis/{_id}.png?v=1'
+        _id = self.emoji.split(":")[-1].rstrip(">")
+        return f"https://cdn.discordapp.com/emojis/{_id}.png?v=1"
 
     def is_wild(self) -> bool:
-        return self.type in (
-            CardType.wild,
-            CardType.plus_4
-        )
+        return self.type in (CardType.wild, CardType.plus_4)
 
     def match(self: E, other: E, /) -> bool:
         return other.color is self.color or other.is_wild() or self.stackable_with(other)
 
     def stackable_with(self: E, other: E, /) -> bool:
         return (
-            (other.type is self.type is CardType.number and other.value == self.value)
-            or other.type is self.type is not CardType.number
-        )
+            other.type is self.type is CardType.number and other.value == self.value
+        ) or other.type is self.type is not CardType.number
 
 
 cards = [
-    # Red 
+    # Red
     Card(color=Color.red, value=0),
     Card(color=Color.red, value=1),
     Card(color=Color.red, value=1),
@@ -172,7 +169,6 @@ cards = [
     Card(color=Color.red, type=CardType.reverse),
     Card(color=Color.red, type=CardType.skip),
     Card(color=Color.red, type=CardType.skip),
-
     # Yellow
     Card(color=Color.yellow, value=0),
     Card(color=Color.yellow, value=1),
@@ -199,7 +195,6 @@ cards = [
     Card(color=Color.yellow, type=CardType.reverse),
     Card(color=Color.yellow, type=CardType.skip),
     Card(color=Color.yellow, type=CardType.skip),
-
     # Blue
     Card(color=Color.blue, value=0),
     Card(color=Color.blue, value=1),
@@ -226,7 +221,6 @@ cards = [
     Card(color=Color.blue, type=CardType.reverse),
     Card(color=Color.blue, type=CardType.skip),
     Card(color=Color.blue, type=CardType.skip),
-    
     # Green
     Card(color=Color.green, value=0),
     Card(color=Color.green, value=1),
@@ -253,7 +247,6 @@ cards = [
     Card(color=Color.green, type=CardType.reverse),
     Card(color=Color.green, type=CardType.skip),
     Card(color=Color.green, type=CardType.skip),
-
     # Wild cards
     Card(color=Color.wild, type=CardType.wild),
     Card(color=Color.wild, type=CardType.wild),
@@ -262,7 +255,7 @@ cards = [
     Card(color=Color.wild, type=CardType.plus_4),
     Card(color=Color.wild, type=CardType.plus_4),
     Card(color=Color.wild, type=CardType.plus_4),
-    Card(color=Color.wild, type=CardType.plus_4)
+    Card(color=Color.wild, type=CardType.plus_4),
 ]
 
 

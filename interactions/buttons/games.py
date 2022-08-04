@@ -2467,8 +2467,7 @@ class Games(Cog):
         embed = discord.Embed(
             title="Duck Duck Duck Goose!",
             color=discord.Color.dark_purple(),
-        )
-        embed.set_image(url="attachment://board.png")
+        ).set_image(url="attachment://board.png")
         return await ctx.send(embed=embed, file=file)
 
     async def send_found_embed(self, ctx: Context) -> discord.Message:
@@ -2496,7 +2495,7 @@ class Games(Cog):
             title=end_message,
             color=discord.Color.dark_purple(),
         )
-        scores = sorted(
+        scores: List[discord.Member, int] = sorted(
             game.scores.items(),
             key=lambda item: item[1],
             reverse=True,
@@ -2544,6 +2543,7 @@ class Games(Cog):
     @commands.command("uno", aliases=["unogame"])
     @commands.max_concurrency(1, commands.BucketType.user)
     async def play_uno(self, ctx: Context, /) -> None:
+        """Play a game of Uno."""
         if ctx.channel.id in self.uno_games:
             return await ctx.error("An instance of UNO is already running in this channel.")
 

@@ -75,6 +75,7 @@ from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__wordle import BetaWordle
 from interactions.buttons.secret_hitler.ui.join import JoinUI
+from utilities.uno.game import UNO
 from pymongo import ReturnDocument
 from pymongo.collection import Collection
 from utilities.constants import Colours
@@ -132,7 +133,7 @@ class BoardBoogle:
 
     def board_contains(
         self, word: str, pos: Position = None, passed: List[Position] = None
-    ) -> bool:
+    ) -> bool:  # sourcery skip: use-itertools-product
         if passed is None:
             passed = []
         # Empty words
@@ -1410,6 +1411,7 @@ class Games(Cog):
         self.edited_content: Dict[int, str] = {}
         self.checks: Set[Callable] = set()
         self.current_games: Dict[int, DuckGame] = {}
+        self.uno_games: Dict[int, UNO] = {}
 
     @staticmethod
     def _load_templates() -> List[MadlibsTemplate]:
@@ -2683,3 +2685,20 @@ class Games(Cog):
             text="Tip: using Discord's compact message display mode can help keep the board on the screen"
         )
         return await ctx.send(file=file, embed=embed)
+
+    @commands.command('uno', aliases=['unogame'])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def play_uno(self, ctx: Context, /) -> None:
+        if ctx.channel.id in self.uno_games:
+            return await ctx.error('An instance of UNO is already running in this channel.')
+
+        game = UNO(ctx)
+        self.uno_games[ctx.channel.id] = game
+
+        await game.start()
+        await game.wait()
+
+        try:
+            del self.uno_games[ctx.channel.id]
+        except KeyError:
+            pass

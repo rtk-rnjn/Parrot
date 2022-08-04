@@ -536,7 +536,7 @@ class GameView(discord.ui.View):
     @discord.ui.button(label='Vote-kick', style=discord.ButtonStyle.danger)
     async def vote_kick(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.send_message(
-            content='Choose the player you would like to vote-kick.',
+            'Choose the player you would like to vote-kick.',
             view=VoteKickView(self.game, interaction.user),
             ephemeral=True
         )

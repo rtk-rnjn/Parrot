@@ -51,7 +51,18 @@ async def function(message):
         await message_send(f"<@{message.author.id}> Hi there")
     return
 ```
-
+```python
+COUNTING_CHANNEL = 999
+async def function(message):
+    if message.channel.id == COUNTING_CHANNEL:
+        data = await get_db()
+        if not data.get("count"):
+            data["count"] = 0
+        data["count"] += 1
+        await edit_db(update={"$set": data})
+        if message.content != str(data["count"]):
+            await message.delete(delay=0)
+```
 ---
 
 #### On Reaction
@@ -203,7 +214,7 @@ await get_channel(channel_id)
 To get the data of the guild.
 
 ```python
-await get_db(projection)
+await get_db(*, projection, **kwargs)
 ```
 
 #### `edit_db`

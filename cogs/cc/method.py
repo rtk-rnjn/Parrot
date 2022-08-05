@@ -116,7 +116,8 @@ class CustomMessage(CustomBase):
         self.edited_at = message.edited_at
         self.tts = message.tts
         self.type = message.type
-        self.reactions = [CustomReactionPassive(reaction) for reaction in message.reactions]
+        self.reactions: List[CustomReactionPassive] = [CustomReactionPassive(reaction) for reaction in message.reactions]
+        self.delete = message.delete
 
 
 class CustomReactionPassive:
@@ -444,13 +445,12 @@ class BaseCustomCommand:
 
     # DB
 
-    async def get_db(self, **kwargs: Any) -> Dict[str, Any]:
-        project = kwargs.pop("projection", {})
-        return await self.__bot.mongo.cc.storage.find_one({"_id": self.__guild.id, **kwargs}, project)
+    async def get_db(self, *, projection: dict = {}, **kwargs: Any) -> Dict[str, Any]:
+        # sourcery skip: default-mutable-arg
+        return await self.__bot.mongo.cc.storage.find_one({"_id": self.__guild.id, **kwargs}, projection)
 
-    async def edit_db(self, **kwargs: Any) -> None:
-        upsert = kwargs.pop("upsert", False)
-        await self.__bot.mongo.cc.storage.update_one({"_id": self.__guild.id}, kwargs, upsert=upsert)
+    async def edit_db(self, *, upsert: bool = False, update: dict) -> None:
+        await self.__bot.mongo.cc.storage.update_one({"_id": self.__guild.id}, update, upsert=upsert)
         return
 
     async def del_db(

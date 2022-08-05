@@ -72,15 +72,36 @@ env = {
     "__name__": "__custom_command__",
     "globals": None,
     "locals": None,
-    "__doc__": None,
-    "__package__": None,
-    "__loader__": None,
-    "__spec__": None,
-    "__annotations__": None,
-    "__all__": None,
-    "__file__": None,
-    "__cached__": None,
-    "__docformat__": None,
+    "int": int,
+    "str": str,
+    "float": float,
+    "bool": bool,
+    "list": list,
+    "dict": dict,
+    "tuple": tuple,
+    "set": set,
+    "range": range,
+    "len": len,
+    "abs": abs,
+    "min": min,
+    "max": max,
+    "sum": sum,
+    "round": round,
+    "ord": ord,
+    "chr": chr,
+    "hex": hex,
+    "oct": oct,
+    "bin": bin,
+    "divmod": divmod,
+    "pow": pow,
+    "zip": zip,
+    "filter": filter,
+    "map": map,
+    "sorted": sorted,
+    "reversed": reversed,
+    "enumerate": enumerate,
+    "any": any,
+    "all": all,
     "Re": re,
     "Random": random.randint,
     "Datetime": datetime.datetime,
@@ -265,6 +286,9 @@ class BaseCustomCommand:
         self.env["message_send"] = self.message_send
 
         [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
+
+    async def prefix(self,) -> str:
+        return self.__bot.get_guild_prefixes(self.__guild)
 
     async def wait_for_message(self, timeout: float, **kwargs: Any) -> Optional[CustomMessage]:
         def check_outer(**kwargs) -> Callable:

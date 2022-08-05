@@ -110,22 +110,27 @@ class CustomCommand(Cog):
         """
         The feture is in Beta (still in Testing). May get bugs/errors.
         """
-        if ctx.invoked_subcommand is None:
-            if data := await self.bot.mongo.cc.commands.find_one(
-                {"_id": ctx.guild.id, "commands.name": name},
-                {"_id": 0, "commands.$": 1},
-            ):
-                for command in data.get("commands", []):
-                    if command.get("name") == name:
-                        embed = discord.Embed(
-                            title="Custom Command",
-                            color=self.bot.color,
-                            description=f"```python\n{command['code']}\n```",
-                        )
-                        embed.set_footer(
-                            text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}"
-                        )
-                        return await ctx.send(embed=embed)
+        if ctx.invoked_subcommand is not None:
+            return
+
+        data = await self.bot.mongo.cc.commands.find_one(
+            {"_id": ctx.guild.id, "commands.name": name},
+            {"_id": 0, "commands.$": 1},
+        )
+        if data is None:
+            return await ctx.send(f"{ctx.author.mention} Command not found")
+
+        for command in data.get("commands", []):
+            if command.get("name") == name:
+                embed = discord.Embed(
+                    title="Custom Command",
+                    color=self.bot.color,
+                    description=f"```python\n{command['code']}\n```",
+                )
+                embed.set_footer(
+                    text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}"
+                )
+                return await ctx.send(embed=embed)
 
     @cc.command(name="review", aliases=["approve"], hidden=True)
     @commands.is_owner()
@@ -135,7 +140,7 @@ class CustomCommand(Cog):
         """To review the code"""
         guild = guild.id if isinstance(guild, discord.Guild) else guild
 
-        def check_reaction(reaction, user) -> bool:
+        def check_reaction(reaction: discord.Reaction, user: discord.User) -> bool:
             return user.id == ctx.author.id
 
         if data := await self.bot.mongo.cc.commands.find_one(

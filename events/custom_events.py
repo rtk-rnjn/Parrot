@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import discord
 from cogs.utils.method import end_giveaway
@@ -64,7 +64,7 @@ class EventCustom(Cog):
     async def normal_parser(
         self,
         *,
-        embed: Dict[str, Any] = {},
+        embed: Dict[str, Any] = None,
         content: str = None,
         dm_notify: bool = False,
         is_todo: bool = False,
@@ -73,6 +73,8 @@ class EventCustom(Cog):
         messageURL: str = None,
         **kw: Any,
     ):
+        if embed is None:
+            embed = {}
         embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
         if (dm_notify or is_todo) and content:
             user: discord.User = self.bot.get_user(messageAuthor)

@@ -26,6 +26,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
         collection = self.bot.mongo.parrot_db["ticket"]
         guild_id = payload.guild_id

@@ -16,6 +16,8 @@ from typing import (
 import discord
 from discord.ext import commands
 
+from core import Parrot
+
 from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
 
 if TYPE_CHECKING:
@@ -45,7 +47,7 @@ async def wait_for_delete(
     message: discord.Message,
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
-    bot: Optional[discord.Client] = None,
+    bot: Union[commands.Bot, Parrot] = None,
     user: Optional[Union[discord.User, tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
@@ -62,7 +64,7 @@ async def wait_for_delete(
             return _user in user if isinstance(user, tuple) else _user == user
         return False
 
-    bot: discord.Client = bot or ctx.bot
+    bot: Union[commands.Bot, Parrot] = bot or ctx.bot
     try:
         await bot.wait_for("reaction_add", timeout=timeout, check=check)
     except asyncio.TimeoutError:

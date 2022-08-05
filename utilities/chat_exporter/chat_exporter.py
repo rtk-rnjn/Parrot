@@ -4,6 +4,7 @@ import io
 from typing import List, Optional
 
 import discord
+from discord.ext import commands
 
 from .construct.transcript import Transcript
 
@@ -11,7 +12,7 @@ from .construct.transcript import Transcript
 async def quick_export(
     channel: discord.TextChannel,
     guild: Optional[discord.Guild] = None,
-    bot: Optional[discord.Client] = None,
+    bot: Optional[commands.Bot] = None,
 ):
     if guild:
         channel.guild = guild
@@ -43,7 +44,7 @@ async def export(
     limit: Optional[int] = None,
     tz_info="UTC",
     guild: Optional[discord.Guild] = None,
-    bot: Optional[discord.Client] = None,
+    bot: Optional[commands.Bot] = None,
     military_time: Optional[bool] = False,
 ):
     if guild:
@@ -66,7 +67,7 @@ async def raw_export(
     messages: List[discord.Message],
     tz_info="UTC",
     guild: Optional[discord.Guild] = None,
-    bot: Optional[discord.Client] = None,
+    bot: Optional[commands.Bot] = None,
     military_time: Optional[bool] = False,
 ):
     if guild:

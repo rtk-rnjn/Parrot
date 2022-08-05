@@ -430,12 +430,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_reaction_clear_emoji(self, payload: discord.RawReactionClearEmojiEvent):
         pass
 
-        # if not payload.guild_id:
-        #     return
-
-        # if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-        #     await self._remove_reactor(payload)
-
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnReaction(bot))

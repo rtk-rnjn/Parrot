@@ -449,7 +449,7 @@ class BaseCustomCommand:
         # sourcery skip: default-mutable-arg
         return await self.__bot.mongo.cc.storage.find_one({"_id": self.__guild.id, **kwargs}, projection)
 
-    async def edit_db(self, *, upsert: bool = False, update: dict) -> None:
+    async def edit_db(self, *, upsert: bool = True, update: dict) -> None:
         await self.__bot.mongo.cc.storage.update_one({"_id": self.__guild.id}, update, upsert=upsert)
         return
 

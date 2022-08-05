@@ -1,24 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import io
 from typing import Optional
 
 import discord
 from core import Context, Parrot
+from utilities.chat_exporter import quick_export
 
 
 async def chat_exporter(channel: discord.TextChannel, limit: Optional[int] = 100) -> None:
-
-    st = ""
-    async for msg in channel.history(limit=limit, oldest_first=True):
-        st = (
-            st
-            + f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
-        )
-
-    return await channel.send(file=discord.File(io.BytesIO(st.encode()), "FILE.txt"))
-
+    await quick_export(channel)
 
 async def log(
     guild: discord.Guild, channel: discord.TextChannel, description: str, status: str

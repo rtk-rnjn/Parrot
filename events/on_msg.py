@@ -38,6 +38,7 @@ from pymongo import ReturnDocument, UpdateOne
 from pymongo.typings import _DocumentType
 from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, INVITE_RE, LINKS_NO_PROTOCOLS
+from utilities.chat_exporter.construct.transcript import Transcript
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -747,11 +748,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             with suppress(discord.HTTPException):
                 msgs = payload.cached_messages
 
-                for msg in msgs:
-                    if not msg.author.bot:
-                        main += f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
+                # for msg in msgs:
+                #     if not msg.author.bot:
+                #         main += f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
+                transcript = await Transcript(messages=msgs).export()
+                transcript = transcript.html
 
-                fp = io.BytesIO(main.encode()) if msgs else None
+                fp = discord.File(
+                    io.BytesIO(transcript.encode()),
+                    filename=f"transcript-{webhook.channel.name}.html",
+                )
                 main_content = f"""**Bulk Message Delete**
 
 `Total Messages:` **{len(msg_ids)}**
@@ -950,6 +956,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             await member.add_roles(role, reason=reason)
 
     async def _on_message_passive(self, message: discord.Message):
+        # sourcery skip: low-code-quality
         if message.guild is None:
             return
         if message.author.bot:

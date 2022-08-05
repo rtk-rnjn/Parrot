@@ -431,7 +431,7 @@ class Meta(Cog):
                 description=r"This bot is being hosted and created by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool",
                 timestamp=discord.utils.utcnow(),
                 color=ctx.author.color,
-                url="https://discord.com/users/741614468546560092",
+                url=f"https://discord.com/users/{self.bot.author_obj.id}",
             )
         )
 
@@ -614,7 +614,7 @@ class Meta(Cog):
             url=SUPPORT_SERVER,
         )
         support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
-        owner = await self.bot.get_or_fetch_member(support_guild, 741614468546560092)
+        owner = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)
         embed.set_author(name=str(owner), icon_url=owner.display_avatar.url)
 
         # statistics

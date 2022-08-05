@@ -983,31 +983,31 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
 
         # code from someone mentions the AFK user
-        if message.mentions:
-            for user in message.mentions:
-                if hasattr(user, "guild") and (
-                    data := await self.bot.mongo.parrot_db.afk.find_one(
-                        {
-                            "$or": [
-                                {"messageAuthor": user.id, "guild": user.guild.id},  # type: ignore
-                                {"messageAuthor": user.id, "global": True},
-                            ]
-                        }
-                    )
-                ):
-                    if message.channel.id in data["ignoredChannel"]:
-                        return
-                    post = {
-                        "messageAuthor": message.author.id,
-                        "channel": message.channel.id,
-                        "messageURL": message.jump_url,
+
+        for user in message.mentions:
+            if hasattr(user, "guild") and (
+                data := await self.bot.mongo.parrot_db.afk.find_one(
+                    {
+                        "$or": [
+                            {"messageAuthor": user.id, "guild": user.guild.id},  # type: ignore
+                            {"messageAuthor": user.id, "global": True},
+                        ]
                     }
-                    await self.bot.mongo.parrot_db.afk.update_one(
-                        {"_id": data["_id"]}, {"$addToSet": {"pings": post}}
-                    )
-                    await message.channel.send(
-                        f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
-                    )
+                )
+            ):
+                if message.channel.id in data["ignoredChannel"]:
+                    return
+                post = {
+                    "messageAuthor": message.author.id,
+                    "channel": message.channel.id,
+                    "messageURL": message.jump_url,
+                }
+                await self.bot.mongo.parrot_db.afk.update_one(
+                    {"_id": data["_id"]}, {"$addToSet": {"pings": post}}
+                )
+                await message.channel.send(
+                    f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
+                )
 
     async def _what_is_this(
         self, message: Union[discord.Message, str], *, channel: discord.TextChannel

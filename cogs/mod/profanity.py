@@ -105,9 +105,8 @@ class Profanity(Cog):
                     ctx=ctx,
                 )
 
-                await self.bot.get_cog("Moderator").warn_task(
-                    target=message.author, ctx=ctx
-                )
+                if mod_cog := self.bot.get_cog("Moderator"):
+                    await mod_cog.warn_task(target=message.author, ctx=ctx)
 
             if any(self.isin(word, message.content.lower()) for word in bad_words):
                 await message.channel.send(

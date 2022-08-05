@@ -433,10 +433,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
             def __suppress_attr_error(func: Callable, *args: Any, **kwargs: Any) -> bool:
                 """Suppress attribute error for the function."""
-                with suppress(AttributeError):
+                try:
                     func(*args, **kwargs)
                     return True
-                return False
+                except AttributeError:
+                    return False
 
             def __internal_check(
                 *args,

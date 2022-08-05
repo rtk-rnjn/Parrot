@@ -25,6 +25,7 @@ class LinkProt(Cog):
         return bool(url1 or url2)
 
     async def _message_passive(self, message: discord.Message):
+        # sourcery skip: low-code-quality
         if message.author.bot or (not message.guild):
             return
 
@@ -94,10 +95,10 @@ class LinkProt(Cog):
                     ctx=ctx,
                 )
 
-                await self.bot.get_cog("Moderator").warn_task(
-                    target=message.author, ctx=ctx
-                )
-            if has_links := self.has_links(message.content):
+                if mod_cog := self.bot.get_cog("Moderator"):
+                    await mod_cog.warn_task(target=message.author, ctx=ctx)
+
+            if self.has_links(message.content):
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
                     delete_after=10,

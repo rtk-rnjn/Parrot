@@ -4,7 +4,7 @@ import asyncio
 import importlib
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import discord
 from cogs.cc import method
@@ -523,10 +523,12 @@ class CustomCommand(Cog):
         ignored_channel: Optional[int] = None,
         **kwargs: Any,
     ) -> bool:
-        if message.author._roles.has(required_role or 0):
+        has: Callable = message.author._roles.has
+
+        if has(required_role or 0):
             return True
 
-        if message.author._roles.has(ignored_role or 0):
+        if has(ignored_role or 0):
             return False
 
-        return message.channel.id != ((ignored_channel or 0))
+        return message.channel.id != (ignored_channel or 0)

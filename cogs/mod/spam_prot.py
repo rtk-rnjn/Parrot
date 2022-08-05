@@ -91,9 +91,8 @@ class SpamProt(Cog):
                         at=message.created_at,
                         ctx=ctx,
                     )
-                    await self.bot.get_cog("Moderator").warn_task(
-                        target=message.author, ctx=ctx
-                    )
+                    if mod_cog := self.bot.get_cog("Moderator"):
+                        await mod_cog.warn_task(target=message.author, ctx=ctx)
 
                 await message.channel.send(
                     f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",

@@ -1,0 +1,3 @@
+[submodule "akinator"]
+    path = ./akinator
+    url = git://github.com/rtk-rnjn/akinator.py.git

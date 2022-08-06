@@ -1,7 +1,6 @@
 aiodns
 aiofile
 aiohttp
-akinator.py
 arrow
 async_timeout
 beautifulsoup4

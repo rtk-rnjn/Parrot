@@ -1,9 +1,12 @@
 import re
-from typing import Optional
+from typing import Optional, Union
 
 import discord
+from discord.ext import commands
 
-bot: Optional[discord.Client] = None
+from core import Parrot
+
+bot: Union[commands.Bot, discord.Client, Parrot] = None
 
 
 def pass_bot(_bot):

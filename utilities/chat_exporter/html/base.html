@@ -103,20 +103,20 @@ If you have any issues or suggestions - open an issue on the Github Repository o
             filter: blur(44px);
         }
 
-            .spoiler--hidden .spoiler-image:after {
-                content: "SPOILER";
-                color: #dcddde;
-                background-color: rgba(0, 0, 0, 0.6);
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                font-weight: 600;
-                padding: 100%;
-                border-radius: 20px;
-                letter-spacing: 0.05em;
-                font-size: 0.9em;
-            }
+        .spoiler--hidden .spoiler-image:after {
+            content: "SPOILER";
+            color: #dcddde;
+            background-color: rgba(0, 0, 0, 0.6);
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 600;
+            padding: 100%;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            font-size: 0.9em;
+        }
 
         .spoiler--hidden:hover .spoiler-image:after {
             color: #fff;
@@ -244,7 +244,7 @@ If you have any issues or suggestions - open an issue on the Github Repository o
             flex-grow: 500;
         }
 
-        .chatlog__reference-content > * {
+        .chatlog__reference-content>* {
             display: inline;
         }
 
@@ -735,7 +735,7 @@ If you have any issues or suggestions - open an issue on the Github Repository o
 
         .info__channel-timezone {
             margin-top: 2px;
-            font-size:0.9em;
+            font-size: 0.9em;
         }
 
         .info__channel-date-range {
@@ -743,53 +743,53 @@ If you have any issues or suggestions - open an issue on the Github Repository o
         }
 
         .dropdownButton {
-          width: 100%;
-          color: #6E767D;
-          padding: 11.5px;
-          font-size: 15px;
-          cursor: pointer;
-          text-align: left;
-          border-radius: 5px;
-          background-color: #2F3136;
-          border: 1px solid #202225;
+            width: 100%;
+            color: #6E767D;
+            padding: 11.5px;
+            font-size: 15px;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 5px;
+            background-color: #2F3136;
+            border: 1px solid #202225;
         }
 
         .chatlog__component-disabled {
-          cursor: not-allowed;
-          opacity: 0.6;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
         .chatlog__component-disabled a {
-          cursor: not-allowed;
+            cursor: not-allowed;
         }
 
         .chatlog__component-disabled button {
-          cursor: not-allowed;
+            cursor: not-allowed;
         }
 
         .chatlog__component-dropdown {
-          width: 400px;
-          margin-top: 5px;
-          position: relative;
-          display: inline-block;
+            width: 400px;
+            margin-top: 5px;
+            position: relative;
+            display: inline-block;
         }
 
         .chatlog__dropdown-content {
-          position: relative;
+            position: relative;
         }
 
         .chatlog__dropdown-emoji {
-          left: 10px;
-          position: absolute;
+            left: 10px;
+            position: absolute;
         }
 
         .chatlog__dropdown-emoji img {
-          width: 1.4em;
-          height: 1.4em;
+            width: 1.4em;
+            height: 1.4em;
         }
 
         .chatlog__dropdown-text {
-          padding-left: 25px
+            padding-left: 25px
         }
 
         .chatlog__role-icon {
@@ -800,55 +800,68 @@ If you have any issues or suggestions - open an issue on the Github Repository o
         }
 
         .dropdownContent {
-          z-index: 1;
-          display: none;
-          width: 99.5%;
-          font-size: 14px;
-          position: absolute;
-          margin-top: -0.7px;
-          background-color: #2F3136;
-          border: 1px solid #202225;
-          box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            display: none;
+            width: 99.5%;
+            font-size: 14px;
+            position: absolute;
+            margin-top: -0.7px;
+            background-color: #2F3136;
+            border: 1px solid #202225;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
         }
 
         .dropdownContentEmoji {
-          width: 25px;
-          position: absolute;
+            width: 25px;
+            position: absolute;
         }
 
         .dropdownContentTitle {
-          color: white;
-          font-weight: 600;
+            color: white;
+            font-weight: 600;
         }
 
         .dropdownContent a {
-          display: block;
-          padding: 12px 16px;
-          text-decoration: none;
+            display: block;
+            padding: 12px 16px;
+            text-decoration: none;
         }
 
         .chatlog__dropdown-icon {
-          right: 0px;
-          width: 25px;
-          margin-top: -12px;
-          position: absolute;
-          padding-right: 4px;
+            right: 0px;
+            width: 25px;
+            margin-top: -12px;
+            position: absolute;
+            padding-right: 4px;
         }
 
         .chatlog__component-dropdown-border {
-          border-bottom-left-radius: 0px;
-          border-bottom-right-radius: 0px;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
         }
 
-        .dropdownContentDesc { color: #999B9E; }
-        .dropdownButton:hover { border: 1px solid #040405; }
-        .chatlog__component-dropdown-show { display: block; }
-        .chatlog__component-dropdown a:hover { background-color: #292B2F; }
+        .dropdownContentDesc {
+            color: #999B9E;
+        }
 
-        .cursor_pointer { cursor: pointer; }
+        .dropdownButton:hover {
+            border: 1px solid #040405;
+        }
 
+        .chatlog__component-dropdown-show {
+            display: block;
+        }
+
+        .chatlog__component-dropdown a:hover {
+            background-color: #292B2F;
+        }
+
+        .cursor_pointer {
+            cursor: pointer;
+        }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
     <script>
         // <!--  Scroll to Message (References)  -->
@@ -865,7 +878,7 @@ If you have any issues or suggestions - open an issue on the Github Repository o
                     behavior: 'smooth'
                 });
 
-                window.setTimeout(function() {
+                window.setTimeout(function () {
                     element.classList.remove('chatlog__message--highlighted');
                 }, 2000);
             }
@@ -884,7 +897,7 @@ If you have any issues or suggestions - open an issue on the Github Repository o
                     behavior: 'smooth'
                 });
 
-                window.setTimeout(function() {
+                window.setTimeout(function () {
                     element.classList.remove('chatlog__message--highlighted');
                 }, 2000);
             }
@@ -900,10 +913,10 @@ If you have any issues or suggestions - open an issue on the Github Repository o
 
         // <!--  Menu Dropdown (Selectmenu)  -->
         function showDropdown(dropdownID) {
-         //   <!--    If you are reading this and can improve the JS logic, let me know!-->
-          document.getElementById("dropdownButton" + dropdownID).classList.toggle("chatlog__component-dropdown-border");
-          document.getElementById("dropdownMenuContent" + dropdownID).classList.toggle("chatlog__component-dropdown-show");
-          document.getElementById("dropdownMenu" + dropdownID).classList.toggle("chatlog__component-dropdown-show");
+            //   <!--    If you are reading this and can improve the JS logic, let me know!-->
+            document.getElementById("dropdownButton" + dropdownID).classList.toggle("chatlog__component-dropdown-border");
+            document.getElementById("dropdownMenuContent" + dropdownID).classList.toggle("chatlog__component-dropdown-show");
+            document.getElementById("dropdownMenu" + dropdownID).classList.toggle("chatlog__component-dropdown-show");
         }
 
         // <!--  Code Block Markdown (```lang```) -->
@@ -914,26 +927,28 @@ If you have any issues or suggestions - open an issue on the Github Repository o
         });
     </script>
 </head>
+
 <body>
 
-<div class="info">
-    <div class="info__guild-icon-container">
-        <img class="info__guild-icon" src="{{SERVER_AVATAR_URL}}" />
+    <div class="info">
+        <div class="info__guild-icon-container">
+            <img class="info__guild-icon" src="{{SERVER_AVATAR_URL}}" />
+        </div>
+        <div class="info__metadata">
+            <div class="info__guild-name">{{SERVER_NAME}}</div>
+            <div class="info__channel-name">{{CHANNEL_NAME}}</div>
+
+
+            <div class="info__channel-message-count">{{MESSAGE_COUNT}} messages</div>
+            <div class="info__channel-timezone">Timezone: {{TIMEZONE}}</div>
+
+        </div>
     </div>
-    <div class="info__metadata">
-        <div class="info__guild-name">{{SERVER_NAME}}</div>
-        <div class="info__channel-name">{{CHANNEL_NAME}}</div>
 
-
-        <div class="info__channel-message-count">{{MESSAGE_COUNT}} messages</div>
-        <div class="info__channel-timezone">Timezone: {{TIMEZONE}}</div>
-
+    <div class="chatlog">
+        {{MESSAGES}}
     </div>
-</div>
-
-<div class="chatlog">
-{{MESSAGES}}
-</div>
 
 </body>
+
 </html>

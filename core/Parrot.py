@@ -140,7 +140,7 @@ class Parrot(commands.AutoShardedBot):
 
     commands: Set[commands.Command]
     cached_messages: Sequence[discord.Message]
-    guilds: List[discord.Guild]
+    guilds: Sequence[discord.Guild]
 
     tree_cls: Type[app_commands.CommandTree]
     tree: app_commands.CommandTree

@@ -46,22 +46,21 @@ To create custom command you need to have a permission level of `MANAGE_GUILD`.
 #### On Message
 
 ```python
-async def function(message):
-    if message.author.id == 123 and message.channel.id == 456:
-        await message_send(f"<@{message.author.id}> Hi there")
-    return
+if message.author.id == 123 and message.channel.id == 456:
+    await message_send(f"<@{message.author.id}> Hi there")
+return
 ```
 ```python
 COUNTING_CHANNEL = 999
-async def function(message):
-    if message.channel.id == COUNTING_CHANNEL:
-        data = await get_db()
-        if not data.get("count"):
-            data["count"] = 0
-        data["count"] += 1
+if message.channel.id == COUNTING_CHANNEL:
+    data = await get_db()
+    if not data.get("count"):
+        data["count"] = 0
+    data["count"] += 1
+    if message.content != str(data["count"]):
+        await message.delete(delay=0)
+    else:
         await edit_db(update={"$set": data})
-        if message.content != str(data["count"]):
-            await message.delete(delay=0)
 ```
 ---
 
@@ -69,18 +68,16 @@ async def function(message):
 
 ```python
 MOD_ROLES = 123456789
-async def function(reaction, member):
-    if reaction_type != 'add':
-        return
-    if MOD_ROLES in member.author.roles and reaction.emoji == "\N{HAMMER}":
-        await ban_member(reaction.message.author.id, "for no reason")
+if reaction_type != 'add':
     return
+if MOD_ROLES in member.author.roles and reaction.emoji == "\N{HAMMER}":
+    await ban_member(reaction.message.author.id, "for no reason")
+return
 ```
 ```python
-async def function(reaction, member):
-    if reaction.emoji == "\N{REGIONAL INDICATOR SYMBOL LETTER F}":
-        await message_send(f"<@{member.id}> paid respect! `F`")
-    return
+if reaction.emoji == "\N{REGIONAL INDICATOR SYMBOL LETTER F}":
+    await message_send(f"<@{member.id}> paid respect! `F`")
+return
 ```
 
 ---

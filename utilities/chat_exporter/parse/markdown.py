@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+
 from ..ext.emoji_convert import convert_emoji
 
 

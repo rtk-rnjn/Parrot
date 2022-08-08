@@ -668,6 +668,7 @@ class ConfirmationView(discord.ui.View):
         if self.reacquire:
             await asyncio.sleep(0)
         if self.delete_after and self.message:
+            self.stop()
             await self.message.delete(delay=0)
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)

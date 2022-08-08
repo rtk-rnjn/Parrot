@@ -8,8 +8,6 @@ Parrot give custom command privileges to members. Instead you think any of the c
 
 To create custom command you need to have a permission level of `MANAGE_GUILD`.
 
----
-
 ## Few things to note
 
 - You are given `message` as instance of CustomMessage, in on_message case, or `reaction` in on_reaction_x case and `member` in on_member_x case.
@@ -19,8 +17,6 @@ To create custom command you need to have a permission level of `MANAGE_GUILD`.
 - The total time taken to execute a custom command must not exceed 10 seconds.
 - In case of any error, the bot will send a message to the channel where the command was executed.
 - The bot will not execute any custom command if the user tries to execute it in a private message.
-
----
 
 ## Variables
 
@@ -37,11 +33,7 @@ To create custom command you need to have a permission level of `MANAGE_GUILD`.
     - `Permissions`: `discord.Permissions` class
     - `PermissionOverwrite`: `discord.PermissionOverwrite` class
 
----
-
 ## Examples
-
----
 
 #### On Message
 
@@ -80,11 +72,7 @@ if reaction.emoji == "\N{REGIONAL INDICATOR SYMBOL LETTER F}":
 return
 ```
 
----
-
 ## Functions
-
----
 
 #### `message_send`
 

@@ -1,13 +1,3 @@
-owner_ids:
-  - 741614468546560092
-  - 813647101392846848
-prefix: $ 
-case_insensitive: true
-strip_after_prefix: true
-super_user: 741614468546560092
-webhook_join_leave_channel_id: 883368274501460039
-author_name: '!! Ritik Ranjan [*.*]'
-discriminator: 9230
 all_extensions:
   - events.on_cmd
   - events.on_msg
@@ -54,10 +44,6 @@ unload_extention:
   - cogs.music
   - cogs.ipc
   - cogs.sports
-invite: >-
-  https://discord.com/oauth2/authorize?client_id=800780974274248764&scope=bot+applications.commands&permissions=1099780451414
+
 dev_logo: >-
-  https://res.cloudinary.com/teepublic/image/private/s--YEWJeY8b--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1506698819/production/designs/1938379_1.jpg
-github: https://github.com/rtk-rnjn/Parrot
-support_server: https://discord.gg/NEyJxM7G7f
-privacy_policy: https://github.com/rtk-rnjn/Parrot/blob/main/privacy%20policy.md
+  https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

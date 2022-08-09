@@ -40,7 +40,7 @@ all_extensions:
   - cogs.wolfram
   - cogs.sector_17
   - cogs.music
-unload_extention:
+unload_extentions:
   - cogs.music
   - cogs.ipc
   - cogs.sports

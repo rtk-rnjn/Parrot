@@ -35,15 +35,15 @@ from discord import Webhook
 from discord.ext import commands, tasks
 from discord.utils import MISSING  # type: ignore
 from pymongo import ReturnDocument, UpdateOne
-from pymongo.typings import _DocumentType
+from utilities.chat_exporter.construct.transcript import Transcript
 from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, INVITE_RE, LINKS_NO_PROTOCOLS
-from utilities.chat_exporter.construct.transcript import Transcript
 
 if TYPE_CHECKING:
     from core import Parrot
     from discord.ext.commands.cooldowns import CooldownMapping
     from pymongo.collection import Collection
+    from pymongo.typings import _DocumentType
     from typing_extensions import TypeAlias
 
     DocumentType: TypeAlias = _DocumentType
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 from core import Cog
 
 with open("extra/profanity.json") as f:
-    bad_dict = json.load(f)
+    bad_dict: dict = json.load(f)
 
 TRIGGER: Tuple = (
     "ok google,",
@@ -470,6 +470,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
+        # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
         if message.guild is None:
             return
@@ -676,6 +677,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     @Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
+        # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
         await self._delete_record_message_to_database(
             payload.message_id, channel=payload.channel_id
@@ -1033,6 +1035,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     @Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
+        # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
         if data := await self.log_collection.find_one(
             {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}

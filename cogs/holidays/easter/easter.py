@@ -15,16 +15,16 @@ from PIL import Image
 from utilities.constants import Colours
 from utilities.deco import seasonal_task
 
-ALL_VIDS = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))
-BUNNY_NAMES = loads(Path(r"extra/easter/bunny_names.json").read_text("utf8"))
-RIDDLE_QUESTIONS = loads(Path(r"extra/easter/easter_riddle.json").read_text("utf8"))
+ALL_VIDS: dict = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))
+BUNNY_NAMES: dict = loads(Path(r"extra/easter/bunny_names.json").read_text("utf8"))
+RIDDLE_QUESTIONS: dict = loads(Path(r"extra/easter/easter_riddle.json").read_text("utf8"))
 
 TIMELIMIT = 10
-HTML_COLOURS = loads(Path(r"extra/html_colours.json").read_text("utf8"))
-EGG_FACTS = loads(Path(r"extra/easter/easter_egg_facts.json").read_text("utf8"))
-XKCD_COLOURS = loads(Path(r"extra/xkcd_colours.json").read_text("utf8"))
-EGGHEAD_QUESTIONS = loads(Path(r"extra/easter/egghead_questions.json").read_text("utf8"))
-traditions = loads(Path(r"extra/easter/traditions.json").read_text("utf8"))
+HTML_COLOURS: dict = loads(Path(r"extra/html_colours.json").read_text("utf8"))
+EGG_FACTS: dict = loads(Path(r"extra/easter/easter_egg_facts.json").read_text("utf8"))
+XKCD_COLOURS: dict = loads(Path(r"extra/xkcd_colours.json").read_text("utf8"))
+EGGHEAD_QUESTIONS: dict = loads(Path(r"extra/easter/egghead_questions.json").read_text("utf8"))
+traditions: dict = loads(Path(r"extra/easter/traditions.json").read_text("utf8"))
 
 COLOURS = [
     (255, 0, 0, 255),
@@ -242,9 +242,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             self.winners.add(message.author.mention)
 
     @commands.command(aliases=("decorateegg",))
-    async def eggdecorate(
-        self, ctx: Context, *colours: Union[discord.Colour, str]
-    ) -> Optional[Image.Image]:
+    async def eggdecorate(self, ctx: Context, *colours: Union[discord.Colour, str]) -> Optional[Image.Image]:
         """
         Picks a random egg design and decorates it using the given colours.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
@@ -357,9 +355,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         del self.quiz_messages[msg.id]
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(
-            msg.channel, msg.id, force_fetch=True
-        )
+        msg: discord.Message = await self.bot.get_or_fetch_message(msg.channel, msg.id, force_fetch=True)
 
         total_no = sum(r.count for r in msg.reactions) - len(valid_emojis)  # - bot's reactions
 
@@ -393,11 +389,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
                     mentions += f" {u.mention}"
                     break
 
-        content = (
-            f"Well done {mentions} for getting it correct!"
-            if mentions
-            else "Nobody got it right..."
-        )
+        content = f"Well done {mentions} for getting it correct!" if mentions else "Nobody got it right..."
 
         a_embed = discord.Embed(
             title=f"The correct answer was {correct}!",
@@ -408,9 +400,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(content, embed=a_embed)
 
     @staticmethod
-    async def already_reacted(
-        message: discord.Message, user: Union[discord.Member, discord.User]
-    ) -> bool:
+    async def already_reacted(message: discord.Message, user: Union[discord.Member, discord.User]) -> bool:
         """Returns whether a given user has reacted more than once to a given message."""
         users = []
 

@@ -5,11 +5,12 @@ from time import time
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import discord
-from core import Cog, Parrot
-from pymongo.collection import Collection
-from pymongo.typings import _DocumentType
+from core import Cog
 
 if TYPE_CHECKING:
+    from core import Parrot
+    from pymongo.collection import Collection
+    from pymongo.typings import _DocumentType
     from typing_extensions import TypeAlias
 
     DocumentType: TypeAlias = _DocumentType

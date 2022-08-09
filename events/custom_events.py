@@ -71,7 +71,7 @@ class EventCustom(Cog):
         messageChannel: int = None,
         messageAuthor: int = None,
         messageURL: str = None,
-        **kw: Any,
+        **kwargs: Any,
     ):
         if embed is None:
             embed = {}

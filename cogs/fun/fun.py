@@ -422,7 +422,7 @@ class Fun(Cog):
             {}
         )  # A variable to store the person's ID who started the quiz game in a channel.
         with open(Path(r"extra/ryanzec_colours.json")) as f:
-            self.colour_mapping = json.load(f)
+            self.colour_mapping: dict = json.load(f)
             del self.colour_mapping["_"]  # Delete source credit entry
         self.questions = self.load_questions()
         self.question_limit = 0

@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from contextlib import suppress
+from typing import TYPE_CHECKING
 
 import discord
 from cogs.meta.robopage import SimplePages
-from core import Cog, Context, Parrot
+from core import Cog
 from discord.ext import commands, tasks
-from pymongo.collection import Collection
+
+if TYPE_CHECKING:
+    from core import Context, Parrot
+    from pymongo.collection import Collection
 
 
 class User(Cog, command_attrs=dict(hidden=True)):

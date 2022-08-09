@@ -178,8 +178,8 @@ class Sector1729(Cog):
 
     @tasks.loop(minutes=5)
     async def vote_reseter(self):
-        col: Collection = self.bot.mongo.extra.user_misc
         async with self.lock:
+            col: Collection = self.bot.mongo.extra.user_misc
             now_plus_12_hours = time() + 43200
 
             async for doc in col.find({"topgg_vote_expires": {"$lte": now_plus_12_hours}}):

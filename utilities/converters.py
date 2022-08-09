@@ -3,12 +3,13 @@ from __future__ import annotations
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Coroutine, Optional, Union
 
 import discord
 from core import Context
 from discord.ext import commands
 
+NUMBER = Union[int, float]
 
 def convert_bool(text: Union[str, bool]) -> bool:
     """True/False converter"""
@@ -24,9 +25,7 @@ class ActionReason(commands.Converter):
 
         if len(ret) > 512:
             reason_max = 512 - len(ret) + len(argument)
-            raise commands.BadArgument(
-                f"Reason is too long ({len(argument)}/{reason_max})"
-            )
+            raise commands.BadArgument(f"Reason is too long ({len(argument)}/{reason_max})")
         return ret
 
 
@@ -35,19 +34,13 @@ class ToAsync:
 
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
 
-        self.executor = executor
+        self.executor = executor or ThreadPoolExecutor()
 
-    def __call__(self, blocking) -> Callable:
+    def __call__(self, blocking) -> Callable[..., Coroutine]:
         @wraps(blocking)
         async def wrapper(*args, **kwargs) -> Any:
 
-            loop = asyncio.get_event_loop()
-            if not self.executor:
-                self.executor = ThreadPoolExecutor()
-
-            func = partial(blocking, *args, **kwargs)
-
-            return await loop.run_in_executor(self.executor, func)
+            return await asyncio.get_event_loop().run_in_executor(self.executor, partial(blocking, *args, **kwargs))
 
         return wrapper
 
@@ -55,16 +48,14 @@ class ToAsync:
 class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild"""
 
-    async def convert(self, ctx: Context, argument: Any) -> Optional[discord.User]:
+    async def convert(self, ctx: Context, argument: Union[str, NUMBER, Any]) -> Optional[discord.User]:
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
                 ban_entry = await ctx.guild.fetch_ban(discord.Object(id=member_id))
                 return ban_entry.user
             except discord.NotFound:
-                raise commands.BadArgument(
-                    "User Not Found! Probably this member has not been banned before."
-                ) from None
+                raise commands.BadArgument("User Not Found! Probably this member has not been banned before.") from None
 
         async for entry in ctx.guild.bans():
             if argument in (entry.user.name, str(entry.user)):
@@ -72,9 +63,7 @@ class BannedMember(commands.Converter):
             if str(entry.user) == argument:
                 return entry.user
 
-        raise commands.BadArgument(
-            "User Not Found! Probably this member has not been banned before."
-        ) from None
+        raise commands.BadArgument("User Not Found! Probably this member has not been banned before.") from None
 
 
 class WrappedMessageConverter(commands.MessageConverter):
@@ -91,14 +80,8 @@ class WrappedMessageConverter(commands.MessageConverter):
         return await super().convert(ctx, argument)
 
 
-def can_execute_action(
-    ctx: Context, user: discord.Member, target: discord.Member
-) -> bool:
-    return (
-        user.id in ctx.bot.owner_ids
-        or user == ctx.guild.owner
-        or user.top_role > target.top_role
-    )
+def can_execute_action(ctx: Context, user: discord.Member, target: discord.Member) -> bool:
+    return user.id in ctx.bot.owner_ids or user == ctx.guild.owner or user.top_role > target.top_role
 
 
 class MemberID(commands.Converter):
@@ -112,9 +95,7 @@ class MemberID(commands.Converter):
             try:
                 member_id = int(argument, base=10)
             except ValueError:
-                raise commands.BadArgument(
-                    f"{argument} is not a valid member or member ID."
-                ) from None
+                raise commands.BadArgument(f"{argument} is not a valid member or member ID.") from None
             else:
                 m = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:

@@ -64,6 +64,7 @@ from utilities.config import (
     STRIP_AFTER_PREFIX,
     SUPPORT_SERVER,
     TOKEN,
+    LRU_CACHE,
 )
 from utilities.converters import ToAsync
 from utilities.paste import Client
@@ -198,7 +199,7 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin = Client()
 
         # caching variables
-        self.server_config: Dict[int, Dict[str, Any]] = LRU(256)  # type: ignore
+        self.server_config: Dict[int, Dict[str, Any]] = LRU(LRU_CACHE)  # type: ignore
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[str, bool, int]]] = {}
         self.afk: Set[int] = set()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import yaml
 
@@ -18,6 +18,7 @@ with open("config.yml") as f:
 
 VERSION = "v4.9.5-beta"
 
+HEROKU: bool = True
 
 def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, float, bool, List[Any]]:
     """
@@ -55,3 +56,5 @@ WEBHOOK_JOIN_LEAVE_CHANNEL_ID: int = parse_env_var("WEBHOOK_JOIN_LEAVE_ID")
 SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
+
+LRU_CACHE = 8 if HEROKU else 256

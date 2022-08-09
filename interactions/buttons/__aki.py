@@ -7,8 +7,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
 
 import discord
-from akinator import CantGoBackAnyFurther
-from akinator.async_aki import Akinator as AkinatorGame
+from .akinator import CantGoBackAnyFurther
+from .akinator.async_aki import Akinator as AkinatorGame
 from discord.ext import commands
 
 BACK = "\N{BLACK LEFT-POINTING TRIANGLE}"

@@ -8,7 +8,7 @@ super_user: 741614468546560092
 webhook_join_leave_channel_id: 883368274501460039
 author_name: '!! Ritik Ranjan [*.*]'
 discriminator: 9230
-extensions:
+all_extensions:
   - events.on_cmd
   - events.on_msg
   - events.on_rexn
@@ -50,6 +50,10 @@ extensions:
   - cogs.wolfram
   - cogs.sector_17
   - cogs.music
+unload_extention:
+  - cogs.music
+  - cogs.ipc
+  - cogs.sports
 invite: >-
   https://discord.com/oauth2/authorize?client_id=800780974274248764&scope=bot+applications.commands&permissions=1099780451414
 dev_logo: >-

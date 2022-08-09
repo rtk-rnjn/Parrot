@@ -65,6 +65,8 @@ from utilities.config import (
     SUPPORT_SERVER,
     TOKEN,
     LRU_CACHE,
+    UNLOAD_EXTENSIONS,
+    TO_LOAD_IPC,
 )
 from utilities.converters import ToAsync
 from utilities.paste import Client
@@ -267,7 +269,8 @@ class Parrot(commands.AutoShardedBot):
         return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}"  # cant join str and int, ofc
 
     async def setup_hook(self):
-        await self.ipc.start()
+        if TO_LOAD_IPC:
+            self.ipc.start()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
@@ -276,6 +279,11 @@ class Parrot(commands.AutoShardedBot):
             except commands.ExtensionFailed as e:
                 self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
+            else:
+                if ext in UNLOAD_EXTENSIONS:
+                    await self.unload_extension(ext)
+                    print(f"[{self.user.name.title()}] {ext} unloaded successfully")
+
         if self.HAS_TOP_GG:
             self.topgg = topgg.DBLClient(
                 self,
@@ -448,15 +456,16 @@ class Parrot(commands.AutoShardedBot):
 
         await self.update_opt_in_out.start()
 
-        # connect to Lavalink server
-        success = await self.ipc_client.request("start_wavelink_nodes", host="127.0.0.1", port=1018, password="password")
-        if success["status"] == "ok":
-            print(f"[{self.user.name}] Wavelink node connected successfully")
+        if TO_LOAD_IPC:
+            # connect to Lavalink server
+            success = await self.ipc_client.request("start_wavelink_nodes", host="127.0.0.1", port=1018, password="password")
+            if success["status"] == "ok":
+                print(f"[{self.user.name}] Wavelink node connected successfully")
 
-        # start webserver to receive Top.GG webhooks
-        success = await self.ipc_client.request("start_dbl_server", port=1019, end_point="/dblwebhook")
-        if success["status"] == "ok":
-            print(f"[{self.user.name}] DBL server started successfully")
+            # start webserver to receive Top.GG webhooks
+            success = await self.ipc_client.request("start_dbl_server", port=1019, end_point="/dblwebhook")
+            if success["status"] == "ok":
+                print(f"[{self.user.name}] DBL server started successfully")
 
         self._was_ready = True
 

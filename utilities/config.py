@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -42,7 +42,8 @@ CASE_INSENSITIVE: bool = parse_env_var("COMMAND_CASE_INSENSITIVE", True)
 STRIP_AFTER_PREFIX: bool = parse_env_var("STRIP_AFTER_PREFIX")
 SUPER_USER: str = parse_env_var("OWNER_ID")
 MASTER_OWNER: str = SUPER_USER
-EXTENSIONS: str = data["extensions"]
+EXTENSIONS: str = data["all_extensions"]
+UNLOAD_EXTENSIONS: str = data["unload_extensions"]
 DEV_LOGO: str = data["dev_logo"]
 TOKEN: str = parse_env_var("TOKEN")
 DATABASE_KEY: str = parse_env_var("DATABASE_KEY")
@@ -58,3 +59,5 @@ MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
 LRU_CACHE = 8 if HEROKU else 256
+
+TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS

@@ -2,11 +2,10 @@
 
 from itertools import islice
 from typing import TYPE_CHECKING, Awaitable, List, NamedTuple, Optional, TypeVar, Union, Callable
-
+from core import Context
 import discord
 
 if TYPE_CHECKING:
-    from core import Context
     from typing_extensions import ParamSpec
 
     P = ParamSpec("P")

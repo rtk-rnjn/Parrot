@@ -406,7 +406,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def close(self) -> None:
         """To close the bot"""
-        if HAS_TOP_GG:
+        if self.HAS_TOP_GG:
             await self.topgg_webhook.close()
 
         self.reminder_task.cancel()

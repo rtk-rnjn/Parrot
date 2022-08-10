@@ -1,7 +1,7 @@
 # AUTHOR: https://github.com/davidetacchini/
 
 from itertools import islice
-from typing import TYPE_CHECKING, Awaitable, List, NamedTuple, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Awaitable, List, NamedTuple, Optional, TypeVar, Union, Callable
 
 import discord
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import time
-from typing import Optional
+from typing import List, Literal, Optional
 
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
+from utilities.paginator import PaginationView as PV
 
 from ._nsfw import ENDPOINTS
 
@@ -47,9 +48,7 @@ class NSFW(Cog):
                 if embed is not None:
                     await ctx.reply(embed=embed)
                 else:
-                    await ctx.reply(
-                        f"{ctx.author.mention} something not right? This is not use but the API"
-                    )
+                    await ctx.reply(f"{ctx.author.mention} something not right? This is not use but the API")
 
             self.bot.add_command(callback)
 
@@ -86,20 +85,27 @@ class NSFW(Cog):
     @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def n(self, ctx: Context) -> None:
-        """
-        Best command I guess. It return random ^^
-        """
-        r = await self.bot.http_session.get("https://scathach.redsplit.org/v3/nsfw/gif/")
-        if r.status == 200:
-            res = await r.json()
-        else:
-            return
+    async def n(
+        self, ctx: Context, count: Optional[int] = 10, *, endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif"
+    ) -> None:
+        """Best command I guess. It return random ^^"""
+        em_list: List[discord.Embed] = []
 
-        img = res["url"]
+        if count is not None and count <= 0:
+            return await ctx.reply(f"{ctx.author.mention} count must be greater than 0")
 
-        em = discord.Embed(timestamp=discord.utils.utcnow())
-        em.set_footer(text=f"{ctx.author.name}")
-        em.set_image(url=img)
+        i: int = 1
+        while i <= count:
+            r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")
+            if r.status == 200:
+                res = await r.json()
+                em_list.append(
+                    discord.Embed(
+                        timestamp=discord.utils.utcnow()
+                    ).set_image(url=res["url"])
+                )
+            await ctx.release(0)
+            i += 1
 
-        await ctx.reply(embed=em)
+        ins = PV(em_list)
+        ins.message = await ins.paginate(ctx)

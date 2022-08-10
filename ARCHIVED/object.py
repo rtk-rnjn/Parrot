@@ -128,13 +128,12 @@ class Object(dict):
         True
         """
         try:
-            # Throws exception if not in prototype chain
             return object.__getattribute__(self, k)
         except AttributeError:
             try:
                 return self[k]
-            except KeyError:
-                raise AttributeError(k)
+            except KeyError as e:
+                raise AttributeError(k) from e
 
     def __setattr__(self, k, v):
         """Sets attribute k if it exists, otherwise sets key k. A KeyError
@@ -157,8 +156,8 @@ class Object(dict):
         except AttributeError:
             try:
                 self[k] = v
-            except Exception:
-                raise AttributeError(k)
+            except Exception as e:
+                raise AttributeError(k) from e
         else:
             object.__setattr__(self, k, v)
 
@@ -178,13 +177,12 @@ class Object(dict):
         AttributeError: lol
         """
         try:
-            # Throws exception if not in prototype chain
             object.__getattribute__(self, k)
         except AttributeError:
             try:
                 del self[k]
-            except KeyError:
-                raise AttributeError(k)
+            except KeyError as e:
+                raise AttributeError(k) from e
         else:
             object.__delattr__(self, k)
 

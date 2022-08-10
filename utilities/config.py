@@ -36,14 +36,14 @@ def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, fl
     return value.lower() == "true" if value.lower() in ("true", "false") else value
 
 
-OWNER_IDS: list = parse_env_var("OWNER_IDS")
+OWNER_IDS: List[int] = parse_env_var("OWNER_IDS")
 DEFAULT_PREFIX: str = parse_env_var("BOT_PREFIX", "$")
 CASE_INSENSITIVE: bool = parse_env_var("COMMAND_CASE_INSENSITIVE", True)
 STRIP_AFTER_PREFIX: bool = parse_env_var("STRIP_AFTER_PREFIX")
 SUPER_USER: str = parse_env_var("OWNER_ID")
 MASTER_OWNER: str = SUPER_USER
-EXTENSIONS: str = data["all_extensions"]
-UNLOAD_EXTENSIONS: str = data["unload_extensions"]
+EXTENSIONS: List[str] = data["all_extensions"]
+UNLOAD_EXTENSIONS: List[str] = data["unload_extensions"]
 DEV_LOGO: str = data["dev_logo"]
 TOKEN: str = parse_env_var("TOKEN")
 DATABASE_KEY: str = parse_env_var("DATABASE_KEY")

@@ -1,49 +1,49 @@
 all_extensions:
-  - events.on_cmd
-  - events.on_msg
-  - events.on_rexn
-  - events.user
+  - cogs.actions
+  - cogs.api
+  - cogs.cc
+  - cogs.config
+  - cogs.fun
+  - cogs.hidden
+  - cogs.holidays
+  - cogs.holidays.easter
+  - cogs.ipc
+  - cogs.love
+  - cogs.memegen
+  - cogs.meta
+  - cogs.mis
+  - cogs.mod
+  - cogs.music
+  - cogs.nasa
+  - cogs.nsfw
+  - cogs.owner
+  - cogs.rtfm
+  - cogs.sector_17
+  - cogs.sports
+  - cogs.telephone
+  - cogs.ticket
+  - cogs.utils
+  - cogs.wolfram
+  - events.custom_events
   - events.guild.channel
   - events.guild.extra
   - events.guild.join
   - events.guild.member
-  - events.guild.thread
   - events.guild.role_emoji
-  - cogs.meta
-  - cogs.mod
-  - cogs.fun
-  - cogs.memegen
-  - cogs.mis
-  - cogs.love
-  - cogs.nsfw
-  - cogs.rtfm
-  - cogs.ticket
-  - cogs.config
-  - cogs.nasa
-  - cogs.owner
-  - cogs.actions
-  - cogs.telephone
-  - cogs.utils
-  - cogs.sports
+  - events.guild.thread
+  - events.on_cmd
+  - events.on_msg
+  - events.on_rexn
+  - events.user
   - interactions.buttons
-  - interactions.buttons.snakes
   - interactions.buttons.foggle
+  - interactions.buttons.snakes
   - interactions.slash
   - jishaku
-  - cogs.holidays
-  - cogs.holidays.easter
-  - cogs.cc
-  - cogs.api
-  - events.custom_events
-  - cogs.hidden
-  - cogs.ipc
-  - cogs.wolfram
-  - cogs.sector_17
-  - cogs.music
 unload_extensions:
-  - cogs.music
   - cogs.ipc
   - cogs.sports
+  - cogs.music
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

@@ -73,31 +73,27 @@ class EventCustom(Cog):
         messageURL: str = None,
         **kwargs: Any,
     ):
+        if not content:
+            return
         if embed is None:
             embed = {}
         embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
-        if (dm_notify or is_todo) and content:
-            user: discord.User = self.bot.get_user(messageAuthor)
-            if user:
-                try:
-                    await user.send(
-                        content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}",
-                        embed=embed,
-                    )
-                except discord.Forbidden:
-                    pass  # I don't know whytf user blocks the DM
 
-        elif content:
-            channel: discord.TextChannel = self.bot.get_channel(messageChannel)
-            if channel:
-                try:
-                    await channel.send(
-                        content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}",
-                        embed=embed,
-                    )
-                except discord.Forbidden:
-                    # bot is not having permissions to send messages
-                    pass
+        if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor)):
+            try:
+                await user.send(content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}", embed=embed)
+            except discord.Forbidden:
+                pass
+            return
+
+        if channel := self.bot.get_channel(messageChannel):
+            try:
+                await channel.send(
+                    content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}", embed=embed
+                )
+            except discord.Forbidden:
+                pass
+            return
 
     @Cog.listener("on_timer_complete")
     async def extra_parser(self, extra: Dict[str, Any] = None, **kw: Any) -> None:

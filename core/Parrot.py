@@ -230,6 +230,11 @@ class Parrot(commands.AutoShardedBot):
         # Wavelink
         self.wavelink = wavelink.NodePool()
 
+        self.GLOBAL_HEADERS: Dict[str, str] = {
+            "Accept": "application/json",
+            "User-Agent": f"Discord Bot '{self.user}' @ {self.github}",
+        }
+
     def __repr__(self):
         return f"<core.{self.user.name}>"
 
@@ -509,15 +514,8 @@ class Parrot(commands.AutoShardedBot):
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:
-
         ctx: Context = await self.get_context(message, cls=Context)
-
-        if ctx.command is None:
-            # ignore if no command found
-            return
-
-        if str(ctx.channel.type) == "public_thread":
-            # no messages in discord.Thread
+        if ctx.command is None or str(ctx.channel.type) == "public_thread":
             return
 
         bucket = self.spam_control.get_bucket(message)
@@ -530,7 +528,6 @@ class Parrot(commands.AutoShardedBot):
                 return
         else:
             self._auto_spam_count.pop(author_id, None)
-
         if ctx.command is not None:
             if not self.banned_users:
                 await self.update_banned_members.start()
@@ -539,23 +536,16 @@ class Parrot(commands.AutoShardedBot):
             except KeyError:
                 pass
             else:
-                true: Optional[bool] = self.banned_users[ctx.author.id].get("command")
-                if true:
+                if self.banned_users[ctx.author.id].get("command"):
                     return
-
             can_run: Optional[bool] = await _can_run(ctx)
             if not can_run:
-                await ctx.reply(
-                    f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in "
-                    f"**{ctx.channel.mention}** by the staff!",
-                    delete_after=10.0,
-                )
-                return
+                await ctx.reply(f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!", delete_after=10.0)
 
+                return
         if guild := self.opts.get(ctx.guild.id):
             if ctx.author.id in guild.get("command", []):
                 return
-
         await self.invoke(ctx)
         return
 

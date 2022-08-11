@@ -407,7 +407,7 @@ class Meta(Cog):
         # embed.add_field(
         #     name=member.name, value=f"[Download]({member.display_avatar.url})"
         # )
-        response = await self.bot.http_session.get(member.display_avatar.url)
+        response = await self.bot.http_session.get(member.display_avatar.url, headers=self.bot.GLOBAL_HEADERS)
         buffer = io.BytesIO(await response.read())
 
         embed.set_image(url="attachment://avatar.gif")

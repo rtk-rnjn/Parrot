@@ -209,7 +209,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif isinstance(error, commands.BadLiteralArgument):
             ERROR_EMBED.description = (
-                f"Please use proper Literals."
+                f"Please use proper Literals. "
                 f"Literal should be any one of the following: `{'`, `'.join(str(i) for i in error.literals)}`"
             )
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}"

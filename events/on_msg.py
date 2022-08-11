@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 from core import Cog
 
 with open("extra/profanity.json") as f:
-    bad_dict: dict = json.load(f)
+    bad_dict: Dict[str, bool] = json.load(f)
 
 TRIGGER: Tuple = (
     "ok google,",
@@ -139,9 +139,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         self.__scam_link_cache: Dict[str, bool] = {}
 
-    async def _fetch_response(
-        self, url: str, response_format: str, **kwargs: Any
-    ) -> Union[str, Dict[str, Any], None]:
+    async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Union[str, Dict[str, Any], None]:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(url, raise_for_status=True, **kwargs) as response:
             if response_format == "text":
@@ -162,9 +160,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 break
         return ref, file_path
 
-    async def _fetch_github_snippet(
-        self, repo: str, path: str, start_line: str, end_line: str
-    ) -> str:
+    async def _fetch_github_snippet(self, repo: str, path: str, start_line: str, end_line: str) -> str:
         """Fetches a snippet from a GitHub repo."""
         # Search the GitHub API for the specified branch
         branches = await self._fetch_response(
@@ -172,9 +168,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "json",
             headers=GITHUB_HEADERS,
         )
-        tags = await self._fetch_response(
-            f"https://api.github.com/repos/{repo}/tags", "json", headers=GITHUB_HEADERS
-        )
+        tags = await self._fetch_response(f"https://api.github.com/repos/{repo}/tags", "json", headers=GITHUB_HEADERS)
         refs = branches + tags
         ref, file_path = self._find_ref(path, refs)
 
@@ -200,7 +194,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             headers=GITHUB_HEADERS,
         )
 
-
         # Check each file in the gist for the specified file
         for gist_file in gist_json["files"]:
             if file_path == gist_file.lower().replace(".", "-"):
@@ -211,19 +204,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 return self._snippet_to_codeblock(file_contents, gist_file, start_line, end_line)
         return ""
 
-    async def _fetch_gitlab_snippet(
-        self, repo: str, path: str, start_line: str, end_line: str
-    ) -> str:
+    async def _fetch_gitlab_snippet(self, repo: str, path: str, start_line: str, end_line: str) -> str:
         """Fetches a snippet from a GitLab repo."""
         enc_repo = quote_plus(repo)
 
         # Searches the GitLab API for the specified branch
-        branches = await self._fetch_response(
-            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/branches", "json"
-        )
-        tags = await self._fetch_response(
-            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/tags", "json"
-        )
+        branches = await self._fetch_response(f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/branches", "json")
+        tags = await self._fetch_response(f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/tags", "json")
         refs = branches + tags
         ref, file_path = self._find_ref(path, refs)
         enc_ref = quote_plus(ref)
@@ -235,9 +222,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
-    async def _fetch_bitbucket_snippet(
-        self, repo: str, ref: str, file_path: str, start_line: str, end_line: str
-    ) -> str:
+    async def _fetch_bitbucket_snippet(self, repo: str, ref: str, file_path: str, start_line: str, end_line: str) -> str:
         """Fetches a snippet from a BitBucket repo."""
         file_contents = await self._fetch_response(
             f"https://bitbucket.org/{quote_plus(repo)}/raw/{quote_plus(ref)}/{quote_plus(file_path)}",
@@ -245,9 +230,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
-    def _snippet_to_codeblock(
-        self, file_contents: str, file_path: str, start_line: str, end_line: str
-    ) -> str:
+    def _snippet_to_codeblock(self, file_contents: str, file_path: str, start_line: str, end_line: str) -> str:
         """
         Given the entire file contents and target lines, creates a code block.
         First, we split the file contents into a list of lines and then keep and join only the required
@@ -354,10 +337,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def refrain_message(self, msg: str):
         if "chod" in msg.replace(",", "").split(" "):
             return False
-        return all(
-            bad_word.lower() not in msg.replace(",", "").split(" ")
-            for bad_word in bad_dict
-        )
+        return all(bad_word.lower() not in msg.replace(",", "").split(" ") for bad_word in bad_dict)
 
     def is_banned(self, user: Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
@@ -380,12 +360,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         return int(str_count + dis_count)
 
     async def on_invite(self, message: discord.Message, invite_link: list):
-        if data := await self.log_collection.find_one(
-            {"_id": message.guild.id, "on_invite_post": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_invite_post"], session=self.bot.http_session
-            )
+        if data := await self.log_collection.find_one({"_id": message.guild.id, "on_invite_post": {"$exists": True}}):
+            webhook: discord.Webhook = discord.Webhook.from_url(data["on_invite_post"], session=self.bot.http_session)
             with suppress(discord.HTTPException):
                 content = f"""**Invite Link Posted**
 
@@ -428,9 +404,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "sqrt",
             "^",
         ]
-        message.content = message.content.replace("\N{MULTIPLICATION SIGN}", "*").replace(
-            "\N{DIVISION SIGN}", "/"
-        )
+        message.content = message.content.replace("\N{MULTIPLICATION SIGN}", "*").replace("\N{DIVISION SIGN}", "/")
 
         if message.author.bot:
             return
@@ -474,18 +448,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         await self.bot.wait_until_ready()
         if message.guild is None:
             return
-
         await self._scam_detection(message)
         await self._on_message_leveling(message)
         await self._add_record_message_to_database(message)
         await self.equation_solver(message)
-
         if message.guild.me.id == message.author.id:
             return
-
         message_to_send = await self._parse_snippets(message.content)
-
-        if 0 < len(message_to_send) <= 2000 and (self._check_gitlink_req(message)):
+        if 0 < len(message_to_send) <= 2000 and self._check_gitlink_req(message):
             await message.channel.send(message_to_send, view=Delete(message.author))
             try:
                 await message.edit(suppress=True)
@@ -493,20 +463,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 pass
             except discord.Forbidden:
                 pass
-
         if message.author.bot:
             return
-
         await self.quick_answer(message)
         await self._on_message_passive(message)
-
         collection: Collection = self.bot.mongo.parrot_db.global_chat
-        data: Optional[DocumentType] = await collection.find_one(
-            {"_id": message.guild.id, "channel_id": message.channel.id}
-        )
+        data: Optional[DocumentType] = await collection.find_one({"_id": message.guild.id, "channel_id": message.channel.id})
+
         if links := INVITE_RE.findall(message.content):
             await self.on_invite(message, links)
-
         if data:
             bucket = self.cd_mapping.get_bucket(message)
             if retry_after := bucket.update_rate_limit():
@@ -519,72 +484,52 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             role_id = guild.get("ignore_role") or guild.get("ignore-role") or 0
             if message.author._roles.has(role_id):
                 return
-
-            if message.content.startswith(
-                ("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")
-            ):  # bot commands or mention in starting
+            if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")):
                 return
-
-            urls: Match[str] = LINKS_NO_PROTOCOLS.search(message.content)
-            if urls:
+            if urls := LINKS_NO_PROTOCOLS.search(message.content):
                 try:
                     await message.delete(delay=0)
-                    return await message.channel.send(
-                        f"{message.author.mention} | URLs aren't allowed.",
-                        delete_after=5,
-                    )
+                    return await message.channel.send(f"{message.author.mention} | URLs aren't allowed.", delete_after=5)
+
                 except discord.Forbidden:
-                    return await message.channel.send(
-                        f"{message.author.mention} | URLs aren't allowed.",
-                        delete_after=5,
-                    )
+                    return await message.channel.send(f"{message.author.mention} | URLs aren't allowed.", delete_after=5)
 
             if len(message.content.split("\n")) > 4:
                 try:
                     await message.delete(delay=0)
                     return await message.channel.send(
-                        f"{message.author.mention} | Do not send message in 4-5 lines or above.",
-                        delete_after=5,
+                        f"{message.author.mention} | Do not send message in 4-5 lines or above.", delete_after=5
                     )
+
                 except discord.Forbidden:
                     return await message.channel.send(
-                        f"{message.author.mention} | Do not send message in 4-5 lines or above.",
-                        delete_after=5,
+                        f"{message.author.mention} | Do not send message in 4-5 lines or above.", delete_after=5
                     )
 
             to_send: bool = self.refrain_message(message.content.lower())
             if not to_send:
                 try:
                     await message.delete(delay=0)
-                    return await message.channel.send(
-                        f"{message.author.mention} | Sending Bad Word not allowed",
-                        delete_after=5,
-                    )
+                    return await message.channel.send(f"{message.author.mention} | Sending Bad Word not allowed", delete_after=5)
+
                 except discord.Forbidden:
-                    return await message.channel.send(
-                        f"{message.author.mention} | Sending Bad Word not allowed",
-                        delete_after=5,
-                    )
+                    return await message.channel.send(f"{message.author.mention} | Sending Bad Word not allowed", delete_after=5)
+
             if self.is_banned(message.author):
                 return
             try:
                 await message.delete()
             except discord.Forbidden:
-                return await message.channel.send(
-                    "Bot requires **Manage Messages** permission(s) to function properly."
-                )
+                return await message.channel.send("Bot requires **Manage Messages** permission(s) to function properly.")
 
             if emoji_count := self.get_emoji_count(message.content):
                 if emoji_count > 10:
                     await message.delete(delay=0)
                     return await message.channel.send(
-                        f"{message.author.mention} | Do not send message with more than 10 emoji.",
-                        delete_after=5,
+                        f"{message.author.mention} | Do not send message with more than 10 emoji.", delete_after=5
                     )
 
-            async for webhook in collection.find(
-                {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
-            ):
+            async for webhook in collection.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
                 if hook := webhook["webhook"]:
                     try:
                         async with aiohttp.ClientSession() as session:
@@ -596,8 +541,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                                     avatar_url=message.author.display_avatar.url,
                                     allowed_mentions=discord.AllowedMentions.none(),
                                 )
+
                     except discord.NotFound:
-                        await collection.delete_one({"webhook": hook})  # all hooks are unique
+                        await collection.delete_one({"webhook": hook})
                     except discord.HTTPException:
                         pass
 
@@ -638,11 +584,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             obj = [obj]
         self.write_data.append(
             UpdateOne(
-                {
-                    "_id": channel.id
-                    if isinstance(channel, (discord.TextChannel, discord.Object))
-                    else channel
-                },
+                {"_id": channel.id if isinstance(channel, (discord.TextChannel, discord.Object)) else channel},
                 {"$pull": {"messages": {"id": {"$in": list(obj)}}}},
             )
         )
@@ -659,29 +601,25 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "jump_url": message.jump_url,
             "type": str(message.type),
             "tts": message.tts,
-            "replied_reference": message.reference.resolved.id
-            if isinstance(message.reference, discord.Message)
-            else None,
+            "replied_reference": message.reference.resolved.id if isinstance(message.reference, discord.Message) else None,
             "timestamp": message.created_at.timestamp(),
             "attachments": [a.url for a in message.attachments],
             "embeds": [e.to_dict() for e in message.embeds],
         }
 
     @Cog.listener()
-    async def on_message_delete(self, message: discord.Message):
+    async def on_message_delete(self, _: discord.Message):
         pass
 
     @Cog.listener()
-    async def on_bulk_message_delete(self, messages: List[discord.Message]):
+    async def on_bulk_message_delete(self, _: List[discord.Message]):
         pass
 
     @Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
-        await self._delete_record_message_to_database(
-            payload.message_id, channel=payload.channel_id
-        )
+        await self._delete_record_message_to_database(payload.message_id, channel=payload.channel_id)
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
@@ -690,12 +628,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 ]
             }
         )
-        if data := await self.log_collection.find_one(
-            {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_message_delete"], session=self.bot.http_session
-            )
+        if data := await self.log_collection.find_one({"_id": payload.guild_id, "on_message_delete": {"$exists": True}}):
+            webhook: discord.Webhook = discord.Webhook.from_url(data["on_message_delete"], session=self.bot.http_session)
             with suppress(discord.HTTPException):
                 if msg := payload.cached_message:
                     msg = payload.cached_message
@@ -721,9 +655,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                         content=main_content,
                         avatar_url=self.bot.user.display_avatar.url,
                         username=self.bot.user.name,
-                        file=discord.File(fp, filename="content.txt")
-                        if fp is not None
-                        else MISSING,
+                        file=discord.File(fp, filename="content.txt") if fp is not None else MISSING,
                     )
 
     @Cog.listener()
@@ -740,12 +672,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 ]
             }
         )
-        if data := await self.log_collection.find_one(
-            {"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_bulk_message_delete"], session=self.bot.http_session
-            )
+        if data := await self.log_collection.find_one({"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}):
+            webhook: discord.Webhook = discord.Webhook.from_url(data["on_bulk_message_delete"], session=self.bot.http_session)
             main = ""
             with suppress(discord.HTTPException):
                 msgs = payload.cached_messages
@@ -775,11 +703,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.bot.wait_until_ready()
-        if (
-            before.content != after.content
-            and after.guild is not None
-            and after.author.id == self.bot.user.id
-        ):
+        if before.content != after.content and after.guild is not None and after.author.id == self.bot.user.id:
             await self._on_message_passive(after)
             await self._scam_detection(after)
             await self._edit_record_message_to_database(after)
@@ -793,9 +717,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         # self.message_append.append(UpdateOne({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True))
-        await self.bot.mongo.msg_db.counter.update_one(
-            {"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True
-        )
+        await self.bot.mongo.msg_db.counter.update_one({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True)
 
         bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)
         retry_after: float = bucket.update_rate_limit()
@@ -820,9 +742,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            ignore_channel: List = (
-                self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"] or []
-            )
+            ignore_channel: List = self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"] or []
         except KeyError:
             ignore_channel = []
 
@@ -832,9 +752,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
 
         try:
-            announce_channel: int = (
-                self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
-            )
+            announce_channel: int = self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
         except KeyError:
             return
         else:
@@ -855,9 +773,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     cog = self.bot.get_cog("Utils")
                     level = int((data["xp"] // 42) ** 0.55)
                     xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
-                    rank = await cog._Utils__get_rank(  # type: ignore
-                        collection=collection, member=message.author
-                    )
+                    rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore
                     file: discord.File = await rank_card(
                         level,
                         rank,
@@ -984,9 +900,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
                         name = message.author.display_name[5:]
                         if len(name) != 0 or name not in (" ", ""):
-                            await message.author.edit(
-                                nick=name, reason=f"{message.author} came after AFK"
-                            )
+                            await message.author.edit(nick=name, reason=f"{message.author} came after AFK")
+
                 await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
                 await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
                 self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
@@ -1011,19 +926,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     "channel": message.channel.id,
                     "messageURL": message.jump_url,
                 }
-                await self.bot.mongo.parrot_db.afk.update_one(
-                    {"_id": data["_id"]}, {"$addToSet": {"pings": post}}
-                )
+                await self.bot.mongo.parrot_db.afk.update_one({"_id": data["_id"]}, {"$addToSet": {"pings": post}})
                 await message.channel.send(
                     f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                 )
 
-    async def _what_is_this(
-        self, message: Union[discord.Message, str], *, channel: discord.TextChannel
-    ) -> None:
-        if match := QUESTION_REGEX.fullmatch(
-            message.content if isinstance(message, discord.Message) else message
-        ):
+    async def _what_is_this(self, message: Union[discord.Message, str], *, channel: discord.TextChannel) -> None:
+        if match := QUESTION_REGEX.fullmatch(message.content if isinstance(message, discord.Message) else message):
             word = replace_many(
                 match.string,
                 {"means": "", "what is": "", " ": "", "?": "", ".": ""},
@@ -1037,12 +946,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
         # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
-        if data := await self.log_collection.find_one(
-            {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_message_edit"], session=self.bot.http_session
-            )
+        if data := await self.log_collection.find_one({"_id": payload.guild_id, "on_message_edit": {"$exists": True}}):
+            webhook: discord.Webhook = discord.Webhook.from_url(data["on_message_edit"], session=self.bot.http_session)
             with suppress(discord.HTTPException):
                 if payload.cached_message is not None:
                     msg = payload.cached_message
@@ -1116,9 +1021,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             del self.bot.message_cache[message.author.id]
 
     @Cog.listener("on_message_edit")
-    async def on_message_edit_updater(
-        self, before: discord.Message, after: discord.Message
-    ) -> None:
+    async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
         if before.author.id in self.bot.message_cache:
             self.bot.message_cache[before.author.id] = after
 
@@ -1128,16 +1031,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_remove")
-    async def on_reaction_remove_updater(
-        self, reaction: discord.Reaction, _: discord.User
-    ) -> None:
+    async def on_reaction_remove_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
         if reaction.message.id in self.bot.message_cache:
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_clear")
-    async def on_reaction_clear_updater(
-        self, message: discord.Message, _: List[discord.Reaction]
-    ) -> None:
+    async def on_reaction_clear_updater(self, message: discord.Message, _: List[discord.Reaction]) -> None:
         if message.id in self.bot.message_cache:
             self.bot.message_cache[message.id] = message
 

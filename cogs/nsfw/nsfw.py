@@ -23,6 +23,11 @@ class NSFW(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{NO ONE UNDER EIGHTEEN SYMBOL}")
 
+    async def cog_check(self, ctx: Context) -> bool:
+        if not ctx.channel.nsfw():
+            raise commands.NSFWChannelRequired(ctx.channel)
+        return True
+
     async def get_embed(self, type_str: str) -> Optional[discord.Embed]:
         response = await self.bot.http_session.get(self.url, params={"type": type_str})
         if response.status != 200:
@@ -53,9 +58,7 @@ class NSFW(Cog):
             self.bot.add_command(callback)
 
     @commands.command(aliases=["randnsfw"], hidden=True)
-    @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
     async def randomnsfw(self, ctx: Context, *, subreddit: str = None) -> None:
         """
         To get Random NSFW from subreddit.
@@ -82,9 +85,9 @@ class NSFW(Cog):
         await ctx.reply(embed=em)
 
     @commands.command(hidden=True)
-    @commands.is_nsfw()
     @commands.bot_has_permissions(embed_links=True)
-    @Context.with_type
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def n(
         self, ctx: Context, count: Optional[int] = 10, *, endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif"
     ) -> None:

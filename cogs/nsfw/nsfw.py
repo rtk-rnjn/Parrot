@@ -24,7 +24,7 @@ class NSFW(Cog):
         return discord.PartialEmoji(name="\N{NO ONE UNDER EIGHTEEN SYMBOL}")
 
     async def cog_check(self, ctx: Context) -> bool:
-        if not ctx.channel.nsfw():
+        if not ctx.channel.nsfw:
             raise commands.NSFWChannelRequired(ctx.channel)
         return True
 

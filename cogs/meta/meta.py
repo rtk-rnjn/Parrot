@@ -605,7 +605,10 @@ class Meta(Cog):
         """
         Get the bot stats
         """
-        revision = self.get_last_commits()
+        if self.bot.ON_HEROKU:
+            revision = "Failed to get revision"
+        else:
+            revision = self.get_last_commits()
         embed = discord.Embed(
             title="Official Bot Server Invite",
             colour=ctx.author.colour,

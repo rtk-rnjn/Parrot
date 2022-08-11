@@ -67,6 +67,7 @@ from utilities.config import (
     LRU_CACHE,
     UNLOAD_EXTENSIONS,
     TO_LOAD_IPC,
+    HEROKU,
 )
 from utilities.converters import ToAsync
 from utilities.paste import Client
@@ -186,7 +187,7 @@ class Parrot(commands.AutoShardedBot):
 
         self._was_ready: bool = False
         self.lock: "asyncio.Lock" = asyncio.Lock()
-
+        self.ON_HEROKU: bool = HEROKU
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
         if self.HAS_TOP_GG:

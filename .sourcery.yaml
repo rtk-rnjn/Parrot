@@ -12,7 +12,7 @@ refactor:
 rules: []
 
 metrics:
-  quality_threshold: 25.0
+  quality_threshold: 20.0
 
 clone_detection:
   min_lines: 3

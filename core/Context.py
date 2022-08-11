@@ -328,9 +328,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     async def bulk_add_reactions(
         self,
-        message: discord.Message,
+        message: Optional[discord.Message],
         *reactions: Union[discord.Emoji, discord.PartialEmoji, str],
     ) -> None:
+        if message is None:
+            raise ValueError("message cannot be None")
         coros = [asyncio.ensure_future(message.add_reaction(reaction)) for reaction in reactions]
         await asyncio.wait(coros)
 
@@ -365,7 +367,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             ``None`` if deny due to timeout
         """
 
-        message = await channel.send(*args, **kwargs)
+        message: Optional[discord.Message] = await channel.send(*args, **kwargs)
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
         def check(payload: discord.RawReactionActionEvent) -> bool:
@@ -426,7 +428,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         if event_name.lower().startswith("on_"):
             event_name = event_name[3:].lower()
 
-        def outer_check(**kw) -> Callable[..., bool]:
+        def outer_check(**kw: Any) -> Callable[..., bool]:
             """Check function for the event"""
             if check is not None:
                 return check

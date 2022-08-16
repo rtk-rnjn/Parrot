@@ -9,7 +9,7 @@ from aiohttp import AsyncResolver, ClientSession, TCPConnector  # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 from core import Parrot
-from utilities.config import TOKEN, my_secret
+from utilities.config import TOKEN, my_secret, VERSION
 
 bot = Parrot()
 
@@ -20,6 +20,10 @@ async def main() -> None:
     ) as http_session:
         async with bot:
             bot.http_session = http_session
+
+            if not hasattr(bot, "__version__"):
+                bot.__version__ = VERSION
+
             bot.mongo = AsyncIOMotorClient(
                 f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
             )

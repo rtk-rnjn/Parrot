@@ -323,7 +323,7 @@ class NASA(Cog):
     @Context.with_type
     async def nasasearch(
         self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content
-    ):
+    ):  # sourcery skip: low-code-quality
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)

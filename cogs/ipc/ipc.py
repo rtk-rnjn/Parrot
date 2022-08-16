@@ -19,10 +19,7 @@ class IPCRoutes(Cog):
         overwrites: Dict[Union[discord.User, discord.Role], discord.PermissionOverwrite],
     ) -> Dict[str, Union[str, Optional[bool]]]:
         try:
-            return {
-                str(target.id): overwrite._values  # type: ignore
-                for target, overwrite in overwrites.items()
-            }
+            return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}  # type: ignore
         except Exception:
             return {}
 
@@ -166,9 +163,7 @@ class IPCRoutes(Cog):
     async def users(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
-        elif (name := getattr(data, "name", None)) and (
-            discriminator := getattr(data, "discriminator", None)
-        ):
+        elif (name := getattr(data, "name", None)) and (discriminator := getattr(data, "discriminator", None)):
             users = [discord.utils.get(self.bot.users, name=name, discriminator=discriminator)]
         else:
             users = self.bot.users
@@ -215,9 +210,7 @@ class IPCRoutes(Cog):
     @server.route()
     async def announce_global(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
         MESSAGES = []
-        async for webhook in self.bot.mongo.parrot_db.global_chat.find(
-            {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
-        ):
+        async for webhook in self.bot.mongo.parrot_db.global_chat.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
             if hook := webhook["webhook"]:
                 try:
                     webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
@@ -229,9 +222,7 @@ class IPCRoutes(Cog):
                         wait=True,
                     )
                 except discord.NotFound:
-                    await self.bot.mongo.parrot_db.global_chat.delete_one(
-                        {"webhook": hook}
-                    )  # all hooks are unique
+                    await self.bot.mongo.parrot_db.global_chat.delete_one({"webhook": hook})  # all hooks are unique
                 except discord.HTTPException:
                     pass
                 else:
@@ -287,7 +278,7 @@ class IPCRoutes(Cog):
             else:
                 return {"status": "ok"}
         return {"status": "error: top.gg not installed"}
-    
+
     @server.route()
     async def stop_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
         if self.bot.HAS_TOP_GG:

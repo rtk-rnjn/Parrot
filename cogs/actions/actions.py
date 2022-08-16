@@ -45,9 +45,7 @@ class Actions(Cog):
         for end_point in ENDPOINTS:
 
             @commands.command(name=end_point)
-            @commands.bot_has_permissions(embed_links=True)
-            @commands.cooldown(1, 5, commands.BucketType.member)
-            @commands.max_concurrency(1, per=commands.BucketType.user)
+            @commands.cooldown(1, 8, commands.BucketType.member)
             @Context.with_type
             async def callback(
                 ctx: Context,

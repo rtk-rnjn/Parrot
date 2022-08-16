@@ -133,6 +133,8 @@ __all__ = ("Parrot",)
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
+    __version__: str
+
     user: discord.ClientUser
     help_command: Optional[commands.HelpCommand]
 
@@ -178,8 +180,8 @@ class Parrot(commands.AutoShardedBot):
         self._startup_log_token = os.environ["CHANNEL_TOKEN3"]
         self._vote_log_token = os.environ["CHANNEL_TOKEN4"]
 
-        self.color = 0x87CEEB
-        self.colour = self.color
+        self.color: int = 0x87CEEB
+        self.colour: int = self.color
 
         self.error_channel: Optional[discord.TextChannel] = None
         self.persistent_views_added: bool = False
@@ -444,8 +446,8 @@ class Parrot(commands.AutoShardedBot):
                 )
             with suppress(discord.HTTPException):
                 if self._failed_to_load:
-                    fail_msg = "".join(
-                        f"> \N{CROSS MARK} Failed to load: `{k}`\nError: `{v}`\n" for k, v in self._failed_to_load.items()
+                    fail_msg = "\n".join(
+                        f"> \N{CROSS MARK} Failed to load: `{k}` ```\n{v}```" for k, v in self._failed_to_load.items()
                     )
 
                     await webhook.send(
@@ -453,6 +455,13 @@ class Parrot(commands.AutoShardedBot):
                         avatar_url=self.user.avatar.url,
                         username=self.user.name,
                     )
+                    if len(fail_msg) < 1990:
+                        await webhook.send(
+                            f"{fail_msg}",
+                            avatar_url=self.user.avatar.url,
+                            username=self.user.name,
+                        )
+
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}")
@@ -540,9 +549,11 @@ class Parrot(commands.AutoShardedBot):
                     return
             can_run: Optional[bool] = await _can_run(ctx)
             if not can_run:
-                await ctx.reply(f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!", delete_after=10.0)
+                return await ctx.reply(
+                    f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!",
+                    delete_after=10.0
+                )
 
-                return
         if guild := self.opts.get(ctx.guild.id):
             if ctx.author.id in guild.get("command", []):
                 return

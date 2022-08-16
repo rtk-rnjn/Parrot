@@ -5,14 +5,6 @@ import typing
 import discord
 from discord.ext import commands
 
-# class purgeFlag(
-#     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-# ):
-#     member: typing.Optional[discord.Member] = None
-#     regex: typing.Optional[str] = None
-#     attachment: typing.Optional[convert_bool] = False
-#     links: typing.Optional[convert_bool] = False
-
 
 class reasonFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
@@ -20,7 +12,7 @@ class reasonFlag(
     reason: typing.Optional[str] = None
 
 
-class warnFlag(
+class WarnFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
     message: typing.Optional[int] = None

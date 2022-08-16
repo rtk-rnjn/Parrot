@@ -932,7 +932,7 @@ class Misc(Cog):
             data = await poll.json()
         except json.decoder.JSONDecodeError:
             return
-        except aiohttp.client_exceptions.ContentTypeError:
+        except aiohttp.ContentTypeError:
             return
         embed = discord.Embed(
             title=data["content"]["poll"]["title"],
@@ -963,7 +963,7 @@ class Misc(Cog):
         await self.bot.http_session.delete(
             URL,
             data={"content_id": content_id},
-            headers={"API-KEY": os.environ["STRAW_POLL"]},
+            headers={"API-KEY": os.environ["STRAW_POLL"], **self.bot.GLOBAL_HEADERS},
         )
         await ctx.reply(f"{ctx.author.mention} deleted")
 
@@ -1001,7 +1001,7 @@ class Misc(Cog):
     @Context.with_type
     async def qrcode(self, ctx: Context, text: str, *, flags: QRCodeFlags):
         """To generate the QR from the given Text"""
-        payload = {}
+        payload: Dict[str, Any] = {}
         if flags.module_drawer:
             payload["module_drawer"] = qr_modular.get(flags.module_drawer)
         if flags.color_mask:

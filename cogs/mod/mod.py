@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import re
 import shlex
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 import discord
 from cogs.meta.robopage import SimplePages
@@ -15,7 +15,7 @@ from cogs.mod.embeds import (
     TEXT_CHANNEL_EMBED,
     VOICE_CHANNEL_EMBED,
 )
-from cogs.mod.flags import warnFlag
+from cogs.mod.flags import WarnFlag
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from pymongo.collection import Collection
@@ -1718,7 +1718,7 @@ class Moderator(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def delwarns(self, ctx: Context, *, flags: warnFlag):
+    async def delwarns(self, ctx: Context, *, flags: WarnFlag):
         """To delete warn of user by ID"""
         payload = {}
         if flags.target:
@@ -1742,7 +1742,7 @@ class Moderator(Cog):
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warns(self, ctx: Context, *, flags: warnFlag):
+    async def warns(self, ctx: Context, *, flags: WarnFlag):
         """To display warning in the server"""
         payload = {}
         if flags.target:

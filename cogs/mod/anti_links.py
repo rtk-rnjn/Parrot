@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import List
+from typing import List, Optional
 
 import discord
 from cogs.mod.method import instant_action_parser
@@ -29,12 +29,8 @@ class LinkProt(Cog):
         if message.author.bot or (not message.guild):
             return
 
-        # perms = message.author.guild_permissions
-
-        # if perms.administrator or perms.manage_messages or perms.manage_channels:
-        #     return
         if data := self.bot.server_config.get(message.guild.id):
-            prot: bool = data["automod"]["antilinks"]["enable"]
+            prot: Optional[bool] = data["automod"]["antilinks"]["enable"]
 
             if not prot:
                 return
@@ -55,7 +51,7 @@ class LinkProt(Cog):
             if any(temp in message.content for temp in whitelist):
                 return
             try:
-                to_delete: bool = data["automod"]["antilinks"]["autowarn"]["to_delete"]
+                to_delete: Optional[bool] = data["automod"]["antilinks"]["autowarn"]["to_delete"]
             except KeyError:
                 to_delete: bool = True
 
@@ -63,7 +59,7 @@ class LinkProt(Cog):
                 await message.delete(delay=0)
 
             try:
-                to_warn: bool = data["automod"]["antilinks"]["autowarn"]["enable"]
+                to_warn: Optional[bool] = data["automod"]["antilinks"]["autowarn"]["enable"]
             except KeyError:
                 to_warn: bool = False
 

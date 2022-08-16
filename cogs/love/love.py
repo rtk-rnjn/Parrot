@@ -32,7 +32,7 @@ HEART_EMOJIS = [
 VALENTINES_DATES = json.loads(Path("extra/valentines/date_ideas.json").read_text("utf8"))
 PICKUP_LINES = json.loads(Path("extra/valentines/pickup_lines.json").read_text("utf8"))
 STATES = json.loads(Path("extra/valentines/valenstates.json").read_text("utf8"))
-LOVE_DATA = json.loads(Path("extra/valentines/love_matches.json").read_text("utf8"))
+LOVE_DATA: dict = json.loads(Path("extra/valentines/love_matches.json").read_text("utf8"))
 LOVE_DATA = sorted((int(key), value) for key, value in LOVE_DATA.items())
 
 

@@ -9,7 +9,6 @@ import emojis
 from cogs.mod.method import instant_action_parser
 from core import Cog, Context, Parrot
 from utilities.infraction import warn
-from utilities.time import ShortTime
 
 with open("extra/duke_nekum.txt") as f:
     quotes = f.read().split("\n")

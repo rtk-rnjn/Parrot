@@ -88,8 +88,9 @@ class NSFW(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
     async def n(
-        self, ctx: Context, count: Optional[int] = 10, *, endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif"
+        self, ctx: Context, count: Optional[int] = 1, *, endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif"
     ) -> None:
         """Best command I guess. It return random ^^"""
         em_list: List[discord.Embed] = []
@@ -99,14 +100,12 @@ class NSFW(Cog):
 
         i: int = 1
         while i <= count:
-            r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")
+            r = await self.bot.http_session.get(
+                f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/", headers=self.bot.GLOBAL_HEADERS
+            )
             if r.status == 200:
                 res = await r.json()
-                em_list.append(
-                    discord.Embed(
-                        timestamp=discord.utils.utcnow()
-                    ).set_image(url=res["url"])
-                )
+                em_list.append(discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]))
             await ctx.release(0)
             i += 1
 

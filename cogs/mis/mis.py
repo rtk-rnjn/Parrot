@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime
 
 import hashlib
 import inspect
@@ -644,7 +645,6 @@ class Misc(Cog):
             + appid
         )
 
-        loc = loc.capitalize()
         r = await self.bot.http_session.get(link)
         if r.status == 200:
             res = await r.json()
@@ -653,45 +653,48 @@ class Misc(Cog):
                 f"{ctx.author.mention} no location named, **{location}**"
             )
 
+        embed: discord.Embed = discord.Embed()
+
         lat = res["coord"]["lat"]
         lon = res["coord"]["lon"]
 
-        weather = res["weather"][0]["main"]
-
-        max_temp = res["main"]["temp_max"] - 273.5
-        min_temp = res["main"]["temp_min"] - 273.5
-
-        press = res["main"]["pressure"] / 1000
-
+        if res["weather"]:
+            weather = res["weather"][0]["main"]
+            description = res["weather"][0]["description"]
+            icon = res["weather"][0]["icon"]
+            icon_url = f"http://openweathermap.org/img/w/{icon}.png"
+            
+            embed.set_thumbnail(url=icon_url)
+            embed.description = f"{weather}: {description}"
+        
+        temp = res["main"]["temp"] - 273.15
+        feels_like = res["main"]["feels_like"] - 273.15
         humidity = res["main"]["humidity"]
-
-        visiblity = res["visibility"]
+        pressure = res["main"]["pressure"]
         wind_speed = res["wind"]["speed"]
-
-        loc_id = res["id"]
+        wind_deg = res["wind"]["deg"]
+        cloudiness = res["clouds"]["all"]
+        visibliity = res["visibility"]
+        sunrise = datetime.fromtimestamp(res["sys"]["sunrise"])
+        sunset = datetime.fromtimestamp(res["sys"]["sunset"])
         country = res["sys"]["country"]
+        _id = res["id"]
+        name = res["name"]
 
-        embed = discord.Embed(
-            title=f"Weather Menu of: {location}",
-            description=f"Weather: {weather}",
-            timestamp=discord.utils.utcnow(),
-        )
-        embed.add_field(name="Latitude", value=f"{lat} Deg", inline=True)
-        embed.add_field(name="Longitude", value=f"{lon} Deg", inline=True)
-        embed.add_field(name="Humidity", value=f"{humidity} g/m³", inline=True)
-        embed.add_field(
-            name="Maximum Temperature", value=f"{round(max_temp)} C Deg", inline=True
-        )
-        embed.add_field(
-            name="Minimum Temperature", value=f"{round(min_temp)} C Deg", inline=True
-        )
-        embed.add_field(name="Pressure", value=f"{press} Pascal", inline=True)
-
-        embed.add_field(name="Visibility", value=f"{visiblity} m", inline=True)
-        embed.add_field(name="Wind Speed", value=f"{wind_speed} m/s", inline=True)
-        embed.add_field(name="Country", value=f"{country}", inline=True)
-        embed.add_field(name="Loaction ID", value=f"{location}: {loc_id}", inline=True)
-        embed.set_footer(text=f"{ctx.author.name}")
+        embed.add_field(name="Temperature", value=f"{temp:.2f}°C")
+        embed.add_field(name="Feels Like", value=f"{feels_like:.2f}°C")
+        embed.add_field(name="Humidity", value=f"{humidity}%")
+        embed.add_field(name="Pressure", value=f"{pressure}hPa")
+        embed.add_field(name="Wind Speed", value=f"{wind_speed}m/s")
+        embed.add_field(name="Wind Direction", value=f"{wind_deg}°")
+        embed.add_field(name="Cloudiness", value=f"{cloudiness}%")
+        embed.add_field(name="Visibility", value=f"{visibliity}m")
+        embed.add_field(name="Sunrise", value=f"{sunrise.strftime('%H:%M')}")
+        embed.add_field(name="Sunset", value=f"{sunset.strftime('%H:%M')}")
+        embed.add_field(name="Country", value=f"{country}")
+        embed.add_field(name="Name", value=f"{name}")
+        embed.set_footer(text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url)
+        embed.set_author(name=f"{location}: {_id}", icon_url=ctx.author.display_avatar.url)
 
         await ctx.reply(embed=embed)
 

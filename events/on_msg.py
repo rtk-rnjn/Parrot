@@ -678,10 +678,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             with suppress(discord.HTTPException):
                 msgs = payload.cached_messages
 
-                # for msg in msgs:
-                #     if not msg.author.bot:
-                #         main += f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
-                transcript = await Transcript(messages=msgs).export()
+                transcript = await Transcript(webhook.channel, None, msgs, None, None, self.bot).export()
                 transcript = transcript.html
 
                 fp = discord.File(

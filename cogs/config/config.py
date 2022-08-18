@@ -1272,40 +1272,40 @@ class Configuration(Cog):
             ticket_counter = data["ticket_counter"]
             valid_roles = (
                 ", ".join(
-                    getattr(ctx.guild.get_role(n), "name", None)
+                    getattr(ctx.guild.get_role(n), "name", "N/A")
                     for n in data["valid_roles"]
                 )
                 if data.get("valid_roles")
-                else None
+                else "N/A"
             )
             pinged_roles = (
                 ", ".join(
-                    getattr(ctx.guild.get_role(n), "name", None)
+                    getattr(ctx.guild.get_role(n), "name", "N/A")
                     for n in data["pinged_roles"]
                 )
                 if data.get("pinged_roles")
-                else None
+                else "N/A"
             )
             current_active_channel = (
                 ", ".join(
-                    getattr(ctx.guild.get_channel(n), "name", None)
+                    getattr(ctx.guild.get_channel(n), "name", "N/A")
                     for n in data["ticket_channel_ids"]
                 )
                 if data.get("ticket_channel_ids")
-                else None
+                else "N/A"
             )
             verified_roles = (
                 ", ".join(
-                    getattr(ctx.guild.get_role(n), "name", None)
+                    getattr(ctx.guild.get_role(n), "name", "N/A")
                     for n in data["verified_roles"]
                 )
                 if data.get("verified_roles")
-                else None
+                else "N/A"
             )
             category = (
                 ctx.guild.get_channel(data["category"])
                 if data.get("category")
-                else None
+                else "N/A"
             )
             await ctx.reply(
                 f"Configuration of this server [ticket]\n\n"

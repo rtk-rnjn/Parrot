@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import aiohttp
 import asyncio
 import datetime
 import functools
@@ -71,7 +72,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         return f"<core.Context author={self.author} guild={self.guild} channel={self.channel} command={self.command}>"
 
     @property
-    def session(self) -> Any:
+    def session(self) -> "aiohttp.ClientSession":
         return self.bot.http_session
 
     async def is_voter(self) -> Optional[bool]:

@@ -22,6 +22,7 @@ from typing import (
     Callable,
     Collection,
     Dict,
+    Generic,
     Iterable,
     List,
     Literal,
@@ -30,6 +31,7 @@ from typing import (
     Sequence,
     Set,
     Type,
+    TypeVar,
     Union,
 )
 
@@ -68,6 +70,7 @@ from utilities.config import (
     UNLOAD_EXTENSIONS,
     TO_LOAD_IPC,
     HEROKU,
+    SUPPORT_SERVER_ID
 )
 from utilities.converters import ToAsync
 from utilities.paste import Client
@@ -119,7 +122,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-SUPPORT_SERVER_ID: Literal[741614680652644382] = 741614680652644382
+T = TypeVar("T")
 
 
 @ToAsync()
@@ -130,7 +133,7 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 __all__ = ("Parrot",)
 
 
-class Parrot(commands.AutoShardedBot):
+class Parrot(commands.AutoShardedBot, Generic[T]):
     """A custom way to organise a commands.AutoSharedBot."""
 
     __version__: str
@@ -190,6 +193,7 @@ class Parrot(commands.AutoShardedBot):
         self._was_ready: bool = False
         self.lock: "asyncio.Lock" = asyncio.Lock()
         self.ON_HEROKU: bool = HEROKU
+
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
         if self.HAS_TOP_GG:
@@ -237,7 +241,7 @@ class Parrot(commands.AutoShardedBot):
             "User-Agent": f"Discord Bot '{self.user}' @ {self.github}",
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
 
     @property
@@ -276,7 +280,7 @@ class Parrot(commands.AutoShardedBot):
     def author_name(self) -> str:
         return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}"  # cant join str and int, ofc
 
-    async def setup_hook(self):
+    async def setup_hook(self) -> None:
         if TO_LOAD_IPC:
             self.ipc.start()
         for ext in EXTENSIONS:
@@ -664,11 +668,9 @@ class Parrot(commands.AutoShardedBot):
         shard = self.get_shard(guild.shard_id)
         if shard.is_ws_ratelimited():
             try:
-                member = await guild.fetch_member(member_id)
+                return await guild.fetch_member(member_id)
             except discord.HTTPException:
                 return None
-            else:
-                return member
 
         members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
         return members[0] if members else None

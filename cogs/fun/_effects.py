@@ -4,12 +4,12 @@ import math
 import random
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 import discord
 from PIL import Image, ImageDraw, ImageOps
 
-easter_like_colours = [
+easter_like_colours: List[Tuple[int, int, int]] = [
     (255, 247, 0),
     (255, 255, 224),
     (0, 255, 127),
@@ -34,7 +34,7 @@ class PfpEffects:
 
     @staticmethod
     def apply_effect(
-        image_bytes: bytes, effect: Callable, filename: str, *args
+        image_bytes: bytes, effect: Callable, filename: str, *args: Any
     ) -> discord.File:
         """Applies the given effect to the image passed to it."""
         im = Image.open(BytesIO(image_bytes))

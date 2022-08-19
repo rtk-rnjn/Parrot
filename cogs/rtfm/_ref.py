@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import urllib.parse
 from functools import partial
+from typing import Any
 
 import discord
 from bs4 import BeautifulSoup
@@ -18,13 +19,6 @@ except ImportError:
 
 
 class DocMarkdownConverter(MarkdownConverter):
-    # def convert_code(self, el, text):
-    #     """Undo `markdownify`s underscore escaping."""
-    #     print(el)
-    #     print(el.strings)
-    #     print(text)
-
-    #     return f"`{text}`".replace('\\', '')
 
     def convert_pre(self, el, text):
         """Wrap any codeblocks in `py` for syntax highlighting."""
@@ -33,37 +27,32 @@ class DocMarkdownConverter(MarkdownConverter):
         return f"```py\n{code}```"
 
 
-def markdownify(html):
+def markdownify(html: Any):
     return DocMarkdownConverter(bullets="\N{BULLET}").convert(html)
 
 
-async def _process_mozilla_doc(ctx: Context, url):
+async def _process_mozilla_doc(ctx: Context, url: str):
     """
     From a given url from developers.mozilla.org, processes format,
     returns tag formatted content
     """
     response = await ctx.bot.http_session.get(url)
     if response.status == 404:
-        return await ctx.send("No results")
+        return await ctx.error("No results")
     if response.status != 200:
-        return await ctx.send(
+        return await ctx.error(
             f"An error occurred (status code: {response.status}). Retry later."
         )
 
     body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
 
-    # if body.get('class')[0] == 'error':
-    #     # 404
-    #     return await ctx.send(f'No results for `{text}`')
-
-    # First tag not empty
     contents = body.find(id="wikiArticle").find(lambda x: x.name == "p" and x.text)
     return markdownify(contents).replace(
         "(/en-US/docs", "(https://developer.mozilla.org/en-US/docs"
     )
 
 
-async def html_ref(ctx, text):
+async def html_ref(ctx: Context, text):
     """Displays informations on an HTML tag"""
     text = text.strip("<>`")
 
@@ -107,7 +96,7 @@ http_status = partial(_http_ref, "Status")
 csp_directives = partial(_http_ref, "Headers/Content-Security-Policy")
 
 
-async def _git_main_ref(part, ctx, text):
+async def _git_main_ref(part: str, ctx: Context, text: str):
     """Displays a git help page"""
     text = text.strip("`")
 
@@ -122,12 +111,12 @@ async def _git_main_ref(part, ctx, text):
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.send(
+        return await ctx.error(
             f"An error occurred (status code: {response.status}). Retry later."
         )
     if str(response.url) == "https://git-scm.com/docs":
         # Website redirects to home page
-        return await ctx.send("No results")
+        return await ctx.error("No results")
 
     soup = BeautifulSoup(await response.text(), HTML_PARSER)
     sectors = soup.find_all("div", {"class": "sect1"}, limit=3)
@@ -151,43 +140,35 @@ git_ref = partial(_git_main_ref, "git-")
 git_tutorial_ref = partial(_git_main_ref, "")
 
 
-async def sql_ref(ctx, text):
+async def sql_ref(ctx: Context, text: str):
     """Displays reference on an SQL statement"""
     text = text.strip("`").lower()
-    if text in ("check", "unique", "not null"):
+    if text in {"check", "unique", "not null"}:
         text += " constraint"
     text = re.sub(" ", "-", text)
-
     base_url = f"http://www.sqltutorial.org/sql-{text}/"
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
-
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.send(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.error(f"An error occurred (status code: {response.status}). Retry later.")
 
     body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
     intro = body.find(lambda x: x.name == "h2" and "Introduction to " in x.string)
     title = body.find("h1").string
-
     ps = []
     for tag in tuple(intro.next_siblings):
         if tag.name == "h2" and tag.text.startswith("SQL "):
             break
         if tag.name == "p":
             ps.append(tag)
-
     description = "\n".join([markdownify(p) for p in ps])[:2048]
-
     emb = discord.Embed(title=title, url=url, description=description)
     emb.set_author(name="SQL Reference")
     emb.set_thumbnail(url="https://users.soe.ucsc.edu/~kunqian/logos/sql-logo.png")
-
     await ctx.send(embed=emb)
 
 
-async def haskell_ref(ctx, text):
+async def haskell_ref(ctx: Context, text: str):
     """Displays informations on given Haskell topic"""
     text = text.strip("`")
 
@@ -198,9 +179,9 @@ async def haskell_ref(ctx, text):
 
     response = await ctx.bot.http_session.get(url)
     if response.status == 404:
-        return await ctx.send(f"No results for `{text}`")
+        return await ctx.error(f"No results for `{text}`")
     if response.status != 200:
-        return await ctx.send(
+        return await ctx.error(
             f"An error occurred (status code: {response.status}). Retry later."
         )
 

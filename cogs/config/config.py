@@ -375,7 +375,7 @@ class Configuration(Cog):
             "mute",
         ]
         if action.lower() not in ACTIONS:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
             )
         if duration:
@@ -383,7 +383,7 @@ class Configuration(Cog):
         if _ := await self.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} warn count {count} already exists."
             )
         await self.bot.mongo.parrot_db.server_config.update_one(
@@ -417,7 +417,7 @@ class Configuration(Cog):
         payload = {}
         if flags.action:
             if flags.action.lower() not in ACTIONS:
-                return await ctx.send(
+                return await ctx.error(
                     f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
                 )
             payload["action"] = flags.action.lower()
@@ -449,7 +449,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id, "warn_auto": {"$exists": True}}, {"warn_auto": 1}
         )
         if not warn_auto:
-            return await ctx.send(f"{ctx.author.mention} no warn settings")
+            return await ctx.error(f"{ctx.author.mention} no warn settings")
 
         entries: List[str] = []
 
@@ -762,7 +762,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id, "leveling.reward": level}
         ):
             role = ctx.guild.get_role(_["role"])
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{getattr(role, 'name', 'Role Not Found')}**"
             )
         await self.bot.mongo.parrot_db.server_config.update_one(
@@ -1502,7 +1502,7 @@ class Configuration(Cog):
             em_lis.append(main)
 
         if not em_lis:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} no commands/category overwrite found"
             )
         p = SimplePages(em_lis, ctx=ctx, per_page=3)
@@ -1678,7 +1678,7 @@ class Configuration(Cog):
         counter = await wait_for_response()
 
         if counter not in AVAILABLE_COUNTER:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE_COUNTER)}`"
             )
         if counter == "role":
@@ -1690,7 +1690,7 @@ class Configuration(Cog):
             try:
                 role = await commands.RoleConverter().convert(ctx, role)
             except commands.BadArgument:
-                return await ctx.send(
+                return await ctx.error(
                     f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
                 )
             else:
@@ -1700,7 +1700,7 @@ class Configuration(Cog):
         await ctx.send(f"{ctx.author.mention} {QUES[1]}")
         channel_type = await wait_for_response()
         if channel_type not in AVAILABLE_TYPE:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid channel type! Available channel type: `{'`, `'.join(AVAILABLE_TYPE)}`"
             )
         PAYLOAD[f"{counter}.channel_type"] = channel_type
@@ -1709,7 +1709,7 @@ class Configuration(Cog):
         await ctx.send(f"{ctx.author.mention} {QUES[2]}")
         _format = await wait_for_response()
         if r"{}" not in _format:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid format! Please provide a valid format."
             )
         PAYLOAD[f"{counter}.template"] = _format
@@ -1736,7 +1736,7 @@ class Configuration(Cog):
                     reason=f"Action requested by {ctx.author} ({ctx.author.id})",
                 )
         except (ValueError, IndexError):
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid format! Please provide a valid format."
             )
         PAYLOAD[f"{counter}.channel_id"] = (
@@ -1780,7 +1780,7 @@ class Configuration(Cog):
             "role",
         ]
         if counter.lower() not in AVAILABLE:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`"
             )
 
@@ -1804,7 +1804,7 @@ class Configuration(Cog):
             try:
                 role = await commands.RoleConverter().convert(ctx, role)
             except commands.BadArgument:
-                return await ctx.send(
+                return await ctx.error(
                     f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
                 )
             else:
@@ -1813,7 +1813,7 @@ class Configuration(Cog):
                     {"$pull": {"stats_channels.role": {"role_id": role.id}}},
                     upsert=True,
                 )
-                return await ctx.send(
+                return await ctx.error(
                     f"{ctx.author.mention} counter deleted for role {role.name} ({role.mention})"
                 )
 
@@ -1862,7 +1862,7 @@ class Configuration(Cog):
             {"_id": guild.id}
         )
         if data is None:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} No backup found for this server!"
             )
 
@@ -1885,7 +1885,7 @@ class Configuration(Cog):
             try:
                 await self.bot.wait_for("reaction_add", check=check, timeout=60)
             except asyncio.TimeoutError:
-                return await ctx.send(
+                return await ctx.error(
                     f"{ctx.author.mention} You took too long to respond!"
                 )
             else:

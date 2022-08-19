@@ -8,6 +8,7 @@ import datetime
 import functools
 import html
 import io
+import itertools
 import json
 import math
 import operator
@@ -1902,7 +1903,7 @@ class Fun(Cog):
                 return f'[{word}](http://{word.replace(" ", "-")}.urbanup.com)'
 
             ret = regex.sub(repl, definition)
-            return ret[:2000] + " [...]" if len(ret) >= 2048 else ret
+            return f"{ret[:2000]} [...]" if len(ret) >= 2048 else ret
 
         # Thanks Danny
 
@@ -2443,13 +2444,14 @@ class Fun(Cog):
     async def activity(self, ctx: Context, *, name: str):
         """To create embed activity within your server"""
         if not ctx.author.voice:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} you must be in the voice channel to use the activity"
             )
 
         INT = EmbeddedActivity.get(name.lower().replace(" ", "_"))
         if INT is None:
-            return await ctx.send(f"{ctx.author.mention} no activity named {name}")
+            return await ctx.error(f"{ctx.author.mention} no activity named {name}")
+
         inv = await ctx.author.voice.channel.create_invite(
             target_type=discord.InviteTarget.embedded_application,
             target_application_id=INT,
@@ -2540,10 +2542,9 @@ class Fun(Cog):
     　　|　　　　|／
     　　￣￣￣￣""",
         )
-        for _ in range(3):
-            for cat in list:
-                await m.edit(content=cat)
-                await ctx.release(1)
+        for _, cat in itertools.product(range(3), list):
+            await m.edit(content=cat)
+            await ctx.release(1)
 
     @commands.command(name="flop")
     @commands.max_concurrency(1, per=commands.BucketType.channel)

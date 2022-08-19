@@ -10,7 +10,6 @@ from core import Context, Parrot
 from discord.ext import commands
 from pymongo.collection import Collection
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError
-from utilities.paginator import ParrotPaginator
 from utilities.time import ShortTime
 
 IGNORE = [
@@ -190,12 +189,13 @@ async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
 async def _show_tag_mine(bot: Parrot, ctx: Context):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     i = 1
-    paginator = ParrotPaginator(ctx, title="Tags")
+    entries: List[str] = []
+
     async for data in collection.find({"owner": ctx.author.id}):
-        paginator.add_line(f"`{i}` {data['_id']}")
+        entries.append(f"`{i}` {data['_id']}")
         i += 1
     try:
-        await paginator.start()
+        return await ctx.paginate(entries, _type="SimplePages")
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} you don't have any tags registered with your name")
 
@@ -203,12 +203,12 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
 async def _show_all_tags(bot: Parrot, ctx: Context):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     i = 1
-    paginator = ParrotPaginator(ctx, title="Tags", per_page=12)
+    entries: List[str] = []
     async for data in collection.find({}):
-        paginator.add_line(f"`{i}` {data['id']}")
+        entries.append(f"`{i}` {data['id']}")
         i += 1
     try:
-        await paginator.start()
+        return await ctx.paginate(entries, _type="SimplePages")
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
 
@@ -307,12 +307,12 @@ async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
 async def _list_todo(bot: Parrot, ctx: Context):
     collection: Collection = bot.mongo.todo[f"{ctx.author.id}"]
     i = 1
-    paginator = ParrotPaginator(ctx, title="Your Pending Tasks", per_page=12)
+    entries: List[str] = []
     async for data in collection.find({}):
-        paginator.add_line(f"[`{i}`]({data['msglink']}) {data['id']}")
+        entries.append(f"[`{i}`]({data['msglink']}) {data['id']}")
         i += 1
     try:
-        await paginator.start()
+        return await ctx.paginate(entries, _type="SimplePages")
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} you do not have task to do")
 

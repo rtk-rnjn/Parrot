@@ -151,7 +151,7 @@ class Hidden(Cog):
                 f"{ctx.author.mention} are you sure you want to upgrade to premium?"
             )
             if not res:
-                return await ctx.send(f"{ctx.author.mention} cancelled.")
+                return await ctx.error(f"{ctx.author.mention} cancelled.")
             await self.bot.mongo.extra.subscription.update_one(
                 {"hash": code_hash}, {"$inc": {"uses": 1}}, upsert=True
             )

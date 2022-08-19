@@ -133,7 +133,7 @@ class Sector1729(Cog):
     @in_support_server()
     async def claim_vote(self, ctx: Context):
         if ctx.author._roles.has(VOTER_ROLE_ID):
-            return await ctx.send("You already have the vote role.")
+            return await ctx.error("You already have the vote role.")
 
         if await self.bot.mongo.extra.user_misc.find_one(
             {"_id": ctx.author.id, "topgg_vote_expires": {"$gte": time()}}

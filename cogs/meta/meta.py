@@ -973,10 +973,10 @@ class Meta(Cog):
     async def stickerinfo(self, ctx: Context, sticker: Union[discord.GuildSticker, None] = None):
         """Get the info regarding the Sticker"""
         if sticker is None and not ctx.message.stickers:
-            return await ctx.send(f"{ctx.author.mention} you did not provide any sticker")
+            return await ctx.error(f"{ctx.author.mention} you did not provide any sticker")
         sticker = sticker or await ctx.message.stickers[0].fetch()
         if sticker.guild and sticker.guild.id != ctx.guild.id:
-            return await ctx.send(f"{ctx.author.mention} this sticker is not from this server")
+            return await ctx.error(f"{ctx.author.mention} this sticker is not from this server")
 
         embed: discord.Embed = (
             discord.Embed(title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url)

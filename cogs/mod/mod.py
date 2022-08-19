@@ -616,7 +616,7 @@ class Moderator(Cog):
         """Removes all reactions from messages that have them."""
 
         if search > 2000:
-            return await ctx.send(f"Too many messages to search for ({search}/2000)")
+            return await ctx.error(f"Too many messages to search for ({search}/2000)")
 
         total_reactions = 0
         async for message in ctx.history(limit=search, before=ctx.message):
@@ -926,7 +926,7 @@ class Moderator(Cog):
     ):
         """To give the member voice ban"""
         if member.voice is None:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} {member} is not in Voice Channel"
             )
         await mt._voice_ban(
@@ -956,7 +956,7 @@ class Moderator(Cog):
     ):
         """To give the member voice unban"""
         if member.voice is None:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} {member} is not in Voice Channel"
             )
         await mt._voice_unban(
@@ -1053,7 +1053,7 @@ class Moderator(Cog):
     ):
         """To set the VC limit"""
         if not ctx.author.voice:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} you must be in voice channel to use the command"
             )
         await ctx.author.voice.channel.edit(
@@ -1101,7 +1101,7 @@ class Moderator(Cog):
                 if not member:
                     member = voicestate.channel.members
             else:
-                return await ctx.send(
+                return await ctx.error(
                     f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command"
                 )
 
@@ -1113,7 +1113,7 @@ class Moderator(Cog):
                     "voice_state_update", timeout=60, check=check
                 )
             except asyncio.TimeoutError:
-                return await ctx.send(f"{ctx.author.mention} you ran out time")
+                return await ctx.error(f"{ctx.author.mention} you ran out time")
 
             a: discord.VoiceState = a
 

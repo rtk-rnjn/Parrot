@@ -118,7 +118,7 @@ class CustomCommand(Cog):
             {"_id": 0, "commands.$": 1},
         )
         if data is None:
-            return await ctx.send(f"{ctx.author.mention} Command not found")
+            return await ctx.error(f"{ctx.author.mention} Command not found")
 
         for command in data.get("commands", []):
             if command.get("name") == name:
@@ -169,7 +169,7 @@ class CustomCommand(Cog):
                         )
                         return await ctx.send("Approved")
                     return await ctx.send("Rejected")
-        return await ctx.send(f"{ctx.author.mention} no codes to review at this time")
+        return await ctx.error(f"{ctx.author.mention} no codes to review at this time")
 
     @cc.command(name="make")
     @commands.has_permissions(manage_guild=True)
@@ -324,10 +324,10 @@ class CustomCommand(Cog):
         """To list custom commands"""
         commands = await self.bot.mongo.cc.commands.find_one({"_id": ctx.guild.id})
         if not commands:
-            return await ctx.send(f"{ctx.author.mention} No custom commands found.")
+            return await ctx.error(f"{ctx.author.mention} No custom commands found.")
         commands = commands.get("commands", [])
         if not commands:
-            return await ctx.send(f"{ctx.author.mention} No custom commands found.")
+            return await ctx.error(f"{ctx.author.mention} No custom commands found.")
         embed = discord.Embed(
             title=f"Custom commands in {ctx.guild.name}",
             description="\n".join([f"`{command.get('name')}`" for command in commands]),

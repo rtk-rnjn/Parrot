@@ -11,7 +11,7 @@ from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 from core import Parrot
 from utilities.config import TOKEN, my_secret, VERSION
 
-bot = Parrot()
+bot: Parrot = Parrot()
 
 
 async def main() -> None:

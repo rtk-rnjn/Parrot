@@ -1887,7 +1887,15 @@ class Fun(Cog):
 
         DATA = {"text": [message], "model_id": model}
         res = await self.bot.http_session.post(URL, json=DATA, auth=AUTH, header=HEADER,)
-
+        if res.status != 200:
+            return await ctx.error(f"{ctx.author.mention} somthing not right! Please try again later or check the `model`")
+        
+        data = await res.json()
+        for i in data.get("translations", []):
+            result = i["translation"]
+            return await ctx.send(f"{ctx.author.mention} Translated: {result}")
+        
+        return await ctx.send(f"{ctx.author.mention} no translation found")
 
     @commands.command(aliases=["def", "urban"])
     @commands.bot_has_permissions(embed_links=True)

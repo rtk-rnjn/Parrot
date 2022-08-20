@@ -472,8 +472,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 await self.on_invite(message, links)
 
         AWAITABLES: List[Coroutine] = [
-            __internal_snippets_parser,
-            __internal_invite_parser,
+            __internal_snippets_parser(),
+            __internal_invite_parser(),
             self._scam_detection(message),
             self._on_message_leveling(message),
             self._add_record_message_to_database(message),

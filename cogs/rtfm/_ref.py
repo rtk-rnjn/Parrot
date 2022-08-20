@@ -52,7 +52,7 @@ async def _process_mozilla_doc(ctx: Context, url: str):
     )
 
 
-async def html_ref(ctx: Context, text):
+async def html_ref(ctx: Context, text: str):
     """Displays informations on an HTML tag"""
     text = text.strip("<>`")
 
@@ -71,7 +71,7 @@ async def html_ref(ctx: Context, text):
     await ctx.send(embed=emb)
 
 
-async def _http_ref(part, ctx, text):
+async def _http_ref(part, ctx: Context, text: str):
     """Displays informations about HTTP protocol"""
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTTP/{part}/{text}"
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")

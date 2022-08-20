@@ -647,8 +647,8 @@ class Utils(Cog):
     ) -> Optional[discord.TextChannel]:
         try:
             ch_id: Optional[int] = self.bot.server_config[guild.id]["suggestion_channel"]
-        except KeyError:
-            raise commands.BadArgument("No suggestion channel is setup")
+        except KeyError as e:
+            raise commands.BadArgument("No suggestion channel is setup") from e
         else:
             if not ch_id:
                 raise commands.BadArgument("No suggestion channel is setup")
@@ -668,8 +668,8 @@ class Utils(Cog):
             if channel is None:
                 try:
                     channel_id = self.bot.server_config[guild.id]["suggestion_channel"]
-                except KeyError:
-                    raise commands.BadArgument("No suggestion channel is setup")
+                except KeyError as e:
+                    raise commands.BadArgument("No suggestion channel is setup") from e
             msg = await self.__fetch_message_from_channel(
                 message=msg_id, channel=self.bot.get_channel(channel_id)
             )

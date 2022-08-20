@@ -4,7 +4,7 @@ import io
 import os
 import random
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -132,7 +132,7 @@ class NASA(Cog):
         else:
             return
 
-        em_list = []
+        em_list: List[discord.Embed] = []
         for index in range(len(res)):
             caption = res[index]["caption"]
             im = res[index]["image"]
@@ -168,7 +168,7 @@ class NASA(Cog):
             res = await r.json()
         else:
             return
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for date in res["near_earth_objects"]:
             for index in range(len(res["near_earth_objects"][date])):
@@ -294,7 +294,7 @@ class NASA(Cog):
         else:
             return
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for index in range(len(res["photos"])):
             img = res["photos"][index]["img_src"]
@@ -338,7 +338,7 @@ class NASA(Cog):
             await ctx.reply(
                 f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library."
             )
-        em_list = []
+        em_list: List[discord.Embed] = []
         for index in range(len(res["collection"]["items"])):
             if data := res["collection"]["items"][index]:
                 try:
@@ -425,7 +425,7 @@ class NASA(Cog):
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -470,7 +470,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -500,7 +500,7 @@ Link: {link}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -540,7 +540,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -590,7 +590,7 @@ Link: {link}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -631,7 +631,7 @@ Link: {link}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -667,7 +667,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -703,7 +703,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list = []
+        em_list: List[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()

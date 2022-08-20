@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import discord
 from core import Parrot
@@ -13,7 +13,7 @@ from ._tio import Tio
 with open("extra/lang.txt") as f:
     languages = f.read().split("\n")
 
-wrapping = {
+wrapping: Dict[str, str] = {
     "c": "#include <stdio.h>\nint main() {code}",
     "cpp": "#include <iostream>\nint main() {code}",
     "cs": "using System;class Program {static void Main(string[] args) {code}}",
@@ -27,7 +27,7 @@ with open("extra/default_langs.yml", "r") as file:
     default_langs = yaml_load(file)
 
 
-def prepare_payload(payload):
+def prepare_payload(payload: str):
     no_code = False
 
     try:
@@ -45,7 +45,7 @@ def prepare_payload(payload):
 
 
 async def get_message(
-    interaction: discord.Interaction, fetch=False, *, bot: Parrot
+    interaction: discord.Interaction, fetch: bool=False, *, bot: Parrot
 ) -> Optional[discord.Message]:
     """Retrieve referenced message, trying cache first and handle deletion"""
     ref = interaction.message.reference
@@ -63,7 +63,7 @@ async def get_message(
 
     try:
         return await bot.get_or_fetch_message(
-            interaction.message.channel, ref.message_id, fetch=True
+            interaction.message.channel, ref.message_id, fetch=fetch
         )
     except discord.errors.NotFound:
         # message deleted
@@ -71,7 +71,7 @@ async def get_message(
 
 
 class RerunBtn(discord.ui.Button):
-    def __init__(self, bot: Parrot, **kwargs):
+    def __init__(self, bot: Parrot, **kwargs: Any):
         super().__init__(**kwargs)
         self.bot = bot
 
@@ -79,7 +79,7 @@ class RerunBtn(discord.ui.Button):
         # We always fetch since we need an updated message.content
         message = await get_message(interaction, fetch=True, bot=self.bot)
 
-        if message is None:
+        if message is None and self.view is not None:
             await interaction.response.send_message(
                 "No code to run since original message was deleted.", ephemeral=True
             )
@@ -125,7 +125,7 @@ async def execute_run(bot: Parrot, language: str, code: str,) -> str:
 
     # Setting options and removing them from the beginning of the command
     # options may be separated by any single whitespace, which we keep in the list
-    code = re.split(r"(\s)", code, maxsplit=optionsAmount)
+    code: List[str] = re.split(r"(\s)", code, maxsplit=optionsAmount)
 
     for option in options:
         if option in code[: optionsAmount * 2]:
@@ -160,7 +160,7 @@ async def execute_run(bot: Parrot, language: str, code: str,) -> str:
     code = "\n".join(code)
 
     # common identifiers, also used in highlight.js and thus discord codeblocks
-    quickmap = {
+    quickmap: Dict[str, str] = {
         "asm": "assembly",
         "c#": "cs",
         "c++": "cpp",
@@ -270,7 +270,7 @@ def get_raw(link: str) -> str:
 
     if not any(link.startswith(url) for url in authorized):
         raise commands.BadArgument(
-            message=f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http')."
+            f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http')."
         )
 
     domain = link.split("/")[2]

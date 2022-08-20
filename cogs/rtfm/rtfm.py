@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
+import pathlib
 import re
 import sys
 import unicodedata
@@ -12,7 +13,7 @@ from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore
@@ -38,10 +39,7 @@ except ImportError:
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-with open("extra/lang.txt") as f:
-    languages = f.read()
-
-
+languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
 API_ROOT_RP = "https://realpython.com/search/api/v1/"
 ARTICLE_URL = "https://realpython.com{article_url}"
@@ -79,7 +77,7 @@ $wtf del
 TIMEOUT = 120
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
-MAPPING_OF_KYU = {
+MAPPING_OF_KYU: Dict[int, int] = {
     8: 0xDDDBDA,
     7: 0xDDDBDA,
     6: 0xECB613,
@@ -91,7 +89,7 @@ MAPPING_OF_KYU = {
 }
 
 # Supported languages for a kata on codewars.com
-SUPPORTED_LANGUAGES = {
+SUPPORTED_LANGUAGES: Dict[str, List[str]] = {
     "stable": [
         "c",
         "c#",
@@ -154,18 +152,16 @@ SUPPORTED_LANGUAGES = {
 }
 
 
-NEGATIVE_REPLIES = ["! YOU DONE? !", "! OK, HERE IS AN ERROR !", "! F. !"]
+NEGATIVE_REPLIES: List[str] = ["! YOU DONE? !", "! OK, HERE IS AN ERROR !", "! F. !"]
 
 
 class Icons:
-    bookmark = (
-        "https://images-ext-2.discordapp.net/external/zl4oDwcmxUILY7sD9ZWE2fU5R7n6QcxEmPYSE5eddbg/"
-        "%3Fv%3D1/https/cdn.discordapp.com/emojis/654080405988966419.png?width=20&height=20"
-    )
+    bookmark: str = "https://images-ext-2.discordapp.net/external/zl4oDwcmxUILY7sD9ZWE2fU5R7n6QcxEmPYSE5eddbg/%3Fv%3D1/https/cdn.discordapp.com/emojis/654080405988966419.png?width=20&height=20"
 
 
 class InformationDropdown(ui.Select):
     """A dropdown inheriting from ui.Select that allows finding out other information about the kata."""
+
     original_message: discord.Message
 
     def __init__(
@@ -175,7 +171,7 @@ class InformationDropdown(ui.Select):
         other_info_embed: Embed,
         main_embed: Embed,
     ):
-        options = [
+        options: List[SelectOption] = [
             SelectOption(
                 label="Main Information",
                 description="See the kata's difficulty, description, etc.",
@@ -229,12 +225,10 @@ class RTFM(Cog):
         self.bot = bot
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
-        self.bot.languages = ()
+        if not hasattr(self.bot, "languages"):
+            self.bot.languages = ()
         self.headers: Dict[str, str] = {}
         self.fetch_readme.start()
-
-    # async def setup_hook(self) -> None:
-    #     self.fetch_readme.start()
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:
@@ -251,9 +245,7 @@ class RTFM(Cog):
             title=title,
             description=target_message.content,
         )
-        if target_message.attachments and target_message.attachments[0].url.endswith(
-            ("png", "jpeg", "jpg", "gif", "webp")
-        ):
+        if target_message.attachments and target_message.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
             embed.set_image(url=target_message.attachments[0].url)
 
         embed.add_field(
@@ -292,9 +284,7 @@ class RTFM(Cog):
             await channel.send(embed=error_embed)
 
     @staticmethod
-    async def send_reaction_embed(
-        channel: discord.TextChannel, target_message: discord.Message
-    ) -> discord.Message:
+    async def send_reaction_embed(channel: discord.TextChannel, target_message: discord.Message) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
             embed=discord.Embed(
@@ -310,9 +300,7 @@ class RTFM(Cog):
 
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
-        table_of_contents = re.search(
-            r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data
-        )[0].split("\n")
+        table_of_contents = re.search(r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)[0].split("\n")
 
         for header in list(map(str.strip, table_of_contents)):
             if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):
@@ -383,9 +371,7 @@ class RTFM(Cog):
             description=ERROR_MESSAGE_CHEAT_SHEET,
         )
 
-    def result_fmt(
-        self, url: str, body_text: str
-    ) -> Tuple[bool, Union[str, discord.Embed]]:
+    def result_fmt(self, url: str, body_text: str) -> Tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -401,9 +387,7 @@ class RTFM(Cog):
                 f"Full results: {url} "
             )
         else:
-            description = (
-                f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
-            )
+            description = f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
         return False, description
 
     async def get_package(self, url: str):
@@ -428,8 +412,8 @@ class RTFM(Cog):
 
         res = res_json.get("info", "Unknown")
 
-        def getval(key):
-            return res[key] or "Unknown"
+        def getval(key: Dict):
+            return key.get(key, "Unknown")
 
         name = getval("name")
         author = getval("author")
@@ -500,16 +484,12 @@ class RTFM(Cog):
         author = getval("author", "name")
         author_email = getval("author", "email")
 
-        repository = (
-            getval("repository", "url").removeprefix("git+").removesuffix(".git")
-        )
+        repository = getval("repository", "url").removeprefix("git+").removesuffix(".git")
 
         homepage = getval("homepage")
         _license = getval("license")
 
-        em = discord.Embed(
-            title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534
-        )
+        em = discord.Embed(title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534)
 
         em.add_field(name="Author", value=author, inline=True)
         em.add_field(name="Author Email", value=author_email, inline=True)
@@ -520,9 +500,7 @@ class RTFM(Cog):
         em.add_field(name="Repository", value=repository, inline=False)
         em.add_field(name="Homepage", value=homepage, inline=True)
 
-        em.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
-        )
+        em.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png")
 
         await ctx.send(embed=em)
 
@@ -572,9 +550,7 @@ class RTFM(Cog):
         homepage = getmainval("homepage")
         _license = getversionvals("license")
 
-        em = discord.Embed(
-            title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29
-        )
+        em = discord.Embed(title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29)
 
         em.add_field(name="Published By", value=publisher, inline=True)
         em.add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
@@ -593,22 +569,30 @@ class RTFM(Cog):
 
     @commands.command(
         usage="run <language> [--wrapped] [--stats] <code>",
-        help="""For command-line-options, compiler-flags and arguments you may add a line starting with this argument, and after a space add your options, flags or args.
-stats option displays more informations on execution consumption
-wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
-<code> may be normal code, but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com)
-If you use a link, your command must end with this syntax:
-`link=<link>` (no space around `=`)
-for instance : `do run python link=https://hastebin.com/resopedahe.py`
-The link may be the raw version, and with/without the file extension
-If the output exceeds 40 lines or Discord max message length, it will be put
-in a new hastebin and the link will be returned.
-When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
-Useful to hide your syntax fails or when you forgot to print the result.""",
         brief="Execute code in a given programming language",
     )
-    async def run(self, ctx, *, payload=""):
-        """Execute code in a given programming language"""
+    async def run(self, ctx: Context, *, payload: str = ""):
+        """For command-line-options, compiler-flags and arguments you may add a line starting with this argument,
+        and after a space add your options, flags or args.
+
+        Stats option displays more informations on execution consumption
+        wrapped allows you to not put main function in some languages,
+        which you can see in `list wrapped argument` <code> may be normal code,
+        but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com)
+
+        If you use a link, your command must end with this syntax:
+            `link=<link>` (no space around `=`)
+
+        For instance: `$run python link=https://hastebin.com/resopedahe.py`
+
+        The link may be the raw version, and with/without the file extension
+
+        If the output exceeds 40 lines or Discord max message length, it will be put
+        in a new hastebin and the link will be returned.
+
+        When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
+        Useful to hide your syntax fails or when you forgot to print the result."""
+
         if not payload:
             emb = discord.Embed(
                 title="SyntaxError",
@@ -628,11 +612,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             await ctx.message.attachments[0].save(buffer)
             text = buffer.read().decode("utf-8")
             lang = re.split(r"\s+", payload, maxsplit=1)[0]
+
         elif payload.split(" ")[-1].startswith("link="):
             # Code in a webpage
-            base_url = urllib.parse.quote_plus(
-                payload.split(" ")[-1][5:].strip("/"), safe=";/?:@&=$,><-[]"
-            )
+            base_url = urllib.parse.quote_plus(payload.split(" ")[-1][5:].strip("/"), safe=";/?:@&=$,><-[]")
 
             url = get_raw(base_url)
 
@@ -640,14 +623,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 if response.status == 404:
                     return await ctx.send("Nothing found. Check your link")
                 if response.status != 200:
-                    return await ctx.send(
-                        f"An error occurred (status code: {response.status}). Retry later."
-                    )
+                    return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
                 text = await response.text()
                 if len(text) > 20000:
-                    return await ctx.send(
-                        "Code must be shorter than 20,000 characters."
-                    )
+                    return await ctx.send("Code must be shorter than 20,000 characters.")
                 lang = re.split(r"\s+", payload, maxsplit=1)[0]
         else:
             no_rerun = False
@@ -665,10 +644,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
             output = await execute_run(self.bot, language, text)
 
-            try:
-                await ctx.reply(output)
-            except discord.HTTPException:  # message deleted
-                await ctx.send(output)
+            await ctx.reply(output)
 
     @commands.command(aliases=["ref"])
     @commands.bot_has_permissions(embed_links=True)
@@ -678,9 +654,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         lang = language.strip("`")
 
         if lang.lower() not in self.referred:
-            return await ctx.reply(
-                f"{lang} not available. See `[p]list references` for available ones."
-            )
+            return await ctx.reply(f"{lang} not available. See `[p]list references` for available ones.")
         await self.referred[lang.lower()](ctx, query.strip("`"))
 
     @commands.command(aliases=["doc"])
@@ -691,9 +665,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         lang = language.strip("`")
 
         if lang.lower() not in self.documented:
-            return await ctx.reply(
-                f"{lang} not available. See `{ctx.prefix}list documentations` for available ones."
-            )
+            return await ctx.reply(f"{lang} not available. See `{ctx.prefix}list documentations` for available ones.")
         await self.documented[lang.lower()](ctx, query.strip("`"))
 
     @commands.command()
@@ -707,9 +679,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         async with aiohttp.ClientSession() as client_session:
             async with client_session.get(url) as response:
                 if response.status != 200:
-                    return await ctx.reply(
-                        "An error occurred (status code: {response.status}). Retry later."
-                    )
+                    return await ctx.reply("An error occurred (status code: {response.status}). Retry later.")
 
                 soup = BeautifulSoup(await response.text(), HTML_PARSER)
 
@@ -730,16 +700,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
                 emb = discord.Embed(title=title, url=f"https://man.cx/{page}")
                 emb.set_author(name="Debian Linux man pages")
-                emb.set_thumbnail(
-                    url="https://www.debian.org/logos/openlogo-nd-100.png"
-                )
+                emb.set_thumbnail(url="https://www.debian.org/logos/openlogo-nd-100.png")
 
                 for tag in contents:
-                    h2 = tuple(
-                        soup.find(
-                            attrs={"name": tuple(tag.children)[0].get("href")[1:]}
-                        ).parents
-                    )[0]
+                    h2 = tuple(soup.find(attrs={"name": tuple(tag.children)[0].get("href")[1:]}).parents)[0]
                     emb.add_field(name=tag.string, value=self.get_content(h2))
 
                 await ctx.reply(embed=emb)
@@ -756,14 +720,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         }
 
         if group == "languages":
-            emb = discord.Embed(
+            emb: discord.Embed = discord.Embed(
                 title=f"Available for {group}:",
                 description="View them on [tio.run](https://tio.run/#), or in [JSON format](https://tio.run/languages.json)",
             )
             return await ctx.reply(embed=emb)
 
         if group not in choices:
-            emb = discord.Embed(
+            emb: discord.Embed = discord.Embed(
                 title="Available listed commands",
                 description=f"`languages`, `{'`, `'.join(choices)}`",
             )
@@ -771,9 +735,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         availables = choices[group]
         description = f"`{'`, `'.join([*availables])}`"
-        emb = discord.Embed(
-            title=f"Available for {group}: {len(availables)}", description=description
-        )
+        emb: discord.Embed = discord.Embed(title=f"Available for {group}: {len(availables)}", description=description)
         await ctx.reply(embed=emb)
 
     @commands.command()
@@ -797,9 +759,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
             await ctx.reply(embed=emb)
         except ValueError:
-            await ctx.reply(
-                "Invalid sequence. Example usage : `[p]unascii 104 101 121`"
-            )
+            await ctx.reply("Invalid sequence. Example usage : `[p]unascii 104 101 121`")
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
@@ -824,7 +784,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(name="hash")
     @commands.bot_has_permissions(embed_links=True)
-    async def _hash(self, ctx: Context, algorithm, *, text: str):
+    async def _hash(self, ctx: Context, algorithm: str, *, text: str):
         """
         Hashes text with a given algorithm
         UTF-8, returns under hexadecimal form
@@ -833,9 +793,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         if algo not in self.algos:
             message = f"`{algorithm}` not available."
-            if matches := "\n".join(
-                [supported for supported in self.algos if algo in supported][:10]
-            ):
+            if matches := "\n".join([supported for supported in self.algos if algo in supported][:10]):
                 message += f" Did you mean:\n{matches}"
             return await ctx.reply(message)
 
@@ -846,9 +804,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             # Available
             hash_object = hashlib.new(algo, text.encode("utf-8"))
 
-        emb = discord.Embed(
-            title=f"{algorithm} hash", description=hash_object.hexdigest()
-        )
+        emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest())
         emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
 
         await ctx.reply(embed=emb)
@@ -873,9 +829,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         async with self.bot.http_session.get(url) as r:
             return await r.json()
 
-    @commands.group(
-        name="github", aliases=("gh", "git", "g")
-    )  # Thanks `will.#0021` (211756205721255947)
+    @commands.group(name="github", aliases=("gh", "git", "g"))  # Thanks `will.#0021` (211756205721255947)
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def github_group(self, ctx: Context) -> None:
@@ -883,15 +837,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @github_group.command(
-        name="user", aliases=("userinfo", "u")
-    )  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
     async def github_user_info(self, ctx: Context, username: str) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
-            user_data = await self.fetch_data(
-                f"{GITHUB_API_URL}/users/{quote_plus(username)}"
-            )
+            user_data = await self.fetch_data(f"{GITHUB_API_URL}/users/{quote_plus(username)}")
 
             # User_data will not have a message key if the user exists
             if "message" in user_data:
@@ -905,10 +855,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                 return
 
             org_data = await self.fetch_data(user_data["organizations_url"])
-            orgs = [
-                f"[{org['login']}](https://github.com/{org['login']})"
-                for org in org_data
-            ]
+            orgs = [f"[{org['login']}](https://github.com/{org['login']})" for org in org_data]
             orgs_to_add = " | ".join(orgs)
 
             gists = user_data["public_gists"]
@@ -923,14 +870,10 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
             embed = discord.Embed(
                 title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```\n{user_data['bio']}\n```\n"
-                if user_data["bio"]
-                else "",
+                description=f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else "",
                 colour=discord.Colour.og_blurple(),
                 url=user_data["html_url"],
-                timestamp=datetime.strptime(
-                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-                ),
+                timestamp=datetime.strptime(user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
             )
             embed.set_thumbnail(url=user_data["avatar_url"])
             embed.set_footer(text="Account created at")
@@ -965,9 +908,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         await ctx.send(embed=embed)
 
-    @github_group.command(
-        name="repository", aliases=("repo", "r")
-    )  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks `will.#0021` (211756205721255947)
     async def github_repo_info(self, ctx: Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.
@@ -1008,9 +949,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         # If it's a fork, then it will have a parent key
         try:
             parent = repo_data["parent"]
-            embed.description += (
-                f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
-            )
+            embed.description += f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
         except KeyError:
             pass
 
@@ -1022,12 +961,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             icon_url=repo_owner["avatar_url"],
         )
 
-        repo_created_at = datetime.strptime(
-            repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-        ).strftime("%d/%m/%Y")
-        last_pushed = datetime.strptime(
-            repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ"
-        ).strftime("%d/%m/%Y at %H:%M")
+        repo_created_at = datetime.strptime(repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y")
+        last_pushed = datetime.strptime(repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y at %H:%M")
 
         embed.set_footer(
             text=(
@@ -1043,9 +978,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def realpython(
-        self, ctx: Context, amount: Optional[int] = 5, *, user_search: str = None
-    ) -> None:
+    async def realpython(self, ctx: Context, amount: Optional[int] = 5, *, user_search: str = None) -> None:
         """
         Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to a number between 1 and 5 by specifying an amount before the search query.
@@ -1061,15 +994,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             return
 
         if not 1 <= amount <= 5:
-            await ctx.send(
-                f"{ctx.author.mention} `amount` must be between 1 and 5 (inclusive)."
-            )
+            await ctx.send(f"{ctx.author.mention} `amount` must be between 1 and 5 (inclusive).")
             return
 
         params = {"q": user_search, "limit": amount, "kind": "article"}
-        async with self.bot.http_session.get(
-            url=API_ROOT_RP, params=params
-        ) as response:
+        async with self.bot.http_session.get(url=API_ROOT_RP, params=params) as response:
             if response.status != 200:
                 await ctx.send(
                     embed=discord.Embed(
@@ -1085,9 +1014,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         articles = data["results"]
 
         if len(articles) == 0:
-            no_articles = discord.Embed(
-                title=f"No articles found for '{user_search}'", color=ctx.author.color
-            )
+            no_articles = discord.Embed(title=f"No articles found for '{user_search}'", color=ctx.author.color)
             await ctx.send(embed=no_articles)
             return
 
@@ -1118,10 +1045,8 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
     @commands.bot_has_permissions(embed_links=True)
     async def stackoverflow(self, ctx: Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
-        params = {**SO_PARAMS, **{"q": search_query}}
-        async with self.bot.http_session.get(
-            url=BASE_URL_SO, params=params
-        ) as response:
+        params = {**SO_PARAMS, "q": search_query}
+        async with self.bot.http_session.get(url=BASE_URL_SO, params=params) as response:
             if response.status == 200:
                 data = await response.json()
             else:
@@ -1229,9 +1154,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             return
 
         if len(query) > 50:
-            embed = discord.Embed(
-                title="! Well !", description=ERROR_MESSAGE, colour=ctx.author.color
-            )
+            embed = discord.Embed(title="! Well !", description=ERROR_MESSAGE, colour=ctx.author.color)
             match = None
         else:
             match = self.fuzzy_match_header(query)
@@ -1315,18 +1238,14 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         reaction_message = await self.send_reaction_embed(ctx.channel, target_message)
 
         try:
-            _, user = await self.bot.wait_for(
-                "reaction_add", timeout=TIMEOUT, check=event_check
-            )
+            _, user = await self.bot.wait_for("reaction_add", timeout=TIMEOUT, check=event_check)
         except asyncio.TimeoutError:
             return await reaction_message.delete(delay=0)
 
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 
-    async def kata_id(
-        self, search_link: str, params: Dict[str, Any]
-    ) -> Union[str, Embed]:
+    async def kata_id(self, search_link: str, params: Dict[str, Any]) -> Union[str, Embed]:
         """
         Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
@@ -1340,18 +1259,11 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
                     color=0xCD6D6D,
                 )
 
-
-            soup = BeautifulSoup(
-                await response.text(), features=HTML_PARSER
-            )  # changed the parser
-            first_kata_div = await _doc.get_ele(
-                soup.find_all, "div", class_="item-title px-0"
-            )
+            soup = BeautifulSoup(await response.text(), features=HTML_PARSER)  # changed the parser
+            first_kata_div = await _doc.get_ele(soup.find_all, "div", class_="item-title px-0")
 
             if not first_kata_div:
-                raise commands.BadArgument(
-                    "No katas could be found with the filters provided."
-                )
+                raise commands.BadArgument("No katas could be found with the filters provided.")
             if len(first_kata_div) >= 3:
                 first_kata_div = choice(first_kata_div[:3])
             elif "q=" not in search_link:
@@ -1366,16 +1278,13 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         Returns the information about the Kata.
         Uses the codewars.com API to get information about the kata using `kata_id`.
         """
-        async with self.bot.http_session.get(
-                API_ROOT.format(kata_id=kata_id)
-            ) as response:
+        async with self.bot.http_session.get(API_ROOT.format(kata_id=kata_id)) as response:
             if response.status != 200:
                 return Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="We ran into an error when getting the kata information, try again later.",
                     color=0xCD6D6D,
                 )
-
 
             return await response.json()
 
@@ -1387,9 +1296,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
         # Ensuring it isn't over the length 1024
         if len(kata_description) > 1024:
-            kata_description = (
-                "\n".join(kata_description[:1000].split("\n")[:-1]) + "..."
-            )
+            kata_description = "\n".join(kata_description[:1000].split("\n")[:-1]) + "..."
             kata_description += f" [continue reading]({kata_url})"
 
         if kata_information["rank"]["name"] is None:
@@ -1487,9 +1394,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
 
     @commands.command(aliases=["kata"])
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def challenge(
-        self, ctx: Context, language: str = "python", *, query: str = None
-    ) -> None:
+    async def challenge(self, ctx: Context, language: str = "python", *, query: str = None) -> None:
         """
         The challenge command pulls a random kata (challenge) from codewars.com.
         The different ways to use this command are:
@@ -1502,9 +1407,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
         """
         language = language.lower()
         if language not in SUPPORTED_LANGUAGES["stable"] + SUPPORTED_LANGUAGES["beta"]:
-            raise commands.BadArgument(
-                "This is not a recognized language on codewars.com!"
-            )
+            raise commands.BadArgument("This is not a recognized language on codewars.com!")
 
         get_kata_link = f"https://codewars.com/kata/search/{language}"
         params = {}
@@ -1551,9 +1454,7 @@ Useful to hide your syntax fails or when you forgot to print the result.""",
             tags_embed=tags_embed,
             other_info_embed=miscellaneous_embed,
         )
-        kata_view = self.create_view(
-            dropdown, f"https://codewars.com/kata/{first_kata_id}"
-        )
+        kata_view = self.create_view(dropdown, f"https://codewars.com/kata/{first_kata_id}")
         original_message: discord.Message = await ctx.send(embed=kata_embed, view=kata_view)
         dropdown.original_message = original_message
 

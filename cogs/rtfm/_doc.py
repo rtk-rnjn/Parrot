@@ -64,7 +64,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     return await ctx.send(embed=emb)
 
 
-async def _cppreference(language, ctx: Context, text: str) -> Optional[discord.Message]:
+async def _cppreference(language: str, ctx: Context, text: str) -> Optional[discord.Message]:
     """Search something on cppreference"""
     text = text.strip("`")
 

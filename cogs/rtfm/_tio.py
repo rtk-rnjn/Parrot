@@ -52,10 +52,10 @@ class Tio:
 
     async def send(self):
         async with aiohttp.ClientSession() as client_session:
-            async with client_session.post(self.backend, data=self.request) as res:
-                if res.status != 200:
-                    raise aiohttp.HttpProcessingError(res.status)
+            res = await client_session.post(self.backend, data=self.request)
+            if res.status != 200:
+                raise aiohttp.HttpProcessingError(res.status)
 
-                data = await res.read()
-                data = data.decode("utf-8")
-                return data.replace(data[:16], "")  # remove token
+            data = await res.read()
+            data = data.decode("utf-8")
+            return data.replace(data[:16], "")  # remove token

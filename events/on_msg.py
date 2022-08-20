@@ -678,7 +678,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             with suppress(discord.HTTPException):
                 msgs = payload.cached_messages
 
-                transcript = await Transcript(webhook.channel, None, msgs, None, None, self.bot).export()
+                transcript = await Transcript(webhook.channel, len(msgs), msgs, "Asia/Calcutta", True, self.bot).export()
                 transcript = transcript.html
 
                 fp = discord.File(

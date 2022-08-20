@@ -262,7 +262,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ctx: Context,
         guild: typing.Union[discord.Guild, int] = None,
         channel_member: str = None,
-    ):
+    ):  # sourcery skip: low-code-quality
         """This is not really a spy command"""
         guild = guild or ctx.guild
         channel_member = channel_member or "members"

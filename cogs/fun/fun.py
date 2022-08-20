@@ -12,14 +12,15 @@ import itertools
 import json
 import math
 import operator
+import os
 import random
+import aiohttp
 import re
 import string
 import time
 import unicodedata
 import urllib
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
@@ -1875,18 +1876,18 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def translate(self, ctx: Context, to: str, *, message: str):
+    async def translate(self, ctx: Context, model: str, *, message: str):
         """Translates a message to English (default). using My Memory"""
-        url = f"https://api.mymemory.translated.net/get?q={message}&langpair=en|{to}"
 
-        resp = await ctx.session.get(url)
-        data = await resp.json()
+        # from the docs
+        IBM_END_POINT = os.environ["IBM_END_POINT"]
+        URL = f"{IBM_END_POINT}/v3/translate?version=2018-05-01"
+        HEADER = {"Content-Type": "application/json"}
+        AUTH = aiohttp.BasicAuth("apikey", os.environ["IBM_KEY"])
 
-        return await ctx.send(
-            embed=discord.Embed(description=data["responseData"]["translatedText"]).set_footer(
-                text="This command is work in progress"
-            )
-        )
+        DATA = {"text": [message], "model_id": model}
+        res = await self.bot.http_session.post(URL, json=DATA, auth=AUTH, header=HEADER,)
+
 
     @commands.command(aliases=["def", "urban"])
     @commands.bot_has_permissions(embed_links=True)

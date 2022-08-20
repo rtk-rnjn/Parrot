@@ -468,7 +468,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         await self.quick_answer(message)
         await self._on_message_passive(message)
 
-        self._global_chat_handler(message)
+        await self._global_chat_handler(message)
 
         if links := INVITE_RE.findall(message.content):
             await self.on_invite(message, links)
@@ -481,7 +481,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         collection: Collection = self.bot.mongo.parrot_db.global_chat
         data: Optional[DocumentType] = await collection.find_one({"_id": message.guild.id, "channel_id": message.channel.id})
 
-        if data is None:
+        if not data:
             return
 
         bucket = self.cd_mapping.get_bucket(message)
@@ -493,7 +493,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         guild = data
-        role_id = guild.get("ignore_role", 0) or guild.get("ignore-role", 0)
+        role_id = guild.get("ignore_role") or guild.get("ignore-role") or 0
 
         if message.author._roles.has(role_id):
             return

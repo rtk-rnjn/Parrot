@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import aiohttp
 import asyncio
 import datetime
 import functools
@@ -28,6 +27,7 @@ from typing import (
     Union,
 )
 
+import aiohttp
 import discord
 from discord.ext import commands
 from utilities.emotes import emojis
@@ -379,7 +379,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             )
 
         try:
-            payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
+            payload: discord.RawReactionActionEvent = await self.bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
             return str(payload.emoji) == "\N{THUMBS UP SIGN}"
         except asyncio.TimeoutError:
             return None

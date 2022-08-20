@@ -15,6 +15,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Coroutine,
     Dict,
     List,
     Match,
@@ -446,32 +447,42 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def on_message(self, message: discord.Message):
         # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
+
         if message.guild is None:
             return
-        await self._scam_detection(message)
-        await self._on_message_leveling(message)
-        await self._add_record_message_to_database(message)
-        await self.equation_solver(message)
+
         if message.guild.me.id == message.author.id:
             return
-        message_to_send = await self._parse_snippets(message.content)
-        if 0 < len(message_to_send) <= 2000 and self._check_gitlink_req(message):
-            await message.channel.send(message_to_send, view=Delete(message.author))
-            try:
-                await message.edit(suppress=True)
-            except discord.NotFound:
-                pass
-            except discord.Forbidden:
-                pass
-        if message.author.bot:
-            return
-        await self.quick_answer(message)
-        await self._on_message_passive(message)
 
-        await self._global_chat_handler(message)
+        async def __internal_snippets_parser():
+            message_to_send = await self._parse_snippets(message.content)
+            if 0 < len(message_to_send) <= 2000 and self._check_gitlink_req(message):
+                await message.channel.send(message_to_send, view=Delete(message.author))
+                try:
+                    await message.edit(suppress=True)
+                except discord.NotFound:
+                    pass
+                except discord.Forbidden:
+                    pass
+            if message.author.bot:
+                return
 
-        if links := INVITE_RE.findall(message.content):
-            await self.on_invite(message, links)
+        async def __internal_invite_parser():
+            if links := INVITE_RE.findall(message.content):
+                await self.on_invite(message, links)
+
+        AWAITABLES: List[Coroutine] = [
+            __internal_snippets_parser,
+            __internal_invite_parser,
+            self._scam_detection(message),
+            self._on_message_leveling(message),
+            self._add_record_message_to_database(message),
+            self.equation_solver(message),
+            self.quick_answer(message),
+            self._on_message_passive(message),
+            self._global_chat_handler(message),
+        ]
+        await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
         # sourcery skip: low-code-quality

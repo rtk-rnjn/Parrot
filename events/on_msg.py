@@ -498,7 +498,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         bucket = self.cd_mapping.get_bucket(message)
         if retry_after := bucket.update_rate_limit():
             await message.channel.send(
-                f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**",
+                (
+                    f"{message.author.mention} Chill out | You reached the limit | "
+                    f"Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**"
+                ),
                 delete_after=10,
             )
             return
@@ -652,7 +655,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     """
                     if any((content, msg.attachments, msg.embeds)):
                         fp = io.BytesIO(
-                            f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
+                            (
+                                f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} "
+                                f"{', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
+                            ).encode()
                         )
 
                     else:
@@ -707,10 +713,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.bot.wait_until_ready()
         if before.content != after.content and after.guild is not None and after.author.id == self.bot.user.id:
-            await self._on_message_passive(after)
-            await self._scam_detection(after)
-            await self._edit_record_message_to_database(after)
-            await self.equation_solver(after)
+            AWAITABLES: List[Coroutine] = [
+                self._on_message_passive(after),
+                self._scam_detection(after),
+                self._edit_record_message_to_database(after),
+                self.equation_solver(after),
+            ]
+            await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _on_message_leveling(self, message: discord.Message):
 
@@ -719,7 +728,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if message.author.bot:
             return
 
-        # self.message_append.append(UpdateOne({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True))
         await self.bot.mongo.msg_db.counter.update_one({"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True)
 
         bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)

@@ -329,12 +329,13 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
     async def bulk_add_reactions(
         self,
-        message: Optional[discord.Message],
+        message: Optional[discord.Message] = None,
         *reactions: Union[discord.Emoji, discord.PartialEmoji, str],
     ) -> None:
-        if message is None:
-            raise ValueError("message cannot be None")
-        coros = [asyncio.ensure_future(message.add_reaction(reaction)) for reaction in reactions]
+        if message is None or not isinstance(message, discord.Message):
+            message: discord.Message = self.message
+
+        coros: List[Coroutine] = [message.add_reaction(reaction) for reaction in reactions]
         await asyncio.wait(coros)
 
     async def confirm(
@@ -419,6 +420,9 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         ```python
         # Wait for the message to be sent
         await ctx.wait_for("message", timeout=10, author__id=741614468546560092)
+        ```
+        ```python
+        await ctx.wait_for("on_message_edit", check=lambda m: m.author.id == self.bot.user.id)
         ```
 
         Raises

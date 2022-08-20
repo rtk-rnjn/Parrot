@@ -467,85 +467,80 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
         await self.quick_answer(message)
         await self._on_message_passive(message)
-        collection: Collection = self.bot.mongo.parrot_db.global_chat
-        data: Optional[DocumentType] = await collection.find_one({"_id": message.guild.id, "channel_id": message.channel.id})
+
+        self._global_chat_handler(message)
 
         if links := INVITE_RE.findall(message.content):
             await self.on_invite(message, links)
-        if data:
-            bucket = self.cd_mapping.get_bucket(message)
-            if retry_after := bucket.update_rate_limit():
-                return await message.channel.send(
-                    f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**",
-                    delete_after=10,
-                )
 
-            guild = data
-            role_id = guild.get("ignore_role") or guild.get("ignore-role") or 0
-            if message.author._roles.has(role_id):
-                return
-            if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")):
-                return
-            if urls := LINKS_NO_PROTOCOLS.search(message.content):
+    async def _global_chat_handler(self, message: discord.Message) -> None:
+        # sourcery skip: low-code-quality
+        if self.is_banned(message.author):
+            return
+
+        collection: Collection = self.bot.mongo.parrot_db.global_chat
+        data: Optional[DocumentType] = await collection.find_one({"_id": message.guild.id, "channel_id": message.channel.id})
+
+        if data is None:
+            return
+
+        bucket = self.cd_mapping.get_bucket(message)
+        if retry_after := bucket.update_rate_limit():
+            await message.channel.send(
+                f"{message.author.mention} Chill out | You reached the limit | Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**",
+                delete_after=10,
+            )
+            return
+
+        guild = data
+        role_id = guild.get("ignore_role", 0) or guild.get("ignore-role", 0)
+
+        if message.author._roles.has(role_id):
+            return
+
+        if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")):
+            return
+
+        if LINKS_NO_PROTOCOLS.search(message.content):
+            await message.delete(delay=0)
+            await message.channel.send(f"{message.author.mention} | URLs aren't allowed.", delete_after=5)
+            return
+
+        if len(message.content.split("\n")) > 4:
+            await message.delete(delay=0)
+            await message.channel.send(f"{message.author.mention} | Do not send message in 4-5 lines or above.", delete_after=5)
+            return
+
+        to_send: bool = self.refrain_message(message.content.lower())
+        if not to_send:
+            await message.delete(delay=0)
+            await message.channel.send(f"{message.author.mention} | Sending Bad Word not allowed", delete_after=5)
+            return
+
+        if self.get_emoji_count(message.content) > 10:
+            await message.delete(delay=0)
+            await message.channel.send(
+                f"{message.author.mention} | Do not send message with more than 10 emoji.", delete_after=5
+            )
+            return
+
+        await message.delete(delay=0)
+
+        async for webhook in collection.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
+            if hook := webhook["webhook"]:
                 try:
-                    await message.delete(delay=0)
-                    return await message.channel.send(f"{message.author.mention} | URLs aren't allowed.", delete_after=5)
-
-                except discord.Forbidden:
-                    return await message.channel.send(f"{message.author.mention} | URLs aren't allowed.", delete_after=5)
-
-            if len(message.content.split("\n")) > 4:
-                try:
-                    await message.delete(delay=0)
-                    return await message.channel.send(
-                        f"{message.author.mention} | Do not send message in 4-5 lines or above.", delete_after=5
-                    )
-
-                except discord.Forbidden:
-                    return await message.channel.send(
-                        f"{message.author.mention} | Do not send message in 4-5 lines or above.", delete_after=5
-                    )
-
-            to_send: bool = self.refrain_message(message.content.lower())
-            if not to_send:
-                try:
-                    await message.delete(delay=0)
-                    return await message.channel.send(f"{message.author.mention} | Sending Bad Word not allowed", delete_after=5)
-
-                except discord.Forbidden:
-                    return await message.channel.send(f"{message.author.mention} | Sending Bad Word not allowed", delete_after=5)
-
-            if self.is_banned(message.author):
-                return
-            try:
-                await message.delete()
-            except discord.Forbidden:
-                return await message.channel.send("Bot requires **Manage Messages** permission(s) to function properly.")
-
-            if emoji_count := self.get_emoji_count(message.content):
-                if emoji_count > 10:
-                    await message.delete(delay=0)
-                    return await message.channel.send(
-                        f"{message.author.mention} | Do not send message with more than 10 emoji.", delete_after=5
-                    )
-
-            async for webhook in collection.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
-                if hook := webhook["webhook"]:
-                    try:
-                        async with aiohttp.ClientSession() as session:
-                            webhook = Webhook.from_url(f"{hook}", session=session)
-                            with suppress(discord.HTTPException):
-                                await webhook.send(
-                                    content=message.content[:1990],
-                                    username=f"{message.author}",
-                                    avatar_url=message.author.display_avatar.url,
-                                    allowed_mentions=discord.AllowedMentions.none(),
-                                )
-
-                    except discord.NotFound:
-                        await collection.delete_one({"webhook": hook})
-                    except discord.HTTPException:
-                        pass
+                    webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                    with suppress(discord.HTTPException):
+                        await webhook.send(
+                            content=message.content[:1990],
+                            username=f"{message.author}",
+                            avatar_url=message.author.display_avatar.url,
+                            allowed_mentions=discord.AllowedMentions.none(),
+                        )
+                except discord.NotFound:
+                    await collection.delete_one({"webhook": hook})
+                except discord.HTTPException:
+                    pass
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(
@@ -731,7 +726,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            role: List = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or []
+            role: List[int] = self.bot.server_config[message.guild.id]["leveling"]["ignore_role"] or []
         except KeyError:
             role = []
 

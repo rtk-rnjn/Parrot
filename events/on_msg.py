@@ -340,14 +340,17 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return False
         return all(bad_word.lower() not in msg.replace(",", "").split(" ") for bad_word in bad_dict)
 
-    def is_banned(self, user: Union[discord.User, discord.Member]) -> bool:
+    def is_banned(self, member: Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
+        if not hasattr(member, "guild"):
+            return
+
         try:
-            return self.bot.banned_users[user.id].get("global", False)  # type: ignore
-        except KeyError:
+            return self.bot.banned_users[member.id].get("global", False)  # type: ignore
+        except (AttributeError, KeyError):
             try:
-                return user.id in self.bot.opts[user.guild.id]["global"]  # type: ignore
-            except KeyError:
+                return member.id in self.bot.opts[member.guild.id]["global"]  # type: ignore
+            except (AttributeError, KeyError):
                 return False
 
     def get_emoji_count(self, message_content: str) -> int:
@@ -486,6 +489,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
         # sourcery skip: low-code-quality
+        if not hasattr(message.author, "guild"):
+            return
+        # this is equivalent to `if not message.guild: ...`
+        # for some reason, message.author.guild is None from that check
+
         if self.is_banned(message.author):
             return
 

@@ -69,9 +69,7 @@ class nitro(discord.ui.View):
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
-        button.label = (
-            "\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,
-        )
+        button.label = ("\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,)
 
         ni: discord.Embed = discord.Embed(
             title="You received a gift, but...",
@@ -367,9 +365,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         kwargs["limit"] = args.limit or 100
         if args.action:
-            kwargs["action"] = getattr(
-                discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None
-            )
+            kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
 
         if args.before:
             kwargs["before"] = args.before.dt
@@ -398,9 +394,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         collection = self.bot.mongo.parrot_db["global_chat"]
         async for webhook in collection.find({"webhook": {"$exists": True}}):
             if hook := webhook["webhook"]:
-                if webhook := discord.Webhook.from_url(
-                    f"{hook}", session=self.bot.http_session
-                ):
+                if webhook := discord.Webhook.from_url(f"{hook}", session=self.bot.http_session):
                     await webhook.send(
                         content=announcement,
                         username="SERVER - SECTOR 17-29",
@@ -431,9 +425,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             PAYLOAD["hash"] = hashlib.sha256("".join(BASIC).encode()).hexdigest()
 
         PAYLOAD["guild"] = args.guild.id if args.guild else ctx.guild.id
-        PAYLOAD["expiry"] = (
-            args.expiry.dt.timestamp() if args.expiry else ShortTime("2d").dt.timestamp()
-        )
+        PAYLOAD["expiry"] = args.expiry.dt.timestamp() if args.expiry else ShortTime("2d").dt.timestamp()
         PAYLOAD["uses"] = args.uses
         PAYLOAD["limit"] = args.limit
         await self.bot.mongo.extra.subscriptions.insert_one(PAYLOAD)
@@ -575,11 +567,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if connections:
             em.add_field(
                 name="Connections",
-                value=", ".join(
-                    f'[{i["type"].title()}]({i["url"] or ""})'
-                    for i in connections
-                    if i != "fetchError"
-                )
+                value=", ".join(f'[{i["type"].title()}]({i["url"] or ""})' for i in connections if i != "fetchError")
                 or "No connections",
             )
         await ctx.send(embed=em)
@@ -838,6 +826,14 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(f"{ctx.author.mention} done!")
 
     @commands.command()
+    async def maintenance(self, ctx: Context, till: typing.Optional[ShortTime] = None, *, reason: str = None):
+        """To toggle the bot maintenance"""
+        ctx.bot.UNDER_MAINTENANCE = not ctx.bot.UNDER_MAINTENANCE
+        ctx.bot.UNDER_MAINTENANCE_OVER = till.dt
+        ctx.bot.UNDER_MAINTENANCE_REASON = reason
+        await ctx.send(f"{ctx.author.mention} bot under global maintenance: **{ctx.bot.UNDER_MAINTENANCE}**")
+
+    @commands.command()
     async def cleanup(self, ctx: Context, search: int = 100):
         """Cleans up the bot's messages from the channel.
         If a search number is specified, it searches that many messages to delete.
@@ -891,9 +887,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m: discord.Message):
-            return (m.author == ctx.me or m.content.startswith(prefixes)) and not (
-                m.mentions or m.role_mentions
-            )
+            return (m.author == ctx.me or m.content.startswith(prefixes)) and not (m.mentions or m.role_mentions)
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)

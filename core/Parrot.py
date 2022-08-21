@@ -61,16 +61,16 @@ from utilities.config import (
     CASE_INSENSITIVE,
     EXTENSIONS,
     GITHUB,
+    HEROKU,
+    LRU_CACHE,
     MASTER_OWNER,
     OWNER_IDS,
     STRIP_AFTER_PREFIX,
     SUPPORT_SERVER,
-    TOKEN,
-    LRU_CACHE,
-    UNLOAD_EXTENSIONS,
+    SUPPORT_SERVER_ID,
     TO_LOAD_IPC,
-    HEROKU,
-    SUPPORT_SERVER_ID
+    TOKEN,
+    UNLOAD_EXTENSIONS,
 )
 from utilities.converters import ToAsync
 from utilities.paste import Client
@@ -240,6 +240,10 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
             "Accept": "application/json",
             "User-Agent": f"Discord Bot '{self.user}' @ {self.github}",
         }
+
+        self.UNDER_MAINTENANCE: bool = False
+        self.UNDER_MAINTENANCE_REASON: Optional[str] = None
+        self.UNDER_MAINTENANCE_OVER: Optional[datetime.datetime] = None
 
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
@@ -529,6 +533,23 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
     async def process_commands(self, message: discord.Message) -> None:
         ctx: Context = await self.get_context(message, cls=Context)
         if ctx.command is None or str(ctx.channel.type) == "public_thread":
+            return
+
+        if self.UNDER_MAINTENANCE and ctx.author.id not in self.owner_ids:
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Bot under maintenance!",
+                    description=self.UNDER_MAINTENANCE_REASON or "N/A"
+                ).add_field(
+                    name="ETA?", value=discord.utils.format_dt(self.UNDER_MAINTENANCE_OVER, "R") if self.UNDER_MAINTENANCE_OVER else "N/A"
+                ).add_field(
+                    name="Message From?", value=self.author_name
+                ).add_field(
+                    name="Have Question?", value=f"[Join Support Server]({self.support_server})"
+                ).set_author(
+                    name=ctx.author, icon_url=ctx.author.display_avatar.url, url=self.support_server
+                )
+            )
             return
 
         bucket = self.spam_control.get_bucket(message)

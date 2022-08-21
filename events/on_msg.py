@@ -699,7 +699,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 msgs = payload.cached_messages
 
                 transcript = await Transcript(webhook.channel, len(msgs), msgs, "Asia/Calcutta", True, self.bot).export()
-                transcript = transcript.html
+                transcript = transcript.html or "N/A"
 
                 fp = discord.File(
                     io.BytesIO(transcript.encode()),

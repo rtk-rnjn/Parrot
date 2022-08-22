@@ -65,10 +65,10 @@ class EmojiCapsProt(Cog):
         if message.channel.id in ignore:
             return False
         try:
-            limit: int = data_c["automod"]["emoji"]["limit"]
+            limit: Optional[int] = data_c["automod"]["emoji"]["limit"]
         except KeyError:
             return False
-        if limit <= (self.get_emoji_count(message.content)):
+        if limit and limit <= (self.get_emoji_count(message.content)):
             return True
 
     async def _on_message_passive(self, message: discord.Message):

@@ -26,7 +26,7 @@ class LinkProt(Cog):
 
     async def _message_passive(self, message: discord.Message):
         # sourcery skip: low-code-quality
-        if message.author.bot or (not message.guild):
+        if message.author.bot or not message.guild:
             return
 
         if data := self.bot.server_config.get(message.guild.id):
@@ -43,7 +43,7 @@ class LinkProt(Cog):
             try:
                 ignore: List[int] = data["automod"]["antilinks"]["channel"]
             except KeyError:
-                pass
+                ignore = []
 
             if message.channel.id in ignore:
                 return

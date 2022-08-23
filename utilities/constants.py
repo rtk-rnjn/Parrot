@@ -1,25 +1,28 @@
+from __future__ import annotations
+
 import enum
+from typing import List, Tuple
 
 from .emotes import EMOJIS
 
 
 class Colours:
-    blue = 0x0279FD
-    bright_green = 0x01D277
-    dark_green = 0x1F8B4C
-    orange = 0xE67E22
-    pink = 0xCF84E0
-    purple = 0xB734EB
-    soft_green = 0x68C290
-    soft_orange = 0xF9CB54
-    soft_red = 0xCD6D6D
-    yellow = 0xF9F586
-    python_blue = 0x4B8BBE
-    python_yellow = 0xFFD43B
-    grass_green = 0x66FF00
-    gold = 0xE6C200
+    blue: int = 0x0279FD
+    bright_green: int = 0x01D277
+    dark_green: int = 0x1F8B4C
+    orange: int = 0xE67E22
+    pink: int = 0xCF84E0
+    purple: int = 0xB734EB
+    soft_green: int = 0x68C290
+    soft_orange: int = 0xF9CB54
+    soft_red: int = 0xCD6D6D
+    yellow: int = 0xF9F586
+    python_blue: int = 0x4B8BBE
+    python_yellow: int = 0xFFD43B
+    grass_green: int = 0x66FF00
+    gold: int = 0xE6C200
 
-    easter_like_colours = [
+    easter_like_colours: List[Tuple[int, int, int]] = [
         (255, 247, 0),
         (255, 255, 224),
         (0, 255, 127),
@@ -91,7 +94,7 @@ class Day(enum.IntEnum):
         return self.name.replace("_", " ").title()
 
 
-ERROR_REPLIES = [
+ERROR_REPLIES: List[str] = [
     "Please don't do that.",
     "You have to stop.",
     "Do you mind?",
@@ -104,7 +107,7 @@ ERROR_REPLIES = [
     "I can't believe you've done this",
 ]
 
-NEGATIVE_REPLIES = [
+NEGATIVE_REPLIES: List[str] = [
     "Noooooo!!",
     "Nope.",
     "I'm sorry Dave, I'm afraid I can't do that.",

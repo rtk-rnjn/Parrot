@@ -72,7 +72,7 @@ from utilities.config import (
     TOKEN,
     UNLOAD_EXTENSIONS,
 )
-from utilities.converters import ToAsync
+from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
 
 from .__template import post as POST
@@ -208,13 +208,13 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.mystbin = Client()
 
         # caching variables
-        self.server_config: Dict[int, Dict[str, Any]] = LRU(LRU_CACHE)  # type: ignore
+        self.server_config: Dict[int, Dict[str, Any]] = Cache()
         self.message_cache: Dict[int, discord.Message] = {}
-        self.banned_users: Dict[int, Dict[str, Union[str, bool, int]]] = {}
+        self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: Set[int] = set()
 
         self.opts: Dict[int, Any] = {}
-        self.func: Callable = func
+        self.func: Callable[..., Any] = func
 
         # IPC
         self.ipc: "ipc.Server" = ipc.Server(
@@ -272,7 +272,9 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
     async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
         if not self._change_log:
-            self._change_log = [msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)]
+            self._change_log = [
+                msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)
+            ]
 
         return self._change_log[0]
 
@@ -647,7 +649,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
                 else:
                     yield member
             else:
-                members = await guild.query_members(limit=1, user_ids=needs_resolution, cache=True)
+                members: List[discord.Member] = await guild.query_members(limit=1, user_ids=needs_resolution, cache=True)
                 if members:
                     yield members[0]
         elif total_need_resolution <= 100 and total_need_resolution > 1:

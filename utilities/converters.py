@@ -4,7 +4,6 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Coroutine,
@@ -17,7 +16,7 @@ from typing import (
 )
 
 import discord
-from core import Context, Parrot
+from core import Context
 from discord.ext import commands
 from lru import LRU
 
@@ -108,14 +107,14 @@ class MemberID(commands.Converter):
     async def convert(self, ctx: Context, argument: str) -> discord.Member:
         """Convert a user mention or ID to a member object."""
         try:
-            m = await commands.MemberConverter().convert(ctx, argument)
+            m: discord.Member = await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
             except ValueError:
                 raise commands.BadArgument(f"{argument} is not a valid member or member ID.") from None
             else:
-                m = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
+                m: Optional[discord.Member] = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:
                     # hackban case
                     return type(
@@ -138,28 +137,16 @@ class Cache(dict, Generic[KT, VT]):
         *,
         callback: Optional[Callable[[KT, VT], Any]] = None,
     ) -> None:
-        self.cache_size = cache_size
+        self.cache_size: int = cache_size
+        self.__internal_cache: "LRU" = LRU(self.cache_size, callback=callback or (lambda a, b: ...))
 
-        self.__internal_cache = LRU(self.cache_size, callback=callback or (lambda a, b: ...))
-
-        # >>> # Why don't you subclass LRU?
-        # >>>
-        # >>> class Cache(LRU):
-        # ...     pass
-        # ...
-        # Traceback (most recent call last):
-        # File "<stdin>", line 1, in <module>
-        # TypeError: Error when calling the metaclass bases
-        #     type 'lru.LRU' is not an acceptable base type
-        # >>>
-
-        self.items: Callable[..., List[Tuple[int, Any]]] = self.__internal_cache.items
-        self.peek_first_item: Callable[..., Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item
-        self.peek_last_item: Callable[..., Optional[Tuple[int, Any]]] = self.__internal_cache.peek_last_item
-        self.get_size: Callable[..., int] = self.__internal_cache.get_size
-        self.set_size: Callable[[int], None] = self.__internal_cache.set_size
-        self.has_key: Callable[[object], bool] = self.__internal_cache.has_key
-        self.update: Callable[..., None] = self.__internal_cache.update
+        self.items: Callable[..., List[Tuple[int, Any]]] = self.__internal_cache.items  # type: ignore
+        self.peek_first_item: Callable[..., Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item  # type: ignore
+        self.peek_last_item: Callable[..., Optional[Tuple[int, Any]]] = self.__internal_cache.peek_last_item  # type: ignore
+        self.get_size: Callable[..., int] = self.__internal_cache.get_size  # type: ignore
+        self.set_size: Callable[[int], None] = self.__internal_cache.set_size  # type: ignore
+        self.has_key: Callable[[object], bool] = self.__internal_cache.has_key  # type: ignore
+        self.update: Callable[..., None] = self.__internal_cache.update  # type: ignore
 
     def __repr__(self) -> str:
         return repr(self.__internal_cache)
@@ -175,7 +162,3 @@ class Cache(dict, Generic[KT, VT]):
 
     def __setitem__(self, __k: KT, __v: VT) -> None:
         self.__internal_cache[__k] = __v
-
-    def __getattribute__(self, __name: str) -> Any:
-        if isinstance(__name, str):
-            return self.__getitem__(__name)

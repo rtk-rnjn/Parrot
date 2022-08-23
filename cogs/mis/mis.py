@@ -777,7 +777,10 @@ class Misc(Cog):
         channel = channel or ctx.channel
         if channel.permissions_for(ctx.author).embed_links:
             if not data:
-                return await self.bot.invoke_help_command(ctx)
+                from .__embed_view import EmbedBuilder, EmbedSend, EmbedCancel
+                view = EmbedBuilder(ctx, items=[EmbedSend(channel), EmbedCancel()])
+                await view.rendor()
+                return
             try:
                 data = json.loads(data)
                 await channel.send(embed=discord.Embed.from_dict(data))

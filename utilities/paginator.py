@@ -1,9 +1,21 @@
 # AUTHOR: https://github.com/davidetacchini/
 
 from itertools import islice
-from typing import TYPE_CHECKING, Awaitable, List, NamedTuple, Optional, TypeVar, Union, Callable
-from core import Context
+from typing import (
+    TYPE_CHECKING,
+    Awaitable,
+    Callable,
+    Generic,
+    List,
+    NamedTuple,
+    Optional,
+    TypeAlias,
+    TypeVar,
+    Union,
+)
+
 import discord
+from core import Context
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
@@ -12,9 +24,10 @@ if TYPE_CHECKING:
     MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]  # type: ignore
 
 T = TypeVar("T")
+PageT = TypeVar("PageT", bound=Union[str, int, discord.File, discord.Embed])
 MaybeAwaitable = Union[T, Awaitable[T]]
 
-Callback = MaybeAwaitable
+Callback: TypeAlias = MaybeAwaitable
 
 
 def get_chunks(iterable, size):
@@ -252,9 +265,9 @@ class PaginatorView(discord.ui.View):
         await interaction.response.edit_message(embed=self.embed, view=self)
 
 
-class PaginationView(discord.ui.View):
+class PaginationView(discord.ui.View, Generic[PageT]):
     message: discord.Message
-    current = 0
+    current: int = 0
 
     def __init__(
         self,

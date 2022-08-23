@@ -13,23 +13,18 @@ class plural:
         v = self.value
         singular, sep, plural = format_spec.partition("|")
         plural = plural or f"{singular}s"
-        if abs(v) != 1:
-            return f"{v} {plural}"
-        return f"{v} {singular}"
+        return f"{v} {plural}" if abs(v) != 1 else f"{v} {singular}"
 
 
 def human_join(seq, delim=", ", final="or"):
     size = len(seq)
     if size == 0:
         return ""
-
     if size == 1:
         return seq[0]
-
     if size == 2:
         return f"{seq[0]} {final} {seq[1]}"
-
-    return delim.join(seq[:-1]) + f" {final} {seq[-1]}"
+    return f"{delim.join(seq[:-1])} {final} {seq[-1]}"
 
 
 class TabularData:
@@ -93,7 +88,7 @@ def format_dt(dt, style=None) -> str:
 
 
 def format_dt_with_int(dt: int, style=None) -> str:
-    return f"<t:{dt}:{style if style else ''}>"
+    return f"<t:{dt}:{style or ''}>"
 
 
 def suppress_links(message: str) -> str:

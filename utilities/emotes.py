@@ -1,17 +1,20 @@
+from __future__ import annotations
+
+from typing import Dict
 import discord
 
-EMOJIS = {
+EMOJIS: Dict[str, discord.PartialEmoji] = {
     "remove": discord.PartialEmoji(name="remove", id=855002325340913665),
     "edit": discord.PartialEmoji(name="edit", id=855002325440266251),
     "add": discord.PartialEmoji(name="add", id=855002325487452170),
     "kali_trans": discord.PartialEmoji(name="kali_transparent", id=855002672846471179),
-    "Parrot": discord.PartialEmoji(name="Parrot", id=855002672948183060),
-    "Parrot_A": discord.PartialEmoji(name="Parrot_Alpha", id=855002673288183829),
+    "parrot": discord.PartialEmoji(name="Parrot", id=855002672948183060),
+    "parrot2": discord.PartialEmoji(name="Parrot_Alpha", id=855002673288183829),
     "moderator": discord.PartialEmoji(name="moderator", id=892424227007918121),
     "admin": discord.PartialEmoji(name="admin", id=892424347782889553),
-    "Staff": discord.PartialEmoji(name="Staff", id=892424463818309633),
-    "Utilities": discord.PartialEmoji(name="Utilities", id=892424737840582776),
-    "Config": discord.PartialEmoji(name="Config", id=892425561807417354),
+    "staff": discord.PartialEmoji(name="Staff", id=892424463818309633),
+    "utilities": discord.PartialEmoji(name="Utilities", id=892424737840582776),
+    "config": discord.PartialEmoji(name="Config", id=892425561807417354),
     "nasa": discord.PartialEmoji(name="nasa", id=892425662864982056),
     "ticket": discord.PartialEmoji(name="ticket", id=892425759287824415),
     "issue": discord.PartialEmoji(name="issue", id=892426388336955422),
@@ -19,10 +22,10 @@ EMOJIS = {
     "dollor": discord.PartialEmoji(name="dollor", id=892427274253631548),
     "channel_lk": discord.PartialEmoji(name="channel_locked", id=892432117764620289),
     "fun": discord.PartialEmoji(name="fun", id=892432619374014544),
-    "404parrot": discord.PartialEmoji(
+    "parrot_404": discord.PartialEmoji(
         name="404parrot", id=892432991186464808, animated=True
     ),
-    "channel_nf": discord.PartialEmoji(name="channel_nsfw", id=892433335274582026),
+    "channel_nsfw": discord.PartialEmoji(name="channel_nsfw", id=892433335274582026),
     "on": discord.PartialEmoji(name="on", id=892433654201061407),
     "off": discord.PartialEmoji(name="off", id=892433704444641290),
     "crown": discord.PartialEmoji(name="crown", id=892434461269061663, animated=True),
@@ -71,8 +74,8 @@ EMOJIS = {
     "announcement_channel_locked": discord.PartialEmoji(
         name="announcement_channel_locked", id=892438741111701544
     ),
-    "messageDelete": discord.PartialEmoji(name="messageDelete", id=892438822569267242),
-    "messageUpdate": discord.PartialEmoji(name="messageUpdate", id=892438874641547326),
+    "message_delete": discord.PartialEmoji(name="messageDelete", id=892438822569267242),
+    "message_update": discord.PartialEmoji(name="messageUpdate", id=892438874641547326),
 }
 
 emojis = EMOJIS  # beauty of code do matter

@@ -25,9 +25,8 @@ from utilities.config import LRU_CACHE
 
 NUMBER = Union[int, float]
 
-if TYPE_CHECKING:
-    KT = TypeVar("KT", bound=int)
-    VT = TypeVar("VT", bound=Any)
+KT = TypeVar("KT", bound=Union[str, int])
+VT = TypeVar("VT", bound=Any)
 
 
 def convert_bool(text: Union[str, bool]) -> bool:

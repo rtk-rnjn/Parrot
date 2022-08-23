@@ -3,13 +3,32 @@ from __future__ import annotations
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, Callable, Coroutine, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import discord
-from core import Context
+from core import Context, Parrot
 from discord.ext import commands
+from lru import LRU
+
+from utilities.config import LRU_CACHE
 
 NUMBER = Union[int, float]
+
+if TYPE_CHECKING:
+    KT = TypeVar("KT", bound=int)
+    VT = TypeVar("VT", bound=Any)
+
 
 def convert_bool(text: Union[str, bool]) -> bool:
     """True/False converter"""
@@ -111,3 +130,53 @@ class MemberID(commands.Converter):
                 f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
             )
         return m
+
+
+class Cache(dict, Generic[KT, VT]):
+    def __init__(
+        self,
+        cache_size: Optional[int] = LRU_CACHE,
+        *,
+        callback: Optional[Callable[[KT, VT], Any]] = None,
+    ) -> None:
+        self.cache_size = cache_size
+
+        self.__internal_cache = LRU(self.cache_size, callback=callback or (lambda a, b: ...))
+
+        # >>> # Why don't you subclass LRU?
+        # >>>
+        # >>> class Cache(LRU):
+        # ...     pass
+        # ...
+        # Traceback (most recent call last):
+        # File "<stdin>", line 1, in <module>
+        # TypeError: Error when calling the metaclass bases
+        #     type 'lru.LRU' is not an acceptable base type
+        # >>>
+
+        self.items: Callable[..., List[Tuple[int, Any]]] = self.__internal_cache.items
+        self.peek_first_item: Callable[..., Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item
+        self.peek_last_item: Callable[..., Optional[Tuple[int, Any]]] = self.__internal_cache.peek_last_item
+        self.get_size: Callable[..., int] = self.__internal_cache.get_size
+        self.set_size: Callable[[int], None] = self.__internal_cache.set_size
+        self.has_key: Callable[[object], bool] = self.__internal_cache.has_key
+        self.update: Callable[..., None] = self.__internal_cache.update
+
+    def __repr__(self) -> str:
+        return repr(self.__internal_cache)
+
+    def __getitem__(self, __k: KT) -> VT:
+        return self.__internal_cache[__k]
+
+    def __delitem__(self, __v: KT) -> None:
+        del self.__internal_cache[__v]
+
+    def __contains__(self, __o: object) -> bool:
+        return self.has_key(__o)
+
+    def __setitem__(self, __k: KT, __v: VT) -> None:
+        self.__internal_cache[__k] = __v
+
+    def __getattribute__(self, __name: str) -> Any:
+        if isinstance(__name, str):
+            return self.__getitem__(__name)

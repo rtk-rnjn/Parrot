@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import List
+from typing import List, Optional
 
 import discord
 from cogs.mod.method import instant_action_parser
@@ -34,67 +34,62 @@ class SpamProt(Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or (not message.guild):
             return
-        # perms = message.author.guild_permissions
-
-        # if perms.administrator or perms.manage_messages or perms.manage_channels:
-        #     return
 
         bucket = self.cd_mapping.get_bucket(message)
-        if retry_after := bucket.update_rate_limit():
-            if data := self.bot.server_config.get(message.guild.id):
-                if not data["automod"]["spam"]["enable"]:
-                    return
-                try:
-                    ignore: List[int] = data["automod"]["spam"]["channel"]
-                except KeyError:
-                    ignore: List[int] = []
+        if bucket.update_rate_limit() and (data := self.bot.server_config.get(message.guild.id)):
+            if not data["automod"]["spam"]["enable"]:
+                return
+            try:
+                ignore: Optional[List[int]] = data["automod"]["spam"]["channel"]
+            except KeyError:
+                ignore: List[int] = []
 
-                if message.channel.id in ignore:
-                    return
-                try:
-                    to_delete: bool = data["automod"]["spam"]["autowarn"]["to_delete"]
-                except KeyError:
-                    to_delete: bool = True
+            if message.channel.id in (ignore or []):
+                return
+            try:
+                to_delete: bool = data["automod"]["spam"]["autowarn"]["to_delete"]
+            except KeyError:
+                to_delete: bool = True
 
-                if to_delete:
-                    await self.delete(message)
+            if to_delete:
+                await self.delete(message)
 
-                try:
-                    to_warn: bool = data["automod"]["spam"]["autowarn"]["enable"]
-                except KeyError:
-                    to_warn: bool = False
+            try:
+                to_warn: bool = data["automod"]["spam"]["autowarn"]["enable"]
+            except KeyError:
+                to_warn: bool = False
 
-                ctx: Context = await self.bot.get_context(message, cls=Context)
+            ctx: Context = await self.bot.get_context(message, cls=Context)
 
-                try:
-                    instant_action: str = data["automod"]["spam"]["autowarn"]["punish"][
-                        "type"
-                    ]
-                except KeyError:
-                    instant_action = False
-                else:
-                    if instant_action and to_warn:
-                        await self.__instant_action_parser(
-                            name=instant_action,
-                            ctx=ctx,
-                            message=message,
-                            **data["automod"]["mention"]["autowarn"]["punish"],
-                        )
-
-                if to_warn and not instant_action:
-                    await warn(
-                        message.guild,
-                        message.author,
-                        "Automod: Spammed 5 messages in 5 seconds",
-                        moderator=self.bot.user,
-                        message=message,
-                        at=message.created_at,
+            try:
+                instant_action: Optional[str] = data["automod"]["spam"]["autowarn"]["punish"][
+                    "type"
+                ]
+            except KeyError:
+                instant_action: bool = False
+            else:
+                if instant_action and to_warn:
+                    await self.__instant_action_parser(
+                        name=instant_action,
                         ctx=ctx,
+                        message=message,
+                        **data["automod"]["mention"]["autowarn"]["punish"],
                     )
-                    if mod_cog := self.bot.get_cog("Moderator"):
-                        await mod_cog.warn_task(target=message.author, ctx=ctx)
 
-                await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",
-                    delete_after=10,
+            if to_warn and not instant_action:
+                await warn(
+                    message.guild,
+                    message.author,
+                    "Automod: Spammed 5 messages in 5 seconds",
+                    moderator=self.bot.user,
+                    message=message,
+                    at=message.created_at,
+                    ctx=ctx,
                 )
+                if mod_cog := self.bot.get_cog("Moderator"):
+                    await mod_cog.warn_task(target=message.author, ctx=ctx)
+
+            await message.channel.send(
+                f"{message.author.mention} *{random.choice(quotes)}* **[Spam Protection] {'[Warning]' if to_warn else ''}**",
+                delete_after=10,
+            )

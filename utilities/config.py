@@ -58,6 +58,6 @@ SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
-LRU_CACHE = 8 if HEROKU else 256
+LRU_CACHE = 32 + 16 if HEROKU else 256
 
 TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS

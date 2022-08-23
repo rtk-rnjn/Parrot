@@ -1,5 +1,6 @@
 # https://github.com/bijij/BotBot
 # https://github.com/python-discord/sir-lancebot
+# https://github.com/Tom-the-Bomb/Discord-Games
 
 from __future__ import annotations
 

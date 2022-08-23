@@ -179,9 +179,9 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self._seen_messages: int = 0
         self._change_log: List[discord.Message] = []
 
-        self._error_log_token = os.environ["CHANNEL_TOKEN2"]
-        self._startup_log_token = os.environ["CHANNEL_TOKEN3"]
-        self._vote_log_token = os.environ["CHANNEL_TOKEN4"]
+        self._error_log_token: str = os.environ["CHANNEL_TOKEN2"]
+        self._startup_log_token: str = os.environ["CHANNEL_TOKEN3"]
+        self._vote_log_token: str = os.environ["CHANNEL_TOKEN4"]
 
         self.color: int = 0x87CEEB
         self.colour: int = self.color
@@ -197,8 +197,8 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
         if self.HAS_TOP_GG:
-            self.topgg: topgg.DBLClient
-            self.topgg_webhook: topgg.WebhookManager
+            self.topgg: "topgg.DBLClient"
+            self.topgg_webhook: "topgg.WebhookManager"
 
         self._auto_spam_count: Counter = Counter()
         self.resumes: Dict[int, List[datetime.datetime]] = defaultdict(list)
@@ -217,13 +217,13 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.func: Callable = func
 
         # IPC
-        self.ipc = ipc.Server(
+        self.ipc: "ipc.Server" = ipc.Server(
             bot=self,
             host="localhost",
             port=1730,
             secret_key=os.environ["IPC_KEY"],
         )
-        self.ipc_client = ipc.Client(
+        self.ipc_client: "ipc.Client" = ipc.Client(
             host="localhost",
             port=1730,
             secret_key=os.environ["IPC_KEY"],

@@ -43,12 +43,13 @@ from utilities.ttg import Truths
 from utilities.youtube_search import YoutubeSearch
 
 from .__flags import TTFlag, SearchFlag
+from .__embed_view import EmbedBuilder, EmbedSend, EmbedCancel
 
 invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"
 invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\/)?([A-Za-z0-9\-]+)(\/)?"
 
-google_key = os.environ["GOOGLE_KEY"]
-cx = os.environ["GOOGLE_CX"]
+google_key: str = os.environ["GOOGLE_KEY"]
+cx: str = os.environ["GOOGLE_CX"]
 
 SEARCH_API = "https://en.wikipedia.org/w/api.php"
 WIKI_PARAMS = {
@@ -777,7 +778,6 @@ class Misc(Cog):
         channel = channel or ctx.channel
         if channel.permissions_for(ctx.author).embed_links:
             if not data:
-                from .__embed_view import EmbedBuilder, EmbedSend, EmbedCancel
                 view = EmbedBuilder(ctx, items=[EmbedSend(channel), EmbedCancel()])
                 await view.rendor()
                 return

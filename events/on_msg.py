@@ -550,19 +550,21 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         async for webhook in collection.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
             if hook := webhook["webhook"]:
-                try:
-                    webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
-                    with suppress(discord.HTTPException):
-                        await webhook.send(
-                            content=message.content[:1990],
-                            username=f"{message.author}",
-                            avatar_url=message.author.display_avatar.url,
-                            allowed_mentions=discord.AllowedMentions.none(),
-                        )
-                except discord.NotFound:
-                    await collection.delete_one({"webhook": hook})
-                except discord.HTTPException:
-                    pass
+                async def __internal_func():
+                    try:
+                        webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                        with suppress(discord.HTTPException):
+                            await webhook.send(
+                                content=message.content[:1990],
+                                username=f"{message.author}",
+                                avatar_url=message.author.display_avatar.url,
+                                allowed_mentions=discord.AllowedMentions.none(),
+                            )
+                    except discord.NotFound:
+                        await collection.delete_one({"webhook": hook})
+                    except discord.HTTPException:
+                        pass
+                asyncio.create_task(__internal_func())
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(
@@ -780,29 +782,30 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 self.bot.get_channel,
                 self.bot.fetch_channel,
                 announce_channel,
-                force_fetch=False,
+                force_fetch=True,
             )
-            if ch:
-                if data := await collection.find_one_and_update(
+            if ch and (
+                data := await collection.find_one_and_update(
                     {"_id": message.author.id},
                     {"$inc": {"xp": 0}},
                     upsert=True,
                     return_document=ReturnDocument.AFTER,
-                ):
-                    cog = self.bot.get_cog("Utils")
-                    level = int((data["xp"] // 42) ** 0.55)
-                    xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
-                    rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore
-                    file: discord.File = await rank_card(
-                        level,
-                        rank,
-                        message.author,
-                        current_xp=data["xp"],
-                        custom_background="#000000",
-                        xp_color="#FFFFFF",
-                        next_level_xp=xp,
-                    )
-                    await message.reply("GG! Level up!", file=file)
+                )
+            ):
+                cog = self.bot.get_cog("Utils")
+                level = int((data["xp"] // 42) ** 0.55)
+                xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
+                rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore
+                file: discord.File = await rank_card(
+                    level,
+                    rank,
+                    message.author,
+                    current_xp=data["xp"],
+                    custom_background="#000000",
+                    xp_color="#FFFFFF",
+                    next_level_xp=xp,
+                )
+                await message.reply("GG! Level up!", file=file)
 
     async def _scam_detection(self, message: discord.Message) -> None:
         if message.guild is None:
@@ -900,30 +903,31 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         # code: when the AFK user messages
-        if message.author.id in self.bot.afk:
-            if data := await self.bot.mongo.parrot_db.afk.find_one(
+        if message.author.id in self.bot.afk and (
+            data := await self.bot.mongo.parrot_db.afk.find_one(
                 {
                     "$or": [
                         {"messageAuthor": message.author.id, "guild": message.guild.id},
                         {"messageAuthor": message.author.id, "global": True},
                     ]
                 }
-            ):
-                if message.channel.id in data["ignoredChannel"]:
-                    return  # There exists `$nin` operator in MongoDB
-                await message.channel.send(
-                    f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
-                    f"> You were mentioned **{len(data['pings'])}** times"
-                )
-                with suppress(discord.Forbidden):
-                    if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
-                        name = message.author.display_name[5:]
-                        if len(name) != 0 or name not in (" ", ""):
-                            await message.author.edit(nick=name, reason=f"{message.author} came after AFK")
+            )
+        ):
+            if message.channel.id in data["ignoredChannel"]:
+                return  # There exists `$nin` operator in MongoDB
+            await message.channel.send(
+                f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
+                f"> You were mentioned **{len(data['pings'])}** times"
+            )
+            with suppress(discord.Forbidden):
+                if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
+                    name = message.author.display_name[5:]
+                    if len(name) != 0 or name not in (" ", ""):
+                        await message.author.edit(nick=name, reason=f"{message.author} came after AFK")
 
-                await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
-                await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
-                self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
+            await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
+            await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
+            self.bot.afk = set(await self.bot.mongo.parrot_db.afk.distinct("messageAuthor"))
 
         # code from someone mentions the AFK user
 

@@ -110,9 +110,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             )
             return dj_role or author_dj_role or server_dj_role
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
-                {"_id": self.guild.id}
-            ):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
                 return self.guild.get_role(data.get("dj_role") or 0)
         return None
 
@@ -120,21 +118,11 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         self,
     ) -> Optional[discord.Role]:
         try:
-            author_muted = discord.utils.find(
-                lambda m: m.name.lower() == "muted", self.author.roles
-            )
-            global_muted = discord.utils.find(
-                lambda m: m.name.lower() == "muted", self.guild.roles
-            )
-            return (
-                self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"] or 0)
-                or global_muted
-                or author_muted
-            )
+            author_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.author.roles)
+            global_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.guild.roles)
+            return self.guild.get_role(self.bot.server_config[self.guild.id]["mute_role"] or 0) or global_muted or author_muted
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
-                {"_id": self.guild.id}
-            ):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
                 return self.guild.get_role(data["mute_role"] or 0)
         return None
 
@@ -144,9 +132,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         try:
             return self.guild.get_role(self.bot.server_config[self.guild.id]["mod_role"] or 0)
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
-                {"_id": self.guild.id}
-            ):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": self.guild.id}):
                 return self.guild.get_role(data["mod_role"] or 0)
         return None
 
@@ -203,19 +189,13 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             if not embed.timestamp:
                 embed.timestamp = discord.utils.utcnow()
             if not embed.footer:
-                embed.set_footer(
-                    text=f"Requested by {self.author}", icon_url=self.author.display_avatar.url
-                )
+                embed.set_footer(text=f"Requested by {self.author}", icon_url=self.author.display_avatar.url)
 
         return await super().send(content, **kwargs)
 
-    async def reply(
-        self, content: Optional[str] = None, **kwargs: Any
-    ) -> Optional[discord.Message]:
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Optional[discord.Message]:
         try:
-            return await self.send(
-                content, reference=kwargs.get("reference") or self.message, **kwargs
-            )
+            return await self.send(content, reference=kwargs.get("reference") or self.message, **kwargs)
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
@@ -232,9 +212,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         )
         if isinstance(msg, discord.Message):
             try:
-                await self.wait_for(
-                    "message_delete", check=lambda m: m.id == self.message.id, timeout=30
-                )
+                await self.wait_for("message_delete", check=lambda m: m.id == self.message.id, timeout=30)
             except asyncio.TimeoutError:
                 return msg
             else:
@@ -248,9 +226,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         output.append("```")
         return await self.send("\n".join(output))
 
-    async def indented_entry_to_code(
-        self, entries: List[Tuple[Any, Any]]
-    ) -> Optional[discord.Message]:
+    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"\u200b{name:>{width}}: {entry}" for name, entry in entries)
@@ -307,15 +283,13 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         await view.wait()
         return view.value
 
-    async def release(self, _for: Union[int, float, datetime.datetime] = None) -> None:
+    async def release(self, _for: Union[int, float, datetime.datetime] = None, *, result: Optional[T]) -> Optional[T]:
         if isinstance(_for, datetime.datetime):
-            await discord.utils.sleep_until(_for)
+            await discord.utils.sleep_until(_for, result)
         else:
-            await asyncio.sleep(_for or 0)
+            await asyncio.sleep(_for or 0, result)
 
-    async def safe_send(
-        self, content: str, *, escape_mentions: bool = True, **kwargs: Any
-    ) -> Optional[discord.Message]:
+    async def safe_send(self, content: str, *, escape_mentions: bool = True, **kwargs: Any) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
 
@@ -373,11 +347,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
         def check(payload: discord.RawReactionActionEvent) -> bool:
-            return (
-                payload.message_id == message.id
-                and payload.user_id == user.id
-                and str(payload.emoji) in CONFIRM_REACTIONS
-            )
+            return payload.message_id == message.id and payload.user_id == user.id and str(payload.emoji) in CONFIRM_REACTIONS
 
         try:
             payload: discord.RawReactionActionEvent = await self.bot.wait_for("raw_reaction_add", check=check, timeout=timeout)
@@ -393,7 +363,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         event_name: str,
         *,
         timeout: Optional[float] = None,
-        check: Optional[Callable[[Any], bool]] = None,
+        check: Optional[Callable[..., bool]] = None,
         before_function: Callback = None,
         after_function: Callback = None,
         error_function: Callback = None,
@@ -451,10 +421,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             ) -> bool:
                 """Main check function"""
                 convert_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kw.items()]
-                return all(
-                    all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
-                    for pred, val in convert_pred
-                )
+                return all(all(pred(i) == val for i in args if __suppress_attr_error(pred, i)) for pred, val in convert_pred)
 
             return __internal_check
 
@@ -462,9 +429,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             await discord.utils.maybe_coroutine(before_function)
 
         try:
-            return await self.bot.wait_for(
-                event_name, timeout=timeout, check=outer_check(**kwargs)
-            )
+            return await self.bot.wait_for(event_name, timeout=timeout, check=outer_check(**kwargs))
         except asyncio.TimeoutError:
             if error_function is not None:
                 await discord.utils.maybe_coroutine(error_function)
@@ -531,9 +496,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         self,
         events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
         *,
-        return_when: Literal[
-            "FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"
-        ] = "FIRST_COMPLETED",
+        return_when: Literal["FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"] = "FIRST_COMPLETED",
         timeout: Optional[float] = None,
         **kwargs: Any,
     ) -> Tuple[Set[asyncio.Task], Set[asyncio.Task]]:
@@ -559,7 +522,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             |                 | exception then it is equivalent   |
             |                 | to ALL_COMPLETED.                 |
             +-----------------+-----------------------------------+
-            |  ALL_COMPLETED  | The function will return when all | 
+            |  ALL_COMPLETED  | The function will return when all |
             |                 | futures finish or are cancelled.  |
             +-----------------+-----------------------------------+
             ```
@@ -586,7 +549,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
 
         return await asyncio.wait(
             _events,
-            timeout=timeout,
+            timeout=timeout + 0.01,
             return_when=getattr(asyncio, return_when, "FIRST_COMPLETED"),
         )
 
@@ -666,9 +629,7 @@ class ConfirmationView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
-        await interaction.response.send_message(
-            "This confirmation dialog is not for you.", ephemeral=True
-        )
+        await interaction.response.send_message("This confirmation dialog is not for you.", ephemeral=True)
         return False
 
     async def on_timeout(self) -> None:

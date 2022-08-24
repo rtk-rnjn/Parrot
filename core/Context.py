@@ -283,7 +283,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         await view.wait()
         return view.value
 
-    async def release(self, _for: Union[int, float, datetime.datetime] = None, *, result: Optional[T]) -> Optional[T]:
+    async def release(self, _for: Union[int, float, datetime.datetime] = None, *, result: Optional[T] = None) -> Optional[T]:
         if isinstance(_for, datetime.datetime):
             await discord.utils.sleep_until(_for, result)
         else:

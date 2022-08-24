@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import re
+from typing import Optional
 
 import discord
 import parsedatetime as pdt
@@ -30,9 +31,9 @@ class ShortTime:
         re.VERBOSE,
     )
 
-    def __init__(self, argument: str, *, now=None):
+    def __init__(self, argument: Optional[str], *, now=None):
         self.argument = argument
-        match = self.compiled.fullmatch(argument.lower())
+        match = self.compiled.fullmatch(str(argument).lower())
         if match is None or not match.group(0):
             raise commands.BadArgument("Invalid time provided. Try something like this: `5m`, `2h` or `60s`")
 

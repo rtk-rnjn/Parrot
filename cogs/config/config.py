@@ -39,23 +39,17 @@ class Configuration(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{GEAR}")
 
-    @commands.group(
-        name="config", aliases=["serverconfig"], invoke_without_command=True
-    )
+    @commands.group(name="config", aliases=["serverconfig"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def config(self, ctx: Context):
         """To config the bot, mod role, prefix, or you can disable the commands and cogs."""
         if not ctx.invoked_subcommand:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
-                {"_id": ctx.guild.id}
-            ):
+            if data := await self.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id}):
                 role = ctx.guild.get_role(data.get("mod_role", 0))
                 mod_log = ctx.guild.get_channel(data.get("action_log", 0))
                 mute_role = ctx.guild.get_role(data.get("mute_role", 0))
-                suggestion_channel = ctx.guild.get_channel(
-                    data.get("suggestion_channel", 0)
-                )
+                suggestion_channel = ctx.guild.get_channel(data.get("suggestion_channel", 0))
                 hub = ctx.guild.get_channel(data.get("hub", 0))
 
                 await ctx.reply(
@@ -77,12 +71,8 @@ class Configuration(Cog):
         ctx: Context,
     ):
         """To setup Hub like channel"""
-        overwrites: Dict[
-            Union[discord.Role, discord.Member], discord.PermissionOverwrite
-        ] = {
-            ctx.guild.default_role: discord.PermissionOverwrite(
-                connect=True, read_messages=True
-            ),
+        overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+            ctx.guild.default_role: discord.PermissionOverwrite(connect=True, read_messages=True),
             ctx.guild.me: discord.PermissionOverwrite(
                 connect=True,
                 read_messages=True,
@@ -103,12 +93,8 @@ class Configuration(Cog):
             user_limit=1,
         )
 
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"hub": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} successfully created {channel.mention}! Enjoy"
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"hub": channel.id}})
+        await ctx.reply(f"{ctx.author.mention} successfully created {channel.mention}! Enjoy")
 
     @config.group(name="starboard", aliases=["star"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -120,24 +106,15 @@ class Configuration(Cog):
         if ctx.invoked_subcommand:
             return
         try:
-            starboard_data: Dict[
-                str, Union[str, int, List[int], bool, None]
-            ] = self.bot.server_config[ctx.guild.id]["starboard"]
+            starboard_data: Dict[str, Union[str, int, List[int], bool, None]] = self.bot.server_config[ctx.guild.id]["starboard"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
 
-        channel: Optional[discord.TextChannel] = ctx.guild.get_channel(
-            starboard_data.get("channel", 0)
-        )
+        channel: Optional[discord.TextChannel] = ctx.guild.get_channel(starboard_data.get("channel", 0))
         limit: Optional[int] = starboard_data.get("limit")
         is_locked: Optional[bool] = starboard_data.get("is_locked")
 
-        ignore_channel = ", ".join(
-            [
-                f"{ctx.guild.get_channel(c)} ({c})"
-                for c in starboard_data.get("ignore_channel", [])
-            ]
-        )
+        ignore_channel = ", ".join([f"{ctx.guild.get_channel(c)} ({c})" for c in starboard_data.get("ignore_channel", [])])
         max_duration: Optional[str] = starboard_data.get("max_duration")
 
         return await ctx.reply(
@@ -151,18 +128,14 @@ class Configuration(Cog):
 
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
-    async def starboard_channel(
-        self, ctx: Context, *, channel: Optional[discord.TextChannel] = None
-    ):
+    async def starboard_channel(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None):
         """To setup the channel"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"starboard.channel": channel.id if channel else None}},
         )
         if channel:
-            return await ctx.reply(
-                f"{ctx.author.mention} set the starboard channel to {channel.mention}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} set the starboard channel to {channel.mention}")
         await ctx.send(f"{ctx.author.mention} removed the starboard channel")
 
     @starboard.command(name="maxage", aliases=["maxduration"])
@@ -171,12 +144,7 @@ class Configuration(Cog):
         """To set the max duration"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {
-                "$set": {
-                    "starboard.max_duration": ctx.message.created_at.timestamp()
-                    - duration.dt.timestamp()
-                }
-            },
+            {"$set": {"starboard.max_duration": ctx.message.created_at.timestamp() - duration.dt.timestamp()}},
         )
         await ctx.reply(
             f"{ctx.author.mention} set the max duration to **{ctx.message.created_at.timestamp() - duration.dt.timestamp()}** seconds"
@@ -190,68 +158,48 @@ class Configuration(Cog):
             {"_id": ctx.guild.id},
             {"$addToSet": {"starboard.ignore_channel": channel.id}},
         )
-        await ctx.reply(
-            f"{ctx.author.mention} added {channel.mention} to the ignore list"
-        )
+        await ctx.reply(f"{ctx.author.mention} added {channel.mention} to the ignore list")
 
     @starboard.command(name="unignore", aliases=["unignorechannel"])
     @commands.has_permissions(administrator=True)
-    async def starboard_remove_ignore(
-        self, ctx: Context, *, channel: discord.TextChannel
-    ):
+    async def starboard_remove_ignore(self, ctx: Context, *, channel: discord.TextChannel):
         """To remove the channel from ignore list"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"starboard.ignore_channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed {channel.mention} from the ignore list"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed {channel.mention} from the ignore list")
 
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_permissions(administrator=True)
     async def starboard_limit(self, ctx: Context, limit: int = 3):
         """To set the starboard limit"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard.limit": limit}}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"starboard.limit": limit}})
         await ctx.reply(f"{ctx.author.mention} set starboard limit to **{limit}**")
 
     @starboard.command(name="lock", aliases=["locked"])
     @commands.has_permissions(administrator=True)
     async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
         """To lock the starboard channel"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard.is_locked": toggle}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}"
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"starboard.is_locked": toggle}})
+        await ctx.reply(f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}")
 
     @config.group(aliases=["log"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(
-        manage_channels=True, manage_webhooks=True, view_audit_log=True
-    )
-    async def logging(
-        self, ctx: Context, event: str, *, channel: discord.TextChannel = None
-    ):
+    @commands.bot_has_permissions(manage_channels=True, manage_webhooks=True, view_audit_log=True)
+    async def logging(self, ctx: Context, event: str, *, channel: discord.TextChannel = None):
         """To setup the logging feature of the server. This logging is not mod log or Ticket log"""
         if ctx.invoked_subcommand:
             return
         chn: discord.TextChannel = channel or ctx.channel
         if event.lower() not in events:
-            return await ctx.reply(
-                f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
-            )
+            return await ctx.reply(f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`")
         hooks: List[discord.Webhook] = await chn.webhooks()
         if len(hooks) >= 10:
             for hook in hooks:
                 if hook is not None and hook.user.id == self.bot.user.id:  # type: ignore
                     webhook = hook
                     post = {event.lower(): str(webhook.url)}
-                    await self.bot.mongo.parrot_db.logging.update_one(
-                        {"_id": ctx.guild.id}, {"$set": post}, upsert=True
-                    )
+                    await self.bot.mongo.parrot_db.logging.update_one({"_id": ctx.guild.id}, {"$set": post}, upsert=True)
                     break
             else:
                 return await ctx.reply(
@@ -268,43 +216,31 @@ class Configuration(Cog):
                 upsert=True,
             )
 
-        await ctx.reply(
-            f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {chn.mention}"
-        )
+        await ctx.reply(f"{ctx.author.mention} all `{event.replace('_', ' ').title()}` will be posted on {chn.mention}")
 
     @logging.command(name="remove", aliases=["delete", "removeevent"])
     @commands.has_permissions(administrator=True)
     async def logging_remove(self, ctx: Context, event: str):
         """To remove the logging event"""
         if event.lower() not in events:
-            return await ctx.reply(
-                f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
-            )
-        await self.bot.mongo.parrot_db.logging.update_one(
-            {"_id": ctx.guild.id}, {"$set": {event.lower(): ""}}
-        )
+            return await ctx.reply(f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`")
+        await self.bot.mongo.parrot_db.logging.update_one({"_id": ctx.guild.id}, {"$set": {event.lower(): ""}})
 
-        await ctx.reply(
-            f"{ctx.author.mention} removed `{event.replace('_', ' ').title()}` from the logging list"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed `{event.replace('_', ' ').title()}` from the logging list")
 
     @logging.command(name="list")
     @commands.has_permissions(administrator=True)
     async def logging_list(self, ctx: Context):
         """To list the logging events"""
         main = []
-        if data := await self.bot.mongo.parrot_db.logging.find_one(
-            {"_id": ctx.guild.id}, {"_id": 0}
-        ):
+        if data := await self.bot.mongo.parrot_db.logging.find_one({"_id": ctx.guild.id}, {"_id": 0}):
             for k, v in data.items():
                 if v:
                     res = await self.bot.http_session.get(v)
                     if res.status == 200:
                         d: Dict[str, Any] = await res.json()
                         channel = ctx.guild.get_channel(int(d["channel_id"]))
-                        main.append(
-                            [f"{k.replace('_', ' ').title()}", f"#{channel.name}"]
-                        )
+                        main.append([f"{k.replace('_', ' ').title()}", f"#{channel.name}"])
         if main:
             table = tabulate(main, headers=["Event", "Channel"], tablefmt="pretty")
             await ctx.send(f"```\n{table}```")
@@ -324,32 +260,22 @@ class Configuration(Cog):
         #         f"{ctx.author.mention} length of prefix can not be more than 6 characters."
         #     )
         post = {"prefix": arg}
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": post}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
 
-        await ctx.reply(
-            f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**."
-        )
+        await ctx.reply(f"{ctx.author.mention} success! Prefix for **{ctx.guild.name}** is **{arg}**.")
 
     @config.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def suggestchannel(
-        self, ctx: Context, *, channel: Optional[discord.TextChannel] = None
-    ):
+    async def suggestchannel(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None):
         """To configure the suggestion channel. If no channel is provided it will remove the channel"""
         if channel:
             await self.bot.mongo.parrot_db.server_config.update_one(
                 {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}}
             )
-            await ctx.reply(
-                f"{ctx.author.mention} set suggestion channel to {channel.mention}"
-            )
+            await ctx.reply(f"{ctx.author.mention} set suggestion channel to {channel.mention}")
             return
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}})
         await ctx.reply(f"{ctx.author.mention} removed suggestion channel")
 
     @config.group(name="warn")
@@ -363,9 +289,7 @@ class Configuration(Cog):
     @config_warn.command(name="add")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def warnadd(
-        self, ctx: Context, count: int, action: str, duration: str = None
-    ):
+    async def warnadd(self, ctx: Context, count: int, action: str, duration: str = None):
         """To add warn settings in server. This is configuration is applicable when used `warn` command"""
         ACTIONS = [
             "ban",
@@ -375,17 +299,11 @@ class Configuration(Cog):
             "mute",
         ]
         if action.lower() not in ACTIONS:
-            return await ctx.error(
-                f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
-            )
+            return await ctx.error(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
         if duration:
             ShortTime(duration)  # type: ignore
-        if _ := await self.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": ctx.guild.id, "warn_auto.count": count}
-        ):
-            return await ctx.error(
-                f"{ctx.author.mention} warn count {count} already exists."
-            )
+        if _ := await self.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id, "warn_auto.count": count}):
+            return await ctx.error(f"{ctx.author.mention} warn count {count} already exists.")
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {
@@ -417,17 +335,13 @@ class Configuration(Cog):
         payload = {}
         if flags.action:
             if flags.action.lower() not in ACTIONS:
-                return await ctx.error(
-                    f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`"
-                )
+                return await ctx.error(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
             payload["action"] = flags.action.lower()
         if flags.count:
             payload["count"] = flags.count
         if flags.duration:
             payload["duration"] = flags.duration
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"warn_auto": {**payload}}}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$pull": {"warn_auto": {**payload}}})
         await ctx.send(f"{ctx.author.mention} updated")
 
     @config_warn.command(name="expiry", aliases=["expire"])
@@ -436,9 +350,7 @@ class Configuration(Cog):
     async def warnexpiry(self, ctx: Context, *, duration: str):
         """To set the expiry duration of warns"""
         ShortTime(duration)
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"warn_expiry": duration}}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"warn_expiry": duration}})
 
     @config_warn.command(name="list", aliases=["show"])
     @commands.has_permissions(administrator=True)
@@ -457,9 +369,7 @@ class Configuration(Cog):
             count = data.get("count")
             action = data.get("action")
             duration = data.get("duration")
-            entries.append(
-                f"""Count: {count} | Action: {action} | Duration: {duration}"""
-            )
+            entries.append(f"""Count: {count} | Action: {action} | Duration: {duration}""")
 
         p = SimplePages(entries, ctx=ctx, per_page=10)
         await p.start()
@@ -470,16 +380,10 @@ class Configuration(Cog):
     async def muterole(self, ctx: Context, *, role: discord.Role = None):
         """To set the mute role of the server. By default role with name `Muted` is consider as mute role."""
         post = {"mute_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": post}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
-            return await ctx.reply(
-                f"{ctx.author.mention} mute role reseted! or removed"
-            )
-        await ctx.reply(
-            f"{ctx.author.mention} success! Mute role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
-        )
+            return await ctx.reply(f"{ctx.author.mention} mute role reseted! or removed")
+        await ctx.reply(f"{ctx.author.mention} success! Mute role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
 
     @config.command(aliases=["mod-role"])
     @commands.has_permissions(administrator=True)
@@ -488,14 +392,10 @@ class Configuration(Cog):
         """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot.
         By default the mod functionality works on the basis of permission"""
         post = {"mod_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": post}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
             return await ctx.reply(f"{ctx.author.mention} mod role reseted! or removed")
-        await ctx.reply(
-            f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
-        )
+        await ctx.reply(f"{ctx.author.mention} success! Mod role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
 
     @config.command(aliases=["dj-role"])
     @commands.has_permissions(administrator=True)
@@ -504,19 +404,14 @@ class Configuration(Cog):
         """To set dj role of the server. People with dj role can accesss the DJ power of Parrot.
         By default the dj functionality works on the basis of permission that is (Manage Channel)"""
         post = {"dj_role": role.id if role else None}
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": post}
-        )
+        await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
             return await ctx.reply(f"{ctx.author.mention} dj role reseted! or removed")
-        await ctx.reply(
-            f"{ctx.author.mention} success! DJ role for **{ctx.guild.name}** is **{role.name} ({role.id})**"
-        )
+        await ctx.reply(f"{ctx.author.mention} success! DJ role for **{ctx.guild.name}** is **{role.name} ({role.id})**")
+
     @config.command(aliases=["g-setup", "g_setup"])
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(
-        manage_channels=True, manage_webhooks=True, manage_roles=True
-    )
+    @commands.bot_has_permissions(manage_channels=True, manage_webhooks=True, manage_roles=True)
     @Context.with_type
     async def gsetup(
         self,
@@ -529,15 +424,11 @@ class Configuration(Cog):
         c: Collection = self.bot.mongo.parrot_db.global_chat
         if not setting:
 
-            overwrites: Dict[
-                Union[discord.Role, discord.Member], discord.PermissionOverwrite
-            ] = {
+            overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
                     read_messages=True, send_messages=True, read_message_history=True
                 ),
-                ctx.guild.me: discord.PermissionOverwrite(
-                    read_messages=True, send_messages=True, read_message_history=True
-                ),
+                ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True),
             }
             channel = await ctx.guild.create_text_channel(
                 "global-chat",
@@ -553,9 +444,7 @@ class Configuration(Cog):
                 {"$set": {"channel_id": channel.id, "webhook": webhook.url}},
                 upsert=True,
             )
-            return await ctx.reply(
-                f"{ctx.author.mention} success! Global chat is now setup {channel.mention}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} success! Global chat is now setup {channel.mention}")
 
         if setting.lower() in {
             "ignore-role",
@@ -564,16 +453,10 @@ class Configuration(Cog):
             "ignore",
         }:
             post = {"ignore-role": role.id if role else None}
-            await self.bot.mongo.parrot_db.global_chat.update_one(
-                {"_id": ctx.guild.id}, {"$set": post}, upsert=True
-            )
+            await self.bot.mongo.parrot_db.global_chat.update_one({"_id": ctx.guild.id}, {"$set": post}, upsert=True)
             if not role:
-                return await ctx.reply(
-                    f"{ctx.author.mention} ignore role reseted! or removed"
-                )
-            await ctx.reply(
-                f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!"
-            )
+                return await ctx.reply(f"{ctx.author.mention} ignore role reseted! or removed")
+            await ctx.reply(f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!")
 
     @config.command()
     @commands.has_permissions(administrator=True)
@@ -589,9 +472,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} counting channel for the server is set to **{channel.mention} ({channel.id})**"
             )
         else:
-            await ctx.reply(
-                f"{ctx.author.mention} counting channel for the server is not removed"
-            )
+            await ctx.reply(f"{ctx.author.mention} counting channel for the server is not removed")
 
     @config.group(name="leveling", aliases=["lvl"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -599,12 +480,8 @@ class Configuration(Cog):
     async def leveling(self, ctx: Context, toggle: convert_bool = True):
         """To configure leveling"""
         if not ctx.invoked_subcommand:
-            await self.bot.mongo.parrot_db.server_config.update_one(
-                {"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}}
-            )
-            await ctx.reply(
-                f"{ctx.author.mention} set leveling system to: **{toggle}**"
-            )
+            await self.bot.mongo.parrot_db.server_config.update_one({"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}})
+            await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
 
     @leveling.command(name="show")
     @commands.has_permissions(administrator=True)
@@ -614,9 +491,7 @@ class Configuration(Cog):
         try:
             leveling: Dict[str, Any] = self.bot.server_config[ctx.guild.id]["leveling"]
         except KeyError:
-            return await ctx.reply(
-                f"{ctx.author.mention} leveling system is not set up yet!"
-            )
+            return await ctx.reply(f"{ctx.author.mention} leveling system is not set up yet!")
         reward: List[Dict[str, int]] = leveling.get("reward", [])
         rwrd_tble = []
         for i in reward:
@@ -650,22 +525,16 @@ class Configuration(Cog):
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_channel(
-        self, ctx: Context, *, channel: discord.TextChannel = None
-    ):
+    async def leveling_channel(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To configure leveling channel"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"leveling.channel": channel.id if channel else None}},
         )
         if channel:
-            await ctx.reply(
-                f"{ctx.author.mention} all leveling like annoucement will posted in {channel.mention}"
-            )
+            await ctx.reply(f"{ctx.author.mention} all leveling like annoucement will posted in {channel.mention}")
             return
-        await ctx.reply(
-            f"{ctx.author.mention} reset annoucement channel for the leveling"
-        )
+        await ctx.reply(f"{ctx.author.mention} reset annoucement channel for the leveling")
 
     @leveling.group(name="ignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -688,9 +557,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"leveling.ignore_role": role.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**")
         return
 
     @leveling_ignore_set.command(
@@ -698,17 +565,13 @@ class Configuration(Cog):
     )
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_ignore_channel(
-        self, ctx: Context, *, channel: discord.TextChannel
-    ):
+    async def leveling_ignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
         """To configure leveling ignore channel"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {"$addToSet": {"leveling.ignore_channel": channel.id}},
         )
-        await ctx.reply(
-            f"{ctx.author.mention} all leveling will be ignored in **{channel.mention}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} all leveling will be ignored in **{channel.mention}**")
 
     @leveling.group(name="unignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -731,54 +594,38 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_role": role.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{role.name}** from ignore list. (If existed)"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed **{role.name}** from ignore list. (If existed)")
 
     @leveling_unignore_set.command(
         name="channel",
     )
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling_unignore_channel(
-        self, ctx: Context, *, channel: discord.TextChannel
-    ):
+    async def leveling_unignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
         """To configure leveling ignore channel"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.mention}** from ignore list. (If existed)"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.mention}** from ignore list. (If existed)")
 
     @leveling.command(name="addreward")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def level_reward_add(
-        self, ctx: Context, level: int, *, role: discord.Role = None
-    ):
+    async def level_reward_add(self, ctx: Context, level: int, *, role: discord.Role = None):
         """To add the level reward"""
-        if _ := await self.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": ctx.guild.id, "leveling.reward": level}
-        ):
+        if _ := await self.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id, "leveling.reward": level}):
             role = ctx.guild.get_role(_["role"])
             return await ctx.error(
                 f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{getattr(role, 'name', 'Role Not Found')}**"
             )
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {
-                "$addToSet": {
-                    "leveling.reward": {"lvl": level, "role": role.id if role else None}
-                }
-            },
+            {"$addToSet": {"leveling.reward": {"lvl": level, "role": role.id if role else None}}},
         )
         if not role:
             await ctx.reply(f"{ctx.author.mention} reset the role on level **{level}**")
             return
-        await ctx.reply(
-            f"{ctx.author.mention} set role {role.name} at level **{level}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} set role {role.name} at level **{level}**")
 
     @leveling.command(name="removereward")
     @commands.has_permissions(administrator=True)
@@ -788,29 +635,21 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"leveling.reward": {"lvl": level}}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} updated/removed reward at level: **{level}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} updated/removed reward at level: **{level}**")
 
     @config.command()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def onewordchannel(
-        self, ctx: Context, *, channel: discord.TextChannel = None
-    ):
+    async def onewordchannel(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To set the one word channel in the server"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"oneword": channel.id if channel else None}},
         )
         if channel:
-            await ctx.reply(
-                f"{ctx.author.mention} one word channel for the server is set to **{channel.name}**"
-            )
+            await ctx.reply(f"{ctx.author.mention} one word channel for the server is set to **{channel.name}**")
         else:
-            await ctx.reply(
-                f"{ctx.author.mention} one word channel for the server is not removed"
-            )
+            await ctx.reply(f"{ctx.author.mention} one word channel for the server is not removed")
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -819,9 +658,7 @@ class Configuration(Cog):
         """To configure the automoderation"""
         if ctx.invoked_subcommand is None:
             try:
-                automod: Dict[str, Dict[str, Any]] = self.bot.server_config[
-                    ctx.guild.id
-                ]["automod"]
+                automod: Dict[str, Dict[str, Any]] = self.bot.server_config[ctx.guild.id]["automod"]
             except KeyError:
                 return await self.bot.invoke_help_command(ctx)
             main = []
@@ -829,17 +666,17 @@ class Configuration(Cog):
             for k, v in automod.items():
                 main_str = f"""\N{BULLET} Name: {k.title()}
 
-`Enable    :` **{v['enable']}**
-`I. Channel:` **{', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}**
+`Enable    :` **{v['enable']} **
+`I. Channel:` **{', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])} **
 
 [Autowarn]
-`Enabled   :` **{getattr(v['autowarn'], 'enable', False)}**
-`Count     :` **{getattr(v['autowarn'], 'count', 0)}**
-`Delete    :` **{getattr(v['autowarn'], 'to_delete', False)}**
+`Enabled   :` **{getattr(v['autowarn'], 'enable', False)} **
+`Count     :` **{getattr(v['autowarn'], 'count', 0)} **
+`Delete    :` **{getattr(v['autowarn'], 'to_delete', False)} **
 
 [Punish]
-`Type      :` **{getattr(v['autowarn'].get('punish'), 'type', None)}**
-`Duration  :` **{getattr(v['autowarn'].get('punish'), 'duration', None)}**
+`Type      :` **{getattr(v['autowarn'].get('punish'), 'type', None)} **
+`Duration  :` **{getattr(v['autowarn'].get('punish'), 'duration', None)} **
 """
                 main.append(main_str)
 
@@ -871,9 +708,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.spam.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} spam protection won't be working in **{channel.name}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} spam protection won't be working in **{channel.name}**")
 
     @automod_spam.command(name="remove")
     @commands.has_permissions(administrator=True)
@@ -883,9 +718,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.spam.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} spam protection will be working in **{channel.name}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} spam protection will be working in **{channel.name}**")
 
     @automod.group(name="links")
     @commands.has_permissions(administrator=True)
@@ -895,9 +728,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.antilinks.enable": to_enable}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**")
 
     @automod_links.command(name="ignore")
     @commands.has_permissions(administrator=True)
@@ -908,9 +739,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id},
             {"$addToSet": {"automod.antilinks.channel": channel.id}},
         )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection")
 
     @automod_links.command(name="remove")
     @commands.has_permissions(administrator=True)
@@ -920,9 +749,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.antilinks.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection")
 
     @automod_links.command(name="whitelist")
     @commands.has_permissions(administrator=True)
@@ -936,9 +763,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.antilinks.whitelist": link}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} **<{link}>** added for the whitelist link"
-        )
+        await ctx.reply(f"{ctx.author.mention} **<{link}>** added for the whitelist link")
 
     @automod_links.command(name="blacklist")
     @commands.has_permissions(administrator=True)
@@ -948,9 +773,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.antilinks.whitelist": link}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} **<{link}>** removed for the whitelist link"
-        )
+        await ctx.reply(f"{ctx.author.mention} **<{link}>** removed for the whitelist link")
 
     @automod.group(name="profanity", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -960,9 +783,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.profanity.enable": to_enable}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} profanity system in this server is set to **{to_enable}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} profanity system in this server is set to **{to_enable}**")
 
     @profanity.command(name="add")
     @commands.has_permissions(administrator=True)
@@ -994,9 +815,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id},
             {"$addToSet": {"automod.profanity.channel": channel.id}},
         )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for profanity protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for profanity protection")
 
     @profanity.command(name="remove")
     @commands.has_permissions(administrator=True)
@@ -1006,9 +825,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.profanity.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for profanity protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for profanity protection")
 
     @automod.group(name="caps", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -1018,9 +835,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.caps.enable": to_enable}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} caps protection for this server is set to **{to_enable}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} caps protection for this server is set to **{to_enable}**")
 
     @capsprotection.command(name="limit")
     @commands.has_permissions(administrator=True)
@@ -1031,9 +846,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id},
             {"$set": {"automod.caps.limit": limit if limit > 0 else None}},
         )
-        await ctx.reply(
-            f"{ctx.author.mention} caps protection limit for this server is set to **{limit}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} caps protection limit for this server is set to **{limit}**")
 
     @capsprotection.command(name="ignore")
     @commands.has_permissions(administrator=True)
@@ -1043,9 +856,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.caps.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for caps protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for caps protection")
 
     @capsprotection.command(name="remove")
     @commands.has_permissions(administrator=True)
@@ -1055,9 +866,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.caps.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for caps protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for caps protection")
 
     @automod.group(name="emoji", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -1067,9 +876,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.emoji.enable": to_enable}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} emoji protection for this server is set to **{to_enable}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} emoji protection for this server is set to **{to_enable}**")
 
     @emojiprotection.command(name="limit")
     @commands.has_permissions(administrator=True)
@@ -1080,9 +887,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id},
             {"$set": {"automod.emoji.limit": limit if limit > 0 else None}},
         )
-        await ctx.reply(
-            f"{ctx.author.mention} emoji protection limit for this server is set to **{limit}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} emoji protection limit for this server is set to **{limit}**")
 
     @emojiprotection.command(name="ignore")
     @commands.has_permissions(administrator=True)
@@ -1092,9 +897,7 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.emoji.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for emoji protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} added **{channel.name}** in whitelist, for emoji protection")
 
     @emojiprotection.command(name="remove")
     @commands.has_permissions(administrator=True)
@@ -1104,18 +907,14 @@ class Configuration(Cog):
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"automod.emoji.channel": channel.id}}
         )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for emoji protection"
-        )
+        await ctx.reply(f"{ctx.author.mention} removed **{channel.name}** in whitelist, for emoji protection")
 
     @config.group(aliases=["tel"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def telephone(self, ctx: Context):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
-        data: Dict[str, Any] = await self.bot.mongo.parrot_db.telephone.find_one(
-            {"_id": ctx.guild.id}
-        )
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
         if not data:
             await self.bot.mongo.parrot_db.telephone.insert_one(
                 {
@@ -1128,25 +927,11 @@ class Configuration(Cog):
                 }
             )
         if not ctx.invoked_subcommand:
-            data = await self.bot.mongo.parrot_db.telephone.find_one(
-                {"_id": ctx.guild.id}
-            )
+            data = await self.bot.mongo.parrot_db.telephone.find_one({"_id": ctx.guild.id})
             if data:
-                role = (
-                    ctx.guild.get_role(data["pingrole"]).name
-                    if data.get("pingrole")
-                    else None
-                )
-                channel = (
-                    ctx.guild.get_channel(data["channel"]).name
-                    if data.get("channel")
-                    else None
-                )
-                member = (
-                    await self.bot.get_or_fetch_member(ctx.guild, data["memberping"])
-                    if data.get("memberping")
-                    else None
-                )
+                role = ctx.guild.get_role(data["pingrole"]).name if data.get("pingrole") else None
+                channel = ctx.guild.get_channel(data["channel"]).name if data.get("channel") else None
+                member = await self.bot.get_or_fetch_member(ctx.guild, data["memberping"]) if data.get("memberping") else None
                 await ctx.reply(
                     f"Configuration of this server [telsetup]\n\n"
                     f"`Channel   :` **{channel}**\n"
@@ -1158,9 +943,7 @@ class Configuration(Cog):
     @telephone.command(name="channel")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def tel_config_channel(
-        self, ctx: Context, *, channel: discord.TextChannel = None
-    ):
+    async def tel_config_channel(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To setup the telephone line in the channel."""
         await self.bot.mongo.parrot_db.telephone.update_one(
             {"_id": ctx.guild.id},
@@ -1168,12 +951,8 @@ class Configuration(Cog):
             upsert=True,
         )
         if not channel:
-            return await ctx.reply(
-                f"{ctx.author.mention} global telephone line is reseted! or removed"
-            )
-        await ctx.reply(
-            f"{ctx.author.mention} success! **#{channel.name}** is now added to global telephone line."
-        )
+            return await ctx.reply(f"{ctx.author.mention} global telephone line is reseted! or removed")
+        await ctx.reply(f"{ctx.author.mention} success! **#{channel.name}** is now added to global telephone line.")
 
     @telephone.command(name="pingrole")
     @commands.has_permissions(administrator=True)
@@ -1186,19 +965,13 @@ class Configuration(Cog):
             upsert=True,
         )
         if not role:
-            return await ctx.reply(
-                f"{ctx.author.mention} ping role reseted! or removed"
-            )
-        await ctx.reply(
-            f"{ctx.author.mention} success! **@{role.name}** will be now pinged when someone calls your server."
-        )
+            return await ctx.reply(f"{ctx.author.mention} ping role reseted! or removed")
+        await ctx.reply(f"{ctx.author.mention} success! **@{role.name}** will be now pinged when someone calls your server.")
 
     @telephone.command(name="memberping")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def tel_config_memberping(
-        self, ctx: Context, *, member: discord.Member = None
-    ):
+    async def tel_config_memberping(self, ctx: Context, *, member: discord.Member = None):
         """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
         await self.bot.mongo.parrot_db.telephone.update_one(
             {"_id": ctx.guild.id},
@@ -1206,9 +979,7 @@ class Configuration(Cog):
             upsert=True,
         )
         if not member:
-            return await ctx.reply(
-                f"{ctx.author.menton} member ping reseted! or removed"
-            )
+            return await ctx.reply(f"{ctx.author.menton} member ping reseted! or removed")
         await ctx.reply(
             f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."
         )
@@ -1232,25 +1003,19 @@ class Configuration(Cog):
     async def tel_config_unblock(self, ctx: Context, *, server: discord.Guild):
         """Now they understood their mistake. You can now unblock them."""
         if server is ctx.guild:
-            return await ctx.reply(
-                f"{ctx.author.mention} ok google, let the server admin get some rest"
-            )
+            return await ctx.reply(f"{ctx.author.mention} ok google, let the server admin get some rest")
         await self.bot.mongo.parrot_db.telephone.update_one(
             {"_id": ctx.guild.id}, {"$pull": {"blocked": server.id}}, upsert=True
         )
         await ctx.reply(f"{ctx.author.mention} Success! unblocked: {server.id}")
 
     @commands.group(aliases=["ticketsetup"], invoke_without_command=True)
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def ticketconfig(self, ctx: Context):
         """To config the Ticket Parrot Bot in the server"""
-        data: Dict[str, Any] = await self.bot.mongo.parrot_db.ticket.find_one(
-            {"_id": ctx.guild.id}
-        )
+        data: Dict[str, Any] = await self.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         if not data:
             await self.bot.mongo.parrot_db.ticket.insert_one(
                 {
@@ -1271,42 +1036,26 @@ class Configuration(Cog):
 
             ticket_counter = data["ticket_counter"]
             valid_roles = (
-                ", ".join(
-                    getattr(ctx.guild.get_role(n), "name", "N/A")
-                    for n in data["valid_roles"]
-                )
+                ", ".join(getattr(ctx.guild.get_role(n), "name", "N/A") for n in data["valid_roles"])
                 if data.get("valid_roles")
                 else "N/A"
             )
             pinged_roles = (
-                ", ".join(
-                    getattr(ctx.guild.get_role(n), "name", "N/A")
-                    for n in data["pinged_roles"]
-                )
+                ", ".join(getattr(ctx.guild.get_role(n), "name", "N/A") for n in data["pinged_roles"])
                 if data.get("pinged_roles")
                 else "N/A"
             )
             current_active_channel = (
-                ", ".join(
-                    getattr(ctx.guild.get_channel(n), "name", "N/A")
-                    for n in data["ticket_channel_ids"]
-                )
+                ", ".join(getattr(ctx.guild.get_channel(n), "name", "N/A") for n in data["ticket_channel_ids"])
                 if data.get("ticket_channel_ids")
                 else "N/A"
             )
             verified_roles = (
-                ", ".join(
-                    getattr(ctx.guild.get_role(n), "name", "N/A")
-                    for n in data["verified_roles"]
-                )
+                ", ".join(getattr(ctx.guild.get_role(n), "name", "N/A") for n in data["verified_roles"])
                 if data.get("verified_roles")
                 else "N/A"
             )
-            category = (
-                ctx.guild.get_channel(data["category"])
-                if data.get("category")
-                else "N/A"
-            )
+            category = ctx.guild.get_channel(data["category"]) if data.get("category") else "N/A"
             await ctx.reply(
                 f"Configuration of this server [ticket]\n\n"
                 f"`Total Ticket made  :` **{ticket_counter}**\n"
@@ -1318,23 +1067,17 @@ class Configuration(Cog):
             )
 
     @ticketconfig.command()
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def auto(
-        self, ctx: Context, channel: discord.TextChannel = None, *, message: str = None
-    ):
+    async def auto(self, ctx: Context, channel: discord.TextChannel = None, *, message: str = None):
         """Automatic ticket making system. On reaction basis"""
         channel = channel or ctx.channel
         message = message or "React to \N{ENVELOPE} to create ticket"
         await mt._auto(ctx, channel, message)
 
     @ticketconfig.command()
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def setcategory(self, ctx: Context, *, channel: discord.CategoryChannel):
@@ -1342,9 +1085,7 @@ class Configuration(Cog):
         await mt._setcategory(ctx, channel)
 
     @ticketconfig.command()
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def setlog(self, ctx: Context, *, channel: discord.TextChannel):
@@ -1352,9 +1093,7 @@ class Configuration(Cog):
         await mt._setlog(ctx, channel)
 
     @ticketconfig.command()
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addaccess(self, ctx: Context, *, role: discord.Role):
@@ -1366,9 +1105,7 @@ class Configuration(Cog):
         await mt._addaccess(ctx, role)
 
     @ticketconfig.command()
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def delaccess(self, ctx: Context, *, role: discord.Role):
@@ -1389,9 +1126,7 @@ class Configuration(Cog):
         await mt._addadimrole(ctx, role)
 
     @ticketconfig.command(hidden=False)
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addpingedrole(self, ctx: Context, *, role: discord.Role):
@@ -1409,9 +1144,7 @@ class Configuration(Cog):
         await mt._deladminrole(ctx, role)
 
     @ticketconfig.command()
-    @commands.check_any(
-        commands.has_permissions(administrator=True), has_verified_role_ticket()
-    )
+    @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def delpingedrole(self, ctx: Context, *, role: discord.Role):
@@ -1451,9 +1184,7 @@ class Configuration(Cog):
         elif command == "all":
             await mt_._enable(self.bot, ctx, "all", target, force)
         else:
-            await ctx.send(
-                f"{ctx.author.mention} {command} is nither command nor any category"
-            )
+            await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
 
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)
@@ -1475,9 +1206,7 @@ class Configuration(Cog):
         elif command == "all":
             await mt_._disable(self.bot, ctx, "all", target, force)
         else:
-            await ctx.send(
-                f"{ctx.author.mention} {command} is nither command nor any category"
-            )
+            await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
 
     @cmdconfig.command(name="list")
     @commands.has_permissions(administrator=True)
@@ -1502,9 +1231,7 @@ class Configuration(Cog):
             em_lis.append(main)
 
         if not em_lis:
-            return await ctx.error(
-                f"{ctx.author.mention} no commands/category overwrite found"
-            )
+            return await ctx.error(f"{ctx.author.mention} no commands/category overwrite found")
         p = SimplePages(em_lis, ctx=ctx, per_page=3)
         await p.start()
 
@@ -1534,23 +1261,27 @@ class Configuration(Cog):
         ACTIONS = ["antilinks", "profanity", "spam", "emoji", "caps"]
 
         if action.lower() not in ACTIONS:
-            await ctx.send(
-                f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**"
-            )
+            await ctx.send(f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**")
             return
-        ShortTime(flags.duration)  # flake8: noqa
+        
+        if flags.duration:
+            ShortTime(flags.duration)  # flake8: noqa
+
+        _PUNISH = str(flags.punish).lower()
+        if _PUNISH not in PUNISH:
+            _PUNISH = None
+
+        _DURATION = str(flags.punish).lower()
+        if _PUNISH in {"kick", "ban"}:
+            _DURATION = None
 
         data = {
             "enable": flags.enable,
             "count": flags.count,
             "to_delete": flags.delete,
             "punish": {
-                "type": flags.punish.lower()
-                if str(flags.punish).lower() in PUNISH
-                else None,
-                "duration": flags.duration
-                if str(flags.punish).lower() not in ("kick", "ban")
-                else None,
+                "type": _PUNISH,
+                "duration": _DURATION,
             },
         }
         await self.bot.mongo.parrot_db.server_config.update_one(
@@ -1574,19 +1305,13 @@ class Configuration(Cog):
         if ctx.invoked_subcommand is not None:
             return
         try:
-            server_stats: Dict[str, Any] = self.bot.server_config[ctx.guild.id][
-                "stats_channels"
-            ]
+            server_stats: Dict[str, Any] = self.bot.server_config[ctx.guild.id]["stats_channels"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
         table = []
         for key, value in server_stats.items():
             if key != "role":
-                chn = (
-                    self.bot.get_channel(value["channel_id"])
-                    if value.get("channel_id")
-                    else 0
-                )
+                chn = self.bot.get_channel(value["channel_id"]) if value.get("channel_id") else 0
                 table.append(
                     [
                         key.title(),
@@ -1665,14 +1390,10 @@ class Configuration(Cog):
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                msg: discord.Message = await self.bot.wait_for(
-                    "message", check=check, timeout=60
-                )
+                msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=60)
                 return msg.content.lower()
             except asyncio.TimeoutError:
-                raise commands.BadArgument(
-                    f"{ctx.author.mention} You took too long to respond!"
-                )
+                raise commands.BadArgument(f"{ctx.author.mention} You took too long to respond!")
 
         await ctx.send(f"{ctx.author.mention} {QUES[0]}")
         counter = await wait_for_response()
@@ -1683,16 +1404,12 @@ class Configuration(Cog):
             )
         if counter == "role":
             OP = "$addToSet"
-            await ctx.send(
-                f"{ctx.author.mention} Enter the role name/ID or you can even mention it"
-            )
+            await ctx.send(f"{ctx.author.mention} Enter the role name/ID or you can even mention it")
             role = await wait_for_response()
             try:
                 role = await commands.RoleConverter().convert(ctx, role)
             except commands.BadArgument:
-                return await ctx.error(
-                    f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
-                )
+                return await ctx.error(f"{ctx.author.mention} invalid role! Please enter a valid role name/ID")
             else:
                 PAYLOAD_R["role_id"] = role.id
                 COUNTER_PAYLOAD["role"] = len(role.members)
@@ -1709,9 +1426,7 @@ class Configuration(Cog):
         await ctx.send(f"{ctx.author.mention} {QUES[2]}")
         _format = await wait_for_response()
         if r"{}" not in _format:
-            return await ctx.error(
-                f"{ctx.author.mention} invalid format! Please provide a valid format."
-            )
+            return await ctx.error(f"{ctx.author.mention} invalid format! Please provide a valid format.")
         PAYLOAD[f"{counter}.template"] = _format
         PAYLOAD_R["template"] = _format
 
@@ -1736,15 +1451,9 @@ class Configuration(Cog):
                     reason=f"Action requested by {ctx.author} ({ctx.author.id})",
                 )
         except (ValueError, IndexError):
-            return await ctx.error(
-                f"{ctx.author.mention} invalid format! Please provide a valid format."
-            )
-        PAYLOAD[f"{counter}.channel_id"] = (
-            channel.id if isinstance(channel, discord.abc.Messageable) else channel
-        )
-        PAYLOAD_R["channel_id"] = (
-            channel.id if isinstance(channel, discord.abc.Messageable) else channel
-        )
+            return await ctx.error(f"{ctx.author.mention} invalid format! Please provide a valid format.")
+        PAYLOAD[f"{counter}.channel_id"] = channel.id if isinstance(channel, discord.abc.Messageable) else channel
+        PAYLOAD_R["channel_id"] = channel.id if isinstance(channel, discord.abc.Messageable) else channel
 
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
@@ -1756,9 +1465,7 @@ class Configuration(Cog):
             upsert=True,
         )
 
-        await ctx.send(
-            f"{ctx.author.mention} counter created at #{channel.name} ({channel.mention})"
-        )
+        await ctx.send(f"{ctx.author.mention} counter created at #{channel.name} ({channel.mention})")
 
     @serverstats.command(name="delete")
     @commands.has_permissions(administrator=True)
@@ -1780,9 +1487,7 @@ class Configuration(Cog):
             "role",
         ]
         if counter.lower() not in AVAILABLE:
-            return await ctx.error(
-                f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`"
-            )
+            return await ctx.error(f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`")
 
         async def wait_for_response() -> Optional[str]:
             def check(m: discord.Message) -> bool:
@@ -1792,30 +1497,22 @@ class Configuration(Cog):
                 msg = await self.bot.wait_for("message", check=check, timeout=60)
                 return msg.content.lower()
             except asyncio.TimeoutError:
-                raise commands.BadArgument(
-                    f"{ctx.author.mention} You took too long to respond!"
-                )
+                raise commands.BadArgument(f"{ctx.author.mention} You took too long to respond!")
 
         if counter == "role":
-            await ctx.send(
-                f"{ctx.author.mention} Enter the role name/ID or you can even mention it"
-            )
+            await ctx.send(f"{ctx.author.mention} Enter the role name/ID or you can even mention it")
             role = await wait_for_response()
             try:
                 role = await commands.RoleConverter().convert(ctx, role)
             except commands.BadArgument:
-                return await ctx.error(
-                    f"{ctx.author.mention} invalid role! Please enter a valid role name/ID"
-                )
+                return await ctx.error(f"{ctx.author.mention} invalid role! Please enter a valid role name/ID")
             else:
                 await self.bot.mongo.parrot_db.server_config.update_one(
                     {"_id": ctx.guild.id},
                     {"$pull": {"stats_channels.role": {"role_id": role.id}}},
                     upsert=True,
                 )
-                return await ctx.error(
-                    f"{ctx.author.mention} counter deleted for role {role.name} ({role.mention})"
-                )
+                return await ctx.error(f"{ctx.author.mention} counter deleted for role {role.name} ({role.mention})")
 
         if data := await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id, "stats_channels": {"$exists": True}},
@@ -1831,9 +1528,7 @@ class Configuration(Cog):
 
     @config.group(name="backup", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(
-        manage_guild=True, ban_members=True, attach_files=True
-    )
+    @commands.bot_has_permissions(manage_guild=True, ban_members=True, attach_files=True)
     @commands.cooldown(1, 600, commands.BucketType.guild)
     async def config_backup(self, ctx: Context):
         """Saves your server template"""
@@ -1847,9 +1542,7 @@ class Configuration(Cog):
             )
             await ctx.send(
                 f"{ctx.author.mention} Your server template has been saved!\n",
-                file=discord.File(
-                    io.BytesIO(data.encode("utf-8")), filename="server_template.json"
-                ),
+                file=discord.File(io.BytesIO(data.encode("utf-8")), filename="server_template.json"),
             )
 
     @config_backup.command(name="load")
@@ -1858,13 +1551,9 @@ class Configuration(Cog):
     async def config_backup_load(self, ctx: Context, guild: discord.Guild = None):
         """Loads a server template"""
         guild = guild or ctx.guild
-        data: Dict[str, Any] = await self.bot.mongo.extra.server_misc.find_one(
-            {"_id": guild.id}
-        )
+        data: Dict[str, Any] = await self.bot.mongo.extra.server_misc.find_one({"_id": guild.id})
         if data is None:
-            return await ctx.error(
-                f"{ctx.author.mention} No backup found for this server!"
-            )
+            return await ctx.error(f"{ctx.author.mention} No backup found for this server!")
 
         if backup := data.get("backup"):
             backup = json.loads(backup)
@@ -1876,18 +1565,12 @@ class Configuration(Cog):
             await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
             def check(r: discord.Reaction, u: discord.User) -> bool:
-                return (
-                    r.message.id == msg.id
-                    and u == ctx.author
-                    and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
-                )
+                return r.message.id == msg.id and u == ctx.author and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
             try:
                 await self.bot.wait_for("reaction_add", check=check, timeout=60)
             except asyncio.TimeoutError:
-                return await ctx.error(
-                    f"{ctx.author.mention} You took too long to respond!"
-                )
+                return await ctx.error(f"{ctx.author.mention} You took too long to respond!")
             else:
                 await ctx.send(f"{ctx.author.mention} Loading backup...")
                 await ctx.release(5)
@@ -1902,8 +1585,6 @@ class Configuration(Cog):
             {"_id": ctx.guild.id}, {"$unset": {"backup": 1}}, upsert=True
         )
         if data.modified_count:
-            await ctx.send(
-                f"{ctx.author.mention} Your server template has been deleted!"
-            )
+            await ctx.send(f"{ctx.author.mention} Your server template has been deleted!")
         else:
             await ctx.send(f"{ctx.author.mention} No backup found for this server!")

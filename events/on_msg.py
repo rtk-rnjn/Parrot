@@ -547,25 +547,19 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         await message.delete(delay=2)
-        AWAITABLES = []
         async for webhook in collection.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
             if hook := webhook["webhook"]:
-                async def __internal_func():
-                    try:
-                        with suppress(discord.HTTPException, ValueError):
-                            webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
-                            await webhook.send(
-                                content=message.content[:1990],
-                                username=f"{message.author}",
-                                avatar_url=message.author.display_avatar.url,
-                                allowed_mentions=discord.AllowedMentions.none(),
-                            )
-                    except discord.NotFound:
-                        await collection.delete_one({"webhook": hook})
-
-                AWAITABLES.append(__internal_func())
-
-        await asyncio.gather(*AWAITABLES, return_exceptions=False)
+                try:
+                    with suppress(discord.HTTPException, ValueError):
+                        webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
+                        await webhook.send(
+                            content=message.content[:1990],
+                            username=f"{message.author}",
+                            avatar_url=message.author.display_avatar.url,
+                            allowed_mentions=discord.AllowedMentions.none(),
+                        )
+                except discord.NotFound:
+                    await collection.delete_one({"webhook": hook})
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(

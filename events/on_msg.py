@@ -552,8 +552,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             if hook := webhook["webhook"]:
                 async def __internal_func():
                     try:
-                        webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
-                        with suppress(discord.HTTPException):
+                        with suppress(discord.HTTPException, ValueError):
+                            webhook = Webhook.from_url(f"{hook}", session=self.bot.http_session)
                             await webhook.send(
                                 content=message.content[:1990],
                                 username=f"{message.author}",
@@ -562,8 +562,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                             )
                     except discord.NotFound:
                         await collection.delete_one({"webhook": hook})
-                    except discord.HTTPException:
-                        pass
+
                 asyncio.create_task(__internal_func())
 
     async def _add_record_message_to_database(self, message: discord.Message):

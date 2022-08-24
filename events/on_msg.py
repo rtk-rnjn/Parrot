@@ -546,8 +546,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             )
             return
 
-        await message.delete(delay=0)
-
+        await message.delete(delay=2)
+        AWAITABLES = []
         async for webhook in collection.find({"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}):
             if hook := webhook["webhook"]:
                 async def __internal_func():
@@ -563,7 +563,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     except discord.NotFound:
                         await collection.delete_one({"webhook": hook})
 
-                asyncio.create_task(__internal_func())
+                AWAITABLES.append(__internal_func())
+
+        await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(

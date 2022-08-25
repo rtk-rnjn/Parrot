@@ -121,16 +121,12 @@ formatter = logging.Formatter("[{asctime}] [{levelname:<8}] {name}: {message}", 
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-
-T = TypeVar("T")
-
-
 @ToAsync()
 def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     return function(*args, **kwargs)
 
-
 __all__ = ("Parrot",)
+T = TypeVar("T")
 
 
 class Parrot(commands.AutoShardedBot, Generic[T]):

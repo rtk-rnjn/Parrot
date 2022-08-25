@@ -844,6 +844,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         After the cleanup is completed, the bot will send you a message with
         which people got their messages deleted and their count. This is useful
         to see which users are spammers.
+
         Members with Manage Messages can search up to 1000 messages.
         Members without can search up to 25 messages.
         """
@@ -887,7 +888,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m: discord.Message):
-            return (m.author == ctx.me or m.content.startswith(prefixes)) and not (m.mentions or m.role_mentions)
+            return (m.author == ctx.me or m.content.startswith(prefixes)) and not m.mentions and not m.role_mentions
+
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)

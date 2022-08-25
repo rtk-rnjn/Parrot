@@ -34,7 +34,7 @@ IGNORE = [
 ]
 
 
-async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: discord.Message = None):
+async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if (
@@ -74,15 +74,15 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
 async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if tag in IGNORE:
-        return await ctx.reply(f"{ctx.author.mention} the name `{tag}` is reserved word.")
+        return await ctx.error(f"{ctx.author.mention} the name `{tag}` is reserved word.")
     if _ := await collection.find_one({"id": tag}):
-        return await ctx.reply(f"{ctx.author.mention} the name `{tag}` already exists")
+        return await ctx.error(f"{ctx.author.mention} the name `{tag}` already exists")
 
     val = await ctx.prompt(
         f"{ctx.author.mention} do you want to make the tag as NSFW marked channels"
     )
     if val is None:
-        return await ctx.reply(
+        return await ctx.error(
             f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
         )
     nsfw = bool(val)
@@ -106,23 +106,23 @@ async def _delete_tag(bot: Parrot, ctx: Context, tag: str):
             await collection.delete_one({"id": tag})
             await ctx.reply(f"{ctx.author.mention} tag deleted successfully")
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't own this tag")
+            await ctx.error(f"{ctx.author.mention} you don't own this tag")
     else:
-        await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+        await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _name_edit(bot: Parrot, ctx: Context, tag: str, name: str):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if _ := await collection.find_one({"id": name}):
-        await ctx.reply(f"{ctx.author.mention} that name already exists in the database")
+        await ctx.error(f"{ctx.author.mention} that name already exists in the database")
     elif data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
             await collection.update_one({"id": tag}, {"$set": {"id": name}})
             await ctx.reply(f"{ctx.author.mention} tag name successfully changed")
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't own this tag")
+            await ctx.error(f"{ctx.author.mention} you don't own this tag")
     else:
-        await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+        await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _text_edit(bot: Parrot, ctx: Context, tag: str, text: str):
@@ -132,9 +132,9 @@ async def _text_edit(bot: Parrot, ctx: Context, tag: str, text: str):
             await collection.update_one({"id": tag}, {"$set": {"text": text}})
             await ctx.reply(f"{ctx.author.mention} tag content successfully changed")
         else:
-            await ctx.reply(f"{ctx.author.mention} you don't own this tag")
+            await ctx.error(f"{ctx.author.mention} you don't own this tag")
     else:
-        await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+        await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
@@ -142,34 +142,34 @@ async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
     if data := await collection.find_one({"id": tag}):
         member = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         if member:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server"
             )
         await collection.update_one({"id": tag}, {"$set": {"owner": ctx.author.id}})
         await ctx.reply(f"{ctx.author.mention} ownership of tag `{tag}` claimed!")
     else:
-        await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+        await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.Member):
     collection: Collection = bot.mongo.tags[f"{ctx.guild.id}"]
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
-            return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
+            return await ctx.error(f"{ctx.author.mention} you don't own this tag")
         val = await ctx.prompt(
             f"{ctx.author.mention} are you sure to transfer the tag ownership to **{member}**? This process is irreversible!"
         )
         if val is None:
-            await ctx.reply(f"{ctx.author.mention} you did not responds on time")
+            await ctx.error(f"{ctx.author.mention} you did not responds on time")
         elif val:
             await collection.update_one({"id": tag}, {"$set": {"owner": member.id}})
             await ctx.reply(
                 f"{ctx.author.mention} tag ownership successfully transfered to **{member}**"
             )
         else:
-            await ctx.reply(f"{ctx.author.mention} ok! reverting the process!")
+            await ctx.error(f"{ctx.author.mention} ok! reverting the process!")
     else:
-        await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
+        await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
@@ -266,7 +266,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
                 f"To delete your reminder consider typing.\n```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
             )
         except Exception as e:
-            return await ctx.send(
+            return await ctx.error(
                 f"{ctx.author.mention} seems that your DM are blocked for the bot. Error: {e}"
             )
         finally:
@@ -599,8 +599,8 @@ def __is_int(st: str, error: str) -> Optional[int]:
         return None
     try:
         main = int(st)
-    except ValueError:
-        raise ParrotCheckFailure(error)
+    except ValueError as e:
+        raise ParrotCheckFailure(error) from e
     else:
         return main
 

@@ -48,12 +48,12 @@ T = TypeVar("T")
 MaybeAwaitable = Union[T, Awaitable[T]]
 
 Callback = MaybeAwaitable
-BotT = TypeVar("BotT", bound=commands.Bot)
+# BotT = TypeVar("BotT", bound=commands.Bot)
 
 VOTER_ROLE_ID = 836492413312040990
 
 
-class Context(commands.Context["commands.Bot"], Generic[BotT]):
+class Context(commands.Context[commands.Bot], Generic[T]):
     """A custom implementation of commands.Context class."""
 
     if TYPE_CHECKING:
@@ -206,7 +206,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             # if no color is set, set it to red
             embed.color = discord.Color.red()
 
-        msg: Optional[discord.Message] = await self.send(
+        msg: Optional[discord.Message] = await self.reply(
             *args,
             **kwargs,
         )
@@ -364,9 +364,9 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
         *,
         timeout: Optional[float] = None,
         check: Optional[Callable[..., bool]] = None,
-        before_function: Callback = None,
-        after_function: Callback = None,
-        error_function: Callback = None,
+        before_function: Optional[Callback] = None,
+        after_function: Optional[Callback] = None,
+        error_function: Optional[Callback] = None,
         error_message: Optional[str] = None,
         suppress_error: bool = False,
         **kwargs: Any,
@@ -434,7 +434,7 @@ class Context(commands.Context["commands.Bot"], Generic[BotT]):
             if error_function is not None:
                 await discord.utils.maybe_coroutine(error_function)
             if error_message:
-                await self.send(error_message)
+                await self.error(error_message)
             if suppress_error:
                 return None
             raise

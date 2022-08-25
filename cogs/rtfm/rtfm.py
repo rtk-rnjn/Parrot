@@ -195,7 +195,7 @@ class InformationDropdown(ui.Select):
         ]
 
         # We map the option label to the embed instance so that it can be easily looked up later in O(1)
-        self.mapping_of_embeds = {
+        self.mapping_of_embeds: Dict[str, Embed] = {
             "Main Information": main_embed,
             "Languages": language_embed,
             "Tags": tags_embed,
@@ -225,8 +225,6 @@ class RTFM(Cog):
         self.bot = bot
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
-        if not hasattr(self.bot, "languages"):
-            self.bot.languages = ()
         self.headers: Dict[str, str] = {}
         self.fetch_readme.start()
 

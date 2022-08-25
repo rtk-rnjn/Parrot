@@ -20,9 +20,7 @@ class LinkProt(Cog):
         self.__instant_action_parser = instant_action_parser
 
     def has_links(self, message_content: str) -> bool:
-        url1 = LINKS_NO_PROTOCOLS.search(message_content)
-        url2 = LINKS_RE.search(message_content)
-        return bool(url1 or url2)
+        return bool(LINKS_NO_PROTOCOLS.search(message_content) or LINKS_RE.search(message_content))
 
     async def _message_passive(self, message: discord.Message):
         # sourcery skip: low-code-quality
@@ -63,7 +61,7 @@ class LinkProt(Cog):
             except KeyError:
                 to_warn: bool = False
 
-            ctx: Context = await self.bot.get_context(message, cls=Context)
+            ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
 
             try:
                 instant_action: str = data["automod"]["antilinks"]["autowarn"][

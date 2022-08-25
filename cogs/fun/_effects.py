@@ -33,9 +33,7 @@ class PfpEffects:
     """
 
     @staticmethod
-    def apply_effect(
-        image_bytes: bytes, effect: Callable, filename: str, *args: Any
-    ) -> discord.File:
+    def apply_effect(image_bytes: bytes, effect: Callable, filename: str, *args: Any) -> discord.File:
         """Applies the given effect to the image passed to it."""
         im = Image.open(BytesIO(image_bytes))
         im = im.convert("RGBA")
@@ -70,7 +68,7 @@ class PfpEffects:
         return r, g, b
 
     @staticmethod
-    def crop_avatar_circle(avatar: Image.Image) -> Image.Image:
+    def crop_avatar_circle(avatar: "Image.Image") -> "Image.Image":
         """This crops the avatar given into a circle."""
         mask = Image.new("L", avatar.size, 0)
         draw = ImageDraw.Draw(mask)
@@ -79,7 +77,7 @@ class PfpEffects:
         return avatar
 
     @staticmethod
-    def crop_ring(ring: Image.Image, px: int) -> Image.Image:
+    def crop_ring(ring: "Image.Image", px: int) -> "Image.Image":
         """This crops the given ring into a circle."""
         mask = Image.new("L", ring.size, 0)
         draw = ImageDraw.Draw(mask)
@@ -89,7 +87,7 @@ class PfpEffects:
         return ring
 
     @staticmethod
-    def pridify_effect(image: Image.Image, pixels: int, flag: str) -> Image.Image:
+    def pridify_effect(image: "Image.Image", pixels: int, flag: str) -> "Image.Image":
         """Applies the given pride effect to the given image."""
         image = PfpEffects.crop_avatar_circle(image)
 
@@ -101,7 +99,7 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def eight_bitify_effect(image: Image.Image) -> Image.Image:
+    def eight_bitify_effect(image: "Image.Image") -> "Image.Image":
         """
         Applies the 8bit effect to the given image.
         This is done by reducing the image to 32x32 and then back up to 1024x1024.
@@ -112,7 +110,7 @@ class PfpEffects:
         return image.quantize()
 
     @staticmethod
-    def flip_effect(image: Image.Image) -> Image.Image:
+    def flip_effect(image: "Image.Image") -> "Image.Image":
         """
         Flips the image horizontally.
         This is done by just using ImageOps.mirror().
@@ -122,9 +120,7 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def easterify_effect(
-        image: Image.Image, overlay_image: Optional[Image.Image] = None
-    ) -> Image.Image:
+    def easterify_effect(image: "Image.Image", overlay_image: Optional["Image.Image"] = None) -> "Image.Image":
         """
         Applies the easter effect to the given image.
         This is done by getting the closest "easter" colour to each pixel and changing the colour
@@ -151,10 +147,7 @@ class PfpEffects:
         data_set = set(data)
         easterified_data_set = {x: PfpEffects.closest(x) for x in data_set}
 
-        new_pixel_data = [
-            (*easterified_data_set[x], alpha[i]) if x in easterified_data_set else x
-            for i, x in enumerate(data)
-        ]
+        new_pixel_data = [(*easterified_data_set[x], alpha[i]) if x in easterified_data_set else x for i, x in enumerate(data)]
 
         im = Image.new("RGBA", image.size)
         im.putdata(new_pixel_data)
@@ -165,7 +158,7 @@ class PfpEffects:
         return im
 
     @staticmethod
-    def split_image(img: Image.Image, squares: int) -> list:
+    def split_image(img: "Image.Image", squares: int) -> list:
         """
         Split an image into a selection of squares, specified by the squares argument.
         Explanation:
@@ -223,7 +216,7 @@ class PfpEffects:
         return new_imgs
 
     @staticmethod
-    def join_images(images: List[Image.Image]) -> Image.Image:
+    def join_images(images: List["Image.Image"]) -> "Image.Image":
         """
         Stitches all the image squares into a new image.
         Explanation:
@@ -285,7 +278,7 @@ class PfpEffects:
         return new_image
 
     @staticmethod
-    def mosaic_effect(image: Image.Image, squares: int) -> Image.Image:
+    def mosaic_effect(image: "Image.Image", squares: int) -> "Image.Image":
         """
         Applies a mosaic effect to the given image.
         The "squares" argument specifies the number of squares to split

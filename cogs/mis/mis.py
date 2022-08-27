@@ -531,7 +531,7 @@ class Misc(Cog):
         """To make custom search request"""
         PAYLOAD = {"q": search.q}
         for k, v in _SEACH_FLAG_CONVERTERS.items():
-            if getattr(search, k):
+            if hasattr(search, k):
                 PAYLOAD[v] = getattr(search, k)
         if not ctx.channel.nsfw:
             PAYLOAD["safe"] = "active"

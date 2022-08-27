@@ -143,6 +143,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             return ref.resolved.to_reference()
         return None
 
+    @staticmethod
     def with_type(func):
         @functools.wraps(func)
         async def wrapped(*args: Any, **kwargs: Any):

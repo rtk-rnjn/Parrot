@@ -7,7 +7,6 @@ from utilities.converters import convert_bool
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
-    # ints: convert_bool = False
     ascending: convert_bool = True
     table_format: str = "psql"
     align: str = "center"

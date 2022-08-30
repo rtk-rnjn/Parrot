@@ -1,17 +1,16 @@
 from __future__ import annotations
 
+import contextlib
 import os
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
-try:
+with contextlib.suppress(ImportError):
     from dotenv import dotenv_values, load_dotenv  # type: ignore
 
     load_dotenv()
     dotenv_values(".env")
-except ImportError:
-    pass
 
 with open("config.yml") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
@@ -52,7 +51,7 @@ my_secret = DATABASE_KEY
 AUTHOR_NAME: str = parse_env_var("OWNER_NAME")
 AUTHOR_DISCRIMINATOR: int = parse_env_var("OWNER_DISCRIMINATOR", 9230)
 GITHUB: str = f"https://github.com/{parse_env_var('GITHUB_ID')}/{parse_env_var('GITHUB_PROJECT_NAME')}"
-SUPPORT_SERVER: str = f"https://discord.gg/{parse_env_var('SUPPORT_SERVER')}" + "R"  # Intentional Typo
+SUPPORT_SERVER: str = f"https://discord.gg/{parse_env_var('SUPPORT_SERVER')}R"
 WEBHOOK_JOIN_LEAVE_CHANNEL_ID: int = parse_env_var("WEBHOOK_JOIN_LEAVE_ID")
 SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")

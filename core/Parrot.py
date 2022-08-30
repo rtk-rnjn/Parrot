@@ -63,6 +63,7 @@ from utilities.config import (
     GITHUB,
     HEROKU,
     LRU_CACHE,
+    VERSION,
     MASTER_OWNER,
     OWNER_IDS,
     STRIP_AFTER_PREFIX,
@@ -234,7 +235,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
 
         self.GLOBAL_HEADERS: Dict[str, str] = {
             "Accept": "application/json",
-            "User-Agent": f"Discord Bot '{self.user}' @ {self.github}",
+            "User-Agent": f"Discord Bot '{self.user}' {getattr(self, '__version__', VERSION)} @ {self.github}",
         }
 
         self.UNDER_MAINTENANCE: bool = False

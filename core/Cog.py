@@ -23,7 +23,7 @@ class Cog(commands.Cog, Generic[T]):
         super().__init__(*args, **kwargs)
 
     def __str__(self) -> str:
-        return "{0.__class__.__name__}".format(self)
+        return self.__class__.__name__
 
     def __repr__(self) -> str:
         return self.__str__()

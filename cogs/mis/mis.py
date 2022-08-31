@@ -943,15 +943,16 @@ class Misc(Cog):
         res = await self.bot.http_session.get(link)
         data = await res.json()
         try:
-            if data["online"]:
-                ip = data["ip"]
-                port = data["port"]
-                motd = "\n".join(data["motd"]["clean"])
-                players_max = data["players"]["max"]
-                players_onl = data["players"]["online"]
-                version = data["version"]
-                protocol = data["protocol"]
-                hostname = data["hostname"]
+            if not data["online"]:
+                return await ctx.reply(f"{ctx.author.mention} Server not online!")
+            ip = data["ip"]
+            port = data["port"]
+            motd = "\n".join(data["motd"]["clean"])
+            players_max = data["players"]["max"]
+            players_onl = data["players"]["online"]
+            version = data["version"]
+            protocol = data["protocol"]
+            hostname = data["hostname"]
         except KeyError:
             return await ctx.reply(f"{ctx.author.mention} no server exists")
 

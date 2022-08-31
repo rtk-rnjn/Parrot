@@ -5,17 +5,17 @@ import re
 from difflib import SequenceMatcher
 
 
-def ratio(a, b):
+def ratio(a: str, b: str):
     m = SequenceMatcher(None, a, b)
     return int(round(100 * m.ratio()))
 
 
-def quick_ratio(a, b):
+def quick_ratio(a: str, b: str):
     m = SequenceMatcher(None, a, b)
     return int(round(100 * m.quick_ratio()))
 
 
-def partial_ratio(a, b):
+def partial_ratio(a: str, b: str):
     short, long = (a, b) if len(a) <= len(b) else (b, a)
     m = SequenceMatcher(None, short, long)
 

@@ -127,7 +127,7 @@ NEGATIVE_REPLIES: List[str] = [
     "Not in my house!",
 ]
 
-POSITIVE_REPLIES = [
+POSITIVE_REPLIES: List[str] = [
     "Yep.",
     "Absolutely!",
     "Can do!",

@@ -5,6 +5,7 @@ from typing import Optional
 from discord.ext import commands
 from utilities.converters import convert_bool
 
+
 class AutoWarn(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"  # type: ignore
 ):

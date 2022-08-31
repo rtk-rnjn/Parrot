@@ -19,7 +19,10 @@ VERSION = "v4.9.5-beta"
 
 HEROKU: bool = True
 
-def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, float, bool, List[Any]]:
+
+def parse_env_var(
+    key: Optional[str], default: Any = None
+) -> Union[str, int, float, bool, List[Any]]:
     """
     Parse an environment variable into a Python type.
     """

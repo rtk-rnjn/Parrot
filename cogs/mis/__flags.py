@@ -4,6 +4,7 @@ from typing import Literal, Optional
 from discord.ext import commands
 from utilities.converters import convert_bool
 
+
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str

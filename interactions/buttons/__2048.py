@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional, TypeAlias
 
 import discord
 
 from core import Parrot
+
+if TYPE_CHECKING:
+    from pymongo.collection import Collection
+
+    MongoCollection: TypeAlias = Collection
 
 URL_THUMBNAIL = "https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
 
@@ -166,7 +171,8 @@ class Twenty48_Button(discord.ui.View):
         return False
 
     async def update_to_db(self) -> None:
-        await self.bot.mongo.extra.games_leaderboard.games_leaderboard(
+        col: MongoCollection = self.bot.mongo.extra.games_leaderboard
+        await col.update_one(
             {"_id": self.user.id,},
             {"$inc": {"twenty48.games_played": 1, "twenty48.total_moves": self._moves}},
             upsert=True,

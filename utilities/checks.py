@@ -100,14 +100,18 @@ def is_mod() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
         bot: Parrot = ctx.bot
         try:
-            role = bot.server_config[ctx.guild.id]["mod_role"] or 0  # role could be `None`
+            role = (
+                bot.server_config[ctx.guild.id]["mod_role"] or 0
+            )  # role could be `None`
             if true := ctx.author._roles.has(role):
                 return true
             raise ex.NoModRole()
         except KeyError:
             pass
 
-        if data := await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id}):
+        if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id}
+        ):
             role = ctx.guild.get_role(data["mod_role"])
             if role and role in ctx.author.roles:
                 return True
@@ -118,7 +122,9 @@ def is_mod() -> Callable:
 
 def in_temp_channel() -> Callable:
     async def predicate(ctx: Context) -> Optional[bool]:
-        data = await ctx.bot.mongo.parrot_db.server_config.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.mongo.parrot_db.server_config.find_one(
+            {"_id": ctx.guild.id}
+        )
         if not data:
             raise ex.InHubVoice()
 
@@ -177,7 +183,9 @@ async def _can_run(ctx: Context) -> Optional[bool]:
 def guild_premium() -> Callable:
     def predicate(ctx: Context) -> bool:
         """Returns True if the guild is premium."""
-        if ctx.guild is not None and ctx.bot.server_config[ctx.guild.id].get("premium", False):
+        if ctx.guild is not None and ctx.bot.server_config[ctx.guild.id].get(
+            "premium", False
+        ):
             return True
 
         raise ex.NotPremiumServer()
@@ -245,7 +253,9 @@ def cooldown_with_role_bypass(
             return
 
         # Cooldown logic, taken from discord.py internals.
-        current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+        current = ctx.message.created_at.replace(
+            tzinfo=datetime.timezone.utc
+        ).timestamp()
         bucket = buckets.get_bucket(ctx.message)
         retry_after = bucket.update_rate_limit(current)
         if retry_after:
@@ -315,7 +325,11 @@ def in_whitelist_check(
         return True
 
     # Only check the category id if we have a category whitelist and the channel has a `category_id`
-    if categories and hasattr(ctx.channel, "category_id") and ctx.channel.category_id in categories:
+    if (
+        categories
+        and hasattr(ctx.channel, "category_id")
+        and ctx.channel.category_id in categories
+    ):
         return True
 
     # category = getattr(ctx.channel, "category", None)
@@ -340,7 +354,9 @@ class InWhitelistCheckFailure(ex.ParrotCheckFailure):
         self.redirect_channel = redirect_channel
 
         if redirect_channel:
-            redirect_message = f" here. Please use the <#{redirect_channel}> channel instead"
+            redirect_message = (
+                f" here. Please use the <#{redirect_channel}> channel instead"
+            )
         else:
             redirect_message = ""
 

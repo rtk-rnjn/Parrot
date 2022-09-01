@@ -1,5 +1,6 @@
 aiodns
 aiofile
+aioredis
 aiohttp
 arrow
 async_timeout

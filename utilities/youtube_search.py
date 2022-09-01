@@ -1,8 +1,9 @@
 from __future__ import annotations
+import asyncio
 
 import json
 import urllib.parse
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp  # type: ignore
 
@@ -32,9 +33,10 @@ class YoutubeSearch:
                 response = await session.get(url)
                 if response.status == 200:
                     response = await response.text()
+            await asyncio.sleep(0)
         results = self._parse_html(response)
         if self.max_results is not None and len(results) > self.max_results:
-            results = results[: self.max_results]
+            results = results[:self.max_results]
 
         self._cache[self.search_terms] = results
         return results
@@ -46,7 +48,7 @@ class YoutubeSearch:
         json_str = response[start:end]
         data = json.loads(json_str)
 
-        videos = data["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"][
+        videos: List[Dict] = data["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"][
             "sectionListRenderer"
         ]["contents"][0]["itemSectionRenderer"]["contents"]
 

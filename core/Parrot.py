@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import aioredis
 import datetime
 import io
 import logging
@@ -62,7 +63,6 @@ from utilities.config import (
     EXTENSIONS,
     GITHUB,
     HEROKU,
-    LRU_CACHE,
     VERSION,
     MASTER_OWNER,
     OWNER_IDS,

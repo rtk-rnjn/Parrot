@@ -23,6 +23,7 @@ from typing import (
     Optional,
     Set,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -178,6 +179,39 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         return wrapped
 
+    def __nearest_nth(
+        self, iterable: Iterable[str], *, chunk: int, width: int
+    ) -> Optional[int]:
+        while chunk:
+            v = iterable[:chunk]
+            size = len("\n".join(v))
+            if size > width:
+                chunk -= 1
+                continue
+            return chunk
+
+    def __newlink_chunker(
+        self, text: str, *, width: int = 1500, max_newline: int = 10
+    ) -> List[str]:
+        lines: List[str] = text.splitlines()
+        build: List[str] = []
+        current_pos = 0
+
+        while True:
+            lines = lines[current_pos:]
+            if not lines:
+                break
+
+            n: Optional[int] = self.__nearest_nth(lines, chunk=max_newline, width=width)
+            if n is None:
+                build.append(lines[0][:width])
+                lines[0] = lines[0][width:]
+                continue
+
+            build.append("\n".join(lines[:n]))
+            current_pos = n
+        return build
+
     async def send(
         self,
         content: Optional[str] = None,
@@ -185,29 +219,33 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         bold: bool = False,
         italic: bool = False,
         underline: bool = False,
+        force: bool = True,
         **kwargs: Any,
     ) -> Optional[discord.Message]:
         perms: discord.Permissions = self.channel.permissions_for(self.me)
-        if content is not None:
+        if not (perms.send_messages and perms.embed_links):
+            with suppress(discord.Forbidden):
+                await self.author.send(
+                    (
+                        "Bot don't have either Embed Links/Send Messages permission in that channel. "
+                        "Please give sufficient permissions to the bot."
+                    )
+                )
+
+                return None
+        contents = self.__newlink_chunker(content) if content else ["\u200b"]
+        for content in contents:
             if bold:
                 content = f"**{content}**"
             if italic:
                 content = f"*{content}*"
             if underline:
                 content = f"__{content}__"
-
-        if not (perms.send_messages and perms.embed_links):
-            with suppress(discord.Forbidden):
-                await self.author.send(
-                    "Bot don't have either Embed Links/Send Messages permission in that channel. "
-                    "Please give sufficient permissions to the bot."
-                )
-                return None
-
-        embed: Optional[discord.Embed] = kwargs.get(
-            "embed",
+        embeds: List[Optional[discord.Embed]] = kwargs.get("embed") or kwargs.get(
+            "embeds"
         )
-        if isinstance(embed, discord.Embed):
+
+        def __set_embed_defaults(embed: discord.Embed, /):
             if not embed.color:
                 embed.color = self.bot.color
             if not embed.timestamp:
@@ -218,7 +256,33 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                     icon_url=self.author.display_avatar.url,
                 )
 
-        return await super().send(content, **kwargs)
+        if isinstance(embeds, list):
+            for embed in embeds:
+                if isinstance(embed, discord.Embed):
+                    __set_embed_defaults(embed)
+        else:
+            if isinstance(embed, discord.Embed):
+                __set_embed_defaults(embed)
+
+        if content is None:
+            await super().send(**kwargs)
+
+        if force and contents:
+            if any(
+                (
+                    kwargs.get("file"),
+                    kwargs.get("files"),
+                    kwargs.get("embed"),
+                    kwargs.get("embeds"),
+                )
+            ):
+                await super().send(**kwargs)
+            for content in contents:
+                if content is not None:
+                    await super().send(content)
+                await self.release()
+        else:
+            await super().send(content[:1990], **kwargs)
 
     async def reply(
         self, content: Optional[str] = None, **kwargs: Any
@@ -680,6 +744,25 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             __internal_appender(done)
 
         return done_result
+
+    async def retry(
+        self,
+        callback: Callable[..., Any],
+        *args: Any,
+        multiplier: int = 5,
+        retries: 5,
+        exception: Type[Exception] = Exception,
+        **kwargs: Any,
+    ):
+        errors: Dict[int, str] = {}
+        for retry in range(max(retries, 1)):
+            try:
+                return await discord.utils.maybe_coroutine(callback, *args, **kwargs)
+            except exception as e:
+                errors[retry] = e
+                await self.release(multiplier * retry)
+
+        raise errors[retry]
 
 
 class ConfirmationView(discord.ui.View):

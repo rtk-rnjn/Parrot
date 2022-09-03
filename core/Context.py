@@ -227,7 +227,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             if isinstance(embeds, discord.Embed):
                 __set_embed_defaults(embeds)
 
-        return await super().send(content[:1990], **kwargs)
+        return await super().send(content[:1990] if content else None, **kwargs)
 
     async def reply(
         self, content: Optional[str] = None, **kwargs: Any

@@ -217,6 +217,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: Set[int] = set()
+        self.__disabled_commands: Dict[commands.Command, List[int]] = {}
 
         self.opts: Dict[int, Any] = {}
         self.func: Callable[..., Any] = func

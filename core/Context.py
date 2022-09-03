@@ -225,7 +225,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                     __set_embed_defaults(embed)
         else:
             if isinstance(embeds, discord.Embed):
-                __set_embed_defaults(embed)
+                __set_embed_defaults(embeds)
 
         return await super().send(content[:1990], **kwargs)
 

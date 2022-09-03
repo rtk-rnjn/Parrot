@@ -261,7 +261,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 if isinstance(embed, discord.Embed):
                     __set_embed_defaults(embed)
         else:
-            if isinstance(embed, discord.Embed):
+            if isinstance(embeds, discord.Embed):
                 __set_embed_defaults(embed)
 
         if content is None:

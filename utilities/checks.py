@@ -201,7 +201,9 @@ async def _can_run(ctx: Context) -> Optional[bool]:
     for data in _cached_data:
         for cmd in data:
             if cmd.qualified_name == ctx.command.qualified_name:
-                return __internal_cmd_checker_parser(ctx=ctx, data=data)
+                none = __internal_cmd_checker_parser(ctx=ctx, data=data)
+                if none is None:
+                    break
 
     if not hasattr(ctx, "channel"):
         return True
@@ -217,12 +219,14 @@ async def _can_run(ctx: Context) -> Optional[bool]:
                 ]
             }
         ):
-            return __internal_cmd_checker_parser(ctx=ctx, data=data)
+            none = __internal_cmd_checker_parser(ctx=ctx, data=data)
+            if none is None:
+                return True
 
     return True
 
 
-def __internal_cmd_checker_parser(*, ctx: Context, data: Dict):
+def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> Optional[bool]:
     # sourcery skip: assign-if-exp, boolean-if-exp-identity, reintroduce-else, remove-redundant-if, remove-unnecessary-cast
     roles = set(ctx.author.roles)
     if ctx.channel.id in data["channel_in"]:

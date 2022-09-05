@@ -150,7 +150,7 @@ def in_temp_channel() -> Callable:
 
 async def set_command_run_cache(context: Context):
     for guild in context.bot.guilds:
-        context.bot.__disabled_commands[guild.id] = await _get_server_command_cache(
+        context.bot._disabled_commands[guild.id] = await _get_server_command_cache(
             guild=guild, bot=context.bot
         )
 
@@ -185,7 +185,7 @@ async def _get_server_command_cache(
             __internal_appender(data)
 
     if force_update:
-        bot.__disabled_commands[guild.id] = _cache
+        bot._disabled_commands[guild.id] = _cache
 
     return _cache
 
@@ -196,12 +196,12 @@ async def _can_run(ctx: Context) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
     _cached_data: List[
         Dict[commands.Command, Dict[str, Union[List[int], bool]]]
-    ] = ctx.bot.__disabled_commands.get(ctx.guild.id)
+    ] = ctx.bot._disabled_commands.get(ctx.guild.id)
 
-    for data in _cached_data:
-        for cmd in data:
-            if cmd.qualified_name == ctx.command.qualified_name:
-                return __internal_cmd_checker_parser(ctx=ctx, data=data)
+    if data:
+        for data in _cached_data:
+            for cmd in data:
+                return __internal_cmd_checker_parser(ctx=ctx, data=data) if cmd.qualified_name == ctx.command.qualified_name else None
 
     if not hasattr(ctx, "channel"):
         return True

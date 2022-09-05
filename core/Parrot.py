@@ -217,7 +217,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: Set[int] = set()
-        self.__disabled_commands: Dict[
+        self._disabled_commands: Dict[
             int, List[Dict[commands.Command, Dict[str, Union[List[int], bool]]]]
         ] = {}
 
@@ -558,6 +558,11 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
 
     async def process_commands(self, message: discord.Message) -> None:
         ctx: Context = await self.get_context(message, cls=Context)
+
+        if ctx.author.id in self.owner_ids:
+            await self.process_commands(message)
+            return
+
         if ctx.command is None or str(ctx.channel.type) == "public_thread":
             return
 

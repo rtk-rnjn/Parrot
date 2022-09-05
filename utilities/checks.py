@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Container, Iterable
-from typing import Callable, Optional
+from typing import Callable, Dict, List, Optional, TypeAlias, Union
 
 from core import Context, Parrot
+import discord
 from discord.ext import commands
 from discord.ext.commands import (  # type: ignore
     BucketType,
@@ -17,7 +18,9 @@ from discord.ext.commands import (  # type: ignore
 
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
+from pymongo.collection import Collection
 
+MongoCollection: TypeAlias = Collection
 __all__ = (
     "_can_run",
     "cooldown_with_role_bypass",
@@ -96,7 +99,7 @@ def has_verified_role_ticket() -> Callable:
     return commands.check(predicate)
 
 
-def is_mod() -> Callable:
+def is_mod() -> Callable:  # sourcery skip: use-contextlib-suppress
     async def predicate(ctx: Context) -> Optional[bool]:
         bot: Parrot = ctx.bot
         try:
@@ -145,15 +148,65 @@ def in_temp_channel() -> Callable:
     return commands.check(predicate)
 
 
+async def set_command_run_cache(context: Context):
+    for guild in context.bot.guilds:
+        context.bot.__disabled_commands[guild.id] = await _get_server_command_cache(
+            guild=guild, bot=context.bot
+        )
+
+
+async def _get_server_command_cache(
+    *,
+    guild: discord.Guild,
+    bot: Parrot,
+    force_update: bool = False,
+    command: Optional[str] = None,
+):
+    _cache: List = []
+    collection: MongoCollection = bot.mongo.enabled_disable[f"{guild.id}"]
+
+    def __internal_appender(data: Dict):
+        data: Dict[str, Union[int, bool]]
+        if data["_id"] != "all":
+            cmd: commands.Command = bot.get_command(data["_id"])
+            data.pop("_id")
+            if cmd is not None:
+                _cache.append({cmd: data})
+        else:
+            for cmd in bot.walk_commands():
+                data.pop("_id")
+                _cache.append({cmd: data})
+
+    if command:
+        data = await collection.find_one({"_id": command})
+        __internal_appender(data)
+    else:
+        async for data in collection.find():
+            __internal_appender(data)
+
+    if force_update:
+        bot.__disabled_commands[guild.id] = _cache
+
+    return _cache
+
+
 async def _can_run(ctx: Context) -> Optional[bool]:
     # sourcery skip: assign-if-exp, boolean-if-exp-identity
     # sourcery skip: reintroduce-else, remove-redundant-if, remove-unnecessary-cast
     """Return True is the command is whitelisted in specific channel, also with specific role"""
+    _cached_data: List[
+        Dict[commands.Command, Dict[str, Union[List[int], bool]]]
+    ] = ctx.bot.__disabled_commands.get(ctx.guild.id)
+
+    for data in _cached_data:
+        for cmd in data:
+            if cmd.qualified_name == ctx.command.qualified_name:
+                return __internal_cmd_checker_parser(ctx=ctx, data=data)
+
     if not hasattr(ctx, "channel"):
         return True
 
     if ctx.guild is not None and ctx.command:
-        roles = set(ctx.author.roles)
         collection = ctx.bot.mongo.enable_disable[f"{ctx.guild.id}"]
         if data := await collection.find_one(
             {
@@ -164,20 +217,26 @@ async def _can_run(ctx: Context) -> Optional[bool]:
                 ]
             }
         ):
-            if ctx.channel.id in data["channel_in"]:
-                return True
-            if any(role.id in data["role_in"] for role in roles):
-                return True
-            if any(role.id in data["role_out"] for role in roles):
-                return False
-            if ctx.channel.id in data["channel_out"]:
-                return False
-            if data["server"]:
-                return False
-            if not data["server"]:
-                return True
+            return __internal_cmd_checker_parser(ctx=ctx, data=data)
 
     return True
+
+
+def __internal_cmd_checker_parser(*, ctx: Context, data: Dict):
+    # sourcery skip: assign-if-exp, boolean-if-exp-identity, reintroduce-else, remove-redundant-if, remove-unnecessary-cast
+    roles = set(ctx.author.roles)
+    if ctx.channel.id in data["channel_in"]:
+        return True
+    if any(role.id in data["role_in"] for role in roles):
+        return True
+    if any(role.id in data["role_out"] for role in roles):
+        return False
+    if ctx.channel.id in data["channel_out"]:
+        return False
+    if data["server"]:
+        return False
+    if not data["server"]:
+        return True
 
 
 def guild_premium() -> Callable:

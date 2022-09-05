@@ -6,6 +6,7 @@ import discord
 from core import Context, Parrot
 from pymongo.collection import Collection
 
+from utilities.checks import _get_server_command_cache
 
 async def _enable(
     bot: Parrot,
@@ -75,6 +76,8 @@ async def _enable(
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in **{target.name} ({target.id})**"
             )
+    
+    await _get_server_command_cache(guild=ctx.guild, bot=ctx.bot, force_update=True, command=ctx.command.qualified_name)
 
 
 async def _disable(
@@ -145,3 +148,4 @@ async def _disable(
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in **{target.name} ({target.id})**"
             )
+    await _get_server_command_cache(guild=ctx.guild, bot=ctx.bot, force_update=True, command=ctx.command.qualified_name)

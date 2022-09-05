@@ -607,7 +607,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
                 if self.banned_users[ctx.author.id].get("command"):
                     return
             can_run: Optional[bool] = await _can_run(ctx)
-            if not can_run:
+            if can_run is False:
                 return await ctx.reply(
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,

@@ -560,7 +560,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         ctx: Context = await self.get_context(message, cls=Context)
 
         if ctx.author.id in self.owner_ids:
-            await self.process_commands(message)
+            await self.invoke(ctx)
             return
 
         if ctx.command is None or str(ctx.channel.type) == "public_thread":

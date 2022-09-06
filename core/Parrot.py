@@ -566,7 +566,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         if ctx.command is None or str(ctx.channel.type) == "public_thread":
             return
 
-        if self.UNDER_MAINTENANCE and ctx.author.id not in self.owner_ids:
+        if self.UNDER_MAINTENANCE:
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot under maintenance!",

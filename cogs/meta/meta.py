@@ -439,11 +439,14 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
-    async def guildicon(self, ctx: Context, *, server: discord.Guild = None):
+    async def guildicon(self, ctx: Context):
         """
         Get the freaking server icon
         """
-        guild = server or ctx.guild
+        if not hasattr(ctx.guild.icon, "url"):
+            return await ctx.reply(f"{ctx.author.mention} {ctx.guild.name} has no icon yet!")
+
+        guild = ctx.guild
         embed = discord.Embed(timestamp=discord.utils.utcnow())
         embed.set_image(url=guild.icon.url)
         embed.set_footer(text=f"{ctx.author.name}")

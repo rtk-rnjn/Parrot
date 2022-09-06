@@ -33,7 +33,7 @@ import discord
 from discord.ext import commands
 from utilities.emotes import emojis
 
-CONFIRM_REACTIONS: Tuple[str, ...] = (
+CONFIRM_REACTIONS: Tuple = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
@@ -168,14 +168,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         return None
 
     @staticmethod
-    def with_type(func):
+    def with_type(func: Callable[..., Any]) -> Coroutine[Any, Any, Any]:
         @functools.wraps(func)
         async def wrapped(*args: Any, **kwargs: Any):
 
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
-            with suppress(discord.Forbidden):
-                async with context.typing():
-                    return await func(*args, **kwargs)
+            async with context.typing():
+                return await func(*args, **kwargs)
 
         return wrapped
 

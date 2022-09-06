@@ -194,14 +194,14 @@ async def _can_run(ctx: Context) -> Optional[bool]:
     # sourcery skip: assign-if-exp, boolean-if-exp-identity
     # sourcery skip: reintroduce-else, remove-redundant-if, remove-unnecessary-cast
     """Return True is the command is whitelisted in specific channel, also with specific role"""
-    _cached_data: List[
-        Dict[commands.Command, Dict[str, Union[List[int], bool]]]
-    ] = ctx.bot._disabled_commands.get(ctx.guild.id)
-
-    if data:
+    if _cached_data := ctx.bot._disabled_commands.get(ctx.guild.id):
         for data in _cached_data:
             for cmd in data:
-                return __internal_cmd_checker_parser(ctx=ctx, data=data) if cmd.qualified_name == ctx.command.qualified_name else None
+                return (
+                    __internal_cmd_checker_parser(ctx=ctx, data=data)
+                    if cmd.qualified_name == ctx.command.qualified_name
+                    else None
+                )
 
     if not hasattr(ctx, "channel"):
         return True
@@ -238,6 +238,7 @@ def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
     if not data["server"]:
         return True
     return True
+
 
 def guild_premium() -> Callable:
     def predicate(ctx: Context) -> bool:

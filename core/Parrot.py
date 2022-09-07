@@ -107,6 +107,8 @@ ERROR_LOG_WEBHOOK_ID = 924513442273054730
 STARTUP_LOG_WEBHOOK_ID = 985926507530690640
 VOTE_LOG_WEBHOOK_ID = 897741476006592582
 
+DEFAULT_PREFIX: Literal["$"] = "$"
+
 logger = logging.getLogger("discord")
 logger.setLevel(logging.WARNING)
 logging.getLogger("discord.http").setLevel(logging.WARNING)
@@ -832,24 +834,24 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
     ) -> Union[str, Callable, List[str]]:
         """Dynamic prefixing"""
         if message.guild is None:
-            return commands.when_mentioned_or("$")(self, message)
+            return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
         try:
             prefix: str = self.server_config[message.guild.id]["prefix"]
         except KeyError:
             if data := await self.mongo.parrot_db.server_config.find_one(
                 {"_id": message.guild.id}
             ):
-                prefix = data["prefix"]
+                prefix = data.get("prefix", DEFAULT_PREFIX)
                 post = data
                 self.server_config[message.guild.id] = post
             else:
                 FAKE_POST = POST.copy()
                 FAKE_POST["_id"] = message.guild.id
-                prefix = "$"  # default prefix
+                prefix = DEFAULT_PREFIX  # default prefix
                 try:
                     await self.mongo.parrot_db.server_config.insert_one(FAKE_POST)
                 except pymongo.errors.DuplicateKeyError:
-                    return commands.when_mentioned_or("$")(self, message)
+                    return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
                 self.server_config[message.guild.id] = FAKE_POST
 
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
@@ -865,8 +867,8 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
             if data := await self.mongo.parrot_db.server_config.find_one(
                 {"_id": guild.id}
             ):
-                return data.get("prefix", "$")
-        return "$"
+                return data.get("prefix", DEFAULT_PREFIX)
+        return DEFAULT_PREFIX
 
     async def invoke_help_command(self, ctx: Context) -> None:
         return await ctx.send_help(ctx.command)

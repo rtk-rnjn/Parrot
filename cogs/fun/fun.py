@@ -1886,7 +1886,7 @@ class Fun(Cog):
         AUTH = aiohttp.BasicAuth("apikey", os.environ["IBM_KEY"])
 
         DATA = {"text": [message], "model_id": model}
-        res = await self.bot.http_session.post(URL, json=DATA, auth=AUTH, header=HEADER,)
+        res = await self.bot.http_session.post(URL, json=DATA, auth=AUTH, headers=HEADER,)
         if res.status != 200:
             return await ctx.error(f"{ctx.author.mention} somthing not right! Please try again later or check the `model`")
         

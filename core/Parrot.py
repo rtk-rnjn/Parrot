@@ -357,7 +357,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         suppressor: Optional[Tuple[Type[Exception]]] = Exception,
         **kwargs: Any,
     ) -> Optional[discord.WebhookMessage]:
-        if webhook_url is None or (webhook_id is None and webhook_token is None):
+        if webhook_url is None and (webhook_id is None and webhook_token is None):
             raise ValueError(
                 "must provide atleast webhook_url or webhook_id and webhook_token"
             )

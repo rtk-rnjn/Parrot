@@ -170,7 +170,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     @staticmethod
     def with_type(func: Callable[..., Any]) -> Coroutine[Any, Any, Any]:
         @functools.wraps(func)
-        async def wrapped(*args: Any, **kwargs: Any):
+        async def wrapped(*args: Any, **kwargs: Any) -> Any:
 
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             async with context.typing():
@@ -203,7 +203,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             content = f"*{content}*"
         if underline:
             content = f"__{content}__"
-        embeds: List[Optional[discord.Embed]] = kwargs.get("embed") or kwargs.get(
+        embeds: Union[discord.Embed, List[discord.Embed]] = kwargs.get("embed") or kwargs.get(
             "embeds"
         )
 
@@ -218,7 +218,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                     icon_url=self.author.display_avatar.url,
                 )
 
-        if isinstance(embeds, list):
+        if isinstance(embeds, (list, tuple)):
             for embed in embeds:
                 if isinstance(embed, discord.Embed):
                     __set_embed_defaults(embed)
@@ -625,7 +625,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         return await asyncio.wait(
             _events,
-            timeout=timeout + 0.01,
+            timeout=timeout + 0.001,
             return_when=getattr(asyncio, return_when, "FIRST_COMPLETED"),
         )
 

@@ -431,7 +431,7 @@ Kwargs: {kwargs}```"""
             await self._execute_webhook(
                 webhook_id=STARTUP_LOG_WEBHOOK_ID,
                 webhook_token=self._startup_log_token,
-                content=st,
+                content=f"```py\n{st}```",
             )
 
             print(st)

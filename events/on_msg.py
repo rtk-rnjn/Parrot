@@ -618,7 +618,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                         avatar_url=message.author.display_avatar.url,
                         content=message.content[:1990],
                         allowed_mentions=discord.AllowedMentions.none(),
-                        suppressor=ValueError,
+                        suppressor=(ValueError, discord.HTTPException),
                     )
                 except discord.NotFound:
                     await collection.delete_one({"webhook": hook})

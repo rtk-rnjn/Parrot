@@ -17,14 +17,21 @@ def ans_to_id(ans):
         return "0"
     elif ans == "no" or ans == "n" or ans == "1":
         return "1"
-    elif ans == "i" or ans == "idk" or ans == "i dont know" or ans == "i don't know" or ans == "2":
+    elif (
+        ans == "i"
+        or ans == "idk"
+        or ans == "i dont know"
+        or ans == "i don't know"
+        or ans == "2"
+    ):
         return "2"
     elif ans == "probably" or ans == "p" or ans == "3":
         return "3"
     elif ans == "probably not" or ans == "pn" or ans == "4":
         return "4"
     else:
-        raise InvalidAnswerError("""
+        raise InvalidAnswerError(
+            """
         You put "{}", which is an invalid answer.
         The answer must be one of these:
             - "yes" OR "y" OR "0" for YES
@@ -32,7 +39,10 @@ def ans_to_id(ans):
             - "i" OR "idk" OR "i dont know" OR "i don't know" OR "2" for I DON'T KNOW
             - "probably" OR "p" OR "3" for PROBABLY
             - "probably not" OR "pn" OR "4" for PROBABLY NOT
-        """.format(ans))
+        """.format(
+                ans
+            )
+        )
 
 
 def get_lang_and_theme(lang=None):
@@ -91,19 +101,27 @@ def get_lang_and_theme(lang=None):
     elif lang == "id" or lang == "indonesian":
         return {"lang": "id", "theme": "c"}
     else:
-        raise InvalidLanguageError("You put \"{}\", which is an invalid language.".format(lang))
+        raise InvalidLanguageError(
+            'You put "{}", which is an invalid language.'.format(lang)
+        )
 
 
 def raise_connection_error(response):
     """Raise the proper error if the API failed to connect"""
 
     if response == "KO - SERVER DOWN":
-        raise AkiServerDown("Akinator's servers are down in this region. Try again later or use a different language")
+        raise AkiServerDown(
+            "Akinator's servers are down in this region. Try again later or use a different language"
+        )
     elif response == "KO - TECHNICAL ERROR":
-        raise AkiTechnicalError("Akinator's servers have had a technical error. Try again later or use a different language")
+        raise AkiTechnicalError(
+            "Akinator's servers have had a technical error. Try again later or use a different language"
+        )
     elif response == "KO - TIMEOUT":
         raise AkiTimedOut("Your Akinator session has timed out")
     elif response == "KO - ELEM LIST IS EMPTY" or response == "WARN - NO QUESTION":
-        raise AkiNoQuestions("\"Akinator.step\" reached 79. No more questions")
+        raise AkiNoQuestions('"Akinator.step" reached 79. No more questions')
     else:
-        raise AkiConnectionFailure("An unknown error has occured. Server response: {}".format(response))
+        raise AkiConnectionFailure(
+            "An unknown error has occured. Server response: {}".format(response)
+        )

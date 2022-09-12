@@ -359,4 +359,3 @@ class SokobanGameView(discord.ui.View):
             ),
             view=self,
         )
-

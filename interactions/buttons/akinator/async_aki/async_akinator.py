@@ -55,7 +55,9 @@ class Akinator:
             self.session = int(resp["parameters"]["identification"]["session"])
             self.signature = int(resp["parameters"]["identification"]["signature"])
             self.question = str(resp["parameters"]["step_information"]["question"])
-            self.progression = float(resp["parameters"]["step_information"]["progression"])
+            self.progression = float(
+                resp["parameters"]["step_information"]["progression"]
+            )
             self.step = int(resp["parameters"]["step_information"]["step"])
         else:
             self.question = str(resp["parameters"]["question"])
@@ -70,7 +72,9 @@ class Akinator:
     async def _get_session_info(self):
         """Get uid and frontaddr from akinator.com/game"""
 
-        info_regex = re.compile("var uid_ext_session = '(.*)'\\;\\n.*var frontaddr = '(.*)'\\;")
+        info_regex = re.compile(
+            "var uid_ext_session = '(.*)'\\;\\n.*var frontaddr = '(.*)'\\;"
+        )
 
         async with self.client_session.get("https://en.akinator.com/game") as w:
             match = info_regex.search(await w.text())
@@ -90,11 +94,17 @@ class Akinator:
                 match = server_regex.search(await w.text())
             parsed = json.loads(match.group().split("'arrUrlThemesToPlay', ")[-1])
             if theme == "c":
-                server = next((i for i in parsed if i["subject_id"] == "1"), None)["urlWs"]
+                server = next((i for i in parsed if i["subject_id"] == "1"), None)[
+                    "urlWs"
+                ]
             elif theme == "a":
-                server = next((i for i in parsed if i["subject_id"] == "14"), None)["urlWs"]
+                server = next((i for i in parsed if i["subject_id"] == "14"), None)[
+                    "urlWs"
+                ]
             elif theme == "o":
-                server = next((i for i in parsed if i["subject_id"] == "2"), None)["urlWs"]
+                server = next((i for i in parsed if i["subject_id"] == "2"), None)[
+                    "urlWs"
+                ]
             if server not in bad_list:
                 return {"uri": uri, "server": server}
 
@@ -132,7 +142,9 @@ class Akinator:
         """
         self.timestamp = time.time()
         self.client_session = client_session or aiohttp.ClientSession()
-        region_info = await self._auto_get_region(get_lang_and_theme(language)["lang"], get_lang_and_theme(language)["theme"])
+        region_info = await self._auto_get_region(
+            get_lang_and_theme(language)["lang"], get_lang_and_theme(language)["theme"]
+        )
 
         self.uri, self.server = region_info["uri"], region_info["server"]
         self.child_mode = child_mode
@@ -196,7 +208,9 @@ class Akinator:
         If you're on the first question and you try to go back again, the CantGoBackAnyFurther exception will be raised
         """
         if self.step == 0:
-            raise CantGoBackAnyFurther("You were on the first question and couldn't go back any further")
+            raise CantGoBackAnyFurther(
+                "You were on the first question and couldn't go back any further"
+            )
 
         async with self.client_session.get(
             BACK_URL.format(
@@ -224,7 +238,14 @@ class Akinator:
         It's recommended that you call this function when Aki's progression is above 85%, which is when he will have most likely narrowed it down to just one choice. You can get his current progression via "Akinator.progression"
         """
         async with self.client_session.get(
-            WIN_URL.format(self.server, self.timestamp, str(self.child_mode).lower(), self.session, self.signature, self.step),
+            WIN_URL.format(
+                self.server,
+                self.timestamp,
+                str(self.child_mode).lower(),
+                self.session,
+                self.signature,
+                self.step,
+            ),
             headers=HEADERS,
         ) as w:
             resp = self._parse_response(await w.text())

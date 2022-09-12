@@ -36,7 +36,9 @@ class SpamProt(Cog):
             return
 
         bucket = self.cd_mapping.get_bucket(message)
-        if bucket.update_rate_limit() and (data := self.bot.server_config.get(message.guild.id)):
+        if bucket.update_rate_limit() and (
+            data := self.bot.server_config.get(message.guild.id)
+        ):
             if not data["automod"]["spam"]["enable"]:
                 return
             try:
@@ -62,9 +64,9 @@ class SpamProt(Cog):
             ctx: Context = await self.bot.get_context(message, cls=Context)
 
             try:
-                instant_action: Optional[str] = data["automod"]["spam"]["autowarn"]["punish"][
-                    "type"
-                ]
+                instant_action: Optional[str] = data["automod"]["spam"]["autowarn"][
+                    "punish"
+                ]["type"]
             except KeyError:
                 instant_action: bool = False
             else:

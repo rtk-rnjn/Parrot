@@ -50,5 +50,8 @@ class Reaction:
         self.reaction = await fill_out(
             self.guild,
             emoji,
-            [("EMOJI", str(react_emoji), PARSE_MODE_NONE), ("EMOJI_COUNT", str(self.reaction.count), PARSE_MODE_NONE)],
+            [
+                ("EMOJI", str(react_emoji), PARSE_MODE_NONE),
+                ("EMOJI_COUNT", str(self.reaction.count), PARSE_MODE_NONE),
+            ],
         )

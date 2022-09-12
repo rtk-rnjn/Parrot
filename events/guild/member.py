@@ -121,7 +121,12 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if before.roles != after.roles:
             ls.append(
                 "`Role Update     :`",
-                ", ".join([role.name for role in self.difference_list(before.roles, after.roles)]),
+                ", ".join(
+                    [
+                        role.name
+                        for role in self.difference_list(before.roles, after.roles)
+                    ]
+                ),
             )
         return ls
 
@@ -262,7 +267,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
         else:
             perms = member.guild.me.guild_permissions
-            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
+            if not all(
+                [perms.manage_permissions, perms.manage_channels, perms.move_members]
+            ):
                 return
             if channel.id == self.bot.server_config[member.guild.id]["hub"]:
                 if channel.category:
@@ -304,7 +311,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             }
         ):
             perms = member.guild.me.guild_permissions
-            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
+            if not all(
+                [perms.manage_permissions, perms.manage_channels, perms.move_members]
+            ):
                 return
             for ch in data["temp_channels"]:
                 if ch["channel_id"] == channel.id and ch["author"] == member.id:
@@ -315,7 +324,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         {"_id": member.guild.id},
                         {"$pull": {"temp_channels": {"channel_id": hub_channel.id}}},
                     )
-                    await hub_channel.delete(reason=f"{member} ({member.id}) left their Hub")
+                    await hub_channel.delete(
+                        reason=f"{member} ({member.id}) left their Hub"
+                    )
                     return
 
     @Cog.listener(name="on_voice_state_update")

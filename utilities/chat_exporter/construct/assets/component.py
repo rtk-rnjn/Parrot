@@ -55,7 +55,11 @@ class Component:
             self.guild,
             component_button,
             [
-                ("DISABLED", "chatlog__component-disabled" if c.disabled else "", PARSE_MODE_NONE),
+                (
+                    "DISABLED",
+                    "chatlog__component-disabled" if c.disabled else "",
+                    PARSE_MODE_NONE,
+                ),
                 ("URL", str(url), PARSE_MODE_NONE),
                 ("LABEL", str(label), PARSE_MODE_MARKDOWN),
                 ("EMOJI", emoji, PARSE_MODE_EMOJI),
@@ -72,7 +76,11 @@ class Component:
             self.guild,
             component_menu,
             [
-                ("DISABLED", "chatlog__component-disabled" if c.disabled else "", PARSE_MODE_NONE),
+                (
+                    "DISABLED",
+                    "chatlog__component-disabled" if c.disabled else "",
+                    PARSE_MODE_NONE,
+                ),
                 ("ID", str(self.menu_div_id), PARSE_MODE_NONE),
                 ("PLACEHOLDER", str(placeholder), PARSE_MODE_MARKDOWN),
                 ("CONTENT", str(content), PARSE_MODE_NONE),
@@ -91,7 +99,11 @@ class Component:
                         [
                             ("EMOJI", str(option.emoji), PARSE_MODE_EMOJI),
                             ("TITLE", str(option.label), PARSE_MODE_MARKDOWN),
-                            ("DESCRIPTION", str(option.description) if option.description else "", PARSE_MODE_MARKDOWN),
+                            (
+                                "DESCRIPTION",
+                                str(option.description) if option.description else "",
+                                PARSE_MODE_MARKDOWN,
+                            ),
                         ],
                     )
                 )
@@ -102,7 +114,11 @@ class Component:
                         component_menu_options,
                         [
                             ("TITLE", str(option.label), PARSE_MODE_MARKDOWN),
-                            ("DESCRIPTION", str(option.description) if option.description else "", PARSE_MODE_MARKDOWN),
+                            (
+                                "DESCRIPTION",
+                                str(option.description) if option.description else "",
+                                PARSE_MODE_MARKDOWN,
+                            ),
                         ],
                     )
                 )

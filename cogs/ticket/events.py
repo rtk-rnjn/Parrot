@@ -102,10 +102,9 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
 
             em = discord.Embed(
                 title=f"New ticket from {member.name}#{member.discriminator}",
-                description='Pls wait while you reach you',
+                description="Pls wait while you reach you",
                 color=0x00A8FF,
             )
-
 
             await ticket_channel.send(embed=em, content=f"{member.mention}")
             await ticket_channel.send(
@@ -131,7 +130,9 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 "ticket_counter": ticket_number,
                 "ticket_channel_ids": ticket_channel_ids,
             }
-            await self.bot.mongo.parrot_db.ticket.update_one({"_id": guild.id}, {"$set": post})
+            await self.bot.mongo.parrot_db.ticket.update_one(
+                {"_id": guild.id}, {"$set": post}
+            )
 
             log_channel = guild.get_channel(data["log"])
             await self.log(

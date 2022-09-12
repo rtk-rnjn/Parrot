@@ -19,7 +19,7 @@ COLORS = {
     Color.yellow: (255, 199, 69),
     Color.blue: (69, 137, 255),
     Color.green: (83, 194, 109),
-    Color.wild: (13, 13, 13)
+    Color.wild: (13, 13, 13),
 }
 
 
@@ -27,8 +27,8 @@ def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
     factor = 5
     radius *= factor  # For anti-alias
 
-    with Image.new('RGBA', (size[0] * factor, size[1] * factor), (0, 0, 0, 0)) as image:
-        with Image.new('RGBA', (radius, radius), (0, 0, 0, 0)) as corner:
+    with Image.new("RGBA", (size[0] * factor, size[1] * factor), (0, 0, 0, 0)) as image:
+        with Image.new("RGBA", (radius, radius), (0, 0, 0, 0)) as corner:
             draw = ImageDraw.Draw(corner)
 
             draw.pieslice((0, 0, radius * 2, radius * 2), 180, 270, fill=(50, 50, 50))
@@ -36,7 +36,9 @@ def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
 
             image.paste(corner, (0, 0), corner)
             image.paste(corner.rotate(90), (0, my - radius), corner.rotate(90))
-            image.paste(corner.rotate(180), (mx - radius, my - radius), corner.rotate(180))
+            image.paste(
+                corner.rotate(180), (mx - radius, my - radius), corner.rotate(180)
+            )
             image.paste(corner.rotate(270), (mx - radius, 0), corner.rotate(270))
 
         draw = ImageDraw.Draw(image)
@@ -48,13 +50,13 @@ def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
 
 
 def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
-    with Image.new('RGBA', (256, 256)) as image:
+    with Image.new("RGBA", (256, 256)) as image:
         if card.color is not Color.wild:
-            _ = Image.new('RGBA', image.size, COLORS[card.color])
+            _ = Image.new("RGBA", image.size, COLORS[card.color])
         elif card.type is CardType.plus_4:
-            _ = Image.open('./utilities/uno/assets/wild.png').resize(image.size)
+            _ = Image.open("./utilities/uno/assets/wild.png").resize(image.size)
         elif card.type is CardType.wild:
-            _ = Image.open('./utilities/uno/assets/full_wild.png').resize(image.size)
+            _ = Image.open("./utilities/uno/assets/full_wild.png").resize(image.size)
         else:
             return
 
@@ -66,17 +68,17 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
             if card.type is CardType.number:
                 text = str(card.value)
             elif card.type is CardType.plus_2:
-                text = '+2'
+                text = "+2"
             elif card.type is CardType.plus_4:
-                text = '+4'
+                text = "+4"
             elif card.type is CardType.wild:
-                text = ''
+                text = ""
             else:
                 return
 
             draw = ImageDraw.Draw(image)
 
-            with open('./utilities/uno/assets/font.ttf', 'rb') as fp:
+            with open("./utilities/uno/assets/font.ttf", "rb") as fp:
                 font = ImageFont.truetype(BytesIO(fp.read()), size=210)
 
             w, h = font.getsize(text)
@@ -89,16 +91,16 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
 
         else:
             if card.type is CardType.reverse:
-                path = './utilities/uno/assets/reverse.png'
+                path = "./utilities/uno/assets/reverse.png"
             elif card.type is CardType.skip:
-                path = './utilities/uno/assets/skip.png'
+                path = "./utilities/uno/assets/skip.png"
             else:
                 return
 
             with Image.open(path) as asset:
                 x, y = 128 - int(asset.width / 2), 128 - int(asset.height / 2)
 
-                with Image.new('RGBA', asset.size, (0, 0, 0, 255)) as temp:
+                with Image.new("RGBA", asset.size, (0, 0, 0, 255)) as temp:
                     image.paste(temp, (x + 5, y + 5), asset)
                 image.paste(asset, (x, y), asset)
 
@@ -110,7 +112,7 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
 
             save_transparent_gif([image, clone], [20000, 10], buffer)
         else:
-            image.save(buffer, 'png')
+            image.save(buffer, "png")
 
         buffer.seek(0)
         return buffer
@@ -132,9 +134,9 @@ async def fill_emojis(guild: discord.Guild) -> str:
             continue
 
         if card.type is CardType.number:
-            name = f'{card.color.name}_{card.value}'
+            name = f"{card.color.name}_{card.value}"
         else:
-            name = f'{card.color.name}_{card.type.name}'
+            name = f"{card.color.name}_{card.type.name}"
 
         animated = len(done) >= guild.emoji_limit
         buffer = await create_sample(card, animated=animated)
@@ -153,7 +155,8 @@ async def fill_emojis(guild: discord.Guild) -> str:
     # so return a class representation
     # of the emojis.
 
-    fmt = dedent("""
+    fmt = dedent(
+        """
     class Emojis:
         class red:
             numbers = [{}
@@ -189,11 +192,12 @@ async def fill_emojis(guild: discord.Guild) -> str:
     
         wild = {!r}
         plus_4 = {!r}
-    """)
+    """
+    )
 
     def _(sink: Any) -> tuple:
         return (
-            indent('\n' + ',\n'.join(map(repr, sink.numbers)), ' ' * 12),
+            indent("\n" + ",\n".join(map(repr, sink.numbers)), " " * 12),
             sink.plus_2,
             sink.reverse,
             sink.skip,
@@ -205,5 +209,5 @@ async def fill_emojis(guild: discord.Guild) -> str:
         *_(Emojis.blue),
         *_(Emojis.green),
         Emojis.wild,
-        Emojis.plus_4
+        Emojis.plus_4,
     ).strip()

@@ -208,7 +208,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
             self.topgg: "topgg.DBLClient"
             self.topgg_webhook: "topgg.WebhookManager"
 
-        self._auto_spam_count: Counter = Counter()
+        self._auto_spam_count: "Counter[int, int]" = Counter()
         self.resumes: Dict[int, List[datetime.datetime]] = defaultdict(list)
         self.identifies: Dict[int, List[datetime.datetime]] = defaultdict(list)
         self._prev_events: "deque[str]" = deque(maxlen=10)
@@ -295,7 +295,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
 
     @property
     def author_name(self) -> str:
-        return f"{AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}"  # cant join str and int, ofc
+        return str(self.author_obj)
 
     async def setup_hook(self) -> None:
         if TO_LOAD_IPC:
@@ -354,7 +354,9 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         content: str,
         force_file: bool = False,
         filename: Optional[str] = None,
-        suppressor: Optional[Tuple[Type[Exception]]] = Exception,
+        suppressor: Optional[
+            Union[Tuple[Type[Exception]], Type[Exception]]
+        ] = Exception,
         **kwargs: Any,
     ) -> Optional[discord.WebhookMessage]:
         if webhook_url is None and (webhook_id is None and webhook_token is None):
@@ -468,9 +470,9 @@ Kwargs: {kwargs}```"""
         await self._execute_webhook(
             webhook_id=STARTUP_LOG_WEBHOOK_ID,
             webhook_token=self._startup_log_token,
-            content=f"```py\n[{self.bot.user.name}] closed the connection from discord```"
+            content=f"```py\n[{self.user.name}] closed the connection from discord```",
         )
-        print(f"[{self.bot.user.name}] closed the connection from discord")
+        print(f"[{self.user.name}] closed the connection from discord")
         if TO_LOAD_IPC and self.HAS_TOP_GG:
             await self.topgg_webhook.close()
 

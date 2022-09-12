@@ -64,7 +64,9 @@ class MentionProt(Cog):
         ctx: Context = await self.bot.get_context(message, cls=Context)
 
         try:
-            instant_action: str = data["automod"]["mention"]["autowarn"]["punish"]["type"]
+            instant_action: str = data["automod"]["mention"]["autowarn"]["punish"][
+                "type"
+            ]
         except KeyError:
             instant_action = False
         else:

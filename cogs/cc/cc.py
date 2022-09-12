@@ -52,6 +52,7 @@ ERROR_ON_REVIEW_REQUIRED = """
 class ContentCode:
     source: str
     language: str
+
     def __init__(self, argument: Optional[str]):
         if argument is None:
             self.source = "``` ```"
@@ -96,7 +97,7 @@ class CustomCommand(Cog):
             return 0
 
         self.data = {}
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{COPYRIGHT SIGN}")

@@ -81,7 +81,10 @@ class EventCustom(Cog):
 
         if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor)):
             try:
-                await user.send(content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}", embed=embed)
+                await user.send(
+                    content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}",
+                    embed=embed,
+                )
             except discord.Forbidden:
                 pass
             return
@@ -89,7 +92,8 @@ class EventCustom(Cog):
         if channel := self.bot.get_channel(messageChannel):
             try:
                 await channel.send(
-                    content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}", embed=embed
+                    content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}",
+                    embed=embed,
                 )
             except discord.Forbidden:
                 pass
@@ -168,7 +172,9 @@ class EventCustom(Cog):
 
         joiner = ">, <@".join([str(i) for i in member_ids])
 
-        await channel.send(f"Congrats <@{joiner}> you won {kw.get('prize')}\n" f"> {msg_link}")
+        await channel.send(
+            f"Congrats <@{joiner}> you won {kw.get('prize')}\n" f"> {msg_link}"
+        )
 
 
 async def setup(bot: Parrot) -> None:

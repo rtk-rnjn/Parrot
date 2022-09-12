@@ -36,7 +36,7 @@ class YoutubeSearch:
             await asyncio.sleep(0)
         results = self._parse_html(response)
         if self.max_results is not None and len(results) > self.max_results:
-            results = results[:self.max_results]
+            results = results[: self.max_results]
 
         self._cache[self.search_terms] = results
         return results
@@ -48,9 +48,9 @@ class YoutubeSearch:
         json_str = response[start:end]
         data = json.loads(json_str)
 
-        videos: List[Dict] = data["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"][
-            "sectionListRenderer"
-        ]["contents"][0]["itemSectionRenderer"]["contents"]
+        videos: List[Dict] = data["contents"]["twoColumnSearchResultsRenderer"][
+            "primaryContents"
+        ]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"]
 
         for video in videos:
             res = {}

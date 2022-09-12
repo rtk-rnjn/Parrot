@@ -45,7 +45,7 @@ def prepare_payload(payload: str):
 
 
 async def get_message(
-    interaction: discord.Interaction, fetch: bool=False, *, bot: Parrot
+    interaction: discord.Interaction, fetch: bool = False, *, bot: Parrot
 ) -> Optional[discord.Message]:
     """Retrieve referenced message, trying cache first and handle deletion"""
     ref = interaction.message.reference
@@ -114,7 +114,11 @@ class RerunBtn(discord.ui.Button):
         await interaction.message.edit(content=result)
 
 
-async def execute_run(bot: Parrot, language: str, code: str,) -> str:
+async def execute_run(
+    bot: Parrot,
+    language: str,
+    code: str,
+) -> str:
     # Powered by tio.run
 
     options = {"--stats": False, "--wrapped": False}

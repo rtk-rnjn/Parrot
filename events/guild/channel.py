@@ -17,7 +17,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 
     def _overwrite_to_json(
         self,
-        overwrites: Dict[Union[discord.Role, discord.User], discord.PermissionOverwrite],
+        overwrites: Dict[
+            Union[discord.Role, discord.User], discord.PermissionOverwrite
+        ],
     ) -> str:
         try:
             over = {
@@ -47,7 +49,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 ):
                     if entry.target.id == channel.id:
 
-                        reason = entry.reason or None  # Fact is this thing has to be implemented
+                        reason = (
+                            entry.reason or None
+                        )  # Fact is this thing has to be implemented
                         user = entry.user or "UNKNOWN#0000"  # If the action is too old
                         deleted_at = (
                             entry.created_at
@@ -64,7 +68,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Deleted by:` **{user}**
 """
 
-                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        fp = io.BytesIO(
+                            self._overwrite_to_json(channel.overwrites).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,
@@ -106,7 +112,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 `Deleted by:` **{user}**
 """
 
-                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        fp = io.BytesIO(
+                            self._overwrite_to_json(channel.overwrites).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,
@@ -168,7 +176,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
 {ext}
 """
 
-                        fp = io.BytesIO(self._overwrite_to_json(channel.overwrites).encode())
+                        fp = io.BytesIO(
+                            self._overwrite_to_json(channel.overwrites).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,
@@ -190,11 +200,19 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         if before.position != after.position:
             ls.append(("`Position Changed :`", before.position))
         if before.overwrites != after.overwrites:
-            ls.append(("`Overwrite Changed:`", self._overwrite_to_json(before.overwrites)))
-        if before.category and after.category and before.category.id != after.category.id:
+            ls.append(
+                ("`Overwrite Changed:`", self._overwrite_to_json(before.overwrites))
+            )
+        if (
+            before.category
+            and after.category
+            and before.category.id != after.category.id
+        ):
             ls.append(
                 (
-                    "`Category Changed :`" if after.category else "`Category Removed :`",
+                    "`Category Changed :`"
+                    if after.category
+                    else "`Category Removed :`",
                     f"{before.category.name} ({before.category.id})",
                 )
             )
@@ -316,7 +334,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_raw_integration_delete(self, payload: discord.RawIntegrationDeleteEvent):
+    async def on_raw_integration_delete(
+        self, payload: discord.RawIntegrationDeleteEvent
+    ):
         pass
 
 

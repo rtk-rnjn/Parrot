@@ -44,7 +44,9 @@ class Attachment:
 
     async def video(self):
         self.attachments = await fill_out(
-            self.guild, video_attachment, [("ATTACH_URL", self.attachments.proxy_url, PARSE_MODE_NONE)]
+            self.guild,
+            video_attachment,
+            [("ATTACH_URL", self.attachments.proxy_url, PARSE_MODE_NONE)],
         )
 
     async def audio(self):
@@ -92,7 +94,18 @@ class Attachment:
     async def get_file_icon(self) -> str:
         acrobat_types = "pdf"
         webcode_types = "html", "htm", "css", "rss", "xhtml", "xml"
-        code_types = "py", "cgi", "pl", "gadget", "jar", "msi", "wsf", "bat", "php", "js"
+        code_types = (
+            "py",
+            "cgi",
+            "pl",
+            "gadget",
+            "jar",
+            "msi",
+            "wsf",
+            "bat",
+            "php",
+            "js",
+        )
         document_types = (
             "txt",
             "doc",

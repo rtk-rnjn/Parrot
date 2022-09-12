@@ -12,11 +12,15 @@ from discord.ext import commands
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 
-async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False) -> None:
+async def dial(
+    bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False
+) -> None:
     collection = bot.mongo.parrot_db.telephone
 
     async def telephone_update(guild_id: int, event: str, value: Any) -> None:
-        await collection.update_one({"_id": guild_id}, {"$set": {event: value}}, upsert=True)
+        await collection.update_one(
+            {"_id": guild_id}, {"$set": {event: value}}, upsert=True
+        )
 
     if server.id == ctx.guild.id:
         return await ctx.send("Can't make a self call")
@@ -102,7 +106,9 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
 
     if _talk.content.lower() == "pickup":
         await ctx.send(f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
-        await target_channel.send(f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
+        await target_channel.send(
+            f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**"
+        )
 
         await telephone_update(ctx.guild.id, "is_line_busy", True)
         await telephone_update(number, "is_line_busy", True)
@@ -113,7 +119,9 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
                 return False if m.author.bot else m.channel in (target_channel, channel)
 
             try:
-                talk_message = await bot.wait_for("message", check=check_in_channel, timeout=60.0)
+                talk_message = await bot.wait_for(
+                    "message", check=check_in_channel, timeout=60.0
+                )
             except asyncio.TimeoutError:
                 await asyncio.sleep(0.5)
                 await target_channel.send(
@@ -154,8 +162,12 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
             elif talk_message.channel == channel:
                 await target_channel.send(f"**{talk_message.author}** {TALK}")
             if ini - time.time() <= 60:
-                await channel.send("Disconnected. Call duration reached its maximum limit")
-                await target_channel.send("Disconnected. Call duration reached its maximum limit")
+                await channel.send(
+                    "Disconnected. Call duration reached its maximum limit"
+                )
+                await target_channel.send(
+                    "Disconnected. Call duration reached its maximum limit"
+                )
                 await telephone_update(ctx.guild.id, "is_line_busy", False)
                 await telephone_update(number, "is_line_busy", False)
                 return

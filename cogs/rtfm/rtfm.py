@@ -243,7 +243,9 @@ class RTFM(Cog):
             title=title,
             description=target_message.content,
         )
-        if target_message.attachments and target_message.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+        if target_message.attachments and target_message.attachments[0].url.endswith(
+            ("png", "jpeg", "jpg", "gif", "webp")
+        ):
             embed.set_image(url=target_message.attachments[0].url)
 
         embed.add_field(
@@ -282,7 +284,9 @@ class RTFM(Cog):
             await channel.send(embed=error_embed)
 
     @staticmethod
-    async def send_reaction_embed(channel: discord.TextChannel, target_message: discord.Message) -> discord.Message:
+    async def send_reaction_embed(
+        channel: discord.TextChannel, target_message: discord.Message
+    ) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
             embed=discord.Embed(
@@ -298,7 +302,9 @@ class RTFM(Cog):
 
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
-        table_of_contents = re.search(r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)[0].split("\n")
+        table_of_contents = re.search(
+            r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data
+        )[0].split("\n")
 
         for header in list(map(str.strip, table_of_contents)):
             if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):
@@ -369,7 +375,9 @@ class RTFM(Cog):
             description=ERROR_MESSAGE_CHEAT_SHEET,
         )
 
-    def result_fmt(self, url: str, body_text: str) -> Tuple[bool, Union[str, discord.Embed]]:
+    def result_fmt(
+        self, url: str, body_text: str
+    ) -> Tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -385,7 +393,9 @@ class RTFM(Cog):
                 f"Full results: {url} "
             )
         else:
-            description = f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
+            description = (
+                f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
+            )
         return False, description
 
     async def get_package(self, url: str):
@@ -482,12 +492,16 @@ class RTFM(Cog):
         author = getval("author", "name")
         author_email = getval("author", "email")
 
-        repository = getval("repository", "url").removeprefix("git+").removesuffix(".git")
+        repository = (
+            getval("repository", "url").removeprefix("git+").removesuffix(".git")
+        )
 
         homepage = getval("homepage")
         _license = getval("license")
 
-        em = discord.Embed(title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534)
+        em = discord.Embed(
+            title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534
+        )
 
         em.add_field(name="Author", value=author, inline=True)
         em.add_field(name="Author Email", value=author_email, inline=True)
@@ -498,7 +512,9 @@ class RTFM(Cog):
         em.add_field(name="Repository", value=repository, inline=False)
         em.add_field(name="Homepage", value=homepage, inline=True)
 
-        em.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png")
+        em.set_thumbnail(
+            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
+        )
 
         await ctx.send(embed=em)
 
@@ -548,7 +564,9 @@ class RTFM(Cog):
         homepage = getmainval("homepage")
         _license = getversionvals("license")
 
-        em = discord.Embed(title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29)
+        em = discord.Embed(
+            title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29
+        )
 
         em.add_field(name="Published By", value=publisher, inline=True)
         em.add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
@@ -613,7 +631,9 @@ class RTFM(Cog):
 
         elif payload.split(" ")[-1].startswith("link="):
             # Code in a webpage
-            base_url = urllib.parse.quote_plus(payload.split(" ")[-1][5:].strip("/"), safe=";/?:@&=$,><-[]")
+            base_url = urllib.parse.quote_plus(
+                payload.split(" ")[-1][5:].strip("/"), safe=";/?:@&=$,><-[]"
+            )
 
             url = get_raw(base_url)
 
@@ -621,10 +641,14 @@ class RTFM(Cog):
                 if response.status == 404:
                     return await ctx.send("Nothing found. Check your link")
                 if response.status != 200:
-                    return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
+                    return await ctx.send(
+                        f"An error occurred (status code: {response.status}). Retry later."
+                    )
                 text = await response.text()
                 if len(text) > 20000:
-                    return await ctx.send("Code must be shorter than 20,000 characters.")
+                    return await ctx.send(
+                        "Code must be shorter than 20,000 characters."
+                    )
                 lang = re.split(r"\s+", payload, maxsplit=1)[0]
         else:
             no_rerun = False
@@ -652,7 +676,9 @@ class RTFM(Cog):
         lang = language.strip("`")
 
         if lang.lower() not in self.referred:
-            return await ctx.reply(f"{lang} not available. See `[p]list references` for available ones.")
+            return await ctx.reply(
+                f"{lang} not available. See `[p]list references` for available ones."
+            )
         await self.referred[lang.lower()](ctx, query.strip("`"))
 
     @commands.command(aliases=["doc"])
@@ -663,7 +689,9 @@ class RTFM(Cog):
         lang = language.strip("`")
 
         if lang.lower() not in self.documented:
-            return await ctx.reply(f"{lang} not available. See `{ctx.prefix}list documentations` for available ones.")
+            return await ctx.reply(
+                f"{lang} not available. See `{ctx.prefix}list documentations` for available ones."
+            )
         await self.documented[lang.lower()](ctx, query.strip("`"))
 
     @commands.command()
@@ -677,7 +705,9 @@ class RTFM(Cog):
         async with aiohttp.ClientSession() as client_session:
             async with client_session.get(url) as response:
                 if response.status != 200:
-                    return await ctx.reply("An error occurred (status code: {response.status}). Retry later.")
+                    return await ctx.reply(
+                        "An error occurred (status code: {response.status}). Retry later."
+                    )
 
                 soup = BeautifulSoup(await response.text(), HTML_PARSER)
 
@@ -698,10 +728,16 @@ class RTFM(Cog):
 
                 emb = discord.Embed(title=title, url=f"https://man.cx/{page}")
                 emb.set_author(name="Debian Linux man pages")
-                emb.set_thumbnail(url="https://www.debian.org/logos/openlogo-nd-100.png")
+                emb.set_thumbnail(
+                    url="https://www.debian.org/logos/openlogo-nd-100.png"
+                )
 
                 for tag in contents:
-                    h2 = tuple(soup.find(attrs={"name": tuple(tag.children)[0].get("href")[1:]}).parents)[0]
+                    h2 = tuple(
+                        soup.find(
+                            attrs={"name": tuple(tag.children)[0].get("href")[1:]}
+                        ).parents
+                    )[0]
                     emb.add_field(name=tag.string, value=self.get_content(h2))
 
                 await ctx.reply(embed=emb)
@@ -733,7 +769,9 @@ class RTFM(Cog):
 
         availables = choices[group]
         description = f"`{'`, `'.join([*availables])}`"
-        emb: discord.Embed = discord.Embed(title=f"Available for {group}: {len(availables)}", description=description)
+        emb: discord.Embed = discord.Embed(
+            title=f"Available for {group}: {len(availables)}", description=description
+        )
         await ctx.reply(embed=emb)
 
     @commands.command()
@@ -757,7 +795,9 @@ class RTFM(Cog):
             emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
             await ctx.reply(embed=emb)
         except ValueError:
-            await ctx.reply("Invalid sequence. Example usage : `[p]unascii 104 101 121`")
+            await ctx.reply(
+                "Invalid sequence. Example usage : `[p]unascii 104 101 121`"
+            )
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
@@ -791,7 +831,9 @@ class RTFM(Cog):
 
         if algo not in self.algos:
             message = f"`{algorithm}` not available."
-            if matches := "\n".join([supported for supported in self.algos if algo in supported][:10]):
+            if matches := "\n".join(
+                [supported for supported in self.algos if algo in supported][:10]
+            ):
                 message += f" Did you mean:\n{matches}"
             return await ctx.reply(message)
 
@@ -802,7 +844,9 @@ class RTFM(Cog):
             # Available
             hash_object = hashlib.new(algo, text.encode("utf-8"))
 
-        emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest())
+        emb = discord.Embed(
+            title=f"{algorithm} hash", description=hash_object.hexdigest()
+        )
         emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
 
         await ctx.reply(embed=emb)
@@ -827,7 +871,9 @@ class RTFM(Cog):
         async with self.bot.http_session.get(url) as r:
             return await r.json()
 
-    @commands.group(name="github", aliases=("gh", "git", "g"))  # Thanks `will.#0021` (211756205721255947)
+    @commands.group(
+        name="github", aliases=("gh", "git", "g")
+    )  # Thanks `will.#0021` (211756205721255947)
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def github_group(self, ctx: Context) -> None:
@@ -835,11 +881,15 @@ class RTFM(Cog):
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(
+        name="user", aliases=("userinfo", "u")
+    )  # Thanks `will.#0021` (211756205721255947)
     async def github_user_info(self, ctx: Context, username: str) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
-            user_data = await self.fetch_data(f"{GITHUB_API_URL}/users/{quote_plus(username)}")
+            user_data = await self.fetch_data(
+                f"{GITHUB_API_URL}/users/{quote_plus(username)}"
+            )
 
             # User_data will not have a message key if the user exists
             if "message" in user_data:
@@ -853,7 +903,10 @@ class RTFM(Cog):
                 return
 
             org_data = await self.fetch_data(user_data["organizations_url"])
-            orgs = [f"[{org['login']}](https://github.com/{org['login']})" for org in org_data]
+            orgs = [
+                f"[{org['login']}](https://github.com/{org['login']})"
+                for org in org_data
+            ]
             orgs_to_add = " | ".join(orgs)
 
             gists = user_data["public_gists"]
@@ -868,10 +921,14 @@ class RTFM(Cog):
 
             embed = discord.Embed(
                 title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else "",
+                description=f"```\n{user_data['bio']}\n```\n"
+                if user_data["bio"]
+                else "",
                 colour=discord.Colour.og_blurple(),
                 url=user_data["html_url"],
-                timestamp=datetime.strptime(user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                timestamp=datetime.strptime(
+                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+                ),
             )
             embed.set_thumbnail(url=user_data["avatar_url"])
             embed.set_footer(text="Account created at")
@@ -906,7 +963,9 @@ class RTFM(Cog):
 
         await ctx.send(embed=embed)
 
-    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(
+        name="repository", aliases=("repo", "r")
+    )  # Thanks `will.#0021` (211756205721255947)
     async def github_repo_info(self, ctx: Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.
@@ -947,7 +1006,9 @@ class RTFM(Cog):
         # If it's a fork, then it will have a parent key
         try:
             parent = repo_data["parent"]
-            embed.description += f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
+            embed.description += (
+                f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
+            )
         except KeyError:
             pass
 
@@ -959,8 +1020,12 @@ class RTFM(Cog):
             icon_url=repo_owner["avatar_url"],
         )
 
-        repo_created_at = datetime.strptime(repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y")
-        last_pushed = datetime.strptime(repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y at %H:%M")
+        repo_created_at = datetime.strptime(
+            repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+        ).strftime("%d/%m/%Y")
+        last_pushed = datetime.strptime(
+            repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ"
+        ).strftime("%d/%m/%Y at %H:%M")
 
         embed.set_footer(
             text=(
@@ -976,7 +1041,9 @@ class RTFM(Cog):
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
-    async def realpython(self, ctx: Context, amount: Optional[int] = 5, *, user_search: str = None) -> None:
+    async def realpython(
+        self, ctx: Context, amount: Optional[int] = 5, *, user_search: str = None
+    ) -> None:
         """
         Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to a number between 1 and 5 by specifying an amount before the search query.
@@ -992,11 +1059,15 @@ class RTFM(Cog):
             return
 
         if not 1 <= amount <= 5:
-            await ctx.send(f"{ctx.author.mention} `amount` must be between 1 and 5 (inclusive).")
+            await ctx.send(
+                f"{ctx.author.mention} `amount` must be between 1 and 5 (inclusive)."
+            )
             return
 
         params = {"q": user_search, "limit": amount, "kind": "article"}
-        async with self.bot.http_session.get(url=API_ROOT_RP, params=params) as response:
+        async with self.bot.http_session.get(
+            url=API_ROOT_RP, params=params
+        ) as response:
             if response.status != 200:
                 await ctx.send(
                     embed=discord.Embed(
@@ -1012,7 +1083,9 @@ class RTFM(Cog):
         articles = data["results"]
 
         if len(articles) == 0:
-            no_articles = discord.Embed(title=f"No articles found for '{user_search}'", color=ctx.author.color)
+            no_articles = discord.Embed(
+                title=f"No articles found for '{user_search}'", color=ctx.author.color
+            )
             await ctx.send(embed=no_articles)
             return
 
@@ -1044,7 +1117,9 @@ class RTFM(Cog):
     async def stackoverflow(self, ctx: Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = {**SO_PARAMS, "q": search_query}
-        async with self.bot.http_session.get(url=BASE_URL_SO, params=params) as response:
+        async with self.bot.http_session.get(
+            url=BASE_URL_SO, params=params
+        ) as response:
             if response.status == 200:
                 data = await response.json()
             else:
@@ -1152,7 +1227,9 @@ class RTFM(Cog):
             return
 
         if len(query) > 50:
-            embed = discord.Embed(title="! Well !", description=ERROR_MESSAGE, colour=ctx.author.color)
+            embed = discord.Embed(
+                title="! Well !", description=ERROR_MESSAGE, colour=ctx.author.color
+            )
             match = None
         else:
             match = self.fuzzy_match_header(query)
@@ -1236,14 +1313,18 @@ class RTFM(Cog):
         reaction_message = await self.send_reaction_embed(ctx.channel, target_message)
 
         try:
-            _, user = await self.bot.wait_for("reaction_add", timeout=TIMEOUT, check=event_check)
+            _, user = await self.bot.wait_for(
+                "reaction_add", timeout=TIMEOUT, check=event_check
+            )
         except asyncio.TimeoutError:
             return await reaction_message.delete(delay=0)
 
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 
-    async def kata_id(self, search_link: str, params: Dict[str, Any]) -> Union[str, Embed]:
+    async def kata_id(
+        self, search_link: str, params: Dict[str, Any]
+    ) -> Union[str, Embed]:
         """
         Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
@@ -1257,11 +1338,17 @@ class RTFM(Cog):
                     color=0xCD6D6D,
                 )
 
-            soup = BeautifulSoup(await response.text(), features=HTML_PARSER)  # changed the parser
-            first_kata_div = await _doc.get_ele(soup.find_all, "div", class_="item-title px-0")
+            soup = BeautifulSoup(
+                await response.text(), features=HTML_PARSER
+            )  # changed the parser
+            first_kata_div = await _doc.get_ele(
+                soup.find_all, "div", class_="item-title px-0"
+            )
 
             if not first_kata_div:
-                raise commands.BadArgument("No katas could be found with the filters provided.")
+                raise commands.BadArgument(
+                    "No katas could be found with the filters provided."
+                )
             if len(first_kata_div) >= 3:
                 first_kata_div = choice(first_kata_div[:3])
             elif "q=" not in search_link:
@@ -1276,7 +1363,9 @@ class RTFM(Cog):
         Returns the information about the Kata.
         Uses the codewars.com API to get information about the kata using `kata_id`.
         """
-        async with self.bot.http_session.get(API_ROOT.format(kata_id=kata_id)) as response:
+        async with self.bot.http_session.get(
+            API_ROOT.format(kata_id=kata_id)
+        ) as response:
             if response.status != 200:
                 return Embed(
                     title=choice(NEGATIVE_REPLIES),
@@ -1294,7 +1383,9 @@ class RTFM(Cog):
 
         # Ensuring it isn't over the length 1024
         if len(kata_description) > 1024:
-            kata_description = "\n".join(kata_description[:1000].split("\n")[:-1]) + "..."
+            kata_description = (
+                "\n".join(kata_description[:1000].split("\n")[:-1]) + "..."
+            )
             kata_description += f" [continue reading]({kata_url})"
 
         if kata_information["rank"]["name"] is None:
@@ -1392,7 +1483,9 @@ class RTFM(Cog):
 
     @commands.command(aliases=["kata"])
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def challenge(self, ctx: Context, language: str = "python", *, query: str = None) -> None:
+    async def challenge(
+        self, ctx: Context, language: str = "python", *, query: str = None
+    ) -> None:
         """
         The challenge command pulls a random kata (challenge) from codewars.com.
         The different ways to use this command are:
@@ -1405,7 +1498,9 @@ class RTFM(Cog):
         """
         language = language.lower()
         if language not in SUPPORTED_LANGUAGES["stable"] + SUPPORTED_LANGUAGES["beta"]:
-            raise commands.BadArgument("This is not a recognized language on codewars.com!")
+            raise commands.BadArgument(
+                "This is not a recognized language on codewars.com!"
+            )
 
         get_kata_link = f"https://codewars.com/kata/search/{language}"
         params = {}
@@ -1452,8 +1547,12 @@ class RTFM(Cog):
             tags_embed=tags_embed,
             other_info_embed=miscellaneous_embed,
         )
-        kata_view = self.create_view(dropdown, f"https://codewars.com/kata/{first_kata_id}")
-        original_message: discord.Message = await ctx.send(embed=kata_embed, view=kata_view)
+        kata_view = self.create_view(
+            dropdown, f"https://codewars.com/kata/{first_kata_id}"
+        )
+        original_message: discord.Message = await ctx.send(
+            embed=kata_embed, view=kata_view
+        )
         dropdown.original_message = original_message
 
         wait_for_kata = await kata_view.wait()

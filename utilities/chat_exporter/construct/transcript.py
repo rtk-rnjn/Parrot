@@ -51,26 +51,34 @@ class TranscriptDAO:
         return self
 
     async def export_transcript(self, message_html: str):
-        guild_icon = self.channel.guild.icon if (
-                self.channel.guild.icon and len(self.channel.guild.icon) > 2
-        ) else DiscordUtils.default_avatar
+        guild_icon = (
+            self.channel.guild.icon
+            if (self.channel.guild.icon and len(self.channel.guild.icon) > 2)
+            else DiscordUtils.default_avatar
+        )
 
         guild_name = html.escape(self.channel.guild.name)
 
-        self.html = await fill_out(self.channel.guild, total, [
-            ("SERVER_NAME", f"Guild: {guild_name}"),
-            ("SERVER_AVATAR_URL", str(guild_icon), PARSE_MODE_NONE),
-            ("CHANNEL_NAME", f"Channel: {self.channel.name}"),
-            ("MESSAGE_COUNT", str(len(self.messages))),
-            ("MESSAGES", message_html, PARSE_MODE_NONE),
-            ("TIMEZONE", str(self.pytz_timezone)),
-        ])
+        self.html = await fill_out(
+            self.channel.guild,
+            total,
+            [
+                ("SERVER_NAME", f"Guild: {guild_name}"),
+                ("SERVER_AVATAR_URL", str(guild_icon), PARSE_MODE_NONE),
+                ("CHANNEL_NAME", f"Channel: {self.channel.name}"),
+                ("MESSAGE_COUNT", str(len(self.messages))),
+                ("MESSAGES", message_html, PARSE_MODE_NONE),
+                ("TIMEZONE", str(self.pytz_timezone)),
+            ],
+        )
 
 
 class Transcript(TranscriptDAO):
     async def export(self):
         if not self.messages:
-            self.messages = [message async for message in self.channel.history(limit=self.limit)]
+            self.messages = [
+                message async for message in self.channel.history(limit=self.limit)
+            ]
         self.messages.reverse()
 
         try:

@@ -64,11 +64,15 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     return await ctx.send(embed=emb)
 
 
-async def _cppreference(language: str, ctx: Context, text: str) -> Optional[discord.Message]:
+async def _cppreference(
+    language: str, ctx: Context, text: str
+) -> Optional[discord.Message]:
     """Search something on cppreference"""
     text = text.strip("`")
 
-    base_url = f"https://cppreference.com/w/cpp/index.php?title=Special:Search&search={text}"
+    base_url = (
+        f"https://cppreference.com/w/cpp/index.php?title=Special:Search&search={text}"
+    )
 
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 

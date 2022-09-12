@@ -9,6 +9,7 @@ from discord.ext import commands
 
 class Hidden(Cog):
     """This category is for you. You can opt-in or opt-out certain feature of the bot"""
+
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 

@@ -97,7 +97,9 @@ class BaseView(discord.ui.View):
 
 
 class SlideButton(discord.ui.Button["SlideView"]):
-    def __init__(self, label: Union[int, str], *, style: discord.ButtonStyle, row: int) -> None:
+    def __init__(
+        self, label: Union[int, str], *, style: discord.ButtonStyle, row: int
+    ) -> None:
         super().__init__(
             label=str(label),
             style=style,

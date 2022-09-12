@@ -33,7 +33,9 @@ class PfpEffects:
     """
 
     @staticmethod
-    def apply_effect(image_bytes: bytes, effect: Callable, filename: str, *args: Any) -> discord.File:
+    def apply_effect(
+        image_bytes: bytes, effect: Callable, filename: str, *args: Any
+    ) -> discord.File:
         """Applies the given effect to the image passed to it."""
         im = Image.open(BytesIO(image_bytes))
         im = im.convert("RGBA")
@@ -120,7 +122,9 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def easterify_effect(image: "Image.Image", overlay_image: Optional["Image.Image"] = None) -> "Image.Image":
+    def easterify_effect(
+        image: "Image.Image", overlay_image: Optional["Image.Image"] = None
+    ) -> "Image.Image":
         """
         Applies the easter effect to the given image.
         This is done by getting the closest "easter" colour to each pixel and changing the colour
@@ -147,7 +151,10 @@ class PfpEffects:
         data_set = set(data)
         easterified_data_set = {x: PfpEffects.closest(x) for x in data_set}
 
-        new_pixel_data = [(*easterified_data_set[x], alpha[i]) if x in easterified_data_set else x for i, x in enumerate(data)]
+        new_pixel_data = [
+            (*easterified_data_set[x], alpha[i]) if x in easterified_data_set else x
+            for i, x in enumerate(data)
+        ]
 
         im = Image.new("RGBA", image.size)
         im.putdata(new_pixel_data)

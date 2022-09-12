@@ -149,5 +149,6 @@ Discriminator: {change.get('before_discriminator')} -> {change('after_discrimina
     async def cog_unload(self) -> None:
         self.clear_user_misc.cancel()
 
+
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(User(bot))

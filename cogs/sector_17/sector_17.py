@@ -46,7 +46,9 @@ class Sector1729(Cog):
         )
 
     @Cog.listener("on_raw_reaction_add")
-    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
+    async def on_raw_reaction_add(
+        self, payload: discord.RawReactionActionEvent
+    ) -> None:
         if (
             payload.message_id != MESSAGE_ID
             or str(payload.emoji) != EMOJI
@@ -58,7 +60,9 @@ class Sector1729(Cog):
             self.bot.get_user, self.bot.fetch_user, user_id
         )
 
-        channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)
+        channel: Optional[discord.TextChannel] = self.bot.get_channel(
+            payload.channel_id
+        )
 
         if channel is None:
             return
@@ -99,10 +103,15 @@ class Sector1729(Cog):
                 await msg.delete()
             i += 1
             if i % 10 == 0:
-                await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")
+                await _msg.edit(
+                    content=f"<@{payload.user_id}> deleting messages - {i}/50"
+                )
 
         await __remove_reaction(msg)
-        await _msg.edit(content=f"<@{payload.user_id}> deleting messages - 50/50! Done!", delete_after=2)
+        await _msg.edit(
+            content=f"<@{payload.user_id}> deleting messages - 50/50! Done!",
+            delete_after=2,
+        )
 
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):
@@ -140,7 +149,9 @@ class Sector1729(Cog):
         ) or await self.bot.topgg.get_user_vote(ctx.author.id):
             role = discord.Object(id=VOTER_ROLE_ID)
             await ctx.author.add_roles(role, reason="Voted for the bot on Top.gg")
-            await ctx.send("You have claimed your vote for the bot on Top.gg. Added Golden Role.")
+            await ctx.send(
+                "You have claimed your vote for the bot on Top.gg. Added Golden Role."
+            )
             return
 
         await ctx.send(
@@ -182,11 +193,15 @@ class Sector1729(Cog):
             col: Collection = self.bot.mongo.extra.user_misc
             now_plus_12_hours = time() + 43200
 
-            async for doc in col.find({"topgg_vote_expires": {"$lte": now_plus_12_hours}}):
+            async for doc in col.find(
+                {"topgg_vote_expires": {"$lte": now_plus_12_hours}}
+            ):
                 guild = self.bot.server
                 role = discord.Object(id=VOTER_ROLE_ID)
 
-                await col.update_one({"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}})
+                await col.update_one(
+                    {"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}}
+                )
                 if member := guild.get_member(doc["_id"]):
                     await member.remove_roles(role, reason="Top.gg vote expired")
 

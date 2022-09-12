@@ -531,16 +531,12 @@ class BattleshipButton(WordInputButton):
                     "It is not your turn yet!", ephemeral=True
                 )
                 if interaction.user != game.turn.player
-                else await interaction.response.send_modal(
-                    BattleshipInput(self.view)
-                )
+                else await interaction.response.send_modal(BattleshipInput(self.view))
             )
 
         player = self.view.player
         other_player = (
-            game.player2
-            if interaction.user == game.player1.player
-            else game.player1
+            game.player2 if interaction.user == game.player1.player else game.player1
         )
 
         if not player.approves_cancel:
@@ -668,7 +664,6 @@ class SetupInput(discord.ui.Modal):
             max_length=3,
         )
 
-
         self.is_vertical = discord.ui.TextInput(
             label="Do you want it to be vertical? (y/n)",
             placeholder='"y" or "n"',
@@ -677,7 +672,6 @@ class SetupInput(discord.ui.Modal):
             min_length=1,
             max_length=1,
         )
-
 
         self.add_item(self.start_coord)
         self.add_item(self.is_vertical)
@@ -699,7 +693,6 @@ class SetupInput(discord.ui.Modal):
             return await interaction.response.send_message(
                 "Response for `vertical` must be either `y` or `n`", ephemeral=True
             )
-
 
         vertical = vertical != "y"
 

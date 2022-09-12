@@ -125,8 +125,16 @@ class CustomBase:
 class CustomMessage(CustomBase):
     def __init__(self, message: discord.Message):
         self.id = message.id
-        self.author = CustomMember(message.author) if isinstance(message.author, discord.Member) else None
-        self.channel = CustomTextChannel(message.channel) if isinstance(message.channel, discord.TextChannel) else None
+        self.author = (
+            CustomMember(message.author)
+            if isinstance(message.author, discord.Member)
+            else None
+        )
+        self.channel = (
+            CustomTextChannel(message.channel)
+            if isinstance(message.channel, discord.TextChannel)
+            else None
+        )
         self.content = message.content
         self.embeds = message.embeds
         self.created_at = message.created_at
@@ -137,7 +145,9 @@ class CustomMessage(CustomBase):
         self.edited_at = message.edited_at
         self.tts = message.tts
         self.type = message.type
-        self.reactions: List[CustomReactionPassive] = [CustomReactionPassive(reaction) for reaction in message.reactions]
+        self.reactions: List[CustomReactionPassive] = [
+            CustomReactionPassive(reaction) for reaction in message.reactions
+        ]
         self.delete = message.delete
 
 
@@ -287,12 +297,18 @@ class BaseCustomCommand:
 
         [setattr(self, k, v) for k, v in kwargs.items()]  # type: ignore
 
-    async def prefix(self,) -> str:
+    async def prefix(
+        self,
+    ) -> str:
         return self.__bot.get_guild_prefixes(self.__guild)
 
-    async def wait_for_message(self, timeout: float, **kwargs: Any) -> Optional[CustomMessage]:
+    async def wait_for_message(
+        self, timeout: float, **kwargs: Any
+    ) -> Optional[CustomMessage]:
         def check_outer(**kwargs) -> Callable:
-            def __suppress_attr_error(func: Callable, *args: Any, **kwargs: Any) -> bool:
+            def __suppress_attr_error(
+                func: Callable, *args: Any, **kwargs: Any
+            ) -> bool:
                 """Suppress attribute error for the function."""
                 try:
                     func(*args, **kwargs)
@@ -301,13 +317,21 @@ class BaseCustomCommand:
                     return False
 
             def check(message) -> bool:
-                converted_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()]
-                return all(pred(message) == value for pred, value in converted_pred if __suppress_attr_error(pred, message))
+                converted_pred = [
+                    (attrgetter(k.replace("__", ".")), v) for k, v in kwargs.items()
+                ]
+                return all(
+                    pred(message) == value
+                    for pred, value in converted_pred
+                    if __suppress_attr_error(pred, message)
+                )
 
             return check
 
         with suppress(asyncio.TimeoutError):
-            msg = await self.__bot.wait_for("message", check=check_outer(**kwargs), timeout=min(timeout, 10))
+            msg = await self.__bot.wait_for(
+                "message", check=check_outer(**kwargs), timeout=min(timeout, 10)
+            )
 
         return None if msg.guild != self.__guild else CustomMessage(msg)
 
@@ -406,7 +430,9 @@ class BaseCustomCommand:
         role = self.__guild.get_role(role_id)
         return CustomRole(role) if role is not None else None
 
-    async def get_channel(self, channel_id: int) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel, None]:
+    async def get_channel(
+        self, channel_id: int
+    ) -> Union[CustomTextChannel, CustomVoiceChannel, CustomCategoryChannel, None]:
         channel = self.__guild.get_channel(channel_id)
         if isinstance(channel, discord.TextChannel):
             return CustomTextChannel(channel)
@@ -443,7 +469,9 @@ class BaseCustomCommand:
 
         return None
 
-    async def get_permissions_for(self, channel: int, _for: Union[CustomMember, CustomRole, int]) -> Optional[Permissions]:
+    async def get_permissions_for(
+        self, channel: int, _for: Union[CustomMember, CustomRole, int]
+    ) -> Optional[Permissions]:
         obj = self.__get_role_or_user(
             _for,
         )
@@ -471,10 +499,14 @@ class BaseCustomCommand:
 
     async def get_db(self, *, projection: dict = {}, **kwargs: Any) -> Dict[str, Any]:
         # sourcery skip: default-mutable-arg
-        return await self.__bot.mongo.cc.storage.find_one({"_id": self.__guild.id, **kwargs}, projection)
+        return await self.__bot.mongo.cc.storage.find_one(
+            {"_id": self.__guild.id, **kwargs}, projection
+        )
 
     async def edit_db(self, *, upsert: bool = True, update: dict) -> None:
-        await self.__bot.mongo.cc.storage.update_one({"_id": self.__guild.id}, update, upsert=upsert)
+        await self.__bot.mongo.cc.storage.update_one(
+            {"_id": self.__guild.id}, update, upsert=upsert
+        )
         return
 
     async def del_db(
@@ -565,7 +597,9 @@ class CustomCommandsExecutionOnMsg(BaseCustomCommandOnMsg):
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
             await self.__message.channel.send(
-                ERROR_MESSAGE.format(f"#{self.__message.channel.name}", self.__message.created_at, tbe)
+                ERROR_MESSAGE.format(
+                    f"#{self.__message.channel.name}", self.__message.created_at, tbe
+                )
             )
             return
 
@@ -642,12 +676,16 @@ class CustomCommandsExecutionOnReaction(BaseCustomCommandOnMsg):
                 except KeyError:
                     return
 
-                await function(CustomReaction(self.__reaction), CustomMember(self.__user))
+                await function(
+                    CustomReaction(self.__reaction), CustomMember(self.__user)
+                )
                 return
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
             await self.__message.channel.send(
-                ERROR_MESSAGE.format(f"#{self.__message.channel.name}", self.__message.created_at, tbe)
+                ERROR_MESSAGE.format(
+                    f"#{self.__message.channel.name}", self.__message.created_at, tbe
+                )
             )
             return

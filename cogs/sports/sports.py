@@ -56,10 +56,14 @@ class Sports(Cog):
 {extra}
 """
         if data.get("batting"):
-            embed.add_field(name="Batting - Stats", value=f"```\n{table1}```", inline=False)
+            embed.add_field(
+                name="Batting - Stats", value=f"```\n{table1}```", inline=False
+            )
 
         if data.get("bowling"):
-            embed.add_field(name="Bowling - Stats", value=f"```\n{table2}```", inline=False)
+            embed.add_field(
+                name="Bowling - Stats", value=f"```\n{table2}```", inline=False
+            )
 
         embed.add_field(
             name="Recent Commentry",

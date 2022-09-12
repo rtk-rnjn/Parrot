@@ -10,6 +10,7 @@ from ..ext.cache import cache
 
 cdn_fmt = "https://twemoji.maxcdn.com/v/latest/72x72/{codepoint}.png"
 
+
 @cache()
 async def valid_src(src):
     try:
@@ -42,9 +43,13 @@ async def convert(char):
             return char
 
         shortcode = emojis.decode(char)
-        name = shortcode.replace(":", "").replace("_", " ").replace("selector", "").title()
+        name = (
+            shortcode.replace(":", "").replace("_", " ").replace("selector", "").title()
+        )
 
-    src = cdn_fmt.format(codepoint=await codepoint(["{cp:x}".format(cp=ord(c)) for c in char]))
+    src = cdn_fmt.format(
+        codepoint=await codepoint(["{cp:x}".format(cp=ord(c)) for c in char])
+    )
 
     if await valid_src(src):
         return f'<img class="emoji emoji--small" src="{src}" alt="{char}" title="{name}" aria-label="Emoji: {name}">'

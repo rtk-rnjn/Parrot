@@ -17,13 +17,17 @@ from utilities.deco import seasonal_task
 
 ALL_VIDS: dict = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))
 BUNNY_NAMES: dict = loads(Path(r"extra/easter/bunny_names.json").read_text("utf8"))
-RIDDLE_QUESTIONS: dict = loads(Path(r"extra/easter/easter_riddle.json").read_text("utf8"))
+RIDDLE_QUESTIONS: dict = loads(
+    Path(r"extra/easter/easter_riddle.json").read_text("utf8")
+)
 
 TIMELIMIT = 10
 HTML_COLOURS: dict = loads(Path(r"extra/html_colours.json").read_text("utf8"))
 EGG_FACTS: dict = loads(Path(r"extra/easter/easter_egg_facts.json").read_text("utf8"))
 XKCD_COLOURS: dict = loads(Path(r"extra/xkcd_colours.json").read_text("utf8"))
-EGGHEAD_QUESTIONS: dict = loads(Path(r"extra/easter/egghead_questions.json").read_text("utf8"))
+EGGHEAD_QUESTIONS: dict = loads(
+    Path(r"extra/easter/egghead_questions.json").read_text("utf8")
+)
 traditions: dict = loads(Path(r"extra/easter/traditions.json").read_text("utf8"))
 
 COLOURS = [
@@ -189,7 +193,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         The duration of the hint interval can be configured by changing the TIMELIMIT constant in this file.
         """
         if self.current_channel:
-            await ctx.send(f"A riddle is already being solved in {self.current_channel.mention}!")
+            await ctx.send(
+                f"A riddle is already being solved in {self.current_channel.mention}!"
+            )
             return
 
         self.current_channel = ctx.channel
@@ -201,7 +207,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         description = f"You have {TIMELIMIT} seconds before the first hint."
 
-        riddle_embed = discord.Embed(title=question, description=description, colour=0xCF84E0)
+        riddle_embed = discord.Embed(
+            title=question, description=description, colour=0xCF84E0
+        )
 
         await ctx.send(embed=riddle_embed)
         await ctx.release(TIMELIMIT)
@@ -222,7 +230,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         else:
             content = "Nobody got it right..."
 
-        answer_embed = discord.Embed(title=f"The answer is: {self.correct}!", colour=0xCF84E0)
+        answer_embed = discord.Embed(
+            title=f"The answer is: {self.correct}!", colour=0xCF84E0
+        )
 
         await ctx.send(content, embed=answer_embed)
 
@@ -242,7 +252,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             self.winners.add(message.author.mention)
 
     @commands.command(aliases=("decorateegg",))
-    async def eggdecorate(self, ctx: Context, *colours: Union[discord.Colour, str]) -> Optional[Image.Image]:
+    async def eggdecorate(
+        self, ctx: Context, *colours: Union[discord.Colour, str]
+    ) -> Optional[Image.Image]:
         """
         Picks a random egg design and decorates it using the given colours.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
@@ -276,13 +288,17 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
                 q, r = divmod(8, colours_n)
                 colours = colours * q + colours[:r]
             num = random.randint(1, 6)
-            im = Image.open(Path(f"bot/resources/holidays/easter/easter_eggs/design{num}.png"))
+            im = Image.open(
+                Path(f"bot/resources/holidays/easter/easter_eggs/design{num}.png")
+            )
             data = list(im.getdata())
 
             replaceable = {x for x in data if x not in IRREPLACEABLE}
             replaceable = sorted(list(replaceable), key=COLOURS.index)
 
-            replacing_colours = {colour: colours[i] for i, colour in enumerate(replaceable)}
+            replacing_colours = {
+                colour: colours[i] for i, colour in enumerate(replaceable)
+            }
             new_data = []
             for x in data:
                 if x in replacing_colours:
@@ -298,7 +314,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
             bufferedio.seek(0)
 
-            file = discord.File(bufferedio, filename="egg.png")  # Creates file to be used in embed
+            file = discord.File(
+                bufferedio, filename="egg.png"
+            )  # Creates file to be used in embed
             embed = discord.Embed(
                 title="Your Colourful Easter Egg",
                 description="Here is your pretty little egg. Hope you like it!",
@@ -341,9 +359,13 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         valid_emojis = [emoji for emoji, _ in answers]
 
         description = f"You have {TIMELIMIT} seconds to vote.\n\n"
-        description += "\n".join([f"{emoji} -> **{answer}**" for emoji, answer in answers])
+        description += "\n".join(
+            [f"{emoji} -> **{answer}**" for emoji, answer in answers]
+        )
 
-        q_embed = discord.Embed(title=question, description=description, colour=Colours.pink)
+        q_embed = discord.Embed(
+            title=question, description=description, colour=Colours.pink
+        )
 
         msg: discord.Message = await ctx.send(embed=q_embed)
         for emoji in valid_emojis:
@@ -355,9 +377,13 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
         del self.quiz_messages[msg.id]
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(msg.channel, msg.id, force_fetch=True)
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            msg.channel, msg.id, force_fetch=True
+        )
 
-        total_no = sum(r.count for r in msg.reactions) - len(valid_emojis)  # - bot's reactions
+        total_no = sum(r.count for r in msg.reactions) - len(
+            valid_emojis
+        )  # - bot's reactions
 
         if total_no == 0:
             return await msg.delete()  # To avoid ZeroDivisionError if nobody reacts
@@ -389,7 +415,11 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
                     mentions += f" {u.mention}"
                     break
 
-        content = f"Well done {mentions} for getting it correct!" if mentions else "Nobody got it right..."
+        content = (
+            f"Well done {mentions} for getting it correct!"
+            if mentions
+            else "Nobody got it right..."
+        )
 
         a_embed = discord.Embed(
             title=f"The correct answer was {correct}!",
@@ -400,7 +430,9 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(content, embed=a_embed)
 
     @staticmethod
-    async def already_reacted(message: discord.Message, user: Union[discord.Member, discord.User]) -> bool:
+    async def already_reacted(
+        message: discord.Message, user: Union[discord.Member, discord.User]
+    ) -> bool:
         """Returns whether a given user has reacted more than once to a given message."""
         users = []
 

@@ -22,7 +22,9 @@ class TransparentAnimatedGifConverter:
     def _process_pixels(self) -> None:
         self._transparent_pixels = {
             idx
-            for idx, alpha in enumerate(self._img_rgba.getchannel(channel='A').getdata())
+            for idx, alpha in enumerate(
+                self._img_rgba.getchannel(channel="A").getdata()
+            )
             if alpha <= self._alpha_threshold
         }
 
@@ -35,7 +37,7 @@ class TransparentAnimatedGifConverter:
         }
 
         self._img_p_parsedpalette = {
-            idx: tuple(palette[idx * 3: idx * 3 + 3])
+            idx: tuple(palette[idx * 3 : idx * 3 + 3])
             for idx in self._img_p_used_palette_idxs
         }
 
@@ -48,11 +50,13 @@ class TransparentAnimatedGifConverter:
             if color_item == old_color:
                 return idx
 
-            distance = sum((
-                abs(old_color[0] - color_item[0]),
-                abs(old_color[1] - color_item[1]),
-                abs(old_color[2] - color_item[2])
-            ))
+            distance = sum(
+                (
+                    abs(old_color[0] - color_item[0]),
+                    abs(old_color[1] - color_item[1]),
+                    abs(old_color[2] - color_item[2]),
+                )
+            )
             dict_distance[distance].append(idx)
 
         return dict_distance[sorted(dict_distance)[0]][0]
@@ -62,8 +66,8 @@ class TransparentAnimatedGifConverter:
         new_idx = free_slots.pop() if free_slots else self._get_similar_color_idx()
 
         self._img_p_used_palette_idxs.add(new_idx)
-        self._palette_replaces['idx_from'].append(0)
-        self._palette_replaces['idx_to'].append(new_idx)
+        self._palette_replaces["idx_from"].append(0)
+        self._palette_replaces["idx_to"].append(new_idx)
         self._img_p_parsedpalette[new_idx] = self._img_p_parsedpalette[0]
 
         del self._img_p_parsedpalette[0]
@@ -83,10 +87,10 @@ class TransparentAnimatedGifConverter:
         self._img_p_parsedpalette[0] = self._get_unused_color()
 
     def _adjust_pixels(self) -> None:
-        if self._palette_replaces['idx_from']:
+        if self._palette_replaces["idx_from"]:
             trans_table = bytearray.maketrans(
-                bytes(self._palette_replaces['idx_from']),
-                bytes(self._palette_replaces['idx_to'])
+                bytes(self._palette_replaces["idx_from"]),
+                bytes(self._palette_replaces["idx_to"]),
             )
             self._img_p_data = self._img_p_data.translate(trans_table)
 
@@ -103,25 +107,27 @@ class TransparentAnimatedGifConverter:
         self._img_p.putpalette(data=final_palette)
 
     def process(self) -> Image:
-        self._img_p = self._img_rgba.convert(mode='P')
+        self._img_p = self._img_rgba.convert(mode="P")
         self._img_p_data = bytearray(self._img_p.tobytes())
         self._palette_replaces = dict(idx_from=[], idx_to=[])
         self._process_pixels()
         self._process_palette()
         self._adjust_pixels()
         self._adjust_palette()
-        self._img_p.info['transparency'] = 0
-        self._img_p.info['background'] = 0
+        self._img_p.info["transparency"] = 0
+        self._img_p.info["background"] = 0
         return self._img_p
 
 
-def _create_animated_gif(images: List[Image], durations: Union[int, List[int]]) -> Tuple[Image, dict]:
+def _create_animated_gif(
+    images: List[Image], durations: Union[int, List[int]]
+) -> Tuple[Image, dict]:
     save_kwargs = {}
     new_images: List[Image] = []
 
     for frame in images:
         thumbnail = frame.copy()
-        thumbnail_rgba = thumbnail.convert(mode='RGBA')
+        thumbnail_rgba = thumbnail.convert(mode="RGBA")
         thumbnail_rgba.thumbnail(size=frame.size, reducing_gap=3.0)
         converter = TransparentAnimatedGifConverter(img_rgba=thumbnail_rgba)
         thumbnail_p = converter.process()
@@ -129,17 +135,19 @@ def _create_animated_gif(images: List[Image], durations: Union[int, List[int]]) 
 
     output_image = new_images[0]
     save_kwargs.update(
-        format='GIF',
+        format="GIF",
         save_all=True,
         optimize=False,
         append_images=new_images[1:],
         duration=durations,
         disposal=2,  # Other disposals don't work
-        loop=0
+        loop=0,
     )
     return output_image, save_kwargs
 
 
-def save_transparent_gif(images: List[Image], durations: Union[int, List[int]], save_file) -> None:
+def save_transparent_gif(
+    images: List[Image], durations: Union[int, List[int]], save_file
+) -> None:
     root_frame, save_args = _create_animated_gif(images, durations)
     root_frame.save(save_file, **save_args)

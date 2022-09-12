@@ -32,10 +32,13 @@ async def quick_export(
         return
 
     transcript_embed = discord.Embed(
-        description=f"**Transcript Name:** transcript-{channel.name}\n\n", colour=discord.Colour.blurple()
+        description=f"**Transcript Name:** transcript-{channel.name}\n\n",
+        colour=discord.Colour.blurple(),
     )
 
-    transcript_file = discord.File(io.BytesIO(transcript.encode()), filename=f"transcript-{channel.name}.html")
+    transcript_file = discord.File(
+        io.BytesIO(transcript.encode()), filename=f"transcript-{channel.name}.html"
+    )
     return await channel.send(embed=transcript_embed, file=transcript_file)
 
 
@@ -88,7 +91,9 @@ async def raw_export(
 async def quick_link(channel: discord.TextChannel, message: discord.Message):
     embed = discord.Embed(
         title="Transcript Link",
-        description=(f"[Click here to view the transcript](https://mahto.id/chat-exporter?url={message.attachments[0].url})"),
+        description=(
+            f"[Click here to view the transcript](https://mahto.id/chat-exporter?url={message.attachments[0].url})"
+        ),
         colour=discord.Colour.blurple(),
     )
 

@@ -54,12 +54,26 @@ class ParseMarkdown:
     def parse_br(self):
         self.content = self.content.replace("<br>", " ")
 
-    async def parse_emoji(self):  # sourcery skip: identity-comprehension, use-getitem-for-re-match-groups
+    async def parse_emoji(
+        self,
+    ):  # sourcery skip: identity-comprehension, use-getitem-for-re-match-groups
         holder = (
-            [r"&lt;:.*?:(\d*)&gt;", '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.png">'],
-            [r"&lt;a:.*?:(\d*)&gt;", '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.gif">'],
-            [r"<:.*?:(\d*)>", '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.png">'],
-            [r"<a:.*?:(\d*)>", '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.gif">'],
+            [
+                r"&lt;:.*?:(\d*)&gt;",
+                '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.png">',
+            ],
+            [
+                r"&lt;a:.*?:(\d*)&gt;",
+                '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.gif">',
+            ],
+            [
+                r"<:.*?:(\d*)>",
+                '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.png">',
+            ],
+            [
+                r"<a:.*?:(\d*)>",
+                '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.gif">',
+            ],
         )
 
         self.content = await convert_emoji([word for word in self.content])
@@ -69,17 +83,25 @@ class ParseMarkdown:
             match = re.search(p, self.content)
             while match is not None:
                 emoji_id = match.group(1)
-                self.content = self.content.replace(self.content[match.start():match.end()],
-                                                    r % emoji_id)
+                self.content = self.content.replace(
+                    self.content[match.start() : match.end()], r % emoji_id
+                )
                 match = re.search(p, self.content)
 
-    def parse_normal_markdown(self):  # sourcery skip: class-extract-method, identity-comprehension, use-fstring-for-concatenation, use-getitem-for-re-match-groups
-        holder = [r"__(.*?)__", '<span style="text-decoration: underline">%s</span>'], \
-                 [r"\*\*(.*?)\*\*", '<strong>%s</strong>'], \
-                 [r"\*(.*?)\*", '<em>%s</em>'], \
-                 [r"~~(.*?)~~", '<span style="text-decoration: line-through">%s</span>'], \
-                 [r"\|\|(.*?)\|\|", '<span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"> <span '
-                                    'class="spoiler-text">%s</span></span>']
+    def parse_normal_markdown(
+        self,
+    ):  # sourcery skip: class-extract-method, identity-comprehension, use-fstring-for-concatenation, use-getitem-for-re-match-groups
+        holder = (
+            [r"__(.*?)__", '<span style="text-decoration: underline">%s</span>'],
+            [r"\*\*(.*?)\*\*", "<strong>%s</strong>"],
+            [r"\*(.*?)\*", "<em>%s</em>"],
+            [r"~~(.*?)~~", '<span style="text-decoration: line-through">%s</span>'],
+            [
+                r"\|\|(.*?)\|\|",
+                '<span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"> <span '
+                'class="spoiler-text">%s</span></span>',
+            ],
+        )
 
         for x in holder:
             p, r = x
@@ -88,8 +110,9 @@ class ParseMarkdown:
             match = re.search(pattern, self.content)
             while match is not None:
                 affected_text = match.group(1)
-                self.content = self.content.replace(self.content[match.start():match.end()],
-                                                    r % affected_text)
+                self.content = self.content.replace(
+                    self.content[match.start() : match.end()], r % affected_text
+                )
                 match = re.search(pattern, self.content)
 
         # > quote
@@ -123,10 +146,32 @@ class ParseMarkdown:
 
         self.content = new_content
 
-    def parse_code_block_markdown(self, reference=False):  # sourcery skip: assign-if-exp, identity-comprehension, swap-if-expression, use-getitem-for-re-match-groups
-        markdown_languages = ["asciidoc", "autohotkey", "bash", "coffeescript", "cpp", "cs", "css",
-                              "diff", "fix", "glsl", "ini", "json", "md", "ml", "prolog", "py",
-                              "tex", "xl", "xml", "js", "html"]
+    def parse_code_block_markdown(
+        self, reference=False
+    ):  # sourcery skip: assign-if-exp, identity-comprehension, swap-if-expression, use-getitem-for-re-match-groups
+        markdown_languages = [
+            "asciidoc",
+            "autohotkey",
+            "bash",
+            "coffeescript",
+            "cpp",
+            "cs",
+            "css",
+            "diff",
+            "fix",
+            "glsl",
+            "ini",
+            "json",
+            "md",
+            "ml",
+            "prolog",
+            "py",
+            "tex",
+            "xl",
+            "xml",
+            "js",
+            "html",
+        ]
         self.content = re.sub(r"\n", "<br>", self.content)
 
         # ```code```
@@ -139,26 +184,27 @@ class ParseMarkdown:
             for language in markdown_languages:
                 if affected_text.lower().startswith(language):
                     language_class = f"language-{language}"
-                    _, _, affected_text = affected_text.partition('<br>')
+                    _, _, affected_text = affected_text.partition("<br>")
 
             affected_text = self.return_to_markdown(affected_text)
 
             second_pattern = re.compile(r"^<br>|<br>$")
             second_match = re.search(second_pattern, affected_text)
             while second_match is not None:
-                affected_text = re.sub(r"^<br>|<br>$", '', affected_text)
+                affected_text = re.sub(r"^<br>|<br>$", "", affected_text)
                 second_match = re.search(second_pattern, affected_text)
             affected_text = re.sub("  ", "&nbsp;&nbsp;", affected_text)
 
             if not reference:
                 self.content = self.content.replace(
-                    self.content[match.start():match.end()],
-                    '<div class="pre pre--multiline %s">%s</div>' % (language_class, affected_text)
+                    self.content[match.start() : match.end()],
+                    '<div class="pre pre--multiline %s">%s</div>'
+                    % (language_class, affected_text),
                 )
             else:
                 self.content = self.content.replace(
-                    self.content[match.start():match.end()],
-                    '<span class="pre pre-inline">%s</span>' % affected_text
+                    self.content[match.start() : match.end()],
+                    '<span class="pre pre-inline">%s</span>' % affected_text,
                 )
 
             match = re.search(pattern, self.content)
@@ -169,8 +215,10 @@ class ParseMarkdown:
         while match is not None:
             affected_text = match.group(1)
             affected_text = self.return_to_markdown(affected_text)
-            self.content = self.content.replace(self.content[match.start():match.end()],
-                                                '<span class="pre pre-inline">%s</span>' % affected_text)
+            self.content = self.content.replace(
+                self.content[match.start() : match.end()],
+                '<span class="pre pre-inline">%s</span>' % affected_text,
+            )
             match = re.search(pattern, self.content)
 
         # `code`
@@ -179,8 +227,10 @@ class ParseMarkdown:
         while match is not None:
             affected_text = match.group(1)
             affected_text = self.return_to_markdown(affected_text)
-            self.content = self.content.replace(self.content[match.start():match.end()],
-                                                '<span class="pre pre-inline">%s</span>' % affected_text)
+            self.content = self.content.replace(
+                self.content[match.start() : match.end()],
+                '<span class="pre pre-inline">%s</span>' % affected_text,
+            )
             match = re.search(pattern, self.content)
 
         self.content = re.sub(r"<br>", "\n", self.content)
@@ -193,8 +243,10 @@ class ParseMarkdown:
         while match is not None:
             affected_text = match.group(1)
             affected_url = match.group(2)
-            self.content = self.content.replace(self.content[match.start():match.end()],
-                                                '<a href="%s">%s</a>' % (affected_url, affected_text))
+            self.content = self.content.replace(
+                self.content[match.start() : match.end()],
+                '<a href="%s">%s</a>' % (affected_url, affected_text),
+            )
             match = re.search(pattern, self.content)
 
         self.content = self.content.split("\n")
@@ -230,13 +282,18 @@ class ParseMarkdown:
     @staticmethod
     def return_to_markdown(content):
         # sourcery skip: replace-interpolation-with-fstring, use-getitem-for-re-match-groups
-        holders = [r"<strong>(.*?)</strong>", '**%s**'], \
-                  [r"<em>([^<>]+)</em>", '*%s*'], \
-                  [r'<span style="text-decoration: underline">([^<>]+)</span>', '__%s__'], \
-                  [r'<span style="text-decoration: line-through">([^<>]+)</span>', '~~%s~~'], \
-                  [r'<div class="quote">(.*?)</div>', '> %s'], \
-                  [r'<span class="spoiler spoiler--hidden" onclick="showSpoiler\(event, this\)"> <span '
-                   r'class="spoiler-text">(.*?)<\/span><\/span>', '||%s||']
+        holders = (
+            [r"<strong>(.*?)</strong>", "**%s**"],
+            [r"<em>([^<>]+)</em>", "*%s*"],
+            [r'<span style="text-decoration: underline">([^<>]+)</span>', "__%s__"],
+            [r'<span style="text-decoration: line-through">([^<>]+)</span>', "~~%s~~"],
+            [r'<div class="quote">(.*?)</div>', "> %s"],
+            [
+                r'<span class="spoiler spoiler--hidden" onclick="showSpoiler\(event, this\)"> <span '
+                r'class="spoiler-text">(.*?)<\/span><\/span>',
+                "||%s||",
+            ],
+        )
 
         for x in holders:
             p, r = x
@@ -245,8 +302,9 @@ class ParseMarkdown:
             match = re.search(pattern, content)
             while match is not None:
                 affected_text = match.group(1)
-                content = content.replace(content[match.start():match.end()],
-                                          r % affected_text)
+                content = content.replace(
+                    content[match.start() : match.end()], r % affected_text
+                )
                 match = re.search(pattern, content)
 
         pattern = re.compile(r'<a href="(.*?)">(.*?)</a>')
@@ -255,16 +313,21 @@ class ParseMarkdown:
             affected_url = match.group(1)
             affected_text = match.group(2)
             if affected_url != affected_text:
-                content = content.replace(content[match.start():match.end()],
-                                          '[%s](%s)' % (affected_text, affected_url))
+                content = content.replace(
+                    content[match.start() : match.end()],
+                    "[%s](%s)" % (affected_text, affected_url),
+                )
             else:
-                content = content.replace(content[match.start():match.end()],
-                                          '%s' % affected_url)
+                content = content.replace(
+                    content[match.start() : match.end()], "%s" % affected_url
+                )
             match = re.search(pattern, content)
 
         return content.lstrip().rstrip()
 
-    def https_http_links(self):  # sourcery skip: assign-if-exp, reintroduce-else, use-getitem-for-re-match-groups
+    def https_http_links(
+        self,
+    ):  # sourcery skip: assign-if-exp, reintroduce-else, use-getitem-for-re-match-groups
         def remove_silent_link(url: str):
             if url.startswith("&lt;<") and url.endswith(">&gt;"):
                 return url[1:-1]

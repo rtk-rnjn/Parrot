@@ -131,9 +131,7 @@ class LightsOutButton(discord.ui.Button["LightsOutView"]):
             self.view.stop()
             game.embed.description = "**Congrats! You won!**"
 
-        return await interaction.response.edit_message(
-            embed=game.embed, view=self.view
-        )
+        return await interaction.response.edit_message(embed=game.embed, view=self.view)
 
 
 class LightsOutView(SlideView):

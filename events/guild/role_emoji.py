@@ -44,7 +44,9 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `Bot Managed:` **{role.is_bot_managed()}**
 `Integrated :` **{role.is_integration()}**
 """
-                        fp = io.ByteIO(self.permissions_to_json(role.permissions).encode())
+                        fp = io.ByteIO(
+                            self.permissions_to_json(role.permissions).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,
@@ -80,7 +82,9 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 `Bot Managed:` **{role.is_bot_managed()}**
 `Integrated :` **{role.is_integration()}**
 """
-                        fp = io.ByteIO(self.permissions_to_json(role.permissions).encode())
+                        fp = io.ByteIO(
+                            self.permissions_to_json(role.permissions).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,
@@ -161,7 +165,9 @@ class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
 {ext}
 """
 
-                        fp = io.BytesIO(self.permissions_to_json(after.permissions).encode())
+                        fp = io.BytesIO(
+                            self.permissions_to_json(after.permissions).encode()
+                        )
                         await webhook.send(
                             content=content,
                             avatar_url=self.bot.user.display_avatar.url,

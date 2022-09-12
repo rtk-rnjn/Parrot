@@ -30,7 +30,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         try:
             if (
                 payload.channel_id
-                in self.bot.server_config[payload.guild_id]["starboard"]["ignore_channel"]
+                in self.bot.server_config[payload.guild_id]["starboard"][
+                    "ignore_channel"
+                ]
             ):
                 return
         except KeyError:
@@ -38,7 +40,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         try:
             max_duration = (
-                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"] or TWO_WEEK
+                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
+                or TWO_WEEK
             )
         except KeyError:
             if (CURRENT_TIME - DATETIME.timestamp()) > TWO_WEEK:
@@ -71,7 +74,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         try:
             if (
                 payload.channel_id
-                in self.bot.server_config[payload.guild_id]["starboard"]["ignore_channel"]
+                in self.bot.server_config[payload.guild_id]["starboard"][
+                    "ignore_channel"
+                ]
             ):
                 return
         except KeyError:
@@ -79,7 +84,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         try:
             max_duration = (
-                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"] or TWO_WEEK
+                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
+                or TWO_WEEK
             )
         except KeyError:
             if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > TWO_WEEK:
@@ -124,7 +130,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         }
 
         if message.attachments:
-            if message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp")):
+            if (
+                message.attachments[0]
+                .url.lower()
+                .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+            ):
                 post["picture"] = message.attachments[0].url
             else:
                 post["attachment"] = message.attachments[0].url
@@ -190,7 +200,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if message.content:
             embed.description = message.content
         if message.attachments:
-            if message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp")):
+            if (
+                message.attachments[0]
+                .url.lower()
+                .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+            ):
                 embed.set_image(url=message.attachments[0].url)
             else:
                 embed.add_field(
@@ -232,8 +246,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 self.bot.get_channel, self.bot.fetch_channel, starboard_channel
             )
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, bot_message_id)
-        main_message: discord.Message = await self.bot.get_or_fetch_message(ch, main_message)
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            starchannel, bot_message_id
+        )
+        main_message: discord.Message = await self.bot.get_or_fetch_message(
+            ch, main_message
+        )
         if not msg.embeds:
             # moderators removed the embeds
             return False
@@ -252,7 +270,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         return True
 
-    async def __on_star_reaction_remove(self, payload: discord.RawReactionActionEvent) -> bool:
+    async def __on_star_reaction_remove(
+        self, payload: discord.RawReactionActionEvent
+    ) -> bool:
         server_config = self.bot.server_config
         ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
@@ -261,7 +281,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not ch:
             return False
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(ch, payload.message_id)
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            ch, payload.message_id
+        )
         try:
             limit = server_config[payload.guild_id]["starboard"]["limit"] or 0
         except KeyError:
@@ -275,7 +297,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             if not data:
                 return False
             try:
-                channel: int = server_config[payload.guild_id]["starboard"]["channel"] or 0
+                channel: int = (
+                    server_config[payload.guild_id]["starboard"]["channel"] or 0
+                )
             except KeyError:
                 return False
 
@@ -289,7 +313,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return True
         return False
 
-    async def __on_star_reaction_add(self, payload: discord.RawReactionActionEvent) -> bool:
+    async def __on_star_reaction_add(
+        self, payload: discord.RawReactionActionEvent
+    ) -> bool:
         data = self.bot.server_config
 
         try:
@@ -315,7 +341,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ch: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
             )
-            msg: discord.Message = await self.bot.get_or_fetch_message(ch, payload.message_id)
+            msg: discord.Message = await self.bot.get_or_fetch_message(
+                ch, payload.message_id
+            )
             if msg.author.bot:
                 return False
 
@@ -406,7 +434,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self._remove_reactor(payload)
 
     @Cog.listener()
-    async def on_reaction_clear(self, message: discord.Message, reactions: List[discord.Reaction]):
+    async def on_reaction_clear(
+        self, message: discord.Message, reactions: List[discord.Reaction]
+    ):
         pass
 
     @Cog.listener()
@@ -428,7 +458,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_raw_reaction_clear_emoji(self, payload: discord.RawReactionClearEmojiEvent):
+    async def on_raw_reaction_clear_emoji(
+        self, payload: discord.RawReactionClearEmojiEvent
+    ):
         pass
 
 

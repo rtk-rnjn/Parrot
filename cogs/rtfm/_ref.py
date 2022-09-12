@@ -19,7 +19,6 @@ except ImportError:
 
 
 class DocMarkdownConverter(MarkdownConverter):
-
     def convert_pre(self, el, text):
         """Wrap any codeblocks in `py` for syntax highlighting."""
         code = "".join(el.strings)
@@ -150,7 +149,9 @@ async def sql_ref(ctx: Context, text: str):
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.error(f"An error occurred (status code: {response.status}). Retry later.")
+        return await ctx.error(
+            f"An error occurred (status code: {response.status}). Retry later."
+        )
 
     body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
     intro = body.find(lambda x: x.name == "h2" and "Introduction to " in x.string)

@@ -203,9 +203,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             content = f"*{content}*"
         if underline:
             content = f"__{content}__"
-        embeds: Union[discord.Embed, List[discord.Embed]] = kwargs.get("embed") or kwargs.get(
-            "embeds"
-        )
+        embeds: Union[discord.Embed, List[discord.Embed]] = kwargs.get(
+            "embed"
+        ) or kwargs.get("embeds")
 
         def __set_embed_defaults(embed: discord.Embed, /):
             if not embed.color:

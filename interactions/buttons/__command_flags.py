@@ -36,6 +36,7 @@ class CountryGuessStatsFlag(
     sort_by: Literal["win", "games", "games_won", "games_played"] = "games_played"
     sort: Literal[1, -1] = 1
 
+
 class HangmanGuessStatsFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):

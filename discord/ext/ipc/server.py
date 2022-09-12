@@ -207,7 +207,6 @@ class Server:
                         "code": 500,
                     }
 
-
             else:
                 response = {"error": "Invalid or no endpoint given.", "code": 400}
             try:

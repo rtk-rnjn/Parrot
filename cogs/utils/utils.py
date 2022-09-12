@@ -312,7 +312,9 @@ class Utils(Cog):
 
     @commands.command()
     @commands.has_permissions(manage_messages=True, add_reactions=True)
-    @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
+    @commands.bot_has_permissions(
+        embed_links=True, add_reactions=True, read_message_history=True
+    )
     @Context.with_type
     async def quickpoll(self, ctx: Context, *questions_and_choices: str):
         """
@@ -603,7 +605,9 @@ class Utils(Cog):
                 return await ctx.reply(
                     f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages"
                 )
-            return await ctx.reply(f"{ctx.author.mention} **{member}** don't have any xp yet.")
+            return await ctx.reply(
+                f"{ctx.author.mention} **{member}** don't have any xp yet."
+            )
 
     @commands.command(aliases=["leaderboard"])
     @commands.bot_has_permissions(embed_links=True)
@@ -611,9 +615,13 @@ class Utils(Cog):
         """To display the Leaderboard"""
         limit = limit or 10
         collection = self.bot.mongo.leveling[f"{ctx.guild.id}"]
-        entries = await self.__get_entries(collection=collection, limit=limit, guild=ctx.guild)
+        entries = await self.__get_entries(
+            collection=collection, limit=limit, guild=ctx.guild
+        )
         if not entries:
-            return await ctx.send(f"{ctx.author.mention} there is no one in the leaderboard")
+            return await ctx.send(
+                f"{ctx.author.mention} there is no one in the leaderboard"
+            )
         pages = SimplePages(entries, ctx=ctx, per_page=10)
         await pages.start()
 
@@ -635,7 +643,9 @@ class Utils(Cog):
             if data["_id"] == member.id:
                 return countr
 
-    async def __get_entries(self, *, collection: Collection, limit: int, guild: discord.Guild):
+    async def __get_entries(
+        self, *, collection: Collection, limit: int, guild: discord.Guild
+    ):
         ls = []
         async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
             if member := await self.bot.get_or_fetch_member(guild, data["_id"]):
@@ -646,7 +656,9 @@ class Utils(Cog):
         self, guild: discord.Guild
     ) -> Optional[discord.TextChannel]:
         try:
-            ch_id: Optional[int] = self.bot.server_config[guild.id]["suggestion_channel"]
+            ch_id: Optional[int] = self.bot.server_config[guild.id][
+                "suggestion_channel"
+            ]
         except KeyError as e:
             raise commands.BadArgument("No suggestion channel is setup") from e
         else:
@@ -678,7 +690,9 @@ class Utils(Cog):
 
         return msg if msg.author.id == self.bot.user.id else None
 
-    async def __fetch_message_from_channel(self, *, message: int, channel: discord.TextChannel):
+    async def __fetch_message_from_channel(
+        self, *, message: int, channel: discord.TextChannel
+    ):
         async for msg in channel.history(
             limit=1,
             before=discord.Object(message + 1),
@@ -716,9 +730,13 @@ class Utils(Cog):
         file: Optional[discord.File] = None,
     ) -> Optional[discord.Message]:
 
-        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(ctx.guild)
+        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(
+            ctx.guild
+        )
         if channel is None:
-            raise commands.BadArgument(f"{ctx.author.mention} error fetching suggestion channel")
+            raise commands.BadArgument(
+                f"{ctx.author.mention} error fetching suggestion channel"
+            )
 
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
@@ -735,7 +753,9 @@ class Utils(Cog):
         self.message[msg.id] = payload
         return msg
 
-    async def __notify_on_suggestion(self, ctx: Context, *, message: discord.Message) -> None:
+    async def __notify_on_suggestion(
+        self, ctx: Context, *, message: discord.Message
+    ) -> None:
         jump_url: str = message.jump_url
         _id: int = message.id
         content = (
@@ -782,7 +802,9 @@ class Utils(Cog):
             embed = discord.Embed(
                 description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6
             )
-            embed.set_author(name=str(ctx.author), icon_url=ctx.author.display_avatar.url)
+            embed.set_author(
+                name=str(ctx.author), icon_url=ctx.author.display_avatar.url
+            )
             embed.set_footer(
                 text=f"Author ID: {ctx.author.id}",
                 icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url),
@@ -823,7 +845,9 @@ class Utils(Cog):
             return
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
+            return await ctx.send(
+                f"{ctx.author.mention} You don't own that 'suggestion'"
+            )
 
         await msg.delete(delay=0)
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
@@ -868,7 +892,9 @@ class Utils(Cog):
         )
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
+            return await ctx.send(
+                f"{ctx.author.mention} You don't own that 'suggestion'"
+            )
 
         thread: discord.Thread = await self.bot.getch(
             ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id
@@ -970,7 +996,9 @@ class Utils(Cog):
         embed.color = payload["color"]
 
         user_id = int(embed.footer.text.split(":")[1])
-        user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, user_id)
+        user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
+            ctx.guild, user_id
+        )
         await self.__notify_user(ctx, user, message=msg, remark="")
 
         content = f"Flagged: {flag} | {payload['emoji']}"
@@ -1006,7 +1034,9 @@ class Utils(Cog):
         await self.suggest(context, suggestion=message.content)
 
     @Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         if after.id in self.message:
             self.message[after.id]["message"] = after
 
@@ -1093,8 +1123,12 @@ class Utils(Cog):
     ):
         """To create giveaway in quick format"""
         if not prize:
-            return await ctx.send(f"{ctx.author.mention} you didn't give the prize argument")
-        post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
+            return await ctx.send(
+                f"{ctx.author.mention} you didn't give the prize argument"
+            )
+        post = await mt._make_giveaway_drop(
+            ctx, duration=duration, winners=winners, prize=prize
+        )
         await self.create_timer(**post)
 
     @giveaway.command(name="end")
@@ -1122,10 +1156,14 @@ class Utils(Cog):
     @commands.has_permissions(manage_guild=True)
     async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int = 1):
         """To end the giveaway"""
-        if data := await self.bot.mongo.parrot_db.giveaway.find_one({"message_id": messageID}):
+        if data := await self.bot.mongo.parrot_db.giveaway.find_one(
+            {"message_id": messageID}
+        ):
 
             if data["status"].upper() == "ONGOING":
-                return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
+                return await ctx.send(
+                    f"{ctx.author.mention} can not reroll the ongoing giveaway"
+                )
 
             data["winners"] = winners
 
@@ -1141,7 +1179,9 @@ class Utils(Cog):
                 f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
             )
             return
-        await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`")
+        await ctx.send(
+            f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`"
+        )
 
     @tasks.loop(seconds=600)
     async def server_stats_updater(self):
@@ -1157,7 +1197,9 @@ class Utils(Cog):
                 "categories": len(guild.categories),
             }
             try:
-                stats_channels: Dict[str, Any] = self.bot.server_config[guild.id]["stats_channels"]
+                stats_channels: Dict[str, Any] = self.bot.server_config[guild.id][
+                    "stats_channels"
+                ]
             except KeyError:
                 pass
             else:

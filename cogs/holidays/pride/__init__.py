@@ -17,7 +17,9 @@ NAMES: dict = json.loads(Path(r"extra/pride/drag_queen_names.json").read_text("u
 VIDEOS: dict = json.loads(Path(r"extra/pride/anthems.json").read_text("utf8"))
 FACTS: dict = json.loads(Path(r"extra/pride/facts.json").read_text("utf8"))
 
-PRIDE_RESOURCE: dict = json.loads(Path(r"extra/pride/prideleader.json").read_text("utf8"))
+PRIDE_RESOURCE: dict = json.loads(
+    Path(r"extra/pride/prideleader.json").read_text("utf8")
+)
 MINIMUM_FUZZ_RATIO = 40
 
 

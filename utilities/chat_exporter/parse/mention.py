@@ -73,8 +73,13 @@ class ParseMention:
                 if channel is None:
                     replacement = "#deleted-channel"
                 else:
-                    replacement = '<span class="mention" title="%s">#%s</span>' % (channel.id, channel.name)
-                self.content = self.content.replace(self.content[match.start() : match.end()], replacement)
+                    replacement = '<span class="mention" title="%s">#%s</span>' % (
+                        channel.id,
+                        channel.name,
+                    )
+                self.content = self.content.replace(
+                    self.content[match.start() : match.end()], replacement
+                )
 
                 match = re.search(regex, self.content)
 
@@ -92,9 +97,18 @@ class ParseMention:
                     if role.color.r == 0 and role.color.g == 0 and role.color.b == 0:
                         colour = "#dee0fc"
                     else:
-                        colour = "#%02x%02x%02x" % (role.color.r, role.color.g, role.color.b)
-                    replacement = '<span style="color: %s;">@%s</span>' % (colour, role.name)
-                self.content = self.content.replace(self.content[match.start() : match.end()], replacement)
+                        colour = "#%02x%02x%02x" % (
+                            role.color.r,
+                            role.color.g,
+                            role.color.b,
+                        )
+                    replacement = '<span style="color: %s;">@%s</span>' % (
+                        colour,
+                        role.name,
+                    )
+                self.content = self.content.replace(
+                    self.content[match.start() : match.end()], replacement
+                )
 
                 match = re.search(regex, self.content)
 
@@ -113,9 +127,17 @@ class ParseMention:
                     member_name = member
 
                 if member is not None:
-                    replacement = '<span class="mention" title="%s">@%s</span>' % (str(member_id), str(member_name))
+                    replacement = '<span class="mention" title="%s">@%s</span>' % (
+                        str(member_id),
+                        str(member_name),
+                    )
                 else:
-                    replacement = '<span class="mention" title="%s">&lt;@%s></span>' % (str(member_id), str(member_id))
-                self.content = self.content.replace(self.content[match.start() : match.end()], replacement)
+                    replacement = '<span class="mention" title="%s">&lt;@%s></span>' % (
+                        str(member_id),
+                        str(member_id),
+                    )
+                self.content = self.content.replace(
+                    self.content[match.start() : match.end()], replacement
+                )
 
                 match = re.search(regex, self.content)

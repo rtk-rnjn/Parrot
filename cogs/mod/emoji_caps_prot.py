@@ -94,7 +94,9 @@ class EmojiCapsProt(Cog):
                 to_warn: bool = False
 
             try:
-                instant_action: str = data["automod"]["emoji"]["autowarn"]["punish"]["type"]
+                instant_action: str = data["automod"]["emoji"]["autowarn"]["punish"][
+                    "type"
+                ]
             except KeyError:
                 instant_action = False
             else:
@@ -139,7 +141,9 @@ class EmojiCapsProt(Cog):
                 to_warn = False
 
             try:
-                instant_action: str = data["automod"]["caps"]["autowarn"]["punish"]["type"]
+                instant_action: str = data["automod"]["caps"]["autowarn"]["punish"][
+                    "type"
+                ]
             except KeyError:
                 pass
             else:
@@ -163,7 +167,9 @@ class EmojiCapsProt(Cog):
                     ctx=ctx,
                 )
 
-                await self.bot.get_cog("Moderator").warn_task(target=message.author, ctx=ctx)
+                await self.bot.get_cog("Moderator").warn_task(
+                    target=message.author, ctx=ctx
+                )
 
             await message.channel.send(
                 f"{message.author.mention} *{random.choice(quotes)}* **[Excess Caps] {'[Warning]' if to_warn else ''}**",
@@ -175,6 +181,8 @@ class EmojiCapsProt(Cog):
         await self._on_message_passive(message)
 
     @Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         if before.content != after.content:
             await self._on_message_passive(after)

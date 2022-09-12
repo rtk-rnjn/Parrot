@@ -21,7 +21,9 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 
 class ErrorView(discord.ui.View):
-    def __init__(self, author_id, *, ctx: Context = None, error: commands.CommandError = None):
+    def __init__(
+        self, author_id, *, ctx: Context = None, error: commands.CommandError = None
+    ):
         super().__init__(timeout=300.0)
         self.author_id = author_id
         self.ctx = ctx
@@ -30,11 +32,15 @@ class ErrorView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
-        await interaction.response.send_message("You can't interact with this button", ephemeral=True)
+        await interaction.response.send_message(
+            "You can't interact with this button", ephemeral=True
+        )
         return False
 
     @discord.ui.button(label="Show full error", style=discord.ButtonStyle.green)
-    async def show_full_traceback(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def show_full_traceback(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         await interaction.response.send_message(str(self.error), ephemeral=True)
 
 
@@ -51,7 +57,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         if ctx.author.bot:
             return
         collection = self.bot.mongo.parrot_db["cmd_count"]
-        await collection.update_one({"_id": ctx.command.qualified_name}, {"$inc": {"count": 1}}, upsert=True)
+        await collection.update_one(
+            {"_id": ctx.command.qualified_name}, {"$inc": {"count": 1}}, upsert=True
+        )
 
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):
@@ -60,8 +68,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             return
 
         if ctx.cog.qualified_name.lower() == "moderator":
-            if data := await self.collection.find_one({"_id": ctx.guild.id, "on_mod_commands": {"$exists": True}}):
-                webhook: discord.Webhook = discord.Webhook.from_url(data["on_mod_commands"], session=self.bot.http_session)
+            if data := await self.collection.find_one(
+                {"_id": ctx.guild.id, "on_mod_commands": {"$exists": True}}
+            ):
+                webhook: discord.Webhook = discord.Webhook.from_url(
+                    data["on_mod_commands"], session=self.bot.http_session
+                )
                 with suppress(discord.HTTPException):
                     main_content = f"""**On Moderator Command**
 
@@ -77,8 +89,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif ctx.cog.qualified_name.lower() == "configuration":
             await self.bot.update_server_config_cache(ctx.guild.id)
-            if data := await self.collection.find_one({"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}):
-                webhook: discord.Webhook = discord.Webhook.from_url(data["on_config_commands"], session=self.bot.http_session)
+            if data := await self.collection.find_one(
+                {"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}
+            ):
+                webhook: discord.Webhook = discord.Webhook.from_url(
+                    data["on_config_commands"], session=self.bot.http_session
+                )
                 with suppress(discord.HTTPException):
                     main_content = f"""**On Config Command**
 
@@ -116,20 +132,30 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         ERROR_EMBED = discord.Embed()
         if isinstance(error, commands.BotMissingPermissions):
-            missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in error.missing_permissions]
+            missing = [
+                perm.replace("_", " ").replace("guild", "server").title()
+                for perm in error.missing_permissions
+            ]
             if len(missing) > 2:
                 fmt = f'{", ".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
-            ERROR_EMBED.description = f"Please provide the following permission(s) to the bot.```\n{fmt}```"
-            ERROR_EMBED.title = f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"
+            ERROR_EMBED.description = (
+                f"Please provide the following permission(s) to the bot.```\n{fmt}```"
+            )
+            ERROR_EMBED.title = (
+                f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"
+            )
 
         elif isinstance(error, commands.CommandOnCooldown):
             ERROR_EMBED.description = f"You are on command cooldown, please retry in **{math.ceil(error.retry_after)}**s"
             ERROR_EMBED.title = f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}"
 
         elif isinstance(error, commands.MissingPermissions):
-            missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in error.missing_permissions]
+            missing = [
+                perm.replace("_", " ").replace("guild", "server").title()
+                for perm in error.missing_permissions
+            ]
             if len(missing) > 2:
                 fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
@@ -144,7 +170,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
-            ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
+            ERROR_EMBED.description = (
+                f"You need the the following role(s) to use the command```\n{fmt}```"
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
             ctx.command.reset_cooldown(ctx)
 
@@ -154,7 +182,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
                 fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
-            ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
+            ERROR_EMBED.description = (
+                f"You need the the following role(s) to use the command```\n{fmt}```"
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
             ctx.command.reset_cooldown(ctx)
 
@@ -167,7 +197,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.BadArgument):
             ctx.command.reset_cooldown(ctx)
             if isinstance(error, commands.MessageNotFound):
-                ERROR_EMBED.description = "Message ID/Link you provied is either invalid or deleted"
+                ERROR_EMBED.description = (
+                    "Message ID/Link you provied is either invalid or deleted"
+                )
                 ERROR_EMBED.title = f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}"
 
             elif isinstance(error, commands.MemberNotFound):
@@ -215,10 +247,10 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}"
 
         elif isinstance(error, commands.MaxConcurrencyReached):
-            ERROR_EMBED.description = (
-                "This command is already running in this server/channel by you. You have wait for it to finish"
+            ERROR_EMBED.description = "This command is already running in this server/channel by you. You have wait for it to finish"
+            ERROR_EMBED.title = (
+                f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
             )
-            ERROR_EMBED.title = f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"
 
         elif isinstance(error, ParrotCheckFailure):
             ctx.command.reset_cooldown(ctx)
@@ -227,23 +259,27 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif isinstance(error, commands.CheckAnyFailure):
             ctx.command.reset_cooldown(ctx)
-            ERROR_EMBED.description = " or\n".join([error.__str__().format(ctx=ctx) for error in error.errors])
+            ERROR_EMBED.description = " or\n".join(
+                [error.__str__().format(ctx=ctx) for error in error.errors]
+            )
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
 
         elif isinstance(error, commands.CheckFailure):
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
-            ERROR_EMBED.description = "You don't have the required permissions to use this command."
+            ERROR_EMBED.description = (
+                "You don't have the required permissions to use this command."
+            )
 
         elif isinstance(error, asyncio.TimeoutError):
             ERROR_EMBED.description = "Command took too long to respond"
             ERROR_EMBED.title = f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}"
 
         else:
-            ERROR_EMBED.description = (
-                f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
+            ERROR_EMBED.description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
+            ERROR_EMBED.title = (
+                f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
             )
-            ERROR_EMBED.title = f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
 
         msg: discord.Message = await ctx.reply(
             random.choice(quote),
@@ -251,13 +287,18 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         )
 
         try:
-            await ctx.wait_for("message_delete", timeout=30, check=lambda m: m.id == ctx.message.id)
+            await ctx.wait_for(
+                "message_delete", timeout=30, check=lambda m: m.id == ctx.message.id
+            )
         except asyncio.TimeoutError:
             pass
         else:
             await msg.delete(delay=0)
         finally:
-            if ERROR_EMBED.title == f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}":
+            if (
+                ERROR_EMBED.title
+                == f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
+            ):
                 raise error
 
 

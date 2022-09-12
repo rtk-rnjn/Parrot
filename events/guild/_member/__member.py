@@ -37,7 +37,9 @@ class _MemberJoin(Cog):
 
         while RETRY != 0:
             try:
-                async for entry in guild.audit_logs(action=discord.AuditLogAction.kick, limit=5):
+                async for entry in guild.audit_logs(
+                    action=discord.AuditLogAction.kick, limit=5
+                ):
                     if entry.target is not None and entry.target.id == member.id:
                         self.bot.dispatch("member_kick", member, entry)
                         return
@@ -87,7 +89,10 @@ class _MemberJoin(Cog):
                 for invite in reversed(self._cache.get(guild.id, [])):
                     VANITY_USE: int = VANITY_INVITE.uses or 0
                     INVITE_USE: int = invite.uses or 0
-                    if VANITY_INVITE.code == invite.code and VANITY_USE == INVITE_USE + 1:
+                    if (
+                        VANITY_INVITE.code == invite.code
+                        and VANITY_USE == INVITE_USE + 1
+                    ):
                         self.bot.dispatch("invite", member, invite, VANITY_INVITE)
                         DISPATCHED: bool = True  # type: ignore
                         break
@@ -110,7 +115,7 @@ class _MemberJoin(Cog):
 
     @Cog.listener("on_invite_create")
     async def on_invite_create(self, invite: discord.Invite) -> None:
-        guild:  Union[
+        guild: Union[
             discord.Guild, discord.PartialInviteGuild, discord.Object, None
         ] = invite.guild
         if guild is None:

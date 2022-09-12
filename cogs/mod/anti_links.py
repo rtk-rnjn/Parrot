@@ -20,7 +20,10 @@ class LinkProt(Cog):
         self.__instant_action_parser = instant_action_parser
 
     def has_links(self, message_content: str) -> bool:
-        return bool(LINKS_NO_PROTOCOLS.search(message_content) or LINKS_RE.search(message_content))
+        return bool(
+            LINKS_NO_PROTOCOLS.search(message_content)
+            or LINKS_RE.search(message_content)
+        )
 
     async def _message_passive(self, message: discord.Message):
         # sourcery skip: low-code-quality
@@ -49,7 +52,9 @@ class LinkProt(Cog):
             if any(temp in message.content for temp in whitelist):
                 return
             try:
-                to_delete: Optional[bool] = data["automod"]["antilinks"]["autowarn"]["to_delete"]
+                to_delete: Optional[bool] = data["automod"]["antilinks"]["autowarn"][
+                    "to_delete"
+                ]
             except KeyError:
                 to_delete: bool = True
 
@@ -57,7 +62,9 @@ class LinkProt(Cog):
                 await message.delete(delay=0)
 
             try:
-                to_warn: Optional[bool] = data["automod"]["antilinks"]["autowarn"]["enable"]
+                to_warn: Optional[bool] = data["automod"]["antilinks"]["autowarn"][
+                    "enable"
+                ]
             except KeyError:
                 to_warn: bool = False
 

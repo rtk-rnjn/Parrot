@@ -16,6 +16,7 @@ from utilities.converters import ToAsync
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
+
     DiscordColor: TypeAlias = Union[discord.Color, int]
 
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
@@ -242,7 +243,10 @@ class CountryGuesser:
 
 
 class CountryInput(discord.ui.Modal, title="Input your guess!"):
-    def __init__(self, view: CountryView,) -> None:
+    def __init__(
+        self,
+        view: CountryView,
+    ) -> None:
         super().__init__()
         self.view = view
 

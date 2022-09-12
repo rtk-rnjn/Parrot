@@ -135,7 +135,13 @@ class Twenty48:
 
 class Twenty48_Button(discord.ui.View):
     def __init__(
-        self, game: Twenty48, user: discord.Member, timeout: float = 60.0, *, bot: Parrot, **kwargs: Any
+        self,
+        game: Twenty48,
+        user: discord.Member,
+        timeout: float = 60.0,
+        *,
+        bot: Parrot,
+        **kwargs: Any,
     ) -> None:
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
@@ -173,7 +179,9 @@ class Twenty48_Button(discord.ui.View):
     async def update_to_db(self) -> None:
         col: MongoCollection = self.bot.mongo.extra.games_leaderboard
         await col.update_one(
-            {"_id": self.user.id,},
+            {
+                "_id": self.user.id,
+            },
             {"$inc": {"twenty48.games_played": 1, "twenty48.total_moves": self._moves}},
             upsert=True,
         )
@@ -191,15 +199,14 @@ class Twenty48_Button(discord.ui.View):
         self.game = self.make_original_instance()
         self._moves = 0
         board_string = self.game.number_to_emoji()
-        embed = (
-            discord.Embed(
-                title="2048 Game",
-                description=f"{board_string}",
-            )
-            .set_footer(text=f"Total Moves: {self._moves}")
-        )
+        embed = discord.Embed(
+            title="2048 Game",
+            description=f"{board_string}",
+        ).set_footer(text=f"Total Moves: {self._moves}")
         await self.update_to_db()
-        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
+        await interaction.response.edit_message(
+            content=f"{interaction.user.mention}", embed=embed, view=self
+        )
 
     @discord.ui.button(
         emoji="\N{UPWARDS BLACK ARROW}",
@@ -212,19 +219,18 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed: discord.Embed = (
-            discord.Embed(
-                title="2048 Game",
-                description=f"{board_string}",
-            )
-            .set_footer(text=f"Total Moves: {self._moves}")
-        )
+        embed: discord.Embed = discord.Embed(
+            title="2048 Game",
+            description=f"{board_string}",
+        ).set_footer(text=f"Total Moves: {self._moves}")
         if self.game.lost():
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
+        await interaction.response.edit_message(
+            content=f"{interaction.user.mention}", embed=embed, view=self
+        )
 
     @discord.ui.button(
         emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}",
@@ -251,20 +257,19 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed: discord.Embed = (
-            discord.Embed(
-                title="2048 Game",
-                description=f"{board_string}",
-            )
-            .set_footer(text=f"Total Moves: {self._moves}")
-        )
+        embed: discord.Embed = discord.Embed(
+            title="2048 Game",
+            description=f"{board_string}",
+        ).set_footer(text=f"Total Moves: {self._moves}")
         if self.game.lost():
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
 
-        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
+        await interaction.response.edit_message(
+            content=f"{interaction.user.mention}", embed=embed, view=self
+        )
 
     @discord.ui.button(
         emoji="\N{DOWNWARDS BLACK ARROW}",
@@ -278,19 +283,18 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed: discord.Embed = (
-            discord.Embed(
-                title="2048 Game",
-                description=f"{board_string}",
-            )
-            .set_footer(text=f"Total Moves: {self._moves}")
-        )
+        embed: discord.Embed = discord.Embed(
+            title="2048 Game",
+            description=f"{board_string}",
+        ).set_footer(text=f"Total Moves: {self._moves}")
         if self.game.lost():
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
+        await interaction.response.edit_message(
+            content=f"{interaction.user.mention}", embed=embed, view=self
+        )
 
     @discord.ui.button(
         emoji="\N{BLACK RIGHTWARDS ARROW}",
@@ -304,16 +308,15 @@ class Twenty48_Button(discord.ui.View):
         self._moves += 1
         self.game.spawn_new()
         board_string = self.game.number_to_emoji()
-        embed: discord.Embed = (
-            discord.Embed(
-                title="2048 Game",
-                description=f"{board_string}",
-            )
-            .set_footer(text=f"Total Moves: {self._moves}")
-        )
+        embed: discord.Embed = discord.Embed(
+            title="2048 Game",
+            description=f"{board_string}",
+        ).set_footer(text=f"Total Moves: {self._moves}")
         if self.game.lost():
             for c in self.children:
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
+        await interaction.response.edit_message(
+            content=f"{interaction.user.mention}", embed=embed, view=self
+        )

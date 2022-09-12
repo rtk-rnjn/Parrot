@@ -22,10 +22,14 @@ class ContextMenu(Cog):
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.__interpret_as_command)
 
-    async def ctx_menu_interpret_as_command(self, interaction: discord.Interaction, message: discord.Message) -> None:
+    async def ctx_menu_interpret_as_command(
+        self, interaction: discord.Interaction, message: discord.Message
+    ) -> None:
         # await interaction.response.defer(thinking=False)
 
-        await interaction.response.send_message(f"{interaction.user.mention} processing...", ephemeral=True)
+        await interaction.response.send_message(
+            f"{interaction.user.mention} processing...", ephemeral=True
+        )
         prefix = await self.bot.get_guild_prefixes(message.guild)
         if message.content.startswith(prefix):
             await interaction.edit_original_response(
@@ -80,7 +84,9 @@ class ContextMenu(Cog):
             else:
                 fmt += 1
 
-        await ctx.send(f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds.")
+        await ctx.send(
+            f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds."
+        )
 
 
 async def setup(bot: Parrot) -> None:

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import math
+import urllib.parse
 from typing import Any, Dict
 
 import discord
 from core import Context, Parrot
-import urllib.parse
 
 constant: Dict[str, str] = {
     "\N{SUPERSCRIPT ONE}": "^1",

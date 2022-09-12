@@ -9,7 +9,7 @@ from aiohttp import AsyncResolver, ClientSession, TCPConnector  # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 from core import Parrot
-from utilities.config import TOKEN, my_secret, VERSION
+from utilities.config import TOKEN, VERSION, my_secret
 
 bot: Parrot = Parrot()
 

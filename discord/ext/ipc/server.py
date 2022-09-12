@@ -4,6 +4,7 @@ import logging
 from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 import aiohttp.web  # type: ignore
+
 from core import Parrot
 from discord.ext.ipc.errors import JSONEncodeError
 

@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import html
 import traceback
-
 from typing import List, Optional
 
 import discord
 from discord.ext import commands
 
-from ..construct.message import Message
 from ..construct.assets.component import Component
-
+from ..construct.message import Message
 from ..ext.cache import clear_cache
-from ..parse.mention import pass_bot
 from ..ext.discord_utils import DiscordUtils
-from ..ext.html_generator import fill_out, total, PARSE_MODE_NONE
+from ..ext.html_generator import PARSE_MODE_NONE, fill_out, total
+from ..parse.mention import pass_bot
 
 
 class TranscriptDAO:

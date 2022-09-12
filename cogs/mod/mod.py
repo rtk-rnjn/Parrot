@@ -6,6 +6,10 @@ import re
 import shlex
 from typing import List, Optional, Union
 
+import wavelink
+from pymongo.collection import Collection
+from typing_extensions import Annotated
+
 import discord
 from cogs.meta.robopage import SimplePages
 from cogs.mod import method as mt
@@ -18,9 +22,6 @@ from cogs.mod.embeds import (
 from cogs.mod.flags import WarnFlag
 from core import Cog, Context, Parrot
 from discord.ext import commands
-from pymongo.collection import Collection
-from typing_extensions import Annotated
-import wavelink
 from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID
 from utilities.infraction import custom_delete_warn, delete_many_warn, show_warn, warn

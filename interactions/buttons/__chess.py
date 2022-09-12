@@ -4,10 +4,11 @@ import asyncio
 from typing import Any, List, Optional
 
 import chess
-import discord
-from core import Context, Parrot
 from pymongo import UpdateOne
 from pymongo.collection import Collection
+
+import discord
+from core import Context, Parrot
 from utilities.paginator import ParrotPaginator
 
 

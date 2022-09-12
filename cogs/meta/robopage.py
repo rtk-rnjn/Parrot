@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
+from discord.ext.commands import Paginator as CommandPaginator  # type: ignore
+
 import discord
 from discord.ext import old_menus  # type: ignore
-from discord.ext.commands import Paginator as CommandPaginator  # type: ignore
 
 if TYPE_CHECKING:
     from core import Context

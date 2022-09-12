@@ -7,10 +7,11 @@ import re
 import typing as T
 from contextlib import suppress
 
+from PIL import ImageColor
+
 import discord
 from core import Context
 from discord.ext import commands
-from PIL import ImageColor
 from utilities.config import SUPPORT_SERVER
 
 

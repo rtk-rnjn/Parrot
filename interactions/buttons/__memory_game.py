@@ -17,10 +17,11 @@ from typing import (
     Union,
 )
 
+from pymongo.collection import Collection
+
 import discord
 from core import Context, Parrot
 from discord.ext import commands
-from pymongo.collection import Collection
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias

@@ -4,9 +4,10 @@ import time
 from contextlib import suppress
 from typing import Dict, List, Optional, Set, Union
 
+from pymongo import UpdateOne
+
 import discord
 from core import Cog, Parrot
-from pymongo import UpdateOne
 
 from ._member import _MemberJoin as MemberJoin
 

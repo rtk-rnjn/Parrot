@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-import json
 import asyncio
+import json
 import random
 from collections.abc import Iterable
-from typing import Optional, List
+from typing import List, Optional
 
-from discord import Embed, Member, Reaction
 from discord.abc import User
-
-import discord
-from discord.ext.commands import Converter, BadArgument, Paginator
+from discord.ext.commands import BadArgument, Converter, Paginator
 from rapidfuzz import fuzz
 
+import discord
 from core import Context
+from discord import Embed, Member, Reaction
+
 from ._utils import SNAKE_RESOURCES
 
 FIRST_EMOJI = "\u23EE"  # [:track_previous:]

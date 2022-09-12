@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import re
+
 import discord
 
 from ...ext.emoji_convert import convert_emoji
-from ...ext.html_generator import (
-    PARSE_MODE_NONE,
-    custom_emoji,
-    emoji,
-    fill_out,
-)
+from ...ext.html_generator import PARSE_MODE_NONE, custom_emoji, emoji, fill_out
 
 
 class Reaction:

@@ -4,8 +4,9 @@ import io
 import random
 from typing import NamedTuple, Optional
 
-import discord
 from PIL import Image, ImageDraw, ImageFont
+
+import discord
 from utilities.converters import ToAsync
 
 

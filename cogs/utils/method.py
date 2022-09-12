@@ -5,10 +5,11 @@ import random
 from time import time
 from typing import Any, Dict, List, Optional
 
+from pymongo.collection import Collection
+
 import discord
 from core import Context, Parrot
 from discord.ext import commands
-from pymongo.collection import Collection
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError
 from utilities.time import ShortTime
 

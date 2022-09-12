@@ -3,9 +3,10 @@ from __future__ import annotations
 import time
 from typing import List, Optional
 
+from pymongo.collection import Collection
+
 import discord
 from core import Context
-from pymongo.collection import Collection
 
 
 class SokobanGame:

@@ -6,11 +6,12 @@ from typing import Callable, List, Optional, Tuple
 from urllib.parse import urlencode
 
 import arrow  # type: ignore
+from discord.ext.commands import BucketType, check, group  # type: ignore
+
 import discord
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import BucketType, check, group  # type: ignore
 from utilities.paginator import PaginationView
 
 APPID = os.environ["WOLFRAM_APP"]

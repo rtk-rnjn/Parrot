@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 import tweepy  # type: ignore
+
 from core import Cog, Parrot
 
 

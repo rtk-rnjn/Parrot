@@ -3,10 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
+from yaml import safe_load as yaml_load  # type: ignore
+
 import discord
 from core import Parrot
 from discord.ext import commands
-from yaml import safe_load as yaml_load  # type: ignore
 
 from ._tio import Tio
 

@@ -29,6 +29,7 @@ from typing import (
 )
 
 import aiohttp
+
 import discord
 from discord.ext import commands
 from utilities.emotes import emojis

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import argparse
 import os
+from datetime import datetime
 
 import aiohttp
-
-from datetime import datetime
 
 GEMOJI_RELEASE_URL = "https://api.github.com/repos/github/gemoji/releases"
 GEMOJI_JSON_DB_URL = (

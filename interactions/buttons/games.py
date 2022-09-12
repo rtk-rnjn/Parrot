@@ -32,15 +32,18 @@ from typing import (
     overload,
 )
 
-import discord
-import emojis
 import pymongo
 from aiofile import async_open
+from discord.utils import MISSING
+from pymongo import ReturnDocument
+from pymongo.collection import Collection
+
+import discord
+import emojis
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord.ext import boardgames, commands  # type: ignore
 from discord.ext import old_menus as menus  # type: ignore
-from discord.utils import MISSING
 from interactions.buttons.__2048 import Twenty48, Twenty48_Button
 from interactions.buttons.__aki import Akinator
 from interactions.buttons.__battleship import BetaBattleShip
@@ -77,8 +80,6 @@ from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__wordle import BetaWordle
 from interactions.buttons.secret_hitler.ui.join import JoinUI
-from pymongo import ReturnDocument
-from pymongo.collection import Collection
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.uno.game import UNO

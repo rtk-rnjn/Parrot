@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from io import BytesIO
 
-import discord
 import requests
 from PIL import Image, ImageDraw, ImageFont
+
+import discord
 from utilities.converters import ToAsync
 
 

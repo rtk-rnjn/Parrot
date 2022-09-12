@@ -1,7 +1,7 @@
 import os
 
-from ..parse.mention import ParseMention
 from ..parse.markdown import ParseMarkdown
+from ..parse.mention import ParseMention
 
 dir_path = os.path.abspath(
     os.path.join((os.path.dirname(os.path.realpath(__file__))), "..")

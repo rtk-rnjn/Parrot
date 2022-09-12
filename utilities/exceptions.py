@@ -1,5 +1,4 @@
 from discord.ext import commands as cmd
-
 from utilities.config import SUPPORT_SERVER
 
 

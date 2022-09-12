@@ -11,11 +11,12 @@ if TYPE_CHECKING:
 import random
 from io import BytesIO
 
+from PIL import Image, ImageDraw, ImageFont
+from pymongo.collection import Collection
+
 import discord
 from core import Context, Parrot
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFont
-from pymongo.collection import Collection
 from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]

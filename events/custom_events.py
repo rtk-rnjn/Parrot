@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
+from pymongo.collection import Collection
+
 import discord
 from cogs.utils.method import end_giveaway
 from core import Cog, Parrot
-from pymongo.collection import Collection
 from utilities.time import ShortTime
 
 

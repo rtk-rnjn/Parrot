@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import aioredis
 import datetime
 import io
 import logging
@@ -37,15 +36,17 @@ from typing import (
     Union,
 )
 
-import discord
+import aioredis
 import jishaku  # type: ignore  # noqa: F401
 import pymongo
 import wavelink
 from aiohttp import ClientSession  # type: ignore
-from discord import app_commands
-from discord.ext import commands, ipc, tasks  # type: ignore
 from lru import LRU
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
+
+import discord
+from discord import app_commands
+from discord.ext import commands, ipc, tasks  # type: ignore
 
 try:
     import topgg  # type: ignore
@@ -64,7 +65,6 @@ from utilities.config import (
     EXTENSIONS,
     GITHUB,
     HEROKU,
-    VERSION,
     MASTER_OWNER,
     OWNER_IDS,
     STRIP_AFTER_PREFIX,
@@ -73,6 +73,7 @@ from utilities.config import (
     TO_LOAD_IPC,
     TOKEN,
     UNLOAD_EXTENSIONS,
+    VERSION,
 )
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client

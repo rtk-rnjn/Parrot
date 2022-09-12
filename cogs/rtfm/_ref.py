@@ -5,10 +5,11 @@ import urllib.parse
 from functools import partial
 from typing import Any
 
-import discord
 from bs4 import BeautifulSoup
-from core import Context
 from markdownify import MarkdownConverter  # type: ignore
+
+import discord
+from core import Context
 
 try:
     import lxml  # type: ignore

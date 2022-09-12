@@ -8,10 +8,11 @@ import discord
 from core import Cog
 
 if TYPE_CHECKING:
-    from core import Parrot
     from pymongo.collection import Collection
     from pymongo.typings import _DocumentType
     from typing_extensions import TypeAlias
+
+    from core import Parrot
 
     DocumentType: TypeAlias = _DocumentType
 

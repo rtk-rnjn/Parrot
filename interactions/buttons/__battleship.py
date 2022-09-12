@@ -20,9 +20,10 @@ from typing import (
     Union,
 )
 
+from PIL import Image, ImageDraw
+
 import discord
 from discord.ext import commands
-from PIL import Image, ImageDraw
 from utilities.converters import ToAsync
 
 from .__wordle import WordInputButton

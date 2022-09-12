@@ -6,14 +6,15 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Deque, Dict, Literal, Optional, Union
 
 import arrow
-import discord
 import wavelink
+from wavelink import QueueEmpty
+from wavelink.ext import spotify
+
+import discord
 from core import Cog
 from discord.ext import commands
 from utilities.checks import in_voice, is_dj, same_voice
 from utilities.exceptions import NotVoter
-from wavelink import QueueEmpty
-from wavelink.ext import spotify
 
 if TYPE_CHECKING:
     from core import Context, Parrot

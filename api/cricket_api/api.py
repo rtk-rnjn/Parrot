@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Dict
-
-import uvicorn  # type: ignore
-import aiohttp  # type: ignore
-from fastapi import FastAPI, HTTPException  # type: ignore
 import random
+from typing import Any, Dict, Optional
 
-from .functions import find_all, find_one, parse_url, get_batting, get_bowling
+import aiohttp  # type: ignore
+import uvicorn  # type: ignore
+from fastapi import FastAPI, HTTPException  # type: ignore
+
+from .functions import find_all, find_one, get_batting, get_bowling, parse_url
 from .random_agents import AGENTS
 
 app = FastAPI()

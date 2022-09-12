@@ -10,11 +10,12 @@ from functools import wraps
 from typing import Callable, Dict, Optional, Set, Union
 from weakref import WeakValueDictionary
 
+from discord.ext.commands import Command  # type: ignore
+
 import discord
 from core import Context
 from discord import Colour, Embed
 from discord.ext import commands
-from discord.ext.commands import Command  # type: ignore
 
 from .checks import in_whitelist_check
 from .constants import ERROR_REPLIES, Day, Month

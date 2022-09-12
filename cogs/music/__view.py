@@ -3,8 +3,9 @@ from __future__ import annotations
 import time
 from typing import Any, List, Literal, Optional, Union
 
-import discord
 import wavelink
+
+import discord
 from core import Context, Parrot
 from discord.ext import commands
 

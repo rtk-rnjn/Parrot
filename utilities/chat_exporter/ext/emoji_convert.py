@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import unicodedata
-from grapheme import graphemes
-import emojis
+
 import aiohttp
+from grapheme import graphemes
+
+import emojis
 
 from ..ext.cache import cache
-
 
 cdn_fmt = "https://twemoji.maxcdn.com/v/latest/72x72/{codepoint}.png"
 

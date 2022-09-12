@@ -11,11 +11,12 @@ from pathlib import Path
 from random import choice
 from typing import Coroutine, List, Optional, Tuple, Union
 
+from discord.ext.commands import clean_content  # type: ignore
+
 import discord
 from core import Cog, Context, Parrot
 from discord import Member
 from discord.ext import commands
-from discord.ext.commands import clean_content  # type: ignore
 from utilities.constants import Month
 from utilities.deco import in_month
 

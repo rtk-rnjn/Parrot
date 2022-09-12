@@ -14,9 +14,8 @@ from typing import (
 )
 
 import discord
-from discord.ext import commands
-
 from core import Parrot
+from discord.ext import commands
 
 from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
 

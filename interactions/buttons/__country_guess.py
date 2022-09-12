@@ -7,11 +7,12 @@ import random
 from io import BytesIO
 from typing import TYPE_CHECKING, Final, Optional, Union
 
+from PIL import Image, ImageFilter, ImageOps
+from pymongo.collection import Collection
+
 import discord
 from core import Context, Parrot
 from discord.ext import commands
-from PIL import Image, ImageFilter, ImageOps
-from pymongo.collection import Collection
 from utilities.converters import ToAsync
 
 if TYPE_CHECKING:

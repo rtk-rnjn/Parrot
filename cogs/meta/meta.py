@@ -8,9 +8,10 @@ from collections import Counter
 from time import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import discord
 import psutil
 import pygit2  # type: ignore
+
+import discord
 from core import Cog, Context, Parrot
 from discord import __version__ as discord_version
 from discord.ext import commands

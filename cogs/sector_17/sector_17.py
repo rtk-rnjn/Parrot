@@ -19,8 +19,9 @@ except ImportError:
 
 
 if TYPE_CHECKING:
-    from core import Context, Parrot
     from pymongo.collection import Collection
+
+    from core import Context, Parrot
 
     if HAS_TOP_GG:
         from topgg.types import BotVoteData

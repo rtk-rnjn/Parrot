@@ -8,10 +8,11 @@ from json import loads
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Union
 
+from PIL import Image
+
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
-from PIL import Image
 from utilities.constants import Colours
 from utilities.deco import seasonal_task
 

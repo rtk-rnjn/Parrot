@@ -17,10 +17,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore
-import discord
 import rapidfuzz  # type: ignore
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
+
+import discord
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord import Embed, Interaction, SelectOption, ui

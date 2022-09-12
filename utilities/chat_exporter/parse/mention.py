@@ -2,9 +2,8 @@ import re
 from typing import Optional, Union
 
 import discord
-from discord.ext import commands
-
 from core import Parrot
+from discord.ext import commands
 
 bot: Union[commands.Bot, discord.Client, Parrot] = None
 

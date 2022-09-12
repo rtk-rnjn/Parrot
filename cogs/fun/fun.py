@@ -14,7 +14,6 @@ import math
 import operator
 import os
 import random
-import aiohttp
 import re
 import string
 import time
@@ -27,13 +26,15 @@ from pathlib import Path
 from random import choice, randint
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
-import discord
+import aiohttp
 import rapidfuzz  # type: ignore
 from aiohttp import request  # type: ignore
+from PIL import Image, ImageColor
+
+import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 from emojis.db.db import EMOJI_DB, Emoji
-from PIL import Image, ImageColor
 from utilities import spookifications
 from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
 from utilities.img import imagine, timecard

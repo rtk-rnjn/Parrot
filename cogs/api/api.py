@@ -7,8 +7,9 @@ import os
 import re
 from contextlib import suppress
 
-import discord
 import yarl  # type: ignore
+
+import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 

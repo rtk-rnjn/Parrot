@@ -5,7 +5,6 @@ import random
 from typing import TYPE_CHECKING, Any, List, Optional, TypeAlias
 
 import discord
-
 from core import Parrot
 
 if TYPE_CHECKING:

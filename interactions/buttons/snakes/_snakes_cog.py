@@ -9,25 +9,26 @@ import string
 import textwrap
 from functools import partial
 from io import BytesIO
-from typing import Any, Optional, List, Dict
-import async_timeout
-from PIL import Image, ImageDraw, ImageFont
-from discord import Colour, Embed, File, Member, Message, Reaction, PartialEmoji
-from discord.ext.commands import CommandError, bot_has_permissions, group
-from utilities.deco import locked
-from core import Parrot, Context, Cog
+from typing import Any, Dict, List, Optional
 
+import async_timeout
+from discord.ext.commands import CommandError, bot_has_permissions, group
+from PIL import Image, ImageDraw, ImageFont
+
+from core import Cog, Context, Parrot
+from discord import Colour, Embed, File, Member, Message, PartialEmoji, Reaction
+from utilities.deco import locked
+
+from ._converter import Snake
 from ._utils import (
     PerlinNoiseFactory,
-    get_resource,
-    frame_to_png_bytes,
+    SnakeAndLaddersGame,
     create_snek_frame,
+    frame_to_png_bytes,
+    get_resource,
     snakes,
     stages,
-    SnakeAndLaddersGame,
 )
-from ._converter import Snake
-
 
 # region: Constants
 # Color

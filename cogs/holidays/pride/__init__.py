@@ -7,10 +7,11 @@ from pathlib import Path
 from typing import Optional, Union
 
 import dateutil.parser
+from rapidfuzz import fuzz  # type: ignore
+
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
-from rapidfuzz import fuzz  # type: ignore
 from utilities.constants import Colours
 
 NAMES: dict = json.loads(Path(r"extra/pride/drag_queen_names.json").read_text("utf8"))

@@ -9,8 +9,9 @@ from core import Cog
 from discord.ext import commands, tasks
 
 if TYPE_CHECKING:
-    from core import Context, Parrot
     from pymongo.collection import Collection
+
+    from core import Context, Parrot
 
 
 class User(Cog, command_attrs=dict(hidden=True)):

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from enum import Enum
 
+from enum import Enum
 from typing import Literal, Optional
 
 from discord.ext import commands

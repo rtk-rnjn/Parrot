@@ -3,9 +3,13 @@ from __future__ import annotations
 import discord
 
 from ...ext.html_generator import (
-    fill_out,
+    PARSE_MODE_EMBED,
+    PARSE_MODE_MARKDOWN,
+    PARSE_MODE_NONE,
+    PARSE_MODE_SPECIAL_EMBED,
+    embed_author,
+    embed_author_icon,
     embed_body,
-    embed_title,
     embed_description,
     embed_field,
     embed_field_inline,
@@ -13,12 +17,8 @@ from ...ext.html_generator import (
     embed_footer_icon,
     embed_image,
     embed_thumbnail,
-    embed_author,
-    embed_author_icon,
-    PARSE_MODE_NONE,
-    PARSE_MODE_EMBED,
-    PARSE_MODE_MARKDOWN,
-    PARSE_MODE_SPECIAL_EMBED,
+    embed_title,
+    fill_out,
 )
 
 

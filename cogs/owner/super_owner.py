@@ -14,8 +14,9 @@ import urllib
 import zlib
 from collections import Counter
 
-import discord
 from aiofile import async_open  # type: ignore
+
+import discord
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord.ext import commands

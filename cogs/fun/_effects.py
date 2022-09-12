@@ -6,8 +6,9 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Tuple
 
-import discord
 from PIL import Image, ImageDraw, ImageOps
+
+import discord
 
 easter_like_colours: List[Tuple[int, int, int]] = [
     (255, 247, 0),

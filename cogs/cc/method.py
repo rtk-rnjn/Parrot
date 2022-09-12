@@ -12,8 +12,9 @@ from contextlib import suppress
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import discord
 from async_timeout import timeout  # type: ignore
+
+import discord
 from core import Parrot
 from discord import (
     Colour,

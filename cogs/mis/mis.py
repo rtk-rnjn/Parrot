@@ -14,12 +14,7 @@ from pathlib import Path
 from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
 
 import aiohttp  # type: ignore
-import discord
 import qrcode  # type: ignore
-from cogs.meta.robopage import SimplePages
-from core import Cog, Context, Parrot
-from discord import Embed
-from discord.ext import commands
 from PIL import Image
 from qrcode.image.styledpil import StyledPilImage  # type: ignore
 from qrcode.image.styles.colormasks import (  # type: ignore
@@ -37,6 +32,12 @@ from qrcode.image.styles.moduledrawers import (  # type: ignore
     SquareModuleDrawer,
     VerticalBarsDrawer,
 )
+
+import discord
+from cogs.meta.robopage import SimplePages
+from core import Cog, Context, Parrot
+from discord import Embed
+from discord.ext import commands
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
 from utilities.ttg import Truths

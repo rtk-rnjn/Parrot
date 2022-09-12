@@ -15,11 +15,11 @@ from typing import (
     Union,
 )
 
+from lru import LRU
+
 import discord
 from core import Context
 from discord.ext import commands
-from lru import LRU
-
 from utilities.config import LRU_CACHE
 
 NUMBER = Union[int, float]

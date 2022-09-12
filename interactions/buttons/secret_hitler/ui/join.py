@@ -5,10 +5,11 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Dict
 
+from discord.utils import MISSING  # type: ignore
+
 import discord
 from core import Context
 from discord import Member as User
-from discord.utils import MISSING  # type: ignore
 
 from .game import GameUI
 

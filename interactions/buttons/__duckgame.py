@@ -8,8 +8,9 @@ from itertools import product
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import discord
 from PIL import Image, ImageDraw, ImageFont
+
+import discord
 
 DECK = list(product(*[(0, 1, 2)] * 4))
 

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-from bs4 import BeautifulSoup
+import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from html import unescape
+from typing import Any, Callable, Dict, List, Optional
 
-import re
-
-from typing import Any, Callable, List, Optional, Dict
+from bs4 import BeautifulSoup
 
 try:
     import lxml

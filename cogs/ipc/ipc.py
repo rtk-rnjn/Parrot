@@ -3,11 +3,12 @@ from __future__ import annotations
 import os
 from typing import Any, Dict, List, Optional, Union
 
+from wavelink.ext import spotify
+
 import discord
 from api import cricket_api
 from core import Cog, Parrot
 from discord.ext.ipc import server
-from wavelink.ext import spotify
 
 
 class IPCRoutes(Cog):

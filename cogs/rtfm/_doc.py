@@ -5,8 +5,9 @@ from functools import partial
 from string import ascii_uppercase
 from typing import Any, Dict, Optional
 
-import discord
 from bs4 import BeautifulSoup
+
+import discord
 from core import Context
 
 try:

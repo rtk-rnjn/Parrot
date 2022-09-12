@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import asyncio
-import discord
-
 from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
-
-from textwrap import indent, dedent
+from textwrap import dedent, indent
 from typing import Any, Awaitable, Tuple
 
-from .transparency import save_transparent_gif
+from PIL import Image, ImageDraw, ImageFont
+
+import discord
+
 from .cards import Card, CardType, Emojis, cards
 from .enums import Color
-
+from .transparency import save_transparent_gif
 
 COLORS = {
     Color.red: (255, 69, 69),

@@ -6,14 +6,14 @@ import math
 import random
 from itertools import product
 from pathlib import Path
-from typing import Union, List, Tuple
+from typing import List, Tuple, Union
 
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
-from discord import File, Member, Reaction, User
-from discord.ext import commands
 
 from core import Cog, Context
+from discord import File, Member, Reaction, User
+from discord.ext import commands
 
 SNAKE_RESOURCES = Path("extra/snakes").absolute()
 

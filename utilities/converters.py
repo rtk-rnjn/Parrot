@@ -24,7 +24,7 @@ from utilities.config import LRU_CACHE
 
 NUMBER = Union[int, float]
 
-KT = TypeVar("KT", bound=Union[str, int])
+KT = TypeVar("KT", bound=Any)
 VT = TypeVar("VT", bound=Any)
 
 

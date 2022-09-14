@@ -214,7 +214,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.identifies: Dict[int, List[datetime.datetime]] = defaultdict(list)
         self._prev_events: "deque[str]" = deque(maxlen=10)
 
-        self.mystbin = Client()
+        self.mystbin: Client = Client()
 
         # caching variables
         self.server_config: Dict[int, Dict[str, Any]] = Cache()
@@ -246,7 +246,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self._failed_to_load: Dict[str, str] = {}
 
         # Wavelink
-        self.wavelink = wavelink.NodePool()
+        self.wavelink: "wavelink.NodePool" = wavelink.NodePool()
 
         self.GLOBAL_HEADERS: Dict[str, str] = {
             "Accept": "application/json",

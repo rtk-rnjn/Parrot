@@ -538,6 +538,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
         # sourcery skip: low-code-quality
+
+        if not message.content:
+            return
+
         if not hasattr(message.author, "guild"):
             return
         # this is equivalent to `if not message.guild: ...`

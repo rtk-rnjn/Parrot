@@ -4,7 +4,7 @@ import os
 
 import tweepy  # type: ignore
 
-from core import Cog, Parrot
+from core import Cog, Context, Parrot
 
 
 class Twitter(Cog):
@@ -34,3 +34,7 @@ class Twitter(Cog):
             access_token=os.environ["ACCESS_TOKEN"],
             access_token_secret=os.environ["ACCESS_TOKEN_SECRET"],
         )
+
+    async def cog_check(self, ctx: Context):
+        return ctx.author.id in ctx.bot.owner_ids
+

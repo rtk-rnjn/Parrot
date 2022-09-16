@@ -295,11 +295,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         else:
             await msg.delete(delay=0)
         finally:
-            if (
-                ERROR_EMBED.title
-                == f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
-            ):
-                raise error
+            raise error
 
 
 async def setup(bot: Parrot) -> None:

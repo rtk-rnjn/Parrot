@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from typing import Any, Dict, List, Optional
 
 from pymongo.collection import Collection
@@ -40,26 +41,23 @@ class EventCustom(Cog):
         target: int = kw.get("member") or kw.get("target")
 
         if action.upper() == "UNBAN":
-            try:
+            with contextlib.suppress(
+                discord.NotFound, discord.HTTPException, discord.Forbidden
+            ):
                 await guild.unban(discord.Object(target), reason=kw.get("reason"))
-            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
-                # User not found, Bot Not having permissions, Other HTTP Error
-                pass
-
         if action.upper() == "BAN":
-            try:
+            with contextlib.suppress(
+                discord.NotFound, discord.HTTPException, discord.Forbidden
+            ):
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
-            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
-                pass  # User not found, Bot Not having permissions, Other HTTP Error
-
         if action.upper() == "KICK":
             member: discord.Member = self.bot.get_or_fetch_member(guild, target)
             if member is None:
                 return
-            try:
+            with contextlib.suppress(
+                discord.NotFound, discord.HTTPException, discord.Forbidden
+            ):
                 await guild.kick(member, reason=kw.get("reason"))
-            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
-                pass
 
     @Cog.listener("on_timer_complete")
     async def normal_parser(
@@ -81,23 +79,19 @@ class EventCustom(Cog):
         embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
 
         if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor)):
-            try:
+            with contextlib.suppress(discord.Forbidden):
                 await user.send(
                     content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}",
                     embed=embed,
                 )
-            except discord.Forbidden:
-                pass
             return
 
         if channel := self.bot.get_channel(messageChannel):
-            try:
+            with contextlib.suppress(discord.Forbidden):
                 await channel.send(
                     content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}",
                     embed=embed,
                 )
-            except discord.Forbidden:
-                pass
             return
 
     @Cog.listener("on_timer_complete")

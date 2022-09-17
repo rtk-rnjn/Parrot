@@ -20,7 +20,7 @@
 
 ## Self Host?
 
-You need to set the environment variables for the bot to work. You can find the tokens and links for the token in `.example-env` file, and do change the name of file to `.env`. After that, you need to change the `author_name`, `discriminator` and other credentials in the `config.yml` file.
+You need to set the environment variables for the bot to work. You can find the tokens and links for the token in `.example-env` file, and do change the name of file to `.env`.
 
 ---
 

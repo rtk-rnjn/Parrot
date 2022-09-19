@@ -126,7 +126,7 @@ class CustomCommand(Cog):
                 embed = discord.Embed(
                     title="Custom Command",
                     color=self.bot.color,
-                    description=f"```python\n{command['code']}\n```",
+                    description=f"```python\n{command.get('code', 'Codes not avaiable')}\n```",
                 )
                 embed.set_footer(
                     text=f"Command name: {command['name']} | Trigger type: {command['trigger_type']}"
@@ -353,7 +353,7 @@ class CustomCommand(Cog):
             for command in commands:
                 if (
                     command.get("trigger_type") == "on_message"
-                    and not command["review_needed"]
+                    and not command.get("review_needed")
                     and (self.check_requirements(message=message, **command))
                 ):
 
@@ -389,7 +389,7 @@ class CustomCommand(Cog):
             for command in commands:
                 if (
                     command["trigger_type"] == "on_message"
-                    and not command["review_needed"]
+                    and not command.get("review_needed")
                     and (self.check_requirements(message=message, **command))
                 ):
 
@@ -431,7 +431,7 @@ class CustomCommand(Cog):
                 if (
                     command["trigger_type"]
                     in {"reaction_add", "reaction_add_or_remove"}
-                    and not command["review_needed"]
+                    and not command.get("review_needed")
                     and (self.check_requirements(message=message, **command))
                 ):
 
@@ -471,7 +471,7 @@ class CustomCommand(Cog):
                 if (
                     command["trigger_type"]
                     in {"reaction_remove", "reaction_add_or_remove"}
-                    and not command["review_needed"]
+                    and not command.get("review_needed")
                     and (self.check_requirements(message=message, **command))
                 ):
                     CC = CustomCommandsExecutionOnReaction(
@@ -491,9 +491,8 @@ class CustomCommand(Cog):
         ):
             commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
-                if (
-                    command["trigger_type"] == "member_join"
-                    and not command["review_needed"]
+                if command["trigger_type"] == "member_join" and not command.get(
+                    "review_needed"
                 ):
 
                     CC = CustomCommandsExecutionOnJoin(self.bot, member)
@@ -511,9 +510,8 @@ class CustomCommand(Cog):
         ):
             commands: List[Dict[str, Any]] = data.get("commands", [])
             for command in commands:
-                if (
-                    command["trigger_type"] == "member_remove"
-                    and not command["review_needed"]
+                if command["trigger_type"] == "member_remove" and not command.get(
+                    "review_needed"
                 ):
                     CC = CustomCommandsExecutionOnRemove(self.bot, member)
                     await CC.execute(command.get("code"))

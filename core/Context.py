@@ -77,6 +77,18 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     def session(self) -> "aiohttp.ClientSession":
         return self.bot.http_session
 
+    async def tick(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None) -> None:
+        await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
+    
+    async def ok(self) -> None:
+        return await self.tick()
+    
+    async def error(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None) -> None:
+        await self.message.add_reaction(emoji or "\N{CROSS MARK}")
+
+    async def cross(self) -> None:
+        return await self.error()
+
     async def is_voter(self) -> Optional[bool]:
         if member := self.bot.server.get_member(self.author.id):
             return member._roles.has(VOTER_ROLE_ID)

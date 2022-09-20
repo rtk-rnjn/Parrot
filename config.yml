@@ -18,7 +18,6 @@ all_extensions:
   - cogs.nsfw
   - cogs.owner
   - cogs.rtfm
-  - cogs.sector_17
   - cogs.sports
   - cogs.telephone
   - cogs.ticket

@@ -7,6 +7,7 @@ from collections import Counter
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import discord
+from discord.ext import commands
 from core import Context, Parrot
 from utilities.time import FutureTime, ShortTime
 
@@ -288,14 +289,6 @@ async def _ban(
     silent: bool = False,
     **kwargs: Any,
 ):
-    if (
-        isinstance(member, discord.Member)
-        and ctx.author.top_role.position < member.top_role.position
-    ) and not silent:
-        return await destination.send(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-        )
-
     try:
         if member.id in (ctx.author.id, guild.me.id) and not silent:
             await destination.send(
@@ -330,7 +323,7 @@ async def _mass_ban(
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
-            return await destination.send(
+            raise commands.BadArgument(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
         try:
@@ -367,7 +360,7 @@ async def _softban(
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
-            return await destination.send(
+            raise commands.BadArgument(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
         try:
@@ -475,7 +468,7 @@ async def _timeout(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     if member.id in (ctx.author.id, guild.me.id) and not silent:
@@ -554,7 +547,7 @@ async def _mute(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     if member.id in (ctx.author.id, guild.me.id) and not silent:
@@ -654,7 +647,7 @@ async def _kick(
 ):
     try:
         if ctx.author.top_role.position < member.top_role.position and not silent:
-            return await destination.send(
+            raise commands.BadArgument(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
         if member.id in (ctx.author.id, guild.me.id) and not silent:
@@ -687,7 +680,7 @@ async def _mass_kick(
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
-            return await destination.send(
+            raise commands.BadArgument(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
         try:
@@ -726,7 +719,7 @@ async def _block(
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
-            return await destination.send(
+            raise commands.BadArgument(
                 f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             )
         try:
@@ -940,7 +933,7 @@ async def _change_nickname(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     try:
@@ -1081,7 +1074,7 @@ async def _voice_mute(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     try:
@@ -1129,7 +1122,7 @@ async def _voice_deafen(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     try:
@@ -1177,7 +1170,7 @@ async def _voice_kick(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     try:
@@ -1204,7 +1197,7 @@ async def _voice_ban(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
-        return await destination.send(
+        raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
     try:

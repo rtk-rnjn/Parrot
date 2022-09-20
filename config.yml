@@ -40,6 +40,7 @@ all_extensions:
   - interactions.buttons.snakes
   - interactions.slash
   - jishaku
+  - custom_commands
 unload_extensions:
   - cogs.ipc
   - cogs.sports

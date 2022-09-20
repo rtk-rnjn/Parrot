@@ -54,7 +54,7 @@ class NSFW(Cog):
                     await ctx.reply(embed=embed)
                 else:
                     await ctx.reply(
-                        f"{ctx.author.mention} something not right? This is not use but the API"
+                        f"{ctx.author.mention} something not right? This is not us but the API"
                     )
 
             self.bot.add_command(callback)

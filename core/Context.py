@@ -83,11 +83,11 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def ok(self) -> None:
         return await self.tick()
     
-    async def error(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None) -> None:
+    async def wrong(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None) -> None:
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
 
     async def cross(self) -> None:
-        return await self.error()
+        return await self.wrong()
 
     async def is_voter(self) -> Optional[bool]:
         if member := self.bot.server.get_member(self.author.id):

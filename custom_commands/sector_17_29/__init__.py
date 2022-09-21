@@ -218,14 +218,14 @@ class Sector1729(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.guild and message.guild.id == SUPPORT_SERVER_ID:
-            created: datetime = message.author.created_at
-            joined: datetime = message.author.joined_at
-
-            seconds = (created - joined).total_seconds()
-            if seconds >= 86400 and message.author._roles.has(QU_ROLE):
-                with suppress(discord.HTTPException):
-                    await message.author.remove_roles(
-                        discord.Object(id=QU_ROLE),
-                        reason="Account age crosses 1d",
-                    )
+        if message.guild is not None and message.guild.id == SUPPORT_SERVER_ID:
+            created: datetime = getattr(message.author, "created_at", None)
+            joined: datetime = getattr(message.author, "joined_at", None)
+            if joined and created:
+                seconds = (created - joined).total_seconds()
+                if seconds >= 86400 and message.author._roles.has(QU_ROLE):
+                    with suppress(discord.HTTPException):
+                        await message.author.remove_roles(
+                            discord.Object(id=QU_ROLE),
+                            reason="Account age crosses 1d",
+                        )

@@ -6,7 +6,7 @@ import re
 import shlex
 from typing import List, Optional, Union
 
-import wavelink
+# import wavelink
 from pymongo.collection import Collection
 from typing_extensions import Annotated
 
@@ -1096,7 +1096,8 @@ class Moderator(Cog):
         if channel is None:
             if voicestate := ctx.author.voice:
                 if not ctx.guild.me.voice:
-                    await voicestate.channel.connect(cls=wavelink.Player)
+                    # await voicestate.channel.connect(cls=wavelink.Player)
+                    await voicestate.channel.connect()
                 else:
                     await ctx.guild.me.edit(voice_channel=voicestate.channel)
                 if not member:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 import unicodedata
 from time import time
 from typing import TYPE_CHECKING, Dict, Optional
@@ -9,6 +10,7 @@ import discord
 from core import Cog
 from discord.ext import commands, tasks
 from utilities.checks import in_support_server
+from datetime import datetime
 
 try:
     import topgg
@@ -31,6 +33,7 @@ from utilities.config import SUPPORT_SERVER_ID
 EMOJI = "\N{WASTEBASKET}"
 MESSAGE_ID = 1003600244098998283
 VOTER_ROLE_ID = 836492413312040990
+QU_ROLE = 851837681688248351
 
 
 class Sector1729(Cog):
@@ -212,3 +215,16 @@ class Sector1729(Cog):
 
     async def cog_unload(self) -> None:
         self.vote_reseter.cancel()
+
+    @Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        created: datetime = message.author.created_at
+        joined: datetime = message.author.joined_at
+
+        seconds = (created - joined).total_seconds()
+        if seconds >= 86400 and message.author._roles.has(QU_ROLE):
+            with suppress(discord.HTTPException):
+                await message.author.remove_roles(
+                    discord.Object(id=QU_ROLE),
+                    reason="Account age crosses 1d",
+                )

@@ -4,7 +4,7 @@ import asyncio
 from contextlib import suppress
 import unicodedata
 from time import time
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
 import discord
 from core import Cog
@@ -229,3 +229,37 @@ class Sector1729(Cog):
                             discord.Object(id=QU_ROLE),
                             reason="Account age crosses 1d",
                         )
+
+    @commands.group(
+        name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True
+    )
+    async def sector_17_29(self, ctx: Context):
+        """Commands related to SECTOR 17-29"""
+        if not ctx.invoked_subcommand:
+            await ctx.bot.invoke_help_command(ctx)
+
+    @sector_17_29.command(name="info", aliases=["about"])
+    @in_support_server()
+    async def sector_17_29_about(self, ctx: Context):
+        """Information about the SECTOR 17-29"""
+        description = (
+            f"SECTOR 17-29 is support server of the bot (Parrot) and formely a "
+            f"community server for the stream Beasty Stats.\n"
+            f"[Click here]({self.bot.support_server}) to join the server"
+        )
+        await ctx.send(embed=discord.Embed(description=description))
+
+    @sector_17_29.command(name="color")
+    @in_support_server()
+    async def sector_17_29_color(self, ctx: Context, color: Optional[str] = None):
+        """Assign yourself color role"""
+        if not color:
+            return
+        
+        role = discord.utils.get(ctx.bot.server.roles, name=f"COLOR {color.upper()}")
+        if role is None:
+            await ctx.error(f"{ctx.author.mention} no color named {color}!")
+            return
+        
+        await ctx.author.add_roles(role, reason="Color role added")
+        await ctx.tick()

@@ -464,7 +464,7 @@ class Fun(Cog):
         self.some_random_api_loader()
 
     async def send_colour_response(
-        self, ctx: commands.Context, rgb: Tuple[int, int, int]
+        self, ctx: Context, rgb: Tuple[int, int, int]
     ) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
@@ -504,13 +504,27 @@ class Fun(Cog):
 
         thumbnail = Image.new("RGB", THUMBNAIL_SIZE, color=rgb)
         buffer = io.BytesIO()
-        thumbnail.save(buffer, "PNG")
-        buffer.seek(0)
+
+        await ctx.bot.func(thumbnail.save, buffer, "PNG")
+        await ctx.bot.func(buffer.seek, 0)
         thumbnail_file = discord.File(buffer, filename="colour.png")
 
         colour_embed.set_thumbnail(url="attachment://colour.png")
 
-        await ctx.send(file=thumbnail_file, embed=colour_embed)
+        msg: Optional[discord.Message] = await ctx.send(file=thumbnail_file, embed=colour_embed)
+        if isinstance(msg, discord.Message):
+            await msg.add_reaction("\N{HAMMER AND PICK}")
+        
+        def check(r: discord.Reaction, u: discord.User) -> bool:
+            return u.id == ctx.author.id and str(r.emoji) == "\N{HAMMER AND PICK}" and r.message.id == msg.id
+
+        try:
+            await ctx.wait_for("reaction_add", timeout=30, check=check)
+            res = await ctx.prompt("Do you want to create a role of that color?")
+            if res:
+                await self._create_role_on_clr(ctx=ctx, rgb=rgb, color_name=colour_embed.title)
+        except asyncio.TimeoutError:
+            return
 
     def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> Dict[str, str]:
         """Create a dictionary mapping of colour types and their values."""
@@ -576,9 +590,7 @@ class Fun(Cog):
             colour_name = None
         return colour_name
 
-    def match_colour_name(
-        self, ctx: commands.Context, input_colour_name: str
-    ) -> Optional[str]:
+    def match_colour_name(self, ctx: Context, input_colour_name: str) -> Optional[str]:
         """Convert a colour name to HEX code."""
         try:
             match, certainty, _ = rapidfuzz.process.extractOne(
@@ -1646,10 +1658,22 @@ class Fun(Cog):
         options = options.split(",")
         await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 
+    async def _create_role_on_clr(
+        self, *, ctx: Context, rgb: Tuple[int, int, int], color_name: str
+    ):
+        if ctx.author.guild_permissions.manage_roles:
+            await ctx.guild.create_role(
+                name=f"COLOR {color_name.upper()}",
+                color=discord.Color.from_rgb(*rgb),
+                reason=f"Action requested by {ctx.author}",
+            )
+        else:
+            await ctx.error(
+                f"{ctx.author.mention} you don't have permission to create role"
+            )
+
     @commands.group(aliases=("color",), invoke_without_command=True)
-    async def colour(
-        self, ctx: commands.Context, *, colour_input: Optional[str] = None
-    ) -> None:
+    async def colour(self, ctx: Context, *, colour_input: Optional[str] = None) -> None:
         """
         Create an embed that displays colour information.
 
@@ -1666,7 +1690,7 @@ class Fun(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @colour.command()
-    async def rgb(self, ctx: commands.Context, red: int, green: int, blue: int) -> None:
+    async def rgb(self, ctx: Context, red: int, green: int, blue: int) -> None:
         """Create an embed from an RGB input."""
         if any(c not in range(256) for c in (red, green, blue)):
             raise commands.BadArgument(
@@ -1676,9 +1700,7 @@ class Fun(Cog):
         await self.send_colour_response(ctx, rgb_tuple)
 
     @colour.command()
-    async def hsv(
-        self, ctx: commands.Context, hue: int, saturation: int, value: int
-    ) -> None:
+    async def hsv(self, ctx: Context, hue: int, saturation: int, value: int) -> None:
         """Create an embed from an HSV input."""
         if (hue not in range(361)) or any(
             c not in range(101) for c in (saturation, value)
@@ -1692,7 +1714,7 @@ class Fun(Cog):
 
     @colour.command()
     async def hsl(
-        self, ctx: commands.Context, hue: int, saturation: int, lightness: int
+        self, ctx: Context, hue: int, saturation: int, lightness: int
     ) -> None:
         """Create an embed from an HSL input."""
         if (hue not in range(361)) or any(
@@ -1707,7 +1729,7 @@ class Fun(Cog):
 
     @colour.command()
     async def cmyk(
-        self, ctx: commands.Context, cyan: int, magenta: int, yellow: int, key: int
+        self, ctx: Context, cyan: int, magenta: int, yellow: int, key: int
     ) -> None:
         """Create an embed from a CMYK input."""
         if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
@@ -1720,7 +1742,7 @@ class Fun(Cog):
         await self.send_colour_response(ctx, (r, g, b))
 
     @colour.command()
-    async def hex(self, ctx: commands.Context, hex_code: str) -> None:
+    async def hex(self, ctx: Context, hex_code: str) -> None:
         """Create an embed from a HEX input."""
         if hex_code[0] != "#":
             hex_code = f"#{hex_code}"
@@ -1741,7 +1763,7 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hex_tuple)
 
     @colour.command()
-    async def name(self, ctx: commands.Context, *, user_colour_name: str) -> None:
+    async def name(self, ctx: Context, *, user_colour_name: str) -> None:
         """Create an embed from a name input."""
         hex_colour = self.match_colour_name(ctx, user_colour_name)
         if hex_colour is None:
@@ -1756,7 +1778,7 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hex_tuple)
 
     @colour.command()
-    async def random(self, ctx: commands.Context) -> None:
+    async def random(self, ctx: Context) -> None:
         """Create an embed from a randomly chosen colour."""
         hex_colour = random.choice(list(self.colour_mapping.values()))
         hex_tuple = ImageColor.getrgb(f"#{hex_colour}")

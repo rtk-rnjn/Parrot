@@ -77,13 +77,17 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     def session(self) -> "aiohttp.ClientSession":
         return self.bot.http_session
 
-    async def tick(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None) -> None:
+    async def tick(
+        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None
+    ) -> None:
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
-    
+
     async def ok(self) -> None:
         return await self.tick()
-    
-    async def wrong(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None) -> None:
+
+    async def wrong(
+        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None
+    ) -> None:
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
 
     async def cross(self) -> None:
@@ -439,10 +443,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         *,
         timeout: Optional[float] = None,
         check: Optional[Callable[..., bool]] = None,
-        before_function: Optional[Callback] = None,
-        after_function: Optional[Callback] = None,
-        error_function: Optional[Callback] = None,
-        error_message: Optional[str] = None,
         suppress_error: bool = False,
         **kwargs: Any,
     ) -> Any:
@@ -507,24 +507,15 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
             return __internal_check
 
-        if before_function is not None:
-            await discord.utils.maybe_coroutine(before_function)
-
         try:
             return await self.bot.wait_for(
                 event_name, timeout=timeout, check=outer_check(**kwargs)
             )
         except asyncio.TimeoutError:
-            if error_function is not None:
-                await discord.utils.maybe_coroutine(error_function)
-            if error_message:
-                await self.error(error_message)
             if suppress_error:
+                await self.message.add_reaction("\N{ALARM CLOCK}")
                 return None
             raise
-        finally:
-            if after_function is not None:
-                await discord.utils.maybe_coroutine(after_function)
 
     async def paginate(
         self,

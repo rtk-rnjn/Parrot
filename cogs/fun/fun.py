@@ -1667,6 +1667,7 @@ class Fun(Cog):
                 color=discord.Color.from_rgb(*rgb),
                 reason=f"Action requested by {ctx.author}",
             )
+            await ctx.tick()
         else:
             await ctx.error(
                 f"{ctx.author.mention} you don't have permission to create role"

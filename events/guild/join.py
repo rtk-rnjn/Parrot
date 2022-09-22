@@ -67,50 +67,13 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         await self.bot.wait_until_ready()
-        try:
-            CONTENT = f"""
-`Joined       `: {guild.name} (`{guild.id}`)
-`Total member `: {len(guild.members)}
-`Server Owner `: `{guild.owner}` | {getattr(guild.owner, "id")}
-`Bots         `: {len(guild.members) - len([m for m in guild.members if not m.bot])}
-
-Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
-"""
-        except AttributeError:
-            return
-
         await self.guild_join(guild.id)
-
-        data = {
-            "username": "Parrot",
-            "avatar_url": self.bot.user.display_avatar.url,
-            "content": CONTENT,
-        }
-        await self.bot.http_session.post(self.url, json=data)
         await self.bot.update_server_config_cache.start(guild.id)
 
     @Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
         await self.bot.wait_until_ready()
-        try:
-            CONTENT = f"""
-`Removed      `: {guild.name} (`{guild.id}`)
-`Total member `: {len(guild.members)}
-`Server Owner `: `{guild.owner}` | {getattr(guild.owner, "id")}
-`Bots         `: {len(guild.members) - len([m for m in guild.members if not m.bot])}
-
-Total server on count **{len(self.bot.guilds)}**. Total users on count: **{len(self.bot.users)}**
-"""
-        except AttributeError:
-            return
-
         await self.guild_remove(guild.id)
-        data = {
-            "username": "Parrot",
-            "avatar_url": self.bot.user.display_avatar.url,
-            "content": CONTENT,
-        }
-        await self.bot.http_session.post(self.url, json=data)
         await self.bot.update_server_config_cache.start(guild.id)
 
     @Cog.listener()

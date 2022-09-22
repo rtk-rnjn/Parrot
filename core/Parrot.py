@@ -403,20 +403,6 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
     async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
         print(f"Ignoring exception in {event}", file=sys.stderr)
         traceback.print_exc()
-        trace = traceback.format_exc()
-        _CONTENT = f"""```py
-Ignoring exception in {event}
-{trace}
-``````py
-Args: {args}
-Kwargs: {kwargs}```"""
-
-        await self._execute_webhook(
-            webhook_id=ERROR_LOG_WEBHOOK_ID,
-            webhook_token=self._error_log_token,
-            content=_CONTENT,
-            filename="traceback.py",
-        )
 
     async def before_identify_hook(
         self, shard_id: int, *, initial: bool = False
@@ -440,27 +426,10 @@ Kwargs: {kwargs}```"""
             print(st)
 
     async def on_dbl_vote(self, data: BotVoteData) -> None:
-        if self.HAS_TOP_GG:
-            if data.type == "test":
-                return self.dispatch("dbl_test", data)
-
-            user: discord.User = await self.getch(
-                self.get_user, self.fetch_user, data.user
-            )
-            st = f"Received a vote from {user} ({user.id})"
-            await self._execute_webhook(
-                webhook_id=VOTE_LOG_WEBHOOK_ID,
-                webhook_token=self._vote_log_token,
-                content=st,
-            )
+        pass
 
     async def on_dbl_test(self, data: BotVoteData) -> None:
-        st = f"Received a test vote of data: {data}"
-        await self._execute_webhook(
-            webhook_id=VOTE_LOG_WEBHOOK_ID,
-            webhook_token=self._vote_log_token,
-            content=st,
-        )
+        pass
 
     def run(self) -> None:
         """To run connect and login into discord"""
@@ -468,12 +437,6 @@ Kwargs: {kwargs}```"""
 
     async def close(self) -> None:
         """To close the bot"""
-        await self._execute_webhook(
-            webhook_id=STARTUP_LOG_WEBHOOK_ID,
-            webhook_token=self._startup_log_token,
-            content=f"```py\n[{self.user.name}] closed the connection from discord```",
-        )
-        print(f"[{self.user.name}] closed the connection from discord")
         if TO_LOAD_IPC and self.HAS_TOP_GG:
             await self.topgg_webhook.close()
 
@@ -487,41 +450,6 @@ Kwargs: {kwargs}```"""
 
         if self._was_ready:
             return
-
-        webhook: discord.Webhook = discord.Webhook.from_url(
-            f"https://discordapp.com/api/webhooks/{STARTUP_LOG_WEBHOOK_ID}/{self._startup_log_token}",
-            session=self.http_session,
-        )
-        if webhook is not None:
-            await webhook.send(
-                f"```py\n{self.user.name.title()} is online!\n```",
-                avatar_url=self.user.avatar.url,
-                username=self.user.name,
-            )
-            with suppress(discord.HTTPException):
-                await webhook.send(
-                    f"\N{WHITE HEAVY CHECK MARK} | `{'`, `'.join(self._successfully_loaded)}`",
-                    avatar_url=self.user.avatar.url,
-                    username=self.user.name,
-                )
-            with suppress(discord.HTTPException):
-                if self._failed_to_load:
-                    fail_msg = "\n".join(
-                        f"> \N{CROSS MARK} Failed to load: `{k}` ```\n{v}```"
-                        for k, v in self._failed_to_load.items()
-                    )
-
-                    await webhook.send(
-                        f"\N{CROSS MARK} | `{'`, `'.join(self._failed_to_load)}`",
-                        avatar_url=self.user.avatar.url,
-                        username=self.user.name,
-                    )
-                    if len(fail_msg) < 1990:
-                        await webhook.send(
-                            f"{fail_msg}",
-                            avatar_url=self.user.avatar.url,
-                            username=self.user.name,
-                        )
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
@@ -561,22 +489,10 @@ Kwargs: {kwargs}```"""
         return
 
     async def on_disconnect(self) -> None:
-        await self._execute_webhook(
-            webhook_id=STARTUP_LOG_WEBHOOK_ID,
-            webhook_token=self._startup_log_token,
-            content=f"```py\n[{self.user.name.title()}] disconnect from discord```",
-        )
-
         print(f"[{self.user.name.title()}] disconnect from discord")
         return
 
     async def on_shard_resumed(self, shard_id: int) -> None:
-        await self._execute_webhook(
-            webhook_id=STARTUP_LOG_WEBHOOK_ID,
-            webhook_token=self._startup_log_token,
-            content=f"```py\n[{self.user.name.title()}] resumed shard {shard_id}\n```",
-        )
-
         print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
         self.resumes[shard_id].append(discord.utils.utcnow())
 

@@ -30,7 +30,7 @@ class LinkProt(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
-        if data := self.bot.server_config.get(message.guild.id) and self.has_links(message.content):
+        if (data := self.bot.server_config.get(message.guild.id)) and self.has_links(message.content):
             prot: Optional[bool] = data["automod"]["antilinks"]["enable"]
 
             if not prot:

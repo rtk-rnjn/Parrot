@@ -805,16 +805,13 @@ class Configuration(Cog):
             page = PaginationView(main)
             await page.start(ctx)
 
-    @automod.group(name="spam", invoke_without_command=True)
+    @automod.group(name="spam",)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def automod_spam(self, ctx: Context, *, to_enable: convert_bool=True):
         """To toggle the spam protection in the server.
         Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel.
         """
-        if ctx.invoked_subcommand is None:
-            await self.bot.invoke_help_command(ctx)
-            return
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
         )
@@ -1168,7 +1165,7 @@ class Configuration(Cog):
         )
         if not member:
             return await ctx.reply(
-                f"{ctx.author.menton} member ping reseted! or removed"
+                f"{ctx.author.mention} member ping reseted! or removed"
             )
         await ctx.reply(
             f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."

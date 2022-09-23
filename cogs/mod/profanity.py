@@ -32,12 +32,7 @@ class Profanity(Cog):
 
     async def _one_message_passive(self, message: discord.Message) -> Any:
         # sourcery skip: low-code-quality
-        if message.author.bot or (not message.guild):
-            return
-
-        perms = message.author.guild_permissions
-
-        if perms.administrator or perms.manage_messages or perms.manage_channels:
+        if message.author.public_flags.verified_bot or not message.guild:
             return
 
         bad_words = self.get_bad_words(message)

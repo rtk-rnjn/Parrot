@@ -1125,7 +1125,7 @@ class Moderator(Cog):
                     reason=reason,
                 )
             return await ctx.send(
-                f"{ctx.author.mention} moved {len(member)} members to {a.channel.mention}"
+                f"{ctx.author.mention} moved **{len(member)}** members"
             )
 
         if not member:

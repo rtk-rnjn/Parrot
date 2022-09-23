@@ -23,12 +23,7 @@ class MentionProt(Cog):
         self.__instant_action_parser = instant_action_parser
 
     async def _on_message_passive(self, message: discord.Message):
-        if message.author.bot or message.guild is None:
-            return
-
-        perms = message.author.guild_permissions
-
-        if perms.administrator or perms.manage_messages or perms.manage_channels:
+        if message.author.public_flags.verified_bot or not message.guild:
             return
 
         data = self.bot.server_config.get(message.guild.id)

@@ -73,7 +73,7 @@ class EmojiCapsProt(Cog):
 
     async def _on_message_passive(self, message: discord.Message):
         # sourcery skip: low-code-quality
-        if message.author.bot or not message.guild:
+        if message.author.public_flags.verified_bot or not message.guild:
             return
 
         caps_: bool = self.is_caps_infilterated(message)

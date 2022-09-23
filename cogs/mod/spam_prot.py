@@ -32,7 +32,7 @@ class SpamProt(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author.bot or (not message.guild):
+        if message.author.public_flags.verified_bot or not message.guild:
             return
 
         bucket = self.cd_mapping.get_bucket(message)

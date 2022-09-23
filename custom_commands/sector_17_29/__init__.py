@@ -34,6 +34,7 @@ EMOJI = "\N{WASTEBASKET}"
 MESSAGE_ID = 1003600244098998283
 VOTER_ROLE_ID = 836492413312040990
 QU_ROLE = 851837681688248351
+MEMBER_ROLE_ID = 1022216700650868916
 
 
 class Sector1729(Cog):
@@ -141,6 +142,7 @@ class Sector1729(Cog):
         if member.guild.id != SUPPORT_SERVER_ID:
             return
 
+        await member.add_roles(discord.Object(id=MEMBER_ROLE_ID), reason="Member role add")
         if await self.bot.topgg.get_user_vote(member.id):
             await member.add_roles(
                 discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg"

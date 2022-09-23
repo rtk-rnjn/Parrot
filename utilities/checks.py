@@ -183,7 +183,7 @@ async def _get_server_command_cache(
     command: Optional[str] = None,
 ):
     _cache: List = []
-    collection: MongoCollection = bot.mongo.enabled_disable[f"{guild.id}"]
+    collection: MongoCollection = bot.mongo.enable_disable[f"{guild.id}"]
 
     def __internal_appender(data: Optional[Dict]):
         if not data:
@@ -219,11 +219,8 @@ async def _can_run(ctx: Context) -> Optional[bool]:
     if _cached_data := ctx.bot._disabled_commands.get(ctx.guild.id):
         for data in _cached_data:
             for cmd in data:
-                return (
-                    __internal_cmd_checker_parser(ctx=ctx, data=data)
-                    if cmd.qualified_name == ctx.command.qualified_name
-                    else None
-                )
+                if cmd.qualified_name == ctx.command.qualified_name:
+                    return __internal_cmd_checker_parser(ctx=ctx, data=data)
 
     if not hasattr(ctx, "channel"):
         return True

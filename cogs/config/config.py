@@ -48,7 +48,6 @@ class Configuration(Cog):
                 {"_id": ctx.guild.id}
             ):
                 role = ctx.guild.get_role(data.get("mod_role", 0))
-                mod_log = ctx.guild.get_channel(data.get("action_log", 0))
                 mute_role = ctx.guild.get_role(data.get("mute_role", 0))
                 suggestion_channel = ctx.guild.get_channel(
                     data.get("suggestion_channel", 0)
@@ -59,7 +58,6 @@ class Configuration(Cog):
                     f"Configuration of this server [server_config]\n\n"
                     f"`Prefix  :` **{data['prefix']}**\n"
                     f"`ModRole :` **{role.name if role else 'None'} ({data.get('mod_role')})**\n"
-                    f"`MogLog  :` **{mod_log.mention if mod_log else 'None'} ({data.get('action_log')})**\n"
                     f"`MuteRole:` **{mute_role.name if mute_role else 'None'} ({data.get('mute_role')})**\n"
                     f"`Premium :` **{'Enabled' if data.get('premium') else 'Disabled'}**\n\n"
                     f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n\n"
@@ -166,17 +164,13 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     async def starboard_max_age(self, ctx: Context, *, duration: ShortTime):
         """To set the max duration"""
+        difference = duration.dt.timestamp() - ctx.message.created_at.timestamp()
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
-            {
-                "$set": {
-                    "starboard.max_duration": ctx.message.created_at.timestamp()
-                    - duration.dt.timestamp()
-                }
-            },
+            {"$set": {"starboard.max_duration": difference}},
         )
         await ctx.reply(
-            f"{ctx.author.mention} set the max duration to **{ctx.message.created_at.timestamp() - duration.dt.timestamp()}** seconds"
+            f"{ctx.author.mention} set the max duration to **{difference}** seconds"
         )
 
     @starboard.command(name="ignore", aliases=["ignorechannel"])
@@ -252,7 +246,8 @@ class Configuration(Cog):
                     break
             else:
                 return await ctx.reply(
-                    f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {chn.mention}. This happens when channel has already 10 webhooks created."
+                    f"{ctx.author.mention} can not register event (`{event.replace('_', ' ').title()}`) in {chn.mention}."
+                    " This happens when channel has already 10 webhooks created."
                 )
         else:
             webhook: discord.Webhook = await chn.create_webhook(
@@ -577,24 +572,6 @@ class Configuration(Cog):
                 f"{ctx.author.mention} success! **{role.name} ({role.id})** will be ignored from global chat!"
             )
 
-    @config.command()
-    @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def countchannel(self, ctx: Context, *, channel: discord.TextChannel = None):
-        """To set the counting channel in the server"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {"counting": channel.id if channel else None}},
-        )
-        if channel:
-            await ctx.reply(
-                f"{ctx.author.mention} counting channel for the server is set to **{channel.mention} ({channel.id})**"
-            )
-        else:
-            await ctx.reply(
-                f"{ctx.author.mention} counting channel for the server is not removed"
-            )
-
     @config.group(name="leveling", aliases=["lvl"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -794,26 +771,6 @@ class Configuration(Cog):
             f"{ctx.author.mention} updated/removed reward at level: **{level}**"
         )
 
-    @config.command()
-    @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def onewordchannel(
-        self, ctx: Context, *, channel: discord.TextChannel = None
-    ):
-        """To set the one word channel in the server"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {"oneword": channel.id if channel else None}},
-        )
-        if channel:
-            await ctx.reply(
-                f"{ctx.author.mention} one word channel for the server is set to **{channel.name}**"
-            )
-        else:
-            await ctx.reply(
-                f"{ctx.author.mention} one word channel for the server is not removed"
-            )
-
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -851,8 +808,10 @@ class Configuration(Cog):
     @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def automod_spam(self, ctx: Context, to_enable: convert_bool):
-        """To toggle the spam protection in the server"""
+    async def automod_spam(self, ctx: Context, *, to_enable: convert_bool=True):
+        """To toggle the spam protection in the server.
+        Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel.
+        """
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
             return
@@ -860,7 +819,7 @@ class Configuration(Cog):
             {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
         )
         await ctx.reply(
-            f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**. "
+            f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**.\n"
             "Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. "
             "Bot will be issuing warning if someone exceeds the limit."
         )

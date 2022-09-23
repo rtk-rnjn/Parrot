@@ -17,8 +17,6 @@ post: Dict[str, Any] = {
     "dj_role": None,
     "warn_expiry": None,
     "muted": [],
-    "counting": None,
-    "oneword": None,
     "warn_count": 0,
     "suggestion_channel": None,
     "giveaway": [],

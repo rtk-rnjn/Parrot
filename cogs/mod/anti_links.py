@@ -30,7 +30,7 @@ class LinkProt(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
-        if data := self.bot.server_config.get(message.guild.id):
+        if data := self.bot.server_config.get(message.guild.id) and self.has_links(message.content):
             prot: Optional[bool] = data["automod"]["antilinks"]["enable"]
 
             if not prot:
@@ -39,7 +39,7 @@ class LinkProt(Cog):
             try:
                 whitelist: List[str] = data["automod"]["antilinks"]["whitelist"]
             except KeyError:
-                pass
+                whitelist = []
 
             try:
                 ignore: List[int] = data["automod"]["antilinks"]["channel"]
@@ -99,11 +99,10 @@ class LinkProt(Cog):
                 if mod_cog := self.bot.get_cog("Moderator"):
                     await mod_cog.warn_task(target=message.author, ctx=ctx)
 
-            if self.has_links(message.content):
-                await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
-                    delete_after=10,
-                )
+            await message.channel.send(
+                f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
+                delete_after=10,
+            )
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

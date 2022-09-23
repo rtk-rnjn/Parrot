@@ -1666,6 +1666,7 @@ class Fun(Cog):
                 name=f"COLOR {color_name.upper()}",
                 color=discord.Color.from_rgb(*rgb),
                 reason=f"Action requested by {ctx.author}",
+                permissions=discord.Permissions(0)
             )
             await ctx.tick()
         else:

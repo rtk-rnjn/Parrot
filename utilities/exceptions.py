@@ -6,14 +6,18 @@ class ParrotCheckFailure(cmd.CheckFailure):
     pass
 
 
+class CustomError(ParrotCheckFailure):
+    def __init__(self, msg: str):
+        super().__init__(msg)
+
+
 class ParrotTimeoutError(ParrotCheckFailure):
     def __init__(self):
         super().__init__("You did't responded on time!")
 
 
-class StarError(ParrotCheckFailure):
-    def __init__(self, error: str):
-        super().__init__(error)
+class StarError(CustomError):
+    pass
 
 
 class TimeError(ParrotCheckFailure):

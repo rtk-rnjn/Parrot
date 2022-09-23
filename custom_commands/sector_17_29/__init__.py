@@ -261,5 +261,8 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
         
+        if ctx.author._roles.has(role.id):
+            return await ctx.wrong()
+
         await ctx.author.add_roles(role, reason="Color role added")
         await ctx.tick()

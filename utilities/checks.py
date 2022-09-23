@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Container, Iterable
-from typing import Callable, Dict, List, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, TypeAlias, Union
 
 from discord.ext.commands import (
     BucketType,
@@ -19,6 +19,10 @@ from core import Context, Parrot
 from discord.ext import commands
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
+
+if TYPE_CHECKING:
+    from discord.ext.commands._types import Check
+
 
 MongoCollection: TypeAlias = Collection
 __all__ = (
@@ -42,8 +46,24 @@ __all__ = (
 )
 
 
-def in_support_server() -> Callable:
-    def predicate(ctx: Context) -> bool:
+def in_server(guild_id: int) -> Check[Context]:
+    def predicate(ctx: Context) -> Optional[bool]:
+        guild = ctx.bot.get_guild(guild_id)
+        if not guild:
+            return False
+
+        if ctx.guild.id == guild.id:
+            return True
+
+        raise ex.CustomError(
+            f"You must be in server: `{guild.name}`, to use the command"
+        )
+
+    return commands.check(predicate)
+
+
+def in_support_server() -> Check[Context]:
+    def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
         if ctx.guild.id == getattr(ctx.bot.server, "id"):
             return True
@@ -52,7 +72,7 @@ def in_support_server() -> Callable:
     return commands.check(predicate)
 
 
-def voter_only() -> Callable:
+def voter_only() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the user is a voter."""
         if is_voter := await ctx.is_voter():
@@ -63,7 +83,7 @@ def voter_only() -> Callable:
     return commands.check(predicate)
 
 
-def is_guild_owner() -> Callable:
+def is_guild_owner() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
             return True
@@ -72,7 +92,7 @@ def is_guild_owner() -> Callable:
     return commands.check(predicate)
 
 
-def is_me() -> Callable:
+def is_me() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         if ctx.message.author.id == SUPER_USER:  # `!! Ritik Ranjan [*.*]#9230`
             return True
@@ -81,7 +101,7 @@ def is_me() -> Callable:
     return commands.check(predicate)
 
 
-def has_verified_role_ticket() -> Callable:
+def has_verified_role_ticket() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
         if not data:
@@ -99,7 +119,7 @@ def has_verified_role_ticket() -> Callable:
     return commands.check(predicate)
 
 
-def is_mod() -> Callable:  # sourcery skip: use-contextlib-suppress
+def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
     async def predicate(ctx: Context) -> Optional[bool]:
         bot: Parrot = ctx.bot
         try:
@@ -123,7 +143,7 @@ def is_mod() -> Callable:  # sourcery skip: use-contextlib-suppress
     return commands.check(predicate)
 
 
-def in_temp_channel() -> Callable:
+def in_temp_channel() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         data = await ctx.bot.mongo.parrot_db.server_config.find_one(
             {"_id": ctx.guild.id}
@@ -165,7 +185,9 @@ async def _get_server_command_cache(
     _cache: List = []
     collection: MongoCollection = bot.mongo.enabled_disable[f"{guild.id}"]
 
-    def __internal_appender(data: Dict):
+    def __internal_appender(data: Optional[Dict]):
+        if not data:
+            return
         data: Dict[str, Union[int, bool]]
         if data["_id"] != "all":
             cmd: commands.Command = bot.get_command(data["_id"])
@@ -240,8 +262,8 @@ def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
     return True
 
 
-def guild_premium() -> Callable:
-    def predicate(ctx: Context) -> bool:
+def guild_premium() -> Check[Context]:
+    def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is premium."""
         if ctx.guild is not None and ctx.bot.server_config[ctx.guild.id].get(
             "premium", False
@@ -253,8 +275,8 @@ def guild_premium() -> Callable:
     return commands.check(predicate)
 
 
-def is_dj() -> Callable:
-    async def predicate(ctx: Context) -> bool:
+def is_dj() -> Check[Context]:
+    async def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the user is a DJ."""
         if role := await ctx.dj_role():
             return role in ctx.author.roles
@@ -264,8 +286,8 @@ def is_dj() -> Callable:
     return commands.check(predicate)
 
 
-def in_voice() -> Callable:
-    def predicate(ctx: Context) -> bool:
+def in_voice() -> Check[Context]:
+    def predicate(ctx: Context) -> Optional[bool]:
         if ctx.author.voice is None:
             raise ex.NotInVoice()
         return True
@@ -273,8 +295,8 @@ def in_voice() -> Callable:
     return commands.check(predicate)
 
 
-def same_voice() -> Callable:
-    async def predicate(ctx: Context) -> bool:
+def same_voice() -> Check[Context]:
+    async def predicate(ctx: Context) -> Optional[bool]:
         if ctx.me.voice is None:
             raise ex.NotBotInVoice()
         if ctx.author.voice is None:

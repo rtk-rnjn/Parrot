@@ -272,6 +272,25 @@ class Sector1729(Cog):
         await ctx.author.add_roles(role, reason="Color role added")
         await ctx.tick()
 
+    @sector_17_29.command(name="uncolor")
+    @in_support_server()
+    async def sector_17_29_uncolor(self, ctx: Context, *, color: Optional[str] = None):
+        """Unassign yourself color role"""
+        if not color:
+            return
+
+        role = discord.utils.get(ctx.bot.server.roles, name=f"COLOR {color.upper()}")
+        if role is None:
+            await ctx.error(f"{ctx.author.mention} no color named {color}!")
+            return
+        
+        if ctx.author._roles.has(role.id):
+            await ctx.author.remove_roles(role, reason="Color role removed")
+            await ctx.tick()
+            return
+        
+        await ctx.wrong()
+
     @sector_17_29.command(name="role")
     @in_support_server()
     async def sector_17_29_role(self, ctx: Context, *, role: Optional[discord.Role]):
@@ -312,3 +331,4 @@ class Sector1729(Cog):
             return
 
         await ctx.author.remove_roles(role, reason="Self role - Unrole")
+        await ctx.tick()

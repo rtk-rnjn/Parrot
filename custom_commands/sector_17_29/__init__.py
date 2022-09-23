@@ -4,7 +4,7 @@ import asyncio
 from contextlib import suppress
 import unicodedata
 from time import time
-from typing import TYPE_CHECKING, Dict, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import discord
 from core import Cog
@@ -43,6 +43,11 @@ class Sector1729(Cog):
         self.vote_reseter.start()
 
         self.lock: "asyncio.Lock" = asyncio.Lock()
+        self.__asignable_roles: List[int] = [
+            1022896161167777835,  # NSFW ACCESS
+            1022896162107310130,  # BOT ACCESS
+            1022897174624866426,  # MUSIC ACCESS
+        ]
 
     async def cog_check(self, ctx: Context) -> bool:
         return ctx.guild is not None and ctx.guild.id == getattr(
@@ -251,18 +256,59 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="color")
     @in_support_server()
-    async def sector_17_29_color(self, ctx: Context, color: Optional[str] = None):
+    async def sector_17_29_color(self, ctx: Context, *, color: Optional[str] = None):
         """Assign yourself color role"""
         if not color:
             return
-        
+
         role = discord.utils.get(ctx.bot.server.roles, name=f"COLOR {color.upper()}")
         if role is None:
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
-        
+
         if ctx.author._roles.has(role.id):
             return await ctx.wrong()
 
         await ctx.author.add_roles(role, reason="Color role added")
         await ctx.tick()
+
+    @sector_17_29.command(name="role")
+    @in_support_server()
+    async def sector_17_29_role(self, ctx: Context, *, role: Optional[discord.Role]):
+        """Assign yourself role"""
+        if not role:
+            await ctx.error(f"{ctx.author.mention} that role do not exists")
+            return
+
+        if role.id not in self.__asignable_roles:
+            await ctx.error(
+                f"{ctx.author.roles} you don't have permission to assign yourself that role"
+            )
+            return
+
+        if ctx.author._roles.has(role.id):
+            await ctx.error(f"{ctx.author.mention} you already have that role")
+            return
+
+        await ctx.author.add_roles(role, reason="Self role - Role")
+        await ctx.tick()
+
+    @sector_17_29.command(name="unrole")
+    @in_support_server()
+    async def sector_17_29_unrole(self, ctx: Context, *, role: Optional[discord.Role]):
+        """Unassign yourself role"""
+        if not role:
+            await ctx.error(f"{ctx.author.mention} that role do not exists")
+            return
+
+        if role.id not in self.__asignable_roles:
+            await ctx.error(
+                f"{ctx.author.roles} you don't have permission to unassign yourself that role"
+            )
+            return
+
+        if not ctx.author._roles.has(role.id):
+            await ctx.error(f"{ctx.author.mention} you do not have that role")
+            return
+
+        await ctx.author.remove_roles(role, reason="Self role - Unrole")

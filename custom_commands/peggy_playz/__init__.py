@@ -8,7 +8,7 @@ from core import Parrot, Cog
 UPLOAD_CHANNEL_ID = 1021553838135713944
 RULES_CHANNEL_ID = 1021457186997682308
 PEGGY_PLAYZ = 971797000246923334
-
+PINGCORD = 282286160494067712
 
 class PeggyPlayZ(Cog):
     """Command Events for the server Peggy PlayZ"""
@@ -24,7 +24,7 @@ class PeggyPlayZ(Cog):
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
-        if member.guild.id == PEGGY_PLAYZ:
+        if member.guild.id == PEGGY_PLAYZ and member.id == PINGCORD:
             channel = self.bot.get_channel(RULES_CHANNEL_ID)
             if channel is not None:
                 await channel.send(member.mention, delete_after=1)

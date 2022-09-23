@@ -184,3 +184,9 @@ class Cache(dict, Generic[KT, VT]):
 
     def __setitem__(self, __k: KT, __v: VT) -> None:
         self.__internal_cache[__k] = __v
+    
+    def get(self, __k: KT) -> VT:
+        return self.__internal_cache.get(__k)
+
+    def pop(self, __k: KT, *args: Any) -> VT:
+        return self.__internal_cache.pop(__k, *args)

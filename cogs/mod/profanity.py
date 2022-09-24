@@ -27,8 +27,11 @@ class Profanity(Cog):
             return []
 
     def isin(self, phrase: str, sentence: str) -> bool:
-        word = re.escape(phrase)
-        return re.search(rf"\b{word}\b", sentence) is not None
+        try:
+            word = re.escape(phrase)
+            return re.search(rf"\b{word}\b", sentence) is not None
+        except ValueError:
+            return phrase in sentence
 
     async def _one_message_passive(self, message: discord.Message) -> Any:
         # sourcery skip: low-code-quality

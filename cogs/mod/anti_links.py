@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 from typing import List, Optional
 
 import discord
@@ -19,10 +20,9 @@ class LinkProt(Cog):
         self.collection = bot.mongo.parrot_db["server_config"]
         self.__instant_action_parser = instant_action_parser
 
-    def has_links(self, message_content: str) -> bool:
-        return bool(
-            LINKS_NO_PROTOCOLS.search(message_content)
-            or LINKS_RE.search(message_content)
+    def has_links(self, message_content: str) -> List:
+        return LINKS_NO_PROTOCOLS.findall(message_content) + LINKS_RE.findall(
+            message_content
         )
 
     async def _message_passive(self, message: discord.Message):
@@ -30,7 +30,9 @@ class LinkProt(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
-        if (data := self.bot.server_config.get(message.guild.id)) and self.has_links(message.content):
+        if (data := self.bot.server_config.get(message.guild.id)) and (
+            _links := self.has_links(message.content)
+        ):
             prot: Optional[bool] = data["automod"]["antilinks"]["enable"]
 
             if not prot:
@@ -49,8 +51,14 @@ class LinkProt(Cog):
             if message.channel.id in ignore:
                 return
 
-            if any(temp in message.content for temp in whitelist):
-                return
+            for link in _links:
+                if not whitelist:
+                    break
+
+                for temp in whitelist:
+                    if re.match(temp, link):
+                        return
+
             try:
                 to_delete: Optional[bool] = data["automod"]["antilinks"]["autowarn"][
                     "to_delete"

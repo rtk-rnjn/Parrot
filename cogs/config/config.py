@@ -926,7 +926,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def profanityadd(self, ctx: Context, *, word: str):
-        """To add profanity words. Can also work for regex. May take 1h to update"""
+        """To add profanity words. Can also work for regex."""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id},
             {"$addToSet": {"automod.profanity.words": word.lower()}},

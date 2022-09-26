@@ -37,6 +37,7 @@ OTHER_REACTION = {
     "INCOMPLETE": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
     "DECLINE": {"emoji": "\N{CROSS MARK}", "color": 0xFF0000},
     "APPROVED": {"emoji": "\N{WHITE HEAVY CHECK MARK}", "color": 0x90EE90},
+    "DUPLICATE": {"emoji": "\N{HEAVY EXCLAMATION MARK SYMBOL}", "color": 0xDDD6D5},
 }
 
 
@@ -974,6 +975,7 @@ class Utils(Cog):
         - INCOMPLETE
         - DECLINE
         - APPROVED
+        - DUPLICATE
         """
 
         msg: Optional[discord.Message] = await self.get_or_fetch_message(

@@ -21,9 +21,7 @@ class LinkProt(Cog):
         self.__instant_action_parser = instant_action_parser
 
     def has_links(self, message_content: str) -> List:
-        return LINKS_NO_PROTOCOLS.findall(message_content) + LINKS_RE.findall(
-            message_content
-        )
+        return LINKS_RE.findall(message_content)
 
     async def _message_passive(self, message: discord.Message):
         # sourcery skip: low-code-quality

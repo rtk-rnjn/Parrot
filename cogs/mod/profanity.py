@@ -30,7 +30,7 @@ class Profanity(Cog):
         try:
             word = re.escape(phrase)
             return re.search(rf"\b{word}\b", sentence) is not None
-        except ValueError:
+        except re.error:
             return phrase in sentence
 
     async def _one_message_passive(self, message: discord.Message) -> Any:
@@ -76,7 +76,7 @@ class Profanity(Cog):
             except KeyError:
                 to_warn: bool = False
 
-            ctx: Context = await self.bot.get_context(message, cls=Context)
+            ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
 
             try:
                 instant_action: str = data["automod"]["profanity"]["autowarn"][

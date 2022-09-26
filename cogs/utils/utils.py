@@ -790,7 +790,7 @@ class Utils(Cog):
             f"> {message.jump_url}"
         )
         try:
-            await ctx.author.send(content)
+            await user.send(content)
         except discord.Forbidden:
             pass
 

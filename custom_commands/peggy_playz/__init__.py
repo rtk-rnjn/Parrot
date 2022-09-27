@@ -17,14 +17,14 @@ class PeggyPlayZ(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.channel.id == UPLOAD_CHANNEL_ID:
+        if message.channel.id == UPLOAD_CHANNEL_ID and message.author.id == PINGCORD:
             with contextlib.suppress(discord.HTTPException):
                 await message.publish()
                 await message.add_reaction("\N{EYES}")
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
-        if member.guild.id == PEGGY_PLAYZ and member.id == PINGCORD:
+        if member.guild.id == PEGGY_PLAYZ:
             channel = self.bot.get_channel(RULES_CHANNEL_ID)
             if channel is not None:
                 await channel.send(member.mention, delete_after=1)

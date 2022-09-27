@@ -734,7 +734,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def level_reward_add(
-        self, ctx: Context, level: int, *, role: discord.Role = None
+        self, ctx: Context, level: int, role: discord.Role = None
     ):
         """To add the level reward"""
         if _ := await self.bot.mongo.parrot_db.server_config.find_one(
@@ -808,7 +808,7 @@ class Configuration(Cog):
     @automod.group(name="spam",)
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def automod_spam(self, ctx: Context, *, to_enable: convert_bool=True):
+    async def automod_spam(self, ctx: Context, to_enable: convert_bool=True):
         """To toggle the spam protection in the server.
         Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel.
         """

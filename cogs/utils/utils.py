@@ -761,8 +761,8 @@ class Utils(Cog):
         jump_url: str = message.jump_url
         _id: int = message.id
         content = (
-            f"{ctx.author.mention} you suggestion being posted.\n"
-            f"To delete the suggestion typing `{ctx.clean_prefix}suggest delete {_id}`\n"
+            f"{ctx.author.mention} your suggestion being posted.\n"
+            f"To delete the suggestion type: `{ctx.clean_prefix or await ctx.bot.get_guild_prefixes(ctx.guild.id)}suggest delete {_id}`\n"
             f"> {jump_url}"
         )
         try:
@@ -784,7 +784,7 @@ class Utils(Cog):
         remark = remark or "No remark was given"
 
         content = (
-            f"{user.mention} you suggestion of ID: {message.id} had being updated.\n"
+            f"{user.mention} your suggestion of ID: {message.id} had being updated.\n"
             f"By: {ctx.author} (`{ctx.author.id}`)\n"
             f"Remark: {remark}\n"
             f"> {message.jump_url}"

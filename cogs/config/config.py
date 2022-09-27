@@ -850,12 +850,15 @@ class Configuration(Cog):
     @Context.with_type
     async def automod_links(self, ctx: Context, *, to_enable: convert_bool):
         """To toggle the invite protection in the server"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"automod.antilinks.enable": to_enable}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**"
-        )
+        if ctx.invoked_subcommand is None:
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$set": {"automod.antilinks.enable": to_enable}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} anti links protection in the server is set to **{to_enable}**"
+            )
+            return
+        await ctx.bot.invoke_help_command(ctx)
 
     @automod_links.command(name="ignore")
     @commands.has_permissions(administrator=True)

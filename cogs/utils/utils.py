@@ -908,7 +908,7 @@ class Utils(Cog):
         await thread.edit(
             archived=True,
             locked=True,
-            reason=f"Suggestion resolved by {ctx.author.mention}",
+            reason=f"Suggestion resolved by {ctx.author} ({ctx.author.id})",
         )
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 

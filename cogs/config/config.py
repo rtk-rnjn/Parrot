@@ -344,7 +344,7 @@ class Configuration(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} removed suggestion channel")
 
-    @config.group(name="warn")
+    @config.group(name="warn", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def config_warn(self, ctx: Context):
@@ -805,21 +805,22 @@ class Configuration(Cog):
             page = PaginationView(main)
             await page.start(ctx)
 
-    @automod.group(name="spam",)
+    @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def automod_spam(self, ctx: Context, to_enable: convert_bool=True):
         """To toggle the spam protection in the server.
         Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel.
         """
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**.\n"
-            "Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. "
-            "Bot will be issuing warning if someone exceeds the limit."
-        )
+        if ctx.invoked_subcommand is None:
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$set": {"automod.spam.enable": to_enable}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} spam protection in the server is set to **{to_enable}**.\n"
+                "Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel. "
+                "Bot will be issuing warning if someone exceeds the limit."
+            )
 
     @automod_spam.command(name="ignore")
     @commands.has_permissions(administrator=True)
@@ -845,7 +846,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} spam protection will be working in **{channel.name}**"
         )
 
-    @automod.group(name="links")
+    @automod.group(name="links", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def automod_links(self, ctx: Context, to_enable: convert_bool):

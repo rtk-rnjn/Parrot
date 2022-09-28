@@ -848,7 +848,7 @@ class Configuration(Cog):
     @automod.group(name="links")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def automod_links(self, ctx: Context, *, to_enable: convert_bool):
+    async def automod_links(self, ctx: Context, to_enable: convert_bool):
         """To toggle the invite protection in the server"""
         if ctx.invoked_subcommand is None:
             await self.bot.mongo.parrot_db.server_config.update_one(
@@ -916,7 +916,7 @@ class Configuration(Cog):
     @automod.group(name="profanity", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def profanity(self, ctx: Context, *, to_enable: convert_bool):
+    async def profanity(self, ctx: Context, to_enable: convert_bool):
         """To add profanity words. Can also work for regex"""
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$set": {"automod.profanity.enable": to_enable}}

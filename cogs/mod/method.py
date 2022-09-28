@@ -565,9 +565,16 @@ async def _mute(
         )
         for channel in guild.channels:
             try:
-                await channel.set_permissions(
-                    muted, send_messages=False, add_reactions=False
-                )
+                if isinstance(channel, discord.TextChannel):
+                    await channel.set_permissions(
+                        muted, send_messages=False, add_reactions=False
+                    )
+                if isinstance(channel, discord.CategoryChannel):
+                    await channel.set_permissions(
+                        muted, send_messages=False, add_reactions=False, connect=False
+                    )
+                if isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
+                    await channel.set_permissions(muted, connect=False)
             except discord.Forbidden:
                 pass
     try:

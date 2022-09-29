@@ -836,6 +836,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
 
         bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)
+        if bucket is None:
+            return
+
         retry_after: float = bucket.update_rate_limit()
 
         if retry_after:
@@ -1011,7 +1014,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if message.author.bot:
             return
 
-        # code: when the AFK user messages
+        # code - when the AFK user messages
         if message.author.id in self.bot.afk and (
             data := await self.bot.mongo.parrot_db.afk.find_one(
                 {
@@ -1042,7 +1045,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 await self.bot.mongo.parrot_db.afk.distinct("messageAuthor")
             )
 
-        # code from someone mentions the AFK user
+        # code - someone mentions the AFK user
 
         for user in message.mentions:
             if hasattr(user, "guild") and (

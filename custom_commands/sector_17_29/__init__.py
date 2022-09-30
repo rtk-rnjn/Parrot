@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 from utilities.config import SUPPORT_SERVER_ID
 
 EMOJI = "\N{WASTEBASKET}"
-MESSAGE_ID = 1003600244098998283
+MESSAGE_ID = 1025455601398075535
 VOTER_ROLE_ID = 836492413312040990
 QU_ROLE = 851837681688248351
 MEMBER_ROLE_ID = 1022216700650868916
@@ -44,7 +44,7 @@ class Sector1729(Cog):
         self.vote_reseter.start()
 
         self.lock: "asyncio.Lock" = asyncio.Lock()
-        self.__asignable_roles: List[int] = [
+        self.__assignable_roles: List[int] = [
             1022896161167777835,  # NSFW ACCESS
             1022896162107310130,  # BOT ACCESS
             1022897174624866426,  # MUSIC ACCESS
@@ -301,7 +301,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
 
-        if role.id not in self.__asignable_roles:
+        if role.id not in self.__assignable_roles:
             await ctx.error(
                 f"{ctx.author.roles} you don't have permission to assign yourself that role"
             )
@@ -322,7 +322,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
 
-        if role.id not in self.__asignable_roles:
+        if role.id not in self.__assignable_roles:
             await ctx.error(
                 f"{ctx.author.roles} you don't have permission to unassign yourself that role"
             )

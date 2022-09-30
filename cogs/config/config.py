@@ -789,16 +789,17 @@ class Configuration(Cog):
                 main_str = f"""\N{BULLET} Name: {k.title()}
 
 `Enable    :` **{v['enable']} **
-`I. Channel:` **{', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])} **
+`I. Channel:` **{', '.join([getattr(ctx.guild.get_channel(c), 'name', 'None') for c in v['channel'] if getattr(ctx.guild.get_channel(c), 'name', None)])}**
+`I. Role   :` **{', '.join([getattr(ctx.guild.get_role(c), 'name', 'None') for c in v['role'] if getattr(ctx.guild.get_role(c), 'name', None)])}**
 
 [Autowarn]
-`Enabled   :` **{getattr(v['autowarn'], 'enable', False)} **
-`Count     :` **{getattr(v['autowarn'], 'count', 0)} **
-`Delete    :` **{getattr(v['autowarn'], 'to_delete', False)} **
+`Enabled   :` **{getattr(v['autowarn'], 'enable', False)}**
+`Count     :` **{getattr(v['autowarn'], 'count', 0)}**
+`Delete    :` **{getattr(v['autowarn'], 'to_delete', False)}**
 
 [Punish]
-`Type      :` **{getattr(v['autowarn'].get('punish'), 'type', None)} **
-`Duration  :` **{getattr(v['autowarn'].get('punish'), 'duration', None)} **
+`Type      :` **{getattr(v['autowarn'].get('punish'), 'type', None)}**
+`Duration  :` **{getattr(v['autowarn'].get('punish'), 'duration', None)}**
 """
                 main.append(main_str)
 
@@ -808,7 +809,7 @@ class Configuration(Cog):
     @automod.group(name="spam", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def automod_spam(self, ctx: Context, to_enable: convert_bool=True):
+    async def automod_spam(self, ctx: Context, to_enable: convert_bool = True):
         """To toggle the spam protection in the server.
         Note: As per discord API it is allowed to send **5 messages** within **5 seconds** of interval in channel.
         """
@@ -825,26 +826,47 @@ class Configuration(Cog):
     @automod_spam.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def spam_ignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def spam_ignore(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To whitelist the spam channel."""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"automod.spam.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} spam protection won't be working in **{channel.name}**"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.spam.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} spam protection won't be working in **{target.name}**"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$addToSet": {"automod.spam.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} spam protection will be ignored for **{target.name}** role"
+            )
 
     @automod_spam.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def spam_remove(self, ctx: Context, *, channel: discord.TextChannel):
-        """To whitelist the spam channel."""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"automod.spam.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} spam protection will be working in **{channel.name}**"
-        )
+    async def spam_remove(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
+        """To remove whitelist the spam channel."""
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.spam.channel": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} spam protection will now be working in **{target.name}**"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.spam.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} spam protection will now be working for **{target.name}** role"
+            )
 
     @automod.group(name="links", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -864,27 +886,49 @@ class Configuration(Cog):
     @automod_links.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def antilinks_ignore(self, ctx: Context, *, channel: discord.TextChannel):
-        """To whitelist the channel from anti links protection"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id},
-            {"$addToSet": {"automod.antilinks.channel": channel.id}},
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for links protection"
-        )
+    async def antilinks_ignore(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
+        """To whitelist the channel/role from anti links protection"""
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.antilinks.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** in whitelist, for links protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.antilinks.role": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** role in whitelist, for links protection"
+            )
 
     @automod_links.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def antilinksremove(self, ctx: Context, *, channel: discord.TextChannel):
-        """To remove whitelisted channel from anti links protection"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"automod.antilinks.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for links protection"
-        )
+    async def antilinksremove(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
+        """To remove whitelisted channel/role from anti links protection"""
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$pull": {"automod.antilinks.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** in whitelist, for links protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.antilinks.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** role in whitelist, for links protection"
+            )
 
     @automod_links.command(name="whitelist")
     @commands.has_permissions(administrator=True)
@@ -894,7 +938,9 @@ class Configuration(Cog):
         try:
             re.compile(link)
         except re.error:
-            return await ctx.reply(f"{ctx.author.mention} invalid regex expression")
+            await ctx.reply(
+                f"{ctx.author.mention} that is not a valid regex", delete_after=3
+            )
         await self.bot.mongo.parrot_db.server_config.update_one(
             {"_id": ctx.guild.id}, {"$addToSet": {"automod.antilinks.whitelist": link}}
         )
@@ -950,27 +996,49 @@ class Configuration(Cog):
     @profanity.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def profanityignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def profanityignore(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To ignore the channel from profanity"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id},
-            {"$addToSet": {"automod.profanity.channel": channel.id}},
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for profanity protection"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.profanity.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** in whitelist, for profanity protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.profanity.role": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** role in whitelist, for profanity protection"
+            )
 
     @profanity.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def profanityremove(self, ctx: Context, *, channel: discord.TextChannel):
+    async def profanityremove(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To remove the ignored channel from profanity"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"automod.profanity.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for profanity protection"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$pull": {"automod.profanity.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** in whitelist, for profanity protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.profanity.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** role in whitelist, for profanity protection"
+            )
 
     @automod.group(name="caps", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -1000,26 +1068,47 @@ class Configuration(Cog):
     @capsprotection.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def capsignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def capsignore(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To ignore the channel from caps protection"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"automod.caps.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for caps protection"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.caps.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** in whitelist, for caps protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$addToSet": {"automod.caps.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** role in whitelist, for caps protection"
+            )
 
     @capsprotection.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def capsremove(self, ctx: Context, *, channel: discord.TextChannel):
+    async def capsremove(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To remove the ignored channel from caps protection"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"automod.caps.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for caps protection"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.caps.channel": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** in whitelist, for caps protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.caps.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** role in whitelist, for caps protection"
+            )
 
     @automod.group(name="emoji", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -1049,26 +1138,47 @@ class Configuration(Cog):
     @emojiprotection.command(name="ignore")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def emojiignore(self, ctx: Context, *, channel: discord.TextChannel):
+    async def emojiignore(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To ignore the channel from emoji protection"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"automod.emoji.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} added **{channel.name}** in whitelist, for emoji protection"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id},
+                {"$addToSet": {"automod.emoji.channel": target.id}},
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** in whitelist, for emoji protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$addToSet": {"automod.emoji.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} added **{target.name}** role in whitelist, for emoji protection"
+            )
 
     @emojiprotection.command(name="remove")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def emojiremove(self, ctx: Context, *, channel: discord.TextChannel):
+    async def emojiremove(
+        self, ctx: Context, *, target: Union[discord.TextChannel, discord.Role]
+    ):
         """To remove the ignored channel from emoji protection"""
-        await self.bot.mongo.parrot_db.server_config.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"automod.emoji.channel": channel.id}}
-        )
-        await ctx.reply(
-            f"{ctx.author.mention} removed **{channel.name}** in whitelist, for emoji protection"
-        )
+        if isinstance(target, discord.TextChannel):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.emoji.channel": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** in whitelist, for emoji protection"
+            )
+        elif isinstance(target, discord.Role):
+            await self.bot.mongo.parrot_db.server_config.update_one(
+                {"_id": ctx.guild.id}, {"$pull": {"automod.emoji.role": target.id}}
+            )
+            await ctx.reply(
+                f"{ctx.author.mention} removed **{target.name}** role in whitelist, for emoji protection"
+            )
 
     @config.group(aliases=["tel"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)

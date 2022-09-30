@@ -54,6 +54,14 @@ class Profanity(Cog):
             if message.channel.id in ignore:
                 return
 
+            try:
+                ignore_roles: List[int] = data["automod"]["profanity"]["role"]
+            except KeyError:
+                ignore_roles: List[int] = []
+            
+            if any(role.id in ignore_roles for role in message.author.roles):
+                return
+
             if (not bad_words) and profanity:
                 try:
                     bad_words = data["automod"]["profanity"]["words"]

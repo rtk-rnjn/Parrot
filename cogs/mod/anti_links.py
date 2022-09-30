@@ -46,7 +46,15 @@ class LinkProt(Cog):
             except KeyError:
                 ignore = []
 
+            try:
+                ignore_roles: List[int] = data["automod"]["antilinks"]["role"]
+            except KeyError:
+                ignore_roles = []
+
             if message.channel.id in ignore:
+                return
+
+            if any(role.id in ignore_roles for role in message.author.roles):
                 return
 
             for link in _links:

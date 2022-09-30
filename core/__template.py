@@ -62,6 +62,7 @@ post: Dict[str, Any] = {
         "spam": {
             "enable": False,
             "channel": [],
+            "role": [],
             "autowarn": {
                 "enable": False,
                 "count": None,
@@ -72,6 +73,7 @@ post: Dict[str, Any] = {
         "antilinks": {
             "enable": False,
             "channel": [],
+            "role": [],
             "whitelist": [],
             "autowarn": {
                 "enable": False,
@@ -84,6 +86,7 @@ post: Dict[str, Any] = {
             "enable": False,
             "words": [],
             "channel": [],
+            "role": [],
             "autowarn": {
                 "enable": False,
                 "count": None,
@@ -95,6 +98,7 @@ post: Dict[str, Any] = {
             "enable": False,
             "limit": None,
             "channel": [],
+            "role": [],
             "autowarn": {
                 "enable": False,
                 "count": None,
@@ -106,6 +110,7 @@ post: Dict[str, Any] = {
             "enable": False,
             "limit": None,
             "channel": [],
+            "role": [],
             "autowarn": {
                 "enable": False,
                 "count": None,

@@ -94,6 +94,16 @@ class EmojiCapsProt(Cog):
                 to_warn: bool = False
 
             try:
+                ignored_roles: List[int] = data["automod"]["emoji"]["autowarn"][
+                    "role"
+                ]
+            except KeyError:
+                ignored_roles: List[int] = []
+            
+            if any(role.id in ignored_roles for role in message.author.roles):
+                return
+
+            try:
                 instant_action: str = data["automod"]["emoji"]["autowarn"]["punish"][
                     "type"
                 ]
@@ -139,6 +149,14 @@ class EmojiCapsProt(Cog):
                 to_warn = data["automod"]["caps"]["autowarn"]["enable"]
             except KeyError:
                 to_warn = False
+
+            try:
+                ignored_roles: List[int] = data["automod"]["caps"]["autowarn"]["role"]
+            except KeyError:
+                ignored_roles: List[int] = []
+            
+            if any(role.id in ignored_roles for role in message.author.roles):
+                return
 
             try:
                 instant_action: str = data["automod"]["caps"]["autowarn"]["punish"][

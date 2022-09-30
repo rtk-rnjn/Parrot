@@ -39,6 +39,14 @@ class MentionProt(Cog):
             return
 
         try:
+            ignore_roles: List[int] = data[message.guild.id]["automod"]["mention"]["role"]
+        except KeyError:
+            ignore_roles: List[int] = []
+        
+        if any(role.id in ignore_roles for role in message.author.roles):
+            return
+
+        try:
             count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
         except KeyError:
             return

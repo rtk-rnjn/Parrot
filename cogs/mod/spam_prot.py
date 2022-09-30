@@ -53,6 +53,14 @@ class SpamProt(Cog):
             except KeyError:
                 to_delete: bool = True
 
+            try:
+                ignored_roles: List[int] = data["automod"]["spam"]["role"]
+            except KeyError:
+                ignored_roles: List[int] = []
+
+            if any(role.id in ignored_roles for role in message.author.roles):
+                return
+
             if to_delete:
                 await self.delete(message)
 

@@ -46,3 +46,4 @@ tornado
 typing_extensions
 uvicorn
 youtube_dl
+git+https://github.com/akornatskyy/wheezy.captcha

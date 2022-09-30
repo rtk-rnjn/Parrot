@@ -6,7 +6,6 @@ from functools import partial, wraps
 from typing import (
     Any,
     Callable,
-    Coroutine,
     Generic,
     List,
     Optional,
@@ -21,8 +20,6 @@ import discord
 from core import Context
 from discord.ext import commands
 from utilities.config import LRU_CACHE
-
-NUMBER = Union[int, float]
 
 KT = TypeVar("KT", bound=Any)
 VT = TypeVar("VT", bound=Any)
@@ -40,11 +37,10 @@ class ActionReason(commands.Converter):
         """Convert the argument to a action string"""
         ret = f"Action requested by {ctx.author} (ID: {ctx.author.id}) | Reason: {argument or 'no reason provided'}"
 
+        LEN = 0 if argument is None else len(argument)
         if len(ret) > 512:
-            reason_max = 512 - len(ret) + len(argument)
-            raise commands.BadArgument(
-                f"Reason is too long ({len(argument)}/{reason_max})"
-            )
+            reason_max = 512 - len(ret) + LEN
+            raise commands.BadArgument(f"Reason is too long ({LEN}/{reason_max})")
         return ret
 
 
@@ -55,7 +51,7 @@ class ToAsync:
 
         self.executor = executor or ThreadPoolExecutor()
 
-    def __call__(self, blocking) -> Callable[..., Coroutine]:
+    def __call__(self, blocking) -> Callable[..., Any]:
         @wraps(blocking)
         async def wrapper(*args, **kwargs) -> Any:
 
@@ -69,9 +65,7 @@ class ToAsync:
 class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild"""
 
-    async def convert(
-        self, ctx: Context, argument: Union[str, NUMBER, Any]
-    ) -> Optional[discord.User]:
+    async def convert(self, ctx: Context, argument: str) -> Optional[discord.User]:
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
@@ -111,7 +105,7 @@ def can_execute_action(
     ctx: Context, user: discord.Member, target: discord.Member
 ) -> bool:
     return (
-        user.id in ctx.bot.owner_ids
+        user.id in ctx.bot.owner_ids  # type: ignore # owner_ids can not be None
         or user == ctx.guild.owner
         or user.top_role > target.top_role
     )
@@ -153,11 +147,11 @@ class MemberID(commands.Converter):
 class Cache(dict, Generic[KT, VT]):
     def __init__(
         self,
-        cache_size: Optional[int] = LRU_CACHE,
+        cache_size: Optional[int] = None,
         *,
         callback: Optional[Callable[[KT, VT], Any]] = None,
     ) -> None:
-        self.cache_size: int = cache_size
+        self.cache_size: int = cache_size or LRU_CACHE
         self.__internal_cache: "LRU" = LRU(
             self.cache_size, callback=callback or (lambda a, b: ...)
         )
@@ -171,6 +165,8 @@ class Cache(dict, Generic[KT, VT]):
         self.update: Callable[..., None] = self.__internal_cache.update  # type: ignore
         self.values: Callable[[], List[Any]] = self.__internal_cache.values  # type: ignore
         self.keys: Callable[[], List[Any]] = self.__internal_cache.keys  # type: ignore
+        self.get: Callable[[object, ...], Any] = self.__internal_cache.get  # type: ignore
+        self.pop: Callable[[object, ...], Any] = self.__internal_cache.pop  # type: ignore
 
     def __repr__(self) -> str:
         return repr(self.__internal_cache)
@@ -189,9 +185,3 @@ class Cache(dict, Generic[KT, VT]):
 
     def __setitem__(self, __k: KT, __v: VT) -> None:
         self.__internal_cache[__k] = __v
-
-    def get(self, __k: KT) -> VT:
-        return self.__internal_cache.get(__k)
-
-    def pop(self, __k: KT, *args: Any) -> VT:
-        return self.__internal_cache.pop(__k, *args)

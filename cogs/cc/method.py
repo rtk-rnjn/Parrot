@@ -10,7 +10,7 @@ import time
 import traceback
 from contextlib import suppress
 from operator import attrgetter
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 from async_timeout import timeout  # type: ignore
 
@@ -18,11 +18,8 @@ import discord
 from core import Parrot
 from discord import (
     Colour,
-    Embed,
-    File,
     Guild,
     Member,
-    Object,
     PermissionOverwrite,
     Permissions,
     Role,
@@ -66,6 +63,205 @@ def indent(code: str, base_function: str) -> str:
     code = textwrap.indent(code.replace("\t", "    "), "    ")
     return BASE_FUNCTIONS[base_function.upper()].format(code)
 
+class BuiltInMethods:
+    def __init__(self) -> None:
+        self.Color: discord.Color = Colour
+        self.Colour: discord.Color = Colour
+        self.Permissions: discord.Permissions = Permissions
+
+    @staticmethod
+    def PermissionOverwrite(**kwargs: Any) -> discord.PermissionOverwrite:
+        return PermissionOverwrite(**kwargs)
+
+    @staticmethod
+    def try_except(func: Callable, *args: Any, default: Any, **kwargs: Any) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            return default
+
+    @staticmethod
+    def ToInt(value: Any) -> int:
+        return BuiltInMethods.try_except(int, value, default=0)
+
+    @staticmethod
+    def ToStr(value: Any) -> str:
+        return BuiltInMethods.try_except(str, value, default="")
+
+    @staticmethod
+    def ToFloat(value: Any) -> float:
+        return BuiltInMethods.try_except(float, value, default=0.0)
+
+    @staticmethod
+    def ToBool(value: Any) -> bool:
+        return BuiltInMethods.try_except(bool, value, default=False)
+
+    @staticmethod
+    def Len(value: Any) -> int:
+        return BuiltInMethods.try_except(len, value, default=0)
+
+    @staticmethod
+    def Abs(value: Any) -> int:
+        return BuiltInMethods.try_except(abs, value, default=0)
+
+    @staticmethod
+    def Min(
+        *args,
+    ) -> int:
+        return BuiltInMethods.try_except(min, *args, default=0)
+
+    @staticmethod
+    def Max(
+        *args,
+    ) -> int:
+        return BuiltInMethods.try_except(max, *args, default=0)
+
+    @staticmethod
+    def Sum(iterable: Iterable, start: int = 0) -> int:
+        return BuiltInMethods.try_except(sum, iterable, start, default=0)
+
+    @staticmethod
+    def Round(value: Any, ndigits: int = 0) -> int:
+        return BuiltInMethods.try_except(round, value, ndigits, default=0)
+
+    @staticmethod
+    def Ord(value: Any) -> int:
+        return BuiltInMethods.try_except(ord, value, default=0)
+
+    @staticmethod
+    def Chr(value: Any) -> str:
+        return BuiltInMethods.try_except(chr, value, default="")
+
+    @staticmethod
+    def Hex(value: int) -> str:
+        return BuiltInMethods.try_except(hex, value, default="")
+
+    @staticmethod
+    def Oct(value: int) -> str:
+        return BuiltInMethods.try_except(oct, value, default="")
+
+    @staticmethod
+    def Bin(value: int) -> str:
+        return BuiltInMethods.try_except(bin, value, default="")
+
+    @staticmethod
+    def Divmod(a: int, b: int) -> tuple:
+        return BuiltInMethods.try_except(divmod, a, b, default=(0, 0))
+
+    @staticmethod
+    def Pow(*args) -> int:
+        return BuiltInMethods.try_except(pow, *args, default=0)
+
+    @staticmethod
+    def Range(*args) -> list:
+        return BuiltInMethods.try_except(list, range(*args), default=[])
+
+    @staticmethod
+    def Zip(*args) -> list:
+        return BuiltInMethods.try_except(list, zip(*args), default=[])
+
+    @staticmethod
+    def Filter(function: Callable, iterable: Iterable) -> list:
+        return BuiltInMethods.try_except(list, filter(function, iterable), default=[])
+
+    @staticmethod
+    def Map(function: Callable, iterable: Iterable) -> list:
+        return BuiltInMethods.try_except(list, map(function, iterable), default=[])
+
+    @staticmethod
+    def Sorted(iterable: Iterable, key: Callable = None, reverse: bool = False) -> list:
+        return BuiltInMethods.try_except(
+            list, sorted(iterable, key=key, reverse=reverse), default=[]
+        )
+
+    @staticmethod
+    def Reversed(iterable: Iterable) -> list:
+        return BuiltInMethods.try_except(list, reversed(iterable), default=[])
+
+    @staticmethod
+    def Enumerate(iterable: Iterable) -> list:
+        return BuiltInMethods.try_except(list, enumerate(iterable), default=[])
+
+    @staticmethod
+    def Any(iterable: Iterable) -> bool:
+        return BuiltInMethods.try_except(any, iterable, default=False)
+
+    @staticmethod
+    def All(iterable: Iterable) -> bool:
+        return BuiltInMethods.try_except(all, iterable, default=False)
+
+    @staticmethod
+    def ReFindAll(pattern: str, string: str) -> list:
+        return BuiltInMethods.try_except(re.findall, pattern, string, default=[])
+
+    @staticmethod
+    def ReSearch(pattern: str, string: str) -> re.Match:
+        return BuiltInMethods.try_except(re.search, pattern, string, default=None)
+
+    @staticmethod
+    def ReMatch(pattern: str, string: str) -> re.Match:
+        return BuiltInMethods.try_except(re.match, pattern, string, default=None)
+
+    @staticmethod
+    def ReSplit(pattern: str, string: str) -> list:
+        return BuiltInMethods.try_except(re.split, pattern, string, default=[])
+
+    @staticmethod
+    def ReSub(pattern: str, repl: str, string: str) -> str:
+        return BuiltInMethods.try_except(re.sub, pattern, repl, string, default="")
+
+    @staticmethod
+    def RandomRandint(a: int, b: int) -> int:
+        return random.randint(a, b)
+
+    @staticmethod
+    def RandomChoice(iterable: Iterable) -> Any:
+        return random.choice(iterable)
+
+    @staticmethod
+    def RandomSample(iterable: Iterable, k: int) -> list:
+        return random.sample(iterable, k)
+
+    @staticmethod
+    def RandomShuffle(iterable: Iterable) -> list:
+        return random.shuffle(iterable)
+
+    @staticmethod
+    def DateTimeNow() -> datetime.datetime:
+        return datetime.datetime.now()
+
+    @staticmethod
+    def Time() -> float:
+        return time.time()
+
+    @staticmethod
+    async def Sleep(seconds: float) -> None:
+        return await asyncio.sleep(seconds)
+
+    @staticmethod
+    def Object(_id: int) -> discord.Object:
+        return discord.Object(id=_id)
+
+    @staticmethod
+    def File(buffer: io.BytesIO, filename: str, *, kwargs: Any) -> discord.File:
+        return discord.File(buffer, filename, **kwargs)
+
+    @staticmethod
+    def Embed(**kwargs: Any) -> discord.Embed:
+        return discord.Embed(**kwargs)
+
+    @staticmethod
+    def BytesIO(bytes: BytesIO) -> io.BytesIO:
+        return io.BytesIO(bytes)
+
+    @staticmethod
+    def EncodeBytes(string: str) -> bytes:
+        return string.encode()
+
+    @staticmethod
+    def DecodeBytes(bytes: bytes) -> str:
+        return bytes.decode()
+
 
 env = {
     "__import__": None,
@@ -73,48 +269,44 @@ env = {
     "__name__": "__custom_command__",
     "globals": None,
     "locals": None,
-    "int": int,
-    "str": str,
-    "float": float,
-    "bool": bool,
-    "list": list,
-    "dict": dict,
-    "tuple": tuple,
-    "set": set,
-    "range": range,
-    "len": len,
-    "abs": abs,
-    "min": min,
-    "max": max,
-    "sum": sum,
-    "round": round,
-    "ord": ord,
-    "chr": chr,
-    "hex": hex,
-    "oct": oct,
-    "bin": bin,
-    "divmod": divmod,
-    "pow": pow,
-    "zip": zip,
-    "filter": filter,
-    "map": map,
-    "sorted": sorted,
-    "reversed": reversed,
-    "enumerate": enumerate,
-    "any": any,
-    "all": all,
-    "Re": re,
-    "Random": random.randint,
-    "Datetime": datetime.datetime,
-    "Time": time.time,
+    "int": BuiltInMethods.ToInt,
+    "str": BuiltInMethods.ToStr,
+    "float": BuiltInMethods.ToFloat,
+    "bool": BuiltInMethods.ToBool,
+    "range": BuiltInMethods.Range,
+    "len": BuiltInMethods.Len,
+    "abs": BuiltInMethods.Abs,
+    "min": BuiltInMethods.Min,
+    "max": BuiltInMethods.Max,
+    "sum": BuiltInMethods.Sum,
+    "round": BuiltInMethods.Round,
+    "ord": BuiltInMethods.Ord,
+    "chr": BuiltInMethods.Chr,
+    "hex": BuiltInMethods.Hex,
+    "oct": BuiltInMethods.Oct,
+    "bin": BuiltInMethods.Bin,
+    "divmod": BuiltInMethods.Divmod,
+    "pow": BuiltInMethods.Pow,
+    "zip": BuiltInMethods.Zip,
+    "filter": BuiltInMethods.Filter,
+    "map": BuiltInMethods.Map,
+    "sorted": BuiltInMethods.Sorted,
+    "reversed": BuiltInMethods.Reversed,
+    "enumerate": BuiltInMethods.Enumerate,
+    "any": BuiltInMethods.Any,
+    "all": BuiltInMethods.All,
+    "Re": BuiltInMethods.ReFindAll,
+    "Random": BuiltInMethods.RandomRandint,
+    "Datetime": BuiltInMethods.DateTimeNow,
+    "Time": BuiltInMethods.Time,
     "Sleep": asyncio.sleep,
-    "Object": Object,
-    "File": File,
-    "Embed": Embed,
-    "Colour": Colour,
-    "Permissions": Permissions,
-    "PermissionOverwrite": PermissionOverwrite,
-    "BytesIO": io.BytesIO,
+    "Object": BuiltInMethods.Object,
+    "File": BuiltInMethods.File,
+    "Embed": BuiltInMethods.Embed,
+    "Colour": BuiltInMethods.Colour,
+    "Permissions": BuiltInMethods.Permissions,
+    "PermissionOverwrite": BuiltInMethods.PermissionOverwrite,
+    "BytesIO": BuiltInMethods.BytesIO,
 }
 
 

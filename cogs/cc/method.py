@@ -530,6 +530,13 @@ class CustomVoiceChannel(CustomBase):
 
 
 class CustomCategoryChannel(CustomBase):
+    __slots__ = (
+        "id",
+        "name",
+        "created_at",
+        "position",
+        "channels",
+    )
     def __init__(self, channel: discord.CategoryChannel):
         self.id: int = channel.id
         self.name: str = channel.name

@@ -10,7 +10,7 @@ import time
 import traceback
 from contextlib import suppress
 from operator import attrgetter
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Coroutine, Dict, Iterable, List, Optional, Union
 
 from async_timeout import timeout  # type: ignore
 
@@ -63,7 +63,10 @@ def indent(code: str, base_function: str) -> str:
     code = textwrap.indent(code.replace("\t", "    "), "    ")
     return BASE_FUNCTIONS[base_function.upper()].format(code)
 
+
 class BuiltInMethods:
+    __class__ = None
+
     def __init__(self) -> None:
         self.Color: discord.Color = Colour
         self.Colour: discord.Color = Colour
@@ -316,41 +319,72 @@ class CustomBase:
 
 
 class CustomMessage(CustomBase):
+    __slots__ = (
+        "id",
+        "author",
+        "channel",
+        "content",
+        "embeds",
+        "created_at",
+        "guild",
+        "jump_url",
+        # "mentions",
+        "pinned",
+        "edited_at",
+        "tts",
+        # "type",
+        "reactions",
+        "delete",
+    )
+
     def __init__(self, message: discord.Message):
-        self.id = message.id
-        self.author = (
+        self.id: int = message.id
+        self.author: CustomMember = (
             CustomMember(message.author)
             if isinstance(message.author, discord.Member)
             else None
         )
-        self.channel = (
+        self.channel: CustomTextChannel = (
             CustomTextChannel(message.channel)
             if isinstance(message.channel, discord.TextChannel)
             else None
         )
-        self.content = message.content
-        self.embeds = message.embeds
-        self.created_at = message.created_at
-        self.guild = CustomGuild(message.guild) if message.guild is not None else None
-        self.jump_url = message.jump_url
-        self.mentions = message.mentions
-        self.pinned = message.pinned
-        self.edited_at = message.edited_at
-        self.tts = message.tts
-        self.type = message.type
+        self.content: str = message.content
+        self.embeds: List[discord.Embed] = message.embeds
+        self.created_at: datetime.datetime = message.created_at
+        self.guild: "CustomGuild" = (
+            CustomGuild(message.guild) if message.guild is not None else None
+        )
+        self.jump_url: str = message.jump_url
+        # self.mentions: List["CustomMember"] = [CustomMember(u) for u in message.mentions]
+        self.pinned: bool = message.pinned
+        self.edited_at: Optional[datetime.datetime] = message.edited_at
+        self.tts: bool = message.tts
+        # self.type = message.type
         self.reactions: List[CustomReactionPassive] = [
             CustomReactionPassive(reaction) for reaction in message.reactions
         ]
-        self.delete = message.delete
+        self.delete: Callable[..., Coroutine[Any, Any, None]] = message.delete
 
 
 class CustomReactionPassive:
+    __slots__ = (
+        "emoji",
+        "count",
+    )
+
     def __init__(self, reaction: discord.Reaction):
         self.count = reaction.count
         self.emoji = CustomEmoji(reaction.emoji)
 
 
 class CustomReaction:
+    __slots__ = (
+        "count",
+        "emoji",
+        "message",
+    )
+
     def __init__(self, reaction: discord.Reaction):
         self.count = reaction.count
         self.emoji = CustomEmoji(reaction.emoji)
@@ -358,102 +392,150 @@ class CustomReaction:
 
 
 class CustomEmoji:
+    __slots__ = (
+        "id",
+        "name",
+        "animated",
+        "url",
+    )
+
     def __init__(self, emoji: Union[discord.Emoji, discord.PartialEmoji, str]):
         if isinstance(emoji, (discord.PartialEmoji, discord.Emoji)):
             self.id = emoji.id
             self.name = emoji.name
             self.animated = emoji.animated
             self.url = emoji.url
+        else:
+            self.id = None
+            self.name = emoji
+            self.animated = False
+            self.url = None
 
 
 class CustomMember(CustomBase):
+    __slots__ = (
+        "id",
+        "name",
+        "nick",
+        "display_name",
+        "discriminator",
+        "guild_permissions",
+        "top_role",
+        "roles",
+        "joined_at",
+        "created_at",
+        "avatar_url",
+    )
+
     def __init__(self, member: Member):
-        self.id = member.id
-        self.name = member.name
-        self.nick = member.nick
-        self.display_name = member.display_name
-        self.discriminator = member.discriminator
-        self.bot = member.bot
-        self.guild_permissions = member.guild_permissions
-        self.top_role = member.top_role.id
-        self.roles = [role.id for role in member.roles]
-        self.created_at = member.created_at
-        self.joined_at = member.joined_at
+        self.id: int = member.id
+        self.name: str = member.name
+        self.nick: Optional[str] = member.nick
+        self.display_name: str = member.display_name
+        self.discriminator: str = member.discriminator
+        self.bot: bool = member.bot
+        self.guild_permissions: discord.Permissions = member.guild_permissions
+        self.top_role: int = member.top_role.id
+        self.roles: List[int] = [role.id for role in member.roles]
+        self.created_at: datetime.datetime = member.created_at
+        self.joined_at: datetime.datetime = member.joined_at
+        self.avatar_url: str = member.display_avatar.url
 
 
 class CustomRole(CustomBase):
+    __slots__ = (
+        "id",
+        "name",
+        "color",
+        "position",
+        "permissions",
+        "mentionable",
+        "hoist",
+        "created_at",
+    )
+
     def __init__(self, role: Role):
-        self.id = role.id
-        self.name = role.name
-        self.color = role.color
-        self.is_default = role.is_default
-        self.hoist = role.hoist
-        self.managed = role.managed
-        self.position = role.position
-        self.permissions = role.permissions
-        self.created_at = role.created_at
+        self.id: int = role.id
+        self.name: str = role.name
+        self.color: discord.Color = role.color
+        self.is_default: bool = role.is_default()
+        self.hoist: bool = role.hoist
+        self.managed: bool = role.managed
+        self.position: int = role.position
+        self.permissions: discord.Permissions = role.permissions
+        self.created_at: datetime.datetime = role.created_at
 
 
 class CustomGuild(CustomBase):
+    __slots__ = (
+        "id",
+        "name",
+        "created_at",
+        "member_count",
+        "roles",
+        "description",
+    )
+
     def __init__(self, guild: Guild):
-        self.id = guild.id
-        self.name = guild.name
-
-        if guild.afk_channel:
-            self.afk_channel = guild.afk_channel.id
-            self.afk_timeout = guild.afk_timeout
-        else:
-            self.afk_channel = 0
-            self.afk_timeout = 0
-
-        self.created_at = guild.created_at
-        self.verification_level = guild.verification_level
-        self.default_notifications = guild.default_notifications
-        self.explicit_content_filter = guild.explicit_content_filter
-        self.mfa_level = guild.mfa_level
-        self.large = guild.large
-        self.member_count = guild.member_count
-        self.roles = [role.id for role in guild.roles]
-        self.features = guild.features
-        self.approximate_member_count = guild.approximate_member_count
-        self.premium_tier = guild.premium_tier
-        self.premium_subscription_count = guild.premium_subscription_count
-        self.preferred_locale = guild.preferred_locale
-        self.description = guild.description
-        self.public_updates_channel = guild.public_updates_channel
-        self.max_video_channel_users = guild.max_video_channel_users
+        self.id: int = guild.id
+        self.name: str = guild.name
+        self.created_at: datetime.datetime = guild.created_at
+        self.member_count: Optional[int] = guild.member_count
+        self.roles: List[int] = [role.id for role in guild.roles]
+        self.description: str = guild.description
 
 
 class CustomTextChannel(CustomBase):
+    __slots__ = (
+        "id",
+        "name",
+        "created_at",
+        "topic",
+        "is_nsfw",
+        "is_news",
+        "created_at",
+        "members",
+    )
+
     def __init__(self, channel: discord.TextChannel):
-        self.id = channel.id
-        self.name = channel.name
-        self.topic = channel.topic
-        self.position = channel.position
-        self.is_news = channel.is_news()
-        self.is_nsfw = channel.is_nsfw
-        self.created_at = channel.created_at
-        self.members = [member.id for member in channel.members]
+        self.id: int = channel.id
+        self.name: str = channel.name
+        self.topic: Optional[str] = channel.topic
+        self.position: int = channel.position
+        self.is_news: bool = channel.is_news()
+        self.is_nsfw: bool = channel.is_nsfw()
+        self.created_at: datetime.datetime = channel.created_at
+        self.members: List[int] = [member.id for member in channel.members]
 
 
 class CustomVoiceChannel(CustomBase):
+    __slots__ = (
+        "id",
+        "name",
+        "created_at",
+        "position",
+        "bitrate",
+        "user_limit",
+        "members",
+    )
+
     def __init__(self, channel: discord.VoiceChannel):
-        self.id = channel.id
-        self.name = channel.name
-        self.position = channel.position
-        self.bitrate = channel.bitrate
-        self.user_limit = channel.user_limit
-        self.created_at = channel.created_at
-        self.members = [member.id for member in channel.members]
+        self.id: int = channel.id
+        self.name: str = channel.name
+        self.position: int = channel.position
+        self.bitrate: int = channel.bitrate
+        self.user_limit: int = channel.user_limit
+        self.created_at: datetime.datetime = channel.created_at
+        self.members: List[int] = [member.id for member in channel.members]
 
 
 class CustomCategoryChannel(CustomBase):
     def __init__(self, channel: discord.CategoryChannel):
-        self.id = channel.id
-        self.name = channel.name
-        self.position = channel.position
-        self.created_at = channel.created_at
-        self.channels = [channel.id for channel in channel.channels]
+        self.id: int = channel.id
+        self.name: str = channel.name
+        self.position: str = channel.position
+        self.created_at: datetime.datetime = channel.created_at
+        self.channels: List[int] = [channel.id for channel in channel.channels]
 
 
 class BaseCustomCommand:

@@ -1,18 +1,19 @@
 # CUSTOM COMMAND - REACTION ROLES
 
 # Configuration starts here
+MESSAGE_ID = YOUR_MESSAGE_ID
 REACTION_ROLES = {
     "\N{DIGIT ONE}": ROLE_ID_1,
     "\N{DIGIT TWO}": ROLE_ID_2,
 }
 # Configuration ends here
 
-if reaction_type == "add":
+if reaction_type == "add" and reaction.message.id == MESSAGE_ID:
     role_id = REACTION_ROLES.get(reaction.emoji)
     if role_id:
         await member_add_roles(user.id, discord.Object(role_id))
 
-if reaction_type == "remove":
+if reaction_type == "remove" and reaction.message.id == MESSAGE_ID:
     role_id = REACTION_ROLES.get(reaction.emoji)
     if role_id:
         await member_remove_roles(user.id, discord.Object(role_id))

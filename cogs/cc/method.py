@@ -537,6 +537,7 @@ class CustomCategoryChannel(CustomBase):
         "position",
         "channels",
     )
+
     def __init__(self, channel: discord.CategoryChannel):
         self.id: int = channel.id
         self.name: str = channel.name
@@ -700,6 +701,28 @@ class BaseCustomCommand:
         member = self.__guild.get_member(member_id)
         if member is not None:
             await member.edit(**kwargs)
+        return
+
+    async def member_add_roles(
+        self, member_id: int, *args: int, reason: Optional[str] = None
+    ) -> None:
+        member = self.__guild.get_member(member_id)
+        if member is not None:
+            for role_id in args:
+                role = self.__guild.get_role(role_id)
+                if role is not None:
+                    await member.add_roles(role, reason=reason)
+        return
+
+    async def member_remove_roles(
+        self, member_id: int, *args: int, reason: Optional[str] = None
+    ) -> None:
+        member = self.__guild.get_member(member_id)
+        if member is not None:
+            for role_id in args:
+                role = self.__guild.get_role(role_id)
+                if role is not None:
+                    await member.remove_roles(role, reason=reason)
         return
 
     # utils

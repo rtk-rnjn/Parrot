@@ -612,22 +612,35 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             )
             return
 
+        async def __internal_funtion(
+            *, hook: str, bot: Parrot, message: discord.Message, collection: Collection
+        ):
+            try:
+                await bot._execute_webhook(
+                    hook,
+                    username=f"{message.author}",
+                    avatar_url=message.author.display_avatar.url,
+                    content=message.content[:1990],
+                    allowed_mentions=discord.AllowedMentions.none(),
+                    suppressor=(ValueError, discord.HTTPException),
+                )
+            except discord.NotFound:
+                await collection.delete_one({"webhook": hook})
+
         await message.delete(delay=2)
+        __function: list = []
         async for webhook in collection.find(
             {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
         ):
             if hook := webhook["webhook"]:
-                try:
-                    await self.bot._execute_webhook(
-                        hook,
-                        username=f"{message.author}",
-                        avatar_url=message.author.display_avatar.url,
-                        content=message.content[:1990],
-                        allowed_mentions=discord.AllowedMentions.none(),
-                        suppressor=(ValueError, discord.HTTPException),
+                __function.append(
+                    __internal_funtion(
+                        hook=hook, bot=self.bot, message=message, collection=collection
                     )
-                except discord.NotFound:
-                    await collection.delete_one({"webhook": hook})
+                )
+        
+        if __function:
+            await asyncio.gather(*__function, return_exceptions=False)
 
     async def _add_record_message_to_database(self, message: discord.Message):
         self.write_data.append(

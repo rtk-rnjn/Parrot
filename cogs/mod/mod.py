@@ -591,7 +591,7 @@ class Moderator(Cog):
     async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: int = 100):
         """Removes a bot user's messages and messages with their optional prefix."""
 
-        def predicate(m):
+        def predicate(m: discord.Message):
             return (m.webhook_id is None and m.author.bot) or (
                 prefix and m.content.startswith(prefix)
             )

@@ -497,11 +497,11 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:
+        ctx: Context = await self.get_context(message, cls=Context)
+
         if message.author.id in self.owner_ids:
             await self.invoke(ctx)
             return
-
-        ctx: Context = await self.get_context(message, cls=Context)
 
         if ctx.command is None or str(ctx.channel.type) == "public_thread":
             return

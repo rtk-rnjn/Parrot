@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 class _MemberJoin(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot: Parrot = bot
+        self.ON_TESTING = False
         self._cache: Dict[int, List[discord.Invite]] = {}
 
     @Cog.listener("on_member_remove")

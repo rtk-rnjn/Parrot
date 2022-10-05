@@ -41,7 +41,7 @@ class NASA(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.random_agent = random.choice
-
+        self.ON_TESTING = False
         self._cache: dict = {}
 
     @property

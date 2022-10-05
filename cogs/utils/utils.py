@@ -50,7 +50,7 @@ class Utils(Cog):
         self.collection: Collection = bot.mongo.parrot_db["timers"]
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
-
+        self.ON_TESTING = False
         self.server_stats_updater.start()
 
         if not hasattr(self.bot, "create_timer"):

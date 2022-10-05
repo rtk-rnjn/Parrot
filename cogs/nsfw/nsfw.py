@@ -18,6 +18,7 @@ class NSFW(Cog):
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
         self.command_loader()
+        self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

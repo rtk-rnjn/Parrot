@@ -167,6 +167,7 @@ class Snakes(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.ON_TESTING = False
         self.active_sal = {}
         self.snake_names = get_resource("snake_names")
         self.snake_idioms = get_resource("snake_idioms")

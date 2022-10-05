@@ -42,6 +42,7 @@ class Sector1729(Cog):
         self.bot = bot
         self._cache: Dict[int, int] = {}
         self.vote_reseter.start()
+        self.ON_TESTING = False
 
         self.lock: "asyncio.Lock" = asyncio.Lock()
         self.__assignable_roles: List[int] = [

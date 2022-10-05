@@ -14,7 +14,7 @@ from discord.ext.ipc import server
 class IPCRoutes(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-
+        self.ON_TESTING = False
     def _overwrite_to_json(
         self,
         overwrites: Dict[

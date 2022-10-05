@@ -47,6 +47,7 @@ class Love(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.zodiacs, self.zodiac_fact = self.load_comp_json()
+        self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

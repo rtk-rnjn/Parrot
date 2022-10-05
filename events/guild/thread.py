@@ -11,6 +11,7 @@ class OnThread(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.collection = bot.mongo.parrot_db["logging"]
+        self.ON_TESTING = False
 
     @Cog.listener()
     async def on_thread_join(self, thread: discord.Thread) -> None:

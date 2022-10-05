@@ -10,7 +10,7 @@ from core import Cog, Context, Parrot
 class Twitter(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-
+        self.ON_TESTING = False
         self.auth = tweepy.OAuthHandler(
             os.environ["API_KEY"], os.environ["API_KEY_SECRET"]
         )

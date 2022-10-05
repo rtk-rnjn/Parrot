@@ -497,11 +497,11 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:
-        ctx: Context = await self.get_context(message, cls=Context)
-
-        if ctx.author.id in self.owner_ids:
+        if message.author.id in self.owner_ids:
             await self.invoke(ctx)
             return
+
+        ctx: Context = await self.get_context(message, cls=Context)
 
         if ctx.command is None or str(ctx.channel.type) == "public_thread":
             return
@@ -561,11 +561,18 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         if guild := self.opts.get(ctx.guild.id):
             if ctx.author.id in guild.get("command", []):
                 return
-        await self.invoke(ctx)
+
+        if not getattr(ctx.cog, "ON_TESTING", False):
+            await self.invoke(ctx)
+
         return
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
+
+        if message.author.id in self.owner_ids:
+            await self.process_commands(message)
+            return
 
         if message.guild is None or message.author.bot:
             # to prevent the usage of command in DMs

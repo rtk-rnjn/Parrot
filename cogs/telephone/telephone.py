@@ -16,6 +16,7 @@ class Telephone(Cog):
         self.bot = bot
         self.redial = {}
         self.las_call_detail = {}
+        self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

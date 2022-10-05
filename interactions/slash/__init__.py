@@ -12,7 +12,7 @@ from discord.ext import commands
 class ContextMenu(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-
+        self.ON_TESTING = False
         self.__interpret_as_command = app_commands.ContextMenu(
             name="Interpret as command",
             callback=self.ctx_menu_interpret_as_command,

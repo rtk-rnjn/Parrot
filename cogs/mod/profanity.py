@@ -17,6 +17,7 @@ class Profanity(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.__instant_action_parser = instant_action_parser
+        self.ON_TESTING = False
 
     def get_bad_words(self, message) -> List[str]:
         try:

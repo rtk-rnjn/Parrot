@@ -543,6 +543,7 @@ class Foggle(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.ON_TESTING = False
         self.games: Dict[str, Game] = {}
 
     @property

@@ -14,6 +14,7 @@ class PeggyPlayZ(Cog):
     """Command Events for the server Peggy PlayZ"""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self.ON_TESTING = False
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

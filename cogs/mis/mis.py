@@ -212,6 +212,7 @@ class Misc(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
+        self.ON_TESTING = False
         self.snipes: Dict[int, Union[List[discord.Message], discord.Message, None]] = {}
 
         self.youtube_search = YoutubeSearch(5)

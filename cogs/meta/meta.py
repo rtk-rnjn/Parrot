@@ -398,6 +398,7 @@ class Meta(Cog):
         self.old_help_command = bot.help_command
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
+        self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

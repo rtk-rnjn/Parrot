@@ -98,6 +98,8 @@ class CustomCommand(Cog):
 
         self.data = {}
 
+        self.ON_TESTING = False
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{COPYRIGHT SIGN}")

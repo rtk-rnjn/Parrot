@@ -225,7 +225,7 @@ class RTFM(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
-
+        self.ON_TESTING = False
         self.headers: Dict[str, str] = {}
         self.fetch_readme.start()
 

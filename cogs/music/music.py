@@ -60,6 +60,7 @@ class Music(Cog):
 
         self._config: Dict[int, dict] = {}
         self._cache: Dict[int, MusicView] = {}  # guild_id -> MusicView
+        self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

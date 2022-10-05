@@ -463,6 +463,8 @@ class Fun(Cog):
         self.jeyy_api_loader()
         self.some_random_api_loader()
 
+        self.ON_TESTING = False
+
     async def send_colour_response(
         self, ctx: Context, rgb: Tuple[int, int, int]
     ) -> None:

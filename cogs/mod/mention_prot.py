@@ -21,6 +21,7 @@ class MentionProt(Cog):
         self.bot = bot
         self.collection = bot.mongo.parrot_db["server_config"]
         self.__instant_action_parser = instant_action_parser
+        self.ON_TESTING = False
 
     async def _on_message_passive(self, message: discord.Message):
         if message.author.public_flags.verified_bot or not message.guild:

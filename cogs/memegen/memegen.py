@@ -11,6 +11,7 @@ class Memegen(Cog):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

@@ -15,6 +15,8 @@ class Actions(Cog):
         self.url = "https://api.waifu.pics/sfw"
         self.command_loader()
 
+        self.ON_TESTING = False
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(

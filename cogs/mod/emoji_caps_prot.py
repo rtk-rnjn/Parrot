@@ -18,6 +18,7 @@ class EmojiCapsProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.__instant_action_parser = instant_action_parser
+        self.ON_TESTING = False
 
     async def delete(self, message: discord.Message) -> None:
         await message.delete(delay=0)

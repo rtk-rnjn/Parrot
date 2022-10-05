@@ -30,6 +30,7 @@ class Highlight(Cog):
 
         self.__caching_highlight: Dict[int, List[str]] = {}
         self.__caching_hashtag: Dict[str, List[int]] = {}
+        self.ON_TESTING = True
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)

@@ -19,6 +19,7 @@ class LinkProt(Cog):
         self.bot = bot
         self.collection = bot.mongo.parrot_db["server_config"]
         self.__instant_action_parser = instant_action_parser
+        self.ON_TESTING = False
 
     def has_links(self, message_content: str) -> List:
         return LINKS_RE.findall(message_content)

@@ -21,7 +21,7 @@ class Sports(Cog):
         # ipl url - the url to the ipl score page.
         # to my localhost to be honest.
         self.url = None
-
+        self.ON_TESTING = False
         # list of channels
         self.channels: List[discord.TextChannel] = []
         self.annouce_task.start()

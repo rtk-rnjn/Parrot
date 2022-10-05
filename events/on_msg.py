@@ -638,7 +638,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                         hook=hook, bot=self.bot, message=message, collection=collection
                     )
                 )
-        
+
         if __function:
             await asyncio.gather(*__function, return_exceptions=False)
 

@@ -143,7 +143,9 @@ class Sector1729(Cog):
         if member.guild.id != SUPPORT_SERVER_ID:
             return
 
-        await member.add_roles(discord.Object(id=MEMBER_ROLE_ID), reason="Member role add")
+        await member.add_roles(
+            discord.Object(id=MEMBER_ROLE_ID), reason="Member role add"
+        )
         if await self.bot.topgg.get_user_vote(member.id):
             await member.add_roles(
                 discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg"
@@ -286,12 +288,12 @@ class Sector1729(Cog):
         if role is None:
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
-        
+
         if ctx.author._roles.has(role.id):
             await ctx.author.remove_roles(role, reason="Color role removed")
             await ctx.tick()
             return
-        
+
         await ctx.wrong()
 
     @sector_17_29.command(name="role")

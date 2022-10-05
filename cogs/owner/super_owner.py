@@ -612,7 +612,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 or "No connections",
             )
         await ctx.send(embed=em)
-    
+
     @commands.command()
     @commands.is_owner()
     async def maintenance(
@@ -629,7 +629,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.tick()
 
     @commands.command()
-    async def member_count(self, ctx: Context, guild: typing.Optional[discord.Object]=None):
+    async def member_count(
+        self, ctx: Context, guild: typing.Optional[discord.Object] = None
+    ):
         """Returns member count of the guild
 
         This is equivalent to:
@@ -638,22 +640,27 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ```
         """
         GUILD_ID = getattr(guild, "id", ctx.guild.id)
-        await ctx.send(ctx.bot.get_guild(GUILD_ID).member_count or "Member count not available")
+        await ctx.send(
+            ctx.bot.get_guild(GUILD_ID).member_count or "Member count not available"
+        )
 
-    @commands.command(aliases=['streaming', 'listening', 'watching'], hidden=True)
+    @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
     @commands.is_owner()
     async def playing(self, ctx: Context, media: str):
         """Update bot presence accordingly to invoke command
-        
+
         This is equivalent to:
         ```py
         p_types = {'playing': 0, 'streaming': 1, 'listening': 2, 'watching': 3}
         await ctx.bot.change_presence(discord.Activity(name=media, type=p_types[ctx.invoked_with]))
         ```
         """
-        p_types = {'playing': 0, 'streaming': 1, 'listening': 2, 'watching': 3}
-        await ctx.bot.change_presence(discord.Activity(name=media, type=p_types[ctx.invoked_with]))
+        p_types = {"playing": 0, "streaming": 1, "listening": 2, "watching": 3}
+        await ctx.bot.change_presence(
+            discord.Activity(name=media, type=p_types[ctx.invoked_with])
+        )
         await ctx.tick()
+
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader

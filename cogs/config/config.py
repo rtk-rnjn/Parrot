@@ -31,7 +31,7 @@ class Configuration(Cog):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
-    
+
         self.ON_TESTING = False
 
     @property

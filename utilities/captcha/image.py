@@ -160,7 +160,9 @@ class ImageCaptcha(_Captcha):
             number -= 1
         return image
 
-    def create_captcha_image(self, chars: str, color: Tuple[int, int, int], background: str) -> Image.Image:
+    def create_captcha_image(
+        self, chars: str, color: Tuple[int, int, int], background: str
+    ) -> Image.Image:
         """Create the CAPTCHA image itself.
         :param chars: text to be generated.
         :param color: color of the text.

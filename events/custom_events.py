@@ -21,7 +21,7 @@ class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
-        
+
     @Cog.listener("on_timer_complete")
     async def mod_parser(
         self,

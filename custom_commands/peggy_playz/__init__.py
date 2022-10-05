@@ -10,8 +10,10 @@ RULES_CHANNEL_ID = 1021457186997682308
 PEGGY_PLAYZ = 971797000246923334
 PINGCORD = 282286160494067712
 
+
 class PeggyPlayZ(Cog):
     """Command Events for the server Peggy PlayZ"""
+
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False

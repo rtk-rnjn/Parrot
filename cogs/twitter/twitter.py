@@ -37,4 +37,3 @@ class Twitter(Cog):
 
     async def cog_check(self, ctx: Context):
         return ctx.author.id in ctx.bot.owner_ids
-

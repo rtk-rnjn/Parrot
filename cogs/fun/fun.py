@@ -513,18 +513,26 @@ class Fun(Cog):
 
         colour_embed.set_thumbnail(url="attachment://colour.png")
 
-        msg: Optional[discord.Message] = await ctx.send(file=thumbnail_file, embed=colour_embed)
+        msg: Optional[discord.Message] = await ctx.send(
+            file=thumbnail_file, embed=colour_embed
+        )
         if isinstance(msg, discord.Message):
             await msg.add_reaction("\N{HAMMER AND PICK}")
-        
+
         def check(r: discord.Reaction, u: discord.User) -> bool:
-            return u.id == ctx.author.id and str(r.emoji) == "\N{HAMMER AND PICK}" and r.message.id == msg.id
+            return (
+                u.id == ctx.author.id
+                and str(r.emoji) == "\N{HAMMER AND PICK}"
+                and r.message.id == msg.id
+            )
 
         try:
             await ctx.wait_for("reaction_add", timeout=30, check=check)
             res = await ctx.prompt("Do you want to create a role of that color?")
             if res:
-                await self._create_role_on_clr(ctx=ctx, rgb=rgb, color_name=colour_embed.title)
+                await self._create_role_on_clr(
+                    ctx=ctx, rgb=rgb, color_name=colour_embed.title
+                )
         except asyncio.TimeoutError:
             return
 
@@ -1668,7 +1676,7 @@ class Fun(Cog):
                 name=f"COLOR {color_name.upper()}",
                 color=discord.Color.from_rgb(*rgb),
                 reason=f"Action requested by {ctx.author}",
-                permissions=discord.Permissions(0)
+                permissions=discord.Permissions(0),
             )
             await ctx.tick()
         else:

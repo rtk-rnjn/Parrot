@@ -30,6 +30,10 @@ class Highlights(Cog):
         self.__caching_highlight: List[Dict[int, List[int]]] = []
         self.__caching_hashtag: Dict[str, List[int]] = {}
         self.ON_TESTING = True
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{NUMBER SIGN}")
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)

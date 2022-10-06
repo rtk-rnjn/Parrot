@@ -661,7 +661,24 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         )
         await ctx.tick()
 
-
+    @commands.command()
+    @commands.is_owner()
+    async def toggle_testing(self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]) -> None:
+        """Update the cog setting to toggle testing mode
+        """
+        cog: Cog = self.bot.get_cog(cog)
+        if hasattr(cog, "ON_TESTING"):
+            true_false = toggle if toggle is not None else not cog.ON_TESTING
+            cog.ON_TESTING = true_false
+            await ctx.send(
+                f"{ctx.author.mention} successfully toggled cog ({cog.qualified_name}) to {toggle}"
+            )
+            return
+        if cog is not None:
+            await ctx.send(f"{ctx.author.mention} cog ({cog.qualified_name}) does not have testing mode")
+        else:
+            await ctx.send(f"{ctx.author.mention} cog ({cog}) does not exist")
+    
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader
     BUFSIZE = 16 * 1024

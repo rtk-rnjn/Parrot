@@ -22,6 +22,7 @@ class Cog(commands.Cog, Generic[T]):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        self.display_name: str = self.qualified_name
 
     def __str__(self) -> str:
         return self.__class__.__name__

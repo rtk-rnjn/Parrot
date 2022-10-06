@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 
     MongoCollection: TypeAlias = Collection
 
-
-class Highlight(Cog):
+class Highlights(Cog):
     """Manage your highlights and hashtags"""
 
     def __init__(self, bot: Parrot) -> None:
@@ -28,7 +27,7 @@ class Highlight(Cog):
             "hashtag"
         ]
 
-        self.__caching_highlight: Dict[int, List[str]] = {}
+        self.__caching_highlight: List[Dict[int, List[int]]] = []
         self.__caching_hashtag: Dict[str, List[int]] = {}
         self.ON_TESTING = True
 
@@ -51,7 +50,7 @@ class Highlight(Cog):
 
         data_changed: UpdateResult = await self._highlight_collection.update_one(
             {"_id": ctx.author.id},
-            {"$addToSet": {"words": word}},
+            {"$addToSet": {"words": word.lower()}},
             upsert=True,
         )
         if data_changed.modified_count:
@@ -194,7 +193,7 @@ class Highlight(Cog):
             hashtag = hashtag[1:]
         await ctx.message.delete(delay=3)
         data_changed: UpdateResult = await self._hashtag_collection.update_one(
-            {"_id": hashtag},
+            {"_id": hashtag.lower()},
             {"$addToSet": {"followers": ctx.author.id}},
             upsert=True,
         )
@@ -283,63 +282,57 @@ class Highlight(Cog):
         pattern = rf"\b{word}\b"
         return re.search(pattern, sentence) is not None
 
-    def word(self, list_of_phrase: List[str], sentence: str) -> bool:
+    def word(self, list_of_phrase: List[str], sentence: str) -> Optional[str]:
         for phrase in list_of_phrase:
             word = re.escape(phrase)
             pattern = rf"\b{word}\b"
             if re.search(pattern, sentence) is not None:
                 return word
+        return None
 
     @Cog.listener("on_message")
     async def on_message_highlight(self, message: discord.Message) -> None:
         if message.guild is None or message.author.bot or not message.content:
             return
 
-        words: List[str] = self.__caching_highlight.get(message.author.id, [])
-        if not words:
-            data: dict = await self._highlight_collection.find_one(
-                {"_id": message.author.id}
-            )
-            if not data:
-                return
-            words = data["words"]
-
-        for word in words:
-            if not self.isin(word, message.content):
+        def check(m: discord.Message) -> bool:
+            return m.author.id == message.author.id and m.channel.id == message.channel.id
+        
+        for data in self.__caching_highlight:
+            if message.author.id == data["_id"]:
                 continue
 
-            try:
-                await self.bot.wait_for(
-                    "message",
-                    check=lambda m: m.author == message.author
-                    and message.channel == m.channel,
-                    timeout=10,
-                )
-            except asyncio.TimeoutError:
-                content: str = re.sub(rf"\b{word}\b", f"**{word}**", message.content)
-                description = f"Your word **{word}** was mentioned in {message.channel.mention} by {message.author.mention}"
-                description += f"\n\n[{message.created_at}] {message.author}: {content}"
-                embed: discord.Embed = (
-                    discord.Embed(
-                        title="Your word was mentioned",
-                        description=description,
-                        color=discord.Color.blurple(),
-                        url=message.jump_url,
-                    )
-                    .set_author(
-                        name=message.author.display_name,
-                        icon_url=message.author.display_avatar.url,
-                    )
-                    .set_footer(
-                        text=message.guild.name,
-                        icon_url=getattr(message.guild.icon, "url", None),
-                    )
-                )
+            if word := self.word(data["words"], message.content):
                 try:
-                    return await message.author.send(embed=embed)
-                except discord.Forbidden:
-                    pass
-            break
+                    await self.bot.wait_for(
+                        "message",
+                        timeout = 10,
+                        check=check
+                    )
+                except asyncio.TimeoutError:
+                    content: str = re.sub(rf"\b{word}\b", f"**{word}**", message.content)
+                    description = f"Your word **{word}** was mentioned in {message.channel.mention} by {message.author.mention}"
+                    description += f"\n\n[{message.created_at}] {message.author}: {content}"
+                    embed: discord.Embed = (
+                        discord.Embed(
+                            title="Your word was mentioned",
+                            description=description,
+                            color=discord.Color.blurple(),
+                            url=message.jump_url,
+                        )
+                        .set_author(
+                            name=message.author.display_name,
+                            icon_url=message.author.display_avatar.url,
+                        )
+                        .set_footer(
+                            text=message.guild.name,
+                            icon_url=getattr(message.guild.icon, "url", None),
+                        )
+                    )
+                    try:
+                        return await message.author.send(embed=embed)
+                    except discord.Forbidden:
+                        pass
 
     @Cog.listener("on_message")
     async def on_message_hashtag(self, message: discord.Message) -> None:
@@ -398,11 +391,11 @@ class Highlight(Cog):
                         icon_url=getattr(message.guild.icon, "url", None),
                     )
                 )
-                await asyncio.wait(
-                    *[
+                await asyncio.gather(
+                    [
                         __internal_function(self.bot, user_id, embed=embed)
                         for user_id in users
                     ],
-                    return_when=asyncio.ALL_COMPLETED,
+                    return_exceptions=False,
                 )
             break

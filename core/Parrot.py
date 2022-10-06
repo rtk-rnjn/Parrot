@@ -559,6 +559,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
                 )
 
         if guild := self.opts.get(ctx.guild.id):
+            guild: dict
             if ctx.author.id in guild.get("command", []):
                 return
 

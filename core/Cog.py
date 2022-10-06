@@ -18,6 +18,7 @@ class Cog(commands.Cog, Generic[T]):
     app_commands: Optional[discord.app_commands.Group]
     description: str
     qualified_name: str
+    ON_TESTING: bool
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

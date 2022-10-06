@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
     MongoCollection: TypeAlias = Collection
 
+
 class Highlights(Cog):
     """Manage your highlights and hashtags"""
 
@@ -30,7 +31,7 @@ class Highlights(Cog):
         self.__caching_highlight: List[Dict[int, List[int]]] = []
         self.__caching_hashtag: Dict[str, List[int]] = {}
         self.ON_TESTING = True
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{NUMBER SIGN}")
@@ -300,23 +301,25 @@ class Highlights(Cog):
             return
 
         def check(m: discord.Message) -> bool:
-            return m.author.id == message.author.id and m.channel.id == message.channel.id
-        
+            return (
+                m.author.id == message.author.id and m.channel.id == message.channel.id
+            )
+
         for data in self.__caching_highlight:
             if message.author.id == data["_id"]:
                 continue
 
             if word := self.word(data["words"], message.content):
                 try:
-                    await self.bot.wait_for(
-                        "message",
-                        timeout = 10,
-                        check=check
-                    )
+                    await self.bot.wait_for("message", timeout=10, check=check)
                 except asyncio.TimeoutError:
-                    content: str = re.sub(rf"\b{word}\b", f"**{word}**", message.content)
+                    content: str = re.sub(
+                        rf"\b{word}\b", f"**{word}**", message.content
+                    )
                     description = f"Your word **{word}** was mentioned in {message.channel.mention} by {message.author.mention}"
-                    description += f"\n\n[{message.created_at}] {message.author}: {content}"
+                    description += (
+                        f"\n\n[{message.created_at}] {message.author}: {content}"
+                    )
                     embed: discord.Embed = (
                         discord.Embed(
                             title="Your word was mentioned",

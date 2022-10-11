@@ -1,7 +1,7 @@
 from __future__ import annotations
 import asyncio
 import re
-from typing import TYPE_CHECKING, Dict, List, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypeAlias, Union
 
 from discord.ext import commands
 import discord
@@ -28,7 +28,7 @@ class Highlights(Cog):
             "hashtag"
         ]
 
-        self.__caching_highlight: List[Dict[int, List[int]]] = []
+        self.__caching_highlight: List[Dict[str, Any]] = []
         self.__caching_hashtag: Dict[str, List[int]] = {}
         self.ON_TESTING = True
 
@@ -107,7 +107,10 @@ class Highlights(Cog):
 
     @highlight.command(name="ignore")
     async def ignore_role_channel(
-        self, ctx: Context, *, target: Union[discord.Role, discord.TextChannel]
+        self,
+        ctx: Context,
+        *,
+        target: Union[discord.Role, discord.TextChannel, discord.Member, discord.User],
     ):
         """Ignore a role or channel"""
         await ctx.message.delete(delay=3)
@@ -131,10 +134,21 @@ class Highlights(Cog):
                 await ctx.send(f"{ctx.author.mention} Channel added to ignored list")
             else:
                 await ctx.send(f"{ctx.author.mention} Channel already in ignored list")
+        elif isinstance(target, (discord.Member, discord.User)):
+            data_changed: UpdateResult = await self._highlight_collection.update_one(
+                {"_id": ctx.author.id}, {"$addToSet": {"ignored_members": target.id}}
+            )
+            if data_changed.modified_count:
+                await ctx.send(f"{ctx.author.mention} Member added to ignored list")
+            else:
+                await ctx.send(f"{ctx.author.mention} Member already in ignored list")
 
     @highlight.command(name="unignore")
     async def unignore_role_channel(
-        self, ctx: Context, *, target: Union[discord.Role, discord.TextChannel]
+        self,
+        ctx: Context,
+        *,
+        target: Union[discord.Role, discord.TextChannel, discord.Member, discord.User],
     ):
         """Unignore a role or channel"""
         await ctx.message.delete(delay=3)
@@ -158,6 +172,14 @@ class Highlights(Cog):
                 )
             else:
                 await ctx.send(f"{ctx.author.mention} Channel not in ignored list")
+        elif isinstance(target, (discord.Member, discord.User)):
+            data_changed: UpdateResult = await self._highlight_collection.update_one(
+                {"_id": ctx.author.id}, {"$pull": {"ignored_members": target.id}}
+            )
+            if data_changed.modified_count:
+                await ctx.send(f"{ctx.author.mention} Member removed from ignored list")
+            else:
+                await ctx.send(f"{ctx.author.mention} Member not in ignored list")
 
     @highlight.command(name="ignorelist")
     async def ignore_list(self, ctx: Context):
@@ -171,17 +193,28 @@ class Highlights(Cog):
 
         ignored_roles: List[str] = []
         ignored_channels: List[str] = []
+        ignored_members: List[str] = []
         for role_id in data.get("ignored_roles", []):
             if role := ctx.guild.get_role(role_id):
                 ignored_roles.append(role.name)
         for channel_id in data.get("ignored_channels", []):
             if channel := self.bot.get_channel(channel_id):
                 ignored_channels.append(channel.name)
-
+        for user_id in data.get("ignored_members", []):
+            if user := ctx.guild.get_member(user_id):
+                ignored_members.append(user.name)
         if ignored_roles:
-            await ctx.paginate(ignored_roles)
+            await ctx.paginate(
+                ignored_roles,
+            )
+        if ignored_roles:
+            await ctx.paginate(
+                ignored_roles,
+            )
         if ignored_channels:
-            await ctx.paginate(ignored_channels)
+            await ctx.paginate(
+                ignored_channels,
+            )
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
@@ -307,6 +340,21 @@ class Highlights(Cog):
 
         for data in self.__caching_highlight:
             if message.author.id == data["_id"]:
+                continue
+
+            user: Optional[discord.User] = await self.bot.getch(
+                self.bot.get_user, self.bot.fetch_user, data["_id"]
+            )
+            if user is None:
+                continue
+
+            if message.channel.id in data["ignored_channels"]:
+                continue
+
+            if message.author.id in data["ignored_members"]:
+                continue
+
+            if any(r.id in data["ignored_roles"] for r in message.author.roles):
                 continue
 
             if word := self.word(data["words"], message.content):

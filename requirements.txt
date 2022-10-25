@@ -45,5 +45,5 @@ topggpy
 tornado
 typing_extensions
 uvicorn
-# youtube_dl
+youtube_dl
 git+https://github.com/akornatskyy/wheezy.captcha

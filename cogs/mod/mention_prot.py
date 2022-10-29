@@ -27,6 +27,9 @@ class MentionProt(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
+        if isinstance(message.author, discord.User):
+            return
+
         data = self.bot.server_config.get(message.guild.id)
         if not data:
             return

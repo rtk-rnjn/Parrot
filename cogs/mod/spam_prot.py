@@ -33,9 +33,13 @@ class SpamProt(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
+        # sourcery skip: low-code-quality
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
+        if isinstance(message.author, discord.User):
+            return
+        
         bucket = self.cd_mapping.get_bucket(message)
         if bucket.update_rate_limit() and (
             data := self.bot.server_config.get(message.guild.id)

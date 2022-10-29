@@ -39,6 +39,9 @@ class Profanity(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
+        if isinstance(message.author, discord.User):
+            return
+
         bad_words = self.get_bad_words(message)
 
         if data := self.bot.server_config.get(message.guild.id):

@@ -39,8 +39,12 @@ class EmojiCapsProt(Cog):
     def is_caps_infilterated(self, message: discord.Message) -> Optional[bool]:
         if not (data_c := self.bot.server_config.get(message.guild.id)):
             return
-        if not data_c["automod"]["caps"]["enable"]:
+        try:
+            if not data_c["automod"]["caps"]["enable"]:
+                return False
+        except KeyError:
             return False
+
         try:
             ignore: List[int] = data_c["automod"]["caps"]["channel"]
         except KeyError:
@@ -57,7 +61,10 @@ class EmojiCapsProt(Cog):
     def is_emoji_infilterated(self, message: discord.Message) -> Optional[bool]:
         if not (data_c := self.bot.server_config.get(message.guild.id)):
             return
-        if not data_c["automod"]["emoji"]["enable"]:
+        try:
+            if not data_c["automod"]["emoji"]["enable"]:
+                return False
+        except KeyError:
             return False
         try:
             ignore: List[int] = data_c["automod"]["emoji"]["channel"]

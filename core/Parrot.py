@@ -806,7 +806,10 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
             prefix = match[1]
         return commands.when_mentioned_or(prefix)(self, message)
 
-    async def get_guild_prefixes(self, guild: discord.Guild) -> str:
+    async def get_guild_prefixes(self, guild: Union[discord.Guild, int]) -> str:
+        if isinstance(guild, int):
+            guild = discord.Object(id=guild)
+
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:

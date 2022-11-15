@@ -1,18 +1,13 @@
-"""
-truth-table-generator main file
-"""
-
 from __future__ import annotations
 
 import itertools
 import re
-from distutils.util import strtobool
-
-import numpy as np
-import pandas as pd
-import pyparsing
 from prettytable import PrettyTable
+import pyparsing
+import pandas as pd
+import numpy as np
 from tabulate import tabulate
+from distutils.util import strtobool
 
 # dict of boolean operations
 OPERATIONS = {
@@ -35,7 +30,8 @@ def recursive_map(func, data):
     """Recursively applies a map function to a list and all sublists."""
     if isinstance(data, list):
         return [recursive_map(func, elem) for elem in data]
-    return func(data)
+    else:
+        return func(data)
 
 
 def string_to_bool(string):
@@ -63,7 +59,11 @@ def solve_phrase(phrase):
         # single operand operation
         if len(phrase) == 2:
             return OPERATIONS[phrase[0]](solve_phrase(phrase[1]))
-        return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
+        # double operand operation
+        else:
+            return OPERATIONS[phrase[1]](
+                solve_phrase(phrase[0]), solve_phrase([phrase[2]])
+            )
 
 
 def group_operations(phrase):
@@ -114,7 +114,10 @@ class Truths:
         self.ints = ints
 
         # generate the sets of booleans for the bases
-        order = [False, True] if ascending else [True, False]
+        if ascending:
+            order = [False, True]
+        else:
+            order = [True, False]
 
         self.base_conditions = list(itertools.product(order, repeat=len(bases)))
 
@@ -127,7 +130,7 @@ class Truths:
         for item in itertools.chain(
             self.bases, [key for key, val in OPERATIONS.items()]
         ):
-            self.to_match = {**self.to_match, **item}
+            self.to_match |= item
         self.parens = pyparsing.nestedExpr("(", ")", content=self.to_match)
 
     def calculate(self, *args):

@@ -1,6 +1,3 @@
-# <i>IMPORTANT: THE BOT IS CURRENTLY OFFLINE AS I DON'T HAVE MONEY TO HOST THE BOT. SOONER OR LATER I WILL HOST THE BOT</i>
-
-
 # Parrot Discord Bot
 
 *Imagine a Discord bot with Mini Ticket System, Moderation tools for admins and lots of fun commands for the users. And International Global Chat.*

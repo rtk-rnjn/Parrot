@@ -133,3 +133,5 @@ dmypy.json
 .vscode/
 log/
 .env.json
+discord.log
+env.json

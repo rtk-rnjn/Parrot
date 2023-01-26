@@ -105,9 +105,9 @@ intents.message_content = True  # type: ignore
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-ERROR_LOG_WEBHOOK_ID = 924513442273054730
-STARTUP_LOG_WEBHOOK_ID = 985926507530690640
-VOTE_LOG_WEBHOOK_ID = 897741476006592582
+# ERROR_LOG_WEBHOOK_ID = 924513442273054730
+# STARTUP_LOG_WEBHOOK_ID = 985926507530690640
+# VOTE_LOG_WEBHOOK_ID = 897741476006592582
 
 DEFAULT_PREFIX: Literal["$"] = "$"
 
@@ -417,11 +417,11 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
     async def on_autopost_success(self) -> None:
         if self.HAS_TOP_GG:
             st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
-            await self._execute_webhook(
-                webhook_id=STARTUP_LOG_WEBHOOK_ID,
-                webhook_token=self._startup_log_token,
-                content=f"```py\n{st}```",
-            )
+            # await self._execute_webhook(
+            #     webhook_id=STARTUP_LOG_WEBHOOK_ID,
+            #     webhook_token=self._startup_log_token,
+            #     content=f"```py\n{st}```",
+            # )
 
             print(st)
 

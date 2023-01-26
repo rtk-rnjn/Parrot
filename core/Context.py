@@ -52,7 +52,7 @@ MaybeAwaitable = Union[T, Awaitable[T]]
 Callback = MaybeAwaitable
 # BotT = TypeVar("BotT", bound=commands.Bot)
 
-VOTER_ROLE_ID = 836492413312040990
+# VOTER_ROLE_ID = 836492413312040990
 
 
 class Context(commands.Context[commands.Bot], Generic[T]):
@@ -94,19 +94,23 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         return await self.wrong()
 
     async def is_voter(self) -> Optional[bool]:
-        if member := self.bot.server.get_member(self.author.id):
-            return member._roles.has(VOTER_ROLE_ID)
+        # if member := self.bot.server.get_member(self.author.id):
+        #     return member._roles.has(VOTER_ROLE_ID)
 
-        if data := await self.bot.mongo.extra.user_misc.find_one(
-            {
-                "_id": self.author.id,
-                "topgg_vote_expires": {"$gte": discord.utils.utcnow()},
-            }
-        ):
-            return True
+        # if data := await self.bot.mongo.extra.user_misc.find_one(
+        #     {
+        #         "_id": self.author.id,
+        #         "topgg_vote_expires": {"$gte": discord.utils.utcnow()},
+        #     }
+        # ):
+        #     return True
 
-        if self.bot.HAS_TOP_GG:
-            return await self.bot.topgg.get_user_vote(self.author.id)
+        # if self.bot.HAS_TOP_GG:
+        #     return await self.bot.topgg.get_user_vote(self.author.id)
+
+        # TODO: FIX VOTING ROLE ADDING SYSTEM
+
+        return None
 
     async def dj_role(
         self,

@@ -45,8 +45,4 @@ topggpy
 tornado
 typing_extensions
 uvicorn
-
-# This dependency is banned in Railway.App
-# youtube_dl
-
 git+https://github.com/akornatskyy/wheezy.captcha

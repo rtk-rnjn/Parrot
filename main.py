@@ -13,6 +13,8 @@ from utilities.config import TOKEN, VERSION, my_secret
 
 bot: Parrot = Parrot()
 
+DATABASE_URI = "mongodb+srv://user:{}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+
 
 async def main() -> None:
     async with ClientSession(
@@ -25,7 +27,7 @@ async def main() -> None:
                 bot.__version__ = VERSION
 
             bot.mongo = AsyncIOMotorClient(
-                f"mongodb+srv://user:{my_secret}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+                DATABASE_URI.format(my_secret),
             )
             await bot.start(TOKEN)
 

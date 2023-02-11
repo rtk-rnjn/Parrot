@@ -515,7 +515,7 @@ class Misc(Cog):
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 
-    @search.command()
+    @search.command(name="custom")
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)

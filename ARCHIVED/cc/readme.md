@@ -1,3 +1,5 @@
+# ARCHIVED - THIS COG IS NO LONGER MAINTAINED
+
 # Custom Commands
 
 Parrot give custom command privileges to members. Instead you think any of the command is missing you can create your own command. Creating command can be complex for those who are new to the bot. It is expected to have some basic knowledge of the python and the bot.

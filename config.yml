@@ -43,7 +43,6 @@ unload_extensions:
   - cogs.ipc
   - cogs.sports
   - cogs.music
-  - cogs.cc
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

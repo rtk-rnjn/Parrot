@@ -1,7 +1,6 @@
 all_extensions:
   - cogs.actions
   - cogs.api
-  - cogs.cc
   - cogs.config
   - cogs.fun
   - cogs.hidden

@@ -379,7 +379,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         _FILE = discord.utils.MISSING
 
         if content and len(content) > 1990 or force_file:
-            _FILE = discord.File = discord.File(
+            _FILE: discord.File = discord.File(
                 io.BytesIO(
                     content,
                     filename=filename or "content.txt",

@@ -59,8 +59,6 @@ from time import perf_counter
 
 from utilities.checks import _can_run
 from utilities.config import (
-    AUTHOR_DISCRIMINATOR,
-    AUTHOR_NAME,
     CASE_INSENSITIVE,
     EXTENSIONS,
     GITHUB,
@@ -300,7 +298,7 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
 
     async def setup_hook(self) -> None:
         if TO_LOAD_IPC:
-            self.ipc.start()
+            await self.ipc.start()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)

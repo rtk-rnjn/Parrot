@@ -135,3 +135,4 @@ log/
 .env.json
 discord.log
 env.json
+venv

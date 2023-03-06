@@ -930,12 +930,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 )
                 await message.reply("GG! Level up!", file=file)
 
-    async def _scam_detection(self, message: discord.Message) -> None:
+    async def _scam_detection(self, message: discord.Message) -> Optional[bool]:
         if message.guild is None:
-            return
+            return False
 
         if message.author.id == self.bot.user.id:
-            return
+            return False
 
         if not message.channel.permissions_for(message.guild.me).send_messages:  # type: ignore
             return
@@ -953,12 +953,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. "
                     f"Match: `{'`, `'.join(k for k, v in self.__scam_link_cache.items() if v and k in match_list)}`",
                 )
-            return
+            return True
 
         if match_list and all(
             not self.__scam_link_cache.get(i, True) for i in set(match_list)
         ):
-            return
+            return False
 
         with suppress(aiohttp.ClientOSError):
             response = await self.bot.http_session.post(
@@ -976,12 +976,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
             if data["match"]:
                 await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. "
-                    f"Match: `{'`, `'.join(i['domain'] for i in data['matches'])}`"
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: "(
+                        f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
+                        if len(data["matches"]) < 10
+                        else len(data["matches"])
+                    )
                 )
                 for match in data["matches"]:
                     self.__scam_link_cache[match["domain"]] = True
                     await asyncio.sleep(0)
+                return True
 
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         assert isinstance(msg.author, discord.Member) and msg.guild is not None

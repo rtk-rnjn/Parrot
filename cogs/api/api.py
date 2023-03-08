@@ -50,7 +50,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         self._req_lock = asyncio.Lock()
         self.token = os.environ["GITHUB_TOKEN"]
 
-        self.__interal_token_caching = set()
+        self.__internal_token_caching = set()
 
     async def github_request(
         self, method, url, *, params=None, data=None, headers=None
@@ -115,7 +115,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
             if validate_token(token)
         ]
 
-        if all(token in self.__interal_token_caching for token in tokens):
+        if all(token in self.__internal_token_caching for token in tokens):
             return
 
         if tokens and message.author.id != self.bot.user.id:
@@ -123,7 +123,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
                 "\n".join(tokens), description="Discord tokens detected"
             )
             msg = f"{message.author.mention}, I have found tokens and sent them to <{url}> to be invalidated for you."
-            self.__interal_token_caching.update(set(tokens))
+            self.__internal_token_caching.update(set(tokens))
             with suppress(discord.HTTPException):
                 await message.channel.send(msg)
 

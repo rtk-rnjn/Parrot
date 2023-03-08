@@ -38,7 +38,7 @@ class MongoFeature(*STANDARD_FEATURES, *OPTIONAL_FEATURES):
     @Feature.Command(parent="jsk", name="mongodelete", aliases=["md", "mongod"])
     async def jsk_mongodelete(self, ctx: Context[Parrot], db: str, collection: str, *, filter: str):
         """
-        Runs a mongo command. Syntax: `jsk mongofind <db> <collection> <query>`
+        Runs a mongo command. Syntax: `jsk mongodelete <db> <collection> <query>`
         """
 
         col: PyMongoCollection = ctx.bot.mongo[db][collection]

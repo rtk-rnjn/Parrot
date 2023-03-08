@@ -17,7 +17,7 @@ with open("config.yml") as f:
 
 VERSION = "v4.9.5-beta"
 
-HEROKU: bool = True
+HEROKU: bool = False
 
 
 def parse_env_var(

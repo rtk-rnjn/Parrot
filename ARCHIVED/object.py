@@ -14,7 +14,7 @@
     >>> b.foo is b['foo']
     True
     It is safe to import * from this module:
-        __all__ = ('Object', 'objectify','unobjectify')
+        __all__ = ('Object', 'objectify', 'unobjectify')
     un/objectify provide dictionary conversion; Munches can also be
     converted via Object.to/from_dict().
 """

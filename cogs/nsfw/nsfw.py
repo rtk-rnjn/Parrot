@@ -31,7 +31,7 @@ class NSFW(Cog):
 
     async def get_embed(self, type_str: str) -> Optional[discord.Embed]:
         response = await self.bot.http_session.get(self.url, params={"type": type_str})
-        if response.status != 200:
+        if response.status < 300:
             return None
         url = (await response.json())["message"]
         embed = discord.Embed(
@@ -47,7 +47,6 @@ class NSFW(Cog):
 
             @commands.command(name=end_point)
             @commands.is_nsfw()
-            @commands.bot_has_permissions(embed_links=True)
             @Context.with_type
             async def callback(ctx: Context):
                 embed = await self.get_embed(f"{ctx.command.name}")
@@ -61,7 +60,6 @@ class NSFW(Cog):
             self.bot.add_command(callback)
 
     @commands.command(aliases=["randnsfw"], hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def randomnsfw(self, ctx: Context, *, subreddit: str = None) -> None:
         """
         To get Random NSFW from subreddit.
@@ -88,7 +86,6 @@ class NSFW(Cog):
         await ctx.reply(embed=em)
 
     @commands.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type

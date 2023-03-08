@@ -22,7 +22,7 @@ class MongoFeature(*STANDARD_FEATURES, *OPTIONAL_FEATURES):
     Feature that adds a mongo command to jishaku
     """
 
-    @Feature.command(parent="jsk", name="mongofind", aliases=["mf", "mongof"])
+    @Feature.Command(parent="jsk", name="mongofind", aliases=["mf", "mongof"])
     async def jsk_mongo(self, ctx: Context[Parrot], db: str, collection: str, *, filter: str):
         """
         Runs a mongo command. Syntax: `jsk mongofind <db> <collection> <query>`
@@ -35,7 +35,7 @@ class MongoFeature(*STANDARD_FEATURES, *OPTIONAL_FEATURES):
         else:
             await ctx.send(f"```json\n{json.dumps(result, option=json.OPT_INDENT_2)}```")
 
-    @Feature.command(parent="jsk", name="mongodelete", aliases=["md", "mongod"])
+    @Feature.Command(parent="jsk", name="mongodelete", aliases=["md", "mongod"])
     async def jsk_mongo_delete(self, ctx: Context[Parrot], db: str, collection: str, *, filter: str):
         """
         Runs a mongo command. Syntax: `jsk mongofind <db> <collection> <query>`

@@ -63,7 +63,7 @@ async def dial(
         f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
     )
     try:
-        temp_message = target_channel.send(
+        temp_message: discord.Message = target_channel.send(
             f'<@&{target_guild["pingrole"]}> <@{target_guild["memberping"]}>',
             delete_after=1,
         )
@@ -71,7 +71,7 @@ async def dial(
     except (AttributeError, KeyError):
         pass
 
-    def check_pickup_hangup(m):
+    def check_pickup_hangup(m: discord.Message) -> bool:
         return (
             (m.content.lower() in ("pickup", "hangup"))
             and (m.channel in (channel, target_channel))

@@ -35,7 +35,9 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
         try:
             await self.ctx.invoke(cmd, search=self.name.value)
         except commands.CommandError as e:
-            return
+            return await interaction.response.edit_message(
+                content=f"Error while invoking `play` command: {str(e)}"
+            )
 
         await interaction.response.edit_message(
             content="Invoked `play` command",

@@ -94,12 +94,12 @@ class Music(Cog):
         return embed
 
     async def make_final_embed(
-        self, *, track: wavelink.Track, ctx: Context
+        self, *, track: wavelink.Playable, ctx: Context
     ) -> discord.Embed:
         embed: discord.Embed = self.make_embed(ctx, track)
         col = self.bot.mongo.extra.user_misc
         i = 0
-        async for data in col.find({"playlist.id": track.id}):
+        async for data in col.find({"playlist.id": track.identifier}):
             i += 1
 
         embed.add_field(name="Likes", value=i, inline=True)
@@ -555,7 +555,7 @@ class Music(Cog):
         if isinstance(search, str):
             if search.startswith("https://open.spotify.com/"):
                 return await self.play_spotify(ctx, link=search)
-            search = wavelink.PartialTrack(query=search)
+            search = wavelink.GenericTrack.search(query=search, return_first=True)
 
         if vc.is_playing():
 
@@ -566,10 +566,10 @@ class Music(Cog):
             return
 
         await vc.play(search)
-        view = MusicView(ctx.author.voice.channel, timeout=vc.track.duration, ctx=ctx)
+        view = MusicView(ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx)
         view.message = await ctx.send(
             f"{ctx.author.mention} Now playing",
-            embed=await self.make_final_embed(ctx=ctx, track=vc.track),
+            embed=await self.make_final_embed(ctx=ctx, track=vc.current),
             view=view,
         )
         self._cache[ctx.guild.id] = view
@@ -594,12 +594,12 @@ class Music(Cog):
                 await vc.play(np_track)
                 view = MusicView(
                     ctx.author.voice.channel,
-                    timeout=abs(vc.last_position - vc.track.duration) + 1,
+                    timeout=abs(vc.last_position - vc.current.duration) + 1,
                     ctx=ctx,
                 )
                 view.message = await ctx.send(
                     f"{ctx.author.mention} Now playing",
-                    embed=await self.make_final_embed(ctx=ctx, track=vc.track),
+                    embed=await self.make_final_embed(ctx=ctx, track=vc.current),
                     view=view,
                 )
                 self._cache[ctx.guild.id] = view
@@ -660,7 +660,7 @@ class Music(Cog):
             return await ctx.error(f"{ctx.author.mention} bot is not playing anything.")
         view = MusicView(
             ctx.author.voice.channel,
-            timeout=abs(vc.last_position - vc.track.duration) + 1,
+            timeout=abs(vc.last_position - vc.current.duration) + 1,
             ctx=ctx,
         )
         if _previous_view := self._cache.get(ctx.guild.id, None):
@@ -670,7 +670,7 @@ class Music(Cog):
 
         view.message = await ctx.send(
             f"{ctx.author.mention} Now playing",
-            embed=await self.make_final_embed(ctx=ctx, track=vc.track),
+            embed=await self.make_final_embed(ctx=ctx, track=vc.current),
             view=view,
         )
         self._cache[ctx.guild.id] = view
@@ -815,7 +815,7 @@ class Music(Cog):
                 await vc.play(next_song)
                 view = MusicView(
                     ctx.author.voice.channel,
-                    timeout=abs(vc.last_position - vc.track.duration) + 1,
+                    timeout=abs(vc.last_position - vc.current.duration) + 1,
                     ctx=ctx,
                 )
                 if vc._source is None:
@@ -828,7 +828,7 @@ class Music(Cog):
                 self._cache[ctx.guild.id] = view
                 view.message = await ctx.send(
                     f"{ctx.author.mention} Now playing",
-                    embed=await self.make_final_embed(ctx=ctx, track=vc.track),
+                    embed=await self.make_final_embed(ctx=ctx, track=vc.current),
                     view=view,
                 )
                 return
@@ -872,7 +872,7 @@ class Music(Cog):
                 reaction, user = await self.bot.wait_for(
                     "reaction_add",
                     check=check,
-                    timeout=abs(vc.track.duration - vc.last_position),
+                    timeout=abs(vc.current.duration - vc.last_position),
                 )
             except asyncio.TimeoutError:
                 await msg.delete()
@@ -952,7 +952,7 @@ class Music(Cog):
             return await ctx.error(
                 f"{ctx.author.mention} There are no songs in the queue."
             )
-        q: Deque[wavelink.Track] = vc.queue._queue  # type: ignore
+        q: Deque[wavelink.GenericTrack] = vc.queue._queue  # type: ignore
         for i, track in enumerate(q, start=1):
             if i == index:
                 q.remove(track)
@@ -1066,9 +1066,10 @@ class Music(Cog):
         await ctx.send(f"{ctx.author.mention} player seeked to {seconds} seconds.")
 
     @Cog.listener()
-    async def on_wavelink_track_end(
-        self, player: wavelink.Player, track: wavelink.Track, reason: str
-    ):
+    async def on_wavelink_track_end(self, playload: wavelink.TrackEventPayload):
+        player: wavelink.Player = playload.player
+        reason: Optional[str] = playload.reason
+
         if _previous_view := self._cache.get(player.channel.guild.id):
             _previous_view.stop()
             await _previous_view.on_timeout()
@@ -1088,7 +1089,7 @@ class Music(Cog):
                 self._config[player.guild.id] = {}
 
             if self._config[player.guild.id].get("loop", False):
-                q: Deque[wavelink.Track] = player.queue._queue  # type: ignore
+                q: Deque[wavelink.GenericTrack] = player.queue._queue  # type: ignore
                 q.rotate(-1)
 
                 if (

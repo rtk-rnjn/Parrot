@@ -4,6 +4,7 @@ import os
 from typing import Any, Dict, List, Optional, Union
 
 from wavelink.ext import spotify
+import wavelink
 
 import discord
 from api import cricket_api
@@ -264,13 +265,13 @@ class IPCRoutes(Cog):
         password = data.password
         try:
             if hasattr(self.bot, "wavelink"):
-                await self.bot.wavelink.create_node(
-                    bot=self.bot,
-                    host=host,
-                    port=port,
-                    password=password,
-                    identifier="MAIN",
-                    spotify_client=spotify.SpotifyClient(
+                node: wavelink.Node = wavelink.Node(
+                    uri=f"{host}:{port}", password=password, id="MAIN"
+                )
+                await self.bot.wavelink.connect(
+                    client=self.bot,
+                    nodes=[node],
+                    spotify=spotify.SpotifyClient(
                         client_id=os.environ.get("SPOTIFY_CLIENT_ID"),
                         client_secret=os.environ.get("SPOTIFY_CLIENT_SECRET"),
                     ),
@@ -297,10 +298,10 @@ class IPCRoutes(Cog):
             try:
                 self.bot.topgg_webhook.dbl_webhook(end_point, authentication)
                 self.bot.topgg_webhook.run(port)
+                return {"status": "ok"}
             except Exception as e:
                 return {"status": f"error: {e}"}
-            else:
-                return {"status": "ok"}
+
         return {"status": "error: top.gg not installed"}
 
     @server.route()

@@ -110,7 +110,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         # TODO: FIX VOTING ROLE ADDING SYSTEM
 
-        return None
+        return True
 
     async def dj_role(
         self,

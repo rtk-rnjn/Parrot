@@ -113,7 +113,7 @@ logger.setLevel(logging.WARNING)
 logging.getLogger("discord.http").setLevel(logging.WARNING)
 
 handler = logging.handlers.RotatingFileHandler(
-    filename="discord.log",
+    filename=".discord.log",
     encoding="utf-8",
     maxBytes=1 * 1024 * 1024,  # 1 MiB
     backupCount=1,  # Rotate through 1 files
@@ -225,6 +225,7 @@ class Parrot(commands.AutoShardedBot):
         self.func: Callable[..., Any] = func
 
         # IPC
+        self.HAS_IPC = TO_LOAD_IPC
         self.ipc: "ipc.Server" = ipc.Server(
             bot=self,
             host="localhost",
@@ -295,8 +296,6 @@ class Parrot(commands.AutoShardedBot):
         return str(self.author_obj)
 
     async def setup_hook(self) -> None:
-        if TO_LOAD_IPC:
-            await self.ipc.start()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
@@ -319,6 +318,22 @@ class Parrot(commands.AutoShardedBot):
                 session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)
+
+        if self.HAS_IPC:
+            await self.ipc.start()
+            # connect to Lavalink server
+            success = await self.ipc_client.request(
+                "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
+            )
+            if success["status"] == "ok":
+                print(f"[{self.user.name}] Wavelink node connected successfully")
+
+            # start webserver to receive Top.GG webhooks
+            success = await self.ipc_client.request(
+                "start_dbl_server", port=1019, end_point="/dblwebhook"
+            )
+            if success["status"] == "ok":
+                print(f"[{self.user.name}] DBL server started successfully")
 
         self.reminder_task.start()
 
@@ -462,26 +477,11 @@ class Parrot(commands.AutoShardedBot):
 
         await self.update_opt_in_out.start()
 
-        if TO_LOAD_IPC:
-            # connect to Lavalink server
-            success = await self.ipc_client.request(
-                "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
-            )
-            if success["status"] == "ok":
-                print(f"[{self.user.name}] Wavelink node connected successfully")
-
-            # start webserver to receive Top.GG webhooks
-            success = await self.ipc_client.request(
-                "start_dbl_server", port=1019, end_point="/dblwebhook"
-            )
-            if success["status"] == "ok":
-                print(f"[{self.user.name}] DBL server started successfully")
-
         self._was_ready = True
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f"[{self.user.name}] Wavelink Node {node.identifier} is ready!")
+        print(f"[{self.user.name}] Wavelink Node is ready: {node}")
 
     async def on_connect(self) -> None:
         print(f"[{self.user.name.title()}] Logged in")

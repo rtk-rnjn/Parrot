@@ -8,7 +8,7 @@ lavalink:
   server:
     password: "password"
     sources:
-      youtube: false
+      youtube: true
       bandcamp: true
       soundcloud: true
       twitch: true

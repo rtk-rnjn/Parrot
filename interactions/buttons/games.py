@@ -99,7 +99,7 @@ emoji = emojis  # Idk
 DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 
 
-with open("extra/boggle.txt") as f:
+with open("extra/boggle.txt", encoding='utf-8', errors="ignore") as f:
     DICTIONARY = set(f.read().splitlines())
 
 
@@ -1464,7 +1464,7 @@ class Games(Cog):
     def _load_templates() -> List[MadlibsTemplate]:
         madlibs_stories = Path("extra/madlibs_templates.json")
 
-        with open(madlibs_stories) as file:
+        with open(madlibs_stories, encoding='utf-8', errors="ignore") as file:
             return json.load(file)
 
     @staticmethod

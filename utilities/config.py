@@ -12,7 +12,7 @@ with contextlib.suppress(ImportError):
     load_dotenv()
     dotenv_values(".env")
 
-with open("config.yml") as f:
+with open("config.yml", encoding='utf-8', errors="ignore") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
 
 VERSION = "v4.9.5-beta"

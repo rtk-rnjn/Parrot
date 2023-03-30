@@ -22,7 +22,7 @@ from utilities.time import ShortTime
 
 from .flags import AutoWarn, WarnConfig
 
-with open(r"cogs/config/events.json") as f:
+with open(r"cogs/config/events.json", encoding='utf-8', errors="ignore") as f:
     events = json.load(f)
 
 

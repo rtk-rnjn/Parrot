@@ -89,7 +89,7 @@ TEMPLATE = string.Template(Path("extra/latex_template.txt").read_text())
 BG_COLOR = (54, 57, 63, 255)
 PAD = 10
 
-with open("extra/country.json") as f:
+with open("extra/country.json", encoding='utf-8', errors="ignore") as f:
     COUNTRY_CODES = json.load(f)
 
 

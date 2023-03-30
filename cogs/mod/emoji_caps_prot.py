@@ -10,7 +10,7 @@ from cogs.mod.method import instant_action_parser
 from core import Cog, Context, Parrot
 from utilities.infraction import warn
 
-with open("extra/duke_nekum.txt") as f:
+with open("extra/duke_nekum.txt", encoding='utf-8', errors="ignore") as f:
     quotes = f.read().split("\n")
 
 

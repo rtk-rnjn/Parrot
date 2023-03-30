@@ -719,7 +719,7 @@ class SphinxObjectFileReader:
 class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        with open("extra/docs_links.json") as f:
+        with open("extra/docs_links.json", encoding='utf-8', errors="ignore") as f:
             self.page_types = json.load(f)
 
     @property

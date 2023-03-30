@@ -36,7 +36,6 @@ from typing import (
     Union,
 )
 
-import aioredis
 import jishaku  # type: ignore  # noqa: F401
 import pymongo
 import wavelink
@@ -133,10 +132,9 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 
 __all__ = ("Parrot",)
-T = TypeVar("T")
 
 
-class Parrot(commands.AutoShardedBot, Generic[T]):
+class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
 
     __version__: str
@@ -437,6 +435,9 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         """To close the bot"""
         if TO_LOAD_IPC and self.HAS_TOP_GG:
             await self.topgg_webhook.close()
+
+        if hasattr(self, "http_session"):
+            await self.http_session.close()
 
         self.reminder_task.cancel()
 
@@ -828,7 +829,6 @@ class Parrot(commands.AutoShardedBot, Generic[T]):
         *,
         force_fetch: bool = True,
     ) -> Any:
-
         if _id is None:
             something = None
             if not callable(get_function):

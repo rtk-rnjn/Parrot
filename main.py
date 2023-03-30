@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import socket
+import os
 
 from aiohttp import AsyncResolver, ClientSession, TCPConnector  # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
@@ -15,6 +16,8 @@ bot: Parrot = Parrot()
 
 DATABASE_URI = "mongodb+srv://user:{}@cluster0.xjask.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
+if os.name == "nt":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def main() -> None:
     async with ClientSession(

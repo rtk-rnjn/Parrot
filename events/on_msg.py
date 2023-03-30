@@ -53,7 +53,7 @@ if TYPE_CHECKING:
 
 from core import Cog
 
-with open("extra/profanity.json") as f:
+with open("extra/profanity.json", encoding="utf-8", errors="ignore") as f:
     bad_dict: Dict[str, bool] = json.load(f)
 
 TRIGGER: Tuple = (
@@ -119,7 +119,7 @@ class Delete(discord.ui.View):
 
 class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def __init__(self, bot: Parrot):
-        self.bot = bot
+        self.bot: Parrot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.channel
         )
@@ -838,7 +838,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _on_message_leveling(self, message: discord.Message):
-
         if not message.guild:
             return
         if message.author.bot:
@@ -976,7 +975,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
             if data["match"]:
                 await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: "(
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: "
+                    + (
                         f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
                         if len(data["matches"]) < 10
                         else len(data["matches"])

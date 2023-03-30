@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-with open("extra/duke_nekum.txt") as f:
+with open("extra/duke_nekum.txt", encoding='utf-8', errors="ignore") as f:
     quotes = f.read().split("\n")
 
 

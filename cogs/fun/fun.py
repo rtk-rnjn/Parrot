@@ -48,28 +48,28 @@ from ._jeyy_api_endpoints import END_POINTS
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"
 
-with open(Path("extra/truth.txt"), "r") as f:
+with open(Path("extra/truth.txt"), "r", encoding='utf-8', errors="ignore") as f:
     _truth = f.read()
 
-with open(Path("extra/dare.txt"), "r") as g:
+with open(Path("extra/dare.txt"), "r", encoding='utf-8', errors="ignore") as g:
     _dare = g.read()
 
-with open(Path("extra/lang.json"), "r") as lang:
+with open(Path("extra/lang.json"), "r", encoding='utf-8', errors="ignore") as lang:
     lg = json.load(lang)
 
-with open(Path("extra/wyr.txt"), "r") as h:
+with open(Path("extra/wyr.txt"), "r", encoding='utf-8', errors="ignore") as h:
     _wyr = h.read()
 
-with open(Path("extra/nhi.txt"), "r") as i:
+with open(Path("extra/nhi.txt"), "r", encoding='utf-8', errors="ignore") as i:
     _nhi = i.read()
 
-with open(Path("extra/twister.txt"), "r") as k:
+with open(Path("extra/twister.txt"), "r", encoding='utf-8', errors="ignore") as k:
     _twister = k.read()
 
-with open(Path("extra/anagram.json"), "r") as l:
+with open(Path("extra/anagram.json"), "r", encoding='utf-8', errors="ignore") as l:
     ANAGRAMS_ALL = json.load(l)
 
-with open(Path("extra/random_sentences.txt"), "r") as m:
+with open(Path("extra/random_sentences.txt"), "r", encoding='utf-8', errors="ignore") as m:
     _random_sentences = m.read().split("\n")
 
 FILENAME_STRING = "{effect}_{author}.png"

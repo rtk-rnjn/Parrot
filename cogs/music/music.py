@@ -541,38 +541,38 @@ class Music(Cog):
         ctx: Context,
         *,
         search: Union[wavelink.SoundCloudTrack, str],
-    ):
+    ):  # sourcery skip: last-if-guard
         """Play a song with the given search query. If not connected, connect to your voice channel."""
-        if ctx.invoked_subcommand is not None:
-            return
-        if ctx.voice_client is None:
-            vc: wavelink.Player = await ctx.author.voice.channel.connect(
-                cls=wavelink.Player
+        if ctx.invoked_subcommand is None:
+            
+            if ctx.voice_client is None:
+                vc: wavelink.Player = await ctx.author.voice.channel.connect(
+                    cls=wavelink.Player
+                )
+            else:
+                vc: wavelink.Player = ctx.voice_client  # type: ignore
+
+            if isinstance(search, str):
+                if search.startswith("https://open.spotify.com/"):
+                    return await self.play_spotify(ctx, link=search)
+                search = wavelink.GenericTrack.search(search, return_first=True)
+
+            if vc.is_playing():
+
+                vc.queue.put(search)
+                await ctx.send(
+                    f"{ctx.author.mention} added **{search.title}** to the queue"
+                )
+                return
+
+            await vc.play(search)
+            view = MusicView(ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx)
+            view.message = await ctx.send(
+                f"{ctx.author.mention} Now playing",
+                embed=await self.make_final_embed(ctx=ctx, track=vc.current),
+                view=view,
             )
-        else:
-            vc: wavelink.Player = ctx.voice_client  # type: ignore
-
-        if isinstance(search, str):
-            if search.startswith("https://open.spotify.com/"):
-                return await self.play_spotify(ctx, link=search)
-            search = wavelink.GenericTrack.search(query=search, return_first=True)
-
-        if vc.is_playing():
-
-            vc.queue.put(search)
-            await ctx.send(
-                f"{ctx.author.mention} added **{search.title}** to the queue"
-            )
-            return
-
-        await vc.play(search)
-        view = MusicView(ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx)
-        view.message = await ctx.send(
-            f"{ctx.author.mention} Now playing",
-            embed=await self.make_final_embed(ctx=ctx, track=vc.current),
-            view=view,
-        )
-        self._cache[ctx.guild.id] = view
+            self._cache[ctx.guild.id] = view
 
     @play.command(name="spotify")
     async def play_spotify(self, ctx: Context, *, link: str):
@@ -640,11 +640,12 @@ class Music(Cog):
             if i == 1 and vc.is_playing() is False:
                 await self.play(ctx, search=song["song_name"])
             else:
-                track = wavelink.PartialTrack(query=song["song_name"])
+                track = wavelink.GenericTrack(song["song_name"])
                 vc.queue.put(track)
                 countr += 1
 
         await ctx.send(f"{ctx.author.mention} added **{countr} songs** to the queue")
+        await self.nowplaying(ctx)
 
     @commands.command(aliases=["np"])
     async def nowplaying(self, ctx: Context):
@@ -751,7 +752,7 @@ class Music(Cog):
     ):
         """Add song in the playlist"""
         if isinstance(track, str):
-            track = wavelink.PartialTrack(query=track)
+            track = wavelink.GenericTrack.search(track)
 
         data: UpdateResult = await self.bot.mongo.extra.user_misc.update_one(
             {"_id": ctx.author.id},

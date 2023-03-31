@@ -78,9 +78,9 @@ class MusicView(discord.ui.View):
             {
                 "$addToSet": {
                     "playlist": {
-                        "id": self.player.track.id,
-                        "song_name": getattr(self.player.track, "title"),
-                        "url": getattr(self.player.track, "uri"),
+                        "id": self.player.current.identifier,
+                        "song_name": getattr(self.player.current, "title"),
+                        "url": getattr(self.player.current, "uri"),
                     }
                 }
             },
@@ -93,9 +93,9 @@ class MusicView(discord.ui.View):
             {
                 "$pull": {
                     "playlist": {
-                        "id": self.player.track.id,
-                        "song_name": getattr(self.player.track, "title"),
-                        "url": getattr(self.player.track, "uri"),
+                        "id": self.player.current.identifier,
+                        "song_name": getattr(self.player.current, "title"),
+                        "url": getattr(self.player.current, "uri"),
                     }
                 }
             },

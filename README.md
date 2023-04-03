@@ -9,11 +9,12 @@
 ---
 
 #### Invite bot with:-
- - [`No permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=0&scope=bot%20applications.commands)
- - [`Minimal permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=385088&scope=bot%20applications.commands)
- - [`Recommended permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=2013651062&scope=bot%20applications.commands)
- - [`Admin permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot%20applications.commands)
- - [`All permission (Not Admin)`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=545460846583&scope=bot%20applications.commands)
+
+- [`No permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=0&scope=bot%20applications.commands)
+- [`Minimal permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=385088&scope=bot%20applications.commands)
+- [`Recommended permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=2013651062&scope=bot%20applications.commands)
+- [`Admin permission`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=8&scope=bot%20applications.commands)
+- [`All permission (Not Admin)`](https://discord.com/api/oauth2/authorize?client_id=800780974274248764&permissions=545460846583&scope=bot%20applications.commands)
 
 ---
 
@@ -36,6 +37,7 @@ In case you don't have [`npm`](https://docs.npmjs.com/) installed run the follow
 ```bash
 sudo apt update
 ```
+
 ```bash
 sudo apt install nodejs npm
 ```

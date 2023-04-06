@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 import os
 from typing import Any, Dict, List, Optional, Union
@@ -264,18 +265,19 @@ class IPCRoutes(Cog):
         port = data.port
         password = data.password
         try:
-            if hasattr(self.bot, "wavelink"):
-                node: wavelink.Node = wavelink.Node(
-                    uri=f"{host}:{port}", password=password, id="MAIN"
-                )
-                await self.bot.wavelink.connect(
-                    client=self.bot,
-                    nodes=[node],
-                    spotify=spotify.SpotifyClient(
-                        client_id=os.environ.get("SPOTIFY_CLIENT_ID"),
-                        client_secret=os.environ.get("SPOTIFY_CLIENT_SECRET"),
-                    ),
-                )
+            async with asyncio.timeout(5):
+                if hasattr(self.bot, "wavelink"):
+                    node: wavelink.Node = wavelink.Node(
+                        uri=f"{host}:{port}", password=password, id="MAIN"
+                    )
+                    await self.bot.wavelink.connect(
+                        client=self.bot,
+                        nodes=[node],
+                        spotify=spotify.SpotifyClient(
+                            client_id=os.environ.get("SPOTIFY_CLIENT_ID"),
+                            client_secret=os.environ.get("SPOTIFY_CLIENT_SECRET"),
+                        ),
+                    )
         except Exception as e:
             return {"status": f"error: {e}"}
         else:

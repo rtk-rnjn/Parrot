@@ -133,6 +133,9 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 __all__ = ("Parrot",)
 
+LOCALHOST = "127.0.0.1"
+IPC_PORT = 1730
+
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -228,13 +231,13 @@ class Parrot(commands.AutoShardedBot):
         self.HAS_IPC = TO_LOAD_IPC
         self.ipc: "ipc.Server" = ipc.Server(
             bot=self,
-            host="localhost",
-            port=1730,
+            host=LOCALHOST,
+            port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
         self.ipc_client: "ipc.Client" = ipc.Client(
-            host="localhost",
-            port=1730,
+            host=LOCALHOST,
+            port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
 
@@ -322,8 +325,9 @@ class Parrot(commands.AutoShardedBot):
         if self.HAS_IPC:
             await self.ipc.start()
             # connect to Lavalink server
+            print(f"[{self.user.name}] Started IPC Server")
             success = await self.ipc_client.request(
-                "start_wavelink_nodes", host="127.0.0.1", port=1018, password="password"
+                "start_wavelink_nodes", host=LOCALHOST, port=1018, password="password"
             )
             if success["status"] == "ok":
                 print(f"[{self.user.name}] Wavelink node connected successfully")
@@ -448,8 +452,6 @@ class Parrot(commands.AutoShardedBot):
 
     async def close(self) -> None:
         """To close the bot"""
-        if TO_LOAD_IPC and self.HAS_TOP_GG:
-            await self.topgg_webhook.close()
 
         if hasattr(self, "http_session"):
             await self.http_session.close()

@@ -1,3 +1,5 @@
+# PARROT IS UNDER COMPLETE REWRITE
+
 # Parrot Discord Bot
 
 *Imagine a Discord bot with Mini Ticket System, Moderation tools for admins and lots of fun commands for the users. And International Global Chat.*

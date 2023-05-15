@@ -178,7 +178,7 @@ class Parrot(commands.AutoShardedBot):
                 everyone=False, replied_user=False
             ),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
-            shard_count=1,
+            shard_count=5,
             max_messages=5000,
             **kwargs,
         )
@@ -529,10 +529,6 @@ class Parrot(commands.AutoShardedBot):
     async def process_commands(self, message: discord.Message) -> None:
         ctx: Context = await self.get_context(message, cls=Context)
 
-        if message.author.id in self.owner_ids:
-            await self.invoke(ctx)
-            return
-
         if ctx.command is None or str(ctx.channel.type) == "public_thread":
             return
 
@@ -600,9 +596,6 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
-
-        if message.author.id in self.owner_ids:
-            await self.process_commands(message)
 
         if message.guild is None or message.author.bot:
             # to prevent the usage of command in DMs

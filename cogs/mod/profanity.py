@@ -94,9 +94,11 @@ class Profanity(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
+        await self.bot.wait_until_ready()
         await self._one_message_passive(message)
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        await self.bot.wait_until_ready()
         if before.content != after.content:
             await self._one_message_passive(after)

@@ -520,7 +520,9 @@ class Utils(Cog):
         """To get the level of the user"""
         member = member or ctx.author
         try:
-            enable = self.bot.guild_configurations[ctx.guild.id]["leveling"]["enable"]
+            enable = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"][
+                "enable"
+            ]
             if not enable:
                 return await ctx.send(
                     f"{ctx.author.mention} leveling system is disabled in this server"
@@ -606,7 +608,7 @@ class Utils(Cog):
         self, guild: discord.Guild
     ) -> Optional[discord.TextChannel]:
         try:
-            ch_id: Optional[int] = self.bot.guild_configurations[guild.id][
+            ch_id: Optional[int] = self.bot.guild_configurations_cache[guild.id][
                 "suggestion_channel"
             ]
         except KeyError as e:
@@ -629,7 +631,7 @@ class Utils(Cog):
         except KeyError:
             if channel is None:
                 try:
-                    channel_id = self.bot.guild_configurations[guild.id][
+                    channel_id = self.bot.guild_configurations_cache[guild.id][
                         "suggestion_channel"
                     ]
                 except KeyError as e:
@@ -1107,9 +1109,7 @@ class Utils(Cog):
     @commands.has_permissions(manage_guild=True)
     async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int = 1):
         """To end the giveaway"""
-        if data := await self.bot.giveaways.find_one(
-            {"message_id": messageID}
-        ):
+        if data := await self.bot.giveaways.find_one({"message_id": messageID}):
             if data["status"].upper() == "ONGOING":
                 return await ctx.send(
                     f"{ctx.author.mention} can not reroll the ongoing giveaway"
@@ -1147,7 +1147,7 @@ class Utils(Cog):
                 "categories": len(guild.categories),
             }
             try:
-                stats_channels: Dict[str, Any] = self.bot.guild_configurations[
+                stats_channels: Dict[str, Any] = self.bot.guild_configurations_cache[
                     guild.id
                 ]["stats_channels"]
             except KeyError:

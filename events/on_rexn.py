@@ -30,14 +30,16 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
             payload.channel_id
-            in self.bot.guild_configurations[payload.guild_id]["starboard"][
+            in self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
                 "ignore_channel"
             ]
         ):
             return
 
         max_duration = (
-            self.bot.guild_configurations[payload.guild_id]["starboard"]["max_duration"]
+            self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+                "max_duration"
+            ]
             or TWO_WEEK
         )
 
@@ -67,13 +69,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
             payload.channel_id
-            in self.bot.guild_configurations[payload.guild_id]["starboard"][
+            in self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
                 "ignore_channel"
             ]
         ):
             return
         max_duration = (
-            self.bot.guild_configurations[payload.guild_id]["starboard"]["max_duration"]
+            self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+                "max_duration"
+            ]
             or TWO_WEEK
         )
         if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
@@ -222,7 +226,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         main_message = data["message_id"]["author"]
         try:
             starboard_channel: int = (
-                self.bot.guild_configurations[payload.guild_id]["starboard"]["channel"]
+                self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+                    "channel"
+                ]
                 or 0
             )
         except KeyError:

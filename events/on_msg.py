@@ -723,7 +723,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         await self._delete_record_message_to_database(
             payload.message_id, channel=payload.channel_id
         )
-        await self.bot.mongo.parrot_db.starboard.delete_one(
+        await self.bot.starboards.delete_one(
             {
                 "$or": [
                     {"message_id.bot": payload.message_id},
@@ -857,9 +857,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            enable: bool = self.bot.guild_configurations[message.guild.id]["leveling"][
-                "enable"
-            ]
+            enable: bool = self.bot.guild_configurations_cache[message.guild.id][
+                "leveling"
+            ]["enable"]
         except KeyError:
             return
 
@@ -868,7 +868,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         try:
             role: List[int] = (
-                self.bot.guild_configurations[message.guild.id]["leveling"][
+                self.bot.guild_configurations_cache[message.guild.id]["leveling"][
                     "ignore_role"
                 ]
                 or []
@@ -881,7 +881,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         try:
             ignore_channel: List = (
-                self.bot.guild_configurations[message.guild.id]["leveling"][
+                self.bot.guild_configurations_cache[message.guild.id]["leveling"][
                     "ignore_channel"
                 ]
                 or []
@@ -898,7 +898,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         try:
             announce_channel: int = (
-                self.bot.guild_configurations[message.guild.id]["leveling"]["channel"]
+                self.bot.guild_configurations_cache[message.guild.id]["leveling"][
+                    "channel"
+                ]
                 or 0
             )
         except KeyError:
@@ -1008,7 +1010,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def __add_role__xp(self, guild_id: int, level: int, msg: discord.Message):
         assert isinstance(msg.author, discord.Member)
         try:
-            ls = self.bot.guild_configurations[guild_id]["leveling"]["reward"]
+            ls = self.bot.guild_configurations_cache[guild_id]["leveling"]["reward"]
         except KeyError:
             return
 
@@ -1038,13 +1040,20 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         # code - when the AFK user messages
         if message.author.id in self.bot.afk and (
-            data := await self.bot.mongo.parrot_db.afk.find_one(
+            data := await self.bot.extra_collections.find_one_and_update(
                 {
                     "$or": [
                         {"messageAuthor": message.author.id, "guild": message.guild.id},
                         {"messageAuthor": message.author.id, "global": True},
                     ]
-                }
+                },
+                {
+                    "$pull": {
+                        "messageAuthor": message.author.id,
+                    }
+                },
+                multi=True,
+                return_document=ReturnDocument.AFTER,
             )
         ):
             if message.channel.id in data["ignoredChannel"]:
@@ -1061,8 +1070,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                             nick=name, reason=f"{message.author} came after AFK"
                         )
 
-            await self.bot.mongo.parrot_db.afk.delete_one({"_id": data["_id"]})
-            await self.bot.mongo.parrot_db.timers.delete_one({"_id": data["_id"]})
+            await self.bot.timers.delete_one({"_id": data["_id"]})
             self.bot.afk = set(
                 await self.bot.mongo.parrot_db.afk.distinct("messageAuthor")
             )

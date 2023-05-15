@@ -52,7 +52,7 @@ class EmojiCapsProt(Cog):
             return True
 
     def is_emoji_infilterated(self, message: discord.Message) -> Optional[bool]:
-        if not (data_c := self.bot.guild_configurations.get(message.guild.id)):
+        if not (data_c := self.bot.guild_configurations_cache.get(message.guild.id)):
             return
         if not data_c["automod"]["emoji"]["enable"]:
             return False
@@ -157,11 +157,13 @@ class EmojiCapsProt(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         await self._on_message_passive(message)
 
     @Cog.listener()
     async def on_message_edit(
         self, before: discord.Message, after: discord.Message
     ) -> None:
+        await self.bot.wait_until_ready()
         if before.content != after.content:
             await self._on_message_passive(after)

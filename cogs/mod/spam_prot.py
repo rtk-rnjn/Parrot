@@ -34,6 +34,7 @@ class SpamProt(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
+        await self.bot.wait_until_ready()
         # sourcery skip: low-code-quality
         if message.author.public_flags.verified_bot or not message.guild:
             return

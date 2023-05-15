@@ -137,7 +137,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             return self.guild.default_role
         try:
             dj_role = self.guild.get_role(
-                self.bot.guild_configurations[self.guild.id]["dj_role"] or 0
+                self.bot.guild_configurations_cache[self.guild.id]["dj_role"] or 0
             )
             author_dj_role = discord.utils.find(
                 lambda r: r.name.lower() == "dj",
@@ -167,7 +167,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             )
             return (
                 self.guild.get_role(
-                    self.bot.guild_configurations[self.guild.id]["mute_role"] or 0
+                    self.bot.guild_configurations_cache[self.guild.id]["mute_role"] or 0
                 )
                 or global_muted
                 or author_muted
@@ -184,7 +184,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     ) -> Optional[discord.Role]:
         try:
             return self.guild.get_role(
-                self.bot.guild_configurations[self.guild.id]["mod_role"] or 0
+                self.bot.guild_configurations_cache[self.guild.id]["mod_role"] or 0
             )
         except KeyError:
             if data := await self.bot.guild_configurations.find_one(

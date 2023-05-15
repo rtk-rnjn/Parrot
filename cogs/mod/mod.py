@@ -1784,7 +1784,7 @@ class Moderator(Cog):
         col: Collection = self.bot.mongo.warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
-        if data := await self.bot.mongo.parrot_db.server_config.find_one(
+        if data := await self.bot.guild_configurations.find_one(
             {"_id": ctx.guild.id, "warn_auto.count": count}
         ):
             for i in data["warn_auto"]:

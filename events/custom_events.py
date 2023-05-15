@@ -22,7 +22,7 @@ class EventCustom(Cog):
         self.bot = bot
         self.ON_TESTING = False
 
-    @Cog.listener("on_timer_complete")
+    @Cog.listener("on_unban_timer_complete")
     async def mod_parser(
         self,
         *,
@@ -108,23 +108,47 @@ class EventCustom(Cog):
 
         await self.extra_action_parser(name, **main)
 
-    async def extra_action_parser(self, name: str, **kw: Any) -> None:
-        if name.upper() == "REMOVE_AFK":
-            await self.bot.mongo.parrot_db.afk.delete_one(kw)
-            self.bot.afk.remove(kw.get("messageAuthor"))
+    @Cog.listener("on_set_afk_timer_complete")
+    async def extra_parser_set_afk(
+        self, extra: Dict[str, Any] = None, **kw: Any
+    ) -> None:
+        if extra is None:
+            return
 
-        if name.upper() == "SET_AFK":
-            await self.bot.mongo.parrot_db.afk.insert_one(kw)
+        name = extra.get("name")
+        if name == "SET_AFK":
+            await self.bot.extra_collections.insert_one(kw)
             self.bot.afk.add(kw.get("messageAuthor"))
 
+    @Cog.listener("on_remove_afk_timer_complete")
+    async def extra_parser_remove_afk(
+        self, extra: Dict[str, Any] = None, **kw: Any
+    ) -> None:
+        if extra is None:
+            return
+
+        name = extra.get("name")
+        if name == "REMOVE_AFK":
+            await self.bot.extra_collections.delete_one(kw)
+            self.bot.afk.remove(kw.get("messageAuthor"))
+
+    @Cog.listener("on_giveaway_timer_complete")
+    async def extra_parser_giveaway(
+        self, extra: Dict[str, Any] = None, **kw: Any
+    ) -> None:
+        if extra is None:
+            return
+
+        name = extra.get("name")
+        if name == "GIVEAWAY_END":
+            await self._parse_giveaway(**kw)
+
+    async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "SET_TIMER":
-            await self.bot.mongo.parrot_db.timers.insert_one(kw)
+            await self.bot.timers.insert_one(kw)
 
         if name.upper() == "SET_TIMER_LOOP":
             await self._parse_timer(**kw)
-
-        if name.upper() == "GIVEAWAY_END":
-            await self._parse_giveaway(**kw)
 
         if name.upper() == "DB_EXECUTE":
             await self._parse_db_execute(**kw)
@@ -142,10 +166,10 @@ class EventCustom(Cog):
         post = kw.copy()
         post["extra"] = {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}}
         post["expires_at"] = age.dt.timestamp()
-        await self.bot.mongo.parrot_db.timers.insert_one(post)
+        await self.bot.timers.insert_one(post)
 
     async def _parse_giveaway(self, **kw: Any) -> None:
-        data: Dict[str, Any] = await self.bot.mongo.parrot_db.giveaway.find_one(
+        data: Dict[str, Any] = await self.bot.giveaways.find_one(
             {
                 "message_id": kw.get("message_id"),
                 "guild_id": kw.get("guild_id"),
@@ -156,7 +180,7 @@ class EventCustom(Cog):
         channel: Optional[discord.TextChannel] = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel")
         )
-        await self.bot.mongo.parrot_db.giveaway.find_one_and_update(
+        await self.bot.giveaways.find_one_and_update(
             {"message_id": kw.get("message_id"), "status": "ONGOING"},
             {"$set": {"status": "END"}},
         )

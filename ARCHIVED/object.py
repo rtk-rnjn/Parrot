@@ -20,6 +20,7 @@
 """
 
 import sys
+from typing import Any, Dict, List, Self, TypeVar
 
 __version__ = "2.0.2"
 VERSION = tuple(map(int, __version__.split(".")))
@@ -52,6 +53,31 @@ else:
     iteritems = dict.items
     iterkeys = dict.keys
 
+KT = TypeVar("KT", bound=Any)
+VT = TypeVar("VT", bound=Any)
+
+
+class NULL:
+    __slots__ = ()
+
+    def __eq__(self, other: Any) -> bool:
+        return False
+
+    def __bool__(self) -> bool:
+        return False
+
+    def __getattribute__(self, __name: KT) -> Self:
+        return self
+
+    def __getattr__(self, __name: KT) -> Self:
+        return self
+
+    def __repr__(self) -> str:
+        return "NULL()"
+
+    def __str__(self) -> str:
+        return "NULL"
+
 
 class Object(dict):
     """A dictionary that provides attribute-style access.
@@ -83,7 +109,7 @@ class Object(dict):
     See unobjectify/Object.to_dict, objectify/Object.from_dict for notes about conversion.
     """
 
-    def __contains__(self, k):
+    def __contains__(self, k) -> bool:
         """>>> b = Object(ponies='are pretty!')
         >>> 'ponies' in b
         True
@@ -103,12 +129,14 @@ class Object(dict):
         True
         """
         try:
+            if isinstance(k, NULL):
+                return False
             return dict.__contains__(self, k) or hasattr(self, k)
         except Exception:
             return False
 
     # only called if k not found in normal places
-    def __getattr__(self, k):
+    def __getattr__(self, k: KT) -> VT:
         """Gets key if it exists, otherwise throws AttributeError.
         nb. __getattr__ is only called if key is not found in normal places.
         >>> b = Object(bar='baz', lol={})
@@ -133,9 +161,9 @@ class Object(dict):
             try:
                 return self[k]
             except KeyError as e:
-                raise AttributeError(k) from e
+                return NULL()
 
-    def __setattr__(self, k, v):
+    def __setattr__(self, k: KT, v: VT) -> None:
         """Sets attribute k if it exists, otherwise sets key k. A KeyError
         raised by set-item (only likely if you subclass Object) will
         propagate as an AttributeError instead.
@@ -156,12 +184,12 @@ class Object(dict):
         except AttributeError:
             try:
                 self[k] = v
-            except Exception as e:
-                raise AttributeError(k) from e
+            except KeyError:
+                return NULL()
         else:
             object.__setattr__(self, k, v)
 
-    def __delattr__(self, k):
+    def __delattr__(self, k: KT) -> None:
         """Deletes attribute k if it exists, otherwise deletes key k. A KeyError
         raised by deleting the key--such as when the key is missing--will
         propagate as an AttributeError instead.
@@ -182,11 +210,11 @@ class Object(dict):
             try:
                 del self[k]
             except KeyError as e:
-                raise AttributeError(k) from e
+                return NULL()
         else:
             object.__delattr__(self, k)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[KT, VT]:
         """Recursively converts a Object back into a dictionary.
         >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         >>> b.to_dict()
@@ -195,7 +223,7 @@ class Object(dict):
         """
         return unobjectify(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Invertible* string-form of a Object.
         >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         >>> print (repr(b))
@@ -205,10 +233,10 @@ class Object(dict):
         (*) Invertible so long as collection contents are each repr-invertible.
         """
         keys = sorted(iterkeys(self))
-        args = ", ".join(["%s=%r" % (key, self[key]) for key in keys])
+        args = ", ".join([f"{key}={self[key]!r}" for key in keys])
         return f"{self.__class__.__name__}({args})"
 
-    def __dir__(self):
+    def __dir__(self) -> List[str]:
         return list(iterkeys(self))
 
     __members__ = __dir__  # for python2.x compatibility

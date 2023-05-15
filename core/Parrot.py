@@ -71,6 +71,10 @@ from utilities.config import (
     TOKEN,
     UNLOAD_EXTENSIONS,
     VERSION,
+    WEBHOOK_ERROR_LOGS,
+    WEBHOOK_JOIN_LEAVE_LOGS,
+    WEBHOOK_STARTUP_LOGS,
+    WEBHOOK_VOTE_LOGS,
 )
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
@@ -80,7 +84,8 @@ from .Context import Context
 
 if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
-    from pymongo.collection import Collection as PyMongoCollection
+    from motor.motor_asyncio import AsyncIOMotorCollection as Collection
+    from motor.motor_asyncio import AsyncIOMotorDatabase as Database
     from typing_extensions import TypeAlias
 
     from .Cog import Cog
@@ -88,7 +93,8 @@ if TYPE_CHECKING:
     if HAS_TOP_GG:
         from topgg.types import BotVoteData
 
-    MongoCollection: TypeAlias = PyMongoCollection
+    MongoCollection: TypeAlias = Collection
+    MongoDatabase: TypeAlias = Database
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -102,10 +108,6 @@ intents.message_content = True  # type: ignore
 dbl_token = os.environ["TOPGG"]
 
 CHANGE_LOG_ID = 796932292458315776
-# ERROR_LOG_WEBHOOK_ID = 924513442273054730
-# STARTUP_LOG_WEBHOOK_ID = 985926507530690640
-# VOTE_LOG_WEBHOOK_ID = 897741476006592582
-
 DEFAULT_PREFIX: Literal["$"] = "$"
 
 logger = logging.getLogger("discord")
@@ -185,9 +187,9 @@ class Parrot(commands.AutoShardedBot):
         self._seen_messages: int = 0
         self._change_log: List[discord.Message] = []
 
-        self._error_log_token: str = os.environ["CHANNEL_TOKEN2"]
-        self._startup_log_token: str = os.environ["CHANNEL_TOKEN3"]
-        self._vote_log_token: str = os.environ["CHANNEL_TOKEN4"]
+        self._error_log_token: str = WEBHOOK_ERROR_LOGS
+        self._startup_log_token: str = WEBHOOK_STARTUP_LOGS
+        self._vote_log_token: str = WEBHOOK_VOTE_LOGS
 
         self.color: int = 0x87CEEB
         self.colour: int = self.color
@@ -200,6 +202,8 @@ class Parrot(commands.AutoShardedBot):
 
         self._was_ready: bool = False
         self.lock: "asyncio.Lock" = asyncio.Lock()
+        self.timer_task: Optional[asyncio.Task] = None
+        self.reminder_event: asyncio.Event = asyncio.Event()
         self.ON_HEROKU: bool = HEROKU
 
         # Top.gg
@@ -216,13 +220,10 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin: Client = Client()
 
         # caching variables
-        self.server_config: Dict[int, Dict[str, Any]] = Cache()
+        self.guild_configurations_cache: Dict[int, Dict[str, Any]] = Cache()
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: Set[int] = set()
-        self._disabled_commands: Dict[
-            int, List[Dict[commands.Command, Dict[str, Union[List[int], bool]]]]
-        ] = {}
 
         self.opts: Dict[int, Any] = {}
         self.func: Callable[..., Any] = func
@@ -257,6 +258,31 @@ class Parrot(commands.AutoShardedBot):
         self.UNDER_MAINTENANCE_REASON: Optional[str] = None
         self.UNDER_MAINTENANCE_OVER: Optional[datetime.datetime] = None
 
+        # MongoDB Database variables
+        # Main DB
+        self.main_db: MongoDatabase = self.mongo["mainDB"]
+        self.guild_configurations: MongoCollection = self.main_db["guildConfigurations"]
+        self.game_collections: MongoCollection = self.main_db["gameCollections"]
+        self.command_collections: MongoCollection = self.main_db["commandCollections"]
+        self.timers: MongoCollection = self.main_db["timers"]
+        self.starboards: MongoCollection = self.main_db["starboards"]
+        self.giveaways: MongoCollection = self.main_db["giveaways"]
+        self.user_collections_ind: MongoCollection = self.main_db["userCollections"]
+        self.guild_collections_ind: MongoCollection = self.main_db["guildCollections"]
+        self.extra_collections: MongoCollection = self.main_db["extraCollections"]
+
+        # User Message DB
+        self.user_message_db: MongoDatabase = self.mongo["userMessageDB"]
+
+        # Guild Message DB
+        self.guild_message_db: MongoDatabase = self.mongo["guildMessageDB"]
+
+        # User DB
+        self.user_db: MongoDatabase = self.mongo["userDB"]
+
+        # Guild DB
+        self.guild_db: MongoDatabase = self.mongo["guildDB"]
+
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
 
@@ -288,7 +314,8 @@ class Parrot(commands.AutoShardedBot):
                 msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)
             ]
 
-        return self._change_log[0]
+        if self._change_log:
+            return self._change_log[0]
 
     @property
     def author_obj(self) -> Optional[discord.User]:
@@ -339,11 +366,11 @@ class Parrot(commands.AutoShardedBot):
             if success["status"] == "ok":
                 print(f"[{self.user.name}] DBL server started successfully")
 
-        self.reminder_task.start()
+        self.timer_task.start()
 
     async def db_latency(self) -> float:
         ini = perf_counter()
-        await self.mongo.parrot_db.server_config.find_one({})
+        await self.guild_configurations.find_one({})
         return perf_counter() - ini
 
     def _clear_gateway_data(self) -> None:
@@ -432,11 +459,10 @@ class Parrot(commands.AutoShardedBot):
     async def on_autopost_success(self) -> None:
         if self.HAS_TOP_GG:
             st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
-            # await self._execute_webhook(
-            #     webhook_id=STARTUP_LOG_WEBHOOK_ID,
-            #     webhook_token=self._startup_log_token,
-            #     content=f"```py\n{st}```",
-            # )
+            await self._execute_webhook(
+                self._startup_log_token,
+                content=f"```py\n{st}```",
+            )
 
             print(st)
 
@@ -456,7 +482,8 @@ class Parrot(commands.AutoShardedBot):
         if hasattr(self, "http_session"):
             await self.http_session.close()
 
-        self.reminder_task.cancel()
+        if not self.timer_task.cancelled():
+            self.timer_task.cancel()
 
         return await super().close()
 
@@ -466,6 +493,8 @@ class Parrot(commands.AutoShardedBot):
 
         if self._was_ready:
             return
+
+        self.timer_task = self.loop.create_task(self.dispatch_timer())
 
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
@@ -552,7 +581,7 @@ class Parrot(commands.AutoShardedBot):
             else:
                 if self.banned_users[ctx.author.id].get("command"):
                     return
-            can_run: Optional[bool] = await _can_run(ctx)
+            can_run: Optional[bool] = _can_run(ctx)
             if can_run is False:
                 return await ctx.reply(
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!",
@@ -574,7 +603,6 @@ class Parrot(commands.AutoShardedBot):
 
         if message.author.id in self.owner_ids:
             await self.process_commands(message)
-            return
 
         if message.guild is None or message.author.bot:
             # to prevent the usage of command in DMs
@@ -785,7 +813,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             prefix: str = self.server_config[message.guild.id]["prefix"]
         except KeyError:
-            if data := await self.mongo.parrot_db.server_config.find_one(
+            if data := await self.guild_configurations.find_one(
                 {"_id": message.guild.id}
             ):
                 prefix = data.get("prefix", DEFAULT_PREFIX)
@@ -796,7 +824,7 @@ class Parrot(commands.AutoShardedBot):
                 FAKE_POST["_id"] = message.guild.id
                 prefix = DEFAULT_PREFIX  # default prefix
                 try:
-                    await self.mongo.parrot_db.server_config.insert_one(FAKE_POST)
+                    await self.guild_configurations.insert_one(FAKE_POST)
                 except pymongo.errors.DuplicateKeyError:
                     return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
                 self.server_config[message.guild.id] = FAKE_POST
@@ -814,7 +842,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await self.mongo.parrot_db.server_config.find_one(
+            if data := await self.guild_configurations.find_one(
                 {"_id": guild.id}
             ):
                 return data.get("prefix", DEFAULT_PREFIX)
@@ -854,7 +882,7 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await self.mongo.parrot_db.server_config.find_one({"_id": guild_id}):
+        if data := await self.guild_configurations.find_one({"_id": guild_id}):
             self.server_config[guild_id] = data
 
     @tasks.loop(count=1)
@@ -873,17 +901,100 @@ class Parrot(commands.AutoShardedBot):
             self.opts[_id] = data
             await asyncio.sleep(0)
 
-    @tasks.loop(seconds=3)
-    async def reminder_task(self):
-        collection: MongoCollection = self.mongo.parrot_db["timers"]
-        async with self.lock:
-            async for data in collection.find(
-                {"expires_at": {"$lte": discord.utils.utcnow().timestamp()}}
-            ):
-                await collection.delete_one({"_id": data["_id"]})
-                self.dispatch("timer_complete", **data)
+    async def dispatch_timer(self):
+        try:
+            while not self.is_closed():
+                await self.dispatch_timer_complete()
                 await asyncio.sleep(0)
+        except (OSError, discord.ConnectionClosed):
+            self.timer_task.cancel()
+            self.timer_task = self.loop.create_task(self.dispatch_timer())
+        except asyncio.CancelledError:
+            raise
 
-    @reminder_task.before_loop
-    async def before_reminder_task(self):
-        await self.wait_until_ready()
+    async def dispatch_timer_complete(self):
+        collection: MongoCollection = self.timers
+        now = discord.utils.utcnow().timestamp()
+
+        now_plus_40_days = now + 3456000
+
+        async for data in collection.find({"expires_at": {"$lte": now_plus_40_days}}):
+            self.loop.create_task(self.short_time_dispatcher(collection, **data))
+
+    async def call_timer(self, **data):
+        if data.get("event_name"):
+            self.dispatch(f"{data['event_name']}_timer_complete", **data)
+        else:
+            self.dispatch("timer_complete", **data)
+
+    async def short_time_dispatcher(self, collection: MongoCollection, **data):
+        await asyncio.sleep(data["expires_at"] - discord.utils.utcnow().timestamp())
+        await collection.delete_one({"_id": data["_id"]})
+        await self.call_timer(**data)
+
+    async def create_timer(
+        self,
+        *,
+        expires_at: float,
+        event_name: str = None,
+        created_at: float = None,
+        content: str = None,
+        message: discord.Message,
+        dm_notify: bool = False,
+        is_todo: bool = False,
+        extra: Dict[str, Any] = None,
+        **kw,
+    ) -> None:
+        """|coro|
+
+        Master Function to register Timers.
+
+        Parameters
+        ----------
+        expires_at: :class:`float`
+            Timer exprire timestamp
+        created_at: :class:`float`
+            Timer created timestamp
+        content: :class:`str`
+            Content of the Timer
+        message: :class:`discord.Message`
+            Message Object
+        dm_notify: :class:`bool`
+            To notify the user or not
+        is_todo: :class:`bool`
+            To provide whether the timer related to `TODO`
+        """
+        collection: MongoCollection = self.timers
+
+        embed: Dict[str, Any] = kw.get("embed_like") or kw.get("embed")
+        mod_action: Dict[str, Any] = kw.get("mod_action")
+        cmd_exec_str: str = kw.get("cmd_exec_str")
+
+        post = {
+            "_id": message.id,
+            "event_name": event_name,
+            "expires_at": expires_at,
+            "created_at": created_at or message.created_at.timestamp(),
+            "content": content,
+            "embed": embed,
+            "messageURL": message.jump_url,
+            "messageAuthor": message.author.id,
+            "messageChannel": message.channel.id,
+            "dm_notify": dm_notify,
+            "is_todo": is_todo,
+            "mod_action": mod_action,
+            "cmd_exec_str": cmd_exec_str,
+            "extra": extra,
+            **kw,
+        }
+
+        _24_hours = 86400
+        if (expires_at - discord.utils.utcnow().timestamp()) <= _24_hours:
+            self.loop.create_task(self.short_time_dispatcher(**post))
+            return
+
+        await collection.insert_one(post)
+
+    async def delete_timer(self, **kw):
+        collection: MongoCollection = self.timers
+        await collection.delete_one(kw)

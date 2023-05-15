@@ -1,12 +1,13 @@
 ignore: []
-
-refactor:
-  include: []
-  skip: []
+rule_settings:
+  enable:
+  - default
+  disable:
+  - do-not-use-bare-except
   rule_types:
-    - refactoring
-    - suggestion
-    - comment
+  - refactoring
+  - suggestion
+  - comment
   python_version: '3.8'
 
 rules: []

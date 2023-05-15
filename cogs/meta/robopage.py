@@ -1,3 +1,5 @@
+# Author: Rapptz (Danny)
+
 from __future__ import annotations
 
 import asyncio
@@ -38,25 +40,29 @@ class RoboPages(discord.ui.View):
             self.stop_pages.row = 1
 
         if self.source.is_paginating():
-            max_pages = self.source.get_max_pages()
-            use_last_and_first = max_pages is not None and max_pages >= 2
-            if use_last_and_first:
-                self.add_item(self.go_to_first_page)  # flake8: noqa
+            self._extracted_from_fill_items_7()
 
-            self.add_item(self.go_to_previous_page)  # flake8: noqa
+    # TODO Rename this here and in `fill_items`
+    def _extracted_from_fill_items_7(self):
+        max_pages = self.source.get_max_pages()
+        use_last_and_first = max_pages is not None and max_pages >= 2
+        if use_last_and_first:
+            self.add_item(self.go_to_first_page)  # flake8: noqa
 
-            if not self.compact:
-                self.add_item(self.go_to_current_page)  # flake8: noqa
+        self.add_item(self.go_to_previous_page)  # flake8: noqa
 
-            self.add_item(self.go_to_next_page)  # flake8: noqa
+        if not self.compact:
+            self.add_item(self.go_to_current_page)  # flake8: noqa
 
-            if use_last_and_first:
-                self.add_item(self.go_to_last_page)  # flake8: noqa
+        self.add_item(self.go_to_next_page)  # flake8: noqa
 
-            if not self.compact:
-                self.add_item(self.numbered_page)  # flake8: noqa
+        if use_last_and_first:
+            self.add_item(self.go_to_last_page)  # flake8: noqa
 
-            self.add_item(self.stop_pages)  # flake8: noqa
+        if not self.compact:
+            self.add_item(self.numbered_page)  # flake8: noqa
+
+        self.add_item(self.stop_pages)  # flake8: noqa
 
     async def _get_kwargs_from_page(self, page: int) -> Dict[str, Any]:
         value: Union[dict, str, discord.Embed] = await discord.utils.maybe_coroutine(

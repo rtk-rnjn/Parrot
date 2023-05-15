@@ -282,7 +282,8 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
             )
         finally:
             await collection.update_one({"_id": name}, {"$set": post})
-            await bot.get_cog("Utils").create_timer(
+            await bot.create_timer(
+                event_name="todo",
                 expires_at=timestamp,
                 created_at=ctx.message.created_at.timestamp(),
                 message=ctx.message,
@@ -406,10 +407,6 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
     embed.color = 0xFF000
     await msg.edit(embed=embed)
 
-    # data = await bot.mongo.parrot_db.giveaway.find_one(
-    #     {"message_id": kw.get("message_id"), "guild_id": kw.get("guild_id"), "status": "ONGOING"}
-    # )
-
     reactors = kw["reactors"]
     if not reactors:
         for reaction in msg.reactions:
@@ -484,7 +481,7 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
 async def __update_giveaway_reactors(
     *, bot: Parrot, reactors: List[int], message_id: int
 ) -> None:
-    collection: Collection = bot.mongo.parrot_db.giveaway
+    collection: Collection = bot.giveaways
     await collection.update_one(
         {"message_id": message_id}, {"$set": {"reactors": reactors}}
     )
@@ -599,7 +596,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
         message=msg, **payload
     )  # flake8: noqa  # type: ignore
 
-    await bot.mongo.parrot_db.giveaway.insert_one(
+    await bot.giveaways.insert_one(
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
     )
     return main_post
@@ -637,7 +634,7 @@ async def _make_giveaway_drop(
     await msg.add_reaction("\N{PARTY POPPER}")
     main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
 
-    await ctx.bot.mongo.parrot_db.giveaway.insert_one(
+    await ctx.bot.giveaways.insert_one(
         {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
     )
     return main_post
@@ -658,7 +655,7 @@ async def add_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 
-    await bot.mongo.parrot_db.giveaway.update_one(
+    await bot.giveaways.update_one(
         {"message_id": payload.message_id, "status": "ONGOING"},
         {"$addToSet": {"reactors": payload.user_id}},
     )
@@ -668,7 +665,7 @@ async def remove_reactor(bot: Parrot, payload: discord.RawReactionActionEvent):
     if str(payload.emoji) != "\N{PARTY POPPER}":
         return
 
-    await bot.mongo.parrot_db.giveaway.update_one(
+    await bot.giveaways.update_one(
         {"message_id": payload.message_id, "status": "ONGOING"},
         {"$pull": {"reactors": payload.user_id}},
     )

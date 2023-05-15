@@ -10,7 +10,7 @@ from cogs.mod.method import instant_action_parser
 from core import Cog, Context, Parrot
 from utilities.infraction import warn
 
-with open("extra/duke_nekum.txt", encoding='utf-8', errors="ignore") as f:
+with open("extra/duke_nekum.txt", encoding="utf-8", errors="ignore") as f:
     quotes = f.read().split("\n")
 
 
@@ -37,45 +37,30 @@ class EmojiCapsProt(Cog):
         return len(re.findall(r"[A-Z]", message_content))
 
     def is_caps_infilterated(self, message: discord.Message) -> Optional[bool]:
-        if not (data_c := self.bot.server_config.get(message.guild.id)):
+        if not (data_c := self.bot.guild_configurations.get(message.guild.id)):
             return
-        try:
-            if not data_c["automod"]["caps"]["enable"]:
-                return False
-        except KeyError:
+        if not data_c["automod"]["caps"]["enable"]:
             return False
+        ignore: List[int] = data_c["automod"]["caps"]["channel"]
 
-        try:
-            ignore: List[int] = data_c["automod"]["caps"]["channel"]
-        except KeyError:
-            ignore = []
         if message.channel.id in ignore:
             return False
-        try:
-            limit: Optional[int] = data_c["automod"]["caps"]["limit"]
-        except KeyError:
-            return False
+        limit: Optional[int] = data_c["automod"]["caps"]["limit"]
+
         if limit and limit <= (self.get_caps_count(message.content)):
             return True
 
     def is_emoji_infilterated(self, message: discord.Message) -> Optional[bool]:
-        if not (data_c := self.bot.server_config.get(message.guild.id)):
+        if not (data_c := self.bot.guild_configurations.get(message.guild.id)):
             return
-        try:
-            if not data_c["automod"]["emoji"]["enable"]:
-                return False
-        except KeyError:
+        if not data_c["automod"]["emoji"]["enable"]:
             return False
-        try:
-            ignore: List[int] = data_c["automod"]["emoji"]["channel"]
-        except KeyError:
-            ignore = []
+        ignore: List[int] = data_c["automod"]["emoji"]["channel"]
+
         if message.channel.id in ignore:
             return False
-        try:
-            limit: Optional[int] = data_c["automod"]["emoji"]["limit"]
-        except KeyError:
-            return False
+        limit: Optional[int] = data_c["automod"]["emoji"]["limit"]
+
         if limit and limit <= (self.get_emoji_count(message.content)):
             return True
 
@@ -87,42 +72,26 @@ class EmojiCapsProt(Cog):
         caps_: bool = self.is_caps_infilterated(message)
         emoj_: bool = self.is_emoji_infilterated(message)
         ctx: Context = await self.bot.get_context(message, cls=Context)
-        if emoj_ and (data := self.bot.server_config.get(message.guild.id)):
-            try:
-                to_delete: bool = data["automod"]["emoji"]["autowarn"]["to_delete"]
-            except KeyError:
-                to_delete: bool = True
+        data = self.bot.guild_configurations_cache[message.guild.id]
+        if emoj_:
+            to_delete: bool = data["automod"]["emoji"]["autowarn"]["to_delete"]
 
             if to_delete:
                 await message.delete(delay=0)
 
-            try:
-                to_warn: bool = data["automod"]["emoji"]["autowarn"]["enable"]
-            except KeyError:
-                to_warn: bool = False
-
-            try:
-                ignored_roles: List[int] = data["automod"]["emoji"]["autowarn"]["role"]
-            except KeyError:
-                ignored_roles: List[int] = []
+            to_warn: bool = data["automod"]["emoji"]["autowarn"]["enable"]
+            ignored_roles: List[int] = data["automod"]["emoji"]["autowarn"]["role"]
 
             if any(role.id in ignored_roles for role in message.author.roles):
                 return
-
-            try:
-                instant_action: str = data["automod"]["emoji"]["autowarn"]["punish"][
-                    "type"
-                ]
-            except KeyError:
-                instant_action = False
-            else:
-                if instant_action and to_warn:
-                    await self.__instant_action_parser(
-                        name=instant_action,
-                        ctx=ctx,
-                        message=message,
-                        **data["automod"]["mention"]["autowarn"]["punish"],
-                    )
+            instant_action: str = data["automod"]["emoji"]["autowarn"]["punish"]["type"]
+            if instant_action and to_warn:
+                await self.__instant_action_parser(
+                    name=instant_action,
+                    ctx=ctx,
+                    message=message,
+                    **data["automod"]["mention"]["autowarn"]["punish"],
+                )
 
             if to_warn and not instant_action:
                 await warn(
@@ -142,43 +111,26 @@ class EmojiCapsProt(Cog):
                 f"{message.author.mention} *{random.choice(quotes)}* **[Excess Emoji] {'[Warning]' if to_warn else ''}**",
                 delete_after=10,
             )
-        if caps_ and (data := self.bot.server_config.get(message.guild.id)):
-            try:
-                to_delete: bool = data["automod"]["caps"]["autowarn"]["to_delete"]
-            except KeyError:
-                to_delete: bool = True
+        if caps_:
+            to_delete: bool = data["automod"]["caps"]["autowarn"]["to_delete"]
 
             if to_delete:
                 await message.delete(delay=0)
-
-            try:
-                to_warn = data["automod"]["caps"]["autowarn"]["enable"]
-            except KeyError:
-                to_warn = False
-
-            try:
-                ignored_roles: List[int] = data["automod"]["caps"]["autowarn"]["role"]
-            except KeyError:
-                ignored_roles: List[int] = []
+            to_warn = data["automod"]["caps"]["autowarn"]["enable"]
+            ignored_roles: List[int] = data["automod"]["caps"]["autowarn"]["role"]
 
             if any(role.id in ignored_roles for role in message.author.roles):
                 return
 
-            try:
-                instant_action: str = data["automod"]["caps"]["autowarn"]["punish"][
-                    "type"
-                ]
-            except KeyError:
-                pass
-            else:
-                if instant_action and to_warn:
-                    await self.__instant_action_parser(
-                        name=instant_action,
-                        ctx=ctx,
-                        message=message,
-                        **data["automod"]["mention"]["autowarn"]["punish"],
-                    )
-                    return
+            instant_action: str = data["automod"]["caps"]["autowarn"]["punish"]["type"]
+            if instant_action and to_warn:
+                await self.__instant_action_parser(
+                    name=instant_action,
+                    ctx=ctx,
+                    message=message,
+                    **data["automod"]["mention"]["autowarn"]["punish"],
+                )
+                return
 
             if to_warn:
                 await warn(

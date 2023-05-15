@@ -24,14 +24,14 @@ async def get_lastest_release():
     return latest["tag_name"], latest["name"]
 
 
-async def generate(path, dbname):
+async def generate(path: str, dbname: str):
     tag, name = get_lastest_release()
 
     req = await session.get(GEMOJI_JSON_DB_URL.format(tag=tag))
 
     data = await req.json()
 
-    path = os.path.join(path, dbname)
+    path: str = os.path.join(path, dbname)
 
     with open(path, "w", encoding="utf-8", encoding='utf-8', errors="ignore") as file:
         file.write("### This is a generated file.\n")

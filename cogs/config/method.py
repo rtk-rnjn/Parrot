@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Union
 
-from pymongo.collection import Collection
 
 import discord
 from core import Context, Parrot
-from utilities.checks import _get_server_command_cache
 
 
 async def _enable(
@@ -16,74 +14,74 @@ async def _enable(
     target: Union[discord.abc.Messageable, discord.Object],
     force: Optional[bool] = None,
 ) -> None:
-    collection: Collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
-    data: Dict[str, Any] = await collection.find_one({"_id": cmd_cog})
-    if not data:
-        await collection.insert_one(
-            {
-                "_id": cmd_cog,
-                "channel_in": [],
-                "channel_out": [],
-                "role_in": [],
-                "role_out": [],
-                "server": False,
-            }
-        )
     if not target:
         if force:
-            await collection.update_one(
-                {"_id": cmd_cog}, {"$set": {"server": False, "channel_out": []}}
+            await ctx.bot.guild_configurations.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {
+                    "$set": {
+                        "cmd_config.$.cmd_enable": False,
+                        "cmd_config.$.channel_out": [],
+                    }
+                },
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable **server** wide, forcely"
             )
         else:
-            await collection.update_one({"_id": cmd_cog}, {"$set": {"server": False}})
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {"$set": {"cmd_config.$.cmd_enable": False}},
+                upsert=True,
+            )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable **server** wide"
             )
     elif isinstance(target, discord.abc.Messageable):
         if force:
-            await collection.update_one(
-                {"_id": cmd_cog},
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
                 {
-                    "$pull": {"channel_out": target.id},
-                    "$addToSet": {"channel_in": target.id},
+                    "$pull": {"cmd_config.$.channel_out": target.id},
+                    "$addToSet": {"cmd_config.$.channel_in": target.id},
                 },
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in {target.mention}, forcely"
             )
         else:
-            await collection.update_one(
-                {"_id": cmd_cog}, {"$pull": {"channel_out": target.id}}
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {"$pull": {"cmd_config.$.channel_out": target.id}},
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in {target.mention}"
             )
     elif isinstance(target, discord.Role):
         if force:
-            await collection.update_one(
-                {"_id": cmd_cog},
-                {"$pull": {"role_out": target.id}, "$addToSet": {"role_in": target.id}},
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {
+                    "$pull": {"cmd_config.$.role_out": target.id},
+                    "$addToSet": {"cmd_config.$.role_in": target.id},
+                },
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable for **{target.name} ({target.id})**, forcely"
             )
         else:
-            await collection.update_one(
-                {"_id": cmd_cog}, {"$pull": {"role_out": target.id}}
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {"$pull": {"cmd_config.$.role_out": target.id}},
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now enable in **{target.name} ({target.id})**"
             )
-
-    await _get_server_command_cache(
-        guild=ctx.guild,
-        bot=ctx.bot,
-        force_update=True,
-        command=ctx.command.qualified_name,
-    )
 
 
 async def _disable(
@@ -93,70 +91,71 @@ async def _disable(
     target: Union[discord.abc.Messageable, discord.Object],
     force: Optional[bool] = None,
 ) -> None:
-    collection: Collection = bot.mongo.enable_disable[f"{ctx.guild.id}"]
-    data: Dict[str, Any] = await collection.find_one({"_id": cmd_cog})
-    if not data:
-        await collection.insert_one(
-            {
-                "_id": cmd_cog,
-                "channel_in": [],
-                "channel_out": [],
-                "role_in": [],
-                "role_out": [],
-                "server": False,
-            }
-        )
     if not target:
         if force:
-            await collection.update_one(
-                {"_id": cmd_cog}, {"$set": {"server": True, "channel_in": []}}
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {
+                    "$set": {
+                        "cmd_config.$.cmd_enable": True,
+                        "cmd_config.$.channel_in": [],
+                    }
+                },
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled **server** wide, forcely"
             )
         else:
-            await collection.update_one({"_id": cmd_cog}, {"$set": {"server": True}})
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {"$set": {"cmd_config.$.cmd_enable": True}},
+                upsert=True,
+            )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled **server** wide"
             )
     elif isinstance(target, discord.abc.Messageable):
         if force:
-            await collection.update_one(
-                {"_id": cmd_cog},
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
                 {
-                    "$pull": {"channel_in": target.id},
-                    "$addToSet": {"channel_out": target.id},
+                    "$pull": {"cmd_config.$.channel_in": target.id},
+                    "$addToSet": {"cmd_config.$.channel_out": target.id},
                 },
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}, forcely"
             )
         else:
-            await collection.update_one(
-                {"_id": cmd_cog}, {"$addToSet": {"channel_out": target.id}}
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {"$addToSet": {"cmd_config.$.channel_out": target.id}},
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in {target.mention}"
             )
     elif isinstance(target, discord.Role):
         if force:
-            await collection.update_one(
-                {"_id": cmd_cog},
-                {"$pull": {"role_in": target.id}, "$addToSet": {"role_out": target.id}},
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {
+                    "$pull": {"cmd_config.$.role_in": target.id},
+                    "$addToSet": {"cmd_config.$.role_out": target.id},
+                },
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled for **{target.name} ({target.id})**, forcely"
             )
         else:
-            await collection.update_one(
-                {"_id": cmd_cog}, {"$addToSet": {"role_out": target.id}}
+            await ctx.guild_collection.update_one(
+                {"_id": ctx.guild.id, "cmd_config.cmd_name": cmd_cog},
+                {"$addToSet": {"cmd_config.$.role_out": target.id}},
+                upsert=True,
             )
             await ctx.send(
                 f"{ctx.author.mention} **{cmd_cog}** {'commands are' if cmd_cog == 'all' else 'is'} now disabled in **{target.name} ({target.id})**"
             )
-    await _get_server_command_cache(
-        guild=ctx.guild,
-        bot=ctx.bot,
-        force_update=True,
-        command=ctx.command.qualified_name,
-    )

@@ -14,7 +14,7 @@ from utilities.time import ShortTime
 
 
 async def get_warn_count(ctx: Context, guild: discord.Guild) -> Optional[int]:
-    data = await ctx.bot.mongo.parrot_db.server_config.find_one_and_update(
+    data = await ctx.bot.guild_configurations.find_one_and_update(
         {"_id": guild.id},
         {"$inc": {"warn_count": 1}},
         upsert=True,
@@ -25,7 +25,7 @@ async def get_warn_count(ctx: Context, guild: discord.Guild) -> Optional[int]:
 
 def get_warn_expiry(ctx: Context):
     try:
-        duration = ctx.bot.server_config[ctx.guild.id]["warn_expiry"]
+        duration = ctx.bot.guild_configurations[ctx.guild.id]["warn_expiry"]
     except KeyError:
         return None
     else:
@@ -80,9 +80,8 @@ async def warn(
     collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.insert_one(post)
 
-    cog = ctx.bot.get_cog("Utils")
-    if cog and expires_at:
-        await cog.create_timer(  # type: ignore
+    if expires_at:
+        await ctx.bot.create_timer(  # type: ignore
             expires_at=expires_at,
             created_at=discord.utils.utcnow(),
             message=message,

@@ -16,11 +16,10 @@ from core import Cog, Context, Parrot
 from discord import __version__ as discord_version
 from discord.ext import commands
 from discord.ext import old_menus as menus
-from utilities.config import PRIVACY_POLICY, SUPPORT_SERVER, VERSION
+from utilities.config import PRIVACY_POLICY, SUPPORT_SERVER, SUPPORT_SERVER_ID, VERSION
 
 from .robopage import RoboPages
 
-SUPPORT_SERVER_ID = 741614680652644382
 DISPLAY_COG = (
     "CONFIGURATION",
     "FUN",

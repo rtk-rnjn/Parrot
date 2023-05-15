@@ -27,7 +27,8 @@ class Ticket(Cog):
     @Context.with_type
     async def new(self, ctx: Context, *, args: Optional[str] = None):
         """This creates a new ticket.
-        Add any words after the command if you'd like to send a message when we initially create your ticket."""
+        Add any words after the command if you'd like to send a message when we initially create your ticket.
+        """
         await mt._new(ctx, args)
 
     @commands.command(hidden=True)

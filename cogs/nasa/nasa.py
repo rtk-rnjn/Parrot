@@ -13,7 +13,7 @@ from utilities.paginator import PaginationView
 
 NASA_KEY = os.environ["NASA_KEY"]
 
-with open(r"extra/user_agents.txt", encoding='utf-8', errors="ignore") as f:
+with open(r"extra/user_agents.txt", encoding="utf-8", errors="ignore") as f:
     USER_AGENTS = f.read().splitlines()
 
 

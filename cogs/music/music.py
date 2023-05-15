@@ -544,7 +544,6 @@ class Music(Cog):
     ):  # sourcery skip: last-if-guard
         """Play a song with the given search query. If not connected, connect to your voice channel."""
         if ctx.invoked_subcommand is None:
-            
             if ctx.voice_client is None:
                 vc: wavelink.Player = await ctx.author.voice.channel.connect(
                     cls=wavelink.Player
@@ -558,7 +557,6 @@ class Music(Cog):
                 search = wavelink.GenericTrack.search(search, return_first=True)
 
             if vc.is_playing():
-
                 vc.queue.put(search)
                 await ctx.send(
                     f"{ctx.author.mention} added **{search.title}** to the queue"
@@ -566,7 +564,9 @@ class Music(Cog):
                 return
 
             await vc.play(search)
-            view = MusicView(ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx)
+            view = MusicView(
+                ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx
+            )
             view.message = await ctx.send(
                 f"{ctx.author.mention} Now playing",
                 embed=await self.make_final_embed(ctx=ctx, track=vc.current),

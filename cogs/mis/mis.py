@@ -89,7 +89,7 @@ TEMPLATE = string.Template(Path("extra/latex_template.txt").read_text())
 BG_COLOR = (54, 57, 63, 255)
 PAD = 10
 
-with open("extra/country.json", encoding='utf-8', errors="ignore") as f:
+with open("extra/country.json", encoding="utf-8", errors="ignore") as f:
     COUNTRY_CODES = json.load(f)
 
 
@@ -452,7 +452,6 @@ class Misc(Cog):
 
         em_list = []
         for data in range(len(res["articles"])):
-
             source = res["articles"][data]["source"]["name"]
             author = res["articles"][data]["author"]
             title = res["articles"][data]["title"]
@@ -761,7 +760,8 @@ class Misc(Cog):
         data: Union[dict, str] = None,
     ):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in.
-        You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`."""
+        You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
+        """
         channel = channel or ctx.channel
         if channel.permissions_for(ctx.author).embed_links:
             if not data:
@@ -802,6 +802,7 @@ class Misc(Cog):
             discord.CategoryChannel,
             discord.DMChannel,
             discord.GroupChannel,
+            discord.Object,
         ],
     ):
         """To get the ID of discord models"""
@@ -884,8 +885,7 @@ class Misc(Cog):
     @Context.with_type
     async def create_poll(self, ctx: Context, question: str, *, options: str):
         """To create a poll, options should be seperated by commas"""
-        parrot_db = self.bot.mongo["parrot_db"]
-        collection = parrot_db["poll"]
+
         BASE_URL = "https://strawpoll.com/api/poll/"
         options: List[str] = options.split(",")
         data = {"poll": {"title": question, "answers": options, "only_reg": True}}
@@ -898,7 +898,7 @@ class Misc(Cog):
         )
 
         data = await poll.json()
-        _exists = await collection.find_one_and_update(
+        _exists = await self.bot.user_collections_ind.find_one_and_update(
             {"_id": ctx.author.id},
             {"$set": {"content_id": data["content_id"]}},
             upsert=True,
@@ -947,11 +947,13 @@ class Misc(Cog):
         """To delete the poll. Only if it's yours"""
         _exists: Dict[
             str, Any
-        ] = await self.bot.mongo.parrot_db.poll.collection.find_one(
-            {"_id": ctx.author.id}
+        ] = await self.bot.user_collections_ind.find_one(
+            {"_id": ctx.author.id, "content_id": content_id}
         )
         if not _exists:
-            return
+            return await ctx.reply(
+                f"{ctx.author.mention} you can only delete your own polls. Content id didn't match"
+            )
         URL = "https://strawpoll.com/api/content/delete"
         await self.bot.http_session.delete(
             URL,
@@ -960,33 +962,34 @@ class Misc(Cog):
         )
         await ctx.reply(f"{ctx.author.mention} deleted")
 
-    @commands.command(name="orc")
-    @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def ocr(self, ctx: Context, *, link: str = None):
-        """To convert image to text"""
-        link = link or ctx.message.attachments[0].url
-        if not link:
-            await ctx.error(f"{ctx.author.mention} must provide the link")
-        try:
-            res = await self.bot.http_session.get(link)
-        except Exception as e:
-            return await ctx.error(
-                f"{ctx.author.mention} something not right. Error raised {e}"
-            )
-        else:
-            json = await res.json()
-        if str(json["status"]) != str(200):
-            return await ctx.error(f"{ctx.author.mention} something not right.")
-        msg = json["message"][:2000:]
-        await ctx.reply(
-            embed=discord.Embed(
-                description=msg,
-                color=ctx.author.color,
-                timestamp=discord.utils.utcnow(),
-            ).set_footer(text=f"{ctx.author}")
-        )
+    # TODO: OCR
+    # @commands.command(name="orc")
+    # @commands.cooldown(1, 5, commands.BucketType.member)
+    # @commands.max_concurrency(1, per=commands.BucketType.user)
+    # @Context.with_type
+    # async def ocr(self, ctx: Context, *, link: str = None):
+    #     """To convert image to text"""
+    #     link = link or ctx.message.attachments[0].url
+    #     if not link:
+    #         await ctx.error(f"{ctx.author.mention} must provide the link")
+    #     try:
+    #         res = await self.bot.http_session.get(link)
+    #     except Exception as e:
+    #         return await ctx.error(
+    #             f"{ctx.author.mention} something not right. Error raised {e}"
+    #         )
+    #     else:
+    #         json = await res.json()
+    #     if str(json["status"]) != str(200):
+    #         return await ctx.error(f"{ctx.author.mention} something not right.")
+    #     msg = json["message"][:2000:]
+    #     await ctx.reply(
+    #         embed=discord.Embed(
+    #             description=msg,
+    #             color=ctx.author.color,
+    #             timestamp=discord.utils.utcnow(),
+    #         ).set_footer(text=f"{ctx.author}")
+    #     )
 
     @commands.command(name="qr", aliases=["createqr", "cqr"])
     @commands.cooldown(1, 5, commands.BucketType.member)

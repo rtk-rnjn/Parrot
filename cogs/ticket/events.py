@@ -28,12 +28,10 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
-        collection = self.bot.mongo.parrot_db["ticket"]
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
-        data = await collection.find_one({"_id": guild_id})
-        if not data:
-            return
+        data = await self.bot.guild_configurations.find_one({"_id": guild_id})
+        data = data["ticket_config"]
         user_id = payload.user_id
         member = await self.bot.get_or_fetch_member(guild, user_id)
 
@@ -127,10 +125,10 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             ticket_channel_ids = data["ticket_channel_ids"]
             ticket_channel_ids.append(ticket_channel.id)
             post = {
-                "ticket_counter": ticket_number,
-                "ticket_channel_ids": ticket_channel_ids,
+                "ticket_config.ticket_counter": ticket_number,
+                "ticket_config.ticket_channel_ids": ticket_channel_ids,
             }
-            await self.bot.mongo.parrot_db.ticket.update_one(
+            await self.bot.guild_configurations.update_one(
                 {"_id": guild.id}, {"$set": post}
             )
 

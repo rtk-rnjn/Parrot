@@ -935,7 +935,6 @@ class RTFM(Cog):
             embed.set_footer(text="Account created at")
 
             if user_data["type"] == "User":
-
                 embed.add_field(
                     name="Followers",
                     value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",

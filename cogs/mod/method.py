@@ -7,8 +7,8 @@ from collections import Counter
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import discord
-from discord.ext import commands
 from core import Context, Parrot
+from discord.ext import commands
 from utilities.time import FutureTime, ShortTime
 
 
@@ -414,8 +414,9 @@ async def _temp_ban(
                 "reason": f"Action requested by: {ctx.author} ({ctx.author.id}) | Reason: Automatic tempban action",
                 "guild": guild.id,
             }
-            cog = bot.get_cog("Utils")
-            await cog.create_timer(
+
+            await ctx.bot.create_timer(
+                event_name="unban",
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,
@@ -1574,8 +1575,9 @@ async def instant_action_parser(
                 "reason": "Auto mod: Automatic tempban action",
                 "guild": ctx.guild.id,
             }
-            cog = ctx.bot.get_cog("Utils")
-            await cog.create_timer(
+
+            await ctx.bot.create_timer(
+                event_name="unban",
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,

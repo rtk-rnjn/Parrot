@@ -44,7 +44,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 )
 
         try:
-            role = int(self.bot.server_config[member.guild.id]["mute_role"] or 0)
+            role = int(self.bot.guild_configurations[member.guild.id]["mute_role"] or 0)
             role: Optional[discord.Role] = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
@@ -93,7 +93,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if isinstance(member, discord.User) or member.bot:
             return
         try:
-            role = int(self.bot.server_config[payload.guild_id]["mute_role"] or 0)
+            role = int(
+                self.bot.guild_configurations[payload.guild_id]["mute_role"] or 0
+            )
             role = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.find(lambda m: "muted" in m.name.lower(), member.roles)
@@ -263,7 +265,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         member: discord.Member,
     ):
         try:
-            self.bot.server_config[member.guild.id]["hub"]
+            self.bot.guild_configurations[member.guild.id]["hub"]
         except KeyError:
             return
         else:
@@ -272,7 +274,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 [perms.manage_permissions, perms.manage_channels, perms.move_members]
             ):
                 return
-            if channel.id == self.bot.server_config[member.guild.id]["hub"]:
+            if channel.id == self.bot.guild_configurations[member.guild.id]["hub"]:
                 if channel.category:
                     hub_channel = await member.guild.create_voice_channel(
                         f"[#{await self._get_index(member.guild)}] {member.name}",
@@ -364,7 +366,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         pass  # nothing can be done, as discord dont gave use presence intent UwU
 
     async def cog_load(self):
-        async for data in self.bot.mongo.parrot_db.server_config.find(
+        async for data in self.bot.guild_configurations.find(
             {"muted": {"$exists": True}}
         ):
             self.muted[data["_id"]] = set(data["muted"])
@@ -379,7 +381,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             for guild_id, set_member_muted in self.muted.items()
         ]
 
-        await self.bot.mongo.parrot_db.server_config.write_bulk(operations)
+        await self.bot.guild_configurations.write_bulk(operations)
 
 
 async def setup(bot: Parrot) -> None:

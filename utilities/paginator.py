@@ -435,7 +435,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
                 attachments=[],
                 view=self,
             )
-
+ 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.red, disabled=False)
     async def _last(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current = len(self.embed_list) - 1

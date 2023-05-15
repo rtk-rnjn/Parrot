@@ -1,11 +1,11 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 import os
 from typing import Any, Dict, List, Optional, Union
 
-from wavelink.ext import spotify
 import wavelink
+from wavelink.ext import spotify
 
 import discord
 from api import cricket_api
@@ -226,10 +226,9 @@ class IPCRoutes(Cog):
         self, data: server.IpcServerResponse
     ) -> List[Dict[str, str]]:
         MESSAGES = []
-        async for webhook in self.bot.mongo.parrot_db.global_chat.find(
-            {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
-        ):
-            if hook := webhook["webhook"]:
+        async for data in self.bot.guild_configurations.find({}):
+            webhook = data["global_chat"]
+            if (hook := webhook["webhook"]) and webhook["enable"]:
                 try:
                     webhook = discord.Webhook.from_url(
                         f"{hook}", session=self.bot.http_session
@@ -242,7 +241,7 @@ class IPCRoutes(Cog):
                         wait=True,
                     )
                 except discord.NotFound:
-                    await self.bot.mongo.parrot_db.global_chat.delete_one(
+                    await self.bot.guild_configurations.delete_one(
                         {"webhook": hook}
                     )  # all hooks are unique
                 except discord.HTTPException:

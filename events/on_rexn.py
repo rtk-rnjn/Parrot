@@ -28,30 +28,23 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> None:
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
-        try:
-            if (
-                payload.channel_id
-                in self.bot.server_config[payload.guild_id]["starboard"][
-                    "ignore_channel"
-                ]
-            ):
-                return
-        except KeyError:
-            pass
+        if (
+            payload.channel_id
+            in self.bot.guild_configurations[payload.guild_id]["starboard"][
+                "ignore_channel"
+            ]
+        ):
+            return
 
-        try:
-            max_duration = (
-                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
-                or TWO_WEEK
-            )
-        except KeyError:
-            if (CURRENT_TIME - DATETIME.timestamp()) > TWO_WEEK:
-                return
-        else:
-            if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
-                return
+        max_duration = (
+            self.bot.guild_configurations[payload.guild_id]["starboard"]["max_duration"]
+            or TWO_WEEK
+        )
 
-        collection: Collection = self.bot.mongo.parrot_db.starboard
+        if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
+            return
+
+        collection: Collection = self.bot.starboards
         data = await collection.find_one_and_update(
             {
                 "$or": [
@@ -72,30 +65,21 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> None:
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
-        try:
-            if (
-                payload.channel_id
-                in self.bot.server_config[payload.guild_id]["starboard"][
-                    "ignore_channel"
-                ]
-            ):
-                return
-        except KeyError:
-            pass
+        if (
+            payload.channel_id
+            in self.bot.guild_configurations[payload.guild_id]["starboard"][
+                "ignore_channel"
+            ]
+        ):
+            return
+        max_duration = (
+            self.bot.guild_configurations[payload.guild_id]["starboard"]["max_duration"]
+            or TWO_WEEK
+        )
+        if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
+            return
 
-        try:
-            max_duration = (
-                self.bot.server_config[payload.guild_id]["starboard"]["max_duration"]
-                or TWO_WEEK
-            )
-        except KeyError:
-            if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > TWO_WEEK:
-                return
-        else:
-            if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
-                return
-
-        collection: Collection = self.bot.mongo.parrot_db.starboard
+        collection: Collection = self.bot.starboards
         data = await collection.find_one_and_update(
             {
                 "$or": [
@@ -149,7 +133,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return 0
 
         if from_db:
-            if data := await self.bot.mongo.parrot_db.starboard.find_one(
+            if data := await self.bot.starboards.find_one(
                 {
                     "$or": [
                         {"message_id.bot": message.id},
@@ -221,7 +205,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         self.bot.message_cache[message.id] = message
 
         post = await self.__make_starboard_post(bot_message=msg, message=message)
-        await self.bot.mongo.parrot_db.starboard.insert_one(post)
+        await self.bot.starboards.insert_one(post)
 
     async def edit_starbord_post(
         self, payload: discord.RawReactionActionEvent, **data: Any
@@ -238,7 +222,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         main_message = data["message_id"]["author"]
         try:
             starboard_channel: int = (
-                self.bot.server_config[payload.guild_id]["starboard"]["channel"] or 0
+                self.bot.guild_configurations[payload.guild_id]["starboard"]["channel"]
+                or 0
             )
         except KeyError:
             return False
@@ -274,7 +259,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_remove(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
-        server_config = self.bot.server_config
+        server_config = self.bot.guild_configurations
         ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
         )
@@ -291,7 +276,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return False
         count = await self.get_star_count(msg, from_db=True)
         if limit > count:
-            collection: Collection = self.bot.mongo.parrot_db.starboard
+            collection: Collection = self.bot.starboards
             data: DocumentType = await collection.find_one_and_delete(
                 {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
             )
@@ -317,7 +302,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
-        data = self.bot.server_config
+        data = self.bot.guild_configurations
 
         try:
             locked: bool = data[payload.guild_id]["starboard"]["is_locked"]
@@ -374,7 +359,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-
         if not payload.guild_id:
             return
 
@@ -445,7 +429,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
-        await self.bot.mongo.parrot_db.starboard.delete_one(
+        await self.bot.starboards.delete_one(
             {
                 "$or": [
                     {"message_id.bot": payload.message_id},

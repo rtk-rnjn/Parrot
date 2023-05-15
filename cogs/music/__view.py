@@ -26,7 +26,6 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
         self.bot = self.ctx.bot
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-
         cmd: commands.Command = self.bot.get_command("play")
         await interaction.response.send_message(
             f"Recieved `{self.name.value}`", ephemeral=True

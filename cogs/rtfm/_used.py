@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from ._tio import Tio
 
-with open("extra/lang.txt", encoding='utf-8', errors="ignore") as f:
+with open("extra/lang.txt", encoding="utf-8", errors="ignore") as f:
     languages = f.read().split("\n")
 
 wrapping: Dict[str, str] = {
@@ -24,7 +24,7 @@ wrapping: Dict[str, str] = {
     "kotlin": "fun main(args: Array<String>) {code}",
 }
 
-with open("extra/default_langs.yml", "r", encoding='utf-8', errors="ignore") as file:
+with open("extra/default_langs.yml", "r", encoding="utf-8", errors="ignore") as file:
     default_langs = yaml_load(file)
 
 

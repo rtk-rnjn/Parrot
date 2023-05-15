@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -100,7 +102,10 @@ class Memegen(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def magik(
-        self, ctx: Context, member: discord.Member = None, intensity: int = None
+        self,
+        ctx: Context,
+        member: Optional[discord.Member] = None,
+        intensity: Optional[int] = None,
     ):
         """
         Meme Generator/Image Generator: Magik

@@ -10,7 +10,6 @@ COMMAND_CASE_INSENSITIVE = ""
 STRIP_AFTER_PREFIX = ""
 
 # Misc settings
-WEBHOOK_JOIN_LEAVE_ID = ""
 GITHUB_ID = ""
 GITHUB_PROJECT_NAME = ""
 SUPPORT_SERVER = ""
@@ -21,82 +20,95 @@ MEME_PASS = ""
 
 # Your Discord Bot Token
 # https://discord.com/developers/applications
-TOKEN=""
+TOKEN = ""
 
 # Google Keys
 # https://developers.google.com/
-GOOGLE_KEY=""
-GOOGLE_CX=""
+GOOGLE_KEY = ""
+GOOGLE_CX = ""
 
 # Top.gg
 # https://docs.top.gg/api/@reference/
-TOPGG=""
-TOPGG_AUTH=""
+TOPGG = ""
+TOPGG_AUTH = ""
 
 # MongoDB
 # https://www.mongodb.com
-DATABASE_KEY=""
+DATABASE_KEY = ""
+DATABASE_URI = ""
+MONGO_MAIN_DB_NAME = ""
+MAIN_DB_GUILD_CONFIG = ""
+MAIN_DB_TIMERS = ""
+MAIN_DB_GAME_COLLECTIONS = ""
+MAIN_DB_COMMAND_COLLECTIONS = ""
+MAIN_DB_PARROT_COLLECTIONS = ""
+USER_MESSAGES_DB_NAME = ""
+GUILD_MESSAGES_DB_NAME = ""
+USER_DB = ""
+GUILD_DB = ""
 
 # NASA
 # https://api.nasa.gov/
-NASA_KEY=""
+NASA_KEY = ""
 
-# Discord Webhook Tokens
-CHANNEL_TOKEN1=""
-CHANNEL_TOKEN2=""
-CHANNEL_TOKEN3=""
-CHANNEL_TOKEN4=""
+# Discord Webhooks
+WEBHOOK_ERROR_LOGS = ""
+WEBHOOK_JOIN_LEAVE_LOGS = ""
+WEBHOOK_STARTUP_LOGS = ""
+WEBHOOK_VOTE_LOGS = ""
+WEBHOOK_CHANGE_LOG = ""
 
 # Extra
 # https://www.remove.bg/api#remove-background
-REMOVE_BG=""
+REMOVE_BG = ""
 
 # https://products.wolframalpha.com/api/
-WOLFRAM_APP=""
+WOLFRAM_APP = ""
 
 # https://newsapi.org/
-NEWSKEY=""
+NEWSKEY = ""
 
 # https://strawpoll.com/en/api-docs/
-STRAW_POLL=""
+STRAW_POLL = ""
 
 # https://apiflash.com/
-SCREEN_SHOT=""
+SCREEN_SHOT = ""
 
 # For this you need to contact `proguy914629.bot#5419` in Discord
 # Or Use `OpenRobot#1952` (759591316627128320)
 # https://api.openrobot.xyz/
-OPEN_ROBOT_API=""
+OPEN_ROBOT_API = ""
 
 # https://home.openweathermap.org/api_keys
-WEATHERID=""
+WEATHERID = ""
 
 # https://github.com/
-GITHUB_TOKEN=""
+GITHUB_TOKEN = ""
 
 # Twitter
 # https://developer.twitter.com/
-API_KEY=""
-API_KEY_SECRET=""
-ACCESS_TOKEN=""
-ACCESS_TOKEN_SECRET=""
-BEARER=""
+API_KEY = ""
+API_KEY_SECRET = ""
+ACCESS_TOKEN = ""
+ACCESS_TOKEN_SECRET = ""
+BEARER = ""
 
 # IBM Keys
 # https://cloud.ibm.com/apidocs
-IBM_KEY=""
-IBM_END_POINT=""
+IBM_KEY = ""
+IBM_END_POINT = ""
 
 # Internal IPC
 IPC_KEY = ""
 
 # Spotify
 # https://developer.spotify.com/
-SPOTIFY_CLIENT_ID=""
-SPOTIFY_CLIENT_SECRET=""
+SPOTIFY_CLIENT_ID = ""
+SPOTIFY_CLIENT_SECRET = ""
 
 # Redis
 # https://redislabs.com/
-REDIS_DATABASE=""
-REDIS_ENDPOINT=""
-REDIS_PASSWORD=""
+REDIS_DATABASE = ""
+REDIS_ENDPOINT = ""
+REDIS_PASSWORD = ""
+

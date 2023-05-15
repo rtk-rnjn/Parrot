@@ -9,7 +9,7 @@ from cogs.mod.method import instant_action_parser
 from core import Cog, Context, Parrot
 from utilities.infraction import warn
 
-with open("extra/duke_nekum.txt", encoding='utf-8', errors="ignore") as f:
+with open("extra/duke_nekum.txt", encoding="utf-8", errors="ignore") as f:
     quotes = f.read().split("\n")
 
 
@@ -19,13 +19,10 @@ class Profanity(Cog):
         self.__instant_action_parser = instant_action_parser
         self.ON_TESTING = False
 
-    def get_bad_words(self, message) -> List[str]:
-        try:
-            return self.bot.server_config[message.guild.id]["automod"]["profanity"][
-                "words"
-            ]
-        except KeyError:
-            return []
+    def get_bad_words(self, message: discord.Message) -> List[str]:
+        return self.bot.guild_configurations_cache[message.guild.id]["automod"][
+            "profanity"
+        ]["words"]
 
     def isin(self, phrase: str, sentence: str) -> bool:
         try:
@@ -39,91 +36,61 @@ class Profanity(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
-        if isinstance(message.author, discord.User):
-            return
-
         bad_words = self.get_bad_words(message)
 
-        if data := self.bot.server_config.get(message.guild.id):
-            try:
-                profanity: bool = data["automod"]["profanity"]["enable"]
-            except KeyError:
-                profanity: bool = False
+        data = self.bot.guild_configurations_cache.get(message.guild.id)
+        profanity: bool = data["automod"]["profanity"]["enable"]
+        ignore: List[int] = data["automod"]["profanity"]["channel"]
 
-            try:
-                ignore: List[int] = data["automod"]["profanity"]["channel"]
-            except KeyError:
-                ignore: List[int] = []
+        if message.channel.id in ignore:
+            return
 
-            if message.channel.id in ignore:
-                return
+        ignore_roles: List[int] = data["automod"]["profanity"]["role"]
 
-            try:
-                ignore_roles: List[int] = data["automod"]["profanity"]["role"]
-            except KeyError:
-                ignore_roles: List[int] = []
+        if any(role.id in ignore_roles for role in message.author.roles):
+            return
 
-            if any(role.id in ignore_roles for role in message.author.roles):
-                return
+        if (not bad_words) and profanity:
+            bad_words = data["automod"]["profanity"]["words"]
 
-            if (not bad_words) and profanity:
-                try:
-                    bad_words = data["automod"]["profanity"]["words"]
-                except KeyError:
-                    return
+        if not bad_words:
+            return
+        to_delete: bool = data["automod"]["profanity"]["autowarn"]["to_delete"]
 
-            if not bad_words:
-                return
+        if to_delete:
+            await message.delete(delay=0)
 
-            try:
-                to_delete: bool = data["automod"]["profanity"]["autowarn"]["to_delete"]
-            except KeyError:
-                to_delete: bool = True
+        to_warn: bool = data["automod"]["profanity"]["autowarn"]["enable"]
 
-            if to_delete:
-                await message.delete(delay=0)
+        ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
+        instant_action: str = data["automod"]["profanity"]["autowarn"]["punish"]["type"]
+        if instant_action and to_warn:
+            await self.__instant_action_parser(
+                name=instant_action,
+                ctx=ctx,
+                message=message,
+                **data["automod"]["mention"]["autowarn"]["punish"],
+            )
 
-            try:
-                to_warn: bool = data["automod"]["profanity"]["autowarn"]["enable"]
-            except KeyError:
-                to_warn: bool = False
+        if to_warn and not instant_action:
+            await warn(
+                message.guild,
+                message.author,
+                "Automod: Bad words usage",
+                moderator=self.bot.user,
+                message=message,
+                at=message.created_at,
+                ctx=ctx,
+            )
 
-            ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
+            if mod_cog := self.bot.get_cog("Moderator"):
+                await mod_cog.warn_task(target=message.author, ctx=ctx)
 
-            try:
-                instant_action: str = data["automod"]["profanity"]["autowarn"][
-                    "punish"
-                ]["type"]
-            except KeyError:
-                instant_action = False
-            else:
-                if instant_action and to_warn:
-                    await self.__instant_action_parser(
-                        name=instant_action,
-                        ctx=ctx,
-                        message=message,
-                        **data["automod"]["mention"]["autowarn"]["punish"],
-                    )
-
-            if to_warn and not instant_action:
-                await warn(
-                    message.guild,
-                    message.author,
-                    "Automod: Bad words usage",
-                    moderator=self.bot.user,
-                    message=message,
-                    at=message.created_at,
-                    ctx=ctx,
-                )
-
-                if mod_cog := self.bot.get_cog("Moderator"):
-                    await mod_cog.warn_task(target=message.author, ctx=ctx)
-
-            if any(self.isin(word, message.content.lower()) for word in bad_words):
-                await message.channel.send(
-                    f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] {'[Warning]' if to_warn else ''}**",
-                    delete_after=10,
-                )
+        if any(self.isin(word, message.content.lower()) for word in bad_words):
+            await message.channel.send(
+                f"{message.author.mention} *{random.choice(quotes)}* **[Blacklisted Word] {'[Warning]' if to_warn else ''}**",
+                delete_after=10,
+            )
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

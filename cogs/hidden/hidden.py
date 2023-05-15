@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from typing import Literal
 
 import discord
 from core import Cog, Context, Parrot
@@ -26,47 +27,23 @@ class Hidden(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @optout.command(name="gitlink")
-    async def optout_gitlink(self, ctx: Context):
+    async def optout_gitlink(self, ctx: Context, g: Literal['--global']):
         """Opt-out for gitlink to codeblock."""
-        await self.bot.mongo.extra.misc.update_one(
+        await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$pull": {"gitlink": ctx.author.id}},
+            {"$set": {"opts.gitlink": False}},
             upsert=True,
         )
         await ctx.send(
             f"{ctx.author.mention} You have opted-out to the use of gitlink in codeblocks."
         )
 
-    @optout.command(name="global")
-    async def optout_global(self, ctx: Context):
-        """Opt-out for global chat"""
-        await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"global": ctx.author.id}}, upsert=True
-        )
-        await ctx.send(
-            f"{ctx.author.mention} You have opted-out to the use of global chat."
-        )
-
-    @optout.command(name="command", aliases=["commands", "cmd"])
-    async def optout_command(self, ctx: Context):
-        """Opt-out for command usage.
-        Beware after opting-out, you will not be able to use commands anymore.
-        It is similar to self banning from using the bot"""
-        await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id},
-            {"$addToSet": {"command": ctx.author.id}},
-            upsert=True,
-        )
-        await ctx.send(
-            f"{ctx.author.mention} You have opted-out to the use of Parrot commands."
-        )
-
     @optout.command(name="equation")
-    async def optout_equation(self, ctx: Context):
+    async def optout_equation(self, ctx: Context, g: Literal['--global']):
         """Opt-out for equation usage"""
-        await self.bot.mongo.extra.misc.update_one(
+        await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"equation": ctx.author.id}},
+            {"$set": {"opts.equation": False}},
             upsert=True,
         )
         await ctx.send(
@@ -80,45 +57,27 @@ class Hidden(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @optin.command(name="gitlink")
-    async def optin_gitlink(self, ctx: Context):
+    async def optin_gitlink(self, ctx: Context, g: Literal['--global']):
         """Opt-in for gitlink to codeblock"""
-        await self.bot.mongo.extra.misc.update_one(
+        await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"gitlink": ctx.author.id}},
+            {"$set": {"opts.equation": True}},
             upsert=True,
         )
         await ctx.send(
             f"{ctx.author.mention} You have opted-in to the use of gitlink in codeblocks."
         )
 
-    @optin.command(name="global")
-    async def optin_global(self, ctx: Context):
-        """Opt-in for global chat"""
-        await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"global": ctx.author.id}}, upsert=True
-        )
-        await ctx.send(
-            f"{ctx.author.mention} You have opted-in to the use of global chat."
-        )
-
-    @optin.command(name="command", aliases=["commands", "cmd"])
-    async def optin_command(self, ctx: Context):
-        """Opt-in for command usage"""
-        await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"command": ctx.author.id}}, upsert=True
-        )
-        await ctx.send(
-            f"{ctx.author.mention} You have opted-in to the use of Parrot commands."
-        )
-
     @optin.command(name="equation")
-    async def optin_equation(self, ctx: Context):
+    async def optin_equation(self, ctx: Context, g: Literal['--global']):
         """Opt-in for equation usage"""
-        await self.bot.mongo.extra.misc.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"equation": ctx.author.id}}, upsert=True
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"opts.equation": False}},
+            upsert=True,
         )
         await ctx.send(
-            f"{ctx.author.mention} You have opted-in to the use of equations."
+            f"{ctx.author.mention} You have opted-out to the use of equations."
         )
 
     @commands.command(hidden=True)
@@ -158,7 +117,7 @@ class Hidden(Cog):
             await self.bot.mongo.extra.subscription.update_one(
                 {"hash": code_hash}, {"$inc": {"uses": 1}}, upsert=True
             )
-            await self.bot.mongo.parrot_db.server_config.update_one(
+            await self.bot.guild_configurations.update_one(
                 {"_id": ctx.guild.id},
                 {"$set": {"premium": True}},
                 upsert=True,

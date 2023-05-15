@@ -56,57 +56,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         """This event will be triggered when the command is being completed; triggered by [discord.User]!"""
         if ctx.author.bot:
             return
-        collection = self.bot.mongo.parrot_db["cmd_count"]
-        await collection.update_one(
-            {"_id": ctx.command.qualified_name}, {"$inc": {"count": 1}}, upsert=True
+        await ctx.database_command_update(
+            success=not ctx.command_failed,
         )
-
-    @Cog.listener()
-    async def on_command_completion(self, ctx: Context):
-        """Only for logging"""
-        if ctx.cog is None:
-            return
-
-        if ctx.cog.qualified_name.lower() == "moderator":
-            if data := await self.collection.find_one(
-                {"_id": ctx.guild.id, "on_mod_commands": {"$exists": True}}
-            ):
-                webhook: discord.Webhook = discord.Webhook.from_url(
-                    data["on_mod_commands"], session=self.bot.http_session
-                )
-                with suppress(discord.HTTPException):
-                    main_content = f"""**On Moderator Command**
-
-`Mod    `: **{ctx.author}**
-`Command`: **{ctx.command.qualified_name}**
-`Content`: **{ctx.message.content}**
-"""
-                    await webhook.send(
-                        content=main_content,
-                        avatar_url=self.bot.user.display_avatar.url,
-                        username=self.bot.user.name,
-                    )
-
-        elif ctx.cog.qualified_name.lower() == "configuration":
-            await self.bot.update_server_config_cache(ctx.guild.id)
-            if data := await self.collection.find_one(
-                {"_id": ctx.guild.id, "on_config_commands": {"$exists": True}}
-            ):
-                webhook: discord.Webhook = discord.Webhook.from_url(
-                    data["on_config_commands"], session=self.bot.http_session
-                )
-                with suppress(discord.HTTPException):
-                    main_content = f"""**On Config Command**
-
-`Admin  `: **{ctx.author}**
-`Command`: **{ctx.command.qualified_name}**
-`Content`: **{ctx.message.content}**
-"""
-                    await webhook.send(
-                        content=main_content,
-                        avatar_url=self.bot.user.display_avatar.url,
-                        username=self.bot.user.name,
-                    )
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: commands.CommandError):

@@ -18,7 +18,7 @@ class _MemberJoin(Cog):
     @Cog.listener("on_member_remove")
     async def on_member_kick(self, member: discord.Member) -> None:
         try:
-            premium: bool = self.bot.server_config[member.guild.id]["premium"]
+            premium: bool = self.bot.guild_configurations[member.guild.id]["premium"]
         except KeyError:
             premium: bool = False  # type: ignore
 
@@ -50,7 +50,7 @@ class _MemberJoin(Cog):
     @Cog.listener("on_member_join")
     async def on_invite(self, member: discord.Member) -> None:
         try:
-            premium: bool = self.bot.server_config[member.guild.id]["premium"]
+            premium: bool = self.bot.guild_configurations[member.guild.id]["premium"]
         except KeyError:
             premium: bool = False  # type: ignore
 
@@ -122,7 +122,7 @@ class _MemberJoin(Cog):
         if guild is None:
             return
         try:
-            premium: bool = self.bot.server_config[guild.id]["premium"]
+            premium: bool = self.bot.guild_configurations[guild.id]["premium"]
         except KeyError:
             premium: bool = False  # type: ignore
 
@@ -139,7 +139,7 @@ class _MemberJoin(Cog):
         if guild is None:
             return
         try:
-            premium: bool = self.bot.server_config[guild.id]["premium"]
+            premium: bool = self.bot.guild_configurations[guild.id]["premium"]
         except KeyError:
             premium: bool = False  # type: ignore
 

@@ -46,78 +46,18 @@ class Utils(Cog):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.react_collection: Collection = bot.mongo.parrot_db["reactions"]
-        self.collection: Collection = bot.mongo.parrot_db["timers"]
+        self.collection: Collection = bot.timers
         self.lock = asyncio.Lock()
         self.message: Dict[int, Dict[str, Any]] = {}
         self.ON_TESTING = False
         self.server_stats_updater.start()
 
-        if not hasattr(self.bot, "create_timer"):
-            self.bot.create_timer = self.create_timer
-
-        if not hasattr(self.bot, "delete_timer"):
-            self.bot.delete_timer = self.delete_timer
+        self.create_timer = self.bot.create_timer
+        self.delete_timer = self.bot.delete_timer
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="sparkles_", id=892435276264259665)
-
-    async def create_timer(
-        self,
-        *,
-        expires_at: float,
-        created_at: float = None,
-        content: str = None,
-        message: discord.Message,
-        dm_notify: bool = False,
-        is_todo: bool = False,
-        extra: Dict[str, Any] = None,
-        **kw,
-    ) -> None:
-        """|coro|
-
-        Master Function to register Timers.
-
-        Parameters
-        ----------
-        expires_at: :class:`float`
-            Timer exprire timestamp
-        created_at: :class:`float`
-            Timer created timestamp
-        content: :class:`str`
-            Content of the Timer
-        message: :class:`discord.Message`
-            Message Object
-        dm_notify: :class:`bool`
-            To notify the user or not
-        is_todo: :class:`bool`
-            To provide whether the timer related to `TODO`
-        """
-        embed: Dict[str, Any] = kw.get("embed_like") or kw.get("embed")
-        mod_action: Dict[str, Any] = kw.get("mod_action")
-        cmd_exec_str: str = kw.get("cmd_exec_str")
-
-        post = {
-            "_id": message.id,
-            "expires_at": expires_at,
-            "created_at": created_at or message.created_at.timestamp(),
-            "content": content,
-            "embed": embed,
-            "messageURL": message.jump_url,
-            "messageAuthor": message.author.id,
-            "messageChannel": message.channel.id,
-            "dm_notify": dm_notify,
-            "is_todo": is_todo,
-            "mod_action": mod_action,
-            "cmd_exec_str": cmd_exec_str,
-            "extra": extra,
-            **kw,
-        }
-        await self.collection.insert_one(post)
-
-    async def delete_timer(self, **kw):
-        await self.collection.delete_one(kw)
 
     @commands.group(aliases=["remind", "reminder"], invoke_without_command=True)
     @Context.with_type
@@ -424,7 +364,9 @@ class Utils(Cog):
                 "ignoredChannel": [],
             }
             await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
-            await self.bot.mongo.parrot_db.afk.insert_one({**post})
+            await self.bot.extra_collections.update_one(
+                {"_id": "afk"}, {"$addToSet": {"afk": post}}, upsert=True
+            )
             self.bot.afk.add(ctx.author.id)
 
     @afk.command(name="global")
@@ -442,7 +384,9 @@ class Utils(Cog):
             "text": text or "AFK",
             "ignoredChannel": [],
         }
-        await self.bot.mongo.parrot_db.afk.insert_one({**post})
+        await self.bot.extra_collections.update_one(
+            {"_id": "afk"}, {"$addToSet": {"afk": post}}, upsert=True
+        )
         await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
         self.bot.afk.add(ctx.author.id)
 
@@ -465,12 +409,15 @@ class Utils(Cog):
             "text": text or "AFK",
             "ignoredChannel": [],
         }
-        await self.bot.mongo.parrot_db.afk.insert_one({**post})
+        await self.bot.extra_collections.update_one(
+            {"_id": "afk"}, {"$addToSet": {"afk": post}}, upsert=True
+        )
         self.bot.afk.add(ctx.author.id)
         await ctx.send(
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
         )
         await self.create_timer(
+            event_name="remove_afk",
             expires_at=till.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
             extra={"name": "REMOVE_AFK", "main": {**post}},
@@ -500,6 +447,7 @@ class Utils(Cog):
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(after.dt, 'R')}"
         )
         await self.create_timer(
+            event_name="set_afk",
             expires_at=after.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
             extra={"name": "SET_AFK", "main": {**post}},
@@ -531,6 +479,7 @@ class Utils(Cog):
 
         if flags.after:
             await self.create_timer(
+                event_name="set_afk",
                 expires_at=flags.after.dt.timestamp(),
                 created_at=ctx.message.created_at.timestamp(),
                 extra={"name": "SET_AFK", "main": {**payload}},
@@ -542,28 +491,27 @@ class Utils(Cog):
             return
         if flags._for:
             await self.create_timer(
+                event_name="remove_afk",
                 expires_at=flags._for.dt.timestamp(),
                 created_at=ctx.message.created_at.timestamp(),
                 extra={"name": "REMOVE_AFK", "main": {**payload}},
                 message=ctx.message,
             )
-            await self.bot.mongo.parrot_db.afk.insert_one({**payload})
+            await self.bot.extra_collections.update_one(
+                {"_id": "afk"}, {"$addToSet": {"afk": payload}}, upsert=True
+            )
             self.bot.afk.add(ctx.author.id)
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
             )
             return
-        await self.bot.mongo.parrot_db.afk.insert_one({**payload})
+        await self.bot.extra_collections.update_one(
+            {"_id": "afk"}, {"$addToSet": {"afk": payload}}, upsert=True
+        )
         self.bot.afk.add(ctx.author.id)
         await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 
     async def cog_unload(self):
-        if hasattr(self.bot, "create_timer"):
-            delattr(self.bot, "create_timer")
-
-        if hasattr(self.bot, "delete_timer"):
-            delattr(self.bot, "delete_timer")
-
         self.server_stats_updater.cancel()
 
     @commands.command(aliases=["level"])
@@ -572,7 +520,7 @@ class Utils(Cog):
         """To get the level of the user"""
         member = member or ctx.author
         try:
-            enable = self.bot.server_config[ctx.guild.id]["leveling"]["enable"]
+            enable = self.bot.guild_configurations[ctx.guild.id]["leveling"]["enable"]
             if not enable:
                 return await ctx.send(
                     f"{ctx.author.mention} leveling system is disabled in this server"
@@ -658,7 +606,7 @@ class Utils(Cog):
         self, guild: discord.Guild
     ) -> Optional[discord.TextChannel]:
         try:
-            ch_id: Optional[int] = self.bot.server_config[guild.id][
+            ch_id: Optional[int] = self.bot.guild_configurations[guild.id][
                 "suggestion_channel"
             ]
         except KeyError as e:
@@ -681,7 +629,9 @@ class Utils(Cog):
         except KeyError:
             if channel is None:
                 try:
-                    channel_id = self.bot.server_config[guild.id]["suggestion_channel"]
+                    channel_id = self.bot.guild_configurations[guild.id][
+                        "suggestion_channel"
+                    ]
                 except KeyError as e:
                     raise commands.BadArgument("No suggestion channel is setup") from e
             msg = await self.__fetch_message_from_channel(
@@ -731,7 +681,6 @@ class Utils(Cog):
         ctx: Context,
         file: Optional[discord.File] = None,
     ) -> Optional[discord.Message]:
-
         channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(
             ctx.guild
         )
@@ -1021,7 +970,7 @@ class Utils(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        ls = await self.bot.mongo.parrot_db.server_config.find_one(
+        ls = await self.bot.guild_configurations.find_one(
             {"_id": message.guild.id, "suggestion_channel": message.channel.id}
         )
         if not ls:
@@ -1097,7 +1046,7 @@ class Utils(Cog):
 
     def __is_mod(self, member: discord.Member) -> bool:
         try:
-            role_id = self.bot.server_config[member.guild.id]["mod_role"]
+            role_id = self.bot.guild_configurations[member.guild.id]["mod_role"]
             if role_id is None:
                 perms: discord.Permissions = member.guild_permissions
                 if any([perms.manage_guild, perms.manage_messages]):
@@ -1112,7 +1061,7 @@ class Utils(Cog):
         """To create giveaway"""
         if not ctx.invoked_subcommand:
             post = await mt._make_giveaway(ctx)
-            await self.create_timer(**post)
+            await self.create_timer(event_name="giveaway", **post)
 
     @giveaway.command(name="drop")
     @commands.has_permissions(manage_guild=True)
@@ -1132,16 +1081,15 @@ class Utils(Cog):
         post = await mt._make_giveaway_drop(
             ctx, duration=duration, winners=winners, prize=prize
         )
-        await self.create_timer(**post)
+        await self.create_timer(event_name="giveaway", **post)
 
     @giveaway.command(name="end")
     @commands.has_permissions(manage_guild=True)
     async def giveaway_end(self, ctx: Context, messageID: int):
         """To end the giveaway"""
-        if data := await self.bot.mongo.parrot_db.giveaway.find_one_and_update(
+        if data := await self.bot.giveaways.find_one_and_update(
             {"message_id": messageID, "status": "ONGOING"}, {"$set": {"status": "END"}}
         ):
-
             await self.collection.delete_one({"_id": messageID})
 
             member_ids = await mt.end_giveaway(self.bot, **data)
@@ -1159,10 +1107,9 @@ class Utils(Cog):
     @commands.has_permissions(manage_guild=True)
     async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int = 1):
         """To end the giveaway"""
-        if data := await self.bot.mongo.parrot_db.giveaway.find_one(
+        if data := await self.bot.giveaways.find_one(
             {"message_id": messageID}
         ):
-
             if data["status"].upper() == "ONGOING":
                 return await ctx.send(
                     f"{ctx.author.mention} can not reroll the ongoing giveaway"
@@ -1200,9 +1147,9 @@ class Utils(Cog):
                 "categories": len(guild.categories),
             }
             try:
-                stats_channels: Dict[str, Any] = self.bot.server_config[guild.id][
-                    "stats_channels"
-                ]
+                stats_channels: Dict[str, Any] = self.bot.guild_configurations[
+                    guild.id
+                ]["stats_channels"]
             except KeyError:
                 pass
             else:

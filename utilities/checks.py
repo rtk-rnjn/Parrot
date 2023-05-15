@@ -103,10 +103,8 @@ def is_me() -> Check[Context]:
 
 def has_verified_role_ticket() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
-        if not data:
-            raise ex.NoVerifiedRoleTicket()
-        data = await ctx.bot.mongo.parrot_db.ticket.find_one({"_id": ctx.guild.id})
+        data = await ctx.bot.guild_configurations_cache[ctx.guild.id]
+        data = data["ticket_config"]
         roles = data["verified_roles"]
         if not roles:
             raise ex.NoVerifiedRoleTicket()
@@ -124,7 +122,7 @@ def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
         bot: Parrot = ctx.bot
         try:
             role = (
-                bot.server_config[ctx.guild.id]["mod_role"] or 0
+                bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0
             )  # role could be `None`
             if true := ctx.author._roles.has(role):
                 return true
@@ -132,12 +130,10 @@ def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
         except KeyError:
             pass
 
-        if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": ctx.guild.id}
-        ):
-            role = ctx.guild.get_role(data["mod_role"])
-            if role and role in ctx.author.roles:
-                return True
+        data = ctx.bot.guild_configurations_cache[ctx.guild.id]
+        role = ctx.guild.get_role(data["mod_role"])
+        if role and role in ctx.author.roles:
+            return True
         raise ex.NoModRole()
 
     return commands.check(predicate)
@@ -145,16 +141,10 @@ def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
 
 def in_temp_channel() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        data = await ctx.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": ctx.guild.id}
-        )
-        if not data:
-            raise ex.InHubVoice()
-
         if not ctx.author.voice:
             raise ex.InHubVoice()
 
-        if data := await ctx.bot.mongo.parrot_db.server_config.find_one(
+        if data := await ctx.bot.guild_configurations.find_one(
             {
                 "_id": ctx.guild.id,
                 "temp_channels.channel_id": ctx.author.voice.channel.id,
@@ -168,75 +158,15 @@ def in_temp_channel() -> Check[Context]:
     return commands.check(predicate)
 
 
-async def set_command_run_cache(context: Context):
-    for guild in context.bot.guilds:
-        context.bot._disabled_commands[guild.id] = await _get_server_command_cache(
-            guild=guild, bot=context.bot
-        )
-
-
-async def _get_server_command_cache(
-    *,
-    guild: discord.Guild,
-    bot: Parrot,
-    force_update: bool = False,
-    command: Optional[str] = None,
-):
-    _cache: List = []
-    collection: MongoCollection = bot.mongo.enable_disable[f"{guild.id}"]
-
-    def __internal_appender(data: Optional[Dict]):
-        if not data:
-            return
-        data: Dict[str, Union[int, bool]]
-        if data["_id"] != "all":
-            cmd: commands.Command = bot.get_command(data["_id"])
-            data.pop("_id")
-            if cmd is not None:
-                _cache.append({cmd: data})
-        else:
-            for cmd in bot.walk_commands():
-                data.pop("_id")
-                _cache.append({cmd: data})
-
-    if command:
-        data = await collection.find_one({"_id": command})
-        __internal_appender(data)
-    else:
-        async for data in collection.find():
-            __internal_appender(data)
-
-    if force_update:
-        bot._disabled_commands[guild.id] = _cache
-
-    return _cache
-
-
-async def _can_run(ctx: Context) -> Optional[bool]:
-    # sourcery skip: assign-if-exp, boolean-if-exp-identity
-    # sourcery skip: reintroduce-else, remove-redundant-if, remove-unnecessary-cast
+def _can_run(ctx: Context) -> Optional[bool]:  # sourcery skip: use-next
     """Return True is the command is whitelisted in specific channel, also with specific role"""
-    if _cached_data := ctx.bot._disabled_commands.get(ctx.guild.id):
-        for data in _cached_data:
-            for cmd in data:
-                if cmd.qualified_name == ctx.command.qualified_name:
-                    return __internal_cmd_checker_parser(ctx=ctx, data=data)
-
-    if not hasattr(ctx, "channel"):
-        return True
-
-    if ctx.guild is not None and ctx.command:
-        collection = ctx.bot.mongo.enable_disable[f"{ctx.guild.id}"]
-        if data := await collection.find_one(
-            {
-                "$or": [
-                    {"_id": ctx.command.qualified_name},
-                    {"_id": getattr(ctx.command.cog, "qualified_name", None)},
-                    {"_id": "all"},
-                ]
-            }
+    for cmd in ctx.bot.guild_configurations_cache[ctx.guild.id]["cmd_config"]:
+        if (
+            cmd["cmd"] == ctx.command.qualified_name
+            or cmd["cmd"] == "all"
+            or (getattr(ctx.command.cog, "qualified_name", None) == cmd["cmd"])
         ):
-            return __internal_cmd_checker_parser(ctx=ctx, data=data)
+            return __internal_cmd_checker_parser(ctx=ctx, data=cmd)
 
     return True
 
@@ -252,9 +182,9 @@ def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
         return False
     if ctx.channel.id in data["channel_out"]:
         return False
-    if data["server"]:
+    if data["cmd_enable"]:
         return False
-    if not data["server"]:
+    if not data["cmd_enable"]:
         return True
     return True
 
@@ -262,7 +192,7 @@ def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
 def guild_premium() -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is premium."""
-        if ctx.guild is not None and ctx.bot.server_config[ctx.guild.id].get(
+        if ctx.guild is not None and ctx.bot.guild_configurations[ctx.guild.id].get(
             "premium", False
         ):
             return True

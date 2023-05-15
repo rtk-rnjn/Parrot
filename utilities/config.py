@@ -12,7 +12,7 @@ with contextlib.suppress(ImportError):
     load_dotenv()
     dotenv_values(".env")
 
-with open("config.yml", encoding='utf-8', errors="ignore") as f:
+with open("config.yml", encoding="utf-8", errors="ignore") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
 
 VERSION = "v4.9.5-beta"
@@ -50,7 +50,6 @@ DEV_LOGO: str = data["dev_logo"]
 TOKEN: str = parse_env_var("TOKEN")
 DATABASE_KEY: str = parse_env_var("DATABASE_KEY")
 OPEN_ROBOT_API: str = parse_env_var("OPEN_ROBOT_API")
-my_secret = DATABASE_KEY
 AUTHOR_NAME: str = parse_env_var("OWNER_NAME")
 AUTHOR_DISCRIMINATOR: int = parse_env_var("OWNER_DISCRIMINATOR", 9230)
 GITHUB: str = f"https://github.com/{parse_env_var('GITHUB_ID')}/{parse_env_var('GITHUB_PROJECT_NAME')}"
@@ -63,3 +62,54 @@ PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 LRU_CACHE = 32 if HEROKU else 256
 
 TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
+
+DATABASE_URI: str = parse_env_var("DATABASE_URI")
+MONGO_MAIN_DB_NAME: str = parse_env_var("MONGO_MAIN_DB_NAME")
+MAIN_DB_GUILD_CONFIG: str = parse_env_var("MAIN_DB_GUILD_CONFIG")
+MAIN_DB_REMINDERS: str = parse_env_var("MAIN_DB_REMINDERS")
+USER_MESSAGES_DB_NAME: str = parse_env_var("USER_MESSAGES_DB_NAME")
+GUILD_MESSAGES_DB_NAME: str = parse_env_var("GUILD_MESSAGES_DB_NAME")
+USER_DB: str = parse_env_var("USER_DB")
+GUILD_DB: str = parse_env_var("GUILD_DB")
+
+WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
+WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")
+WEBHOOK_STARTUP_LOGS: str = parse_env_var("WEBHOOK_STARTUP_LOGS")
+WEBHOOK_VOTE_LOGS: str = parse_env_var("WEBHOOK_VOTE_LOGS")
+
+# ALL_CONFIG = [
+#     OWNER_IDS,
+#     DEFAULT_PREFIX,
+#     CASE_INSENSITIVE,
+#     STRIP_AFTER_PREFIX,
+#     SUPER_USER,
+#     MASTER_OWNER,
+#     EXTENSIONS,
+#     UNLOAD_EXTENSIONS,
+#     DEV_LOGO,
+#     TOKEN,
+#     DATABASE_KEY,
+#     OPEN_ROBOT_API,
+#     AUTHOR_NAME,
+#     AUTHOR_DISCRIMINATOR,
+#     GITHUB,
+#     SUPPORT_SERVER,
+#     WEBHOOK_JOIN_LEAVE_CHANNEL_ID,
+#     SUPPORT_SERVER_ID,
+#     MEME_PASS,
+#     PRIVACY_POLICY,
+#     LRU_CACHE,
+#     TO_LOAD_IPC,
+#     DATABASE_URI,
+#     MONGO_MAIN_DB_NAME,
+#     MAIN_DB_GUILD_CONFIG,
+#     MAIN_DB_REMINDERS,
+#     USER_MESSAGES_DB_NAME,
+#     GUILD_MESSAGES_DB_NAME,
+#     USER_DB,
+#     GUILD_DB,
+#     WEBHOOK_JOIN_LEAVE_LOGS,
+#     WEBHOOK_ERROR_LOGS,
+#     WEBHOOK_STARTUP_LOGS,
+#     WEBHOOK_VOTE_LOGS,
+# ]

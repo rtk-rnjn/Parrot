@@ -9,8 +9,6 @@
   "on_role_create",
   "on_role_delete",
   "on_role_update",
-  "on_mod_commands",
-  "on_config_commands",
   "on_message_delete",
   "on_message_edit",
   "on_message_pin",

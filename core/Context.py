@@ -41,10 +41,15 @@ CONFIRM_REACTIONS: Tuple = (
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
+    from motor.motor_asyncio import AsyncIOMotorCollection as Collection
+    from typing_extensions import TypeAlias
+    from pymongo.results import UpdateResult
 
     P = ParamSpec("P")
 
     MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]  # type: ignore
+    MongoCollection: TypeAlias = Collection
+
 
 T = TypeVar("T")
 MaybeAwaitable = Union[T, Awaitable[T]]
@@ -69,6 +74,12 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+
+        if self.guild is not None:
+            self.guild_collection: MongoCollection = self.bot.guild_db[
+                f"{self.guild.id}"
+            ]
+        self.user_collection: MongoCollection = self.bot.user_db[f"{self.author.id}"]
 
     def __repr__(self) -> str:
         return f"<core.Context author={self.author} guild={self.guild} channel={self.channel} command={self.command}>"
@@ -115,7 +126,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def dj_role(
         self,
     ) -> Optional[discord.Role]:
-        if channel := getattr(self.author.voice, "channel"):  
+        if channel := getattr(self.author.voice, "channel"):
             # channel: discord.VoiceChannel
             members = sum(not m.bot for m in channel.members)  # type: ignore  # channel is surely the voice channel
             if members <= 3:
@@ -126,7 +137,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             return self.guild.default_role
         try:
             dj_role = self.guild.get_role(
-                self.bot.server_config[self.guild.id]["dj_role"] or 0
+                self.bot.guild_configurations[self.guild.id]["dj_role"] or 0
             )
             author_dj_role = discord.utils.find(
                 lambda r: r.name.lower() == "dj",
@@ -138,7 +149,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             )
             return dj_role or author_dj_role or server_dj_role
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            if data := await self.bot.guild_configurations.find_one(
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(data.get("dj_role") or 0)
@@ -156,13 +167,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             )
             return (
                 self.guild.get_role(
-                    self.bot.server_config[self.guild.id]["mute_role"] or 0
+                    self.bot.guild_configurations[self.guild.id]["mute_role"] or 0
                 )
                 or global_muted
                 or author_muted
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            if data := await self.bot.guild_configurations.find_one(
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(data["mute_role"] or 0)
@@ -173,10 +184,10 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     ) -> Optional[discord.Role]:
         try:
             return self.guild.get_role(
-                self.bot.server_config[self.guild.id]["mod_role"] or 0
+                self.bot.guild_configurations[self.guild.id]["mod_role"] or 0
             )
         except KeyError:
-            if data := await self.bot.mongo.parrot_db.server_config.find_one(
+            if data := await self.bot.guild_configurations.find_one(
                 {"_id": self.guild.id}
             ):
                 return self.guild.get_role(data["mod_role"] or 0)
@@ -193,7 +204,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     def with_type(func: Callable[..., Any]) -> Coroutine[Any, Any, Any]:
         @functools.wraps(func)
         async def wrapped(*args: Any, **kwargs: Any) -> Any:
-
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             async with context.typing():
                 return await func(*args, **kwargs)
@@ -716,6 +726,123 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 await self.release(multiplier * retry)
 
         raise errors[retry]
+
+    async def database_game_update(
+        self, game_name: str, *, win: bool = False, loss: bool = False, **kwargs: Any
+    ) -> bool:
+        """|coro|
+
+        Updates the game database.
+
+        Parameters
+        -----------
+        game_name: str
+            The name of the game.
+        win: bool
+            Whether the game is won.
+        loss: bool
+            Whether the game is lost.
+        """
+        if not win and not loss:
+            update_result: UpdateResult = await self.bot.game_collections.update_one(
+                {
+                    "_id": self.author.id,
+                },
+                {
+                    "$inc": {
+                        f"game_{game_name}_played": 1,
+                    },
+                    **kwargs,
+                },
+                upsert=True,
+            )
+        elif win:
+            update_result: UpdateResult = await self.bot.game_collections.update_one(
+                {
+                    "_id": self.author.id,
+                },
+                {
+                    "$inc": {
+                        f"game_{game_name}_played": 1,
+                        f"game_{game_name}_won": 1,
+                    },
+                    **kwargs,
+                },
+                upsert=True,
+            )
+        else:
+            update_result: UpdateResult = await self.bot.game_collections.update_one(
+                {
+                    "_id": self.author.id,
+                },
+                {
+                    "$inc": {
+                        f"game_{game_name}_played": 1,
+                        f"game_{game_name}_loss": 1,
+                    },
+                    **kwargs,
+                },
+                upsert=True,
+            )
+
+        return bool(update_result.modified_count)
+
+    async def database_command_update(
+        self, *, success: bool = False, error: Optional[str] = None, **kwargs: Any
+    ) -> Dict[str, Any]:
+        if self.command is None:
+            return
+
+        cmd = self.command.qualified_name
+        cmd = cmd.replace(" ", "_")
+        now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+        if error:
+            kwargs["$addToSet"] = {
+                f"command_{cmd}_errors": {
+                    "error": error,
+                    "time": now,
+                }
+            }
+
+        update_result_cmd_user: UpdateResult = (
+            await self.bot.command_collections.update_one(
+                {
+                    "_id": self.author.id,
+                },
+                {
+                    "$inc": {
+                        f"command_{cmd}_used": 1,
+                        f"command_{cmd}_success": 1 if success else 0,
+                    },
+                    "$set": {"type": "user"},
+                    **kwargs,
+                },
+                upsert=True,
+            )
+        )
+
+        update_result_cmd_guild: UpdateResult = (
+            await self.bot.command_collections.update_one(
+                {
+                    "_id": self.guild.id,
+                },
+                {
+                    "$inc": {
+                        f"command_{cmd}_used": 1,
+                        f"command_{cmd}_success": 1 if success else 0,
+                    },
+                    "$set": {"type": "guild"},
+                    **kwargs,
+                },
+                upsert=True,
+            )
+        )
+
+        return {
+            "user": bool(update_result_cmd_user.modified_count),
+            "guild": bool(update_result_cmd_guild.modified_count),
+        }
 
 
 class ConfirmationView(discord.ui.View):

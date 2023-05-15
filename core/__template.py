@@ -19,6 +19,12 @@ post: Dict[str, Any] = {
     "muted": [],
     "warn_count": 0,
     "suggestion_channel": None,
+    "global_chat": {
+        "enable": False,
+        "channel_id": None,
+        "ignore_role": [],
+        "webhook": None,
+    },
     "giveaway": [],
     "hub": None,
     "stats_channels": {
@@ -39,7 +45,7 @@ post: Dict[str, Any] = {
             # }
         ],
     },
-    "starboard": {
+    "starboard_config": {
         "is_locked": False,
         "limit": None,
         "ignore_channel": [],
@@ -59,6 +65,7 @@ post: Dict[str, Any] = {
         "ignore_channel": [],
     },
     "automod": {
+        "enable": False,
         "spam": {
             "enable": False,
             "channel": [],
@@ -119,4 +126,38 @@ post: Dict[str, Any] = {
             },
         },
     },
+    "telephone": {
+        "enable": False,
+        "channel_id": None,
+        "ping_role": None,
+        "is_line_busy": False,
+        "member_ping": None,
+        "blocked": [],
+    },
+    "cmd_config": [
+        # {
+        #     "cmd_enable": False,
+        #     "cmd_name": None,
+        #     "role_out": [],
+        #     "channel_out": [],
+        #     "role_in": [],
+        #     "channel_in": [],
+        # }
+    ],
+    "opts": {
+        "gitlink_enabled": True,
+        "equation_enabled": True,
+    },
+    "ticket_config": {
+        "enable": False,
+        "category": None,
+        "message_id": None,
+        "channel_id": None,
+        "log": None,
+        "pinged_roles": [],
+        "verified_roles": [],
+        "ticket_channel_ids": [],
+        "ticket_counter": 0,
+    },
+    "logging": {}
 }

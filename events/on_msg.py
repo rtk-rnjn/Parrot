@@ -857,7 +857,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            enable: bool = self.bot.server_config[message.guild.id]["leveling"][
+            enable: bool = self.bot.guild_configurations[message.guild.id]["leveling"][
                 "enable"
             ]
         except KeyError:
@@ -868,7 +868,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         try:
             role: List[int] = (
-                self.bot.server_config[message.guild.id]["leveling"]["ignore_role"]
+                self.bot.guild_configurations[message.guild.id]["leveling"][
+                    "ignore_role"
+                ]
                 or []
             )
         except KeyError:
@@ -879,7 +881,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         try:
             ignore_channel: List = (
-                self.bot.server_config[message.guild.id]["leveling"]["ignore_channel"]
+                self.bot.guild_configurations[message.guild.id]["leveling"][
+                    "ignore_channel"
+                ]
                 or []
             )
         except KeyError:
@@ -894,7 +898,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         try:
             announce_channel: int = (
-                self.bot.server_config[message.guild.id]["leveling"]["channel"] or 0
+                self.bot.guild_configurations[message.guild.id]["leveling"]["channel"]
+                or 0
             )
         except KeyError:
             return
@@ -1003,7 +1008,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def __add_role__xp(self, guild_id: int, level: int, msg: discord.Message):
         assert isinstance(msg.author, discord.Member)
         try:
-            ls = self.bot.server_config[guild_id]["leveling"]["reward"]
+            ls = self.bot.guild_configurations[guild_id]["leveling"]["reward"]
         except KeyError:
             return
 

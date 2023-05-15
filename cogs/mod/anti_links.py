@@ -10,14 +10,13 @@ from core import Cog, Context, Parrot
 from utilities.infraction import warn
 from utilities.regex import LINKS_NO_PROTOCOLS, LINKS_RE
 
-with open("extra/duke_nekum.txt", encoding='utf-8', errors="ignore") as f:
+with open("extra/duke_nekum.txt", encoding="utf-8", errors="ignore") as f:
     quotes = f.read().split("\n")
 
 
 class LinkProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = bot.mongo.parrot_db["server_config"]
         self.__instant_action_parser = instant_action_parser
         self.ON_TESTING = False
 
@@ -25,102 +24,73 @@ class LinkProt(Cog):
         return LINKS_RE.findall(message_content)
 
     async def _message_passive(self, message: discord.Message):
-        # sourcery skip: low-code-quality
-        if message.author.public_flags.verified_bot or not message.guild:
+        if message.author.public_flags.verified_bot or message.guild is None:
             return
 
-        if isinstance(message.author, discord.User):
+        _links = self.has_links(message.content)
+
+        if not _links:
             return
 
-        if (data := self.bot.server_config.get(message.guild.id)) and (
-            _links := self.has_links(message.content)
+        data = self.bot.guild_configurations_cache[message.guild.id]
+        prot: Optional[bool] = data["automod"]["antilinks"]["enable"]
+
+        if not prot:
+            return
+
+        whitelist: List[str] = data["automod"]["antilinks"]["whitelist"]
+        ignore: List[int] = data["automod"]["antilinks"]["channel"]
+        ignore_roles: List[int] = data["automod"]["antilinks"]["role"]
+
+        if message.channel.id in ignore or any(
+            role.id in ignore_roles for role in message.author.roles
         ):
-            prot: Optional[bool] = data["automod"]["antilinks"]["enable"]
+            return
 
-            if not prot:
-                return
+        for link in _links:
+            for temp in whitelist:
+                if re.match(temp, link):
+                    return
 
-            try:
-                whitelist: List[str] = data["automod"]["antilinks"]["whitelist"]
-            except KeyError:
-                whitelist = []
+        to_delete: Optional[bool] = data["automod"]["antilinks"]["autowarn"][
+            "to_delete"
+        ]
 
-            try:
-                ignore: List[int] = data["automod"]["antilinks"]["channel"]
-            except KeyError:
-                ignore = []
+        if to_delete:
+            await message.delete(delay=0)
 
-            try:
-                ignore_roles: List[int] = data["automod"]["antilinks"]["role"]
-            except KeyError:
-                ignore_roles = []
+        to_warn: Optional[bool] = data["automod"]["antilinks"]["autowarn"]["enable"]
 
-            if message.channel.id in ignore:
-                return
+        ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
 
-            if any(role.id in ignore_roles for role in message.author.roles):
-                return
+        instant_action: str = data["automod"]["antilinks"]["autowarn"]["punish"]["type"]
 
-            for link in _links:
-                if not whitelist:
-                    break
-
-                for temp in whitelist:
-                    if re.match(temp, link):
-                        return
-
-            try:
-                to_delete: Optional[bool] = data["automod"]["antilinks"]["autowarn"][
-                    "to_delete"
-                ]
-            except KeyError:
-                to_delete: bool = True
-
-            if to_delete:
-                await message.delete(delay=0)
-
-            try:
-                to_warn: Optional[bool] = data["automod"]["antilinks"]["autowarn"][
-                    "enable"
-                ]
-            except KeyError:
-                to_warn: bool = False
-
-            ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
-
-            try:
-                instant_action: str = data["automod"]["antilinks"]["autowarn"][
-                    "punish"
-                ]["type"]
-            except KeyError:
-                instant_action = False
-            else:
-                if instant_action and to_warn:
-                    await self.__instant_action_parser(
-                        name=instant_action,
-                        ctx=ctx,
-                        message=message,
-                        **data["automod"]["mention"]["autowarn"]["punish"],
-                    )
-
-            if to_warn and not instant_action:
-                await warn(
-                    message.guild,
-                    message.author,
-                    "Automod: Mass Mention",
-                    moderator=self.bot.user,
-                    message=message,
-                    at=message.created_at,
-                    ctx=ctx,
-                )
-
-                if mod_cog := self.bot.get_cog("Moderator"):
-                    await mod_cog.warn_task(target=message.author, ctx=ctx)
-
-            await message.channel.send(
-                f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
-                delete_after=10,
+        if instant_action and to_warn:
+            await self.__instant_action_parser(
+                name=instant_action,
+                ctx=ctx,
+                message=message,
+                **data["automod"]["mention"]["autowarn"]["punish"],
             )
+
+        if to_warn and not instant_action:
+            await warn(
+                message.guild,
+                message.author,
+                "Automod: Mass Mention",
+                moderator=self.bot.user,
+                message=message,
+                at=message.created_at,
+                ctx=ctx,
+            )
+
+            if mod_cog := self.bot.get_cog("Moderator"):
+                await mod_cog.warn_task(target=message.author, ctx=ctx)
+
+        await message.channel.send(
+            f"{message.author.mention} *{random.choice(quotes)}* **[Links Protection] {'[Warning]' if to_warn else ''}**",
+            delete_after=10,
+        )
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):

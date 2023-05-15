@@ -12,14 +12,13 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-with open("extra/duke_nekum.txt", encoding='utf-8', errors="ignore") as f:
+with open("extra/duke_nekum.txt", encoding="utf-8", errors="ignore") as f:
     quotes = f.read().split("\n")
 
 
 class MentionProt(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        self.collection = bot.mongo.parrot_db["server_config"]
         self.__instant_action_parser = instant_action_parser
         self.ON_TESTING = False
 
@@ -30,62 +29,36 @@ class MentionProt(Cog):
         if isinstance(message.author, discord.User):
             return
 
-        data = self.bot.server_config.get(message.guild.id)
-        if not data:
-            return
-
-        try:
-            ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
-        except KeyError:
-            ignore: List[int] = []
+        data = self.bot.guild_configurations_cache[message.guild.id]
+        ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
 
         if message.channel.id in ignore:
             return
 
-        try:
-            ignore_roles: List[int] = data[message.guild.id]["automod"]["mention"][
-                "role"
-            ]
-        except KeyError:
-            ignore_roles: List[int] = []
+        ignore_roles: List[int] = data[message.guild.id]["automod"]["mention"]["role"]
 
         if any(role.id in ignore_roles for role in message.author.roles):
             return
 
-        try:
-            count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
-        except KeyError:
-            return
-
-        try:
-            to_delete: bool = data["automod"]["mention"]["autowarn"]["to_delete"]
-        except KeyError:
-            to_delete: bool = True
+        count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
+        to_delete: bool = data["automod"]["mention"]["autowarn"]["to_delete"]
 
         if to_delete:
             await message.delete(delay=0)
 
-        try:
-            to_warn: bool = data["automod"]["mention"]["autowarn"]["enable"]
-        except KeyError:
-            to_warn: bool = False
+        to_warn: bool = data["automod"]["mention"]["autowarn"]["enable"]
 
         ctx: Context = await self.bot.get_context(message, cls=Context)
 
-        try:
-            instant_action: str = data["automod"]["mention"]["autowarn"]["punish"][
-                "type"
-            ]
-        except KeyError:
-            instant_action = False
-        else:
-            if instant_action and to_warn:
-                await self.__instant_action_parser(
-                    name=instant_action,
-                    ctx=ctx,
-                    message=message,
-                    **data["automod"]["mention"]["autowarn"]["punish"],
-                )
+        instant_action: str = data["automod"]["mention"]["autowarn"]["punish"]["type"]
+
+        if instant_action and to_warn:
+            await self.__instant_action_parser(
+                name=instant_action,
+                ctx=ctx,
+                message=message,
+                **data["automod"]["mention"]["autowarn"]["punish"],
+            )
 
         if to_warn and not instant_action:
             await warn(

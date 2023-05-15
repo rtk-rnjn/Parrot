@@ -48,7 +48,6 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                     action=discord.AuditLogAction.channel_delete, limit=5
                 ):
                     if entry.target.id == channel.id:
-
                         reason = (
                             entry.reason or None
                         )  # Fact is this thing has to be implemented
@@ -128,7 +127,9 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
                 and channel.permissions_for(channel.guild.default_role).send_messages
                 and channel.permissions_for(channel.guild.me).manage_roles
             ):
-                if role_id := self.bot.server_config[channel.guild.id]["mute_role"]:
+                if role_id := self.bot.guild_configurations[channel.guild.id][
+                    "mute_role"
+                ]:
                     if role := channel.guild.get_role(role_id):
                         await channel.set_permissions(
                             role, send_messages=False, add_reactions=False

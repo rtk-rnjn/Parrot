@@ -71,7 +71,6 @@ class nitro(discord.ui.View):
         style=discord.ButtonStyle.green,
     )
     async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
-
         i = discord.Embed()
         i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
         await interaction.response.send_message(
@@ -201,8 +200,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """To ban the user"""
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
-        await self.bot.mongo.parrot_db.banned_users.insert_one(
-            {"_id": user.id, **payload}
+        await self.bot.extra_collections.insert_one(
+            {"_id": "banned_users"},
+            {"$addToSet": {"users": {"user_id": user.id, **payload}}},
         )
         await self.bot.update_banned_members.start()
         try:
@@ -223,10 +223,13 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         user: discord.User,
     ):
         """To ban the user"""
-        await self.bot.mongo.parrot_db.banned_users.delete_one(
+        await self.bot.extra_collections.update_one(
             {
-                "_id": user.id,
-            }
+                "_id": "banned_users",
+            },
+            {
+                "$pull": {"users": {"user_id": user.id}},
+            },
         )
         await self.bot.update_banned_members.start()
         try:
@@ -418,9 +421,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     async def announce_global(self, ctx: Context, *, announcement: str):
-        collection = self.bot.mongo.parrot_db["global_chat"]
-        async for webhook in collection.find({"webhook": {"$exists": True}}):
-            if hook := webhook["webhook"]:
+        async for data in self.bot.guild_configurations.find():
+            webhook = data["global_chat"]
+            if (hook := webhook["webhook"]) and webhook["enable"]:
                 if webhook := discord.Webhook.from_url(
                     f"{hook}", session=self.bot.http_session
                 ):
@@ -719,7 +722,7 @@ class SphinxObjectFileReader:
 class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
-        with open("extra/docs_links.json", encoding='utf-8', errors="ignore") as f:
+        with open("extra/docs_links.json", encoding="utf-8", errors="ignore") as f:
             self.page_types = json.load(f)
 
     @property

@@ -17,7 +17,7 @@ from typing import (
 from lru import LRU
 
 import discord
-from core import Context
+from core import Context, Parrot
 from discord.ext import commands
 from utilities.config import LRU_CACHE
 
@@ -143,17 +143,23 @@ class MemberID(commands.Converter):
             )
         return m
 
+def lru_callback(key: KT, value: VT) -> None:
+    value = str(value)[:10]
+    print(f"[Cached] Key: {key} | Value: {value}...")
+
 
 class Cache(dict, Generic[KT, VT]):
     def __init__(
         self,
+        bot: Parrot,
         cache_size: Optional[int] = None,
         *,
         callback: Optional[Callable[[KT, VT], Any]] = None,
     ) -> None:
         self.cache_size: int = cache_size or LRU_CACHE
+        self.bot = bot
         self.__internal_cache: "LRU" = LRU(
-            self.cache_size, callback=callback or (lambda a, b: ...)
+            self.cache_size, callback=callback or lru_callback
         )
 
         self.items: Callable[[], List[Tuple[int, Any]]] = self.__internal_cache.items  # type: ignore

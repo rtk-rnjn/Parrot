@@ -125,6 +125,18 @@ post: Dict[str, Any] = {
                 "punish": {"type": None, "duration": None},
             },
         },
+        "mention": {
+            "enable": False,
+            "limit": None,
+            "channel": [],
+            "role": [],
+            "autowarn": {
+                "enable": False,
+                "count": None,
+                "to_delete": False,
+                "punish": {"type": None, "duration": None},
+            },
+        },
     },
     "telephone": {
         "enable": False,
@@ -159,5 +171,5 @@ post: Dict[str, Any] = {
         "ticket_channel_ids": [],
         "ticket_counter": 0,
     },
-    "logging": {}
+    "logging": {},
 }

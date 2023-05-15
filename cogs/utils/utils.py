@@ -532,7 +532,7 @@ class Utils(Cog):
                 f"{ctx.author.mention} leveling system is disabled in this server"
             )
         else:
-            collection: Collection = self.bot.mongo.leveling[f"{member.guild.id}"]
+            collection: Collection = self.bot.guild_db[f"{member.guild.id}"]
             if data := await collection.find_one_and_update(
                 {"_id": member.id},
                 {"$inc": {"xp": 0}},
@@ -566,7 +566,7 @@ class Utils(Cog):
     async def lb(self, ctx: Context, *, limit: Optional[int] = None):
         """To display the Leaderboard"""
         limit = limit or 10
-        collection = self.bot.mongo.leveling[f"{ctx.guild.id}"]
+        collection = self.bot.guild_db[f"{ctx.guild.id}"]
         entries = await self.__get_entries(
             collection=collection, limit=limit, guild=ctx.guild
         )

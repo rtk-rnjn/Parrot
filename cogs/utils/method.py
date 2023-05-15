@@ -469,7 +469,7 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
             __item__remove(real_winners, member)
 
         if required_level:
-            level = await bot.mongo.leveling[f"{current_guild.id}"].find_one(
+            level = await bot.guild_db[f"{current_guild.id}"].find_one(
                 {"_id": member.id}
             )
             if level < required_level:

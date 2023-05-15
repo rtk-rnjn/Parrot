@@ -30,17 +30,20 @@ class MentionProt(Cog):
             return
 
         data = self.bot.guild_configurations_cache[message.guild.id]
-        ignore: List[int] = data[message.guild.id]["automod"]["mention"]["channel"]
+        enable: bool = data["automod"]["mention"]["enable"]
+        if not enable:
+            return
+        ignore: List[int] = data["automod"]["mention"]["channel"]
 
         if message.channel.id in ignore:
             return
 
-        ignore_roles: List[int] = data[message.guild.id]["automod"]["mention"]["role"]
+        ignore_roles: List[int] = data["automod"]["mention"]["role"]
 
         if any(role.id in ignore_roles for role in message.author.roles):
             return
 
-        count: Optional[int] = data[message.guild.id]["automod"]["mention"]["count"]
+        count: Optional[int] = data["automod"]["mention"]["autowarn"]["count"] or float('inf')
         to_delete: bool = data["automod"]["mention"]["autowarn"]["to_delete"]
 
         if to_delete:

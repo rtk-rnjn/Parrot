@@ -180,6 +180,7 @@ class Parrot(commands.AutoShardedBot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=5,
             max_messages=5000,
+            chunk_guilds_at_startup=False,
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
@@ -220,13 +221,15 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin: Client = Client()
 
         # caching variables
-        self.guild_configurations_cache: Dict[int, Dict[str, Any]] = Cache()
+        self.guild_configurations_cache: Dict[int, Dict[str, Any]] = Cache(self)
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: Set[int] = set()
 
         self.opts: Dict[int, Any] = {}
         self.func: Callable[..., Any] = func
+
+        self.before_invoke(self.__before_invoke)
 
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
@@ -515,7 +518,7 @@ class Parrot(commands.AutoShardedBot):
         print(f"[{self.user.name}] Wavelink Node is ready: {node}")
 
     async def on_connect(self) -> None:
-        print(f"[{self.user.name.title()}] Logged in")
+        print(f"[{self.user.name.title()}] [{self.shard_id}] Logged in")
         return
 
     async def on_disconnect(self) -> None:
@@ -597,8 +600,12 @@ class Parrot(commands.AutoShardedBot):
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
 
+        try:
+            self.guild_configurations_cache[message.guild.id]
+        except KeyError:
+            self.update_server_config_cache.start(message.guild.id)
+
         if message.guild is None or message.author.bot:
-            # to prevent the usage of command in DMs
             return
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
@@ -833,7 +840,7 @@ class Parrot(commands.AutoShardedBot):
             guild = discord.Object(id=guild)
 
         try:
-            return self.server_config[guild.id]["prefix"]
+            return self.guild_configurations_cache[guild.id]["prefix"]
         except KeyError:
             if data := await self.guild_configurations.find_one({"_id": guild.id}):
                 return data.get("prefix", DEFAULT_PREFIX)
@@ -873,24 +880,38 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
-        if data := await self.guild_configurations.find_one({"_id": guild_id}):
-            self.guild_configurations_cache[guild_id] = data
+        async def __internal_func():
+            if data := await self.guild_configurations.find_one({"_id": guild_id}):
+                self.guild_configurations_cache[guild_id] = data
+            else:
+                FAKE_POST = POST.copy()
+                FAKE_POST["_id"] = guild_id
+                try:
+                    await self.guild_configurations.insert_one(FAKE_POST)
+                except pymongo.errors.DuplicateKeyError:
+                    return
+                self.guild_configurations_cache[guild_id] = FAKE_POST
+        self.loop.create_task(__internal_func())
 
     @tasks.loop(count=1)
     async def update_banned_members(self):
         self.banned_users = {}
-        async for data in self.mongo.parrot_db.banned_users.find({}):
+        async for data in self.extra_collections.find({}):
             self.banned_users[data["_id"]] = data
             await asyncio.sleep(0)
 
     @tasks.loop(count=1)
     async def update_opt_in_out(self):
         self.opts = {}
-        async for data in self.mongo.extra.misc.find({}):
+        async for data in self.extra_collections.find({}):
             data: Dict[str, Any] = data
             _id: int = data.pop("_id")
             self.opts[_id] = data
             await asyncio.sleep(0)
+
+    async def __before_invoke(self, ctx: Context):
+        if ctx.guild is not None and not ctx.guild.chunked:
+            self.loop.create_task(ctx.guild.chunk())
 
     async def dispatch_timer(self):
         try:

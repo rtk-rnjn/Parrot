@@ -528,7 +528,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             __internal_invite_parser(),
             self._scam_detection(message),
             self._on_message_leveling(message),
-            self._add_record_message_to_database(message),
             self.equation_solver(message),
             self.quick_answer(message),
             self._on_message_passive(message),
@@ -642,53 +641,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if __function:
             await asyncio.gather(*__function, return_exceptions=False)
 
-    async def _add_record_message_to_database(self, message: discord.Message):
-        self.write_data.append(
-            UpdateOne(
-                {
-                    "_id": message.channel.id,
-                },
-                {
-                    "$addToSet": {"messages": self._msg_raw(message)},
-                },
-                upsert=True,
-            )
-        )
-        await asyncio.sleep(0)
-
-    async def _edit_record_message_to_database(self, message: discord.Message):
-        self.write_data.append(
-            UpdateOne(
-                {"_id": message.channel.id, "messages.id": message.id},
-                {
-                    "$set": {"messages.$": self._msg_raw(message)},
-                },
-            )
-        )
-        await asyncio.sleep(0)
-
-    async def _delete_record_message_to_database(
-        self,
-        obj: Union[discord.Message, int, List[int], Set[int]],
-        *,
-        channel: Union[discord.TextChannel, discord.Object, int],
-    ):
-        if isinstance(obj, discord.Message):
-            obj = [obj.id]
-        elif isinstance(obj, int):
-            obj = [obj]
-        self.write_data.append(
-            UpdateOne(
-                {
-                    "_id": channel.id
-                    if isinstance(channel, (discord.TextChannel, discord.Object))
-                    else channel
-                },
-                {"$pull": {"messages": {"id": {"$in": list(obj)}}}},
-            )
-        )
-        await asyncio.sleep(0)
-
     def _msg_raw(self, message: discord.Message):
         assert message.guild is not None
         return {
@@ -720,9 +672,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
-        await self._delete_record_message_to_database(
-            payload.message_id, channel=payload.channel_id
-        )
         await self.bot.starboards.delete_one(
             {
                 "$or": [
@@ -777,9 +726,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         await self.bot.wait_until_ready()
         msg_ids: List[int] = list(payload.message_ids)
 
-        await self._delete_record_message_to_database(
-            msg_ids, channel=payload.channel_id
-        )
         await self.bot.mongo.parrot_db.starboard.delete_one(
             {
                 "$or": [
@@ -832,7 +778,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             AWAITABLES: List[Coroutine] = [
                 self._on_message_passive(after),
                 self._scam_detection(after),
-                self._edit_record_message_to_database(after),
                 self.equation_solver(after),
             ]
             await asyncio.gather(*AWAITABLES, return_exceptions=False)
@@ -842,10 +787,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
         if message.author.bot:
             return
-
-        await self.bot.mongo.msg_db.counter.update_one(
-            {"_id": message.author.id}, {"$inc": {"count": 1}}, upsert=True
-        )
 
         bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)
         if bucket is None:
@@ -906,7 +847,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         except KeyError:
             return
         else:
-            collection: Collection = self.bot.mongo.leveling[f"{message.guild.id}"]
+            collection: Collection = self.bot.guild_db[f"{message.guild.id}"]
             ch: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
@@ -997,7 +938,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         assert isinstance(msg.author, discord.Member) and msg.guild is not None
 
-        collection: Collection = self.bot.mongo.leveling[f"{member.guild.id}"]
+        collection: Collection = self.bot.guild_db[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
             {"_id": member.id},
             {"$inc": {"xp": xp}},
@@ -1170,25 +1111,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     if fp is not None
                     else MISSING,
                 )
-
-    @tasks.loop(seconds=10)
-    async def msg_db_bulkdelete(self) -> None:
-        async with self.lock:
-            await self.bot.mongo.msg_db.content.update_many(
-                {}, {"$pull": {"messages": {"timestamp": {"$lt": int(time()) - 43200}}}}
-            )
-
-    @tasks.loop(seconds=10)
-    async def msg_db_bulkwrite(self) -> None:
-        if not self.write_data:
-            return
-        async with self.lock:
-            await self.bot.mongo.msg_db.content.bulk_write(self.write_data)
-            self.write_data.clear()
-
-    async def cog_unload(self) -> None:
-        self.msg_db_bulkwrite.cancel()
-        self.msg_db_bulkdelete.cancel()
 
     # Internal Message Cache Updater Events
     # caching variable `Parrot.message_cache`

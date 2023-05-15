@@ -1,7 +1,6 @@
 ENDPOINTS = [
     "hentai",
     "holo",
-    "neko",
     "hneko",
     "hkitsune",
     "kemonomimi",

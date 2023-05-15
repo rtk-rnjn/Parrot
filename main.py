@@ -30,6 +30,7 @@ async def main() -> None:
             bot.mongo = AsyncIOMotorClient(
                 DATABASE_URI.format(DATABASE_KEY),
             )
+            bot.init_db()
             await bot.start(TOKEN)
 
 

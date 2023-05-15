@@ -63,19 +63,11 @@ LRU_CACHE = 32 if HEROKU else 256
 
 TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
 
-DATABASE_URI: str = parse_env_var("DATABASE_URI")
-MONGO_MAIN_DB_NAME: str = parse_env_var("MONGO_MAIN_DB_NAME")
-MAIN_DB_GUILD_CONFIG: str = parse_env_var("MAIN_DB_GUILD_CONFIG")
-MAIN_DB_REMINDERS: str = parse_env_var("MAIN_DB_REMINDERS")
-USER_MESSAGES_DB_NAME: str = parse_env_var("USER_MESSAGES_DB_NAME")
-GUILD_MESSAGES_DB_NAME: str = parse_env_var("GUILD_MESSAGES_DB_NAME")
-USER_DB: str = parse_env_var("USER_DB")
-GUILD_DB: str = parse_env_var("GUILD_DB")
-
 WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
 WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")
 WEBHOOK_STARTUP_LOGS: str = parse_env_var("WEBHOOK_STARTUP_LOGS")
 WEBHOOK_VOTE_LOGS: str = parse_env_var("WEBHOOK_VOTE_LOGS")
+DATABASE_URI: str = parse_env_var("DATABASE_URI")
 
 # ALL_CONFIG = [
 #     OWNER_IDS,

@@ -259,7 +259,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_remove(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
-        server_config = self.bot.guild_configurations
+        server_config = self.bot.guild_configurations_cache
         ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
         )

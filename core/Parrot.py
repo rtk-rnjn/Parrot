@@ -258,6 +258,7 @@ class Parrot(commands.AutoShardedBot):
         self.UNDER_MAINTENANCE_REASON: Optional[str] = None
         self.UNDER_MAINTENANCE_OVER: Optional[datetime.datetime] = None
 
+    def init_db(self) -> None:
         # MongoDB Database variables
         # Main DB
         self.main_db: MongoDatabase = self.mongo["mainDB"]
@@ -365,8 +366,7 @@ class Parrot(commands.AutoShardedBot):
             )
             if success["status"] == "ok":
                 print(f"[{self.user.name}] DBL server started successfully")
-
-        self.timer_task.start()
+        self.timer_task = self.loop.create_task(self.dispatch_timer())
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -811,14 +811,14 @@ class Parrot(commands.AutoShardedBot):
         if message.guild is None:
             return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
         try:
-            prefix: str = self.server_config[message.guild.id]["prefix"]
+            prefix: str = self.guild_configurations_cache[message.guild.id]["prefix"]
         except KeyError:
             if data := await self.guild_configurations.find_one(
                 {"_id": message.guild.id}
             ):
                 prefix = data.get("prefix", DEFAULT_PREFIX)
                 post = data
-                self.server_config[message.guild.id] = post
+                self.guild_configurations_cache[message.guild.id] = post
             else:
                 FAKE_POST = POST.copy()
                 FAKE_POST["_id"] = message.guild.id
@@ -827,7 +827,7 @@ class Parrot(commands.AutoShardedBot):
                     await self.guild_configurations.insert_one(FAKE_POST)
                 except pymongo.errors.DuplicateKeyError:
                     return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
-                self.server_config[message.guild.id] = FAKE_POST
+                self.guild_configurations_cache[message.guild.id] = FAKE_POST
 
         comp = re.compile(f"^({re.escape(prefix)}).*", flags=re.I)
         match = comp.match(message.content)
@@ -842,9 +842,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             return self.server_config[guild.id]["prefix"]
         except KeyError:
-            if data := await self.guild_configurations.find_one(
-                {"_id": guild.id}
-            ):
+            if data := await self.guild_configurations.find_one({"_id": guild.id}):
                 return data.get("prefix", DEFAULT_PREFIX)
         return DEFAULT_PREFIX
 
@@ -883,7 +881,7 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
         if data := await self.guild_configurations.find_one({"_id": guild_id}):
-            self.server_config[guild_id] = data
+            self.guild_configurations_cache[guild_id] = data
 
     @tasks.loop(count=1)
     async def update_banned_members(self):

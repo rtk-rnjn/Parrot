@@ -37,7 +37,8 @@ class EmojiCapsProt(Cog):
         return len(re.findall(r"[A-Z]", message_content))
 
     def is_caps_infilterated(self, message: discord.Message) -> Optional[bool]:
-        if not (data_c := self.bot.guild_configurations.get(message.guild.id)):
+        
+        if not (data_c := self.bot.guild_configurations_cache.get(message.guild.id)):
             return
         if not data_c["automod"]["caps"]["enable"]:
             return False
@@ -69,6 +70,8 @@ class EmojiCapsProt(Cog):
         if message.author.public_flags.verified_bot or not message.guild:
             return
 
+        if isinstance(message.author, discord.User):
+            return
         caps_: bool = self.is_caps_infilterated(message)
         emoj_: bool = self.is_emoji_infilterated(message)
         ctx: Context = await self.bot.get_context(message, cls=Context)

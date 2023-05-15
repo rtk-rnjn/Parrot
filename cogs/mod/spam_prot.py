@@ -37,6 +37,9 @@ class SpamProt(Cog):
         # sourcery skip: low-code-quality
         if message.author.public_flags.verified_bot or not message.guild:
             return
+        
+        if isinstance(message.author, discord.User):
+            return
 
         bucket = self.cd_mapping.get_bucket(message)
         retry_after = bucket.update_rate_limit()

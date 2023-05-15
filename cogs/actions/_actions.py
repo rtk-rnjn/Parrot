@@ -24,7 +24,6 @@ ENDPOINTS = [
     "glomp",
     "slap",
     "kill",
-    "kick",
     "happy",
     "wink",
     "poke",

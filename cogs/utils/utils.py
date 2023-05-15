@@ -1046,7 +1046,7 @@ class Utils(Cog):
 
     def __is_mod(self, member: discord.Member) -> bool:
         try:
-            role_id = self.bot.guild_configurations[member.guild.id]["mod_role"]
+            role_id = self.bot.guild_configurations_cache[member.guild.id]["mod_role"]
             if role_id is None:
                 perms: discord.Permissions = member.guild_permissions
                 if any([perms.manage_guild, perms.manage_messages]):

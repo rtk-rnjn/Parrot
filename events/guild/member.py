@@ -44,7 +44,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 )
 
         try:
-            role = int(self.bot.guild_configurations[member.guild.id]["mute_role"] or 0)
+            role = int(self.bot.guild_configurations_cache[member.guild.id]["mute_role"] or 0)
             role: Optional[discord.Role] = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
@@ -265,7 +265,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         member: discord.Member,
     ):
         try:
-            self.bot.guild_configurations[member.guild.id]["hub"]
+            self.bot.guild_configurations_cache[member.guild.id]["hub"]
         except KeyError:
             return
         else:
@@ -274,7 +274,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 [perms.manage_permissions, perms.manage_channels, perms.move_members]
             ):
                 return
-            if channel.id == self.bot.guild_configurations[member.guild.id]["hub"]:
+            if channel.id == self.bot.guild_configurations_cache[member.guild.id]["hub"]:
                 if channel.category:
                     hub_channel = await member.guild.create_voice_channel(
                         f"[#{await self._get_index(member.guild)}] {member.name}",

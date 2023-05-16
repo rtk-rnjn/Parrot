@@ -19,30 +19,6 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        await self.bot.wait_until_ready()
-        if data := await self.bot.mongo.parrot_db.logging.find_one(
-            {"_id": member.guild.id, "on_member_join": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_member_join"], session=self.bot.http_session
-            )
-            with suppress(discord.HTTPException):
-                content = f"""**Member Joined Event**
-
-`Name (ID)  :` **{member} (`{member.id}`)**
-`Account age:` **{discord.utils.format_dt(member.created_at)}**
-`Joined at  :` **{discord.utils.format_dt(member.joined_at)}**
-`Is Bot?    :` **{member.bot}**
-`Verified?  :` **{not member.pending}**
-`Badges     :` **{', '.join([str(i).replace('.', ':').split(':')[1].replace('_', ' ').title() if i else None for i in member.public_flags.all()])}**
-`Premium Since:` **{discord.utils.format_dt(member.premium_since) if member.premium_since else None}**
-"""
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.display_avatar.url,
-                    username=self.bot.user.name,
-                )
-
         try:
             role = int(
                 self.bot.guild_configurations_cache[member.guild.id]["mute_role"] or 0
@@ -64,30 +40,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_member_remove(self, member: discord.Member):
-        await self.bot.wait_until_ready()
-        if data := await self.bot.mongo.parrot_db.logging.find_one(
-            {"_id": member.guild.id, "on_member_leave": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_member_leave"], session=self.bot.http_session
-            )
-            with suppress(discord.HTTPException):
-                content = f"""**Member Leave Event**
-
-`Name (ID)  :` **{member} (`{member.id}`)**
-`Account age:` **{discord.utils.format_dt(member.created_at)}**
-`Joined at  :` **{discord.utils.format_dt(member.joined_at)}**
-`Left at    :` **<t:{int(time.time())}>**
-`Is Bot?    :` **{member.bot}**
-`Verified?  :` **{not member.pending}**
-`Badges     :` **{', '.join([str(i).replace('.', ':').split(':')[1].replace('_', ' ').title() if i else None for i in member.public_flags.all()])}**
-`Premium Since:` **{discord.utils.format_dt(member.premium_since) if member.premium_since else None}**
-"""
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.display_avatar.url,
-                    username=self.bot.user.name,
-                )
+        pass
 
     @Cog.listener()
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent):
@@ -110,58 +63,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             else:
                 self.muted[member.guild.id] = {member.id}
 
-    def difference_list(self, li1: List, li2: List) -> List:
-        return [i for i in li1 + li2 if i not in li1 or i not in li2]
-
-    def _member_change(self, before, after):
-        ls = []
-        if before.nick != after.nick:
-            ls.append(["`Nickname Changed:`", before.nick])
-        if before.name != after.name:
-            ls.append(["`Name changed    :`", before.name])
-        if before.discriminator != after.discriminator:
-            ls.append(["`Discriminator   :`", before.discriminator])
-        if before.display_avatar.url != after.display_avatar.url:
-            ls.append(["`Avatar Changed  :`", f"<{before.display_avatar.url}>"])
-        if before.roles != after.roles:
-            ls.append(
-                "`Role Update     :`",
-                ", ".join(
-                    [
-                        role.name
-                        for role in self.difference_list(before.roles, after.roles)
-                    ]
-                ),
-            )
-        return ls
-
     @Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
-        await self.bot.wait_until_ready()
-        if data := await self.bot.mongo.parrot_db.logging.find_one(
-            {"_id": after.guild.id, "on_member_update": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_member_update"], session=self.bot.http_session
-            )
-            ch = "".join(f"{i} {j}\n" for i, j in self._member_change(before, after))
-            with suppress(discord.HTTPException):
-                content = f"""**On Member Update**
-
-`Name       :` **{after.name} (`{after.id}`)**
-`Account age:` **{discord.utils.format_dt(after.created_at)}**
-`Joined at  :` **{discord.utils.format_dt(after.joined_at)}**
-`Badges     :` **{', '.join([str(i).replace('.', ':').split(':')[1].replace('_', ' ').title() if i else None for i in after.public_flags.all()])}**
-`Premium Since:` **{discord.utils.format_dt(after.premium_since) if after.premium_since else None}**
-
-**Change/Update (Before)**
-{ch}
-"""
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.display_avatar.url,
-                    username=self.bot.user.name,
-                )
+        pass
 
     @Cog.listener()
     async def on_voice_state_update(
@@ -170,84 +74,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         before: discord.VoiceState,
         after: discord.VoiceState,
     ):
-        await self.bot.wait_until_ready()
-        if member.bot:
-            return
-        if before.channel is None:
-            # member joined VC
-            if data := await self.bot.mongo.parrot_db.logging.find_one(
-                {"_id": member.guild.id, "on_vc_join": {"$exists": True}}
-            ):
-                webhook: discord.Webhook = discord.Webhook.from_url(
-                    data["on_vc_join"], session=self.bot.http_session
-                )
-                with suppress(discord.HTTPException):
-                    content = f"""**On VC Join Event**
-
-`Member     :` **{member}** (`{member.id}`)
-`Channel    :` **{after.channel.mention}** (`{after.channel.id}`)
-`Server Mute:` **{after.mute}**
-`Server Deaf:` **{after.deaf}**
-`Self Mute  :` **{after.self_mute}**
-`Self Deaf  :` **{after.self_deaf}**
-"""
-                    await webhook.send(
-                        content=content,
-                        avatar_url=self.bot.user.display_avatar.url,
-                        username=self.bot.user.name,
-                    )
-                    return
-
-        if after.channel is None:
-            # Member left VC
-            if data := await self.bot.mongo.parrot_db.logging.find_one(
-                {"_id": member.guild.id, "on_vc_leave": {"$exists": True}}
-            ):
-                webhook: discord.Webhook = discord.Webhook.from_url(
-                    data["on_vc_leave"], session=self.bot.http_session
-                )
-                with suppress(discord.HTTPException):
-                    content = f"""**On VC Leave Event**
-
-`Member     :` **{member}** (`{member.id}`)
-`Channel    :` **{before.channel.mention}** (`{before.channel.id}`)
-`Server Mute:` **{before.mute}**
-`Server Deaf:` **{before.deaf}**
-`Self Mute  :` **{before.self_mute}**
-`Self Deaf  :` **{before.self_deaf}**
-"""
-                    await webhook.send(
-                        content=content,
-                        avatar_url=self.bot.user.display_avatar.url,
-                        username=self.bot.user.name,
-                    )
-                    return
-
-        if before.channel and after.channel:
-            # Member moved
-            if data := await self.bot.mongo.parrot_db.logging.find_one(
-                {"_id": member.guild.id, "on_vc_move": {"$exists": True}}
-            ):
-                webhook: discord.Webhook = discord.Webhook.from_url(
-                    data["on_vc_move"], session=self.bot.http_session
-                )
-                with suppress(discord.HTTPException):
-                    content = f"""**On VC Move Event**
-
-`Member     :` **{member}** (`{member.id}`)
-`Channel (A):` **{after.channel.mention}** (`{after.channel.id}`) 
-`Channel (B):` **{before.channel.mention}** (`{before.channel.id}`)
-`Server Mute:` **A: {after.mute}** | **B: {before.mute}**
-`Server Deaf:` **A: {after.deaf}** | **B: {before.deaf}**
-`Self Mute  :` **A: {after.self_mute}** | **B: {after.self_mute}**
-`Self Deaf  :` **A: {after.self_deaf}** | **B: {after.self_deaf}**
-"""
-                    await webhook.send(
-                        content=content,
-                        avatar_url=self.bot.user.display_avatar.url,
-                        username=self.bot.user.name,
-                    )
-                    return
+        pass
 
     async def __notify_member(self, error: str, *, member: discord.Member):
         with suppress(discord.Forbidden):

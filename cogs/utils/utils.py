@@ -357,7 +357,6 @@ class Utils(Cog):
                 "messageAuthor": ctx.author.id,
                 "guild": ctx.guild.id,
                 "channel": ctx.channel.id,
-                "pings": [],
                 "at": ctx.message.created_at.timestamp(),
                 "global": False,
                 "text": text or "AFK",

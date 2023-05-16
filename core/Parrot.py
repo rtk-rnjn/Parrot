@@ -394,7 +394,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def _execute_webhook(
         self,
-        webhook_url: Optional[str] = None,
+        webhook: Union[str, discord.Webhook] = None,
         *,
         webhook_id: Union[str, int] = None,
         webhook_token: Optional[str] = None,
@@ -406,7 +406,7 @@ class Parrot(commands.AutoShardedBot):
         ] = Exception,
         **kwargs: Any,
     ) -> Optional[discord.WebhookMessage]:
-        if webhook_url is None and (webhook_id is None and webhook_token is None):
+        if webhook is None and (webhook_id is None and webhook_token is None):
             raise ValueError(
                 "must provide atleast webhook_url or webhook_id and webhook_token"
             )
@@ -414,15 +414,15 @@ class Parrot(commands.AutoShardedBot):
         if webhook_id and webhook_token:
             BASE_URL = "https://discordapp.com/api/webhooks"
             URL = f"{BASE_URL}/{webhook_id}/{webhook_token}"
-        else:
-            URL = webhook_url
+        elif isinstance(webhook, str):
+            URL = webhook
 
-        webhook: discord.Webhook = discord.Webhook.from_url(
-            URL, session=self.http_session
-        )
+            webhook: discord.Webhook = discord.Webhook.from_url(
+                URL, session=self.http_session
+            )
 
         _CONTENT = content
-        _FILE = discord.utils.MISSING
+        _FILE = kwargs.pop('file', discord.utils.MISSING)
 
         if content and len(content) > 1990 or force_file:
             _FILE: discord.File = discord.File(

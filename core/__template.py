@@ -171,5 +171,4 @@ post: Dict[str, Any] = {
         "ticket_channel_ids": [],
         "ticket_counter": 0,
     },
-    "logging": {},
 }

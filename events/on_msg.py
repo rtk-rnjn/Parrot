@@ -123,7 +123,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         self.cd_mapping = commands.CooldownMapping.from_cooldown(
             3, 5, commands.BucketType.channel
         )
-        self.log_collection: Collection = bot.mongo.parrot_db["logging"]
         self.pattern_handlers: List[Tuple[Pattern[str], Callable]] = [
             (GITHUB_RE, self._fetch_github_snippet),
             (GITHUB_GIST_RE, self._fetch_github_gist_snippet),
@@ -138,9 +137,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
 
         self.write_data: List[UpdateOne] = []
-
-        self.msg_db_bulkdelete.start()
-        self.msg_db_bulkwrite.start()
 
         self.lock = asyncio.Lock()
 
@@ -402,40 +398,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
         return int(str_count + dis_count)
 
-    async def on_invite(self, message: discord.Message, invite_link: list):
-        if data := await self.log_collection.find_one(
-            {"_id": message.guild.id, "on_invite_post": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_invite_post"], session=self.bot.http_session
-            )
-            with suppress(discord.HTTPException):
-                content = f"""**Invite Link Posted**
-
-`Author (ID):` **{message.author} [`{message.author.id}`]**
-`Message ID :` **{message.id}**
-`Jump URL   :` **{message.jump_url}**
-`Invite Link:` **<{invite_link[0]}>**
-
-`Content    :` **{message.content[:250:]}**
-"""
-                msg = message
-                if content:
-                    fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
-                    )
-
-                else:
-                    fp = None
-                await webhook.send(
-                    content=content,
-                    avatar_url=self.bot.user.display_avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt")
-                    if fp is not None
-                    else MISSING,
-                )
-
     async def equation_solver(self, message: discord.Message):
         OP = [
             "+",
@@ -519,13 +481,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             if message.author.bot:
                 return
 
-        async def __internal_invite_parser():
-            if links := INVITE_RE.findall(message.content):
-                await self.on_invite(message, links)
-
         AWAITABLES: List[Coroutine] = [
             __internal_snippets_parser(),
-            __internal_invite_parser(),
             self._scam_detection(message),
             self._on_message_leveling(message),
             self.equation_solver(message),
@@ -549,19 +506,20 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if self.is_banned(message.author):
             return
 
-        collection: Collection = self.bot.mongo.parrot_db.global_chat
-        data: Optional[DocumentType] = await collection.find_one(
-            {"_id": message.guild.id, "channel_id": message.channel.id}
+        
+        data: Optional[DocumentType] = await self.bot.guild_configurations.find_one(
+            {"_id": message.guild.id, "global_chat.channel_id": message.channel.id, "global_chat.enable": True}
         )
+        data = data["global_chat"]
 
-        if not data:
+        if data is None:
             return
 
         bucket = self.cd_mapping.get_bucket(message)
         if retry_after := bucket.update_rate_limit():
             await message.channel.send(
                 (
-                    f"{message.author.mention} Chill out | You reached the limit | "
+                    f"{message.author.mention} Chill out | You reached the limit | \n"
                     f"Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**"
                 ),
                 delete_after=10,
@@ -569,7 +527,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         guild = data
-        role_id = guild.get("ignore_role") or guild.get("ignore-role") or 0
+        role_id = guild.get("ignore_role") or 0
 
         if message.author._roles.has(role_id):
             return
@@ -612,7 +570,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         async def __internal_funtion(
-            *, hook: str, bot: Parrot, message: discord.Message, collection: Collection
+            *, hook: str, bot: Parrot, message: discord.Message
         ):
             try:
                 await bot._execute_webhook(
@@ -624,148 +582,22 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     suppressor=(ValueError, discord.HTTPException),
                 )
             except discord.NotFound:
-                await collection.delete_one({"webhook": hook})
+                pass
 
         await message.delete(delay=2)
         __function: list = []
-        async for webhook in collection.find(
-            {"webhook": {"$exists": True}}, {"webhook": 1, "_id": 0}
+        async for webhook in self.bot.guild_configurations.find(
+            {"global_chat.enable": True}
         ):
-            if hook := webhook["webhook"]:
+            if hook := webhook["global_chat"]["webhook"]:
                 __function.append(
                     __internal_funtion(
-                        hook=hook, bot=self.bot, message=message, collection=collection
+                        hook=hook, bot=self.bot, message=message
                     )
                 )
 
         if __function:
             await asyncio.gather(*__function, return_exceptions=False)
-
-    def _msg_raw(self, message: discord.Message):
-        assert message.guild is not None
-        return {
-            "id": message.id,
-            "author": message.author.id,
-            "channel": message.channel.id,
-            "guild": message.guild.id,
-            "content": message.content,
-            "jump_url": message.jump_url,
-            "type": str(message.type),
-            "tts": message.tts,
-            "replied_reference": message.reference.resolved.id
-            if isinstance(message.reference, discord.Message)
-            else None,
-            "timestamp": message.created_at.timestamp(),
-            "attachments": [a.url for a in message.attachments],
-            "embeds": [e.to_dict() for e in message.embeds],
-        }
-
-    @Cog.listener()
-    async def on_message_delete(self, _: discord.Message):
-        pass
-
-    @Cog.listener()
-    async def on_bulk_message_delete(self, _: List[discord.Message]):
-        pass
-
-    @Cog.listener()
-    async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
-        # sourcery skip: low-code-quality
-        await self.bot.wait_until_ready()
-        await self.bot.starboards.delete_one(
-            {
-                "$or": [
-                    {"message_id.bot": payload.message_id},
-                    {"message_id.author": payload.message_id},
-                ]
-            }
-        )
-        if data := await self.log_collection.find_one(
-            {"_id": payload.guild_id, "on_message_delete": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_message_delete"], session=self.bot.http_session
-            )
-            with suppress(discord.HTTPException):
-                if msg := payload.cached_message:
-                    msg = payload.cached_message
-                    if msg.author.bot:
-                        return
-                    content = msg.content
-
-                    main_content = f"""**Message Delete Event**
-
-    `ID      :` **{payload.message_id}**
-    `Channel :` **<#{payload.channel_id}>**
-    `Author  :` **{msg.author}**
-    `Deleted at:` **<t:{int(time())}>**
-    """
-                    if any((content, msg.attachments, msg.embeds)):
-                        fp = io.BytesIO(
-                            (
-                                f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} "
-                                f"{', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n"
-                            ).encode()
-                        )
-
-                    else:
-                        fp = None
-                    await webhook.send(
-                        content=main_content,
-                        avatar_url=self.bot.user.display_avatar.url,
-                        username=self.bot.user.name,
-                        file=discord.File(fp, filename="content.txt")
-                        if fp is not None
-                        else MISSING,
-                    )
-
-    @Cog.listener()
-    async def on_raw_bulk_message_delete(
-        self, payload: discord.RawBulkMessageDeleteEvent
-    ):
-        await self.bot.wait_until_ready()
-        msg_ids: List[int] = list(payload.message_ids)
-
-        await self.bot.mongo.parrot_db.starboard.delete_one(
-            {
-                "$or": [
-                    {"message_id.bot": {"$in": msg_ids}},
-                    {"message_id.author": {"$in": msg_ids}},
-                ]
-            }
-        )
-        if data := await self.log_collection.find_one(
-            {"_id": payload.guild_id, "on_bulk_message_delete": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_bulk_message_delete"], session=self.bot.http_session
-            )
-            main = ""
-            with suppress(discord.HTTPException):
-                msgs = payload.cached_messages
-
-                transcript = await Transcript(
-                    webhook.channel, len(msgs), msgs, "Asia/Calcutta", True, self.bot
-                ).export()
-                transcript = transcript.html or "N/A"
-
-                fp = discord.File(
-                    io.BytesIO(transcript.encode()),
-                    filename=f"transcript-{webhook.channel.name}.html",
-                )
-                main_content = f"""**Bulk Message Delete**
-
-`Total Messages:` **{len(msg_ids)}**
-`Channel       :` **<#{payload.channel_id}>**
-"""
-                await webhook.send(
-                    content=main_content,
-                    avatar_url=self.bot.user.display_avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt")
-                    if fp is not None
-                    else MISSING,
-                )
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -1006,10 +838,17 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                         },
                     }
                 },
-                multi=True,
+                {
+                    "afk": {
+                        "$elemMatch": {
+                            "messageAuthor": message.author.id,
+                        }
+                    }
+                },
                 return_document=ReturnDocument.AFTER,
             )
         ):
+            data = data["afk"][0]
             await message.channel.send(f"{message.author.mention} welcome back!")
             with suppress(discord.Forbidden):
                 if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
@@ -1048,8 +887,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                             },
                         ]
                     },
+                    {
+                        "afk": {
+                            "$elemMatch": {
+                                "messageAuthor": message.author.id,
+                            }
+                        }
+                    },
                 )
             ):
+                data = data["afk"][0]
                 await message.channel.send(
                     f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                 )
@@ -1070,58 +917,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
                 )
             return
-
-    @Cog.listener()
-    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
-        # sourcery skip: low-code-quality
-        await self.bot.wait_until_ready()
-        if data := await self.log_collection.find_one(
-            {"_id": payload.guild_id, "on_message_edit": {"$exists": True}}
-        ):
-            webhook: discord.Webhook = discord.Webhook.from_url(
-                data["on_message_edit"], session=self.bot.http_session
-            )
-            with suppress(discord.HTTPException):
-                if payload.cached_message is not None:
-                    msg = payload.cached_message
-                    message_author = msg.author
-                    if message_author.bot:
-                        return
-                    content = msg.content
-                else:
-                    # guild = self.bot.get_guild(payload.guild_id)
-                    message_author = None
-                    content = None
-
-                main_content = f"""**Message Edit Event**
-
-`ID       :` **{payload.message_id}**
-`Channel  :` **<#{payload.channel_id}>**
-`Author   :` **{message_author}**
-`Edited at:` **<t:{int(time())}>**
-`Jump URL :` **<https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id}>**
-"""
-                if any(
-                    (
-                        content,
-                        hasattr(payload.cached_message, "embeds"),
-                        hasattr(payload.cached_message, "attachments"),
-                    )
-                ):
-                    fp = io.BytesIO(
-                        f"[{msg.created_at}] {msg.author} | {msg.content or ''} {', '.join([i.url for i in msg.attachments]) if msg.attachments else ''} {', '.join([str(i.to_dict()) for i in msg.embeds]) if msg.embeds else ''}\n".encode()
-                    )
-
-                else:
-                    fp = None
-                await webhook.send(
-                    content=main_content,
-                    avatar_url=self.bot.user.display_avatar.url,
-                    username=self.bot.user.name,
-                    file=discord.File(fp, filename="content.txt")
-                    if fp is not None
-                    else MISSING,
-                )
 
     # Internal Message Cache Updater Events
     # caching variable `Parrot.message_cache`

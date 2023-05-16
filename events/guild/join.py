@@ -5,17 +5,10 @@ from typing import Any, Dict
 
 import discord
 from core import Cog, Parrot
-from utilities.config import WEBHOOK_JOIN_LEAVE_LOGS
-
-HEAD_MODERATOR = 861476968439611392
-MODERATOR = 771025632184369152
-STAFF = 793531029184708639
-
 
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.url = WEBHOOK_JOIN_LEAVE_LOGS
 
     @Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):

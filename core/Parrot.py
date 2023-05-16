@@ -274,6 +274,7 @@ class Parrot(commands.AutoShardedBot):
         self.user_collections_ind: MongoCollection = self.main_db["userCollections"]
         self.guild_collections_ind: MongoCollection = self.main_db["guildCollections"]
         self.extra_collections: MongoCollection = self.main_db["extraCollections"]
+        self.dictionary: MongoCollection = self.main_db["dictionary"]
 
         # User Message DB
         self.user_message_db: MongoDatabase = self.mongo["userMessageDB"]
@@ -285,7 +286,7 @@ class Parrot(commands.AutoShardedBot):
         self.user_db: MongoDatabase = self.mongo["userDB"]
 
         # Guild DB
-        self.guild_db: MongoDatabase = self.mongo["guildDB"]
+        self.guild_level_db: MongoDatabase = self.mongo["guildLevelDB"]
 
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
@@ -464,7 +465,7 @@ class Parrot(commands.AutoShardedBot):
             st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
             await self._execute_webhook(
                 self._startup_log_token,
-                content=f"```py\n{st}```",
+                content=f"```css\n{st}```",
             )
 
             print(st)
@@ -497,15 +498,13 @@ class Parrot(commands.AutoShardedBot):
         if self._was_ready:
             return
 
-        self.timer_task = self.loop.create_task(self.dispatch_timer())
-
         print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
         print(
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
         )
 
-        ls: List[Optional[int]] = await self.mongo.parrot_db.afk.distinct(
-            "messageAuthor"
+        ls: List[Optional[int]] = await self.extra_collections.distinct(
+            "afk.messageAuthor"
         )
         self.afk = set(ls)
 

@@ -847,7 +847,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         except KeyError:
             return
         else:
-            collection: Collection = self.bot.guild_db[f"{message.guild.id}"]
+            collection: Collection = self.bot.guild_level_db[f"{message.guild.id}"]
             ch: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
@@ -938,7 +938,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
         assert isinstance(msg.author, discord.Member) and msg.guild is not None
 
-        collection: Collection = self.bot.guild_db[f"{member.guild.id}"]
+        collection: Collection = self.bot.guild_level_db[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
             {"_id": member.id},
             {"$inc": {"xp": xp}},
@@ -974,35 +974,43 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     async def _on_message_passive(self, message: discord.Message):
         # sourcery skip: low-code-quality
-        if message.guild is None:
-            return
-        if message.author.bot:
+        if message.guild is None or message.author.bot:
             return
 
         # code - when the AFK user messages
         if message.author.id in self.bot.afk and (
             data := await self.bot.extra_collections.find_one_and_update(
                 {
-                    "$or": [
-                        {"messageAuthor": message.author.id, "guild": message.guild.id},
-                        {"messageAuthor": message.author.id, "global": True},
+                    "$and": [
+                        {
+                            "$or": [
+                                {
+                                    "afk.messageAuthor": message.author.id,
+                                    "afk.guild": message.guild.id,
+                                },
+                                {
+                                    "afk.messageAuthor": message.author.id,
+                                    "afk.global": True,
+                                },
+                            ]
+                        },
+                        {
+                            "afk.ignoreChannel": message.channel.id,
+                        },
                     ]
                 },
                 {
                     "$pull": {
-                        "messageAuthor": message.author.id,
+                        "afk": {
+                            "messageAuthor": message.author.id,
+                        },
                     }
                 },
                 multi=True,
                 return_document=ReturnDocument.AFTER,
             )
         ):
-            if message.channel.id in data["ignoredChannel"]:
-                return  # There exists `$nin` operator in MongoDB
-            await message.channel.send(
-                f"{message.author.mention} welcome back! You were AFK <t:{int(data['at'])}:R>\n"
-                f"> You were mentioned **{len(data['pings'])}** times"
-            )
+            await message.channel.send(f"{message.author.mention} welcome back!")
             with suppress(discord.Forbidden):
                 if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
                     name = message.author.display_name[5:]
@@ -1013,32 +1021,35 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
             await self.bot.timers.delete_one({"_id": data["_id"]})
             self.bot.afk = set(
-                await self.bot.mongo.parrot_db.afk.distinct("messageAuthor")
+                await self.bot.extra_collections.distinct("afk.messageAuthor")
             )
 
         # code - someone mentions the AFK user
 
         for user in message.mentions:
             if hasattr(user, "guild") and (
-                data := await self.bot.mongo.parrot_db.afk.find_one(
+                data := await self.bot.extra_collections.find_one(
                     {
-                        "$or": [
-                            {"messageAuthor": user.id, "guild": user.guild.id},  # type: ignore
-                            {"messageAuthor": user.id, "global": True},
+                        "$and": [
+                            {
+                                "$or": [
+                                    {
+                                        "afk.messageAuthor": message.author.id,
+                                        "afk.guild": message.guild.id,
+                                    },
+                                    {
+                                        "afk.messageAuthor": message.author.id,
+                                        "afk.global": True,
+                                    },
+                                ]
+                            },
+                            {
+                                "afk.ignoreChannel": message.channel.id,
+                            },
                         ]
-                    }
+                    },
                 )
             ):
-                if message.channel.id in data["ignoredChannel"]:
-                    return
-                post = {
-                    "messageAuthor": message.author.id,
-                    "channel": message.channel.id,
-                    "messageURL": message.jump_url,
-                }
-                await self.bot.mongo.parrot_db.afk.update_one(
-                    {"_id": data["_id"]}, {"$addToSet": {"pings": post}}
-                )
                 await message.channel.send(
                     f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                 )
@@ -1054,7 +1065,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 {"means": "", "what is": "", " ": "", "?": "", ".": ""},
                 ignore_case=True,
             )
-            if data := await self.bot.mongo.extra.dictionary.find_one({"word": word}):
+            if data := await self.bot.dictionary.find_one({"word": word}):
                 await channel.send(
                     f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
                 )

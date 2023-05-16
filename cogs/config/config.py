@@ -277,7 +277,7 @@ class Configuration(Cog):
             return await ctx.reply(
                 f"{ctx.author.mention} invalid event. Available events `{'`, `'.join(events)}`"
             )
-        await sself.bot.guild_configurations.update_one(
+        await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id}, {"$set": {event.lower(): ""}}
         )
 
@@ -290,7 +290,7 @@ class Configuration(Cog):
     async def logging_list(self, ctx: Context):
         """To list the logging events"""
         main = []
-        if data := await sself.bot.guild_configurations.find_one(
+        if data := await self.bot.guild_configurations.find_one(
             {"_id": ctx.guild.id}, {"_id": 0}
         ):
             for k, v in data.items():
@@ -1365,9 +1365,7 @@ class Configuration(Cog):
             else "N/A"
         )
         category = (
-            ctx.guild.get_channel(data["category"])
-            if data.get("category")
-            else "N/A"
+            ctx.guild.get_channel(data["category"]) if data.get("category") else "N/A"
         )
         await ctx.reply(
             f"Configuration of this server [ticket]\n\n"

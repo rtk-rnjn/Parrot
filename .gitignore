@@ -136,3 +136,4 @@ log/
 .discord.log
 env.json
 venv
+tests/

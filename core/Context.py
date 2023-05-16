@@ -76,7 +76,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         super().__init__(*args, **kwargs)
 
         if self.guild is not None:
-            self.guild_collection: MongoCollection = self.bot.guild_db[
+            self.guild_collection: MongoCollection = self.bot.guild_level_db[
                 f"{self.guild.id}"
             ]
         self.user_collection: MongoCollection = self.bot.user_db[f"{self.author.id}"]

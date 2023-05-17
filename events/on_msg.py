@@ -510,10 +510,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         data: Optional[DocumentType] = await self.bot.guild_configurations.find_one(
             {"_id": message.guild.id, "global_chat.channel_id": message.channel.id, "global_chat.enable": True}
         )
-        data = data["global_chat"]
-
         if data is None:
             return
+
+        data = data["global_chat"]
+
 
         bucket = self.cd_mapping.get_bucket(message)
         if retry_after := bucket.update_rate_limit():

@@ -448,6 +448,10 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
         print(f"Ignoring exception in {event}", file=sys.stderr)
+        await self._execute_webhook(
+            WEBHOOK_ERROR_LOGS,
+            content=f"```py\n{traceback.format_exc()}```",
+        )
         traceback.print_exc()
 
     async def before_identify_hook(

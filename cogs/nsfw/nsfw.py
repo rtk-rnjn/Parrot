@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import time
-from typing import List, Literal, Optional
-
+from typing import Dict, List, Literal, Optional, Set
+from random import random, choice
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -18,28 +18,46 @@ class NSFW(Cog):
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
         self.command_loader()
+
+        self.cached_images: Dict[str, Set[str]] = {}
+
         self.ON_TESTING = False
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{NO ONE UNDER EIGHTEEN SYMBOL}")
 
-    async def cog_check(self, ctx: Context) -> bool:
+    async def cog_check(self, ctx: Context) -> Optional[bool]:
         if not ctx.channel.nsfw:
             raise commands.NSFWChannelRequired(ctx.channel)
         return True
 
+    def _try_from_cache(self, type_str: str) -> Optional[str]:
+        return choice(self.cached_images.get(type_str, [None]))
+
     async def get_embed(self, type_str: str) -> Optional[discord.Embed]:
-        response = await self.bot.http_session.get(self.url, params={"type": type_str})
-        if response.status < 300:
-            return None
-        url = (await response.json())["message"]
+        if random() > 0.5 and len(self.cached_images.get(type_str, [])) >= 10:
+            url = choice(self.cached_images[type_str])
+        else:
+            response = await self.bot.http_session.get(
+                self.url, params={"type": type_str}
+            )
+            if response.status > 300:
+                url = self._try_from_cache(type_str)
+                if url is None:
+                    return None
+            else:
+                url = (await response.json())["message"]
         embed = discord.Embed(
             title=f"{type_str.title()}",
             color=self.bot.color,
             timestamp=discord.utils.utcnow(),
         )
         embed.set_image(url=url)
+
+        if type_str not in self.cached_images:
+            self.cached_images[type_str] = set()
+        self.cached_images[type_str].add(url)
         return embed
 
     def command_loader(self) -> None:
@@ -49,9 +67,14 @@ class NSFW(Cog):
             @commands.is_nsfw()
             @Context.with_type
             async def callback(ctx: Context):
-                embed = await self.get_embed(f"{ctx.command.name}")
+                embed = await self.get_embed(f"{ctx.command.qualified_name}")
                 if embed is not None:
-                    await ctx.reply(embed=embed)
+                    await ctx.reply(
+                        embed=embed.set_footer(
+                            text=f"Requested by {ctx.author}",
+                            icon_url=ctx.author.display_avatar.url,
+                        )
+                    )
                 else:
                     await ctx.reply(
                         f"{ctx.author.mention} something not right? This is not us but the API"

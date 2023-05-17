@@ -899,8 +899,9 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_banned_members(self):
         self.banned_users = {}
-        async for data in self.extra_collections.find({}):
-            self.banned_users[data["_id"]] = data
+        data = self.extra_collections.find_one({"_id": "banned_users"})
+        for _data in data["users"]:
+            self.banned_users[_data["user_id"]] = _data
             await asyncio.sleep(0)
 
     @tasks.loop(count=1)

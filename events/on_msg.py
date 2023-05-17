@@ -571,10 +571,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         async def __internal_funtion(
-            *, hook: str, bot: Parrot, message: discord.Message
+            *, hook: str, message: discord.Message
         ):
             try:
-                await bot._execute_webhook(
+                await self.bot._execute_webhook(
                     hook,
                     username=f"{message.author}",
                     avatar_url=message.author.display_avatar.url,
@@ -593,7 +593,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             if hook := webhook["global_chat"]["webhook"]:
                 __function.append(
                     __internal_funtion(
-                        hook=hook, bot=self.bot, message=message
+                        hook=hook, message=message
                     )
                 )
 
@@ -616,9 +616,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _on_message_leveling(self, message: discord.Message):
-        if not message.guild:
-            return
-        if message.author.bot:
+        if not message.guild or message.author.bot:
             return
 
         bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)

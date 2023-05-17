@@ -240,11 +240,7 @@ class IPCRoutes(Cog):
                         allowed_mentions=discord.AllowedMentions.none(),
                         wait=True,
                     )
-                except discord.NotFound:
-                    await self.bot.guild_configurations.delete_one(
-                        {"webhook": hook}
-                    )  # all hooks are unique
-                except discord.HTTPException:
+                except (discord.NotFound, discord.HTTPException):
                     pass
                 else:
                     MESSAGES.append(

@@ -178,7 +178,7 @@ class Parrot(commands.AutoShardedBot):
                 everyone=False, replied_user=False
             ),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
-            shard_count=5,
+            shard_count=1,
             max_messages=5000,
             chunk_guilds_at_startup=False,
             **kwargs,
@@ -899,7 +899,9 @@ class Parrot(commands.AutoShardedBot):
     @tasks.loop(count=1)
     async def update_banned_members(self):
         self.banned_users = {}
-        data = self.extra_collections.find_one({"_id": "banned_users"})
+        data = await self.extra_collections.find_one({"_id": "banned_users"})
+        if data is None:
+            return
         for _data in data["users"]:
             self.banned_users[_data["user_id"]] = _data
             await asyncio.sleep(0)

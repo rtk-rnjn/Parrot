@@ -506,15 +506,17 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if self.is_banned(message.author):
             return
 
-        
         data: Optional[DocumentType] = await self.bot.guild_configurations.find_one(
-            {"_id": message.guild.id, "global_chat.channel_id": message.channel.id, "global_chat.enable": True}
+            {
+                "_id": message.guild.id,
+                "global_chat.channel_id": message.channel.id,
+                "global_chat.enable": True,
+            }
         )
         if data is None:
             return
 
         data = data["global_chat"]
-
 
         bucket = self.cd_mapping.get_bucket(message)
         if retry_after := bucket.update_rate_limit():
@@ -570,9 +572,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             )
             return
 
-        async def __internal_funtion(
-            *, hook: str, message: discord.Message
-        ):
+        async def __internal_funtion(*, hook: str, message: discord.Message):
             try:
                 await self.bot._execute_webhook(
                     hook,
@@ -591,11 +591,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             {"global_chat.enable": True}
         ):
             if hook := webhook["global_chat"]["webhook"]:
-                __function.append(
-                    __internal_funtion(
-                        hook=hook, message=message
-                    )
-                )
+                __function.append(__internal_funtion(hook=hook, message=message))
 
         if __function:
             await asyncio.gather(*__function, return_exceptions=False)
@@ -807,10 +803,74 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         # sourcery skip: low-code-quality
         if message.guild is None or message.author.bot:
             return
+        
+        await asyncio.gather(
+            self._on_message_passive_afk_user_message(message),
+            self._on_message_passive_afk_user_mention(message),
+        )
 
+    async def _on_message_passive_afk_user_message(self, message: discord.Message):
         # code - when the AFK user messages
-        if message.author.id in self.bot.afk and (
-            data := await self.bot.extra_collections.find_one_and_update(
+        data = await self.bot.extra_collections.find_one_and_update(
+            {
+                "$and": [
+                    {
+                        "$or": [
+                            {
+                                "afk.messageAuthor": message.author.id,
+                                "afk.guild": message.guild.id,
+                            },
+                            {
+                                "afk.messageAuthor": message.author.id,
+                                "afk.global": True,
+                            },
+                        ]
+                    },
+                    {
+                        "afk.ignoreChannel": {"$nin": [message.channel.id]},
+                    },
+                ]
+            },
+            {
+                "$pull": {
+                    "afk": {
+                        "messageAuthor": message.author.id,
+                    },
+                }
+            },
+            {
+                "afk": {
+                    "$elemMatch": {
+                        "messageAuthor": message.author.id,
+                    }
+                }
+            },
+            return_document=ReturnDocument.BEFORE,
+        )
+        if message.author.id not in self.bot.afk or not (data) or "afk" not in data:
+            return
+        data = data["afk"][0]
+        await message.channel.send(f"{message.author.mention} welcome back!")
+        try:
+            if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
+                name = message.author.display_name[5:]
+                if len(name) != 0 or name not in (" ", ""):
+                    await message.author.edit(
+                        nick=name, reason=f"{message.author} came after AFK"
+                    )
+        except discord.Forbidden:
+            pass
+
+        await self.bot.timers.delete_one({"_id": data["_id"]})
+        self.bot.afk = set(
+            await self.bot.extra_collections.distinct("afk.messageAuthor")
+        )
+
+    async def _on_message_passive_afk_user_mention(self, message: discord.Message):
+        if message.guild is None:
+            return
+        for _ in message.mentions:
+            if data := await self.bot.extra_collections.find_one(
                 {
                     "$and": [
                         {
@@ -826,16 +886,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                             ]
                         },
                         {
-                            "afk.ignoreChannel": message.channel.id,
+                            "afk.ignoreChannel": {"$nin": [message.channel.id]},
                         },
                     ]
-                },
-                {
-                    "$pull": {
-                        "afk": {
-                            "messageAuthor": message.author.id,
-                        },
-                    }
                 },
                 {
                     "afk": {
@@ -844,57 +897,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                         }
                     }
                 },
-                return_document=ReturnDocument.AFTER,
-            )
-        ):
-            data = data["afk"][0]
-            await message.channel.send(f"{message.author.mention} welcome back!")
-            with suppress(discord.Forbidden):
-                if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
-                    name = message.author.display_name[5:]
-                    if len(name) != 0 or name not in (" ", ""):
-                        await message.author.edit(
-                            nick=name, reason=f"{message.author} came after AFK"
-                        )
-
-            await self.bot.timers.delete_one({"_id": data["_id"]})
-            self.bot.afk = set(
-                await self.bot.extra_collections.distinct("afk.messageAuthor")
-            )
-
-        # code - someone mentions the AFK user
-
-        for user in message.mentions:
-            if hasattr(user, "guild") and (
-                data := await self.bot.extra_collections.find_one(
-                    {
-                        "$and": [
-                            {
-                                "$or": [
-                                    {
-                                        "afk.messageAuthor": message.author.id,
-                                        "afk.guild": message.guild.id,
-                                    },
-                                    {
-                                        "afk.messageAuthor": message.author.id,
-                                        "afk.global": True,
-                                    },
-                                ]
-                            },
-                            {
-                                "afk.ignoreChannel": message.channel.id,
-                            },
-                        ]
-                    },
-                    {
-                        "afk": {
-                            "$elemMatch": {
-                                "messageAuthor": message.author.id,
-                            }
-                        }
-                    },
-                )
             ):
+                if "afk" not in data:
+                    return
                 data = data["afk"][0]
                 await message.channel.send(
                     f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"

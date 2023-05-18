@@ -49,7 +49,7 @@ class GroupHelpPageSource(menus.ListPageSource):
         self.title = f"{self.group.qualified_name} Commands"
         self.description = self.group.description
 
-    async def format_page(self, menu, commands_list):
+    async def format_page(self, menu, commands_list: List[commands.Command]):
         embed = discord.Embed(
             title=self.title,
             description=self.description,

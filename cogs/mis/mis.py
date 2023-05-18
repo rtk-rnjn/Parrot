@@ -417,7 +417,7 @@ class Misc(Cog):
         if r.status == 200:
             res = await r.json()
         else:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} invalid **{expression}** or either **{operation}**"
             )
         result = res["result"]
@@ -448,7 +448,7 @@ class Misc(Cog):
         res = await r.json()
 
         if res["status"].upper() != "OK":
-            return await ctx.send(f"{ctx.author.mention} something not right!")
+            return await ctx.error(f"{ctx.author.mention} something not right!")
 
         em_list = []
         for data in range(len(res["articles"])):
@@ -490,7 +490,7 @@ class Misc(Cog):
         response = await self.bot.http_session.get(url)
         json_ = await response.json()
         if response.status != 200:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
             )
 
@@ -508,7 +508,7 @@ class Misc(Cog):
 """
             )
         if not pages:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
             )
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
@@ -533,7 +533,7 @@ class Misc(Cog):
 
         json_ = await response.json()
         if response.status != 200:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
             )
         pages = []
@@ -550,7 +550,7 @@ class Misc(Cog):
 """
             )
         if not pages:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
             )
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
@@ -592,9 +592,7 @@ class Misc(Cog):
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
 
-    @commands.command(
-        aliases=["trutht", "tt", "ttable"],
-    )
+    @commands.command(aliases=["trutht", "tt", "ttable"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truthtable(self, ctx: Context, *, flags: TTFlag):
@@ -702,7 +700,7 @@ class Misc(Cog):
             page = SimplePages(entries=contents, ctx=ctx, per_page=3)
             await page.start()
         else:
-            await ctx.send(
+            await ctx.error(
                 "Sorry, we could not find a wikipedia article using that search term."
             )
 
@@ -771,11 +769,11 @@ class Misc(Cog):
             try:
                 await channel.send(embed=discord.Embed.from_dict(json.loads(str(data))))
             except Exception as e:
-                await ctx.reply(
+                await ctx.error(
                     f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}"
                 )
         else:
-            await ctx.reply(
+            await ctx.error(
                 f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}"
             )
 
@@ -890,7 +888,7 @@ class Misc(Cog):
         options: List[str] = options.split(",")
         data = {"poll": {"title": question, "answers": options, "only_reg": True}}
         if len(options) > 10:
-            return await ctx.reply(
+            return await ctx.error(
                 f"{ctx.author.mention} can not provide more than 10 options"
             )
         poll = await self.bot.http_session.post(
@@ -923,9 +921,7 @@ class Misc(Cog):
         )
         try:
             data = await poll.json()
-        except json.decoder.JSONDecodeError:
-            return
-        except aiohttp.ContentTypeError:
+        except (json.decoder.JSONDecodeError, aiohttp.ContentTypeError):
             return
         embed = discord.Embed(
             title=data["content"]["poll"]["title"],
@@ -945,9 +941,7 @@ class Misc(Cog):
     @Context.with_type
     async def delete_poll(self, ctx: Context, content_id: str):
         """To delete the poll. Only if it's yours"""
-        _exists: Dict[
-            str, Any
-        ] = await self.bot.user_collections_ind.find_one(
+        _exists: Dict[str, Any] = await self.bot.user_collections_ind.find_one(
             {"_id": ctx.author.id, "content_id": content_id}
         )
         if not _exists:
@@ -1038,7 +1032,7 @@ class Misc(Cog):
             protocol = data["protocol"]
             hostname = data["hostname"]
         except KeyError:
-            return await ctx.reply(f"{ctx.author.mention} no server exists")
+            return await ctx.error(f"{ctx.author.mention} no server exists")
 
         embed = discord.Embed(
             title="SERVER STATUS",
@@ -1088,10 +1082,9 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def whatis(self, ctx: Context, *, query: str):
         """To get the meaning of the word"""
-        if data := await self.bot.mongo.extra.dictionary.find_one({"word": query}):
-            return await ctx.send(
-                f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
-            )
+        query = query.lower()
+        if data := await self.bot.dictionary.find_one({query: {"$exists": True}}):
+            return await ctx.send(f"**{query.title()}**: {data[query]}")
         return await ctx.error(
             "No word found, if you think its a mistake then contact the owner."
         )

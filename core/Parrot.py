@@ -336,9 +336,10 @@ class Parrot(commands.AutoShardedBot):
                 await self.load_extension(ext)
                 print(f"[{self.user.name.title()}] {ext} loaded successfully")
                 self._successfully_loaded.append(ext)
-            except commands.ExtensionFailed as e:
+            except (commands.ExtensionFailed, commands.ExtensionNotFound) as e:
                 self._failed_to_load[ext] = str(e)
-                traceback.print_exc()
+                # traceback.print_exc()
+                print(f"[{self.user.name.title()}] {ext} failed to load")
             else:
                 if ext in UNLOAD_EXTENSIONS:
                     await self.unload_extension(ext)
@@ -371,6 +372,9 @@ class Parrot(commands.AutoShardedBot):
             if success["status"] == "ok":
                 print(f"[{self.user.name}] DBL server started successfully")
         self.timer_task = self.loop.create_task(self.dispatch_timer())
+
+        async for data in self.guild_configurations.find({}):
+            self.guild_configurations_cache[data["_id"]] = data
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -490,7 +494,7 @@ class Parrot(commands.AutoShardedBot):
         if hasattr(self, "http_session"):
             await self.http_session.close()
 
-        if not self.timer_task.cancelled():
+        if self.timer_task is not None and not self.timer_task.cancelled():
             self.timer_task.cancel()
 
         return await super().close()

@@ -803,7 +803,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         # sourcery skip: low-code-quality
         if message.guild is None or message.author.bot:
             return
-        
+
         await asyncio.gather(
             self._on_message_passive_afk_user_message(message),
             self._on_message_passive_afk_user_mention(message),
@@ -869,34 +869,36 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     async def _on_message_passive_afk_user_mention(self, message: discord.Message):
         if message.guild is None:
             return
-        for _ in message.mentions:
-            if data := await self.bot.extra_collections.find_one(
-                {
-                    "$and": [
-                        {
-                            "$or": [
-                                {
-                                    "afk.messageAuthor": message.author.id,
-                                    "afk.guild": message.guild.id,
-                                },
-                                {
-                                    "afk.messageAuthor": message.author.id,
-                                    "afk.global": True,
-                                },
-                            ]
-                        },
-                        {
-                            "afk.ignoreChannel": {"$nin": [message.channel.id]},
-                        },
-                    ]
-                },
-                {
-                    "afk": {
-                        "$elemMatch": {
-                            "messageAuthor": message.author.id,
+        for user in message.mentions:
+            if (user.id in self.bot.afk) and (
+                data := await self.bot.extra_collections.find_one(
+                    {
+                        "$and": [
+                            {
+                                "$or": [
+                                    {
+                                        "afk.messageAuthor": user.id,
+                                        "afk.guild": message.guild.id,
+                                    },
+                                    {
+                                        "afk.messageAuthor": user.id,
+                                        "afk.global": True,
+                                    },
+                                ]
+                            },
+                            {
+                                "afk.ignoreChannel": {"$nin": [message.channel.id]},
+                            },
+                        ]
+                    },
+                    {
+                        "afk": {
+                            "$elemMatch": {
+                                "messageAuthor": user.id,
+                            }
                         }
-                    }
-                },
+                    },
+                )
             ):
                 if "afk" not in data:
                     return

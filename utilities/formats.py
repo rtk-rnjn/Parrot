@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import Any
+from typing import Any, Union
 
 
 class plural:
-    def __init__(self, value):
+    def __init__(self, value: int):
         self.value = value
 
-    def __format__(self, format_spec):
+    def __format__(self, format_spec: str) -> str:
         v = self.value
         singular, sep, plural = format_spec.partition("|")
         plural = plural or f"{singular}s"
@@ -78,7 +78,12 @@ class TabularData:
         return "\n".join(to_draw)
 
 
-def format_dt(dt, style=None) -> str:
+def format_dt(dt: Union[datetime.datetime, int, float], style: str = None) -> str:
+    """Formats a datetime object or timestamp into a Discord-style timestamp."""
+
+    if isinstance(dt, (int, float)):
+        dt = datetime.datetime.utcfromtimestamp(dt)
+
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=datetime.timezone.utc)
 
@@ -86,9 +91,6 @@ def format_dt(dt, style=None) -> str:
         return f"<t:{int(dt.timestamp())}>"
     return f"<t:{int(dt.timestamp())}:{style}>"
 
-
-def format_dt_with_int(dt: int, style=None) -> str:
-    return f"<t:{dt}:{style or ''}>"
 
 
 def suppress_links(message: str) -> str:

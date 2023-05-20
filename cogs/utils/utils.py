@@ -416,7 +416,7 @@ class Utils(Cog):
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
         )
         await self.create_timer(
-            event_name="remove_afk",
+            _event_name="remove_afk",
             expires_at=till.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
             extra={"name": "REMOVE_AFK", "main": {**post}},
@@ -446,7 +446,7 @@ class Utils(Cog):
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(after.dt, 'R')}"
         )
         await self.create_timer(
-            event_name="set_afk",
+            _event_name="set_afk",
             expires_at=after.dt.timestamp(),
             created_at=ctx.message.created_at.timestamp(),
             extra={"name": "SET_AFK", "main": {**post}},
@@ -478,7 +478,7 @@ class Utils(Cog):
 
         if flags.after:
             await self.create_timer(
-                event_name="set_afk",
+                _event_name="set_afk",
                 expires_at=flags.after.dt.timestamp(),
                 created_at=ctx.message.created_at.timestamp(),
                 extra={"name": "SET_AFK", "main": {**payload}},
@@ -490,7 +490,7 @@ class Utils(Cog):
             return
         if flags._for:
             await self.create_timer(
-                event_name="remove_afk",
+                _event_name="remove_afk",
                 expires_at=flags._for.dt.timestamp(),
                 created_at=ctx.message.created_at.timestamp(),
                 extra={"name": "REMOVE_AFK", "main": {**payload}},
@@ -1062,7 +1062,7 @@ class Utils(Cog):
         """To create giveaway"""
         if not ctx.invoked_subcommand:
             post = await mt._make_giveaway(ctx)
-            await self.create_timer(event_name="giveaway", **post)
+            await self.create_timer(_event_name="giveaway", **post)
 
     @giveaway.command(name="drop")
     @commands.has_permissions(manage_guild=True)
@@ -1082,7 +1082,7 @@ class Utils(Cog):
         post = await mt._make_giveaway_drop(
             ctx, duration=duration, winners=winners, prize=prize
         )
-        await self.create_timer(event_name="giveaway", **post)
+        await self.create_timer(_event_name="giveaway", **post)
 
     @giveaway.command(name="end")
     @commands.has_permissions(manage_guild=True)

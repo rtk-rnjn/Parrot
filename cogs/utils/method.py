@@ -283,7 +283,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
         finally:
             await collection.update_one({"_id": name}, {"$set": post})
             await bot.create_timer(
-                event_name="todo",
+                _event_name="todo",
                 expires_at=timestamp,
                 created_at=ctx.message.created_at.timestamp(),
                 message=ctx.message,

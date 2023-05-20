@@ -454,11 +454,12 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def wait_for(
         self,
-        event_name: str,
+        _event_name: str,
         *,
         timeout: Optional[float] = None,
         check: Optional[Callable[..., bool]] = None,
         suppress_error: bool = False,
+        operator: Callable[[Iterable[object]], bool] = all,
         **kwargs: Any,
     ) -> Any:
         """|coro|
@@ -467,7 +468,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         Parameters
         -----------
-        event_name: str
+        _event_name: str
             The event name to wait for.
         timeout: float
             How long to wait for the event to be triggered.
@@ -490,8 +491,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         asyncio.TimeoutError
             If the event is not triggered before the given timeout.
         """
-        if event_name.lower().startswith("on_"):
-            event_name = event_name[3:].lower()
+        if _event_name.lower().startswith("on_"):
+            _event_name = _event_name[3:].lower()
 
         def outer_check(**kw: Any) -> Callable[..., bool]:
             """Check function for the event"""
@@ -515,7 +516,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 convert_pred = [
                     (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
                 ]
-                return all(
+                return operator(
                     all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
                     for pred, val in convert_pred
                 )
@@ -524,7 +525,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         try:
             return await self.bot.wait_for(
-                event_name, timeout=timeout, check=outer_check(**kwargs)
+                _event_name, timeout=timeout, check=outer_check(**kwargs)
             )
         except asyncio.TimeoutError:
             if suppress_error:

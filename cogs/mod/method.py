@@ -416,7 +416,7 @@ async def _temp_ban(
             }
 
             await ctx.bot.create_timer(
-                event_name="unban",
+                _event_name="unban",
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,
@@ -1577,7 +1577,7 @@ async def instant_action_parser(
             }
 
             await ctx.bot.create_timer(
-                event_name="unban",
+                _event_name="unban",
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,

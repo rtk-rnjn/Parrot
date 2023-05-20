@@ -426,7 +426,7 @@ class Parrot(commands.AutoShardedBot):
             )
 
         _CONTENT = content
-        _FILE = kwargs.pop('file', discord.utils.MISSING)
+        _FILE = kwargs.pop("file", discord.utils.MISSING)
 
         if content and len(content) > 1990 or force_file:
             _FILE: discord.File = discord.File(
@@ -607,13 +607,13 @@ class Parrot(commands.AutoShardedBot):
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
 
+        if message.guild is None or message.author.bot:
+            return
+
         try:
             self.guild_configurations_cache[message.guild.id]
         except KeyError:
             self.update_server_config_cache.start(message.guild.id)
-
-        if message.guild is None or message.author.bot:
-            return
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             await message.channel.send(
@@ -898,6 +898,7 @@ class Parrot(commands.AutoShardedBot):
                 except pymongo.errors.DuplicateKeyError:
                     return
                 self.guild_configurations_cache[guild_id] = FAKE_POST
+
         self.loop.create_task(__internal_func())
 
     @tasks.loop(count=1)
@@ -944,8 +945,8 @@ class Parrot(commands.AutoShardedBot):
             self.loop.create_task(self.short_time_dispatcher(collection, **data))
 
     async def call_timer(self, **data):
-        if data.get("event_name"):
-            self.dispatch(f"{data['event_name']}_timer_complete", **data)
+        if data.get("_event_name"):
+            self.dispatch(f"{data['_event_name']}_timer_complete", **data)
         else:
             self.dispatch("timer_complete", **data)
 
@@ -958,7 +959,7 @@ class Parrot(commands.AutoShardedBot):
         self,
         *,
         expires_at: float,
-        event_name: str = None,
+        _event_name: str = None,
         created_at: float = None,
         content: str = None,
         message: discord.Message,
@@ -994,7 +995,7 @@ class Parrot(commands.AutoShardedBot):
 
         post = {
             "_id": message.id,
-            "event_name": event_name,
+            "_event_name": _event_name,
             "expires_at": expires_at,
             "created_at": created_at or message.created_at.timestamp(),
             "content": content,
@@ -1011,8 +1012,10 @@ class Parrot(commands.AutoShardedBot):
         }
 
         _24_hours = 86400
-        if (expires_at - discord.utils.utcnow().timestamp()) <= _24_hours:
-            self.loop.create_task(self.short_time_dispatcher(**post))
+        if ((extra and "LOOP" not in extra.get("name", "")) or (not extra)) and (
+            expires_at - discord.utils.utcnow().timestamp()
+        ) <= _24_hours:
+            self.loop.create_task(self.short_time_dispatcher(collection, **post))
             return
 
         await collection.insert_one(post)

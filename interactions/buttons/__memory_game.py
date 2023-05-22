@@ -50,7 +50,6 @@ async def wait_for_delete(
     user: Optional[Union[discord.User, Tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
-
     if not user:
         user = ctx.author
     try:
@@ -79,7 +78,6 @@ async def double_wait(
     *,
     loop: Optional[asyncio.AbstractEventLoop] = None,
 ) -> Tuple[Set[asyncio.Task[Union[A, B]]], Set[asyncio.Task[Union[A, B]]],]:
-
     if not loop:
         loop = asyncio.get_event_loop()
 
@@ -113,7 +111,6 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-
         assert self.view is not None
 
         game = self.view.game
@@ -159,23 +156,19 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
     async def update_to_db(self):
         time_taken = time.perf_counter() - self.view.ini
 
-        async def internal_update():
-            await col.update_one(
-                {"_id": self.view.ctx.author.id},
-                {"$set": {"memory_test": time_taken}},
-            )
-
         bot: Parrot = self.view.ctx.bot
-        col: Collection = bot.mongo.extra.games_leaderboard
+        col: Collection = bot.game_collections
 
-        if data := await col.find_one(
-            {"_id": self.view.ctx.guild.id, "memory_test": {"$exists": True}}
-        ):
-            if data["memory_test"] > time_taken:
-                await internal_update()
-                return
-            return
-        await internal_update()
+        await col.update_one(
+            {
+                "_id": self.view.ctx.author.id,
+                "game_memory_test_time": {"$gt": time_taken},
+            },
+            {
+                "$set": {"game_memory_test_time": time_taken},
+                "$inc": {"game_memory_test": 1},
+            },
+        )
 
 
 class MemoryView(BaseView):
@@ -205,7 +198,6 @@ class MemoryView(BaseView):
         ctx: Context,
         timeout: Optional[float] = None,
     ) -> None:
-
         super().__init__(timeout=timeout)
 
         self.game = game

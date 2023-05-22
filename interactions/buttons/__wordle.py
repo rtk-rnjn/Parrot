@@ -163,20 +163,11 @@ class Wordle:
                     embed=embed, file=discord.File(buf, "wordle.png")
                 )
 
-                col: Collection = ctx.bot.mongo.extra.games_leaderboard
                 if won:
-                    await col.update_one(
-                        {"_id": ctx.author.id},
-                        {"$inc": {"wordle.games_won": 1}},
-                        upsert=True,
-                    )
+                    await ctx.database_game_update("wordle", win=True)
                     return await ctx.send("Game Over! You won!")
                 if len(self.guesses) > 5:
-                    await col.update_one(
-                        {"_id": ctx.author.id},
-                        {"$inc": {"wordle.games_lost": 1}},
-                        upsert=True,
-                    )
+                    await ctx.database_game_update("wordle", loss=True)
                     return await ctx.send(
                         f"Game Over! You lose, the word was: **{self.word}**"
                     )

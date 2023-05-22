@@ -43,7 +43,6 @@ from utilities.regex import LINKS_RE
 
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
-from ._jeyy_api_endpoints import END_POINTS
 from ._fun_utils import replace_many, file_safe_name, AnagramGame, suppress_links
 from ._fun_constants import (
     THUMBNAIL_SIZE,
@@ -1175,11 +1174,7 @@ class Fun(Cog):
                         embed=self.create_embed(tries, user_guess),
                     )
                     await ctx.send(content=f"{ctx.author.mention}", embed=losing_embed)
-                    await self.bot.mongo.extra.games_leaderboard.update_one(
-                        {"_id": ctx.author.id},
-                        {"$inc": {"hangman.games_played": 1}},
-                        upsert=True,
-                    )
+                    await ctx.database_game_update("hangman", loss=True)
                     return
 
             guessed_letters.add(normalized_content)
@@ -1194,11 +1189,7 @@ class Fun(Cog):
             color=Colours.grass_green,
         )
         await ctx.send(content=f"{ctx.author.mention}", embed=win_embed)
-        await self.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": ctx.author.id},
-            {"$inc": {"hangman.games_won": 1, "hangman.games_played": 1}},
-            upsert=True,
-        )
+        await ctx.database_game_update("hangman", win=True)
         return
 
     @quiz_game.command(name="stop")
@@ -2571,20 +2562,9 @@ class Fun(Cog):
         accuracy = rapidfuzz.fuzz.ratio(msg.content, line)
         wpm = round(len(fakecontent.split(" ")) / (fin - ini) * 60, 2)
 
-        await self.bot.mongo.extra.games_leaderboard.update_one(
-            {"_id": ctx.author.id},
-            {
-                "$set": {
-                    "typing_test": {
-                        "speed": fin - ini,
-                        "accuracy": accuracy,
-                        "wpm": wpm,
-                    }
-                }
-            },
-            upsert=True,
+        await ctx.database_game_update(
+            "typing_test", set={"speed": fin - ini, "accuracy": accuracy, "wpm": wpm}
         )
-
         await ctx.send(
             f"{ctx.author.mention} your accuracy is `{accuracy}`%. "
             f"You typed in `{round(fin - ini, 2)}` seconds. "
@@ -2632,104 +2612,12 @@ class Fun(Cog):
         end = time.perf_counter()
 
         await confirm.edit(content=f"{ctx.author.mention} reacted on {end-start:.2f}s")
-        data = await self.bot.mongo.extra.games_leaderboard.find_one(
-            {"_id": ctx.author.id, "reaction_test": {"$exists": True}},
+
+        await self.bot.game_collections.update_one(
+            {"_id": ctx.author.id, "reaction_test": {"$gt": end - start}},
+            {
+                "$set": {"game_reaction_test_time": end - start},
+                "$inc": {"game_reaction_test_played": 1},
+            },
+            upsert=True,
         )
-
-        async def update():
-            await self.bot.mongo.extra.games_leaderboard.update_one(
-                {"_id": ctx.author.id},
-                {"$set": {"reaction_test": end - start}},
-                upsert=True,
-            )
-
-        if data is None:
-            await update()
-            return
-
-        if data["reaction_test"] > end - start:
-            await update()
-            return
-
-    def jeyy_api_loader(self):
-        for end_point in END_POINTS:
-
-            @commands.command(name=end_point, help=f"{end_point} commnad Generation")
-            @commands.bot_has_permissions(attach_files=True)
-            @Context.with_type
-            async def callback(
-                ctx: Context,
-                *,
-                target: Union[discord.Member, discord.Emoji, str, None] = None,
-            ):
-                ref = ctx.message.reference
-                url = None
-                if ref and isinstance(ref.resolved, discord.Message):
-                    msg: discord.Message = ref.resolved
-                    if msg.attachments and msg.attachments[0].url.endswith(
-                        ("png", "jpeg", "jpg", "gif", "webp")
-                    ):
-                        url = msg.attachments[0].url
-                    elif msg.embeds and str(msg.embeds[0].image.url).endswith(
-                        ("png", "jpeg", "jpg", "gif", "webp")
-                    ):
-                        url = ref.resolved.embeds[0].image.url
-
-                elif isinstance(target, discord.Member):
-                    url = target.display_avatar.url
-                elif isinstance(target, discord.Emoji):
-                    url = target.url
-                elif isinstance(target, str):
-                    url = f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(target)[0]):x}.png"
-                elif url is not None and LINKS_RE.fullmatch(target):
-                    url = target
-
-                url = url or ctx.author.display_avatar.url
-                params = {"image_url": url}
-                r = await self.bot.http_session.get(
-                    f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
-                )
-                file = discord.File(
-                    io.BytesIO(await r.read()), f"{ctx.command.name}.gif"
-                )
-                embed = (
-                    discord.Embed(timestamp=discord.utils.utcnow()).set_image(
-                        url=f"attachment://{ctx.command.name}.gif"
-                    )
-                ).set_footer(text=f"{ctx.author}")
-                await ctx.reply(embed=embed, file=file)
-
-            self.bot.add_command(callback)
-
-    def some_random_api_loader(self):
-        bot: Parrot = self.bot
-        for endpoint in [
-            "gay",
-            "glass",
-            "horny",
-            "jail",
-            "lolice",
-            "simpcard",
-            "triggered",
-            "wasted",
-        ]:
-
-            @commands.command(name=endpoint)
-            @commands.bot_has_permissions(attach_files=True, embed_links=True)
-            @commands.max_concurrency(1, per=commands.BucketType.user)
-            @Context.with_type
-            async def callback(ctx: Context, *, member: discord.Member = None) -> None:
-                member = member or ctx.author
-
-                response = await bot.http_session.get(
-                    "https://some-random-api.ml/canvas/{}?avatar={}".format(
-                        ctx.command.name, member.display_avatar.url
-                    )
-                )
-                imageData = io.BytesIO(await response.read())  # read the image/bytes
-
-                await ctx.reply(
-                    file=discord.File(imageData, "gay.png")
-                )  # replying the file
-
-            self.bot.add_command(callback)

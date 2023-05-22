@@ -46,7 +46,7 @@ sudo apt install nodejs npm
 
 ---
 
-Now you need to install dependencies, to do that run the following command, make sure you have [`python`](https://www.python.org/) version `3.8.0+` installed:
+Now you need to install dependencies, to do that run the following command, make sure you have [`python`](https://www.python.org/) version `3.11+` installed:
 
 ```bash
 pip install -r requirements.txt

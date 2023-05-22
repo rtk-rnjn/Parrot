@@ -34,9 +34,8 @@ class Twenty48:
 
     def transp(self, board: List[List[int]]) -> List[List[int]]:
         new_board = [[0 for _ in range(self.size)] for _ in range(self.size)]
-        for i in range(self.size):
-            for j in range(self.size):
-                new_board[i][j] = board[j][i]
+        for i, j in itertools.product(range(self.size), range(self.size)):
+            new_board[i][j] = board[j][i]
         return new_board
 
     def merge(self, board: List[List[int]]) -> List[List[int]]:
@@ -125,7 +124,6 @@ class Twenty48:
         return restore() if self.board != board else True
 
     def start(self) -> None:
-
         self.board[random.randrange(4)][random.randrange(4)] = 2
         self.board[random.randrange(4)][random.randrange(4)] = 2
 
@@ -167,7 +165,6 @@ class Twenty48_Button(discord.ui.View):
         return original_game
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-
         if interaction.user == self.user:
             return True
         await interaction.response.send_message(
@@ -176,12 +173,12 @@ class Twenty48_Button(discord.ui.View):
         return False
 
     async def update_to_db(self) -> None:
-        col: MongoCollection = self.bot.mongo.extra.games_leaderboard
+        col: MongoCollection = self.bot.game_collections
         await col.update_one(
+            {"_id": self.user.id},
             {
-                "_id": self.user.id,
+                "$inc": {"game_twenty48_played": 1, "game_twenty48_moves": self._moves},
             },
-            {"$inc": {"twenty48.games_played": 1, "twenty48.total_moves": self._moves}},
             upsert=True,
         )
 

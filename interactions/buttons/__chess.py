@@ -216,20 +216,16 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 await msg_.add_reaction("\N{HANDSHAKE}")
                 self.game_stop = True
 
-                col: Collection = self.bot.mongo.extra.games_leaderboard
+                col: Collection = self.bot.game_collections
                 await col.bulk_write(
                     [
                         UpdateOne(
                             {"_id": _id},
                             {
-                                "$addToSet": {
-                                    "chess_games": {
-                                        "white": self.white.id,
-                                        "black": self.black.id,
-                                        "winner": msg.author.id,
-                                        "draw": False,
-                                    }
-                                },
+                                "$inc": {
+                                    "game_chess_played": 1,
+                                    "game_chess_won": 1 if _id == msg.author.id else 0,
+                                }
                             },
                             upsert=True,
                         )
@@ -263,18 +259,15 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 self.switch()
 
     async def add_db(self, **kwargs):
-        col: Collection = self.bot.mongo.extra.games_leaderboard
+        col: Collection = self.bot.game_collections
         await col.bulk_write(
             [
                 UpdateOne(
                     {"_id": _id},
                     {
-                        "$addToSet": {
-                            "chess": {
-                                "white": self.white.id,
-                                "black": self.black.id,
-                                **kwargs,
-                            }
+                        "$inc": {
+                            "game_chess_played": 1,
+                            "game_chess_won": 1 if _id == kwargs["winner"] else 0,
                         },
                     },
                     upsert=True,

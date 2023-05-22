@@ -729,7 +729,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         raise errors[retry]
 
     async def database_game_update(
-        self, game_name: str, *, win: bool = False, loss: bool = False, **kwargs: Any
+        self, game_name: str, *, win: bool = False, loss: bool = False, **kw: Any
     ) -> bool:
         """|coro|
 
@@ -744,6 +744,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         loss: bool
             Whether the game is lost.
         """
+        kwargs: Dict[str, Any] = {}
+
+        for key, value in kw.items():
+            new_key = f"${key}"
+            new_value = f"{game_name}_{value}"
+            kwargs[new_key] = new_value
+
         if not win and not loss:
             update_result: UpdateResult = await self.bot.game_collections.update_one(
                 {

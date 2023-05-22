@@ -11,6 +11,7 @@ from discord.ext import commands
 
 from .akinator import CantGoBackAnyFurther
 from .akinator.async_aki import Akinator as AkinatorGame
+from core import Parrot
 
 BACK = "\N{BLACK LEFT-POINTING TRIANGLE}"
 STOP = "\N{BLACK SQUARE FOR STOP}"
@@ -66,7 +67,7 @@ class Akinator:
         self.bar: str = ""
         self.questions: int = 0
 
-        self.bot: commands.Bot = None
+        self.bot: Parrot = None
 
     def build_bar(self) -> str:
         prog = round(self.aki.progression / 8)
@@ -74,7 +75,6 @@ class Akinator:
         return self.bar
 
     def build_embed(self, *, instructions: bool = True) -> discord.Embed:
-
         embed = discord.Embed(
             title="Guess your character!",
             description=(
@@ -94,7 +94,6 @@ class Akinator:
         return embed
 
     async def win(self) -> discord.Embed:
-
         await self.aki.win()
         self.guess = self.aki.first_guess
 
@@ -110,11 +109,15 @@ class Akinator:
         embed.set_image(url=self.guess["absolute_picture_path"])
         embed.set_footer(text="Was I correct?")
 
-        await self.bot.mongo.extra.games_leaderboard.update_one(
+        await self.bot.game_collections.update_one(
             {
                 "_id": self.player.id,
             },
-            {"$inc": {"aki.games_played": 1, "aki.questions_answered": self.questions}},
+            {
+                "$inc": {
+                    "game_aki_played": 1,
+                }
+            },
             upsert=True,
         )
         return embed
@@ -283,7 +286,6 @@ class AkiView(BaseView):
     async def process_input(
         self, interaction: discord.Interaction, answer: str
     ) -> None:
-
         game = self.game
 
         if interaction.user != game.player:

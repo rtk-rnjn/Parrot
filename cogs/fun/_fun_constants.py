@@ -1,7 +1,6 @@
-from dataclasses import dataclass
 import operator
 import random
-
+from dataclasses import dataclass
 from typing import List
 
 THUMBNAIL_SIZE = (80, 80)

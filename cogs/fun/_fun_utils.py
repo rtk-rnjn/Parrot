@@ -1,7 +1,7 @@
 import re
 import string
-from typing import List, Dict
 import unicodedata
+from typing import Dict, List
 
 import discord
 

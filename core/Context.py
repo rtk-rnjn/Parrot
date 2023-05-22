@@ -9,24 +9,9 @@ import io
 import time
 from contextlib import suppress
 from operator import attrgetter
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    Coroutine,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Dict,
+                    Generic, Iterable, List, Literal, Optional, Set, Tuple,
+                    Type, TypeVar, Union)
 
 import aiohttp
 
@@ -40,10 +25,9 @@ CONFIRM_REACTIONS: Tuple = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
     from motor.motor_asyncio import AsyncIOMotorCollection as Collection
-    from typing_extensions import TypeAlias
     from pymongo.results import UpdateResult
+    from typing_extensions import ParamSpec, TypeAlias
 
     P = ParamSpec("P")
 

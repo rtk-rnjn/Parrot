@@ -50,7 +50,6 @@ async def wait_for_delete(
     user: Optional[Union[discord.User, tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
-
     if not user:
         user = ctx.author
     try:
@@ -79,7 +78,6 @@ async def double_wait(
     *,
     loop: Optional[asyncio.AbstractEventLoop] = None,
 ) -> tuple[set[asyncio.Task[Union[A, B]]], set[asyncio.Task[Union[A, B]]],]:
-
     if not loop:
         loop = asyncio.get_event_loop()
 
@@ -140,7 +138,6 @@ class LightsOutView(SlideView):
         super().__init__(game, timeout=timeout)
 
     def update_board(self, *, clear: bool = False) -> None:
-
         if clear:
             self.clear_items()
 
@@ -161,7 +158,6 @@ class LightsOut:
     """
 
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
-
         if count not in range(1, 6):
             raise ValueError("Count must be an integer between 1 and 5")
 

@@ -34,7 +34,7 @@ ORANGE = (200, 179, 87)
 GREEN = (105, 169, 99)
 LGRAY = (198, 201, 205)
 
-with open(r"extra/5_words.txt", "r", encoding='utf-8', errors="ignore") as f:
+with open(r"extra/5_words.txt", "r", encoding="utf-8", errors="ignore") as f:
     VALID_WORDS = tuple(f.read().splitlines())
 
 
@@ -107,7 +107,6 @@ class Wordle:
         embed_color: DiscordColor = DEFAULT_COLOR,
         **kwargs: Any,
     ) -> Optional[discord.Message]:
-
         self.embed_color = embed_color
 
         buf = await self.render_image()

@@ -209,7 +209,6 @@ class Board:
 
         # When starting out
         if pos is None:
-
             # Check all positions
             for col in range(self.size):
                 for row in range(self.size):
@@ -220,11 +219,9 @@ class Board:
         elif pos not in passed:
             # Check if letter matches current start of numbers
             if numbers[0] == self.columns[pos.col][pos.row]:
-
                 # Check adjacent for next letter
                 for x in range(-1, 2):
                     for y in range(-1, 2):
-
                         # don't check yourself
                         if x == 0 and y == 0:
                             continue

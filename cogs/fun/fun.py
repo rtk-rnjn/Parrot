@@ -43,24 +43,24 @@ from utilities.regex import LINKS_RE
 
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
-from ._fun_utils import replace_many, file_safe_name, AnagramGame, suppress_links
 from ._fun_constants import (
-    THUMBNAIL_SIZE,
-    MAX_SQUARES,
-    IMAGES,
-    RESPONSES,
-    UWU_WORDS,
     DEFAULT_QUESTION_LIMIT,
-    STANDARD_VARIATION_TOLERANCE,
-    TIME_LIMIT,
-    MAX_ERROR_FETCH_TRIES,
-    WRONG_ANS_RESPONSE,
-    RULES,
-    WIKI_FEED_API_URL,
-    TRIVIA_QUIZ_ICON,
-    QuizEntry,
     DYNAMIC_QUESTIONS_FORMAT_FUNCS,
+    IMAGES,
+    MAX_ERROR_FETCH_TRIES,
+    MAX_SQUARES,
+    RESPONSES,
+    RULES,
+    STANDARD_VARIATION_TOLERANCE,
+    THUMBNAIL_SIZE,
+    TIME_LIMIT,
+    TRIVIA_QUIZ_ICON,
+    UWU_WORDS,
+    WIKI_FEED_API_URL,
+    WRONG_ANS_RESPONSE,
+    QuizEntry,
 )
+from ._fun_utils import AnagramGame, file_safe_name, replace_many, suppress_links
 
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"

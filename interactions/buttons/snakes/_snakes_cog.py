@@ -647,7 +647,6 @@ class Snakes(Cog):
         Modified by juan and lemon.
         """
         async with ctx.typing():
-
             # Generate random snake attributes
             width = random.randint(6, 10)
             length = random.randint(15, 22)
@@ -740,7 +739,6 @@ class Snakes(Cog):
         Modified by lemon.
         """
         async with ctx.typing():
-
             image = None
 
             while image is None:
@@ -958,7 +956,6 @@ class Snakes(Cog):
 
         # Make the card
         async with ctx.typing():
-
             stream = BytesIO()
             async with async_timeout.timeout(10):
                 async with self.bot.http_session.get(
@@ -1002,7 +999,6 @@ class Snakes(Cog):
             user = ctx.author
 
             if not message:
-
                 # Get a random message from the users history
                 messages = []
                 async for message in ctx.history(limit=500).filter(

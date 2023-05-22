@@ -134,7 +134,6 @@ def timecard(text: str) -> discord.File:
     # Draw text
     lines = text.split("\n")
     for line in lines:
-
         line_width, _ = draw.textsize(line, font=font)
         x_pos = TIMECARD_X_OFFSET + (TIMECARD_X_BOUND - line_width) // 2
 

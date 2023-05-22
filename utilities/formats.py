@@ -92,7 +92,6 @@ def format_dt(dt: Union[datetime.datetime, int, float], style: str = None) -> st
     return f"<t:{int(dt.timestamp())}:{style}>"
 
 
-
 def suppress_links(message: str) -> str:
     """Accepts a message that may contain links, suppresses them, and returns them."""
     for link in set(re.findall(r"https?://[^\s]+", message, re.IGNORECASE)):

@@ -77,7 +77,12 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
 
             draw = ImageDraw.Draw(image)
 
-            with open("./utilities/uno/assets/font.ttf", "rb", encoding='utf-8', errors="ignore") as fp:
+            with open(
+                "./utilities/uno/assets/font.ttf",
+                "rb",
+                encoding="utf-8",
+                errors="ignore",
+            ) as fp:
                 font = ImageFont.truetype(BytesIO(fp.read()), size=210)
 
             w, h = font.getsize(text)

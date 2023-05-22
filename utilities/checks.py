@@ -4,10 +4,10 @@ import datetime
 from collections.abc import Container, Iterable
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, TypeAlias, Union
 
+from discord.ext.commands import Command  # type: ignore
 from discord.ext.commands import (
     BucketType,
     Cog,
-    Command,  # type: ignore
     CommandOnCooldown,
     Cooldown,
     CooldownMapping,

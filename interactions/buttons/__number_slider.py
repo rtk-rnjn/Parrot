@@ -47,7 +47,6 @@ async def wait_for_delete(
     user: Optional[Union[discord.User, Tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
-
     if not user:
         user = ctx.author
     try:
@@ -76,7 +75,6 @@ async def double_wait(
     *,
     loop: Optional[asyncio.AbstractEventLoop] = None,
 ) -> Tuple[Set[asyncio.Task[Union[A, B]]], Set[asyncio.Task[Union[A, B]]]]:
-
     if not loop:
         loop = asyncio.get_event_loop()
 
@@ -110,7 +108,6 @@ class SlideButton(discord.ui.Button["SlideView"]):
             self.disabled = True
 
     async def callback(self, interaction: discord.Interaction) -> None:
-
         assert self.view is not None
 
         game = self.view.game
@@ -150,7 +147,6 @@ class NumberSlider:
     """
 
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
-
         if count not in range(1, 6):
             raise ValueError("Count must be an integer between 1 and 5")
 
@@ -255,7 +251,6 @@ class SlideView(BaseView):
         self.update_board()
 
     def update_board(self, *, clear: bool = False) -> None:
-
         if clear:
             self.clear_items()
 

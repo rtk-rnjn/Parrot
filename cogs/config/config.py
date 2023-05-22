@@ -1404,7 +1404,7 @@ class Configuration(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @optout.command(name="gitlink")
-    async def optout_gitlink(self, ctx: Context, g: Literal['--global']):
+    async def optout_gitlink(self, ctx: Context, g: Literal["--global"]):
         """Opt-out for gitlink to codeblock."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -1416,7 +1416,7 @@ class Configuration(Cog):
         )
 
     @optout.command(name="equation")
-    async def optout_equation(self, ctx: Context, g: Literal['--global']):
+    async def optout_equation(self, ctx: Context, g: Literal["--global"]):
         """Opt-out for equation usage"""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -1434,7 +1434,7 @@ class Configuration(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @optin.command(name="gitlink")
-    async def optin_gitlink(self, ctx: Context, g: Literal['--global']):
+    async def optin_gitlink(self, ctx: Context, g: Literal["--global"]):
         """Opt-in for gitlink to codeblock"""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -1446,7 +1446,7 @@ class Configuration(Cog):
         )
 
     @optin.command(name="equation")
-    async def optin_equation(self, ctx: Context, g: Literal['--global']):
+    async def optin_equation(self, ctx: Context, g: Literal["--global"]):
         """Opt-in for equation usage"""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -1463,9 +1463,7 @@ class Configuration(Cog):
         """To upgrade the server to premium"""
 
         code_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
-        if data := await self.bot.extra_collections.find_one(
-            {"hash": code_hash}
-        ):
+        if data := await self.bot.extra_collections.find_one({"hash": code_hash}):
             if data.get("uses", 0) > data.get("limit", 0):
                 await ctx.send(
                     f"{ctx.author.mention} This code has been used up. Please ask for new code in support server"

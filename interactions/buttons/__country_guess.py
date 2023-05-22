@@ -41,7 +41,6 @@ class CountryGuesser:
         guesses: int = 5,
         hints: int = 1,
     ) -> None:
-
         self.embed_color: Optional[DiscordColor] = None
         self.hints = hints
         self.guesses = guesses
@@ -275,9 +274,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             self.view.disable_all()
             game.embed.description = f"```fix\n{game.country.title()}\n```"
             await interaction.message.edit(view=self.view, embed=game.embed)
-            await self.view.ctx.database_game_update(
-                "country_guess", win=True
-            )
+            await self.view.ctx.database_game_update("country_guess", win=True)
             return self.view.stop()
         else:
             game.guesses -= 1
@@ -290,9 +287,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
                 await interaction.response.send_message(
                     f"Game Over! you lost, The country was `{game.country.title()}`"
                 )
-                await self.view.ctx.database_game_update(
-                    "country_guess", loss=True
-                )
+                await self.view.ctx.database_game_update("country_guess", loss=True)
                 return self.view.stop()
             else:
                 acc = game.get_accuracy(guess)

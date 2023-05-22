@@ -14,27 +14,10 @@ import traceback
 import types
 from collections import Counter, defaultdict, deque
 from contextlib import suppress
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncGenerator,
-    Awaitable,
-    Callable,
-    Collection,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Literal,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import (TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable,
+                    Collection, Dict, Generic, Iterable, List, Literal,
+                    Mapping, Optional, Sequence, Set, Tuple, Type, TypeVar,
+                    Union)
 
 import jishaku  # type: ignore  # noqa: F401
 import pymongo
@@ -57,25 +40,12 @@ except ImportError:
 from time import perf_counter
 
 from utilities.checks import _can_run
-from utilities.config import (
-    CASE_INSENSITIVE,
-    EXTENSIONS,
-    GITHUB,
-    HEROKU,
-    MASTER_OWNER,
-    OWNER_IDS,
-    STRIP_AFTER_PREFIX,
-    SUPPORT_SERVER,
-    SUPPORT_SERVER_ID,
-    TO_LOAD_IPC,
-    TOKEN,
-    UNLOAD_EXTENSIONS,
-    VERSION,
-    WEBHOOK_ERROR_LOGS,
-    WEBHOOK_JOIN_LEAVE_LOGS,
-    WEBHOOK_STARTUP_LOGS,
-    WEBHOOK_VOTE_LOGS,
-)
+from utilities.config import (CASE_INSENSITIVE, EXTENSIONS, GITHUB, HEROKU,
+                              MASTER_OWNER, OWNER_IDS, STRIP_AFTER_PREFIX,
+                              SUPPORT_SERVER, SUPPORT_SERVER_ID, TO_LOAD_IPC,
+                              TOKEN, UNLOAD_EXTENSIONS, VERSION,
+                              WEBHOOK_ERROR_LOGS, WEBHOOK_JOIN_LEAVE_LOGS,
+                              WEBHOOK_STARTUP_LOGS, WEBHOOK_VOTE_LOGS)
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
 

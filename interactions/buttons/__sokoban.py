@@ -20,6 +20,7 @@ class SokobanGame:
         ".": ":o:",
         "x": ":x:",  # TODO: change the "x"
     }
+
     # Do not DM me or mail me how this works
     # Thing is, I myself forget
     def __init__(self, level: List[str]):

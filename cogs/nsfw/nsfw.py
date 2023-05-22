@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import time
+from random import choice, random
 from typing import Dict, List, Literal, Optional, Set
-from random import random, choice
+
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands

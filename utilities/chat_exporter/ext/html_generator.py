@@ -43,7 +43,7 @@ async def fill_out(guild, base, replacements):
 
 
 def read_file(filename):
-    with open(filename, "r", encoding='utf-8', errors="ignore") as f:
+    with open(filename, "r", encoding="utf-8", errors="ignore") as f:
         s = f.read()
     return s
 

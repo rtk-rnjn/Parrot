@@ -6,14 +6,13 @@
     This module is totally inspired by https://github.com/dchest/captcha
 """
 
-import os
 import copy
-import wave
-import struct
-import random
 import operator
-
+import os
+import random
+import struct
 import sys
+import wave
 
 if sys.version_info[0] != 2:
     import functools

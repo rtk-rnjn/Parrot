@@ -4,7 +4,8 @@ from __future__ import annotations
 import os
 import random
 from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
-from PIL import Image, ImageFont, ImageFilter
+
+from PIL import Image, ImageFilter, ImageFont
 from PIL.ImageDraw import Draw
 from PIL.ImageFont import truetype
 

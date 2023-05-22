@@ -1,4 +1,7 @@
 from string import ascii_uppercase
+from typing import Dict, List, Optional, Tuple, Union
+
+import discord
 
 REGIONAL_INDICATOR_EMOJI = (
     "\N{REGIONAL INDICATOR SYMBOL LETTER A}",
@@ -201,3 +204,76 @@ class Emojis:
 
     x = "\U0001f1fd"
     o = "\U0001f1f4"
+
+
+STATES = (
+    "\N{REGIONAL INDICATOR SYMBOL LETTER X}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER O}",
+)
+
+NUMBERS = list(Emojis.number_emojis.values())
+CROSS_EMOJI = Emojis.incident_unactioned
+
+Coordinate = Optional[Tuple[int, int]]
+EMOJI_CHECK = Union[discord.Emoji, discord.PartialEmoji, str]
+
+CHOICES = ["rock", "paper", "scissors"]
+SHORT_CHOICES = ["r", "p", "s"]
+
+# Using a dictionary instead of conditions to check for the winner.
+WINNER_DICT = {
+    "r": {
+        "r": 0,
+        "p": -1,
+        "s": 1,
+    },
+    "p": {
+        "r": 1,
+        "p": 0,
+        "s": -1,
+    },
+    "s": {
+        "r": -1,
+        "p": 1,
+        "s": 0,
+    },
+}
+
+# This is for the opposing player's board which only shows aimed locations.
+HIDDEN_EMOJIS = {
+    (True, True): ":red_circle:",
+    (True, False): ":black_circle:",
+    (False, True): ":white_circle:",
+    (False, False): ":black_circle:",
+}
+
+# For the top row of the board
+LETTERS = (
+    ":stop_button::regional_indicator_a::regional_indicator_b::regional_indicator_c::regional_indicator_d:"
+    ":regional_indicator_e::regional_indicator_f::regional_indicator_g::regional_indicator_h:"
+    ":regional_indicator_i::regional_indicator_j:"
+)
+
+# For the first column of the board
+NUMBERS = [
+    ":one:",
+    ":two:",
+    ":three:",
+    ":four:",
+    ":five:",
+    ":six:",
+    ":seven:",
+    ":eight:",
+    ":nine:",
+    ":keycap_ten:",
+]
+
+CROSS_EMOJI = "\u274e"
+HAND_RAISED_EMOJI = "\U0001f64b"
+
+BoardState = List[List[Optional[bool]]]
+
+DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
+
+
+EmojiSet = Dict[Tuple[bool, bool], str]

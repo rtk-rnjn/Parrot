@@ -67,6 +67,7 @@ from interactions.buttons.__games_utils import (
     boggle_game,
     is_game,
     is_no_game,
+    fenPass,
 )
 from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__memory_game import MemoryGame

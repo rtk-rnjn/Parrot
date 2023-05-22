@@ -4,15 +4,15 @@
 
 ---
 
-### How to get this shit working?
+## How to get this shit working?
 
 Run the script
+
 ```bash
-$ pm2 start pm2.json
+pm2 start pm2.json
 ```
 
 ---
-
 
 ### Then?
 
@@ -55,4 +55,5 @@ On successful completion, you can make `get` request to `http://127.0.0.1:1729/c
 ... }
 >>> 
 ```
+
 > **Note:** This API is no longer maintained.

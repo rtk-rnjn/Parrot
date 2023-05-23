@@ -309,7 +309,7 @@ class SimplePageSource(old_menus.ListPageSource):
 
     async def format_page(self, menu, entries):
         pages = [
-            f"`{f'0{str(index + 1)}' if index < 9 else index + 1}` {entry}"
+            f"{f'`0{str(index + 1)}` ' if index < 9 else index + 1 if self.to_index else ''}{entry}"
             for index, entry in enumerate(
                 entries, start=menu.current_page * self.per_page
             )

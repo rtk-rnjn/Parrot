@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 from aiofile import async_open
 from discord.utils import MISSING
 from pymongo import ReturnDocument
+import pymongo
 from pymongo.collection import Collection
 
 import discord
@@ -952,34 +953,37 @@ class Games(Cog):
         Flag Options:
         `--me`: Only show your stats
         `--global`: Show global stats
-        `--sort_by`: Sort the list either by `moves` or `games`
-        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
+        `--sort_by`: Sort the list either by `moves` or `played`
+        `--sort`: Sort the list either `asc` (ascending) or `desc` (descending)
+        `--limit`: To limit the search, default is 100
         """
         user = user or ctx.author
-        col: Collection = self.bot.mongo.extra.games_leaderboard
+        col: Collection = self.bot.game_collections
+        sort_by = f"game_twenty48_{flag.sort_by.lower()}" if flag.sort_by else "game_twenty48_played"
+        order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
 
-        sort_by = (
-            "games_played" if flag.sort_by.lower() == "games" else flag.sort_by.lower()
-        )
-        sort_by = "moves" if sort_by == "total_moves" else sort_by
-
-        FILTER = {"twenty48": {"$exists": True}}
+        FILTER = {sort_by: {"$exists": True}}
 
         if flag.me:
             FILTER["_id"] = user.id
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
+        LIMIT = flag.limit or float('inf')
         entries = []
-        async for data in col.find(FILTER).sort(sort_by, flag.sort):
-            user = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, data["_id"]
+        i = 0
+        async for data in col.find(FILTER).sort(sort_by, order_by):
+            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
+                ctx.guild, data["_id"]
             )
             entries.append(
                 f"""User: `{user or 'NA'}`
-`Games Played`: {data['twenty48']['games_played']} games played
-`Total Moves `: {data['twenty48']['total_moves']} moves
+`Games Played`: {data['game_twenty48_played']} games played
+`Total Moves `: {data['game_twenty48_moves']} moves
 """
             )
+            if i > LIMIT:
+                break
+            i += 1
         if not entries:
             await ctx.send(f"{ctx.author.mention} No results found")
             return
@@ -1000,8 +1004,9 @@ class Games(Cog):
         Flag Options:
         `--me`: Only show your stats
         `--global`: Show global stats
-        `--sort_by`: Sort the list either by `win` or `games`
-        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
+        `--sort_by`: Sort the list either by `moves` or `played`
+        `--sort`: Sort the list either `asc` (ascending) or `desc` (descending)
+        `--limit`: To limit the search, default is 100
         """
         return await self.__guess_stats(
             game_type="country_guess", ctx=ctx, user=user, flag=flag
@@ -1036,14 +1041,12 @@ class Games(Cog):
         flag: GameCommandFlag,
     ):
         user = user or ctx.author
-        col: Collection = self.bot.mongo.extra.games_leaderboard
+        col: Collection = self.bot.game_collections
 
-        sort_by = (
-            "games_played" if flag.sort_by.lower() == "games" else flag.sort_by.lower()
-        )
-        sort_by = "games_won" if sort_by == "win" else sort_by
+        sort_by = f"game_{game_type}_{flag.sort_by or 'played'}"
+        order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
 
-        FILTER = {game_type: {"$exists": True}}
+        FILTER = {sort_by: {"$exists": True}}
 
         if flag.me and flag._global:
             return await ctx.send(
@@ -1055,17 +1058,23 @@ class Games(Cog):
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
+        LIMIT = flag.limit or float('inf')
         entries = []
-        async for data in col.find(FILTER).sort(sort_by, flag.sort):
-            user = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, data["_id"]
+        i = 0
+        async for data in col.find(FILTER).sort(sort_by, order_by):
+            user = await self.bot.get_or_fetch_member(
+                ctx.guild, data["_id"]
             )
             entries.append(
                 f"""User: `{user or 'NA'}`
-`Games Played`: {data[game_type].get('games_played', 0)} games played
-`Total Wins  `: {data[game_type].get('games_won', 0)} Wins
+`Games Played`: {data[f'game_{game_type}_played']} games played
+`Total Wins  `: {data[f'game_{game_type}_won']} Wins
+`Total Loss  `: {data[f'game_{game_type}_loss']} Loss
 """
             )
+            if i > LIMIT:
+                break
+            i += 1
         if not entries:
             await ctx.send(f"{ctx.author.mention} No records found")
             return
@@ -1084,7 +1093,7 @@ class Games(Cog):
         """Chess Game stats
 
         Flag Options:
-        `--sort_by`: Sort the list either by `winner` or `draw`
+        `--sort_by`: Sort the list either by `won` or `draw`
         `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
@@ -1171,11 +1180,15 @@ class Games(Cog):
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
-        col: Collection = self.bot.mongo.extra.games_leaderboard
+        LIMIT = flag.limit or float('inf')
+        col: Collection = self.bot.game_collections
         async for data in col.find(FILTER).sort(name, flag.sort):
-            user = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, data["_id"]
+            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
+                ctx.guild, data['_id']
             )
+            if user is None:
+                continue
+
             if user.id == ctx.author.id:
                 entries.append(
                     f"""**{user or 'NA'}**
@@ -1188,7 +1201,7 @@ class Games(Cog):
 `Minimum Time`: {data[name]}
 """
                 )
-            if i >= flag.limit:
+            if i >= LIMIT:
                 break
             i += 1
 

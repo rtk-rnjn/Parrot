@@ -303,6 +303,10 @@ class TextPageSource(old_menus.ListPageSource):
 
 
 class SimplePageSource(old_menus.ListPageSource):
+    def __init__(self, to_index: bool = False, *args: Any, **kwargs: Any) -> None:
+        self.to_index = to_index
+        super().__init__(*args, **kwargs)
+
     async def format_page(self, menu, entries):
         pages = [
             f"`{f'0{str(index + 1)}' if index < 9 else index + 1}` {entry}"

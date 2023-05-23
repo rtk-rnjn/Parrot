@@ -9,6 +9,7 @@ from utilities.converters import convert_bool
 class GameCommandFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
+    me: Optional[convert_bool] = False
     sort_by: Optional[str] = None
     order_by: Literal["asc", "desc"] = "desc"
     limit: int = 100

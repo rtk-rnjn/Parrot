@@ -14,21 +14,6 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    def _overwrite_to_json(
-        self,
-        overwrites: Dict[
-            Union[discord.Role, discord.User], discord.PermissionOverwrite
-        ],
-    ) -> str:
-        try:
-            over = {
-                f"{str(target.name)} ({'Role' if isinstance(target, discord.Role) else 'Member'})": overwrite._values
-                for target, overwrite in overwrites.items()
-            }
-            return json.dumps(over, indent=4)
-        except TypeError:
-            return "{}"
-
     @Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         pass
@@ -65,7 +50,6 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         last_pin: Optional[datetime],
     ):
         pass
-
 
     @Cog.listener()
     async def on_guild_integrations_update(self, guild: discord.Guild):

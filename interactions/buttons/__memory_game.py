@@ -166,7 +166,7 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
             },
             {
                 "$set": {"game_memory_test_time": time_taken},
-                "$inc": {"game_memory_test": 1},
+                "$inc": {"game_memory_test_played": 1},
             },
         )
 

@@ -268,7 +268,20 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                         "$inc": {
                             "game_chess_played": 1,
                             "game_chess_won": 1 if _id == kwargs["winner"] else 0,
+                            "game_chess_draw": 1 if kwargs["draw"] else 0,
                         },
+                        "$addToSet": {
+                            "game_chess_opponent": {
+                                "$each": [self.white.id, self.black.id]
+                            }
+                        },
+                        "$push": {
+                            "game_chess_stat": {
+                                "game_chess_winner": kwargs['winner'],
+                                "game_chess_player_1": _id if _id == self.white.id else self.black.id,
+                                "game_chess_player_2": _id if _id == self.black.id else self.white.id,
+                            }
+                        }
                     },
                     upsert=True,
                 )

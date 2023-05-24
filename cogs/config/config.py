@@ -1357,7 +1357,7 @@ class Configuration(Cog):
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                msg = await self.bot.wait_for("message", check=check, timeout=60)
+                msg: discord.Message = await ctx.wait_for("message", check=check, timeout=60)
                 return msg.content.lower()
             except asyncio.TimeoutError:
                 raise commands.BadArgument(

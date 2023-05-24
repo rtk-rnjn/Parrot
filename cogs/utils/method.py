@@ -500,9 +500,7 @@ async def __wait_for__message(ctx: Context) -> str:
         return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
 
     try:
-        msg: discord.Message = await ctx.bot.wait_for(
-            "message", check=check, timeout=60
-        )
+        msg: discord.Message = await ctx.wait_for("message", check=check, timeout=60)
     except asyncio.TimeoutError:
         raise ParrotTimeoutError()
     else:

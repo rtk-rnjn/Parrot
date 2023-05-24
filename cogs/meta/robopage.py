@@ -242,7 +242,7 @@ class RoboPages(discord.ui.View):
                 )
 
             try:
-                msg: discord.Message = await self.ctx.bot.wait_for(
+                msg: discord.Message = await self.ctx.wait_for(
                     "message", check=message_check, timeout=30.0
                 )
             except asyncio.TimeoutError:

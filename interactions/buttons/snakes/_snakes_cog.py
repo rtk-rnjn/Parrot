@@ -446,7 +446,7 @@ class Snakes(Cog):
 
         # Validate the answer
         try:
-            reaction, _ = await ctx.bot.wait_for(
+            reaction, _ = await ctx.wait_for(
                 "reaction_add", timeout=45.0, check=predicate
             )
         except asyncio.TimeoutError:
@@ -550,7 +550,7 @@ class Snakes(Cog):
         # Begin main game loop
         while not win and antidote_tries < 10:
             try:
-                reaction, user = await ctx.bot.wait_for(
+                reaction, user = await ctx.wait_for(
                     "reaction_add", timeout=300, check=predicate
                 )
             except asyncio.TimeoutError:

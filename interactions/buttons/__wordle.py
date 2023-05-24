@@ -129,7 +129,7 @@ class Wordle:
                 ) or (m.content.lower() == "quit")
 
             try:
-                guess: discord.Message = await ctx.bot.wait_for(
+                guess: discord.Message = await ctx.wait_for(
                     "message", check=check, timeout=900
                 )
             except asyncio.TimeoutError:

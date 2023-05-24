@@ -198,10 +198,8 @@ class Akinator:
                     except ValueError:
                         return emoji in (BACK, STOP)
 
-            REACTION_ADD = ctx.bot.wait_for(
-                "reaction_add", timeout=timeout, check=check
-            )
-            REACTION_REMOVE = ctx.bot.wait_for(
+            REACTION_ADD = ctx.wait_for("reaction_add", timeout=timeout, check=check)
+            REACTION_REMOVE = ctx.wait_for(
                 "reaction_remove", timeout=timeout, check=check
             )
 

@@ -14,11 +14,29 @@ import traceback
 import types
 from collections import Counter, defaultdict, deque
 from contextlib import suppress
-from typing import (TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable,
-                    Collection, Dict, Generic, Iterable, List, Literal,
-                    Mapping, Optional, Sequence, Set, Tuple, Type, TypeVar,
-                    Union)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Collection,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
+import aiohttp
 import jishaku  # type: ignore  # noqa: F401
 import pymongo
 import wavelink
@@ -40,12 +58,25 @@ except ImportError:
 from time import perf_counter
 
 from utilities.checks import _can_run
-from utilities.config import (CASE_INSENSITIVE, EXTENSIONS, GITHUB, HEROKU,
-                              MASTER_OWNER, OWNER_IDS, STRIP_AFTER_PREFIX,
-                              SUPPORT_SERVER, SUPPORT_SERVER_ID, TO_LOAD_IPC,
-                              TOKEN, UNLOAD_EXTENSIONS, VERSION,
-                              WEBHOOK_ERROR_LOGS, WEBHOOK_JOIN_LEAVE_LOGS,
-                              WEBHOOK_STARTUP_LOGS, WEBHOOK_VOTE_LOGS)
+from utilities.config import (
+    CASE_INSENSITIVE,
+    EXTENSIONS,
+    GITHUB,
+    HEROKU,
+    MASTER_OWNER,
+    OWNER_IDS,
+    STRIP_AFTER_PREFIX,
+    SUPPORT_SERVER,
+    SUPPORT_SERVER_ID,
+    TO_LOAD_IPC,
+    TOKEN,
+    UNLOAD_EXTENSIONS,
+    VERSION,
+    WEBHOOK_ERROR_LOGS,
+    WEBHOOK_JOIN_LEAVE_LOGS,
+    WEBHOOK_STARTUP_LOGS,
+    WEBHOOK_VOTE_LOGS,
+)
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
 
@@ -161,6 +192,7 @@ class Parrot(commands.AutoShardedBot):
         self._error_log_token: str = WEBHOOK_ERROR_LOGS
         self._startup_log_token: str = WEBHOOK_STARTUP_LOGS
         self._vote_log_token: str = WEBHOOK_VOTE_LOGS
+        self._join_leave_log_token: str = WEBHOOK_JOIN_LEAVE_LOGS
 
         self.color: int = 0x87CEEB
         self.colour: int = self.color
@@ -366,6 +398,32 @@ class Parrot(commands.AutoShardedBot):
     async def on_socket_raw_receive(self, msg: str) -> None:
         self._prev_events.append(msg)
 
+    async def _execute_webhook_from_scratch(
+        self,
+        webhook: Union[discord.Webhook, str],
+        *,
+        content: str,
+        username: str,
+        avatar_url: str,
+        **kw: Any,
+    ) -> Optional[dict]:
+        payload = {}
+        URL = webhook.url if isinstance(webhook, discord.Webhook) else webhook
+        if content:
+            payload["content"] = content
+        if username:
+            payload["username"] = username
+        if avatar_url:
+            payload["avatar_url"] = avatar_url
+
+        if self.http_session.closed:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(URL, json=payload) as resp:
+                    return await resp.json()
+        else:
+            async with self.http_session.post(URL, json=payload) as resp:
+                return await resp.json()
+
     async def _execute_webhook(
         self,
         webhook: Union[str, discord.Webhook] = None,
@@ -388,11 +446,19 @@ class Parrot(commands.AutoShardedBot):
         if webhook_id and webhook_token:
             BASE_URL = "https://discordapp.com/api/webhooks"
             URL = f"{BASE_URL}/{webhook_id}/{webhook_token}"
-        elif isinstance(webhook, str):
+        elif isinstance(webhook, str) and not self.http_session.closed:
             URL = webhook
 
             webhook: discord.Webhook = discord.Webhook.from_url(
                 URL, session=self.http_session
+            )
+        else:
+            await self._execute_webhook_from_scratch(
+                webhook,
+                content=content,
+                username=kwargs.pop("username", self.user.name),
+                avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
+                **kwargs,
             )
 
         _CONTENT = content

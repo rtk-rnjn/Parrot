@@ -139,7 +139,7 @@ class CountryGuesser:
                 )
             return m.channel == ctx.channel and m.author == ctx.author
 
-        message: discord.Message = await ctx.bot.wait_for(
+        message: discord.Message = await ctx.wait_for(
             "message", timeout=self.timeout, check=check
         )
         content = message.content.strip().lower()

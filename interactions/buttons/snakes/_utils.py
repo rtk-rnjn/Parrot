@@ -429,7 +429,7 @@ class SnakeAndLaddersGame:
 
         while not self.started:
             try:
-                reaction, user = await self.ctx.bot.wait_for(
+                reaction, user = await self.ctx.wait_for(
                     "reaction_add", timeout=300, check=startup_event_check
                 )
                 if reaction.emoji == JOIN_EMOJI:
@@ -634,7 +634,7 @@ class SnakeAndLaddersGame:
         is_surrendered = False
         while True:
             try:
-                reaction, user = await self.ctx.bot.wait_for(
+                reaction, user = await self.ctx.wait_for(
                     "reaction_add", timeout=300, check=game_event_check
                 )
 

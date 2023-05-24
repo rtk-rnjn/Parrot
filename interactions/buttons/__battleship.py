@@ -300,7 +300,7 @@ class BattleShip:
                     return bool(self.inputpat.match(content))
 
             try:
-                message: discord.Message = await ctx.bot.wait_for(
+                message: discord.Message = await ctx.wait_for(
                     "message", check=check, timeout=self.timeout
                 )
             except asyncio.TimeoutError:
@@ -319,7 +319,7 @@ class BattleShip:
                     return content in ("yes", "no")
 
             try:
-                message: discord.Message = await ctx.bot.wait_for(
+                message: discord.Message = await ctx.wait_for(
                     "message", check=check, timeout=self.timeout
                 )
             except asyncio.TimeoutError:
@@ -390,7 +390,7 @@ class BattleShip:
                     return bool(self.inputpat.match(content))
 
             try:
-                message: discord.Message = await ctx.bot.wait_for(
+                message: discord.Message = await ctx.wait_for(
                     "message", check=check, timeout=self.timeout
                 )
             except asyncio.TimeoutError:

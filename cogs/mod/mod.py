@@ -1112,7 +1112,7 @@ class Moderator(Cog):
                 await ctx.send(
                     f"{ctx.author.mention} move the bot to other channel as to move other users"
                 )
-                _, _, a = await self.bot.wait_for(
+                _, _, a = await ctx.wait_for(
                     "voice_state_update", timeout=60, check=check
                 )
             except asyncio.TimeoutError:
@@ -1386,7 +1386,7 @@ class Moderator(Cog):
                 )
 
             try:
-                reaction, _ = await self.bot.wait_for(
+                reaction, _ = await ctx.wait_for(
                     "reaction_add", timeout=60.0, check=check
                 )
                 reaction: discord.Reaction = reaction
@@ -1403,7 +1403,7 @@ class Moderator(Cog):
                     f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]"
                 )
                 try:
-                    m: discord.Message = await self.bot.wait_for(
+                    m: discord.Message = await ctx.wait_for(
                         "message", timeout=30, check=check_msg
                     )
                 except asyncio.TimeoutError:
@@ -1428,7 +1428,7 @@ class Moderator(Cog):
                     delete_after=30,
                 )
                 try:
-                    m: discord.Message = await self.bot.wait_for(
+                    m: discord.Message = await ctx.wait_for(
                         "message", timeout=30, check=check_msg
                     )
                 except asyncio.TimeoutError:
@@ -1477,7 +1477,7 @@ class Moderator(Cog):
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                reaction, _ = await self.bot.wait_for(
+                reaction, _ = await ctx.wait_for(
                     "reaction_add", timeout=60.0, check=check
                 )
                 reaction: discord.Reaction = reaction
@@ -1494,7 +1494,7 @@ class Moderator(Cog):
                     delete_after=60,
                 )
                 try:
-                    m: discord.Message = await self.bot.wait_for(
+                    m: discord.Message = await ctx.wait_for(
                         "message", timeout=60, check=check_msg
                     )
                 except asyncio.TimeoutError:
@@ -1548,7 +1548,7 @@ class Moderator(Cog):
                 )
 
             try:
-                reaction, _ = await self.bot.wait_for(
+                reaction, _ = await ctx.wait_for(
                     "reaction_add", timeout=60.0, check=check_reaction_vc
                 )
                 reaction: discord.Reaction = reaction
@@ -1562,7 +1562,7 @@ class Moderator(Cog):
                     f"{ctx.author.mention} Enter the Channel Name", delete_after=60
                 )
                 try:
-                    m: discord.Message = await self.bot.wait_for(
+                    m: discord.Message = await ctx.wait_for(
                         "message", timeout=60, check=check_msg
                     )
                 except asyncio.TimeoutError:
@@ -1607,7 +1607,7 @@ class Moderator(Cog):
                 )
 
             try:
-                reaction, _ = await self.bot.wait_for(
+                reaction, _ = await ctx.wait_for(
                     "reaction_add", timeout=60.0, check=check_reaction_role
                 )
                 reaction: discord.Reaction = reaction
@@ -1622,7 +1622,7 @@ class Moderator(Cog):
                     delete_after=60,
                 )
                 try:
-                    m: discord.Message = await self.bot.wait_for(
+                    m: discord.Message = await ctx.wait_for(
                         "message", timeout=60, check=check_msg
                     )
                 except asyncio.TimeoutError:
@@ -1648,7 +1648,7 @@ class Moderator(Cog):
                     f"{ctx.author.mention} Enter the Role Name", delete_after=60
                 )
                 try:
-                    m: discord.Message = await self.bot.wait_for(
+                    m: discord.Message = await ctx.wait_for(
                         "message", timeout=60, check=check_msg
                     )
                 except asyncio.TimeoutError:

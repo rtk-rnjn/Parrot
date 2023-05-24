@@ -9,9 +9,24 @@ import io
 import time
 from contextlib import suppress
 from operator import attrgetter
-from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Dict,
-                    Generic, Iterable, List, Literal, Optional, Set, Tuple,
-                    Type, TypeVar, Union)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import aiohttp
 
@@ -379,10 +394,11 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if message is None or not isinstance(message, discord.Message):
             message: discord.Message = self.message
 
-        coros: List[Coroutine] = [
-            message.add_reaction(reaction) for reaction in reactions
+        tasks: "List[asyncio.Task[None]]" = [
+            asyncio.create_task(message.add_reaction(reaction))
+            for reaction in reactions
         ]
-        await asyncio.wait(coros)
+        await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
     async def confirm(
         self,
@@ -436,6 +452,38 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             if delete_after:
                 await message.delete(delay=0)
 
+    def outer_check(
+        self,
+        check: Optional[Callable[..., bool]] = None,
+        operator: Callable[[Iterable[object]], bool] = all,
+        **kw: Any,
+    ) -> Callable[..., bool]:
+        """Check function for the event"""
+        if check is not None:
+            return check
+
+        def __suppress_attr_error(func: Callable, *args: Any, **kwargs: Any) -> bool:
+            """Suppress attribute error for the function."""
+            try:
+                func(*args, **kwargs)
+                return True
+            except AttributeError:
+                return False
+
+        def __internal_check(
+            *args,
+        ) -> bool:
+            """Main check function"""
+            convert_pred = [
+                (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
+            ]
+            return operator(
+                all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
+                for pred, val in convert_pred
+            )
+
+        return __internal_check
+
     async def wait_for(
         self,
         _event_name: str,
@@ -478,38 +526,11 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if _event_name.lower().startswith("on_"):
             _event_name = _event_name[3:].lower()
 
-        def outer_check(**kw: Any) -> Callable[..., bool]:
-            """Check function for the event"""
-            if check is not None:
-                return check
-
-            def __suppress_attr_error(
-                func: Callable, *args: Any, **kwargs: Any
-            ) -> bool:
-                """Suppress attribute error for the function."""
-                try:
-                    func(*args, **kwargs)
-                    return True
-                except AttributeError:
-                    return False
-
-            def __internal_check(
-                *args,
-            ) -> bool:
-                """Main check function"""
-                convert_pred = [
-                    (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
-                ]
-                return operator(
-                    all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
-                    for pred, val in convert_pred
-                )
-
-            return __internal_check
-
         try:
             return await self.bot.wait_for(
-                _event_name, timeout=timeout, check=outer_check(**kwargs)
+                _event_name,
+                timeout=timeout,
+                check=self.outer_check(check, operator, **kwargs),
             )
         except asyncio.TimeoutError:
             if suppress_error:
@@ -622,8 +643,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if isinstance(events, dict):
             events = list(events.items())  # type: ignore
 
-        _events: Set[Coroutine[Any, Any, Any]] = {
-            self.wait_for(event, check=check, timeout=timeout, **kwargs)
+        _events: Set[asyncio.Task] = {
+            asyncio.create_task(self.wait_for(event, check=check, timeout=timeout, **kwargs))
             for event, check in events
         }
 

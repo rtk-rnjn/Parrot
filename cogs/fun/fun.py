@@ -141,9 +141,6 @@ class Fun(Cog):
         self.get_latest_comic_info.start()
         self.get_wiki_questions.start()
 
-        self.jeyy_api_loader()
-        self.some_random_api_loader()
-
         self.ON_TESTING = False
 
     async def send_colour_response(
@@ -933,7 +930,7 @@ class Fun(Cog):
                 )
 
             try:
-                msg: discord.Message = await self.bot.wait_for(
+                msg: discord.Message = await ctx.wait_for(
                     "message", check=check, timeout=10
                 )
             except asyncio.TimeoutError:
@@ -1104,7 +1101,7 @@ class Fun(Cog):
             )
 
             try:
-                message: discord.Message = await self.bot.wait_for(
+                message: discord.Message = await ctx.wait_for(
                     "message", timeout=60.0, check=check
                 )
             except asyncio.TimeoutError:
@@ -2530,7 +2527,7 @@ class Fun(Cog):
             )
 
         try:
-            await ctx.bot.wait_for("reaction_add", check=check1, timeout=60)
+            await ctx.wait_for("reaction_add", check=check1, timeout=60)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
@@ -2550,7 +2547,7 @@ class Fun(Cog):
         ini = time.perf_counter()
 
         try:
-            msg: discord.Message = await self.bot.wait_for(
+            msg: discord.Message = await ctx.wait_for(
                 "message", check=check2, timeout=300
             )
         except asyncio.TimeoutError:
@@ -2590,7 +2587,7 @@ class Fun(Cog):
             )
 
         try:
-            await ctx.bot.wait_for("reaction_add", check=check_1, timeout=60)
+            await ctx.wait_for("reaction_add", check=check_1, timeout=60)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
 
@@ -2608,7 +2605,7 @@ class Fun(Cog):
             )
 
         start = time.perf_counter()
-        await ctx.bot.wait_for("reaction_add", check=check_2)
+        await ctx.wait_for("reaction_add", check=check_2)
         end = time.perf_counter()
 
         await confirm.edit(content=f"{ctx.author.mention} reacted on {end-start:.2f}s")

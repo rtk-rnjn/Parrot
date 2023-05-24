@@ -186,7 +186,7 @@ class LinePaginator(Paginator):
 
         while True:
             try:
-                reaction, user = await ctx.bot.wait_for(
+                reaction, user = await ctx.wait_for(
                     "reaction_add", timeout=timeout, check=event_check
                 )
             except asyncio.TimeoutError:
@@ -305,7 +305,7 @@ async def disambiguate(
         if embed is None:
             embed = discord.Embed()
 
-        coro1 = ctx.bot.wait_for("message", check=check, timeout=timeout)
+        coro1 = ctx.wait_for("message", check=check, timeout=timeout)
         coro2 = LinePaginator.paginate(
             choices,
             ctx,

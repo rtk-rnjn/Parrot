@@ -15,9 +15,9 @@ with contextlib.suppress(ImportError):
 with open("config.yml", encoding="utf-8", errors="ignore") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
 
-VERSION = "v4.9.5-beta"
+VERSION = "v5.0-alpha.1"
 
-HEROKU: bool = False
+HEROKU: bool = True
 
 
 def parse_env_var(
@@ -68,40 +68,3 @@ WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")
 WEBHOOK_STARTUP_LOGS: str = parse_env_var("WEBHOOK_STARTUP_LOGS")
 WEBHOOK_VOTE_LOGS: str = parse_env_var("WEBHOOK_VOTE_LOGS")
 DATABASE_URI: str = parse_env_var("DATABASE_URI")
-
-# ALL_CONFIG = [
-#     OWNER_IDS,
-#     DEFAULT_PREFIX,
-#     CASE_INSENSITIVE,
-#     STRIP_AFTER_PREFIX,
-#     SUPER_USER,
-#     MASTER_OWNER,
-#     EXTENSIONS,
-#     UNLOAD_EXTENSIONS,
-#     DEV_LOGO,
-#     TOKEN,
-#     DATABASE_KEY,
-#     OPEN_ROBOT_API,
-#     AUTHOR_NAME,
-#     AUTHOR_DISCRIMINATOR,
-#     GITHUB,
-#     SUPPORT_SERVER,
-#     WEBHOOK_JOIN_LEAVE_CHANNEL_ID,
-#     SUPPORT_SERVER_ID,
-#     MEME_PASS,
-#     PRIVACY_POLICY,
-#     LRU_CACHE,
-#     TO_LOAD_IPC,
-#     DATABASE_URI,
-#     MONGO_MAIN_DB_NAME,
-#     MAIN_DB_GUILD_CONFIG,
-#     MAIN_DB_REMINDERS,
-#     USER_MESSAGES_DB_NAME,
-#     GUILD_MESSAGES_DB_NAME,
-#     USER_DB,
-#     GUILD_DB,
-#     WEBHOOK_JOIN_LEAVE_LOGS,
-#     WEBHOOK_ERROR_LOGS,
-#     WEBHOOK_STARTUP_LOGS,
-#     WEBHOOK_VOTE_LOGS,
-# ]

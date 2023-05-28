@@ -954,7 +954,7 @@ class Games(Cog):
         `--me`: Only show your stats
         `--global`: Show global stats
         `--sort_by`: Sort the list either by `moves` or `played`
-        `--sort`: Sort the list either `asc` (ascending) or `desc` (descending)
+        `--order_by`: Sort the list either `asc` (ascending) or `desc` (descending)
         `--limit`: To limit the search, default is 100
         """
         user = user or ctx.author
@@ -973,7 +973,7 @@ class Games(Cog):
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
             user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-                ctx.guild, data["_id"]
+                ctx.guild, data["_id"], in_guild=False
             )
             entries.append(
                 f"""User: `{user or 'NA'}`
@@ -1005,7 +1005,7 @@ class Games(Cog):
         `--me`: Only show your stats
         `--global`: Show global stats
         `--sort_by`: Sort the list either by `moves` or `played`
-        `--sort`: Sort the list either `asc` (ascending) or `desc` (descending)
+        `--order_by`: Sort the list either `asc` (ascending) or `desc` (descending)
         `--limit`: To limit the search, default is 100
         """
         return await self.__guess_stats(
@@ -1026,7 +1026,7 @@ class Games(Cog):
         `--me`: Only show your stats
         `--global`: Show global stats
         `--sort_by`: Sort the list either by `win` or `games`
-        `--sort`: Sort the list either `1` (ascending) or `-1` (descending)
+        `--order_by`: Sort the list either `1` (ascending) or `-1` (descending)
         """
         return await self.__guess_stats(
             game_type="hangman", ctx=ctx, user=user, flag=flag
@@ -1063,7 +1063,7 @@ class Games(Cog):
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
             user = await self.bot.get_or_fetch_member(
-                ctx.guild, data["_id"]
+                ctx.guild, data["_id"], in_guild=False
             )
             entries.append(
                 f"""User: `{user or 'NA'}`
@@ -1094,7 +1094,7 @@ class Games(Cog):
 
         Flag Options:
         `--sort_by`: Sort the list either by `won` or `draw`
-        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
         user = user or ctx.author
@@ -1154,7 +1154,7 @@ class Games(Cog):
         Flag Options:
         `--me`: Only show your stats
         `--global`: Show global stats
-        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
         await self.__test_stats("reaction_test", ctx, flag)
@@ -1166,7 +1166,7 @@ class Games(Cog):
         Flag Options:
         `--me`: Only show your stats
         `--global`: Show global stats
-        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
         await self.__test_stats("memory_test", ctx, flag)
@@ -1182,9 +1182,9 @@ class Games(Cog):
 
         LIMIT = flag.limit or float('inf')
         col: Collection = self.bot.game_collections
-        async for data in col.find(FILTER).sort(name, flag.sort):
+        async for data in col.find(FILTER).sort(name, 1 if flag.order_by == "asc" else -1):
             user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-                ctx.guild, data['_id']
+                ctx.guild, data['_id'], in_guild=False
             )
             if user is None:
                 continue
@@ -1220,25 +1220,27 @@ class Games(Cog):
         `--me`: Only show your stats
         `--global`: Show global stats
         `--sort_by`: Sort the list by any of the following: `speed`, `accuracy`, `wpm`
-        `--sort`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
+        `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
         entries = []
         i = 1
-        FILTER = {"typing_test": {"$exists": True}}
+        FILTER = {"game_typing_test_played": {"$exists": True}}
         if flag.me:
             FILTER["_id"] = ctx.author.id
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
-        col: Collection = self.bot.mongo.extra.games_leaderboard
+        col: Collection = self.bot.game_collections
 
         async for data in col.find(
             FILTER,
-        ).sort(f"typing_test.{flag.sort_by}", flag.sort):
-            user = await self.bot.getch(
+        ).sort(f"typing_test.{flag.sort_by}", 1 if flag.order_by == "asc" else -1):
+            user: discord.User = await self.bot.getch(
                 self.bot.get_user, self.bot.fetch_user, data["_id"]
             )
+            if not user:
+                continue
 
             if user.id == ctx.author.id:
                 entries.append(

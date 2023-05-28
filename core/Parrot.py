@@ -735,8 +735,8 @@ class Parrot(commands.AutoShardedBot):
                     yield member
 
     async def get_or_fetch_member(
-        self, guild: discord.Guild, member_id: Union[int, discord.Object]
-    ) -> Optional[discord.Member]:
+        self, guild: discord.Guild, member_id: Union[int, discord.Object], in_guild: bool = True
+    ) -> Union[discord.Member, discord.User, None]:
         """|coro|
 
         Looks up a member in cache or fetches if not found.
@@ -753,6 +753,9 @@ class Parrot(commands.AutoShardedBot):
         Optional[Member]
             The member or None if not found.
         """
+        if not in_guild:
+            return await self.getch(self.get_user, self.fetch_user, member_id)
+
         member_id = (
             member_id.id if isinstance(member_id, discord.Object) else int(member_id)
         )

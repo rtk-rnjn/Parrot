@@ -1869,7 +1869,7 @@ class Moderator(Cog):
         if res:
             await ctx.send("Nuking channel...")
             for i in range(1, 4):
-                await ctx.send("# " + str(i))
+                await ctx.send(f"# {str(i)}")
                 await asyncio.sleep(1)
             await asyncio.sleep(1)
             chan = await ctx.channel.clone()

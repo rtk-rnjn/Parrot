@@ -1098,22 +1098,12 @@ class Games(Cog):
         `--limit`: Limit the list to the top `limit` entries.
         """
         user = user or ctx.author
-        col: Collection = self.bot.mongo.extra.games_leaderboard
+        col: Collection = self.bot.game_collections
 
         sort_by = flag.sort_by
 
-        data = await col.find_one_and_update(
-            {"_id": user.id, "chess": {"$exists": True}},
-            {
-                "$push": {
-                    "chess": {
-                        "$each": [],
-                        "$sort": {sort_by: int(flag.sort)},
-                        "$slice": int(flag.limit),
-                    }
-                }
-            },
-            return_document=ReturnDocument.AFTER,
+        data = await col.find_one(
+            {"_id": user.id, "game_chess_played": {"$exists": True}},
         )
         if not data:
             await ctx.send(
@@ -1122,26 +1112,27 @@ class Games(Cog):
 
             return
         entries = []
-        chess_data = data["chess"]
+        chess_data = data["game_chess_stat"]
         for i in chess_data:
             user1 = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, i["white"]
+                self.bot.get_user, self.bot.fetch_user, i["game_chess_player_1"]
             )
             user2 = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, i["black"]
+                self.bot.get_user, self.bot.fetch_user, i["game_chess_player_2"]
             )
+            if not user1 and not user2:
+                continue
+
             if ctx.author.id in {user1.id, user2.id}:
                 entries.append(
                     f"""**{user1 or 'NA'} vs {user2 or 'NA'}**
-`Winner`: {i["winner"]}
-`Draw  `: {i["draw"]}
+`Winner`: {i["game_chess_winner"]}
 """
                 )
             else:
                 entries.append(
                     f"""{user1 or 'NA'} vs {user2 or 'NA'}
-`Winner`: {i["winner"]}
-`Draw  `: {i["draw"]}
+`Winner`: {i["game_chess_winner"]}
 """
                 )
         p = SimplePages(entries, ctx=ctx)
@@ -1224,51 +1215,7 @@ class Games(Cog):
         `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
-        entries = []
-        i = 1
-        FILTER = {"game_typing_test_played": {"$exists": True}}
-        if flag.me:
-            FILTER["_id"] = ctx.author.id
-        elif not flag._global:
-            FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
-
-        col: Collection = self.bot.game_collections
-
-        async for data in col.find(
-            FILTER,
-        ).sort(f"typing_test.{flag.sort_by}", 1 if flag.order_by == "asc" else -1):
-            user: discord.User = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, data["_id"]
-            )
-            if not user:
-                continue
-
-            if user.id == ctx.author.id:
-                entries.append(
-                    f"""**{user or 'NA'}**
-`Minimum Time`: {round(data["typing_test"]['speed'], 2)} seconds
-`Accuracy    `: {int(data["typing_test"]['accuracy'])} %
-`Word Per Min`: {data["typing_test"]['wpm']}
-"""
-                )
-            else:
-                entries.append(
-                    f"""{user or 'NA'}
-`Minimum Time`: {round(data["typing_test"]['speed'], 2)} seconds
-`Accuracy    `: {int(data["typing_test"]['accuracy'])} %
-`Word Per Min`: {data["typing_test"]['wpm']}
-"""
-                )
-            if i >= flag.limit:
-                break
-            i += 1
-
-        if not entries:
-            await ctx.send(f"{ctx.author.mention} No records found")
-            return
-
-        p = SimplePages(entries, ctx=ctx)
-        await p.start()
+        await self.__test_stats("typing_test", ctx, flag)
 
     @commands.group(
         name="duckduckduckgoose",

@@ -272,7 +272,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                         },
                         "$addToSet": {
                             "game_chess_opponent": {
-                                "$each": [self.white.id, self.black.id]
+                                "$each": [self.white.id, self.black.id].pop(_id)
                             }
                         },
                         "$push": {

@@ -76,6 +76,7 @@ from utilities.config import (
     WEBHOOK_JOIN_LEAVE_LOGS,
     WEBHOOK_STARTUP_LOGS,
     WEBHOOK_VOTE_LOGS,
+    CHANGE_LOG_CHANNEL_ID,
 )
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
@@ -108,7 +109,7 @@ intents.message_content = True  # type: ignore
 
 dbl_token = os.environ["TOPGG"]
 
-CHANGE_LOG_ID = 796932292458315776
+CHANGE_LOG_ID = CHANGE_LOG_CHANNEL_ID
 DEFAULT_PREFIX: Literal["$"] = "$"
 
 logger = logging.getLogger("discord")
@@ -575,7 +576,7 @@ class Parrot(commands.AutoShardedBot):
     async def process_commands(self, message: discord.Message) -> None:
         ctx: Context = await self.get_context(message, cls=Context)
 
-        if ctx.command is None or str(ctx.channel.type) == "public_thread":
+        if ctx.command is None:
             return
 
         if self.UNDER_MAINTENANCE:

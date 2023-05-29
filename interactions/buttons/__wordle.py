@@ -12,7 +12,6 @@ import random
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
-from pymongo.collection import Collection
 
 import discord
 from core import Context, Parrot

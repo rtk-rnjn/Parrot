@@ -1171,10 +1171,11 @@ class Games(Cog):
         """
         await self.__test_stats("memory_test", ctx, flag)
 
-    async def __test_stats(self, name: str, ctx: Context, flag: GameCommandFlag):
+    async def __test_stats(self, game_type: str, ctx: Context, flag: GameCommandFlag):
         entries = []
         i = 1
-        FILTER = {name: {"$exists": True}}
+        sort_by = f"game_{game_type}_{flag.sort_by or 'played'}".replace(' ', '_').lower()
+        FILTER = {sort_by: {"$exists": True}}
         if flag.me:
             FILTER["_id"] = ctx.author.id
         elif not flag._global:
@@ -1182,7 +1183,7 @@ class Games(Cog):
 
         LIMIT = flag.limit or float('inf')
         col: Collection = self.bot.game_collections
-        async for data in col.find(FILTER).sort(name, 1 if flag.order_by == "asc" else -1):
+        async for data in col.find(FILTER).sort(sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING):
             user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
                 ctx.guild, data['_id'], in_guild=False
             )
@@ -1192,13 +1193,13 @@ class Games(Cog):
             if user.id == ctx.author.id:
                 entries.append(
                     f"""**{user or 'NA'}**
-`Minimum Time`: {data[name]}
+`{sort_by.replace('_', ' ').title()}`: {data[sort_by]}
 """
                 )
             else:
                 entries.append(
                     f"""{user or 'NA'}
-`Minimum Time`: {data[name]}
+`{sort_by.replace('_', ' ').title()}`: {data[sort_by]}
 """
                 )
             if i >= LIMIT:

@@ -1861,3 +1861,21 @@ class Moderator(Cog):
                     reason=f"Automod. {target} reached warncount threshold",
                     silent=True,
                 )
+            
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
+    async def nuke(self, ctx: Context):
+        res = await ctx.prompt("Are you sure you want to nuke this channel", delete_after=True)
+        if res:
+            await ctx.send("Nuking channel...")
+            for i in range(1, 4):
+                await ctx.send("# " + str(i))
+                await asyncio.sleep(1)
+            await asyncio.sleep(1)
+            chan = await ctx.channel.clone()
+            await ctx.channel.delete()
+            await chan.send(f"# Hey {ctx.author.mention}, I just nuked {chan.mention}")
+            await chan.send("https://tenor.com/view/chicken-bomb-gif-26332692")
+        else:
+            await ctx.send("Canceled nuke.")

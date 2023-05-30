@@ -326,18 +326,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def _check_gitlink_req(self, message: discord.Message):
         assert message.guild is not None
 
-        if self.bot.opts.get(message.guild.id):
-            return message.author.id in self.bot.opts[message.guild.id].get(
-                "gitlink", []
-            )
+        return self.bot.guild_configurations_cache[message.guild.id]["opts"][
+            "gitlink_enabled"
+        ]
 
     def _check_equation_req(self, message: discord.Message):
         assert message.guild is not None
 
-        if self.bot.opts.get(message.guild.id):
-            return message.author.id in self.bot.opts[message.guild.id].get(
-                "equation", []
-            )
+        return self.bot.guild_configurations_cache[message.guild.id]["opts"][
+            "equation_enabled"
+        ]
 
     async def query_ddg(self, query: str) -> Optional[str]:
         link = f"https://api.duckduckgo.com/?q={query}&format=json&pretty=1"

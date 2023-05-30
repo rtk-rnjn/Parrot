@@ -18,7 +18,6 @@ class User(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-
     @Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):
         pass

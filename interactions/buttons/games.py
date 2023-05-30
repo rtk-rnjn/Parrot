@@ -959,7 +959,11 @@ class Games(Cog):
         """
         user = user or ctx.author
         col: Collection = self.bot.game_collections
-        sort_by = f"game_twenty48_{flag.sort_by.lower()}" if flag.sort_by else "game_twenty48_played"
+        sort_by = (
+            f"game_twenty48_{flag.sort_by.lower()}"
+            if flag.sort_by
+            else "game_twenty48_played"
+        )
         order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
 
         FILTER = {sort_by: {"$exists": True}}
@@ -968,7 +972,7 @@ class Games(Cog):
             FILTER["_id"] = user.id
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
-        LIMIT = flag.limit or float('inf')
+        LIMIT = flag.limit or float("inf")
         entries = []
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
@@ -1058,7 +1062,7 @@ class Games(Cog):
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
-        LIMIT = flag.limit or float('inf')
+        LIMIT = flag.limit or float("inf")
         entries = []
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
@@ -1165,18 +1169,22 @@ class Games(Cog):
     async def __test_stats(self, game_type: str, ctx: Context, flag: GameCommandFlag):
         entries = []
         i = 1
-        sort_by = f"game_{game_type}_{flag.sort_by or 'played'}".replace(' ', '_').lower()
+        sort_by = f"game_{game_type}_{flag.sort_by or 'played'}".replace(
+            " ", "_"
+        ).lower()
         FILTER = {sort_by: {"$exists": True}}
         if flag.me:
             FILTER["_id"] = ctx.author.id
         elif not flag._global:
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
-        LIMIT = flag.limit or float('inf')
+        LIMIT = flag.limit or float("inf")
         col: Collection = self.bot.game_collections
-        async for data in col.find(FILTER).sort(sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING):
+        async for data in col.find(FILTER).sort(
+            sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
+        ):
             user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-                ctx.guild, data['_id'], in_guild=False
+                ctx.guild, data["_id"], in_guild=False
             )
             if user is None:
                 continue

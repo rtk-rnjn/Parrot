@@ -229,7 +229,6 @@ class Parrot(commands.AutoShardedBot):
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: Set[int] = set()
 
-        self.opts: Dict[int, Any] = {}
         self.func: Callable[..., Any] = func
 
         self.before_invoke(self.__before_invoke)
@@ -553,8 +552,6 @@ class Parrot(commands.AutoShardedBot):
         )
         self.afk = set(ls)
 
-        await self.update_opt_in_out.start()
-
         self._was_ready = True
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
@@ -630,11 +627,6 @@ class Parrot(commands.AutoShardedBot):
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
-
-        if guild := self.opts.get(ctx.guild.id):
-            guild: dict
-            if ctx.author.id in guild.get("command", []):
-                return
 
         if not getattr(ctx.cog, "ON_TESTING", False):
             await self.invoke(ctx)
@@ -736,7 +728,10 @@ class Parrot(commands.AutoShardedBot):
                     yield member
 
     async def get_or_fetch_member(
-        self, guild: discord.Guild, member_id: Union[int, discord.Object], in_guild: bool = True
+        self,
+        guild: discord.Guild,
+        member_id: Union[int, discord.Object],
+        in_guild: bool = True,
     ) -> Union[discord.Member, discord.User, None]:
         """|coro|
 
@@ -949,15 +944,6 @@ class Parrot(commands.AutoShardedBot):
             return
         for _data in data["users"]:
             self.banned_users[_data["user_id"]] = _data
-            await asyncio.sleep(0)
-
-    @tasks.loop(count=1)
-    async def update_opt_in_out(self):
-        self.opts = {}
-        async for data in self.extra_collections.find({}):
-            data: Dict[str, Any] = data
-            _id: int = data.pop("_id")
-            self.opts[_id] = data
             await asyncio.sleep(0)
 
     async def __before_invoke(self, ctx: Context):

@@ -70,6 +70,71 @@ class Configuration(Cog):
                 f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n"
             )
 
+    @config.group(name="opt", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt(self, ctx: Context):
+        """To opt in or opt out certain features"""
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
+
+    @config_opt.group(name="in", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt_in(self, ctx: Context):
+        """To opt in certain features of Parrot bot in server"""
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
+
+    @config_opt_in.command(name="github", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt_in_github(self, ctx: Context):
+        """To opt in git link to code block"""
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": True}}, upsert=True
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} enabled gitlink to codeblock in this server"
+        )
+
+    @config_opt_in.command(name="equation", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt_in_equation(self, ctx: Context):
+        """To opt in instant equation solver"""
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": True}}, upsert=True
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} enabled instant equation solver in this server"
+        )
+
+    @config_opt.command(name="out", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt_out(self, ctx: Context):
+        """To opt out certain features of Parrot bot in server"""
+        if ctx.invoked_subcommand is None:
+            await self.bot.invoke_help_command(ctx)
+
+    @config_opt_out.command(name="github", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt_out_github(self, ctx: Context):
+        """To opt out git link to code block"""
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": False}}, upsert=True
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} disabled gitlink to codeblock in this server"
+        )
+
+    @config_opt_out.command(name="equation", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def config_opt_out_equation(self, ctx: Context):
+        """To opt out instant equation solver"""
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": False}}, upsert=True
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} disabled instant equation solver in this server"
+        )
+
     @config.group(name="hub", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True)
@@ -1357,7 +1422,9 @@ class Configuration(Cog):
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                msg: discord.Message = await ctx.wait_for("message", check=check, timeout=60)
+                msg: discord.Message = await ctx.wait_for(
+                    "message", check=check, timeout=60
+                )
                 return msg.content.lower()
             except asyncio.TimeoutError:
                 raise commands.BadArgument(

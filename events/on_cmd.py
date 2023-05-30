@@ -246,5 +246,6 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         else:
             await msg.delete(delay=0)
 
+
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Cmd(bot))

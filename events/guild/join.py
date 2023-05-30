@@ -6,6 +6,7 @@ from typing import Any, Dict
 import discord
 from core import Cog, Parrot
 
+
 class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

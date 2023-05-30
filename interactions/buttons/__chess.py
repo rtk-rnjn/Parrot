@@ -277,11 +277,15 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                         },
                         "$push": {
                             "game_chess_stat": {
-                                "game_chess_winner": kwargs['winner'],
-                                "game_chess_player_1": _id if _id == self.white.id else self.black.id,
-                                "game_chess_player_2": _id if _id == self.black.id else self.white.id,
+                                "game_chess_winner": kwargs["winner"],
+                                "game_chess_player_1": _id
+                                if _id == self.white.id
+                                else self.black.id,
+                                "game_chess_player_2": _id
+                                if _id == self.black.id
+                                else self.white.id,
                             }
-                        }
+                        },
                     },
                     upsert=True,
                 )

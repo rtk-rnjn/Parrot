@@ -644,7 +644,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             events = list(events.items())  # type: ignore
 
         _events: Set[asyncio.Task] = {
-            asyncio.create_task(self.wait_for(event, check=check, timeout=timeout, **kwargs))
+            asyncio.create_task(
+                self.wait_for(event, check=check, timeout=timeout, **kwargs)
+            )
             for event, check in events
         }
 

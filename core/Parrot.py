@@ -920,7 +920,7 @@ class Parrot(commands.AutoShardedBot):
 
         return None
 
-    @tasks.loop()
+    @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
         async def __internal_func():
             if data := await self.guild_configurations.find_one({"_id": guild_id}):
@@ -937,7 +937,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.loop.create_task(__internal_func())
 
-    @tasks.loop()
+    @tasks.loop(count=1)
     async def update_banned_members(self):
         self.banned_users = {}
         data = await self.extra_collections.find_one({"_id": "banned_users"})

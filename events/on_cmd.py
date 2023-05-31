@@ -241,10 +241,11 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             await ctx.wait_for(
                 "message_delete", timeout=30, check=lambda m: m.id == ctx.message.id
             )
-        except asyncio.TimeoutError:
-            raise error
-        else:
             await msg.delete(delay=0)
+        except asyncio.TimeoutError:
+            pass
+        else:
+            raise error
 
 
 async def setup(bot: Parrot) -> None:

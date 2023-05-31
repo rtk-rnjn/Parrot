@@ -920,7 +920,7 @@ class Parrot(commands.AutoShardedBot):
 
         return None
 
-    @tasks.loop(count=1)
+    @tasks.loop()
     async def update_server_config_cache(self, guild_id: int):
         async def __internal_func():
             if data := await self.guild_configurations.find_one({"_id": guild_id}):
@@ -931,12 +931,13 @@ class Parrot(commands.AutoShardedBot):
                 try:
                     await self.guild_configurations.insert_one(FAKE_POST)
                 except pymongo.errors.DuplicateKeyError:
-                    return
-                self.guild_configurations_cache[guild_id] = FAKE_POST
+                    pass
+                finally:
+                    self.guild_configurations_cache[guild_id] = FAKE_POST
 
         self.loop.create_task(__internal_func())
 
-    @tasks.loop(count=1)
+    @tasks.loop()
     async def update_banned_members(self):
         self.banned_users = {}
         data = await self.extra_collections.find_one({"_id": "banned_users"})

@@ -106,7 +106,7 @@ class Configuration(Cog):
             f"{ctx.author.mention} enabled instant equation solver in this server"
         )
 
-    @config_opt.command(name="out", invoke_without_command=True)
+    @config_opt.group(name="out", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_out(self, ctx: Context):
         """To opt out certain features of Parrot bot in server"""

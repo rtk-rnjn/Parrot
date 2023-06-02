@@ -12,7 +12,8 @@ from rapidfuzz import fuzz  # type: ignore
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
-from utilities.constants import Colours
+from utilities.constants import Colours, Month
+from utilities.deco import in_month
 
 NAMES: dict = json.loads(Path(r"extra/pride/drag_queen_names.json").read_text("utf8"))
 VIDEOS: dict = json.loads(Path(r"extra/pride/anthems.json").read_text("utf8"))
@@ -73,6 +74,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
             await target.send("The fact for the selected day is not yet available.")
 
     @commands.command(name="pridefact", aliases=("pridefacts",))
+    @in_month(Month.JUNE)
     async def pridefact(self, ctx: Context, option: str = None) -> None:
         """
         Sends a message with a pride fact of the day.
@@ -93,6 +95,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         return discord.Embed(colour=Colours.pink, title="Pride Fact!", description=fact)
 
     @commands.command(name="dragname", aliases=("dragqueenname", "queenme"))
+    @in_month(Month.JUNE)
     async def dragname(self, ctx: Context) -> None:
         """Sends a message with a drag queen name."""
         await ctx.send(random.choice(NAMES))
@@ -113,6 +116,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         return {}
 
     @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
+    @in_month(Month.JUNE)
     async def prideanthem(self, ctx: Context, genre: str = None) -> None:
         """
         Sends a message with a video of a random pride anthem.
@@ -178,6 +182,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         return embed
 
     @commands.command(aliases=("pl", "prideleader"))
+    @in_month(Month.JUNE)
     async def pride_leader(
         self, ctx: Context, *, pride_leader_name: Optional[str]
     ) -> None:

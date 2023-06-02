@@ -30,7 +30,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         await self.bot.wait_until_ready()
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
-        data = await self.bot.guild_configurations.find_one({"_id": guild_id})
+        data = self.bot.guild_configurations_cache.get(guild_id)
         if not data:
             return
         data = data["ticket_config"]

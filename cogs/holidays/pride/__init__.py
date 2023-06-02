@@ -73,8 +73,8 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         else:
             await target.send("The fact for the selected day is not yet available.")
 
-    @commands.command(name="pridefact", aliases=("pridefacts",))
     @in_month(Month.JUNE)
+    @commands.command(name="pridefact", aliases=("pridefacts",))
     async def pridefact(self, ctx: Context, option: str = None) -> None:
         """
         Sends a message with a pride fact of the day.
@@ -94,8 +94,8 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         """Makes a nice embed for the fact to be sent."""
         return discord.Embed(colour=Colours.pink, title="Pride Fact!", description=fact)
 
-    @commands.command(name="dragname", aliases=("dragqueenname", "queenme"))
     @in_month(Month.JUNE)
+    @commands.command(name="dragname", aliases=("dragqueenname", "queenme"))
     async def dragname(self, ctx: Context) -> None:
         """Sends a message with a drag queen name."""
         await ctx.send(random.choice(NAMES))
@@ -115,8 +115,8 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
             pass
         return {}
 
-    @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
     @in_month(Month.JUNE)
+    @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
     async def prideanthem(self, ctx: Context, genre: str = None) -> None:
         """
         Sends a message with a video of a random pride anthem.
@@ -181,8 +181,8 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         embed.set_thumbnail(url=pride_leader["url"])
         return embed
 
-    @commands.command(aliases=("pl", "prideleader"))
     @in_month(Month.JUNE)
+    @commands.command(aliases=("pl", "prideleader"))
     async def pride_leader(
         self, ctx: Context, *, pride_leader_name: Optional[str]
     ) -> None:

@@ -31,6 +31,8 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
         guild_id = payload.guild_id
         guild = self.bot.get_guild(guild_id)
         data = await self.bot.guild_configurations.find_one({"_id": guild_id})
+        if not data:
+            return
         data = data["ticket_config"]
         user_id = payload.user_id
         member = await self.bot.get_or_fetch_member(guild, user_id)

@@ -61,9 +61,9 @@ PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
 if HEROKU:
     UNLOAD_EXTENSIONS.append("cogs.ipc")
-    LRU_CACHE = 32
-else:
     LRU_CACHE = 128
+else:
+    LRU_CACHE = 256
 
 TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
 

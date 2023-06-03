@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union
@@ -158,11 +159,12 @@ class Cache(dict, Generic[KT, VT]):
         self.get_size: Callable[[], int] = self.__internal_cache.get_size  # type: ignore
         self.set_size: Callable[[int], None] = self.__internal_cache.set_size  # type: ignore
         self.has_key: Callable[[object], bool] = self.__internal_cache.has_key  # type: ignore
-        self.update: Callable[..., None] = self.__internal_cache.update  # type: ignore
         self.values: Callable[[], List[Any]] = self.__internal_cache.values  # type: ignore
         self.keys: Callable[[], List[Any]] = self.__internal_cache.keys  # type: ignore
         self.get: Callable[[object, ...], Any] = self.__internal_cache.get  # type: ignore
         self.pop: Callable[[object, ...], Any] = self.__internal_cache.pop  # type: ignore
+        self.get_stats: Callable[[], Dict[str, Any]] = self.__internal_cache.get_stats  # type: ignore
+        self.set_callback: Callable[[Callable[[KT, VT], Any]], None] = self.__internal_cache.set_callback  # type: ignore
 
     def __repr__(self) -> str:
         return repr(self.__internal_cache)
@@ -181,3 +183,15 @@ class Cache(dict, Generic[KT, VT]):
 
     def __setitem__(self, __k: KT, __v: VT) -> None:
         self.__internal_cache[__k] = __v
+
+    def clear(self) -> None:
+        return self.__internal_cache.clear()
+    
+    def update(self, *args, **kwargs) -> None:
+        return self.__internal_cache.update(*args, **kwargs)
+    
+    def setdefault(self, *args, **kwargs) -> None:
+        return self.__internal_cache.setdefault(*args, **kwargs)
+    
+    def __iter__(self) -> Iterator:
+        return iter(self.__internal_cache)

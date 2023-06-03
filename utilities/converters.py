@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union, Dict
 
 from lru import LRU
 
@@ -163,7 +163,7 @@ class Cache(dict, Generic[KT, VT]):
         self.keys: Callable[[], List[Any]] = self.__internal_cache.keys  # type: ignore
         self.get: Callable[[object, ...], Any] = self.__internal_cache.get  # type: ignore
         self.pop: Callable[[object, ...], Any] = self.__internal_cache.pop  # type: ignore
-        self.get_stats: Callable[[], Dict[str, Any]] = self.__internal_cache.get_stats  # type: ignore
+        self.get_stats: Callable[[], Tuple[int, int]] = self.__internal_cache.get_stats  # type: ignore
         self.set_callback: Callable[[Callable[[KT, VT], Any]], None] = self.__internal_cache.set_callback  # type: ignore
 
     def __repr__(self) -> str:

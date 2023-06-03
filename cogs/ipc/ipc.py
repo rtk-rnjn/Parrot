@@ -256,6 +256,8 @@ class IPCRoutes(Cog):
     async def start_wavelink_nodes(
         self, data: server.IpcServerResponse
     ) -> Dict[str, str]:
+        if self.bot.ON_HEROKU:
+            return {"status": "error: cannot start wavelink on heroku"}
         host = data.host
         port = data.port
         password = data.password

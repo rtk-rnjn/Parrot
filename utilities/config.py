@@ -65,7 +65,8 @@ if HEROKU:
 else:
     LRU_CACHE = 256
 
-TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
+# TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
+TO_LOAD_IPC: bool = True
 
 WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
 WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")

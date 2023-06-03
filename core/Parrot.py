@@ -139,6 +139,10 @@ __all__ = ("Parrot",)
 
 LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
 IPC_PORT = 1730
+LAVALINK_PORT = 1018
+LAVALINK_PASSWORD = "password"
+TOPGG_PORT = 1019
+
 
 
 class Parrot(commands.AutoShardedBot):
@@ -362,14 +366,14 @@ class Parrot(commands.AutoShardedBot):
             # connect to Lavalink server
             print(f"[{self.user.name}] Started IPC Server")
             success = await self.ipc_client.request(
-                "start_wavelink_nodes", host=LOCALHOST, port=1018, password="password"
+                "start_wavelink_nodes", host=LOCALHOST, port=LAVALINK_PORT, password=LAVALINK_PASSWORD
             )
             if success["status"] == "ok":
                 print(f"[{self.user.name}] Wavelink node connected successfully")
 
             # start webserver to receive Top.GG webhooks
             success = await self.ipc_client.request(
-                "start_dbl_server", port=1019, end_point="/dblwebhook"
+                "start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook"
             )
             if success["status"] == "ok":
                 print(f"[{self.user.name}] DBL server started successfully")
@@ -513,12 +517,32 @@ class Parrot(commands.AutoShardedBot):
             )
 
             print(st)
+    
+    async def on_autopost_error(self, exception: Exception) -> None:
+        if self.HAS_TOP_GG:
+            await self._execute_webhook(
+                self._error_log_token,
+                content=f"```css\n{exception}```",
+            )
 
     async def on_dbl_vote(self, data: BotVoteData) -> None:
-        pass
+        if data["type"] == "test":
+            return self.dispatch('dbl_test', data)
+        elif data["type"] == "upvote":
+            user: Optional[discord.User] = self.get_user(int(data["user"]))
+            user = user.name if user is not None else f"Unknown User ({data['user']})"
+
+            await self._execute_webhook(
+                self._vote_log_token,
+                content=f"```css\n{user} ({data['user']}) has upvoted the bot```",
+            )
 
     async def on_dbl_test(self, data: BotVoteData) -> None:
-        pass
+        if data["type"] == "test":
+            await self._execute_webhook(
+                self._vote_log_token,
+                content=f"```css\nReceived a test vote from {data['user']} ({data['user']})```",
+            )
 
     def run(self) -> None:
         """To run connect and login into discord"""

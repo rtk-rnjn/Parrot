@@ -42,7 +42,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         try:
             await ctx.send(embed=self.make_embed(random.choice(previous_facts)))
         except IndexError:
-            await ctx.send("No facts available")
+            await ctx.error("No facts available")
 
     async def send_select_fact(
         self, target: discord.abc.Messageable, _date: Union[str, datetime]

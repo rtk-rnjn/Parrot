@@ -188,7 +188,7 @@ class Configuration(Cog):
         try:
             starboard_data: Dict[
                 str, Union[str, int, List[int], bool, None]
-            ] = self.bot.guild_configurations_cache[ctx.guild.id]["starboard"]
+            ] = self.bot.guild_configurations_cache[ctx.guild.id]["starboard_config"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
 
@@ -223,7 +223,7 @@ class Configuration(Cog):
         """To setup the channel"""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"starboard.channel": channel.id if channel else None}},
+            {"$set": {"starboard_config.channel": channel.id if channel else None}},
         )
         if channel:
             return await ctx.reply(
@@ -238,7 +238,7 @@ class Configuration(Cog):
         difference = duration.dt.timestamp() - ctx.message.created_at.timestamp()
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"starboard.max_duration": difference}},
+            {"$set": {"starboard_config.max_duration": difference}},
         )
         await ctx.reply(
             f"{ctx.author.mention} set the max duration to **{difference}** seconds"
@@ -250,7 +250,7 @@ class Configuration(Cog):
         """To add ignore list"""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"starboard.ignore_channel": channel.id}},
+            {"$addToSet": {"starboard_config.ignore_channel": channel.id}},
         )
         await ctx.reply(
             f"{ctx.author.mention} added {channel.mention} to the ignore list"
@@ -263,7 +263,7 @@ class Configuration(Cog):
     ):
         """To remove the channel from ignore list"""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"starboard.ignore_channel": channel.id}}
+            {"_id": ctx.guild.id}, {"$pull": {"starboard_config.ignore_channel": channel.id}}
         )
         await ctx.reply(
             f"{ctx.author.mention} removed {channel.mention} from the ignore list"
@@ -274,7 +274,7 @@ class Configuration(Cog):
     async def starboard_limit(self, ctx: Context, limit: int = 3):
         """To set the starboard limit"""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard.limit": limit}}
+            {"_id": ctx.guild.id}, {"$set": {"starboard_config.limit": limit}}
         )
         await ctx.reply(f"{ctx.author.mention} set starboard limit to **{limit}**")
 
@@ -283,7 +283,7 @@ class Configuration(Cog):
     async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
         """To lock the starboard channel"""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard.is_locked": toggle}}
+            {"_id": ctx.guild.id}, {"$set": {"starboard_config.is_locked": toggle}}
         )
         await ctx.reply(
             f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}"
@@ -297,10 +297,6 @@ class Configuration(Cog):
         To set the prefix of the bot. Whatever prefix you passed, will be case sensitive.
         It is advised to keep a symbol as a prefix. Must not greater than 6 chars
         """
-        # if len(arg) > 6:
-        #     return await ctx.reply(
-        #         f"{ctx.author.mention} length of prefix can not be more than 6 characters."
-        #     )
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id}, {"$set": {"prefix": arg}}
         )

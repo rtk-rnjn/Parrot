@@ -30,14 +30,14 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
             payload.channel_id
-            in self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+            in self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
                 "ignore_channel"
             ]
         ):
             return
 
         max_duration = (
-            self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
                 "max_duration"
             ]
             or TWO_WEEK
@@ -69,13 +69,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
             payload.channel_id
-            in self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+            in self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
                 "ignore_channel"
             ]
         ):
             return
         max_duration = (
-            self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
                 "max_duration"
             ]
             or TWO_WEEK
@@ -226,7 +226,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         main_message = data["message_id"]["author"]
         try:
             starboard_channel: int = (
-                self.bot.guild_configurations_cache[payload.guild_id]["starboard"][
+                self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
                     "channel"
                 ]
                 or 0
@@ -277,7 +277,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ch, payload.message_id
         )
         try:
-            limit = server_config[payload.guild_id]["starboard"]["limit"] or 0
+            limit = server_config[payload.guild_id]["starboard_config"]["limit"] or 0
         except KeyError:
             return False
         count = await self.get_star_count(msg, from_db=True)
@@ -290,7 +290,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 return False
             try:
                 channel: int = (
-                    server_config[payload.guild_id]["starboard"]["channel"] or 0
+                    server_config[payload.guild_id]["starboard_config"]["channel"] or 0
                 )
             except KeyError:
                 return False
@@ -311,12 +311,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         data = self.bot.guild_configurations
 
         try:
-            locked: bool = data[payload.guild_id]["starboard"]["is_locked"]
+            locked: bool = data[payload.guild_id]["starboard_config"]["is_locked"]
         except KeyError:
             return False
 
         try:
-            channel = data[payload.guild_id]["starboard"]["channel"]
+            channel = data[payload.guild_id]["starboard_config"]["channel"]
         except KeyError:
             return False
         else:
@@ -326,7 +326,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         if not locked:
             try:
-                limit: int = data[payload.guild_id]["starboard"]["limit"] or 0
+                limit: int = data[payload.guild_id]["starboard_config"]["limit"] or 0
             except KeyError:
                 return False
 

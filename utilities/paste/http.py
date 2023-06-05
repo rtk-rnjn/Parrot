@@ -21,7 +21,6 @@ from urllib.parse import quote as _uriquote
 
 import aiohttp
 
-from . import __version__
 from .errors import APIException
 from .utils import MISSING
 
@@ -29,7 +28,7 @@ from .utils import MISSING
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from . import File
+    from .paste import File
 
     T = TypeVar("T")
     Response = Coroutine[None, None, T]
@@ -117,8 +116,8 @@ class HTTPClient:
         self._token: Optional[str] = token
         self._session: Optional[aiohttp.ClientSession] = session
         self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
-        user_agent = "mystbin.py (https://github.com/PythonistaGuild/mystbin.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}"
-        self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+        user_agent = "mystbin.py (https://github.com/PythonistaGuild/mystbin.py) Python/{0[0]}.{0[1]} aiohttp/{1}"
+        self.user_agent: str = user_agent.format(sys.version_info, aiohttp.__version__)
 
     async def close(self) -> None:
         if self._session:

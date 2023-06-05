@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN git-check.sh
+RUN ./git-check.sh
 
 CMD [ "python", "main.py" ]
 

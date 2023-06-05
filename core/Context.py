@@ -400,6 +400,10 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         ]
         await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
+    async def get_or_fetch_message(self, *args: Any, **kwargs: Any) -> Optional[discord.Message]:
+        """Shortcut for bot.get_or_fetch_message(...)"""
+        return await self.bot.get_or_fetch_message(*args, **kwargs)
+
     async def confirm(
         self,
         channel: discord.TextChannel,

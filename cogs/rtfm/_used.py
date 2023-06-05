@@ -243,7 +243,7 @@ async def execute_run(
         # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
         # Or if it floods with more than 40 lines
         # Create a hastebin and send it back
-        link = await bot.mystbin.post(result)
+        link = await bot.mystbin.create_paste(filename="output.txt", content=result)
 
         if link is None:
             output = (

@@ -60,6 +60,7 @@ from time import perf_counter
 from utilities.checks import _can_run
 from utilities.config import (
     CASE_INSENSITIVE,
+    CHANGE_LOG_CHANNEL_ID,
     EXTENSIONS,
     GITHUB,
     HEROKU,
@@ -76,7 +77,6 @@ from utilities.config import (
     WEBHOOK_JOIN_LEAVE_LOGS,
     WEBHOOK_STARTUP_LOGS,
     WEBHOOK_VOTE_LOGS,
-    CHANGE_LOG_CHANNEL_ID,
 )
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
@@ -143,7 +143,6 @@ IPC_PORT = 1730
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
 TOPGG_PORT = 1019
-
 
 
 class Parrot(commands.AutoShardedBot):
@@ -367,7 +366,10 @@ class Parrot(commands.AutoShardedBot):
             # connect to Lavalink server
             print(f"[{self.user.name}] Started IPC Server")
             success = await self.ipc_client.request(
-                "start_wavelink_nodes", host=LOCALHOST, port=LAVALINK_PORT, password=LAVALINK_PASSWORD
+                "start_wavelink_nodes",
+                host=LOCALHOST,
+                port=LAVALINK_PORT,
+                password=LAVALINK_PASSWORD,
             )
             if success["status"] == "ok":
                 print(f"[{self.user.name}] Wavelink node connected successfully")
@@ -473,8 +475,8 @@ class Parrot(commands.AutoShardedBot):
             _FILE: discord.File = discord.File(
                 io.BytesIO(
                     content,
-                    filename=filename or "content.txt",
-                )
+                ),
+                filename=filename or "content.txt",
             )
             _CONTENT = discord.utils.MISSING
 
@@ -518,7 +520,7 @@ class Parrot(commands.AutoShardedBot):
             )
 
             print(st)
-    
+
     async def on_autopost_error(self, exception: Exception) -> None:
         if self.HAS_TOP_GG:
             await self._execute_webhook(
@@ -528,7 +530,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_dbl_vote(self, data: BotVoteData) -> None:
         if data["type"] == "test":
-            return self.dispatch('dbl_test', data)
+            return self.dispatch("dbl_test", data)
         elif data["type"] == "upvote":
             user: Optional[discord.User] = self.get_user(int(data["user"]))
             user = user.name if user is not None else f"Unknown User ({data['user']})"
@@ -974,6 +976,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def __before_invoke(self, ctx: Context):
         if ctx.guild is not None and not ctx.guild.chunked:
+            print(f"[{self.user.name}] Chunking guild {ctx.guild.id}")
             self.loop.create_task(ctx.guild.chunk())
 
     async def dispatch_timer(self):

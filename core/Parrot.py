@@ -138,8 +138,8 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 
 __all__ = ("Parrot",)
 
-LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
-# LOCALHOST = "127.0.0.1"
+# LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
+LOCALHOST = "127.0.0.1"
 IPC_PORT = 1730
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"

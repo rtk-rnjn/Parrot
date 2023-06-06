@@ -366,7 +366,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         channel: commands.Greedy[
-            Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]
+            Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]
         ],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
@@ -374,7 +374,7 @@ class Moderator(Cog):
         """To lock the channel"""
         channel = channel or [ctx.channel]
         for chn in channel:
-            if isinstance(chn, discord.TextChannel):
+            if isinstance(chn, discord.abc.Messageable):
                 await mt._text_lock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
@@ -403,7 +403,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         channel: commands.Greedy[
-            Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]
+            Union[discord.abc.MessageableChannel, discord.VoiceChannel, discord.StageChannel]
         ],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
@@ -411,7 +411,7 @@ class Moderator(Cog):
         """To unlock the channel"""
         channel = channel or [ctx.channel]
         for chn in channel:
-            if isinstance(chn, discord.TextChannel):
+            if isinstance(chn, discord.abc.Messageable):
                 await mt._text_unlock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,

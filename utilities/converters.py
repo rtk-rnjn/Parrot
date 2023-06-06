@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union, Dict
+from typing import Any, Callable, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 from lru import LRU
 
@@ -135,7 +135,7 @@ class MemberID(commands.Converter):
 
 
 def lru_callback(key: KT, value: VT) -> None:
-    value = str(value)[:10]
+    value = str(value)[:20]
     print(f"[Cached] Key: {key} | Value: {value}...")
 
 
@@ -186,12 +186,27 @@ class Cache(dict, Generic[KT, VT]):
 
     def clear(self) -> None:
         return self.__internal_cache.clear()
-    
+
     def update(self, *args, **kwargs) -> None:
         return self.__internal_cache.update(*args, **kwargs)
-    
+
     def setdefault(self, *args, **kwargs) -> None:
         return self.__internal_cache.setdefault(*args, **kwargs)
-    
+
     def __iter__(self) -> Iterator:
         return iter(self.__internal_cache)
+
+
+def text_to_list(
+    text: str, *, number_of_lines: int, prefix: str = "```\n", suffix: str = "\n```"
+) -> List[str]:
+    texts = text.split("\n")
+    ls = []
+    temp = ""
+    for index, text in enumerate(texts):
+        if index % number_of_lines == 0 and index != 0:
+            ls.append(prefix + temp + suffix)
+            temp = ""
+        temp += text + "\n"
+
+    return ls

@@ -19,6 +19,7 @@ from typing import (
     Any,
     AsyncGenerator,
     Awaitable,
+    ByteString,
     Callable,
     Collection,
     Dict,
@@ -437,7 +438,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         webhook_id: Union[str, int] = None,
         webhook_token: Optional[str] = None,
-        content: str,
+        content: Union[str, ByteString],
         force_file: bool = False,
         filename: Optional[str] = None,
         suppressor: Optional[
@@ -453,6 +454,7 @@ class Parrot(commands.AutoShardedBot):
         if webhook_id and webhook_token:
             BASE_URL = "https://discordapp.com/api/webhooks"
             URL = f"{BASE_URL}/{webhook_id}/{webhook_token}"
+
         elif isinstance(webhook, str) and not self.http_session.closed:
             URL = webhook
 
@@ -462,7 +464,7 @@ class Parrot(commands.AutoShardedBot):
         else:
             await self._execute_webhook_from_scratch(
                 webhook,
-                content=content,
+                content=content.decode("utf-8") if isinstance(content, bytes) else str(content),
                 username=kwargs.pop("username", self.user.name),
                 avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
                 **kwargs,
@@ -474,7 +476,7 @@ class Parrot(commands.AutoShardedBot):
         if content and len(content) > 1990 or force_file:
             _FILE: discord.File = discord.File(
                 io.BytesIO(
-                    content,
+                    content.encode("utf-8") if isinstance(content, str) else content
                 ),
                 filename=filename or "content.txt",
             )
@@ -483,7 +485,7 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             try:
                 return await webhook.send(
-                    content=_CONTENT,
+                    content=_CONTENT.encode("utf-8") if isinstance(_CONTENT, str) else _CONTENT,
                     file=_FILE,
                     avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
                     username=kwargs.pop("username", self.user.name),

@@ -15,7 +15,7 @@ with contextlib.suppress(ImportError):
 with open("config.yml", encoding="utf-8", errors="ignore") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
 
-VERSION = "v5.0-alpha.1"
+VERSION = "v5.0-alpha.2"
 
 HEROKU: bool = True
 
@@ -65,8 +65,8 @@ if HEROKU:
 else:
     LRU_CACHE = 256
 
-TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
-# TO_LOAD_IPC: bool = True
+# TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
+TO_LOAD_IPC: bool = True
 
 WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
 WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")

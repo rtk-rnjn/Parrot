@@ -113,9 +113,9 @@ dbl_token = os.environ["TOPGG"]
 CHANGE_LOG_ID = CHANGE_LOG_CHANNEL_ID
 DEFAULT_PREFIX: Literal["$"] = "$"
 
-logger = logging.getLogger("discord")
-logger.setLevel(logging.WARNING)
-logging.getLogger("discord.http").setLevel(logging.WARNING)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logging.getLogger("discord.http").setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
     filename=".discord.log",
@@ -139,7 +139,7 @@ def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
 __all__ = ("Parrot",)
 
 # LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
-LOCALHOST = "127.0.0.1"
+LOCALHOST = "localhost"
 IPC_PORT = 1730
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
@@ -171,6 +171,10 @@ class Parrot(commands.AutoShardedBot):
     owner_ids: Optional[Collection[int]]
 
     voice_clients: List[discord.VoiceProtocol]
+
+    DBL_SERVER_RUNNING: bool = False
+    WAVELINK_NODE_READY: bool = False
+    ON_DOCKER: bool = False
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
@@ -240,7 +244,7 @@ class Parrot(commands.AutoShardedBot):
 
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
-        self.ipc: "ipc.Server" = ipc.Server(
+        self.ipc_server: "ipc.Server" = ipc.Server(
             bot=self,
             host=LOCALHOST,
             port=IPC_PORT,
@@ -362,30 +366,40 @@ class Parrot(commands.AutoShardedBot):
             self.topgg_webhook = topgg.WebhookManager(self)
 
         if self.HAS_IPC:
-            await self.ipc.start()
-            # connect to Lavalink server
-            print(f"[{self.user.name}] Started IPC Server")
-
+            # thing is you cant run localhost inside docker container
+            # so we need to check if we are running inside docker container
+            # just by checking if starting the server fails, and raises OSError
             try:
-                success = await self.ipc_client.request(
-                    "start_wavelink_nodes",
-                    host=LOCALHOST,
-                    port=LAVALINK_PORT,
-                    password=LAVALINK_PASSWORD,
-                )
-                if success["status"] == "ok":
-                    print(f"[{self.user.name}] Wavelink node connected successfully")
+                await self.ipc_server.start()
+                print(f"[{self.user.name}] Started IPC Server")
+            except OSError as e:
+                print(f"[{self.user.name}] Failed to start IPC server")
+                self.ON_DOCKER = True
 
-                # start webserver to receive Top.GG webhooks
-                success = await self.ipc_client.request(
-                    "start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook"
-                )
-                if success["status"] == "ok":
-                    print(f"[{self.user.name}] DBL server started successfully")
-            except aiohttp.ClientConnectionError:
-                print(
-                    f"[{self.user.name}] Failed to connect to Wavelink node or DBL server"
-                )
+            if not self.ON_DOCKER:
+                try:
+                    success = await self.ipc_client.request(
+                        "start_wavelink_nodes",
+                        host=LOCALHOST,
+                        port=LAVALINK_PORT,
+                        password=LAVALINK_PASSWORD,
+                    )
+                    print(f"[{self.user.name}] - Wavelink - {success}")
+
+                    # start webserver to receive Top.GG webhooks
+                    success = await self.ipc_client.request(
+                        "start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook"
+                    )
+                    print(f"[{self.user.name}] - DBL - {success}")
+                except aiohttp.ClientConnectionError as e:
+                    print(
+                        f"[{self.user.name}] Failed to connect to Wavelink node or DBL server"
+                    )
+                    traceback.print_exc()
+                except OSError as e:
+                    print(f"[{self.user.name}] Failed to start IPC server")
+                    self.ON_DOCKER = True
+                    traceback.print_exc()
 
         self.timer_task = self.loop.create_task(self.dispatch_timer())
 
@@ -447,7 +461,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         webhook_id: Union[str, int] = None,
         webhook_token: Optional[str] = None,
-        content: Union[str, ByteString],
+        content: str,
         force_file: bool = False,
         filename: Optional[str] = None,
         suppressor: Optional[
@@ -473,13 +487,12 @@ class Parrot(commands.AutoShardedBot):
         else:
             await self._execute_webhook_from_scratch(
                 webhook,
-                content=content.decode("utf-8")
-                if isinstance(content, bytes)
-                else str(content),
+                content=content,
                 username=kwargs.pop("username", self.user.name),
                 avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
                 **kwargs,
             )
+            return
 
         _CONTENT = content
         _FILE = kwargs.pop("file", discord.utils.MISSING)
@@ -496,9 +509,7 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             try:
                 return await webhook.send(
-                    content=_CONTENT.encode("utf-8")
-                    if isinstance(_CONTENT, str)
-                    else _CONTENT,
+                    content=_CONTENT,
                     file=_FILE,
                     avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
                     username=kwargs.pop("username", self.user.name),
@@ -578,15 +589,21 @@ class Parrot(commands.AutoShardedBot):
         return await super().close()
 
     async def on_ready(self) -> None:
+        # sourcery skip: assign-if-exp, hoist-similar-statement-from-if
+        # sourcery skip: merge-assign-and-aug-assign, remove-redundant-fstring, swap-nested-ifs
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
         if self._was_ready:
             return
-
-        print(f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})")
-        print(
+        ready_up_message = (
+            f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})\n"
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
+        )
+        print(ready_up_message)
+        await self._execute_webhook(
+            self._startup_log_token,
+            content=f"```css\n{ready_up_message}```",
         )
 
         ls: List[Optional[int]] = await self.extra_collections.distinct(
@@ -595,6 +612,44 @@ class Parrot(commands.AutoShardedBot):
         self.afk = set(ls)
 
         self._was_ready = True
+
+        content = "```css\n"
+        if self.WAVELINK_NODE_READY:
+            content += f"- Wavelink Node is ready and running"
+        else:
+            content += f"- Wavelink Node is not running"
+
+        if self.HAS_TOP_GG:
+            if self.DBL_SERVER_RUNNING:
+                content += f"\n- Top.gg server is running"
+            else:
+                content += f"\n- Top.gg server is not running"
+
+        if self.ON_DOCKER:
+            content += f"\n- Running on docker"
+        else:
+            content += f"\n- Running on local machine"
+
+        if self._failed_to_load:
+            content += f"\n- Failed to load {len(self._failed_to_load)} cogs"
+        else:
+            content += f"\n- All cogs loaded successfully"
+        content += "```"
+
+        await self._execute_webhook(self._startup_log_token, content=f"{content}")
+
+        for name, error in self._failed_to_load.items():
+            st = f"```css\n[{self.user.name.title()}] Failed to load {name} cog due to``````py\n{error}```"
+            await self._execute_webhook(self._error_log_token, content=f"{st}")
+
+        # Hmm...
+        cog = self.get_cog("Music")
+        if cog is not None and not self.WAVELINK_NODE_READY:
+            await self.unload_extension("cogs.music")
+            await self._execute_webhook(
+                self._startup_log_token,
+                content="```css\n- Unloaded music cog due to wavelink node not running```",
+            )
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""

@@ -275,10 +275,11 @@ class IPCRoutes(Cog):
                             client_secret=os.environ.get("SPOTIFY_CLIENT_SECRET"),
                         ),
                     )
+            self.bot.WAVELINK_NODE_READY = True
         except Exception as e:
             return {"status": f"error: {e}"}
-        else:
-            return {"status": "ok"}
+        
+        return {"status": "ok"}
 
     @server.route()
     async def start_cricket_api(
@@ -297,6 +298,8 @@ class IPCRoutes(Cog):
             try:
                 self.bot.topgg_webhook.dbl_webhook(end_point, authentication)
                 self.bot.topgg_webhook.run(port)
+
+                self.bot.DBL_SERVER_RUNNING = True
                 return {"status": "ok"}
             except Exception as e:
                 return {"status": f"error: {e}"}
@@ -307,5 +310,6 @@ class IPCRoutes(Cog):
     async def stop_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
         if self.bot.HAS_TOP_GG:
             self.bot.topgg_webhook.close()
+            self.bot.DBL_SERVER_RUNNING = False
             return {"status": "ok"}
         return {"status": "error: no top.gg webhook"}

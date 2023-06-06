@@ -1,20 +1,18 @@
-from __future__ import annotations
-
 import logging
-from typing import Any, Callable, Dict, Iterable, Optional, Self, Tuple
 
-import aiohttp.web  # type: ignore
+import aiohttp.web
+from core import Cog, Parrot
 
-from core import Parrot
-from discord.ext.ipc.errors import JSONEncodeError
+from .errors import *
 
 log = logging.getLogger(__name__)
 
 
-def route(name: Optional[str] = None) -> Callable:
+def route(name=None):
     """
     Used to register a coroutine as an endpoint when you don't have
     access to an instance of :class:`.Server`
+
     Parameters
     ----------
     name: str
@@ -23,10 +21,8 @@ def route(name: Optional[str] = None) -> Callable:
     """
 
     def decorator(func):
-        if not name:
-            Server.ROUTES[func.__name__] = func
-        else:
-            Server.ROUTES[name] = func
+        route_name = name or func.__name__
+        setattr(func, "__ipc_route__", route_name)
 
         return func
 
@@ -34,61 +30,29 @@ def route(name: Optional[str] = None) -> Callable:
 
 
 class IpcServerResponse:
-    def __init__(self, data: Dict[str, Any]) -> None:
+    def __init__(self, data):
         self._json = data
         self.length = len(data)
 
         self.endpoint = data["endpoint"]
 
-        self.__refresh()
-
-    def __refresh(self) -> None:
-        for key, value in self._json["data"].items():
+        for key, value in data["data"].items():
             setattr(self, key, value)
 
-    def __getitem__(self, key: Any) -> Any:
-        data = self._json.__getitem__(key)
-        self.__refresh()
-        return data
+    def to_json(self):
+        return self._json
 
-    def __contains__(self, k: Any) -> bool:
-        return self._json.__contains__(k)
+    def __repr__(self):
+        return "<IpcServerResponse length={0.length}>".format(self)
 
-    def __delitem__(self, k: Any):
-        self._json.__delitem__(k)
-        self.__refresh()
-
-    def __iter__(self) -> Iterable[Tuple[str, Any]]:
-        yield from self._json["data"].items()
-
-    def get(self, k: Any, default: Any = None) -> Any:
-        return self._json.get(k, default)
-
-    def pop(self, k: Any, default: Any = None) -> Any:
-        data = self._json.pop(k, default)
-        self.__refresh()
-        return data
-
-    def __setitem__(self, k: Any, v: Any) -> None:
-        self._json(k, v)
-        self.__refresh()
-
-    def to_json(self) -> Dict[str, Any]:
-        return self._json.get("data", {})
-
-    def __repr__(self) -> str:
-        return (
-            f"<IpcServerResponse length={self.length} {' '.join(f'{k}={v}' for k, v in self._json['data'].items())} "
-            f"endpoint={self.to_json()['endpoint']}>"
-        )
-
-    def __str__(self) -> str:
+    def __str__(self):
         return self.__repr__()
 
 
 class Server:
     """The IPC server. Usually used on the bot process for receiving
     requests from the client.
+
     Attributes
     ----------
     bot: :class:`~discord.ext.commands.Bot`
@@ -106,16 +70,13 @@ class Server:
         The port to run the multicasting server on. Defaults to 20000
     """
 
-    ROUTES = {}
-
     def __init__(
         self,
-        *,
         bot: Parrot,
-        host: str = "localhost",
-        port: int = 1730,
-        secret_key: Optional[str] = None,
-        do_multicast: bool = True,
+        host="localhost",
+        port=8765,
+        secret_key=None,
+        do_multicast=True,
         multicast_port=20000,
     ):
         self.bot = bot
@@ -132,41 +93,75 @@ class Server:
         self.do_multicast = do_multicast
         self.multicast_port = multicast_port
 
-        self.endpoints: Dict[str, Callable] = {}
+        self._add_cog = bot.add_cog
+        bot.add_cog = self.add_cog
+
+        self.endpoints = {}
+        self.sorted_endpoints = {}
+
+    def update_endpoints(self):
+        """Ensures endpoints is up to date"""
+        self.endpoints = {}
+        for routes in self.sorted_endpoints.values():
+            self.endpoints = {**self.endpoints, **routes}
+
+    async def add_cog(self, cog: Cog, *, override: bool = False) -> None:
+        """
+        Hooks into add_cog and allows
+        for easy route finding within classes
+        """
+        await self._add_cog(cog, override=override)
+
+        method_list = [
+            getattr(cog, func)
+            for func in dir(cog)
+            if callable(getattr(cog, func)) and getattr(getattr(cog, func), "__ipc_route__", None)
+        ]
+
+        # Reset endpoints for this class
+        cog_name = cog.__class__.__name__
+        self.sorted_endpoints[cog_name] = {}
+
+        for method in method_list:
+            method_name = getattr(method, "__ipc_route__")
+            if cog_name not in self.sorted_endpoints:
+                self.sorted_endpoints[cog_name] = {}
+            self.sorted_endpoints[cog_name][method_name] = method
+
+        self.update_endpoints()
+
+        log.debug("Updated routes for Cog %s", cog_name)
 
     def route(self, name=None):
         """Used to register a coroutine as an endpoint when you have
         access to an instance of :class:`.Server`.
-        Parameters
-        ----------
-        name: str
-            The endpoint name. If not provided the method name will be used.
         """
 
         def decorator(func):
-            if not name:
-                self.endpoints[func.__name__] = func
-            else:
-                self.endpoints[name] = func
+            route_name = name or func.__name__
+            setattr(func, "__ipc_route__", route_name)
+
+            if "__main__" not in self.sorted_endpoints:
+                self.sorted_endpoints["__main__"] = {}
+
+            self.sorted_endpoints["__main__"][route_name] = func
+
+            self.update_endpoints()
+            log.debug("Added IPC route %s", route_name)
 
             return func
 
         return decorator
 
-    def update_endpoints(self):
-        """Called internally to update the server's endpoints for cog routes."""
-        self.endpoints = {**self.endpoints, **self.ROUTES}
-
-        self.ROUTES = {}
-
     async def handle_accept(self, request):
         """Handles websocket requests from the client process.
+
         Parameters
         ----------
         request: :class:`~aiohttp.web.Request`
             The request made by the client, parsed by aiohttp.
         """
-        self.update_endpoints()
+        log.info("Initiating IPC Server.")
 
         websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
@@ -174,44 +169,43 @@ class Server:
         async for message in websocket:
             request = message.json()
 
+            log.debug("IPC Server < %r", request)
+
             endpoint = request.get("endpoint")
 
             headers = request.get("headers")
 
             if not headers or headers.get("Authorization") != self.secret_key:
+                log.info("Received unauthorized request (Invalid or no token provided).")
                 response = {"error": "Invalid or no token provided.", "code": 403}
-            elif endpoint and endpoint in self.endpoints:
-                server_response = IpcServerResponse(request)
-                try:
-                    arguments = (
-                        (attempted_cls, server_response)
-                        if (
-                            attempted_cls := self.bot.cogs.get(
-                                self.endpoints[endpoint].__qualname__.split(".")[0]
-                            )
-                        )
-                        else (server_response,)
-                    )
-
-                except AttributeError:
-                    # Support base Client
-                    arguments = (server_response,)
-
-                try:
-                    ret = await self.endpoints[endpoint](*arguments)
-                    response = ret
-                except Exception as error:
-                    self.bot.dispatch("ipc_error", endpoint, error)
-
-                    response = {
-                        "error": f"IPC route raised error of type {type(error).__name__}",
-                        "code": 500,
-                    }
-
             else:
-                response = {"error": "Invalid or no endpoint given.", "code": 400}
+                if not endpoint or endpoint not in self.endpoints:
+                    log.info("Received invalid request (Invalid or no endpoint given).")
+                    response = {"error": "Invalid or no endpoint given.", "code": 400}
+                else:
+                    server_response = IpcServerResponse(request)
+
+                    try:
+                        ret = await self.endpoints[endpoint](server_response)
+                        response = ret
+                    except Exception as error:
+                        log.error(
+                            "Received error while executing %r with %r",
+                            endpoint,
+                            request,
+                        )
+                        self.bot.dispatch("ipc_error", endpoint, error)
+
+                        response = {
+                            "error": "IPC route raised error of type {}".format(
+                                type(error).__name__
+                            ),
+                            "code": 500,
+                        }
+
             try:
                 await websocket.send_json(response)
+                log.debug("IPC Server > %r", response)
             except TypeError as error:
                 if str(error).startswith("Object of type") and str(error).endswith(
                     "is not JSON serializable"
@@ -221,25 +215,31 @@ class Server:
                         " If you are trying to send a discord.py object,"
                         " please only send the data you need."
                     )
+                    log.error(error_response)
 
                     response = {"error": error_response, "code": 500}
 
                     await websocket.send_json(response)
+                    log.debug("IPC Server > %r", response)
 
                     raise JSONEncodeError(error_response)
 
     async def handle_multicast(self, request):
         """Handles multicasting websocket requests from the client.
+
         Parameters
         ----------
         request: :class:`~aiohttp.web.Request`
             The request made by the client, parsed by aiohttp.
         """
+        log.info("Initiating Multicast Server.")
         websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
 
         async for message in websocket:
             request = message.json()
+
+            log.debug("Multicast Server < %r", request)
 
             headers = request.get("headers")
 
@@ -252,6 +252,8 @@ class Server:
                     "code": 200,
                 }
 
+            log.debug("Multicast Server > %r", response)
+
             await websocket.send_json(response)
 
     async def __start(self, application, port):
@@ -262,9 +264,10 @@ class Server:
         site = aiohttp.web.TCPSite(runner, self.host, port)
         await site.start()
 
-    async def start(self) -> Self:
+    async def start(self):
         """Starts the IPC server."""
-        self.bot.dispatch("ipc_ready")
+        if self.bot.is_ready():
+            self.bot.dispatch("ipc_ready")
 
         self._server = aiohttp.web.Application()
         self._server.router.add_route("GET", "/", self.handle_accept)
@@ -273,9 +276,6 @@ class Server:
             self._multicast_server = aiohttp.web.Application()
             self._multicast_server.router.add_route("GET", "/", self.handle_multicast)
 
-            self.bot.loop.create_task(
-                self.__start(self._multicast_server, self.multicast_port)
-            )
-        self.bot.loop.create_task(self.__start(self._server, self.port))
+            await self.__start(self._multicast_server, self.multicast_port)
 
-        return self
+        await self.__start(self._server, self.port)

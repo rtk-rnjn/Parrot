@@ -3,7 +3,6 @@ all_extensions:
   - cogs.api
   - cogs.config
   - cogs.fun
-  - cogs.hidden
   - cogs.holidays
   - cogs.holidays.easter
   - cogs.ipc

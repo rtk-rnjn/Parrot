@@ -403,7 +403,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         channel: commands.Greedy[
-            Union[discord.abc.MessageableChannel, discord.VoiceChannel, discord.StageChannel]
+            Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]
         ],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,

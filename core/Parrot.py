@@ -341,11 +341,10 @@ class Parrot(commands.AutoShardedBot):
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
-                print(f"[{self.user.name.title()}] {ext} loaded successfully")
                 self._successfully_loaded.append(ext)
             except (commands.ExtensionFailed, commands.ExtensionNotFound) as e:
                 self._failed_to_load[ext] = str(e)
-                # traceback.print_exc()
+                traceback.print_exc()
                 print(f"[{self.user.name.title()}] {ext} failed to load")
             else:
                 if ext in UNLOAD_EXTENSIONS:
@@ -366,25 +365,35 @@ class Parrot(commands.AutoShardedBot):
             await self.ipc.start()
             # connect to Lavalink server
             print(f"[{self.user.name}] Started IPC Server")
-            success = await self.ipc_client.request(
-                "start_wavelink_nodes",
-                host=LOCALHOST,
-                port=LAVALINK_PORT,
-                password=LAVALINK_PASSWORD,
-            )
-            if success["status"] == "ok":
-                print(f"[{self.user.name}] Wavelink node connected successfully")
 
-            # start webserver to receive Top.GG webhooks
-            success = await self.ipc_client.request(
-                "start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook"
-            )
-            if success["status"] == "ok":
-                print(f"[{self.user.name}] DBL server started successfully")
+            try:
+                success = await self.ipc_client.request(
+                    "start_wavelink_nodes",
+                    host=LOCALHOST,
+                    port=LAVALINK_PORT,
+                    password=LAVALINK_PASSWORD,
+                )
+                if success["status"] == "ok":
+                    print(f"[{self.user.name}] Wavelink node connected successfully")
+
+                # start webserver to receive Top.GG webhooks
+                success = await self.ipc_client.request(
+                    "start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook"
+                )
+                if success["status"] == "ok":
+                    print(f"[{self.user.name}] DBL server started successfully")
+            except aiohttp.ClientConnectionError:
+                print(
+                    f"[{self.user.name}] Failed to connect to Wavelink node or DBL server"
+                )
+
         self.timer_task = self.loop.create_task(self.dispatch_timer())
 
-        async for data in self.guild_configurations.find({}):
-            self.guild_configurations_cache[data["_id"]] = data
+        async def __laod_cache():
+            async for data in self.guild_configurations.find({}):
+                self.guild_configurations_cache[data["_id"]] = data
+
+        self.loop.create_task(__laod_cache())
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -464,7 +473,9 @@ class Parrot(commands.AutoShardedBot):
         else:
             await self._execute_webhook_from_scratch(
                 webhook,
-                content=content.decode("utf-8") if isinstance(content, bytes) else str(content),
+                content=content.decode("utf-8")
+                if isinstance(content, bytes)
+                else str(content),
                 username=kwargs.pop("username", self.user.name),
                 avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
                 **kwargs,
@@ -485,7 +496,9 @@ class Parrot(commands.AutoShardedBot):
         if webhook is not None:
             try:
                 return await webhook.send(
-                    content=_CONTENT.encode("utf-8") if isinstance(_CONTENT, str) else _CONTENT,
+                    content=_CONTENT.encode("utf-8")
+                    if isinstance(_CONTENT, str)
+                    else _CONTENT,
                     file=_FILE,
                     avatar_url=kwargs.pop("avatar_url", self.user.avatar.url),
                     username=kwargs.pop("username", self.user.name),
@@ -588,7 +601,7 @@ class Parrot(commands.AutoShardedBot):
         print(f"[{self.user.name}] Wavelink Node is ready: {node}")
 
     async def on_connect(self) -> None:
-        print(f"[{self.user.name.title()}] [{self.shard_id}] Logged in")
+        print(f"[{self.user.name.title()}] Bot connected to discord")
         return
 
     async def on_disconnect(self) -> None:

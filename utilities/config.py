@@ -59,14 +59,9 @@ SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
-if HEROKU:
-    UNLOAD_EXTENSIONS.append("cogs.ipc")
-    LRU_CACHE = 128
-else:
-    LRU_CACHE = 256
-
-# TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
-TO_LOAD_IPC: bool = True
+LRU_CACHE = 128 if HEROKU else 256
+TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
+# TO_LOAD_IPC: bool = True
 
 WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
 WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")

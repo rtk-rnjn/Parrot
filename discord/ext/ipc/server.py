@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, Optional, Self, Tuple
 
 import aiohttp.web  # type: ignore
 
@@ -262,9 +262,9 @@ class Server:
         site = aiohttp.web.TCPSite(runner, self.host, port)
         await site.start()
 
-    async def start(self):
+    async def start(self) -> Self:
         """Starts the IPC server."""
-        # self.bot.dispatch("ipc_ready")
+        self.bot.dispatch("ipc_ready")
 
         self._server = aiohttp.web.Application()
         self._server.router.add_route("GET", "/", self.handle_accept)
@@ -277,3 +277,5 @@ class Server:
                 self.__start(self._multicast_server, self.multicast_port)
             )
         self.bot.loop.create_task(self.__start(self._server, self.port))
+
+        return self

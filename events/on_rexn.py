@@ -45,6 +45,17 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
             return
+        
+        self_star = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
+            "can_self_star"
+        ] or False
+
+        msg: discord.Message = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
+        if not msg:
+            return  # rare case
+        
+        if payload.user_id == msg.author.id and not self_star:
+            return
 
         collection: Collection = self.bot.starboards
         data = await collection.find_one_and_update(
@@ -81,6 +92,17 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             or TWO_WEEK
         )
         if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
+            return
+        
+        self_star = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
+            "can_self_star"
+        ] or False
+        
+        msg: discord.Message = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
+        if not msg:
+            return  # rare case
+        
+        if payload.user_id == msg.author.id and not self_star:
             return
 
         collection: Collection = self.bot.starboards
@@ -251,6 +273,12 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         embed: discord.Embed = msg.embeds[0]
 
         count = await self.get_star_count(msg, from_db=True)
+
+        if count == 0:
+            await self.bot.starboards.delete_one({"message_id.bot": msg.id})
+            await msg.delete(delay=0)
+            return False
+
         embed.color = self.star_gradient_colour(count)
 
         await msg.edit(

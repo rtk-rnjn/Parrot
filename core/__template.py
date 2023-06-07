@@ -51,6 +51,7 @@ post: Dict[str, Any] = {
         "ignore_channel": [],
         "max_duration": None,
         "channel": None,
+        "can_self_star": True,
     },
     "leveling": {
         "enable": False,

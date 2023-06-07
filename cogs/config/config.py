@@ -205,14 +205,16 @@ class Configuration(Cog):
             ]
         )
         max_duration: Optional[str] = starboard_data.get("max_duration")
+        can_self_star: Optional[bool] = starboard_data.get("can_self_star")
 
         return await ctx.reply(
             f"Configuration of this server [starboard]\n\n"
-            f"`Channel :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
-            f"`Limit   :` **{limit}**\n"
-            f"`Locked  :` **{is_locked}**\n"
-            f"`Ignore  :` **{ignore_channel or 'None'}**\n"
-            f"`Duration:` **{max_duration}**\n"
+            f"`Channel  :` **{channel.mention if channel else 'None'} ({starboard_data.get('channel')})**\n"
+            f"`Limit    :` **{limit}**\n"
+            f"`Locked   :` **{is_locked}**\n"
+            f"`Ignore   :` **{ignore_channel or 'None'}**\n"
+            f"`Duration :` **{max_duration}**\n"
+            f"`Self Star:` **{can_self_star}**\n"
         )
 
     @starboard.command(name="channel")
@@ -287,6 +289,17 @@ class Configuration(Cog):
         )
         await ctx.reply(
             f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}"
+        )
+
+    @starboard.command(name="selfstar", aliases=["self-star"])
+    @commands.has_permissions(administrator=True)
+    async def starboard_self_star(self, ctx: Context, *, toggle: convert_bool = False):
+        """To allow self star"""
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id}, {"$set": {"starboard_config.can_self_star": toggle}}
+        )
+        await ctx.reply(
+            f"{ctx.author.mention} self star is now {'enabled' if toggle else 'disabled'}"
         )
 
     @config.command(aliases=["prefix"])

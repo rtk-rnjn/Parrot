@@ -878,6 +878,7 @@ class Parrot(commands.AutoShardedBot):
         cache: bool = True,
         partial: bool = False,
         force_fetch: bool = False,
+        dm_allowed: bool = False,
     ) -> Union[discord.Message, discord.PartialMessage, None]:
         """|coro|
 
@@ -916,7 +917,10 @@ class Parrot(commands.AutoShardedBot):
             else:
                 channel = self.get_channel(channel.id)
 
-        channel: discord.TextChannel = channel  # type: ignore
+        if isinstance(channel, discord.DMChannel) and not dm_allowed:
+            raise ValueError("DMChannel is not allowed")
+
+        channel: discord.abc.Messageable = channel  # type: ignore
         if force_fetch:
             msg = await channel.fetch_message(message)  # type: ignore
             self.message_cache[message] = msg

@@ -20,7 +20,7 @@ with open(r"extra/user_agents.txt", encoding="utf-8", errors="ignore") as f:
 def date_parser(arg: Optional[str] = None) -> str:
     """Validate whether the given string is in YYYY-MM-DD format."""
     if arg is None:
-        return datetime.now().strftime("%Y-%m-%d")
+        return discord.utils.utcnow().strftime("%Y-%m-%d")
     try:
         datetime.strptime(arg, "%Y-%m-%d")
     except ValueError:

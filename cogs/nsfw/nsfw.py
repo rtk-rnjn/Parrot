@@ -90,8 +90,8 @@ class NSFW(Cog):
         """
         if subreddit is None:
             subreddit = "NSFW"
-        end = time.time() + 60
-        while time.time() < end:
+        end = discord.utils.utcnow().timestamp() + 60
+        while discord.utils.utcnow().timestamp() < end:
             url = f"https://memes.blademaker.tv/api/{subreddit}"
             r = await self.bot.http_session.get(url)
             if r.status == 200:

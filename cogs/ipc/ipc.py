@@ -278,7 +278,7 @@ class IPCRoutes(Cog):
             self.bot.WAVELINK_NODE_READY = True
         except Exception as e:
             return {"status": f"error: {e}"}
-        
+
         return {"status": "ok"}
 
     @server.route()

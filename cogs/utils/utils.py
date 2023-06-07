@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import logging
 from itertools import zip_longest
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -18,6 +19,8 @@ from utilities.converters import convert_bool
 from utilities.formats import TabularData
 from utilities.rankcard import rank_card
 from utilities.time import ShortTime
+
+log = logging.getLogger("cogs.utils.utils")
 
 
 class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
@@ -83,15 +86,20 @@ class Utils(Cog):
                 content=task or "...",
                 message=ctx.message,
             )
+            log.info(
+                "Created a reminder for %s. reminder exipres at %s", ctx.author, seconds
+            )
 
     @remindme.command(name="list", aliases=["all"])
     @Context.with_type
     async def _list(self, ctx: Context) -> None:
         """To get all your reminders"""
         ls = []
+        log.info("Fetching reminders for %s from database.", ctx.author)
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
             ls.append(
-                f"<t:{int(data['expires_at'])}:R>\n> [{data['content']}]({data['messageURL']})"
+                f"<t:{int(data['expires_at'])}:R> - Where To? {data.get('guild', 'Failed to fetch')}\n"
+                f"> [{data['content']}]({data['messageURL']})"
             )
         if not ls:
             await ctx.send(f"{ctx.author.mention} you don't have any reminders")
@@ -103,8 +111,16 @@ class Utils(Cog):
     @Context.with_type
     async def delremind(self, ctx: Context, message: int) -> None:
         """To delete the reminder"""
-        await self.delete_timer(_id=message)
-        await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
+        log.info("Deleting reminder of message id %s", message)
+        delete_result = await self.delete_timer(_id=message)
+        if delete_result.deleted_count == 0:
+            await ctx.reply(
+                f"{ctx.author.mention} failed to delete reminder of ID: **{message}**"
+            )
+        else:
+            await ctx.reply(
+                f"{ctx.author.mention} deleted reminder of ID: **{message}**"
+            )
 
     @remindme.command(name="dm")
     @Context.with_type
@@ -129,6 +145,9 @@ class Utils(Cog):
             content=task or "...",
             message=ctx.message,
             dm_notify=True,
+        )
+        log.info(
+            "Created a reminder for %s. reminder exipres at %s", ctx.author, seconds
         )
 
     @remindme.command(name="loop", aliases=["repeat"])
@@ -164,6 +183,11 @@ class Utils(Cog):
             "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(when)}},
         }
         await self.collection.insert_one(post)
+        log.info(
+            "Created a loop reminder for %s. reminder exipres at %s",
+            ctx.author,
+            seconds,
+        )
         text = (
             f"{ctx.author.mention} Alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
             f"within **<t:{int(seconds)}:R>**. To delete your reminder consider typing ```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"

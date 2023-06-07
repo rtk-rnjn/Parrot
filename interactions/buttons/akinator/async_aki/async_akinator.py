@@ -3,6 +3,7 @@ import re
 import time
 
 import aiohttp
+import discord
 
 from ..exceptions import CantGoBackAnyFurther
 from ..utils import ans_to_id, get_lang_and_theme, raise_connection_error
@@ -140,7 +141,7 @@ class Akinator:
         The "child_mode" parameter is False by default. If it's set to True, then Akinator won't ask questions about things that are NSFW
         The "client_session" parameter is where you can optionally specify an aiohttp ClientSession for the class functions to use when making API requests. If unspecified, a new ClientSession will be created
         """
-        self.timestamp = time.time()
+        self.timestamp = discord.utils.utcnow().timestamp()
         self.client_session = client_session or aiohttp.ClientSession()
         region_info = await self._auto_get_region(
             get_lang_and_theme(language)["lang"], get_lang_and_theme(language)["theme"]

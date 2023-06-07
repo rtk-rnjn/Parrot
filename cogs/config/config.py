@@ -265,7 +265,8 @@ class Configuration(Cog):
     ):
         """To remove the channel from ignore list"""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"starboard_config.ignore_channel": channel.id}}
+            {"_id": ctx.guild.id},
+            {"$pull": {"starboard_config.ignore_channel": channel.id}},
         )
         await ctx.reply(
             f"{ctx.author.mention} removed {channel.mention} from the ignore list"

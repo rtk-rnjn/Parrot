@@ -41,7 +41,7 @@ class ShortTime:
             )
 
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
-        now = now or datetime.datetime.now(datetime.timezone.utc)
+        now = now or discord.utils.utcnow()
         self.dt: datetime.datetime = now + relativedelta(**data)
 
     def __str__(self) -> str:

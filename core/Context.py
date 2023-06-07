@@ -6,6 +6,7 @@ import asyncio
 import datetime
 import functools
 import io
+import logging
 import time
 from contextlib import suppress
 from operator import attrgetter
@@ -57,6 +58,7 @@ Callback = MaybeAwaitable
 # BotT = TypeVar("BotT", bound=commands.Bot)
 
 # VOTER_ROLE_ID = 836492413312040990
+log = logging.getLogger("core.context")
 
 
 class Context(commands.Context[commands.Bot], Generic[T]):
@@ -81,7 +83,10 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         self.user_collection: MongoCollection = self.bot.user_db[f"{self.author.id}"]
 
     def __repr__(self) -> str:
-        return f"<core.Context author={self.author} guild={self.guild} channel={self.channel} command={self.command}>"
+        return (
+            f"<core.Context author=`{self.author}` ({self.author.id}) guild=`{self.guild}` ({getattr(self.guild, 'id')}) "
+            f"channel=`{self.channel}` ({self.channel.id}) command={getattr(self.command, 'qualified_name')}>"
+        )
 
     @property
     def session(self) -> "aiohttp.ClientSession":
@@ -93,11 +98,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
 
     async def ok(self) -> None:
+        log.info("Adding ok reaction to message %s", self.message.id)
         return await self.tick()
 
     async def wrong(
         self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None
     ) -> None:
+        log.info("Adding wrong reaction to message %s", self.message.id)
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
 
     async def cross(self) -> None:
@@ -257,6 +264,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             if isinstance(embeds, discord.Embed):
                 __set_embed_defaults(embeds)
 
+        log.info("Sending message to channel `%s` (%s)", self.channel, self.channel.id)
         return await super().send(str(content)[:1990] if content else None, **kwargs)
 
     async def reply(
@@ -400,7 +408,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         ]
         await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
-    async def get_or_fetch_message(self, *args: Any, **kwargs: Any) -> Optional[discord.Message]:
+    async def get_or_fetch_message(
+        self, *args: Any, **kwargs: Any
+    ) -> Optional[discord.Message]:
         """Shortcut for bot.get_or_fetch_message(...)"""
         return await self.bot.get_or_fetch_message(*args, **kwargs)
 
@@ -700,13 +710,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         done_result: List[Any] = []
 
         _for = _for or 0
-        now = time.time() + _for
+        now = discord.utils.utcnow().timestamp() + _for
 
         def __internal_appender(completed_result: Iterable[asyncio.Task]) -> None:
             for task in completed_result:
                 done_result.append(task.result())
 
-        while time.time() <= now:
+        while discord.utils.utcnow().timestamp() <= now:
             done, _ = await self.multiple_wait_for(
                 events, return_when="FIRST_COMPLETED", **kwargs
             )
@@ -814,7 +824,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         cmd = self.command.qualified_name
         cmd = cmd.replace(" ", "_")
-        now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        now = discord.utils.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
         if error:
             kwargs["$addToSet"] = {

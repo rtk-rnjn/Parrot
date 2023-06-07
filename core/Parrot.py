@@ -125,10 +125,14 @@ handler = logging.handlers.RotatingFileHandler(
 )
 dt_fmt = "%Y-%m-%d %H:%M:%S"
 formatter = logging.Formatter(
-    "[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{"
+    "[{asctime}] [{levelname:<8}] {name:<30}: {name}.{module}.{funcName} - \t\t {message}",
+    dt_fmt,
+    style="{",
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+log = logging.getLogger("core.parrot")
 
 
 @ToAsync()
@@ -216,6 +220,8 @@ class Parrot(commands.AutoShardedBot):
         self._was_ready: bool = False
         self.lock: "asyncio.Lock" = asyncio.Lock()
         self.timer_task: Optional[asyncio.Task] = None
+        self._current_timers: Dict = {}
+        self._have_data: asyncio.Event = asyncio.Event()
         self.reminder_event: asyncio.Event = asyncio.Event()
         self.ON_HEROKU: bool = HEROKU
 
@@ -325,6 +331,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def change_log(self) -> Optional[discord.Message]:
         """For the command `announcement` to let the users know the most recent change"""
+        log.info("Getting recent message from channel %s", CHANGE_LOG_ID)
         if not self._change_log:
             self._change_log = [
                 msg async for msg in self.get_channel(CHANGE_LOG_ID).history(limit=1)
@@ -349,11 +356,11 @@ class Parrot(commands.AutoShardedBot):
             except (commands.ExtensionFailed, commands.ExtensionNotFound) as e:
                 self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
-                print(f"[{self.user.name.title()}] {ext} failed to load")
+                log.error("Failed to load extension %s", ext)
             else:
                 if ext in UNLOAD_EXTENSIONS:
                     await self.unload_extension(ext)
-                    print(f"[{self.user.name.title()}] {ext} unloaded successfully")
+                    log.warn("Unloaded extension %s", ext)
 
         if self.HAS_TOP_GG:
             self.topgg = topgg.DBLClient(
@@ -371,9 +378,9 @@ class Parrot(commands.AutoShardedBot):
             # just by checking if starting the server fails, and raises OSError
             try:
                 await self.ipc_server.start()
-                print(f"[{self.user.name}] Started IPC Server")
+                log.info("IPC server started")
             except OSError as e:
-                print(f"[{self.user.name}] Failed to start IPC server")
+                log.warn("Failed to start IPC server")
                 self.ON_DOCKER = True
 
             if not self.ON_DOCKER:
@@ -384,26 +391,25 @@ class Parrot(commands.AutoShardedBot):
                         port=LAVALINK_PORT,
                         password=LAVALINK_PASSWORD,
                     )
-                    print(f"[{self.user.name}] - Wavelink - {success}")
+                    log.info("Wavelink nodes started: %s", success)
 
                     # start webserver to receive Top.GG webhooks
                     success = await self.ipc_client.request(
                         "start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook"
                     )
-                    print(f"[{self.user.name}] - DBL - {success}")
+                    log.info("Top.GG webhook server started: %s", success)
                 except aiohttp.ClientConnectionError as e:
-                    print(
-                        f"[{self.user.name}] Failed to connect to Wavelink node or DBL server"
-                    )
+                    log.warn("Failed to start IPC server")
                     traceback.print_exc()
                 except OSError as e:
-                    print(f"[{self.user.name}] Failed to start IPC server")
+                    log.warn("Failed to start IPC server")
                     self.ON_DOCKER = True
                     traceback.print_exc()
 
         self.timer_task = self.loop.create_task(self.dispatch_timer())
 
         async def __laod_cache():
+            log.info("Fetching guild configurations from database")
             async for data in self.guild_configurations.find({}):
                 self.guild_configurations_cache[data["_id"]] = data
 
@@ -448,10 +454,15 @@ class Parrot(commands.AutoShardedBot):
             payload["avatar_url"] = avatar_url
 
         if self.http_session.closed:
+            log.info("HTTP session is closed. Creating new session")
             async with aiohttp.ClientSession() as session:
+                log.info(
+                    "Executing webhook from scratch (%s). Payload: %s", URL, payload
+                )
                 async with session.post(URL, json=payload) as resp:
                     return await resp.json()
         else:
+            log.info("Executing webhook from scratch (%s). Payload: %s", URL, payload)
             async with self.http_session.post(URL, json=payload) as resp:
                 return await resp.json()
 
@@ -475,6 +486,7 @@ class Parrot(commands.AutoShardedBot):
             )
 
         if webhook_id and webhook_token:
+            log.info("Executing webhook with webhook_id and webhook_token")
             BASE_URL = "https://discordapp.com/api/webhooks"
             URL = f"{BASE_URL}/{webhook_id}/{webhook_token}"
 
@@ -508,6 +520,11 @@ class Parrot(commands.AutoShardedBot):
 
         if webhook is not None:
             try:
+                log.info(
+                    "Executing webhook with discord.Webhook (%s). Content: %s",
+                    webhook.url,
+                    content,
+                )
                 return await webhook.send(
                     content=_CONTENT,
                     file=_FILE,
@@ -520,7 +537,7 @@ class Parrot(commands.AutoShardedBot):
         return None
 
     async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
-        print(f"Ignoring exception in {event}", file=sys.stderr)
+        log.error("Ignoring exception in %s", event, exc_info=True)
         await self._execute_webhook(
             WEBHOOK_ERROR_LOGS,
             content=f"```py\n{traceback.format_exc()}```",
@@ -544,8 +561,11 @@ class Parrot(commands.AutoShardedBot):
                 self._startup_log_token,
                 content=f"```css\n{st}```",
             )
-
-            print(st)
+            log.info(
+                "Posted server count (%s), shard count (%s)",
+                self.topgg.guild_count,
+                self.shard_count,
+            )
 
     async def on_autopost_error(self, exception: Exception) -> None:
         if self.HAS_TOP_GG:
@@ -553,6 +573,7 @@ class Parrot(commands.AutoShardedBot):
                 self._error_log_token,
                 content=f"```css\n{exception}```",
             )
+            log.error("Failed to post server count (%s)", exception, exc_info=True)
 
     async def on_dbl_vote(self, data: BotVoteData) -> None:
         if data["type"] == "test":
@@ -600,15 +621,18 @@ class Parrot(commands.AutoShardedBot):
             f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})\n"
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
         )
-        print(ready_up_message)
         await self._execute_webhook(
             self._startup_log_token,
             content=f"```css\n{ready_up_message}```",
         )
 
+        log.info("Ready: %s (ID: %s)", self.user, self.user.id)
+
+        log.info("Getting all afk users from database")
         ls: List[Optional[int]] = await self.extra_collections.distinct(
             "afk.messageAuthor"
         )
+        log.info("Got all afk users from database: %s", ls)
         self.afk = set(ls)
 
         self._was_ready = True
@@ -653,18 +677,18 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f"[{self.user.name}] Wavelink Node is ready: {node}")
+        log.info("Wavelink node %s is ready", node.id)
 
     async def on_connect(self) -> None:
-        print(f"[{self.user.name.title()}] Bot connected to discord")
+        log.info("Connected to discord")
         return
 
     async def on_disconnect(self) -> None:
-        print(f"[{self.user.name.title()}] disconnect from discord")
+        log.info("Disconnected from discord")
         return
 
     async def on_shard_resumed(self, shard_id: int) -> None:
-        print(f"[{self.user.name.title()}] Shard ID {shard_id} has resumed...")
+        log.info("Shard %s has resumed", shard_id)
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def process_commands(self, message: discord.Message) -> None:
@@ -674,6 +698,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.UNDER_MAINTENANCE:
+            log.info("Bot is under maintenance, ignoring command. Context %s", ctx)
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot under maintenance!",
@@ -705,6 +730,7 @@ class Parrot(commands.AutoShardedBot):
         if retry_after:
             self._auto_spam_count[author_id] += 1
             if self._auto_spam_count[author_id] >= 3:
+                log.info("Auto spam detected, ignoring command. Context %s", ctx)
                 return
         else:
             self._auto_spam_count.pop(author_id, None)
@@ -720,12 +746,17 @@ class Parrot(commands.AutoShardedBot):
                     return
             can_run: Optional[bool] = _can_run(ctx)
             if can_run is False:
+                log.info(
+                    "User %s is blacklisted or command is blocked, ignoring command. Context %s",
+                    ctx,
+                )
                 return await ctx.reply(
                     f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
 
         if not getattr(ctx.cog, "ON_TESTING", False):
+            log.info("Processing command %s. Context %s", ctx.command, ctx)
             await self.invoke(ctx)
 
         return
@@ -934,7 +965,9 @@ class Parrot(commands.AutoShardedBot):
             return channel.get_partial_message(message)  # type: ignore
 
         try:
-            return self.message_cache[message]
+            msg = self.message_cache[message]
+            log.info("Got message from cache %s", msg)
+            return msg
         except KeyError:
             if fetch:
                 async for msg in channel.history(  # type: ignore
@@ -1000,6 +1033,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         force_fetch: bool = True,
     ) -> Any:
+        log.info("Force fetch: %s", force_fetch)
         if _id is None:
             something = None
             if not callable(get_function):
@@ -1009,24 +1043,42 @@ class Parrot(commands.AutoShardedBot):
                 and something is None
                 and force_fetch
             ):
+                log.info(
+                    "Fetching data. function: %s",
+                    fetch_function.__name__,
+                )
                 return await fetch_function
+
+            log.info("Returning data. function: %s", get_function.__name__)
             return something
 
         with suppress(discord.HTTPException):
             _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
             if something is None and force_fetch and callable(fetch_function):
+                log.info(
+                    "Fetching data. function: %s",
+                    fetch_function.__name__,
+                )
                 return await fetch_function(_id)
+            log.info("Returning data. function: %s", get_function.__name__)
             return something
 
+        log.info(
+            "Returning None. functions: %s, %s",
+            get_function.__name__,
+            fetch_function.__name__,
+        )
         return None
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
         async def __internal_func():
+            log.info("Updating server config cache for guild %s", guild_id)
             if data := await self.guild_configurations.find_one({"_id": guild_id}):
                 self.guild_configurations_cache[guild_id] = data
             else:
+                log.info("Guild %s not found in database, creating new one", guild_id)
                 FAKE_POST = POST.copy()
                 FAKE_POST["_id"] = guild_id
                 try:
@@ -1050,39 +1102,83 @@ class Parrot(commands.AutoShardedBot):
 
     async def __before_invoke(self, ctx: Context):
         if ctx.guild is not None and not ctx.guild.chunked:
-            print(f"[{self.user.name}] Chunking guild {ctx.guild.id}")
             self.loop.create_task(ctx.guild.chunk())
 
+    async def get_active_timer(self) -> dict:
+        data = await self.timers.find_one({}, sort=[("expires_at", pymongo.ASCENDING)])
+        log.info("Received data: %s", data)
+        return data
+
+    async def wait_for_active_timers(self) -> None:
+        timers = await self.get_active_timer()
+        if timers:
+            self._have_data.set()
+            log.info("Event set")
+            return timers
+
+        self._have_data.clear()
+        log.info("Event cleared")
+        self._current_timers = None
+        log.info(
+            "Current timers set to None",
+        )
+        await self._have_data.wait()
+        log.info("Event waited")
+        return await self.get_active_timer()
+
     async def dispatch_timer(self):
+        log.info("Starting timer task")
         try:
             while not self.is_closed():
-                await self.dispatch_timer_complete()
+                timers = self._current_timers = await self.wait_for_active_timers()
+                log.info(
+                    "Received timers: %s",
+                    timers,
+                )
+                now = discord.utils.utcnow().timestamp()
+
+                if timers is None:
+                    continue
+
+                if timers["expires_at"] > now:
+                    log.info(
+                        "Sleeping for %s seconds",
+                        timers["expires_at"] - now,
+                    )
+                    await asyncio.sleep(timers["expires_at"] - now)
+
+                await self.call_timer(self.timers, **timers)
+
                 await asyncio.sleep(0)
-        except (OSError, discord.ConnectionClosed):
+        except (OSError, discord.ConnectionClosed, pymongo.errors.ConnectionFailure):
             self.timer_task.cancel()
             self.timer_task = self.loop.create_task(self.dispatch_timer())
         except asyncio.CancelledError:
             raise
 
-    async def dispatch_timer_complete(self):
-        collection: MongoCollection = self.timers
-        now = discord.utils.utcnow().timestamp()
+    async def call_timer(self, collection: MongoCollection, **data: Any):
+        log.info("Calling timer: %s", data)
+        deleted: pymongo.results.DeleteResult = await collection.delete_one(
+            {"_id": data["_id"]}
+        )
 
-        now_plus_40_days = now + 3456000
+        log.info("Deleted timer: %s", deleted)
+        if deleted.deleted_count == 0:
+            return
 
-        async for data in collection.find({"expires_at": {"$lte": now_plus_40_days}}):
-            self.loop.create_task(self.short_time_dispatcher(collection, **data))
-
-    async def call_timer(self, **data):
         if data.get("_event_name"):
             self.dispatch(f"{data['_event_name']}_timer_complete", **data)
         else:
             self.dispatch("timer_complete", **data)
 
-    async def short_time_dispatcher(self, collection: MongoCollection, **data):
-        await asyncio.sleep(data["expires_at"] - discord.utils.utcnow().timestamp())
-        await collection.delete_one({"_id": data["_id"]})
-        await self.call_timer(**data)
+    async def short_time_dispatcher(self, collection: MongoCollection, **data: Any):
+        log.info(
+            "Sleeping for %s seconds",
+            data["expires_at"] - discord.utils.utcnow().timestamp(),
+        )
+        await asyncio.sleep(discord.utils.utcnow().timestamp() - data["expires_at"])
+
+        await self.call_timer(collection, **data)
 
     async def create_timer(
         self,
@@ -1096,7 +1192,7 @@ class Parrot(commands.AutoShardedBot):
         is_todo: bool = False,
         extra: Dict[str, Any] = None,
         **kw,
-    ) -> None:
+    ) -> pymongo.results.InsertOneResult:
         """|coro|
 
         Master Function to register Timers.
@@ -1129,6 +1225,7 @@ class Parrot(commands.AutoShardedBot):
             "created_at": created_at or message.created_at.timestamp(),
             "content": content,
             "embed": embed,
+            "guild": message.guild.id if message.guild else "DM",
             "messageURL": message.jump_url,
             "messageAuthor": message.author.id,
             "messageChannel": message.channel.id,
@@ -1139,16 +1236,22 @@ class Parrot(commands.AutoShardedBot):
             "extra": extra,
             **kw,
         }
+        insert_data = await collection.insert_one(post)
+        log.info("Inserted data: %s", insert_data)
+        self._have_data.set()
 
-        _24_hours = 86400
-        if ((extra and "LOOP" not in extra.get("name", "")) or (not extra)) and (
-            expires_at - discord.utils.utcnow().timestamp()
-        ) <= _24_hours:
-            self.loop.create_task(self.short_time_dispatcher(collection, **post))
-            return
+        if self._current_timers and self._current_timers["expires_at"] > expires_at:
+            self._current_timers = post
 
-        await collection.insert_one(post)
+            log.info("Cancelling current timer %s", self._current_timers)
+            self.timer_task.cancel()
 
-    async def delete_timer(self, **kw):
+            self.timer_task = self.loop.create_task(self.dispatch_timer())
+
+        return insert_data
+
+    async def delete_timer(self, **kw) -> pymongo.results.DeleteResult:
         collection: MongoCollection = self.timers
-        await collection.delete_one(kw)
+        data = await collection.delete_one({"_id": kw["_id"]})
+        log.info("Deleted data: %s", data)
+        return data

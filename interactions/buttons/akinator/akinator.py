@@ -2,6 +2,8 @@ import json
 import re
 import time
 
+import discord
+
 from .exceptions import CantGoBackAnyFurther
 from .utils import ans_to_id, get_lang_and_theme, raise_connection_error
 
@@ -138,7 +140,7 @@ class Akinator:
         You can also put the name of the language spelled out, like "spanish", "korean", "french_animals", etc.
         The "child_mode" parameter is False by default. If it's set to True, then Akinator won't ask questions about things that are NSFW
         """
-        self.timestamp = time.time()
+        self.timestamp = discord.utils.utcnow().timestamp()
         region_info = self._auto_get_region(
             get_lang_and_theme(language)["lang"], get_lang_and_theme(language)["theme"]
         )

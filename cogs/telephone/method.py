@@ -130,8 +130,8 @@ async def dial(
             f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**"
         )
 
-        ini = time.time() + 120
-        while ini > time.time():
+        ini = discord.utils.utcnow().timestamp() + 120
+        while ini > discord.utils.utcnow().timestamp():
 
             def check_in_channel(m: discord.Message) -> bool:
                 return False if m.author.bot else m.channel in (target_channel, channel)

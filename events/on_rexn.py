@@ -308,7 +308,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
-        data = self.bot.guild_configurations
+        data = self.bot.guild_configurations_cache
 
         try:
             locked: bool = data[payload.guild_id]["starboard_config"]["is_locked"]

@@ -4,19 +4,15 @@ import asyncio
 import datetime
 import logging
 import re
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Union
 
-import humanize
 import pymongo
 from pymongo import UpdateMany, UpdateOne
 
 import discord
 from core import Cog, Context, Parrot
-from discord import app_commands
-from discord.ext import commands, menus, tasks
-from utilities.converters import Cache
+from discord.ext import commands, tasks
 from utilities.formats import plural
-from utilities.time import FutureTime
 
 log = logging.getLogger("cogs.highlight.highlight")
 

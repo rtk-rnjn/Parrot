@@ -66,7 +66,18 @@ class Highlight(Cog):
                 "blocked_channels": [],
             }
         self.cached_settings[user_id] = find_one_data["highlight_settings"]
-        return find_one_data["highlight_settings"]
+        user_id = find_one_data["highlight_settings"].get("user_id", user_id)
+        disabled = find_one_data["highlight_settings"].get("disabled", False)
+        blocked_users = find_one_data["highlight_settings"].get("blocked_users", [])
+        blocked_channels = find_one_data["highlight_settings"].get(
+            "blocked_channels", []
+        )
+        return {
+            "user_id": user_id,
+            "disabled": disabled,
+            "blocked_users": blocked_users,
+            "blocked_channels": blocked_channels,
+        }
 
     async def cog_unload(self):
         log.info("Stopping bulk insert loop")
@@ -284,14 +295,22 @@ class Highlight(Cog):
                 delete_after=5,
             )
         else:
-            await self.bot.user_collections_ind.update_one(
+            data = await self.bot.user_collections_ind.update_one(
                 {"_id": ctx.author.id},
                 {
                     "$addToSet": {
                         "highlight_words": {"guild_id": ctx.guild.id, "word": word}
                     },
                 },
+                upsert=True,
             )
+            if data.modified_count == 0:
+                await ctx.send(
+                    f":x: You already have `{word}` in your highlight list.",
+                    delete_after=5,
+                )
+                return
+
             if self.cached_words.get(ctx.author.id) is None:
                 self.cached_words[ctx.author.id] = []
 

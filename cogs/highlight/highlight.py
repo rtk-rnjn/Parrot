@@ -440,7 +440,7 @@ class Highlight(Cog):
                         "highlight_words": {
                             "$each": [
                                 word
-                                for word in self.cached_words(ctx.author.id, [])
+                                for word in self.cached_words.get(ctx.author.id, [])
                                 if word["guild_id"] == from_guild
                             ]
                         },

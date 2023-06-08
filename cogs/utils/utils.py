@@ -182,7 +182,7 @@ class Utils(Cog):
             "cmd_exec_str": None,
             "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(when)}},
         }
-        await self.collection.insert_one(post)
+        await self.bot.create_timer(**post)
         log.info(
             "Created a loop reminder for %s. reminder exipres at %s",
             ctx.author,

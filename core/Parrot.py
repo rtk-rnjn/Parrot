@@ -125,11 +125,14 @@ handler = logging.handlers.RotatingFileHandler(
 )
 dt_fmt = "%Y-%m-%d %H:%M:%S"
 formatter = logging.Formatter(
-    "[{asctime}] [{levelname:<8}] {name:<30}: {name}.{module}.{funcName} - \t\t {message}",
+    "[{asctime}] [{levelname:<8}] {name:<10}: {module}.{funcName} - {message}",
     dt_fmt,
     style="{",
 )
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
 handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
 logger.addHandler(handler)
 
 log = logging.getLogger("core.parrot")
@@ -353,6 +356,7 @@ class Parrot(commands.AutoShardedBot):
             try:
                 await self.load_extension(ext)
                 self._successfully_loaded.append(ext)
+                log.info("Loaded extension %s", ext)
             except (commands.ExtensionFailed, commands.ExtensionNotFound) as e:
                 self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
@@ -455,16 +459,10 @@ class Parrot(commands.AutoShardedBot):
 
         if self.http_session.closed:
             log.info("HTTP session is closed. Creating new session")
-            async with aiohttp.ClientSession() as session:
-                log.info(
-                    "Executing webhook from scratch (%s). Payload: %s", URL, payload
-                )
-                async with session.post(URL, json=payload) as resp:
-                    return await resp.json()
-        else:
-            log.info("Executing webhook from scratch (%s). Payload: %s", URL, payload)
-            async with self.http_session.post(URL, json=payload) as resp:
-                return await resp.json()
+            self.http_session = aiohttp.ClientSession(loop=self.loop)
+        log.info("Executing webhook from scratch (%s). Payload: %s", URL, payload)
+        async with self.http_session.post(URL, json=payload, headers=self.GLOBAL_HEADERS) as resp:
+            return await resp.json()
 
     async def _execute_webhook(
         self,

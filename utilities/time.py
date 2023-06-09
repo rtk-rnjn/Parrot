@@ -69,9 +69,6 @@ class ShortTime:
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> Self:
         tzinfo = datetime.timezone.utc
-        reminder = ctx.bot.reminder
-        if reminder is not None:
-            tzinfo = await reminder.get_tzinfo(ctx.author.id)
         return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
 
 
@@ -109,9 +106,6 @@ class HumanTime:
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> Self:
         tzinfo = datetime.timezone.utc
-        reminder = ctx.bot.reminder
-        if reminder is not None:
-            tzinfo = await reminder.get_tzinfo(ctx.author.id)
         return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
 
 
@@ -200,10 +194,7 @@ class UserFriendlyTime(commands.Converter):
         regex = ShortTime.compiled
         now = ctx.message.created_at
 
-        reminder = ctx.bot.reminder
         tzinfo = datetime.timezone.utc
-        if reminder is not None:
-            tzinfo = await reminder.get_tzinfo(ctx.author.id)
 
         match = regex.match(argument)
         if match is not None and match.group(0):

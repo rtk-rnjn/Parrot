@@ -69,6 +69,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         # get the original exception
         error = getattr(error, "original", error)
+        TO_RAISE_ERROR = False
 
         ignore = (
             commands.CommandNotFound,
@@ -231,6 +232,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.title = (
                 f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
             )
+            TO_RAISE_ERROR = True
 
         msg: discord.Message = await ctx.reply(
             random.choice(quote),
@@ -244,7 +246,8 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             await msg.delete(delay=0)
         except asyncio.TimeoutError:
             pass
-        else:
+        
+        if TO_RAISE_ERROR:
             raise error
 
 

@@ -83,7 +83,7 @@ class Highlight(Cog):
         log.info("Stopping bulk insert loop")
         self.bulk_insert_loop.stop()
         await self.bulk_insert()
-    
+
     async def cog_load(self):
         log.info("Getting all the highlight settings")
         async for data in self.bot.user_collections_ind.find(
@@ -103,11 +103,14 @@ class Highlight(Cog):
             return
 
         notified_users = []
-        possible_words = [
-            word
-            for word in self.cached_words.get(message.author.id, [])
-            if word["guild_id"] == message.guild.id
-        ]
+        possible_words = []
+
+        for _id, words in self.cached_words.items():
+            possible_words.extend(
+                {**word, "user_id": _id}
+                for word in words
+                if word["guild_id"] == message.guild.id
+            )
 
         # Go through all possible messages
         for possible_word in possible_words:
@@ -115,11 +118,9 @@ class Highlight(Cog):
             # And avoid any false positives
             escaped = re.escape(possible_word["word"])
             match = re.match(
-                r"^(?:.+ )?(?:\W*)({word})(?:[{word}]*)(?:\W+|[(?:'|\")s]*)(?: .+)?$".format(
-                    word=escaped
-                ),
+                rf"(.*)({escaped})(.*)",
                 message.content,
-                re.I,
+                re.IGNORECASE | re.DOTALL | re.MULTILINE,
             )
 
             # If there's a match and the user wasn't already notified
@@ -147,55 +148,77 @@ class Highlight(Cog):
         self.bot.dispatch("user_activity", reaction.message.channel, user)
 
     @commands.Cog.listener()
-    async def on_highlight(self, message: discord.Message, word: str, text: str):
+    async def on_highlight(
+        self, message: discord.Message, word: Dict[str, Union[str, int]], text: str
+    ):
         # sourcery skip: low-code-quality
-        member = message.guild.get_member(word["user_id"])
+        member = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
 
         if not member:
             log.info(
                 "Unknown user ID %s (guild ID %s)", word["user_id"], word["guild_id"]
             )
 
+        # Wait for any activity
+        try:
+            await self.bot.wait_for(
+                "user_activity",
+                check=lambda channel, user: message.channel == channel
+                and user == member,
+                timeout=10,
+            )
+            return
+        except asyncio.TimeoutError:
+            pass
+
         # Don't highlight if they were already pinged
-        if member in message.mentions:
-            return
         # Don't highlight if they can't even see the channel
-        elif member not in message.channel.members:
-            return
         # Don't highlight if it's a command
-        elif (await self.bot.get_context(message)).valid:
+        if (
+            member in message.mentions
+            or member not in message.channel.members
+            or (await self.bot.get_context(message)).valid
+        ):
             return
 
         settings = await self.get_user_settings(member.id)
 
         # Don't highlight if the user themsel
-        if member.id == message.author.id:
-            return
-        elif settings["disabled"]:
-            return
         # Don't highlight if they blocked the trigger author or channel
-        elif (
-            message.channel.id in settings["blocked_channels"]
-            or message.author.id in settings["blocked_users"]
-        ):
-            return
         # Don't highlight if they blocked the entire category
-        elif (
-            message.channel.category
-            and message.channel.category.id in settings["blocked_channels"]
+        if (
+            member.id == message.author.id
+            or settings["disabled"]
+            or (
+                message.channel.id in settings.get("blocked_channels", [])
+                or message.author.id in settings.get("blocked_users", [])
+                or (
+                    message.channel.category
+                    and message.channel.category.id
+                    in settings.get("blocked_channels", [])
+                )
+            )
         ):
             return
 
         # Prepare highlight message
-        initial_description = f"In {message.channel.mention} for `{discord.utils.escape_markdown(message.guild.name)}` you were highlighted with the word **{discord.utils.escape_markdown(word['word'])}**\n\n"
+        initial_description = (
+            f"In {message.channel.mention} for `{discord.utils.escape_markdown(message.guild.name)}`"
+            f"you were highlighted with the word **{discord.utils.escape_markdown(word['word'])}**\n\n"
+        )
 
-        em = discord.Embed(
-            description="", timestamp=message.created_at, color=discord.Color.blurple()
+        em = (
+            discord.Embed(
+                description="",
+                timestamp=message.created_at,
+                color=discord.Color.blurple(),
+            )
+            .set_author(
+                name=message.author.display_name,
+                icon_url=message.author.display_avatar.url,
+            )
+            .set_footer(text="Triggered")
         )
-        em.set_author(
-            name=message.author.display_name, icon_url=message.author.display_avatar.url
-        )
-        em.set_footer(text="Triggered")
 
         # Add trigger message
         span = re.search(re.escape(word["word"]), message.content.lower()).span()
@@ -216,7 +239,6 @@ class Highlight(Cog):
 
         # Add some history
         try:
-            messages = []
             async for ms in message.channel.history(limit=3, before=message):
                 content = f"{ms.content[:50]}{'...' if len(ms.content) > 50 else ''}"
                 timestamp = ms.created_at.timestamp()
@@ -229,18 +251,6 @@ class Highlight(Cog):
             pass
 
         em.description = initial_description + em.description
-
-        # Wait for any activity
-        try:
-            await self.bot.wait_for(
-                "user_activity",
-                check=lambda channel, user: message.channel == channel
-                and user == member,
-                timeout=15,
-            )
-            return
-        except asyncio.TimeoutError:
-            pass
 
         # Send the highlight message
         try:

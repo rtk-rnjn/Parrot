@@ -83,6 +83,19 @@ class Highlight(Cog):
         log.info("Stopping bulk insert loop")
         self.bulk_insert_loop.stop()
         await self.bulk_insert()
+    
+    async def cog_load(self):
+        log.info("Getting all the highlight settings")
+        async for data in self.bot.user_collections_ind.find(
+            {"highlight_settings": {"$exists": True}}
+        ):
+            self.cached_settings[data["_id"]] = data["highlight_settings"]
+
+        log.info("Getting all the highlight words")
+        async for data in self.bot.user_collections_ind.find(
+            {"highlight_words": {"$exists": True}}
+        ):
+            self.cached_words[data["_id"]] = data["highlight_words"]
 
     @commands.Cog.listener("on_message")
     async def check_highlights(self, message: discord.Message):
@@ -372,7 +385,7 @@ class Highlight(Cog):
                 name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
             )
 
-            em.description = "`, `".join(words)
+            em.description = "`" + "`, `".join(words) + "`"
 
             await ctx.send(embed=em, delete_after=10)
 

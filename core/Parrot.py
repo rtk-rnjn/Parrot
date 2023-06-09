@@ -617,6 +617,8 @@ class Parrot(commands.AutoShardedBot):
 
         if self._was_ready:
             return
+        self._was_ready = True
+
         ready_up_message = (
             f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})\n"
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
@@ -634,8 +636,6 @@ class Parrot(commands.AutoShardedBot):
         )
         log.info("Got all afk users from database: %s", ls)
         self.afk = set(ls)
-
-        self._was_ready = True
 
         content = "```css\n"
         if self.WAVELINK_NODE_READY:
@@ -674,6 +674,13 @@ class Parrot(commands.AutoShardedBot):
                 self._startup_log_token,
                 content="```css\n- Unloaded music cog due to wavelink node not running```",
             )
+
+        VOICE_CHANNEL_ID = 1116780108074713098
+        channel: discord.VoiceChannel = await self.getch(
+            self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID
+        )
+        if channel is not None:
+            await channel.connect(self_deaf=True, reconnect=True)
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
@@ -1033,7 +1040,13 @@ class Parrot(commands.AutoShardedBot):
         *,
         force_fetch: bool = True,
     ) -> Any:
-        log.info("Force fetch: %s", force_fetch)
+        log.info(
+            "Force fetch (%s), to get (%s). Functions: %s | %s",
+            force_fetch,
+            _id,
+            get_function.__name__,
+            fetch_function.__name__,
+        )
         if _id is None:
             something = None
             if not callable(get_function):
@@ -1049,7 +1062,12 @@ class Parrot(commands.AutoShardedBot):
                 )
                 return await fetch_function
 
-            log.info("Returning data. function: %s", get_function.__name__)
+            log.info(
+                "Returning data (%s). function: %s | %s",
+                something,
+                get_function.__name__,
+                fetch_function.__name__,
+            )
             return something
 
         with suppress(discord.HTTPException):
@@ -1061,11 +1079,17 @@ class Parrot(commands.AutoShardedBot):
                     fetch_function.__name__,
                 )
                 return await fetch_function(_id)
-            log.info("Returning data. function: %s", get_function.__name__)
+            log.info(
+                "Returning data (%s). functions: %s | %s",
+                something,
+                get_function.__name__,
+                fetch_function.__name__,
+            )
             return something
 
         log.info(
-            "Returning None. functions: %s, %s",
+            "Returning data (%s). function: %s | %s",
+            None,
             get_function.__name__,
             fetch_function.__name__,
         )
@@ -1105,7 +1129,9 @@ class Parrot(commands.AutoShardedBot):
             self.loop.create_task(ctx.guild.chunk())
 
     async def get_active_timer(self, **filters: Any) -> dict:
-        data = await self.timers.find_one({**filters}, sort=[("expires_at", pymongo.ASCENDING)])
+        data = await self.timers.find_one(
+            {**filters}, sort=[("expires_at", pymongo.ASCENDING)]
+        )
         log.info("Received data: %s", data)
         return data
 
@@ -1228,7 +1254,9 @@ class Parrot(commands.AutoShardedBot):
             "guild": message.guild.id if message.guild else "DM",
             "messageURL": message.jump_url if message else kw.get("messageURL"),
             "messageAuthor": message.author.id if message else kw.get("messageAuthor"),
-            "messageChannel": message.channel.id if message else kw.get("messageChannel"),
+            "messageChannel": message.channel.id
+            if message
+            else kw.get("messageChannel"),
             "dm_notify": dm_notify,
             "is_todo": is_todo,
             "mod_action": mod_action,

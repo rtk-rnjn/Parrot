@@ -112,7 +112,7 @@ class EventCustom(Cog):
     async def extra_parser_set_afk(
         self, extra: Dict[str, Any] = None, **kw: Any
     ) -> None:
-        if extra is None:
+        if not extra:
             return
 
         name = extra.get("name")
@@ -124,7 +124,7 @@ class EventCustom(Cog):
     async def extra_parser_remove_afk(
         self, extra: Dict[str, Any] = None, **kw: Any
     ) -> None:
-        if extra is None:
+        if not extra:
             return
 
         name = extra.get("name")
@@ -136,7 +136,7 @@ class EventCustom(Cog):
     async def extra_parser_giveaway(
         self, extra: Dict[str, Any] = None, **kw: Any
     ) -> None:
-        if extra is None:
+        if not extra:
             return
 
         name = extra.get("name")
@@ -145,7 +145,7 @@ class EventCustom(Cog):
 
     async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "SET_TIMER":
-            await self.bot.timers.insert_one(kw)
+            await self.bot.create_timer(**kw)
 
         if name.upper() == "SET_TIMER_LOOP":
             await self._parse_timer(**kw)
@@ -166,7 +166,7 @@ class EventCustom(Cog):
         post = kw.copy()
         post["extra"] = {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}}
         post["expires_at"] = age.dt.timestamp()
-        await self.bot.timers.insert_one(post)
+        await self.bot.create_timer(**post)
 
     async def _parse_giveaway(self, **kw: Any) -> None:
         data: Dict[str, Any] = await self.bot.giveaways.find_one(

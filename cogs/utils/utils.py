@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pymongo import ReturnDocument  # type: ignore
 from pymongo.collection import Collection  # type: ignore
+from typing_extensions import Annotated
 
 import discord
 from cogs.meta.robopage import SimplePages
@@ -18,7 +19,7 @@ from utilities.checks import is_mod
 from utilities.converters import convert_bool
 from utilities.formats import TabularData
 from utilities.rankcard import rank_card
-from utilities.time import ShortTime
+from utilities.time import FriendlyTimeResult, ShortTime, UserFriendlyTime
 
 log = logging.getLogger("cogs.utils.utils")
 
@@ -65,9 +66,26 @@ class Utils(Cog):
     @commands.group(aliases=["remind", "reminder"], invoke_without_command=True)
     @Context.with_type
     async def remindme(
-        self, ctx: Context, when: ShortTime, *, task: commands.clean_content = None
+        self,
+        ctx: Context,
+        *,
+        when: Annotated[
+            FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
+        ],
     ) -> None:
-        """To make reminders as to get your tasks done on time"""
+        """Reminds you of something after a certain amount of time.
+
+        The input can be any direct date (e.g. YYYY-MM-DD) or a human
+        readable offset. Examples:
+
+        - "next thursday at 3pm do something funny"
+        - "do the dishes tomorrow"
+        - "in 3 days do the thing"
+        - "2d unmute someone"
+
+        Times are in UTC unless a timezone is specified
+        using the "timezone set" command.
+        """
         if not ctx.invoked_subcommand:
             seconds = when.dt.timestamp()
             text = (
@@ -83,7 +101,7 @@ class Utils(Cog):
             await self.create_timer(
                 expires_at=seconds,
                 created_at=ctx.message.created_at.timestamp(),
-                content=task or "...",
+                content=when.arg,
                 message=ctx.message,
             )
             log.info(
@@ -93,7 +111,7 @@ class Utils(Cog):
     @remindme.command(name="list", aliases=["all"])
     @Context.with_type
     async def _list(self, ctx: Context) -> None:
-        """To get all your reminders"""
+        """To get all your reminders of first 10 active reminders"""
         ls = []
         log.info("Fetching reminders for %s from database.", ctx.author)
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
@@ -101,6 +119,8 @@ class Utils(Cog):
                 f"<t:{int(data['expires_at'])}:R> - Where To? {data.get('guild', 'Failed to fetch')}\n"
                 f"> [{data['content']}]({data['messageURL']})"
             )
+            if len(ls) == 10:
+                break
         if not ls:
             await ctx.send(f"{ctx.author.mention} you don't have any reminders")
             return
@@ -113,6 +133,9 @@ class Utils(Cog):
         """To delete the reminder"""
         log.info("Deleting reminder of message id %s", message)
         delete_result = await self.delete_timer(_id=message)
+        if self.bot._current_timer and self.bot._current_timer["_id"] == message:
+            self.bot.timer_task.cancel()
+            self.bot.timer_task = self.bot.loop.create_task(self.bot.dispatch_timers())
         if delete_result.deleted_count == 0:
             await ctx.reply(
                 f"{ctx.author.mention} failed to delete reminder of ID: **{message}**"
@@ -125,7 +148,9 @@ class Utils(Cog):
     @remindme.command(name="dm")
     @Context.with_type
     async def remindmedm(
-        self, ctx: Context, when: ShortTime, *, task: commands.clean_content = None
+        self, ctx: Context, *, when: Annotated[
+            FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
+        ],
     ) -> None:
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = when.dt.timestamp()
@@ -142,7 +167,7 @@ class Utils(Cog):
         await self.create_timer(
             expires_at=seconds,
             created_at=ctx.message.created_at.timestamp(),
-            content=task or "...",
+            content=when.arg,
             message=ctx.message,
             dm_notify=True,
         )
@@ -153,7 +178,9 @@ class Utils(Cog):
     @remindme.command(name="loop", aliases=["repeat"])
     @Context.with_type
     async def remindmeloop(
-        self, ctx: Context, when: ShortTime, *, task: commands.clean_content = None
+        self, ctx: Context, *, when: Annotated[
+            FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
+        ],
     ):
         """Same as remind me but you will get reminder on every given time.
 
@@ -171,7 +198,7 @@ class Utils(Cog):
             "_id": ctx.message.id,
             "expires_at": seconds,
             "created_at": ctx.message.created_at.timestamp(),
-            "content": task or "...",
+            "content": when.arg,
             "embed": None,
             "messageURL": ctx.message.jump_url,
             "messageAuthor": ctx.message.author.id,

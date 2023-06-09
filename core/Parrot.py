@@ -223,7 +223,7 @@ class Parrot(commands.AutoShardedBot):
         self._was_ready: bool = False
         self.lock: "asyncio.Lock" = asyncio.Lock()
         self.timer_task: Optional[asyncio.Task] = None
-        self._current_timers: Dict = {}
+        self._current_timer: Dict = {}
         self._have_data: asyncio.Event = asyncio.Event()
         self.reminder_event: asyncio.Event = asyncio.Event()
         self.ON_HEROKU: bool = HEROKU
@@ -290,7 +290,7 @@ class Parrot(commands.AutoShardedBot):
         self.command_collections: MongoCollection = self.main_db["commandCollections"]
         self.timers: MongoCollection = self.main_db["timers"]
         self.starboards: MongoCollection = self.main_db["starboards"]
-        self.giveaways: MongoCollection = self.main_db["giveaways"]
+        self.giveaways: MongoCollection = self.main_db["giveawaysCollection"]
         self.user_collections_ind: MongoCollection = self.main_db["userCollections"]
         self.guild_collections_ind: MongoCollection = self.main_db["guildCollections"]
         self.extra_collections: MongoCollection = self.main_db["extraCollections"]
@@ -410,7 +410,7 @@ class Parrot(commands.AutoShardedBot):
                     self.ON_DOCKER = True
                     traceback.print_exc()
 
-        self.timer_task = self.loop.create_task(self.dispatch_timer())
+        self.timer_task = self.loop.create_task(self.dispatch_timers())
 
         async def __laod_cache():
             log.info("Fetching guild configurations from database")
@@ -461,7 +461,9 @@ class Parrot(commands.AutoShardedBot):
             log.info("HTTP session is closed. Creating new session")
             self.http_session = aiohttp.ClientSession(loop=self.loop)
         log.info("Executing webhook from scratch (%s). Payload: %s", URL, payload)
-        async with self.http_session.post(URL, json=payload, headers=self.GLOBAL_HEADERS) as resp:
+        async with self.http_session.post(
+            URL, json=payload, headers=self.GLOBAL_HEADERS
+        ) as resp:
             return await resp.json()
 
     async def _execute_webhook(
@@ -1102,13 +1104,13 @@ class Parrot(commands.AutoShardedBot):
         if ctx.guild is not None and not ctx.guild.chunked:
             self.loop.create_task(ctx.guild.chunk())
 
-    async def get_active_timer(self) -> dict:
-        data = await self.timers.find_one({}, sort=[("expires_at", pymongo.ASCENDING)])
+    async def get_active_timer(self, **filters: Any) -> dict:
+        data = await self.timers.find_one({**filters}, sort=[("expires_at", pymongo.ASCENDING)])
         log.info("Received data: %s", data)
         return data
 
-    async def wait_for_active_timers(self) -> None:
-        timers = await self.get_active_timer()
+    async def wait_for_active_timers(self, **filters: Any) -> None:
+        timers = await self.get_active_timer(**filters)
         if timers:
             self._have_data.set()
             log.info("Event set")
@@ -1116,7 +1118,7 @@ class Parrot(commands.AutoShardedBot):
 
         self._have_data.clear()
         log.info("Event cleared")
-        self._current_timers = None
+        self._current_timer = None
         log.info(
             "Current timers set to None",
         )
@@ -1124,11 +1126,11 @@ class Parrot(commands.AutoShardedBot):
         log.info("Event waited")
         return await self.get_active_timer()
 
-    async def dispatch_timer(self):
+    async def dispatch_timers(self):
         log.info("Starting timer task")
         try:
             while not self.is_closed():
-                timers = self._current_timers = await self.wait_for_active_timers()
+                timers = self._current_timer = await self.wait_for_active_timers()
                 log.info(
                     "Received timers: %s",
                     timers,
@@ -1150,7 +1152,7 @@ class Parrot(commands.AutoShardedBot):
                 await asyncio.sleep(0)
         except (OSError, discord.ConnectionClosed, pymongo.errors.ConnectionFailure):
             self.timer_task.cancel()
-            self.timer_task = self.loop.create_task(self.dispatch_timer())
+            self.timer_task = self.loop.create_task(self.dispatch_timers())
         except asyncio.CancelledError:
             raise
 
@@ -1185,7 +1187,7 @@ class Parrot(commands.AutoShardedBot):
         _event_name: str = None,
         created_at: float = None,
         content: str = None,
-        message: discord.Message,
+        message: Union[discord.Message, int] = None,
         dm_notify: bool = False,
         is_todo: bool = False,
         extra: Dict[str, Any] = None,
@@ -1217,16 +1219,16 @@ class Parrot(commands.AutoShardedBot):
         cmd_exec_str: str = kw.get("cmd_exec_str")
 
         post = {
-            "_id": message.id,
+            "_id": message.id if isinstance(message, discord.Message) else message,
             "_event_name": _event_name,
             "expires_at": expires_at,
             "created_at": created_at or message.created_at.timestamp(),
             "content": content,
             "embed": embed,
             "guild": message.guild.id if message.guild else "DM",
-            "messageURL": message.jump_url,
-            "messageAuthor": message.author.id,
-            "messageChannel": message.channel.id,
+            "messageURL": message.jump_url if message else kw.get("messageURL"),
+            "messageAuthor": message.author.id if message else kw.get("messageAuthor"),
+            "messageChannel": message.channel.id if message else kw.get("messageChannel"),
             "dm_notify": dm_notify,
             "is_todo": is_todo,
             "mod_action": mod_action,
@@ -1238,18 +1240,30 @@ class Parrot(commands.AutoShardedBot):
         log.info("Inserted data: %s", insert_data)
         self._have_data.set()
 
-        if self._current_timers and self._current_timers["expires_at"] > expires_at:
-            self._current_timers = post
+        if self._current_timer and self._current_timer["expires_at"] > expires_at:
+            self._current_timer = post
 
-            log.info("Cancelling current timer %s", self._current_timers)
+            log.info("Cancelling current timer %s", self._current_timer)
             self.timer_task.cancel()
 
-            self.timer_task = self.loop.create_task(self.dispatch_timer())
+            self.timer_task = self.loop.create_task(self.dispatch_timers())
 
         return insert_data
 
     async def delete_timer(self, **kw) -> pymongo.results.DeleteResult:
         collection: MongoCollection = self.timers
         data = await collection.delete_one({"_id": kw["_id"]})
-        log.info("Deleted data: %s", data)
+        delete_count = data.deleted_count
+        if delete_count == 0:
+            log.info("Deleted data: %s", data)
+            return data
+
+        if (
+            delete_count
+            and self._current_timer
+            and self._current_timer["_id"] == kw["_id"]
+        ):
+            log.info("Rerunning timer task")
+            self.timer_task.cancel()
+            self.timer_task = self.loop.create_task(self.dispatch_timers())
         return data

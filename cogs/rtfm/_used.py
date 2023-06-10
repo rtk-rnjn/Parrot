@@ -45,81 +45,11 @@ def prepare_payload(payload: str):
     return (language, text, False)
 
 
-async def get_message(
-    interaction: discord.Interaction, fetch: bool = False, *, bot: Parrot
-) -> Optional[discord.Message]:
-    """Retrieve referenced message, trying cache first and handle deletion"""
-    ref = interaction.message.reference
-
-    if not fetch:
-        message = ref.resolved
-
-        if isinstance(message, discord.DeletedReferencedMessage):
-            return None
-
-        if message is not None:
-            return message
-
-    # message is None, means we have to fetch
-
-    try:
-        return await bot.get_or_fetch_message(
-            interaction.message.channel, ref.message_id, fetch=fetch
-        )
-    except discord.errors.NotFound:
-        # message deleted
-        return None
-
-
-class RerunBtn(discord.ui.Button):
-    def __init__(self, bot: Parrot, **kwargs: Any):
-        super().__init__(**kwargs)
-        self.bot = bot
-
-    async def callback(self, interaction: discord.Interaction):
-        # We always fetch since we need an updated message.content
-        message = await get_message(interaction, fetch=True, bot=self.bot)
-
-        if message is None and self.view is not None:
-            await interaction.response.send_message(
-                "No code to run since original message was deleted.", ephemeral=True
-            )
-            return self.view.stop()  # message won't come back
-
-        if interaction.user.id != message.author.id:
-            await interaction.response.send_message(
-                "Only the one who used the run command can use these buttons.",
-                ephemeral=True,
-            )
-
-        payload = message.content
-
-        # we need to strip the prefix and command name ('do run '), the prefix
-        # having multiple and even custom possible values
-
-        prefix = await self.bot.get_guild_prefixes(interaction.guild)
-        if payload.startswith(prefix):
-            match = re.match(rf"{prefix}( )?run ", payload)
-            if not match:
-                return
-            span = match.span()
-            payload = payload[span[1] :]  # this should work
-
-        language, text, errored = prepare_payload(payload)
-
-        if errored:
-            return await interaction.message.edit(embed=text)
-
-        result = await execute_run(self.bot, language, text)
-
-        await interaction.message.edit(content=result)
-
-
 async def execute_run(
     bot: Parrot,
     language: str,
-    code: str,
-) -> str:
+    code: str,  # type: ignore
+) -> str:  # sourcery skip: low-code-quality
     # Powered by tio.run
 
     options = {"--stats": False, "--wrapped": False}
@@ -139,14 +69,14 @@ async def execute_run(
             code.pop(i)
             code.pop(i)  # remove following whitespace character
 
-    code = "".join(code)
+    code = "".join(code)  # type: ignore
 
     compilerFlags = []
     commandLineOptions = []
     args = []
     inputs = []
 
-    lines = code.split("\n")
+    lines = code.split("\n")  # type: ignore
     code = []
     for line in lines:
         if line.startswith("input "):
@@ -162,7 +92,7 @@ async def execute_run(
 
     inputs = "\n".join(inputs)
 
-    code = "\n".join(code)
+    code = "\n".join(code)  # type: ignore
 
     # common identifiers, also used in highlight.js and thus discord codeblocks
     quickmap: Dict[str, str] = {
@@ -200,10 +130,10 @@ async def execute_run(
 
         return output
 
-    code = code.strip("`")
+    code = code.strip("`")  # type: ignore
 
     if "\n" in code:
-        firstLine = code.splitlines()[0]
+        firstLine = code.splitlines()[0]  # type: ignore
         if re.fullmatch(r"([0-9A-z]*)\b", firstLine):
             code = code[len(firstLine) + 1 :]
 
@@ -216,12 +146,12 @@ async def execute_run(
 
         for beginning in wrapping:
             if lang.split("-")[0] == beginning:
-                code = wrapping[beginning].replace("code", code)
+                code = wrapping[beginning].replace("code", code)  # type: ignore
                 break
 
     tio = Tio(
         lang,
-        code,
+        code,  # type: ignore
         compilerFlags=compilerFlags,
         inputs=inputs,
         commandLineOptions=commandLineOptions,

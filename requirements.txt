@@ -6,9 +6,11 @@ aioredis
 aiosignal
 anyio
 arrow
+astroid
 astunparse
 async-timeout
 attrs
+bandit
 beautifulsoup4
 black
 blinker
@@ -21,11 +23,18 @@ charset-normalizer
 chess
 click
 colorama
+dill
 discord.py @ git+https://github.com/Rapptz/discord.py@e870bb1335e3f824c83a40df4ea9b17f215fde63
 dnspython
 fastapi
+flake8
 frozenlist
+gitdb
+GitPython
 grapheme
+h11
+h2
+hpack
 humanize
 hypercorn
 hyperframe
@@ -34,13 +43,18 @@ import-expression
 isort
 itsdangerous
 Jinja2
-jishaku @ git+https://github.com/Gorialis/jishaku@bf26bea3c1f86993fd75744de48bf52d4925521a
+jishaku @ git+https://github.com/Gorialis/jishaku
+lazy-object-proxy
 lru-dict
 lxml
+markdown-it-py
 markdownify
 MarkupSafe
+mccabe
+mdurl
 motor
 multidict
+mypy
 mypy-extensions
 numpy
 oauthlib
@@ -50,15 +64,21 @@ packaging
 pandas
 parsedatetime
 pathspec
+pbr
 Pillow
 platformdirs
 prettytable
 priority
 psutil
 pycares
+pycodestyle
 pycparser
 pydantic
+pyenchant
+pyflakes
 pygit2
+Pygments
+pylint
 pymongo
 PyNaCl
 pyparsing
@@ -71,19 +91,29 @@ qrcode
 quart
 rapidfuzz
 requests
+requests-oauthlib
+rich
+six
+smmap
+sniffio
+soupsieve
+starlette
+stevedore
 tabulate
 toml
+tomlkit
 topggpy
 tornado
-tweepy @ git+https://github.com/tweepy/tweepy@62cb9907b2e83ef99bb37078a6b7844ce5a1e9d8
+tweepy @ git+https://github.com/tweepy/tweepy
 typing_extensions
 tzdata
 urllib3
 uvicorn
-Wavelink @ git+https://github.com/PythonistaGuild/Wavelink@0d28aadac0905842e2292d153d287eb3efc19801
+Wavelink @ git+https://github.com/PythonistaGuild/Wavelink
 wcwidth
 Werkzeug
 wheezy.captcha
+wrapt
 wsproto
 yarl
 youtube-dl

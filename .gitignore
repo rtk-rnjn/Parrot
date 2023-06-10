@@ -137,3 +137,4 @@ log/
 env.json
 venv
 tests/
+temp/*

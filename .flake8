@@ -1,8 +1,0 @@
-[flake8]
-ignore = E501, W503
-exclude =
-    .git,
-    __pycache__,
-    venv,
-max-complexity = 35
-pre-file-ignores = __init__.py: F401

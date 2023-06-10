@@ -24,199 +24,46 @@ from bs4.element import NavigableString
 import discord
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
-from discord import Embed, Interaction, SelectOption, ui
 from discord.ext import commands, tasks
 from utilities.converters import WrappedMessageConverter
 
 from . import _doc, _ref
 from ._used import execute_run, get_raw, prepare_payload, wrapping
+from ._utils import (
+    ANSI_RE,
+    API_ROOT,
+    API_ROOT_RP,
+    ARTICLE_URL,
+    BASE_URL,
+    BASE_URL_SO,
+    BOOKMARK_EMOJI,
+    ERROR_MESSAGE,
+    ERROR_MESSAGE_CHEAT_SHEET,
+    ESCAPE_TT,
+    GITHUB_API_URL,
+    HEADERS,
+    MAPPING_OF_KYU,
+    MINIMUM_CERTAINTY,
+    NEGATIVE_REPLIES,
+    SEARCH_URL_REAL,
+    SEARCH_URL_SO,
+    SO_PARAMS,
+    SUPPORTED_LANGUAGES,
+    TIMEOUT,
+    URL,
+    WTF_PYTHON_RAW_URL,
+    Icons,
+    InformationDropdown,
+)
 
 try:
-    import lxml  # type: ignore
+    import lxml  # type: ignore  # noqa: F401  # pylint: disable=unused-import
 
     HTML_PARSER = "lxml"
 except ImportError:
     HTML_PARSER = "html.parser"
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-languages = pathlib.Path("extra/lang.txt").read_text()
-GITHUB_API_URL = "https://api.github.com"
-API_ROOT_RP = "https://realpython.com/search/api/v1/"
-ARTICLE_URL = "https://realpython.com{article_url}"
-SEARCH_URL_REAL = "https://realpython.com/search?q={user_search}"
-BASE_URL_SO = "https://api.stackexchange.com/2.2/search/advanced"
-SO_PARAMS = {"order": "desc", "sort": "activity", "site": "stackoverflow"}
-SEARCH_URL_SO = "https://stackoverflow.com/search?q={query}"
-URL = "https://cheat.sh/python/{search}"
-ESCAPE_TT = str.maketrans({"`": "\\`"})
-ANSI_RE = re.compile(r"\x1b\[.*?m")
-# We need to pass headers as curl otherwise it would default to aiohttp which would return raw html.
-HEADERS = {"User-Agent": "curl/7.68.0"}
-ERROR_MESSAGE_CHEAT_SHEET = """
-Unknown cheat sheet. Please try to reformulate your query.
-**Examples**:
-```md
-$cht read json
-$cht hello world
-$cht lambda
-```
-"""
-WTF_PYTHON_RAW_URL = "http://raw.githubusercontent.com/satwikkansal/wtfpython/master/"
-BASE_URL = "https://github.com/satwikkansal/wtfpython"
-API_ROOT = "https://www.codewars.com/api/v1/code-challenges/{kata_id}"
-MINIMUM_CERTAINTY = 55
-ERROR_MESSAGE = """
-Unknown WTF Python Query. Please try to reformulate your query.
-**Examples**:
-```md
-$wtf wild imports
-$wtf subclass
-$wtf del
-```
-"""
-TIMEOUT = 120
-BOOKMARK_EMOJI = "\N{PUSHPIN}"
-
-MAPPING_OF_KYU: Dict[int, int] = {
-    8: 0xDDDBDA,
-    7: 0xDDDBDA,
-    6: 0xECB613,
-    5: 0xECB613,
-    4: 0x3C7EBB,
-    3: 0x3C7EBB,
-    2: 0x866CC7,
-    1: 0x866CC7,
-}
-
-# Supported languages for a kata on codewars.com
-SUPPORTED_LANGUAGES: Dict[str, List[str]] = {
-    "stable": [
-        "c",
-        "c#",
-        "c++",
-        "clojure",
-        "coffeescript",
-        "coq",
-        "crystal",
-        "dart",
-        "elixir",
-        "f#",
-        "go",
-        "groovy",
-        "haskell",
-        "java",
-        "javascript",
-        "kotlin",
-        "lean",
-        "lua",
-        "nasm",
-        "php",
-        "python",
-        "racket",
-        "ruby",
-        "rust",
-        "scala",
-        "shell",
-        "sql",
-        "swift",
-        "typescript",
-    ],
-    "beta": [
-        "agda",
-        "bf",
-        "cfml",
-        "cobol",
-        "commonlisp",
-        "elm",
-        "erlang",
-        "factor",
-        "forth",
-        "fortran",
-        "haxe",
-        "idris",
-        "julia",
-        "nim",
-        "objective-c",
-        "ocaml",
-        "pascal",
-        "perl",
-        "powershell",
-        "prolog",
-        "purescript",
-        "r",
-        "raku",
-        "reason",
-        "solidity",
-        "vb.net",
-    ],
-}
-
-
-NEGATIVE_REPLIES: List[str] = ["! YOU DONE? !", "! OK, HERE IS AN ERROR !", "! F. !"]
-
-
-class Icons:
-    bookmark: str = "https://images-ext-2.discordapp.net/external/zl4oDwcmxUILY7sD9ZWE2fU5R7n6QcxEmPYSE5eddbg/%3Fv%3D1/https/cdn.discordapp.com/emojis/654080405988966419.png?width=20&height=20"
-
-
-class InformationDropdown(ui.Select):
-    """A dropdown inheriting from ui.Select that allows finding out other information about the kata."""
-
-    original_message: discord.Message
-
-    def __init__(
-        self,
-        language_embed: Embed,
-        tags_embed: Embed,
-        other_info_embed: Embed,
-        main_embed: Embed,
-    ):
-        options: List[SelectOption] = [
-            SelectOption(
-                label="Main Information",
-                description="See the kata's difficulty, description, etc.",
-                emoji="\N{EARTH GLOBE AMERICAS}",
-            ),
-            SelectOption(
-                label="Languages",
-                description="See what languages this kata supports!",
-                emoji="\N{PAGE FACING UP}",
-            ),
-            SelectOption(
-                label="Tags",
-                description="See what categories this kata falls under!",
-                emoji="\N{ROUND PUSHPIN}",
-            ),
-            SelectOption(
-                label="Other Information",
-                description="See how other people performed on this kata and more!",
-                emoji="\N{INFORMATION SOURCE}",
-            ),
-        ]
-
-        # We map the option label to the embed instance so that it can be easily looked up later in O(1)
-        self.mapping_of_embeds: Dict[str, Embed] = {
-            "Main Information": main_embed,
-            "Languages": language_embed,
-            "Tags": tags_embed,
-            "Other Information": other_info_embed,
-        }
-
-        super().__init__(
-            placeholder="See more information regarding this kata",
-            min_values=1,
-            max_values=1,
-            options=options,
-        )
-
-    async def callback(self, interaction: Interaction) -> None:
-        """Callback for when someone clicks on a dropdown."""
-        # Edit the message to the embed selected in the option
-        # The `original_message` attribute is set just after the message is sent with the view.
-        # The attribute is not set during initialization.
-        result_embed = self.mapping_of_embeds[self.values[0]]
-        await self.original_message.edit(embed=result_embed)
 
 
 class RTFM(Cog):
@@ -262,7 +109,7 @@ class RTFM(Cog):
         return embed
 
     @staticmethod
-    def build_error_embed(user: discord.Member) -> discord.Embed:
+    def build_error_embed(user: Union[discord.Member, discord.User]) -> discord.Embed:
         """Builds an error embed for when a bookmark requester has DMs disabled."""
         return discord.Embed(
             title="You DM(s) are closed!",
@@ -271,8 +118,8 @@ class RTFM(Cog):
 
     async def action_bookmark(
         self,
-        channel: discord.TextChannel,
-        user: discord.Member,
+        channel: discord.abc.MessageableChannel,
+        user: Union[discord.Member, discord.User],
         target_message: discord.Message,
         title: str,
     ) -> None:
@@ -286,7 +133,7 @@ class RTFM(Cog):
 
     @staticmethod
     async def send_reaction_embed(
-        channel: discord.TextChannel, target_message: discord.Message
+        channel: discord.abc.MessageableChannel, target_message: discord.Message
     ) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
@@ -305,7 +152,9 @@ class RTFM(Cog):
         # Match the start of examples, until the end of the table of contents (toc)
         table_of_contents = re.search(
             r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data
-        )[0].split("\n")
+        )[0].split(
+            "\n"
+        )  # type: ignore
 
         for header in list(map(str.strip, table_of_contents)):
             if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):
@@ -421,8 +270,8 @@ class RTFM(Cog):
 
         res = res_json.get("info", "Unknown")
 
-        def getval(key: Dict):
-            return key.get(key, "Unknown")
+        def getval(key: str):
+            return res.get(key, "Unknown")
 
         name = getval("name")
         author = getval("author")
@@ -435,22 +284,20 @@ class RTFM(Cog):
         version = getval("version")
         _license = getval("license")
 
-        embed = discord.Embed(
-            title=f"{name} PyPi Stats",
-            description=description,
-            color=discord.Color.teal(),
+        embed = (
+            discord.Embed(
+                title=f"{name} PyPi Stats",
+                description=description,
+                color=discord.Color.teal(),
+            )
+            .add_field(name="Author", value=author, inline=True)
+            .add_field(name="Author Email", value=author_email, inline=True)
+            .add_field(name="Version", value=version, inline=False)
+            .add_field(name="License", value=_license, inline=True)
+            .add_field(name="Project Url", value=project_url, inline=False)
+            .add_field(name="Home Page", value=home_page)
+            .set_thumbnail(url="https://i.imgur.com/syDydkb.png")
         )
-
-        embed.add_field(name="Author", value=author, inline=True)
-        embed.add_field(name="Author Email", value=author_email, inline=True)
-
-        embed.add_field(name="Version", value=version, inline=False)
-        embed.add_field(name="License", value=_license, inline=True)
-
-        embed.add_field(name="Project Url", value=project_url, inline=False)
-        embed.add_field(name="Home Page", value=home_page)
-
-        embed.set_thumbnail(url="https://i.imgur.com/syDydkb.png")
 
         await ctx.send(embed=embed)
 
@@ -500,21 +347,19 @@ class RTFM(Cog):
         homepage = getval("homepage")
         _license = getval("license")
 
-        em = discord.Embed(
-            title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534
-        )
-
-        em.add_field(name="Author", value=author, inline=True)
-        em.add_field(name="Author Email", value=author_email, inline=True)
-
-        em.add_field(name="Latest Version", value=latest_version, inline=False)
-        em.add_field(name="License", value=_license, inline=True)
-
-        em.add_field(name="Repository", value=repository, inline=False)
-        em.add_field(name="Homepage", value=homepage, inline=True)
-
-        em.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
+        em = (
+            discord.Embed(
+                title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534
+            )
+            .add_field(name="Author", value=author, inline=True)
+            .add_field(name="Author Email", value=author_email, inline=True)
+            .add_field(name="Latest Version", value=latest_version, inline=False)
+            .add_field(name="License", value=_license, inline=True)
+            .add_field(name="Repository", value=repository, inline=False)
+            .add_field(name="Homepage", value=homepage, inline=True)
+            .set_thumbnail(
+                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
+            )
         )
 
         await ctx.send(embed=em)
@@ -565,28 +410,29 @@ class RTFM(Cog):
         homepage = getmainval("homepage")
         _license = getversionvals("license")
 
-        em = discord.Embed(
-            title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29
-        )
-
-        em.add_field(name="Published By", value=publisher, inline=True)
-        em.add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
-
-        em.add_field(name="Latest Version", value=latest_version, inline=False)
-        em.add_field(name="License", value=_license, inline=True)
-
-        em.add_field(name="Repository", value=repository, inline=False)
-        em.add_field(name="Homepage", value=homepage, inline=True)
-
-        em.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
+        em = (
+            discord.Embed(
+                title=f"{pkg_name} crates.io Stats",
+                description=description,
+                color=0xE03D29,
+            )
+            .add_field(name="Published By", value=publisher, inline=True)
+            .add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
+            .add_field(name="Latest Version", value=latest_version, inline=False)
+            .add_field(name="License", value=_license, inline=True)
+            .add_field(name="Repository", value=repository, inline=False)
+            .add_field(name="Homepage", value=homepage, inline=True)
+            .set_thumbnail(
+                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
+            )
         )
 
         await ctx.send(embed=em)
 
-    @commands.command(
+    @commands.group(
         usage="run <language> [--wrapped] [--stats] <code>",
         brief="Execute code in a given programming language",
+        invoke_without_command=True,
     )
     async def run(self, ctx: Context, *, payload: str = ""):
         """For command-line-options, compiler-flags and arguments you may add a line starting with this argument,
@@ -652,8 +498,6 @@ class RTFM(Cog):
                     )
                 lang = re.split(r"\s+", payload, maxsplit=1)[0]
         else:
-            no_rerun = False
-
             language, text, errored = prepare_payload(
                 payload
             )  # we call it text but it's an embed if it errored #JustDynamicTypingThings
@@ -665,6 +509,7 @@ class RTFM(Cog):
             if lang:
                 language = lang
 
+            assert isinstance(text, str)
             output = await execute_run(self.bot, language, text)
 
             await ctx.reply(output)
@@ -727,23 +572,25 @@ class RTFM(Cog):
 
                 title = self.get_content(nameTag)
 
-                emb = discord.Embed(title=title, url=f"https://man.cx/{page}")
-                emb.set_author(name="Debian Linux man pages")
-                emb.set_thumbnail(
-                    url="https://www.debian.org/logos/openlogo-nd-100.png"
+                emb = (
+                    discord.Embed(title=title, url=f"https://man.cx/{page}")
+                    .set_author(name="Debian Linux man pages")
+                    .set_thumbnail(
+                        url="https://www.debian.org/logos/openlogo-nd-100.png"
+                    )
                 )
 
                 for tag in contents:
                     h2 = tuple(
                         soup.find(
                             attrs={"name": tuple(tag.children)[0].get("href")[1:]}
-                        ).parents
+                        ).parents  # type: ignore
                     )[0]
                     emb.add_field(name=tag.string, value=self.get_content(h2))
 
                 await ctx.reply(embed=emb)
 
-    @commands.command()
+    @run.command()
     @commands.bot_has_permissions(embed_links=True)
     async def list(self, ctx: Context, *, group=None):
         """Lists available choices for other commands"""
@@ -768,7 +615,7 @@ class RTFM(Cog):
             )
             return await ctx.reply(embed=emb)
 
-        availables = choices[group]
+        availables = choices[group]  # type: ignore
         description = f"`{'`, `'.join([*availables])}`"
         emb: discord.Embed = discord.Embed(
             title=f"Available for {group}: {len(availables)}", description=description
@@ -782,8 +629,7 @@ class RTFM(Cog):
         emb = discord.Embed(
             title="Unicode convert",
             description=" ".join([str(ord(letter)) for letter in text]),
-        )
-        emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
+        ).set_footer(text=f"Invoked by {str(ctx.message.author)}")
         await ctx.reply(embed=emb)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -792,9 +638,12 @@ class RTFM(Cog):
         """Reforms string from char codes"""
         try:
             codes = [chr(int(i)) for i in text.split(" ")]
-            emb = discord.Embed(title="Unicode convert", description="".join(codes))
-            emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
-            await ctx.reply(embed=emb)
+
+            await ctx.reply(
+                embed=discord.Embed(
+                    title="Unicode convert", description="".join(codes)
+                ).set_footer(text=f"Invoked by {str(ctx.message.author)}")
+            )
         except ValueError:
             await ctx.reply(
                 "Invalid sequence. Example usage : `[p]unascii 104 101 121`"
@@ -847,8 +696,7 @@ class RTFM(Cog):
 
         emb = discord.Embed(
             title=f"{algorithm} hash", description=hash_object.hexdigest()
-        )
-        emb.set_footer(text=f"Invoked by {str(ctx.message.author)}")
+        ).set_footer(text=f"Invoked by {str(ctx.message.author)}")
 
         await ctx.reply(embed=emb)
 
@@ -920,46 +768,44 @@ class RTFM(Cog):
             else:
                 blog = "No website link available"
 
-            embed = discord.Embed(
-                title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```\n{user_data['bio']}\n```\n"
-                if user_data["bio"]
-                else "",
-                colour=discord.Colour.og_blurple(),
-                url=user_data["html_url"],
-                timestamp=datetime.strptime(
-                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-                ),
+            embed = (
+                discord.Embed(
+                    title=f"`{user_data['login']}`'s GitHub profile info",
+                    description=f"```\n{user_data['bio']}\n```\n"
+                    if user_data["bio"]
+                    else "",
+                    colour=discord.Colour.og_blurple(),
+                    url=user_data["html_url"],
+                    timestamp=datetime.strptime(
+                        user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+                    ),
+                )
+                .set_thumbnail(url=user_data["avatar_url"])
+                .set_footer(text="Account created at")
+                .add_field(
+                    name="Public repos",
+                    value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
+                )
+                .add_field(name="Website", value=blog)
             )
-            embed.set_thumbnail(url=user_data["avatar_url"])
-            embed.set_footer(text="Account created at")
 
             if user_data["type"] == "User":
                 embed.add_field(
                     name="Followers",
                     value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
-                )
-                embed.add_field(
+                ).add_field(
                     name="Following",
                     value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
                 )
-
-            embed.add_field(
-                name="Public repos",
-                value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
-            )
 
             if user_data["type"] == "User":
                 embed.add_field(
                     name="Gists",
                     value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})",
-                )
-
-                embed.add_field(
+                ).add_field(
                     name=f"Organization{'s' if len(orgs)!=1 else ''}",
                     value=orgs_to_add if orgs else "No organizations.",
                 )
-            embed.add_field(name="Website", value=blog)
 
         await ctx.send(embed=embed)
 
@@ -971,7 +817,7 @@ class RTFM(Cog):
         Fetches a repositories' GitHub information.
         The repository should look like `user/reponame` or `user reponame`.
         """
-        repo = "/".join(repo)
+        repo = "/".join(repo)  # type: ignore
         if repo.count("/") != 1:
             embed = discord.Embed(
                 title="Invalid",
@@ -1008,7 +854,7 @@ class RTFM(Cog):
             parent = repo_data["parent"]
             embed.description += (
                 f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
-            )
+            )  # type: ignore
         except KeyError:
             pass
 
@@ -1050,7 +896,7 @@ class RTFM(Cog):
         If no search query is specified by the user, the home page is sent.
         """
         if user_search is None:
-            home_page_embed = Embed(
+            home_page_embed = discord.Embed(
                 title="Real Python Home Page",
                 url="https://realpython.com/",
                 colour=ctx.author.color,
@@ -1196,13 +1042,14 @@ class RTFM(Cog):
 
             is_embed, description = self.result_fmt(
                 URL.format(
-                    search=search_string,
+                    search=search_string,  # type: ignore
                 ),
                 result,
             )
             if is_embed:
                 await ctx.send(embed=description)
             else:
+                assert isinstance(description, str)
                 await ctx.send(content=description)
 
     @commands.command(aliases=["wtfp"])
@@ -1275,7 +1122,14 @@ class RTFM(Cog):
                     "\n2. Lookup by message ID (the message **must** be in the context channel)"
                     "\n3. Lookup by message URL"
                 )
-            target_message = ctx.message.reference.resolved
+            target_message = ctx.message.reference.resolved  # type: ignore
+
+        if not target_message:
+            raise commands.BadArgument("Couldn't find that message.")
+
+        assert isinstance(target_message, discord.Message) and isinstance(
+            ctx.author, discord.Member
+        )
 
         # Prevent users from bookmarking a message in a channel they don't have access to
         permissions = target_message.channel.permissions_for(ctx.author)
@@ -1306,6 +1160,8 @@ class RTFM(Cog):
                 )
             )
 
+        assert isinstance(target_message, discord.Message)
+
         await self.action_bookmark(ctx.channel, ctx.author, target_message, title)
 
         # Keep track of who has already bookmarked, so users can't spam reactions and cause loads of DMs
@@ -1324,15 +1180,15 @@ class RTFM(Cog):
 
     async def kata_id(
         self, search_link: str, params: Dict[str, Any]
-    ) -> Union[str, Embed]:
+    ) -> Union[str, discord.Embed]:
         """
         Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
         codewars.com API to use.
         """
-        async with self.bot.http_session.get(search_link, params=params) as response:
+        async with self.bot.http_session.get(search_link, params=params) as response:  # type: ignore
             if response.status != 200:
-                return Embed(
+                return discord.Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="We ran into an error when getting the kata from codewars.com, try again later.",
                     color=0xCD6D6D,
@@ -1342,7 +1198,7 @@ class RTFM(Cog):
                 await response.text(), features=HTML_PARSER
             )  # changed the parser
             first_kata_div = await _doc.get_ele(
-                soup.find_all, "div", class_="item-title px-0"
+                soup.find_all, "div", class_="item-title px-0"  # type: ignore
             )
 
             if not first_kata_div:
@@ -1358,7 +1214,9 @@ class RTFM(Cog):
 
             return first_kata_div.a["href"].split("/")[-1]
 
-    async def kata_information(self, kata_id: str) -> Union[Dict[str, Any], Embed]:
+    async def kata_information(
+        self, kata_id: str
+    ) -> Union[Dict[str, Any], discord.Embed]:
         """
         Returns the information about the Kata.
         Uses the codewars.com API to get information about the kata using `kata_id`.
@@ -1367,7 +1225,7 @@ class RTFM(Cog):
             API_ROOT.format(kata_id=kata_id)
         ) as response:
             if response.status != 200:
-                return Embed(
+                return discord.Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="We ran into an error when getting the kata information, try again later.",
                     color=0xCD6D6D,
@@ -1376,7 +1234,7 @@ class RTFM(Cog):
             return await response.json()
 
     @staticmethod
-    def main_embed(kata_information: Dict[str, Any]) -> Embed:
+    def main_embed(kata_information: Dict[str, Any]) -> discord.Embed:
         """Creates the main embed which displays the name, difficulty and description of the kata."""
         kata_description = kata_information["description"]
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
@@ -1395,7 +1253,7 @@ class RTFM(Cog):
             embed_color = int(kata_information["rank"]["name"].replace(" kyu", ""))
             kata_difficulty = kata_information["rank"]["name"]
 
-        kata_embed = Embed(
+        kata_embed = discord.Embed(
             title=kata_information["name"],
             description=kata_description,
             color=MAPPING_OF_KYU[embed_color],
@@ -1405,19 +1263,19 @@ class RTFM(Cog):
         return kata_embed
 
     @staticmethod
-    def language_embed(kata_information: Dict[str, Any]) -> Embed:
+    def language_embed(kata_information: Dict[str, Any]) -> discord.Embed:
         """Creates the 'language embed' which displays all languages the kata supports."""
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
         languages = "\n".join(map(str.title, kata_information["languages"]))
-        return Embed(
+        return discord.Embed(
             title=kata_information["name"],
             description=f"```yaml\nSupported Languages:\n{languages}\n```",
             url=kata_url,
         )
 
     @staticmethod
-    def tags_embed(kata_information: Dict[str, Any]) -> Embed:
+    def tags_embed(kata_information: Dict[str, Any]) -> discord.Embed:
         """
         Creates the 'tags embed' which displays all the tags of the Kata.
         Tags explain what the kata is about, this is what codewars.com calls categories.
@@ -1425,7 +1283,7 @@ class RTFM(Cog):
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
         tags = "\n".join(kata_information["tags"])
-        return Embed(
+        return discord.Embed(
             title=kata_information["name"],
             description=f"```yaml\nTags:\n{tags}\n```",
             color=0xCD6D6D,
@@ -1433,7 +1291,7 @@ class RTFM(Cog):
         )
 
     @staticmethod
-    def miscellaneous_embed(kata_information: dict) -> Embed:
+    def miscellaneous_embed(kata_information: dict) -> discord.Embed:
         """
         Creates the 'other information embed' which displays miscellaneous information about the kata.
         This embed shows statistics such as the total number of people who completed the kata,
@@ -1441,50 +1299,51 @@ class RTFM(Cog):
         """
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
-        embed = Embed(
-            title=kata_information["name"],
-            description="```nim\nOther Information\n```",
-            color=0xCD6D6D,
-            url=kata_url,
+        return (
+            discord.Embed(
+                title=kata_information["name"],
+                description="```nim\nOther Information\n```",
+                color=0xCD6D6D,
+                url=kata_url,
+            )
+            .add_field(
+                name="`Total Score`",
+                value=f"```css\n{kata_information['voteScore']}\n```",
+                inline=False,
+            )
+            .add_field(
+                name="`Total Stars`",
+                value=f"```css\n{kata_information['totalStars']}\n```",
+                inline=False,
+            )
+            .add_field(
+                name="`Total Completed`",
+                value=f"```css\n{kata_information['totalCompleted']}\n```",
+                inline=False,
+            )
+            .add_field(
+                name="`Total Attempts`",
+                value=f"```css\n{kata_information['totalAttempts']}\n```",
+                inline=False,
+            )
         )
-        embed.add_field(
-            name="`Total Score`",
-            value=f"```css\n{kata_information['voteScore']}\n```",
-            inline=False,
-        )
-        embed.add_field(
-            name="`Total Stars`",
-            value=f"```css\n{kata_information['totalStars']}\n```",
-            inline=False,
-        )
-        embed.add_field(
-            name="`Total Completed`",
-            value=f"```css\n{kata_information['totalCompleted']}\n```",
-            inline=False,
-        )
-        embed.add_field(
-            name="`Total Attempts`",
-            value=f"```css\n{kata_information['totalAttempts']}\n```",
-            inline=False,
-        )
-        return embed
 
     @staticmethod
-    def create_view(dropdown: InformationDropdown, link: str) -> ui.View:
+    def create_view(dropdown: InformationDropdown, link: str) -> discord.ui.View:
         """
         Creates the discord.py View for the Discord message components (dropdowns and buttons).
         The discord UI is implemented onto the embed, where the user can choose what information about the kata they
         want, along with a link button to the kata itself.
         """
-        view = ui.View()
+        view = discord.ui.View()
         view.add_item(dropdown)
-        view.add_item(ui.Button(label="View the Kata", url=link))
+        view.add_item(discord.ui.Button(label="View the Kata", url=link))
         return view
 
     @commands.command(aliases=["kata"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def challenge(
-        self, ctx: Context, language: str = "python", *, query: str = None
+        self, ctx: Context, language: str = "python", *, query: Optional[str] = None
     ) -> None:
         """
         The challenge command pulls a random kata (challenge) from codewars.com.
@@ -1525,13 +1384,13 @@ class RTFM(Cog):
         params["beta"] = str(language in SUPPORTED_LANGUAGES["beta"]).lower()
 
         first_kata_id = await self.kata_id(get_kata_link, params)
-        if isinstance(first_kata_id, Embed):
+        if isinstance(first_kata_id, discord.Embed):
             # We ran into an error when retrieving the website link
             await ctx.send(embed=first_kata_id)
             return
 
         kata_information = await self.kata_information(first_kata_id)
-        if isinstance(kata_information, Embed):
+        if isinstance(kata_information, discord.Embed):
             # Something went wrong when trying to fetch the kata information
             await ctx.d(embed=kata_information)
             return
@@ -1551,7 +1410,7 @@ class RTFM(Cog):
             dropdown, f"https://codewars.com/kata/{first_kata_id}"
         )
         original_message: discord.Message = await ctx.send(
-            embed=kata_embed, view=kata_view
+            embed=kata_embed, view=kata_view  # type: ignore
         )
         dropdown.original_message = original_message
 

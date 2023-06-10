@@ -258,12 +258,12 @@ class LintCode:
         self.linttype = linttype
 
     async def lint(
-        self, *, flag: Union[Flake8Converter, BanditConverter, PyLintConverter]
+        self, *, flag: Union[Flake8Converter, BanditConverter, PyLintConverter, MypyConverter]
     ) -> dict:
         if self.linttype not in {"flake8", "bandit", "pylint", "mypy"}:
             return {}
 
-        if self.language not in {"python", "py"} or (self.language is not None):
+        if self.language not in {"python", "py", None}:
             return {}
 
         filename = await code_to_file(self.source)

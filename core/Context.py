@@ -949,5 +949,6 @@ class SentFromView(discord.ui.View):
             discord.ui.Button(
                 style=discord.ButtonStyle.blurple,
                 label=label or f"Sent from {ctx.guild.name}",
+                disabled=True,
             )
         )

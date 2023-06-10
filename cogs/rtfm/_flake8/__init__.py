@@ -18,13 +18,13 @@ POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,3})")
 class Flake8Converter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
-    ignore: Optional[str] = commands.flag(aliases=["i"])
-    select: Optional[str] = commands.flag(aliases=["s"])
-    max_line_length: Optional[int] = commands.flag(aliases=["l"])
-    max_doc_length: Optional[int] = commands.flag(aliases=["d"])
-    max_complexity: Optional[int] = commands.flag(aliases=["c"])
-    statistics: Optional[bool] = commands.flag(aliases=["t"])
-    doctests: Optional[bool] = commands.flag(aliases=["D"])
+    ignore: Optional[str] = None
+    select: Optional[str] = None
+    max_line_length: Optional[int] = None
+    max_doc_length: Optional[int] = None
+    max_complexity: Optional[int] = None
+    statistics: Optional[bool] = None
+    doctests: Optional[bool] = None
 
 
 def validate_flake8_code(code: str) -> List[str]:

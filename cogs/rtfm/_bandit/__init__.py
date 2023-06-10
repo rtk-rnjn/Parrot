@@ -14,11 +14,11 @@ POSSIBLE_BANDIT_CODE = re.compile(r"([A-Z]\d{2,3})")
 class BanditConverter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
-    read: Optional[bool] = commands.flag(aliases=["r"])
-    verbose: Optional[bool] = commands.flag(aliases=["v"])
-    skip: Optional[str] = commands.flag(aliases=["s"])
-    level: Literal["low", "medium", "high"] = commands.flag(aliases=["l"])
-    confidence: Literal["low", "medium", "high"] = commands.flag(aliases=["c"])
+    read: Optional[bool] = None
+    verbose: Optional[bool] = None
+    skip: Optional[str] = None
+    level: Optional[Literal["low", "medium", "high"]] = None
+    confidence: Optional[Literal["low", "medium", "high"]] = None
 
 
 def validate_bandit_code(code: str) -> List[str]:

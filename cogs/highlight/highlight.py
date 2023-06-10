@@ -383,7 +383,7 @@ class Highlight(Cog):
         ls = self.cached_words.get(ctx.author.id, [])
 
         words = [
-            word for word in ls if word["guild_id"] == ctx.guild.id and word["word"]
+            word["word"] for word in ls if word["guild_id"] == ctx.guild.id and word["word"]
         ]
         if not ls:
             await ctx.send(

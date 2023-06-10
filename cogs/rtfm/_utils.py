@@ -242,9 +242,10 @@ class LintCode:
             Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, str
         ],
     ) -> None:
-        self.get_code()
         self.codeblock = flag if isinstance(flag, str) else flag.code
         self.flag = flag
+
+        self.get_code()
 
     def get_code(self) -> str:
         try:
@@ -268,10 +269,12 @@ class LintCode:
 
     async def lint(self, ctx: Context) -> None:
         if self.linttype not in {"flake8", "bandit", "pylint", "mypy"}:
-            return {}
+            await ctx.reply("Invalid lint type.")
+            return
 
         if self.language not in {"python", "py", None}:
-            return {}
+            await ctx.reply("Invalid language.")
+            return
 
         filename = await code_to_file(self.source)
 
@@ -290,7 +293,7 @@ class LintCode:
         if not data:
             await ctx.reply("No output.")
             return
-
+        
         if "main" in data:
             await ctx.reply(f"```diff\n{data['main']}```")
         if "stdout" in data:

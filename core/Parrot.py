@@ -34,11 +34,11 @@ from typing import (
 )
 
 import aiohttp
-import jishaku  # type: ignore  # noqa: F401
+import jishaku  # type: ignore  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
-from aiohttp import ClientSession  # type: ignore
-from lru import LRU
+from aiohttp import ClientSession
+
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 import discord
@@ -384,7 +384,7 @@ class Parrot(commands.AutoShardedBot):
                 await self.ipc_server.start()
                 log.info("IPC server started")
             except OSError as e:
-                log.warn("Failed to start IPC server")
+                log.warn("Failed to start IPC server", exc_info=e)
                 self.ON_DOCKER = True
 
             if not self.ON_DOCKER:
@@ -403,10 +403,10 @@ class Parrot(commands.AutoShardedBot):
                     )
                     log.info("Top.GG webhook server started: %s", success)
                 except aiohttp.ClientConnectionError as e:
-                    log.warn("Failed to start IPC server")
+                    log.warn("Failed to start IPC server", exc_info=e)
                     traceback.print_exc()
                 except OSError as e:
-                    log.warn("Failed to start IPC server")
+                    log.warn("Failed to start IPC server", exc_info=e)
                     self.ON_DOCKER = True
                     traceback.print_exc()
 
@@ -641,25 +641,25 @@ class Parrot(commands.AutoShardedBot):
 
         content = "```css\n"
         if self.WAVELINK_NODE_READY:
-            content += f"- Wavelink Node is ready and running"
+            content += "- Wavelink Node is ready and running"
         else:
-            content += f"- Wavelink Node is not running"
+            content += "- Wavelink Node is not running"
 
         if self.HAS_TOP_GG:
             if self.DBL_SERVER_RUNNING:
-                content += f"\n- Top.gg server is running"
+                content += "\n- Top.gg server is running"
             else:
-                content += f"\n- Top.gg server is not running"
+                content += "\n- Top.gg server is not running"
 
         if self.ON_DOCKER:
-            content += f"\n- Running on docker"
+            content += "\n- Running on docker"
         else:
-            content += f"\n- Running on local machine"
+            content += "\n- Running on local machine"
 
         if self._failed_to_load:
-            content += f"\n- Failed to load {len(self._failed_to_load)} cogs"
+            content += "\n- Failed to load {len(self._failed_to_load)} cogs"
         else:
-            content += f"\n- All cogs loaded successfully"
+            content += "\n- All cogs loaded successfully"
         content += "```"
 
         await self._execute_webhook(self._startup_log_token, content=f"{content}")
@@ -868,7 +868,7 @@ class Parrot(commands.AutoShardedBot):
         else:
             # We need to chunk these in bits of 100...
             for index in range(0, total_need_resolution, 100):
-                to_resolve = needs_resolution[index : index + 100]
+                to_resolve = needs_resolution[index: index + 100]
                 members = await guild.query_members(
                     limit=100, user_ids=to_resolve, cache=True
                 )

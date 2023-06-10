@@ -280,13 +280,13 @@ class LintCode:
 
         cmd_str = ""
         if self.linttype == "flake8":
-            cmd_str = await flake8_validate_flag(self.flag)
+            cmd_str = flake8_validate_flag(self.flag)
         elif self.linttype == "bandit":
-            cmd_str = await bandit_validate_flag(self.flag)
+            cmd_str = bandit_validate_flag(self.flag)
         elif self.linttype == "pylint":
-            cmd_str = await pylint_validate_flag(self.flag)
+            cmd_str = pylint_validate_flag(self.flag)
         elif self.linttype == "mypy":
-            cmd_str = await mypy_validate_flag(self.flag)
+            cmd_str = mypy_validate_flag(self.flag)
 
         data = await lint(cmd_str, filename) if cmd_str else {}
 

@@ -881,6 +881,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             "guild": bool(update_result_cmd_guild.modified_count),
         }
 
+    def send_view(self, **kw: Any) -> SentFromView:
+        return SentFromView(self, **kw)
+
 
 class ConfirmationView(discord.ui.View):
     def __init__(
@@ -934,3 +937,17 @@ class ConfirmationView(discord.ui.View):
         if self.delete_after:
             await interaction.delete_original_response()
         self.stop()
+
+
+class SentFromView(discord.ui.View):
+    def __init__(self, ctx: Context, *, timeout: float | None = 180, label: Optional[str] = None):
+        super().__init__(timeout=timeout)
+        self.ctx = ctx
+
+        assert ctx.guild is not None
+        self.add_item(
+            discord.ui.Button(
+                style=discord.ButtonStyle.blurple,
+                label=label or f"Sent from {ctx.guild.name}",
+            )
+        )

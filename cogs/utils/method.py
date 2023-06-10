@@ -274,7 +274,8 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
         try:
             await ctx.author.send(
                 f"You will be reminded for your task named **{name}** here at <t:{int(timestamp)}>. "
-                f"To delete your reminder consider typing.\n```\n{ctx.clean_prefix}remind delete {ctx.message.id}```"
+                f"To delete your reminder consider typing.\n```\n{ctx.clean_prefix}remind delete {ctx.message.id}```",
+                view=ctx.send_view(),
             )
         except Exception as e:
             return await ctx.error(

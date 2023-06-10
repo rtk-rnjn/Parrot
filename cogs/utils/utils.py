@@ -94,7 +94,7 @@ class Utils(Cog):
             )
             try:
                 await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
-                await ctx.author.send(text)
+                await ctx.author.send(text, view=ctx.send_view(),)
             except discord.Forbidden:
                 await ctx.reply(text)
 
@@ -160,7 +160,7 @@ class Utils(Cog):
         )
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
-            await ctx.author.send(text)
+            await ctx.author.send(text, view=ctx.send_view(),)
         except discord.Forbidden:
             await ctx.reply(text)
 
@@ -221,7 +221,7 @@ class Utils(Cog):
         )
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
-            await ctx.author.send(text)
+            await ctx.author.send(text, view=ctx.send_view(),)
         except discord.Forbidden:
             await ctx.reply(text)
 
@@ -767,7 +767,7 @@ class Utils(Cog):
             f"> {jump_url}"
         )
         try:
-            await ctx.author.send(content)
+            await ctx.author.send(content, view=ctx.send_view(),)
         except discord.Forbidden:
             pass
 

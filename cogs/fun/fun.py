@@ -17,11 +17,9 @@ import random
 import re
 import string
 import time
-import unicodedata
 import urllib
 from collections import defaultdict
 from contextlib import suppress
-from dataclasses import dataclass
 from pathlib import Path
 from random import choice, randint
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
@@ -39,7 +37,6 @@ from utilities import spookifications
 from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
-from utilities.regex import LINKS_RE
 
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
@@ -194,6 +191,9 @@ class Fun(Cog):
         msg: Optional[discord.Message] = await ctx.send(
             file=thumbnail_file, embed=colour_embed
         )
+
+        assert msg is not None
+
         if isinstance(msg, discord.Message):
             await msg.add_reaction("\N{HAMMER AND PICK}")
 
@@ -207,14 +207,16 @@ class Fun(Cog):
         try:
             await ctx.wait_for("reaction_add", timeout=30, check=check)
             res = await ctx.prompt("Do you want to create a role of that color?")
-            if res:
+            if res and colour_embed.title is not None:
                 await self._create_role_on_clr(
                     ctx=ctx, rgb=rgb, color_name=colour_embed.title
                 )
+            else:
+                return
         except asyncio.TimeoutError:
             return
 
-    def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> Dict[str, str]:
+    def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> Dict[str, Any]:
         """Create a dictionary mapping of colour types and their values."""
         colour_name = self._rgb_to_name(rgb)
         if colour_name is None:
@@ -328,36 +330,35 @@ class Fun(Cog):
         Returns `text` if the conversion fails.
         """
         try:
-            text = await commands.MessageConverter().convert(ctx, text)
+            msg = await commands.MessageConverter().convert(ctx, text)
         except commands.BadArgument:
-            return None
-        return text
+            msg = await self.bot.get_or_fetch_message(ctx.channel, text, partial=False)
+            return msg if msg is not None else text  # type: ignore
+        return msg
 
     async def _get_text_and_embed(
         self, ctx: Context, text: str
     ) -> Tuple[str, Optional[discord.Embed]]:
         embed = None
 
+        assert isinstance(ctx.author, discord.Member)
+
         msg = await self._get_discord_message(ctx, text)
         # Ensure the user has read permissions for the channel the message is in
-        if isinstance(msg, discord.Message):
-            permissions = msg.channel.permissions_for(ctx.author)
-            if permissions.read_messages:
-                text = msg.clean_content
-                # Take first embed because we can't send multiple embeds
-                if msg.embeds:
-                    embed = msg.embeds[0]
+        if (
+            isinstance(msg, discord.Message)
+            and msg.channel.permissions_for(ctx.author).read_messages
+        ):
+            text = msg.clean_content
+            # Take first embed because we can't send multiple embeds
+            if msg.embeds:
+                embed = msg.embeds[0]
 
         return (text, embed)
 
     def _convert_embed(
         self,
-        func: Callable[
-            [
-                str,
-            ],
-            str,
-        ],
+        func: Callable[[str], str],
         embed: discord.Embed,
     ) -> discord.Embed:
         """
@@ -585,6 +586,7 @@ class Fun(Cog):
                 f"> Usage: `{ctx.clean_prefix}trivia --token {token}`\n"
                 "Token will be reset in 6hour of inactivity",
                 delete_after=300,
+                view=ctx.send_view(label=f"Sent from {ctx.guild}"),
             )
         except discord.Forbidden:
             await ctx.send(

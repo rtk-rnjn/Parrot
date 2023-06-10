@@ -923,7 +923,7 @@ class Parrot(commands.AutoShardedBot):
         channel: Union[  # type: ignore
             discord.Object, int, discord.abc.Messageable, discord.PartialMessageable
         ],
-        message: int,
+        message: Union[int, str],
         *,
         fetch: bool = True,
         cache: bool = True,
@@ -953,6 +953,8 @@ class Parrot(commands.AutoShardedBot):
         Optional[discord.Message]
             The Message or None if not found.
         """
+
+        message = int(message)
 
         if isinstance(channel, int):
             if force_fetch:

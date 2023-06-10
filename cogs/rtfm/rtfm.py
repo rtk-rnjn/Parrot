@@ -138,7 +138,7 @@ class RTFM(Cog):
             name="Bookmark",
             callback=self._bookmark_context_menu_callback,
         )
-        self.bot.add_command(self.__bookmark_context_menu_callback)
+        self.bot.tree.add_command(self.__bookmark_context_menu_callback)
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:

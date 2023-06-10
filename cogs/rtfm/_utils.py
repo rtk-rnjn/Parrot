@@ -4,6 +4,7 @@ import asyncio
 import pathlib
 import re
 import subprocess
+import time
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
@@ -237,10 +238,12 @@ class LintCode:
 
     def __init__(
         self,
-        flag: Union[Flake8Converter, MypyConverter, PyLintConverter, BanditConverter],
+        flag: Union[
+            Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, str
+        ],
     ) -> None:
         self.get_code()
-        self.codeblock = flag.code
+        self.codeblock = flag if isinstance(flag, str) else flag.code
         self.flag = flag
 
     def get_code(self) -> str:
@@ -285,12 +288,47 @@ class LintCode:
         data = await lint(cmd_str, filename) if cmd_str else {}
 
         if not data:
-            await ctx.send("No output.")
+            await ctx.reply("No output.")
             return
 
         if "main" in data:
-            await ctx.send(f"```diff\n{data['main']}```")
+            await ctx.reply(f"```diff\n{data['main']}```")
         if "stdout" in data:
-            await ctx.send(f"```diff\n[stdout]\n{data['stdout']}```")
+            await ctx.reply(f"```diff\n[stdout]\n{data['stdout']}```")
         if "stderr" in data:
-            await ctx.send(f"```diff\n[stderr]\n{data['stderr']}```")
+            await ctx.reply(f"```diff\n[stderr]\n{data['stderr']}```")
+
+    async def run_black(self, ctx: Context) -> None:
+        from black import FileMode, format_str
+
+        ini = time.perf_counter()
+        res = await ctx.bot.func(format_str, self.source, mode=FileMode())
+        end = time.perf_counter()
+
+        await ctx.reply(
+            f"```css\n[Formated Code {int(end-ini)} seconds]``````py\n{res}```"
+        )
+
+    async def run_isort(self, ctx: Context) -> None:
+        import isort
+
+        ini = time.perf_counter()
+        res = await ctx.bot.func(isort.code, self.source)
+        end = time.perf_counter()
+
+        await ctx.reply(
+            f"```css\n[Formated Code {int(end-ini)} seconds]``````py\n{res}```"
+        )
+
+    async def run_isort_with_black(self, ctx: Context) -> None:
+        import isort
+        from black import FileMode, format_str
+
+        ini = time.perf_counter()
+        res = await ctx.bot.func(isort.code, self.source)
+        res = await ctx.bot.func(format_str, res, mode=FileMode())
+        end = time.perf_counter()
+
+        await ctx.reply(
+            f"```css\n[Formated Code {int(end-ini)} seconds]``````py\n{res}```"
+        )

@@ -33,7 +33,7 @@ def validate_flake8_code(code: str) -> List[str]:
 
 
 def validate_flag(flag: Flake8Converter) -> str:
-    cmd = "flake8 -v --color=never --count"
+    cmd = "flake8 -v --color=never --count "
     if flag.ignore:
         _ig = flag.ignore.replace(",", " ")
         if codes := validate_flake8_code(_ig):

@@ -203,8 +203,8 @@ class Highlight(Cog):
 
         # Prepare highlight message
         initial_description = (
-            f"In {message.channel.mention} for `{discord.utils.escape_markdown(message.guild.name)}`"
-            f"you were highlighted with the word **{discord.utils.escape_markdown(word['word'])}**\n\n"
+            f"In {message.channel.mention} for `{(message.guild.name)}`"
+            f"you were highlighted with the word **{(word['word'])}**\n\n"
         )
 
         em = (
@@ -231,11 +231,11 @@ class Highlight(Cog):
                 content = discord.utils.escape_markdown(message.content[:2000])
         else:
             content = discord.utils.escape_markdown(message.content[: span[0]])
-            content += f"**{discord.utils.escape_markdown(text)}**"
+            content += f"**{text}**"
             content += discord.utils.escape_markdown(message.content[span[1] :])
 
         timestamp = message.created_at.timestamp()
-        em.description = f"<t:{int(timestamp)}:t> {discord.utils.escape_markdown(str(message.author))}: {content}"
+        em.description = f"<t:{int(timestamp)}:T> {message.author.mention}: {content}"
 
         # Add some history
         try:
@@ -243,7 +243,7 @@ class Highlight(Cog):
                 content = f"{ms.content[:50]}{'...' if len(ms.content) > 50 else ''}"
                 timestamp = ms.created_at.timestamp()
 
-                text = f"<t:{int(timestamp)}:t> {discord.utils.escape_markdown(str(ms.author))}: {discord.utils.escape_markdown(content)}\n"
+                text = f"<t:{int(timestamp)}:T> {ms.author.mention}: {discord.utils.escape_markdown(content)}\n"
 
                 if len(initial_description + em.description + text) <= 4096:
                     em.description = text + em.description
@@ -274,6 +274,7 @@ class Highlight(Cog):
                                 "user_id": word["user_id"],
                                 "word": word["word"],
                                 "invoked_at": message.created_at.isoformat(),
+                                "content": message.content,
                             }
                         }
                     },

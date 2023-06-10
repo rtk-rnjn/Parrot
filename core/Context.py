@@ -7,7 +7,6 @@ import datetime
 import functools
 import io
 import logging
-import time
 from contextlib import suppress
 from operator import attrgetter
 from typing import (
@@ -15,7 +14,6 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Coroutine,
     Dict,
     Generic,
     Iterable,
@@ -47,8 +45,8 @@ if TYPE_CHECKING:
 
     P = ParamSpec("P")
 
-    MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]  # type: ignore
-    MongoCollection: TypeAlias = Collection
+    MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]
+    MongoCollection: TypeAlias = Type[Collection]  # type: ignore
 
 
 T = TypeVar("T")
@@ -93,7 +91,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         return self.bot.http_session
 
     async def tick(
-        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None
+        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None
     ) -> None:
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
 
@@ -102,7 +100,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         return await self.tick()
 
     async def wrong(
-        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str] = None
+        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None
     ) -> None:
         log.info("Adding wrong reaction to message %s", self.message.id)
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
@@ -132,6 +130,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def dj_role(
         self,
     ) -> Optional[discord.Role]:
+        assert self.guild is not None and isinstance(self.author, discord.Member)
+
         if channel := getattr(self.author.voice, "channel"):
             # channel: discord.VoiceChannel
             members = sum(not m.bot for m in channel.members)  # type: ignore  # channel is surely the voice channel
@@ -164,6 +164,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def muterole(
         self,
     ) -> Optional[discord.Role]:
+        assert self.guild is not None and isinstance(self.author, discord.Member)
+
         try:
             author_muted = discord.utils.find(
                 lambda m: m.name.lower() == "muted", self.author.roles
@@ -188,6 +190,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def modrole(
         self,
     ) -> Optional[discord.Role]:
+        assert self.guild is not None and isinstance(self.author, discord.Member)
+
         try:
             return self.guild.get_role(
                 self.bot.guild_configurations_cache[self.guild.id]["mod_role"] or 0
@@ -207,7 +211,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         return None
 
     @staticmethod
-    def with_type(func: Callable[..., Any]) -> Coroutine[Any, Any, Any]:
+    def with_type(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
         async def wrapped(*args: Any, **kwargs: Any) -> Any:
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
@@ -225,6 +229,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         underline: bool = False,
         **kwargs: Any,
     ) -> Optional[discord.Message]:
+        assert isinstance(self.me, discord.Member)
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
@@ -241,7 +246,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             content = f"*{content}*"
         if underline:
             content = f"__{content}__"
-        embeds: Union[discord.Embed, List[discord.Embed]] = kwargs.get(
+        embeds: Union[discord.Embed, List[discord.Embed], None] = kwargs.get(
             "embed"
         ) or kwargs.get("embeds")
 
@@ -279,7 +284,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def error(self, *args: Any, **kwargs: Any) -> Optional[discord.Message]:
         """Similar to send, but if the original message is deleted, it will delete the error message as well."""
-        embed: discord.Embed = kwargs.get("embed")
+        embed: Optional[discord.Embed] = kwargs.get("embed")
         if isinstance(embed, discord.Embed) and not embed.color:
             # if no color is set, set it to red
             embed.color = discord.Color.red()
@@ -319,7 +324,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         output.append("```")
         return await self.send("\n".join(output))
 
-    async def emoji(self, emoji: str) -> str:
+    async def emoji(self, emoji: str) -> discord.PartialEmoji:
         return emojis[emoji]
 
     async def prompt(
@@ -371,7 +376,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def release(
         self,
-        _for: Union[int, float, datetime.datetime] = None,
+        _for: Union[int, float, datetime.datetime, None] = None,
         *,
         result: Optional[T] = None,
     ) -> Optional[T]:
@@ -396,7 +401,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def bulk_add_reactions(
         self,
-        message: Optional[discord.Message] = None,
+        message: Optional[discord.Message] = None,  # type: ignore
         *reactions: Union[discord.Emoji, discord.PartialEmoji, str],
     ) -> None:
         if message is None or not isinstance(message, discord.Message):
@@ -410,7 +415,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def get_or_fetch_message(
         self, *args: Any, **kwargs: Any
-    ) -> Optional[discord.Message]:
+    ) -> Union[discord.PartialMessage, discord.Message, None]:
         """Shortcut for bot.get_or_fetch_message(...)"""
         return await self.bot.get_or_fetch_message(*args, **kwargs)
 
@@ -666,7 +671,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         return await asyncio.wait(
             _events,
-            timeout=timeout + 0.001,
+            timeout=(timeout or 0) + 0.001,
             return_when=getattr(asyncio, return_when, "FIRST_COMPLETED"),
         )
 
@@ -677,7 +682,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         ],
         *,
         _for: Union[float, int, None] = None,
-        after: Union[float, int] = None,
+        after: Union[float, int, None] = None,
         **kwargs: Any,
     ) -> List[Any]:
         """|coro|
@@ -735,11 +740,12 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         callback: Callable[..., Any],
         *args: Any,
         multiplier: int = 5,
-        retries: 5,
+        retries: int = 5,
         exception: Type[Exception] = Exception,
         **kwargs: Any,
-    ):
-        errors: Dict[int, str] = {}
+    ) -> Type[Exception]:
+        errors: Dict[int, Exception] = {}
+        retry: int = 0
         for retry in range(max(retries, 1)):
             try:
                 return await discord.utils.maybe_coroutine(callback, *args, **kwargs)
@@ -819,8 +825,10 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def database_command_update(
         self, *, success: bool = False, error: Optional[str] = None, **kwargs: Any
     ) -> Dict[str, Any]:
+        assert self.guild is not None
+
         if self.command is None:
-            return
+            return {}
 
         cmd = self.command.qualified_name
         cmd = cmd.replace(" ", "_")

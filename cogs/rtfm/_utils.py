@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import pathlib
 import re
 import subprocess
@@ -223,11 +224,13 @@ async def lint(cmd: str, filename: str) -> Dict[str, str]:
 
     stdout, stderr = await proc.communicate()
 
-    payload = {"main": f"[{cmd!r} exited with {proc.returncode}]"}
+    payload = {"main": f"{cmd!r} exited with {proc.returncode}"}
     if stdout:
         payload["stdout"] = stdout.decode()
     if stderr:
         payload["stderr"] = stderr.decode()
+
+    os.remove(filename)
 
     return payload
 

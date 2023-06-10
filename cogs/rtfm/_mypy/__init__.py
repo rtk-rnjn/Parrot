@@ -246,3 +246,5 @@ def validate_flag(flag: MypyConverter) -> str:
 
     if flag.pretty:
         cmd_str += " --pretty"
+
+    return f"{cmd_str} "

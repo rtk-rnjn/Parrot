@@ -52,3 +52,5 @@ def validate_flag(flag: BanditConverter) -> str:
             cmd += " -ii"
         elif flag.confidence == "high":
             cmd += " -iii"
+
+    return f"{cmd} "

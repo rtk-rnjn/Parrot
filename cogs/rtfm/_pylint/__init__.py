@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Literal
+from typing import List, Literal, Optional
 
 from discord.ext import commands
 
@@ -14,12 +14,12 @@ class PyLintConverter(
     code: str
     confidence: Literal[
         "HIGH", "CONTROL_FLOW", "INFERENCE_FAILURE", "INTERENCE", "UNDEFINED"
-    ] = commands.flag(aliases=["c"])
-    disable: str = commands.flag(aliases=["d"])
-    enable: str = commands.flag(aliases=["e"])
+    ] = "HIGH"
+    disable: Optional[str] = None
+    enable: Optional[str] = None
 
 
-def validate_pylint_code(code: str) -> str:
+def validate_pylint_code(code: str) -> List[str]:
     return POSSIBLE_PYLINT_CODE.findall(code)
 
 
@@ -33,4 +33,4 @@ def validate_flag(flag: PyLintConverter) -> str:
     if flag.enable:
         if codes := validate_pylint_code(flag.enable):
             cmd_str += f" --enable={','.join(codes)}"
-    return cmd_str
+    return f"{cmd_str} "

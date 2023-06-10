@@ -8,6 +8,7 @@ from discord.ext import commands
 class MypyConverter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
+    code: str
     # Import Discovery
     no_namespace_packages: Optional[bool] = None
     ignore_missing_imports: Optional[bool] = None

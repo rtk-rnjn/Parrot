@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 import aiofiles
 
 import discord
+from core import Context
 
 languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
@@ -198,10 +199,10 @@ from ._bandit import BanditConverter
 from ._bandit import validate_flag as bandit_validate_flag
 from ._flake8 import Flake8Converter
 from ._flake8 import validate_flag as flake8_validate_flag
-from ._pylint import PyLintConverter
-from ._pylint import validate_flag as pylint_validate_flag
 from ._mypy import MypyConverter
 from ._mypy import validate_flag as mypy_validate_flag
+from ._pylint import PyLintConverter
+from ._pylint import validate_flag as pylint_validate_flag
 
 
 async def code_to_file(code: str) -> str:
@@ -234,9 +235,13 @@ class LintCode:
     source: str
     language: Union[str, None]
 
-    def __init__(self, codeblock: str) -> None:
-        self.codeblock = codeblock
+    def __init__(
+        self,
+        flag: Union[Flake8Converter, MypyConverter, PyLintConverter, BanditConverter],
+    ) -> None:
         self.get_code()
+        self.codeblock = flag.code
+        self.flag = flag
 
     def get_code(self) -> str:
         try:
@@ -254,12 +259,11 @@ class LintCode:
 
         return self.source
 
-    def set_linttype(self, linttype: str) -> None:
+    def set_linttype(self, linttype: str) -> LintCode:
         self.linttype = linttype
+        return self
 
-    async def lint(
-        self, *, flag: Union[Flake8Converter, BanditConverter, PyLintConverter, MypyConverter]
-    ) -> dict:
+    async def lint(self, ctx: Context) -> None:
         if self.linttype not in {"flake8", "bandit", "pylint", "mypy"}:
             return {}
 
@@ -270,12 +274,23 @@ class LintCode:
 
         cmd_str = ""
         if self.linttype == "flake8":
-            cmd_str = await flake8_validate_flag(flag)
+            cmd_str = await flake8_validate_flag(self.flag)
         elif self.linttype == "bandit":
-            cmd_str = await bandit_validate_flag(flag)
+            cmd_str = await bandit_validate_flag(self.flag)
         elif self.linttype == "pylint":
-            cmd_str = await pylint_validate_flag(flag)
+            cmd_str = await pylint_validate_flag(self.flag)
         elif self.linttype == "mypy":
-            cmd_str = await mypy_validate_flag(flag)
+            cmd_str = await mypy_validate_flag(self.flag)
 
-        return await lint(cmd_str, filename) if cmd_str else {}
+        data = await lint(cmd_str, filename) if cmd_str else {}
+
+        if not data:
+            await ctx.send("No output.")
+            return
+
+        if "main" in data:
+            await ctx.send(f"```diff\n{data['main']}```")
+        if "stdout" in data:
+            await ctx.send(f"```diff\n[stdout]\n{data['stdout']}```")
+        if "stderr" in data:
+            await ctx.send(f"```diff\n[stderr]\n{data['stderr']}```")

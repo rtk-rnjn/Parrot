@@ -53,8 +53,13 @@ from ._utils import (
     TIMEOUT,
     URL,
     WTF_PYTHON_RAW_URL,
+    BanditConverter,
+    Flake8Converter,
     Icons,
     InformationDropdown,
+    LintCode,
+    MypyConverter,
+    PyLintConverter,
 )
 
 try:
@@ -1534,3 +1539,17 @@ class RTFM(Cog):
             )
         p = SimplePages(ls, ctx=ctx, per_page=3)
         await p.start()
+
+    @commands.group(name="lintcode", aliases=["lint"], invoke_without_command=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def lintcode(self, ctx: Context):
+        """To lint your codes"""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @lintcode.command(name="flake8", aliases=["f8", "flake"])
+    async def lintcode_flake8(self, ctx: Context, flag: Flake8Converter):
+        """Lint code with flake8"""
+        linter = LintCode(flag).set_linttype("flake8")
+        await linter.lint(ctx)

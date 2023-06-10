@@ -18,6 +18,7 @@ POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,3})")
 class Flake8Converter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
+    code: str
     ignore: Optional[str] = None
     select: Optional[str] = None
     max_line_length: Optional[int] = None

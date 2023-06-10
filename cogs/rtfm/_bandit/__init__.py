@@ -14,6 +14,7 @@ POSSIBLE_BANDIT_CODE = re.compile(r"([A-Z]\d{2,3})")
 class BanditConverter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
+    code: str
     read: Optional[bool] = None
     verbose: Optional[bool] = None
     skip: Optional[str] = None

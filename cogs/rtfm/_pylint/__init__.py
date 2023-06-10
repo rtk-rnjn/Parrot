@@ -11,6 +11,7 @@ POSSIBLE_PYLINT_CODE = re.compile(r"([A-Z]\d{4})")
 class PyLintConverter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
+    code: str
     confidence: Literal[
         "HIGH", "CONTROL_FLOW", "INFERENCE_FAILURE", "INTERENCE", "UNDEFINED"
     ] = commands.flag(aliases=["c"])

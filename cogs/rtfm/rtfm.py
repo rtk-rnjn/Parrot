@@ -24,6 +24,7 @@ from bs4.element import NavigableString
 import discord
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
+from discord import app_commands
 from discord.ext import commands, tasks
 from utilities.converters import WrappedMessageConverter
 
@@ -66,6 +67,59 @@ except ImportError:
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
+class BookmarkForm(discord.ui.Modal):
+    """The form where a user can fill in a custom title for their bookmark & submit it."""
+
+    bookmark_title = discord.ui.TextInput(
+        label="Choose a title for your bookmark (optional)",
+        placeholder="Type your bookmark title here",
+        default="Bookmark",
+        max_length=50,
+        min_length=0,
+        required=False,
+    )
+
+    def __init__(self, message: discord.Message):
+        super().__init__(timeout=1000, title="Name your bookmark")
+        self.message = message
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """Sends the bookmark embed to the user with the newly chosen title."""
+        title = self.bookmark_title.value or self.bookmark_title.default
+        try:
+            await self.dm_bookmark(interaction, self.message, title)
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                embed=RTFM.build_error_embed(
+                    "Enable your DMs to receive the bookmark."
+                ),
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            embed=RTFM.build_success_reply_embed(self.message),
+            ephemeral=True,
+        )
+
+    async def dm_bookmark(
+        self,
+        interaction: discord.Interaction,
+        target_message: discord.Message,
+        title: str,
+    ) -> None:
+        """
+        Sends the target_message as a bookmark to the interaction user's DMs.
+
+        Raises ``discord.Forbidden`` if the user's DMs are closed.
+        """
+        embed = RTFM.build_bookmark_dm(target_message, title)
+        message_url_view = discord.ui.View().add_item(
+            discord.ui.Button(label="View Message", url=target_message.jump_url)
+        )
+        await interaction.user.send(embed=embed, view=message_url_view)
+
+
 class RTFM(Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
 
@@ -75,6 +129,11 @@ class RTFM(Cog):
         self.ON_TESTING = False
         self.headers: Dict[str, str] = {}
         self.fetch_readme.start()
+        self.__bookmark_context_menu_callback = app_commands.ContextMenu(
+            name="Bookmark",
+            callback=self._bookmark_context_menu_callback,
+        )
+        self.bot.add_command(self.__bookmark_context_menu_callback)
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:
@@ -107,6 +166,31 @@ class RTFM(Cog):
         embed.set_thumbnail(url=Icons.bookmark)
 
         return embed
+
+    @staticmethod
+    def build_success_reply_embed(target_message: discord.Message) -> discord.Embed:
+        """Build the ephemeral reply embed to the bookmark requester."""
+        return discord.Embed(
+            description=(
+                f"A bookmark for [this message]({target_message.jump_url}) has been successfully sent your way."
+            ),
+            color=discord.Color.green(),
+        )
+
+    async def _bookmark_context_menu_callback(
+        self, interaction: discord.Interaction, message: discord.Message
+    ) -> None:
+        """The callback that will be invoked upon using the bookmark's context menu command."""
+        permissions = interaction.channel.permissions_for(interaction.user)
+        if not permissions.read_messages:
+            embed = self.build_error_embed(
+                "You don't have permission to view this channel."
+            )
+            await interaction.response.send_message(embed=embed)
+            return
+
+        bookmark_title_form = BookmarkForm(message=message)
+        await interaction.response.send_modal(bookmark_title_form)
 
     @staticmethod
     def build_error_embed(user: Union[discord.Member, discord.User]) -> discord.Embed:

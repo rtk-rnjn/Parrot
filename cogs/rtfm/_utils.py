@@ -384,7 +384,7 @@ class LintCode:
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
             await interface.add_line(
-                f"\n{Fore.BLUE}Diagnosed completed in {json_data['summary']['timeInSec']} seconds\n"
+                f"\n{Fore.MAGENTA}Diagnosed completed in {json_data['summary']['timeInSec']} seconds\n"
             )
 
             if json_data["generalDiagnostics"]:
@@ -434,7 +434,7 @@ class LintCode:
                 for error in result:
                     line = f"{Fore.GREEN}{error['line_number']}"
                     column = f"{Fore.GREEN}{error['column_number']}"
-                    code = f"{Fore.WHITE}{error['code']}"
+                    code = f"{Fore.RED}{error['code']}"
                     message = f"{Fore.BLUE}{error['text']}"
                     physical_line = f"{Fore.CYAN}{error['physical_line']}"
                     await interface.add_line(

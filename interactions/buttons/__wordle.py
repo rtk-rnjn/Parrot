@@ -263,7 +263,7 @@ class BetaWordle(Wordle):
 
     async def start(
         self,
-        ctx: commands.Context[Parrot],
+        ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
         timeout: Optional[float] = None,
@@ -272,7 +272,7 @@ class BetaWordle(Wordle):
         starts the wordle(buttons) game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         embed_color : DiscordColor, optional
             the color of the game embed, by default DEFAULT_COLOR

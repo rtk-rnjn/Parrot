@@ -158,7 +158,7 @@ class Sector1729(Cog):
         if ctx.author._roles.has(VOTER_ROLE_ID):
             return await ctx.error("You already have the vote role.")
 
-        if await self.bot.mongo.extra.user_misc.find_one(
+        if await self.bot.user_collections_ind.find_one(
             {"_id": ctx.author.id, "topgg_vote_expires": {"$gte": time()}}
         ) or await self.bot.topgg.get_user_vote(ctx.author.id):
             role = discord.Object(id=VOTER_ROLE_ID)
@@ -187,7 +187,7 @@ class Sector1729(Cog):
             await ctx.send("You haven't voted for the bot on Top.gg yet.")
 
     async def __add_to_db(self, member: discord.Member) -> None:
-        col: Collection = self.bot.mongo.extra.user_misc
+        col: Collection = self.bot.user_collections_ind
         now = time()
         await col.update_one(
             {"_id": member.id},
@@ -204,7 +204,7 @@ class Sector1729(Cog):
     @tasks.loop(minutes=5)
     async def vote_reseter(self):
         async with self.lock:
-            col: Collection = self.bot.mongo.extra.user_misc
+            col: Collection = self.bot.user_collections_ind
             now_plus_12_hours = time() + 43200
 
             async for doc in col.find(
@@ -266,7 +266,9 @@ class Sector1729(Cog):
         if not color:
             return
 
-        role = discord.utils.get(ctx.bot.server.roles, name=f"COLOR {color.upper()}")
+        role = discord.utils.get(
+            ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}"
+        )
         if role is None:
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
@@ -284,7 +286,9 @@ class Sector1729(Cog):
         if not color:
             return
 
-        role = discord.utils.get(ctx.bot.server.roles, name=f"COLOR {color.upper()}")
+        role = discord.utils.get(
+            ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}"
+        )
         if role is None:
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
@@ -304,7 +308,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
 
-        if role.id not in self.__assignable_roles:
+        if not role.name.startswith("[SELF]"):
             await ctx.error(
                 f"{ctx.author.roles} you don't have permission to assign yourself that role"
             )
@@ -327,7 +331,7 @@ class Sector1729(Cog):
 
         if role.id not in self.__assignable_roles:
             await ctx.error(
-                f"{ctx.author.roles} you don't have permission to unassign yourself that role"
+                f"{ctx.author.mention} you don't have permission to unassign yourself that role"
             )
             return
 

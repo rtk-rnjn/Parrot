@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
 from typing import List, Literal, Optional
 
-import aiofiles
-
 from discord.ext import commands
+from utilities.converters import convert_bool
 
 POSSIBLE_BANDIT_CODE = re.compile(r"([A-Z]\d{2,3})")
 
@@ -15,8 +13,8 @@ class BanditConverter(
     commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
 ):
     code: str
-    read: Optional[bool] = None
-    verbose: Optional[bool] = None
+    read: Optional[convert_bool] = None
+    verbose: Optional[convert_bool] = None
     skip: Optional[str] = None
     level: Optional[Literal["low", "medium", "high"]] = None
     confidence: Optional[Literal["low", "medium", "high"]] = None

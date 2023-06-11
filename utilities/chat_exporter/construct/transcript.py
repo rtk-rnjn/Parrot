@@ -5,7 +5,7 @@ import traceback
 from typing import List, Optional
 
 import discord
-from discord.ext import commands
+from core import Parrot
 
 from ..construct.assets.component import Component
 from ..construct.message import Message
@@ -25,7 +25,7 @@ class TranscriptDAO:
         messages: Optional[List[discord.Message]],
         pytz_timezone,
         military_time: bool,
-        bot: Optional[commands.Bot],
+        bot: Optional[Parrot],
     ):
         self.channel = channel
         self.messages = messages

@@ -24,7 +24,6 @@ import aiohttp
 from .errors import APIException
 from .utils import MISSING
 
-
 if TYPE_CHECKING:
     from types import TracebackType
 
@@ -49,7 +48,9 @@ def _clean_dt(dt: datetime.datetime) -> str:
     return dt.isoformat()
 
 
-async def json_or_text(response: aiohttp.ClientResponse, /) -> Union[dict[str, Any], str]:
+async def json_or_text(
+    response: aiohttp.ClientResponse, /
+) -> Union[dict[str, Any], str]:
     """A quick method to parse a `aiohttp.ClientResponse` and test if it's json or text."""
     text = await response.text(encoding="utf-8")
     try:
@@ -99,7 +100,12 @@ class Route:
         self.path: str = path
         url = self.API_BASE + path
         if params:
-            url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in params.items()})
+            url = url.format_map(
+                {
+                    k: _uriquote(v) if isinstance(v, str) else v
+                    for k, v in params.items()
+                }
+            )
         self.url: str = url
 
 
@@ -112,10 +118,14 @@ class HTTPClient:
         "user_agent",
     )
 
-    def __init__(self, *, token: Optional[str], session: Optional[aiohttp.ClientSession] = None) -> None:
+    def __init__(
+        self, *, token: Optional[str], session: Optional[aiohttp.ClientSession] = None
+    ) -> None:
         self._token: Optional[str] = token
         self._session: Optional[aiohttp.ClientSession] = session
-        self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
+        self._locks: weakref.WeakValueDictionary[
+            str, asyncio.Lock
+        ] = weakref.WeakValueDictionary()
         user_agent = "mystbin.py (https://github.com/PythonistaGuild/mystbin.py) Python/{0[0]}.{0[1]} aiohttp/{1}"
         self.user_agent: str = user_agent.format(sys.version_info, aiohttp.__version__)
 
@@ -145,7 +155,9 @@ class HTTPClient:
 
         if "json" in kwargs:
             headers["Content-Type"] = "application/json"
-            kwargs["data"] = json.dumps(kwargs.pop("json"), separators=(",", ":"), ensure_ascii=True)
+            kwargs["data"] = json.dumps(
+                kwargs.pop("json"), separators=(",", ":"), ensure_ascii=True
+            )
             LOGGER.debug("Current json body is: %s", str(kwargs["data"]))
 
         kwargs["headers"] = headers
@@ -158,7 +170,9 @@ class HTTPClient:
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
                 try:
-                    async with self._session.request(route.verb, route.url, **kwargs) as response:
+                    async with self._session.request(
+                        route.verb, route.url, **kwargs
+                    ) as response:
                         # Requests remaining before ratelimit
                         remaining = response.headers.get("x-ratelimit-remaining", None)
                         LOGGER.debug("remaining is: %s", remaining)
@@ -175,7 +189,10 @@ class HTTPClient:
                             assert retry is not None
                             delta = retry - datetime.datetime.now()
                             sleep = delta.total_seconds() + 1
-                            LOGGER.warning("A ratelimit has been exhausted, sleeping for: %d", sleep)
+                            LOGGER.warning(
+                                "A ratelimit has been exhausted, sleeping for: %d",
+                                sleep,
+                            )
                             maybe_lock.defer()
                             loop = asyncio.get_running_loop()
                             loop.call_later(sleep, lock.release)
@@ -189,23 +206,34 @@ class HTTPClient:
                             assert retry is not None
                             delta = retry - datetime.datetime.now()
                             sleep = delta.total_seconds() + 1
-                            LOGGER.warning("A ratelimit has been hit, sleeping for: %d", sleep)
+                            LOGGER.warning(
+                                "A ratelimit has been hit, sleeping for: %d", sleep
+                            )
                             await asyncio.sleep(sleep)
                             continue
 
                         if response.status in {500, 502, 503, 504}:
                             sleep_ = 1 + tries * 2
-                            LOGGER.warning("Hit an API error, trying again in: %d", sleep_)
+                            LOGGER.warning(
+                                "Hit an API error, trying again in: %d", sleep_
+                            )
                             await asyncio.sleep(sleep_)
                             continue
 
                         assert isinstance(data, dict)
-                        LOGGER.exception("Unhandled HTTP error occurred: %s -> %s", response.status, data)
+                        LOGGER.exception(
+                            "Unhandled HTTP error occurred: %s -> %s",
+                            response.status,
+                            data,
+                        )
                         raise APIException(
                             response=response,
                             status_code=response.status,
                         )
-                except (aiohttp.ServerDisconnectedError, aiohttp.ServerTimeoutError) as error:
+                except (
+                    aiohttp.ServerDisconnectedError,
+                    aiohttp.ServerTimeoutError,
+                ) as error:
                     LOGGER.exception("Network error occurred: %s", error)
                     await asyncio.sleep(5)
                     continue
@@ -248,7 +276,9 @@ class HTTPClient:
         route = Route("DELETE", "/paste")
         return self.request(route=route, json={"pastes": paste_ids})
 
-    def get_paste(self, *, paste_id: str, password: Optional[str]) -> Response[PasteResponse]:
+    def get_paste(
+        self, *, paste_id: str, password: Optional[str]
+    ) -> Response[PasteResponse]:
         route = Route("GET", "/paste/{paste_id}", paste_id=paste_id)
 
         if password:

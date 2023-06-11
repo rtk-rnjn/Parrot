@@ -23,6 +23,7 @@ from typing import (
 from PIL import Image, ImageDraw
 
 import discord
+from core import Context, Parrot
 from discord.ext import commands
 from utilities.converters import ToAsync
 
@@ -281,9 +282,7 @@ class BattleShip:
         else:
             return None
 
-    async def get_ship_inputs(
-        self, ctx: commands.Context[commands.Bot], user: discord.User
-    ) -> bool:
+    async def get_ship_inputs(self, ctx: Context[Parrot], user: discord.User) -> bool:
         board = self.get_board(user)
 
         async def place_ship(ship: str, size: int, color: Tuple[int, int, int]) -> bool:
@@ -351,13 +350,13 @@ class BattleShip:
         return True
 
     async def start(
-        self, ctx: commands.Context[commands.Bot], *, timeout: Optional[float] = None
+        self, ctx: Context[Parrot], *, timeout: Optional[float] = None
     ) -> Tuple[discord.Message, discord.Message]:
         """
         starts the battleship game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         timeout : Optional[float], optional
             the timeout for when waiting, by default None
@@ -856,7 +855,7 @@ class BetaBattleShip(BattleShip):
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         max_log_size: int = 10,
         embed_color: DiscordColor = DEFAULT_COLOR,
@@ -866,7 +865,7 @@ class BetaBattleShip(BattleShip):
         starts the battleship(buttons) game
         Parameters
         ----------
-        ctx : commands.Context[commands.Bot]
+        ctx : Context[Parrot]
             the context of the invokation command
         max_log_size : int, optional
             indicates the length of the move log to show, by default 10

@@ -295,7 +295,7 @@ class Misc(Cog):
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
-    async def latex(self, ctx: commands.Context, *, query: str) -> None:
+    async def latex(self, ctx: Context, *, query: str) -> None:
         """Renders the text in latex and sends the image."""
         query = _prepare_input(query)
         query_hash = hashlib.md5(query.encode()).hexdigest()

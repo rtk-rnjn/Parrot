@@ -1579,3 +1579,10 @@ class Configuration(Cog):
             await ctx.send(
                 f"{ctx.author.mention} This code is invalid. Please ask for new code in support server"
             )
+
+    @Cog.listener()
+    async def on_command(self, ctx: Context):
+        assert ctx.guild is not None
+
+        if ctx.cog and ctx.cog.qualified_name.lower == self.__class__.__name__.lower():
+            self.bot.update_server_config_cache.start(ctx.guild.id)

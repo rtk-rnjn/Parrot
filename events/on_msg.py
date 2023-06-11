@@ -382,7 +382,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return self.bot.banned_users[member.id].get("global", False)  # type: ignore
         except (AttributeError, KeyError):
             pass
-    
+
         return False
 
     def get_emoji_count(self, message_content: str) -> int:

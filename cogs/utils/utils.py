@@ -94,7 +94,10 @@ class Utils(Cog):
             )
             try:
                 await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
-                await ctx.author.send(text, view=ctx.send_view(),)
+                await ctx.author.send(
+                    text,
+                    view=ctx.send_view(),
+                )
             except discord.Forbidden:
                 await ctx.reply(text)
 
@@ -149,7 +152,10 @@ class Utils(Cog):
     @remindme.command(name="dm")
     @Context.with_type
     async def remindmedm(
-        self, ctx: Context, *, when: Annotated[
+        self,
+        ctx: Context,
+        *,
+        when: Annotated[
             FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
         ],
     ) -> None:
@@ -161,7 +167,10 @@ class Utils(Cog):
         )
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
-            await ctx.author.send(text, view=ctx.send_view(),)
+            await ctx.author.send(
+                text,
+                view=ctx.send_view(),
+            )
         except discord.Forbidden:
             await ctx.reply(text)
 
@@ -179,7 +188,10 @@ class Utils(Cog):
     @remindme.command(name="loop", aliases=["repeat"])
     @Context.with_type
     async def remindmeloop(
-        self, ctx: Context, *, when: Annotated[
+        self,
+        ctx: Context,
+        *,
+        when: Annotated[
             FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
         ],
     ):
@@ -222,7 +234,10 @@ class Utils(Cog):
         )
         try:
             await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
-            await ctx.author.send(text, view=ctx.send_view(),)
+            await ctx.author.send(
+                text,
+                view=ctx.send_view(),
+            )
         except discord.Forbidden:
             await ctx.reply(text)
 
@@ -768,7 +783,10 @@ class Utils(Cog):
             f"> {jump_url}"
         )
         try:
-            await ctx.author.send(content, view=ctx.send_view(),)
+            await ctx.author.send(
+                content,
+                view=ctx.send_view(),
+            )
         except discord.Forbidden:
             pass
 

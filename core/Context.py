@@ -112,7 +112,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         # if member := self.bot.server.get_member(self.author.id):
         #     return member._roles.has(VOTER_ROLE_ID)
 
-        # if data := await self.bot.mongo.extra.user_misc.find_one(
+        # if data := await self.bot.user_collections_ind.find_one(
         #     {
         #         "_id": self.author.id,
         #         "topgg_vote_expires": {"$gte": discord.utils.utcnow()},
@@ -559,7 +559,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def paginate(
         self,
-        entries: List[Any],
+        entries: Union[List[Any], str],
         *,
         _type: str = "SimplePages",
         **kwargs: Any,
@@ -588,6 +588,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if _type == "SimplePages":
             from cogs.meta.robopage import SimplePages
 
+            assert isinstance(entries, list)
+
             pages = SimplePages(
                 entries,
                 ctx=self,
@@ -599,11 +601,25 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if _type == "PaginationView":
             from utilities.paginator import PaginationView
 
+            assert isinstance(entries, list)
+
             pages = PaginationView(entries)
             await pages.start(
                 ctx=self,
             )
             return
+
+        if _type == "JishakuPaginatorInterface":
+            from jishaku.paginators import PaginatorInterface
+
+            assert isinstance(entries, str)
+
+            pages = commands.Paginator(**kwargs)
+            for line in entries.split("\n"):
+                pages.add_line(line)
+
+            interface = PaginatorInterface(self.bot, pages, owner=self.author)
+            await interface.send_to(self)
 
         raise ValueError("Invalid paginator type")
 
@@ -940,7 +956,9 @@ class ConfirmationView(discord.ui.View):
 
 
 class SentFromView(discord.ui.View):
-    def __init__(self, ctx: Context, *, timeout: float | None = 180, label: Optional[str] = None):
+    def __init__(
+        self, ctx: Context, *, timeout: float | None = 180, label: Optional[str] = None
+    ):
         super().__init__(timeout=timeout)
         self.ctx = ctx
 

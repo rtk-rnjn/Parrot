@@ -72,7 +72,7 @@ class MusicView(discord.ui.View):
         return True
 
     async def __add_to_playlist(self, user: Union[discord.User, discord.Member]):
-        await self.bot.mongo.extra.user_misc.update_one(
+        await self.bot.user_collections_ind.update_one(
             {"_id": user.id},
             {
                 "$addToSet": {
@@ -87,7 +87,7 @@ class MusicView(discord.ui.View):
         )
 
     async def __remove_from_playlist(self, user: Union[discord.User, discord.Member]):
-        await self.bot.mongo.extra.user_misc.update_one(
+        await self.bot.user_collections_ind.update_one(
             {"_id": user.id},
             {
                 "$pull": {

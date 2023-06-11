@@ -19,13 +19,11 @@ except ImportError:
 
 class ToAsync:
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
-
         self.executor = executor
 
     def __call__(self, blocking) -> Callable:
         @wraps(blocking)
         async def wrapper(*args, **kwargs) -> Any:
-
             loop = asyncio.get_event_loop()
             if not self.executor:
                 self.executor = ThreadPoolExecutor()
@@ -47,7 +45,6 @@ def parse_text(st: str) -> str:
 
 @ToAsync()
 def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[str]:
-
     if finder := soup.find(name, kwargs):
         return __parse_text(finder.text)
 

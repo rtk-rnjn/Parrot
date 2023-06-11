@@ -125,7 +125,7 @@ class CountryGuesser:
 
     async def wait_for_response(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         options: tuple[str, ...] = (),
         length: Optional[int] = None,
@@ -151,7 +151,7 @@ class CountryGuesser:
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         timeout: Optional[float] = None,
         embed_color: DiscordColor = DEFAULT_COLOR,
@@ -161,7 +161,7 @@ class CountryGuesser:
         starts the country-guesser game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         timeout : Optional[float], optional
             the timeout for when waiting, by default None
@@ -305,7 +305,7 @@ class CountryView(discord.ui.View):
         *,
         user: discord.User,
         timeout: float,
-        ctx: commands.Context[Parrot],
+        ctx: Context[Parrot],
     ) -> None:
         super().__init__(timeout=timeout)
 
@@ -378,7 +378,7 @@ class BetaCountryGuesser(CountryGuesser):
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
         ignore_diff_len: bool = False,
@@ -388,7 +388,7 @@ class BetaCountryGuesser(CountryGuesser):
         starts the Country Guesser(buttons) Game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         embed_color : DiscordColor, optional
             the color of the game embed, by default DEFAULT_COLOR

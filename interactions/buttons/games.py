@@ -14,10 +14,10 @@ from pathlib import Path
 from random import choice, sample
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 
+import pymongo
 from aiofile import async_open
 from discord.utils import MISSING
 from pymongo import ReturnDocument
-import pymongo
 from pymongo.collection import Collection
 
 import discord
@@ -66,9 +66,9 @@ from interactions.buttons.__games_utils import (
     MadlibsTemplate,
     MetaGameUI,
     boggle_game,
+    fenPass,
     is_game,
     is_no_game,
-    fenPass,
 )
 from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__memory_game import MemoryGame

@@ -1,11 +1,11 @@
 import re
-from typing import Optional, Union
+from typing import Union
 
 import discord
 from core import Parrot
 from discord.ext import commands
 
-bot: Union[commands.Bot, discord.Client, Parrot] = None
+bot: Union[commands.Bot, discord.Client, Parrot, None] = None
 
 
 def pass_bot(_bot):
@@ -29,7 +29,7 @@ class ParseMention:
     ESCAPE_GT = "______gt______"
     ESCAPE_AMP = "______amp______"
 
-    def __init__(self, content, guild):
+    def __init__(self, content, guild: discord.Guild):
         self.content = content
         self.guild = guild
 

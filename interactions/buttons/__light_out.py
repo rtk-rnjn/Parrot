@@ -14,7 +14,7 @@ from typing import (
 )
 
 import discord
-from core import Parrot
+from core import Context, Parrot
 from discord.ext import commands
 
 from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
@@ -42,11 +42,11 @@ def chunk(iterable: list[int], *, count: int) -> list[list[int]]:
 
 
 async def wait_for_delete(
-    ctx: commands.Context[commands.Bot],
+    ctx: Context[Parrot],
     message: discord.Message,
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
-    bot: Union[commands.Bot, Parrot] = None,
+    bot: Optional[Parrot] = None,
     user: Optional[Union[discord.User, tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
@@ -62,7 +62,7 @@ async def wait_for_delete(
             return _user in user if isinstance(user, tuple) else _user == user
         return False
 
-    bot: Union[commands.Bot, Parrot] = bot or ctx.bot
+    bot: Optional[Parrot] = bot or ctx.bot
     try:
         await bot.wait_for("reaction_add", timeout=timeout, check=check)
     except asyncio.TimeoutError:
@@ -189,7 +189,7 @@ class LightsOut:
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         button_style: discord.ButtonStyle = discord.ButtonStyle.green,
         embed_color: DiscordColor = DEFAULT_COLOR,
@@ -199,7 +199,7 @@ class LightsOut:
         starts the Lights Out Game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         button_style : discord.ButtonStyle, optional
             the primary button style to use, by default discord.ButtonStyle.green

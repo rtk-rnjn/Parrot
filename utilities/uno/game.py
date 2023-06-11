@@ -21,6 +21,7 @@ from typing import (
 )
 
 import discord
+from core import Context
 from discord.ext import commands
 
 from .cards import Card, create_deck
@@ -648,13 +649,13 @@ class Hand:
 class UNO:
     def __init__(
         self,
-        ctx: commands.Context,
+        ctx: Context,
         *,
         host: discord.Member = None,
         rule_set: RuleSet = None,
         players: Iterable[discord.Member] = (),
     ) -> None:
-        self.ctx: commands.Context = ctx
+        self.ctx: Context = ctx
         self.host: discord.Member = host or ctx.author
 
         self.rule_set: RuleSet = rule_set  # This could be None on init

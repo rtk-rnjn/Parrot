@@ -30,9 +30,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
             payload.channel_id
-            in self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                "ignore_channel"
-            ]
+            in self.bot.guild_configurations_cache[payload.guild_id][
+                "starboard_config"
+            ]["ignore_channel"]
         ):
             return
 
@@ -45,15 +45,20 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
             return
-        
-        self_star = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-            "can_self_star"
-        ] or False
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
+        self_star = (
+            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
+                "can_self_star"
+            ]
+            or False
+        )
+
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            payload.channel_id, payload.message_id
+        )
         if not msg:
             return  # rare case
-        
+
         if payload.user_id == msg.author.id and not self_star:
             return
 
@@ -80,9 +85,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
             payload.channel_id
-            in self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                "ignore_channel"
-            ]
+            in self.bot.guild_configurations_cache[payload.guild_id][
+                "starboard_config"
+            ]["ignore_channel"]
         ):
             return
         max_duration = (
@@ -93,15 +98,20 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
             return
-        
-        self_star = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-            "can_self_star"
-        ] or False
-        
-        msg: discord.Message = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
+
+        self_star = (
+            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
+                "can_self_star"
+            ]
+            or False
+        )
+
+        msg: discord.Message = await self.bot.get_or_fetch_message(
+            payload.channel_id, payload.message_id
+        )
         if not msg:
             return  # rare case
-        
+
         if payload.user_id == msg.author.id and not self_star:
             return
 
@@ -248,9 +258,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         main_message = data["message_id"]["author"]
         try:
             starboard_channel: int = (
-                self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                    "channel"
-                ]
+                self.bot.guild_configurations_cache[payload.guild_id][
+                    "starboard_config"
+                ]["channel"]
                 or 0
             )
         except KeyError:

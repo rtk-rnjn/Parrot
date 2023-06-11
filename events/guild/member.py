@@ -81,10 +81,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             await member.send(error)
 
     async def _get_index(self, guild: discord.Guild) -> int:
-        if data := await self.bot.mongo.parrot_db.server_config.find_one(
-            {"_id": guild.id, "temp_channels": {"$exists": True}}
+        if data := await self.bot.guild_configurations.find_one(
+            {"_id": guild.id, "hub_temp_channels": {"$exists": True}}
         ):
-            return len(data["temp_channels"]) + 1
+            return len(data["hub_temp_channels"]) + 1
 
         return 1
 
@@ -112,11 +112,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                         f"[#{await self._get_index(member.guild)}] {member.name}",
                         category=channel.category,
                     )
-                    await self.bot.mongo.parrot_db.server_config.update_one(
+                    await self.bot.guild_configurations.update_one(
                         {"_id": member.guild.id},
                         {
                             "$addToSet": {
-                                "temp_channels": {
+                                "hub_temp_channels": {
                                     "channel_id": hub_channel.id,
                                     "author": member.id,
                                 }
@@ -138,11 +138,11 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         channel: Union[discord.VoiceChannel, discord.StageChannel],
         member: discord.Member,
     ):
-        if data := await self.bot.mongo.parrot_db.server_config.find_one(
+        if data := await self.bot.guild_configurations.find_one(
             {
                 "_id": member.guild.id,
-                "temp_channels.channel_id": channel.id,
-                "temp_channels.author": member.id,
+                "hub_temp_channels.channel_id": channel.id,
+                "hub_temp_channels.author": member.id,
             }
         ):
             perms = member.guild.me.guild_permissions
@@ -150,14 +150,18 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 [perms.manage_permissions, perms.manage_channels, perms.move_members]
             ):
                 return
-            for ch in data["temp_channels"]:
+            for ch in data["hub_temp_channels"]:
                 if ch["channel_id"] == channel.id and ch["author"] == member.id:
                     hub_channel = await self.bot.getch(
                         self.bot.get_channel, self.bot.fetch_channel, channel.id
                     )
-                    await self.bot.mongo.parrot_db.server_config.update_one(
+                    await self.bot.guild_configurations.update_one(
                         {"_id": member.guild.id},
-                        {"$pull": {"temp_channels": {"channel_id": hub_channel.id}}},
+                        {
+                            "$pull": {
+                                "hub_temp_channels": {"channel_id": hub_channel.id}
+                            }
+                        },
                     )
                     await hub_channel.delete(
                         reason=f"{member} ({member.id}) left their Hub"
@@ -187,10 +191,10 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             await self.__on_voice_channel_remove(before.channel, member)
             return
 
-        if before.channel is None:
+        if before.channel is None and after.channel is not None:
             return await self.__on_voice_channel_join(after.channel, member)
 
-        if after.channel is None:
+        if after.channel is None and before.channel is not None:
             return await self.__on_voice_channel_remove(before.channel, member)
 
     @Cog.listener()

@@ -7,7 +7,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
 
 import discord
-from core import Parrot
+from core import Context, Parrot
 from discord.ext import commands
 
 from .akinator import CantGoBackAnyFurther
@@ -124,7 +124,7 @@ class Akinator:
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
         remove_reaction_after: bool = False,
@@ -138,7 +138,7 @@ class Akinator:
         starts the akinator game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         embed_color : DiscordColor, optional
             the color of the game embed, by default DEFAULT_COLOR
@@ -325,7 +325,7 @@ class BetaAkinator(Akinator):
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         back_button: bool = True,
         delete_button: bool = True,
@@ -338,7 +338,7 @@ class BetaAkinator(Akinator):
         starts the Akinator(buttons) game
         Parameters
         ----------
-        ctx : commands.Context[commands.Bot]
+        ctx : Context[Parrot]
             the context of the invokation command
         back_button : bool, optional
             indicates whether or not to add a back button, by default False

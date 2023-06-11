@@ -4,15 +4,17 @@ import asyncio
 import os
 import pathlib
 import re
-import subprocess
+import threading
 import time
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import aiofiles
+from jishaku.paginators import PaginatorInterface
 
 import discord
 from core import Context
+from discord.ext import commands
 
 languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
@@ -208,11 +210,20 @@ from ._pylint import validate_flag as pylint_validate_flag
 
 
 async def code_to_file(code: str) -> str:
-    filename = f"temp/{int(datetime.now(timezone.utc).timestamp())}"
+    filename = f"temp/runner_{int(datetime.now(timezone.utc).timestamp())}.py"
     async with aiofiles.open(filename, "w") as f:
         await f.write(code)
 
     return filename
+
+
+def background_task(func: Callable, *args: Any, **kwargs: Any) -> Callable[[], Any]:
+    """Decorator for running a function in the background."""
+
+    def wrapper() -> Any:
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 async def lint(cmd: str, filename: str) -> Dict[str, str]:
@@ -224,20 +235,20 @@ async def lint(cmd: str, filename: str) -> Dict[str, str]:
 
     stdout, stderr = await proc.communicate()
 
-    payload = {"main": f"{cmd!r} exited with {proc.returncode}"}
+    payload = {"main": f"{cmd!r} {filename} exited with {proc.returncode}"}
     if stdout:
         payload["stdout"] = stdout.decode()
     if stderr:
         payload["stderr"] = stderr.decode()
 
-    os.remove(filename)
+    threading.Thread(target=background_task(os.remove, filename)).start()
 
     return payload
 
 
 class LintCode:
     source: str
-    language: Union[str, None]
+    language: Optional[str]
 
     def __init__(
         self,
@@ -296,13 +307,24 @@ class LintCode:
         if not data:
             await ctx.reply("No output.")
             return
-        
+
         if "main" in data:
-            await ctx.reply(f"```diff\n{data['main']}```")
+            await ctx.reply(f"```ansi\n{data['main']}```")
         if "stdout" in data:
-            await ctx.reply(f"```diff\n[stdout]\n{data['stdout']}```")
+            pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
+            for line in data["stdout"].splitlines():
+                pages.add_line(line)
+
+            interference = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interference.send_to(ctx)
+
         if "stderr" in data:
-            await ctx.reply(f"```diff\n[stderr]\n{data['stderr']}```")
+            pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
+            for line in data["stderr"].splitlines():
+                pages.add_line(line)
+
+            interference = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interference.send_to(ctx)
 
     async def run_black(self, ctx: Context) -> None:
         from black import FileMode, format_str

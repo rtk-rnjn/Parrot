@@ -38,7 +38,6 @@ import jishaku  # type: ignore  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
 from aiohttp import ClientSession
-
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 import discord
@@ -193,6 +192,7 @@ class Parrot(commands.AutoShardedBot):
             shard_count=1,
             max_messages=5000,
             chunk_guilds_at_startup=False,
+            enable_debug_events=True,
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
@@ -868,7 +868,7 @@ class Parrot(commands.AutoShardedBot):
         else:
             # We need to chunk these in bits of 100...
             for index in range(0, total_need_resolution, 100):
-                to_resolve = needs_resolution[index: index + 100]
+                to_resolve = needs_resolution[index : index + 100]
                 members = await guild.query_members(
                     limit=100, user_ids=to_resolve, cache=True
                 )

@@ -5,7 +5,7 @@ import math
 import pathlib
 import random
 from contextlib import suppress
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from core import Cog
@@ -234,19 +234,20 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             )
             TO_RAISE_ERROR = True
 
-        msg: discord.Message = await ctx.reply(
+        msg: Optional[discord.Message] = await ctx.reply(
             random.choice(quote),
             embed=ERROR_EMBED,
         )
 
         try:
-            await ctx.wait_for(
-                "message_delete", timeout=30, check=lambda m: m.id == ctx.message.id
-            )
-            await msg.delete(delay=0)
+            if msg:
+                await ctx.wait_for(
+                    "message_delete", timeout=10, check=lambda m: m.id == ctx.message.id
+                )
+                await msg.delete(delay=0)
         except asyncio.TimeoutError:
             pass
-        
+
         if TO_RAISE_ERROR:
             raise error
 

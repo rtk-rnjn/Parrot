@@ -563,21 +563,46 @@ async def _mute(
         muted = await guild.create_role(
             name="Muted",
             reason=f"Setting up mute role. it's first command is execution, by {ctx.author} ({ctx.author.id})",
+            permissions=discord.Permissions(
+                send_messages=False,
+                add_reactions=False,
+                use_application_commands=False,
+                create_private_threads=False,
+                create_public_threads=False,
+                send_messages_in_threads=False,
+            ),
         )
+        passed, fails = 0, 0
         for channel in guild.channels:
             try:
                 if isinstance(channel, discord.TextChannel):
                     await channel.set_permissions(
-                        muted, send_messages=False, add_reactions=False
+                        muted,
+                        end_messages=False,
+                        add_reactions=False,
+                        use_application_commands=False,
+                        create_private_threads=False,
+                        create_public_threads=False,
+                        send_messages_in_threads=False,
                     )
                 if isinstance(channel, discord.CategoryChannel):
                     await channel.set_permissions(
-                        muted, send_messages=False, add_reactions=False, connect=False
+                        muted,
+                        end_messages=False,
+                        add_reactions=False,
+                        use_application_commands=False,
+                        create_private_threads=False,
+                        create_public_threads=False,
+                        send_messages_in_threads=False,
+                        connect=False,
+                        speak=False,
                     )
                 if isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
                     await channel.set_permissions(muted, connect=False)
-            except discord.Forbidden:
-                pass
+                passed += 1
+            except discord.HTTPException:
+                fails += 1
+
     try:
         await member.add_roles(
             muted,

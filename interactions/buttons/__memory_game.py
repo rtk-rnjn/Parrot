@@ -21,7 +21,6 @@ from pymongo.collection import Collection
 
 import discord
 from core import Context, Parrot
-from discord.ext import commands
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
@@ -42,11 +41,11 @@ def chunk(iterable: List[int], *, count: int) -> List[List[int]]:
 
 
 async def wait_for_delete(
-    ctx: commands.Context[commands.Bot],
+    ctx: Context[Parrot],
     message: discord.Message,
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
-    _bot: Optional[commands.Bot] = None,
+    _bot: Optional[Parrot] = None,
     user: Optional[Union[discord.User, Tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
@@ -62,7 +61,7 @@ async def wait_for_delete(
             return _user in user if isinstance(user, tuple) else _user == user
         return False
 
-    bot: commands.Bot = _bot or ctx.bot
+    bot: Parrot = _bot or ctx.bot
     try:
         await bot.wait_for("reaction_add", timeout=timeout, check=check)
     except asyncio.TimeoutError:
@@ -260,7 +259,7 @@ class MemoryGame:
         starts the memory game
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             the context of the invokation command
         embed_color : DiscordColor, optional
             the color of the game embed, by default DEFAULT_COLOR

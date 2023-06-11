@@ -97,7 +97,7 @@ class Music(Cog):
         self, *, track: wavelink.Playable, ctx: Context
     ) -> discord.Embed:
         embed: discord.Embed = self.make_embed(ctx, track)
-        col = self.bot.mongo.extra.user_misc
+        col = self.bot.user_collections_ind
         i = 0
         async for data in col.find({"playlist.id": track.identifier}):
             i += 1
@@ -625,7 +625,7 @@ class Music(Cog):
         else:
             vc: wavelink.Player = ctx.voice_client  # type: ignore
 
-        data = await self.bot.mongo.extra.user_misc.find_one(
+        data = await self.bot.user_collections_ind.find_one(
             {"_id": ctx.author.id, "playlist": {"$exists": True}},
             {"playlist": 1, "_id": 0},
         )
@@ -680,7 +680,7 @@ class Music(Cog):
     async def myplaylist(self, ctx: Context):
         """Shows the songs you loved."""
         if ctx.invoked_subcommand is None:
-            col: Collection = self.bot.mongo.extra.user_misc
+            col: Collection = self.bot.user_collections_ind
             data = await col.find_one(  # type: ignore
                 {"_id": ctx.author.id, "playlist": {"$exists": True}},
                 {"playlist": 1, "_id": 0},
@@ -700,7 +700,7 @@ class Music(Cog):
     @myplaylist.command(name="remove", aliases=["delete", "del"])
     async def myplaylist_remove(self, ctx: Context, index_or_name: Union[int, str]):
         """Removes the song from your playlist"""
-        col: Collection = self.bot.mongo.extra.user_misc
+        col: Collection = self.bot.user_collections_ind
         data = await col.find_one(  # type: ignore
             {"_id": ctx.author.id, "playlist": {"$exists": True}},
             {"playlist": 1, "_id": 0},
@@ -712,7 +712,7 @@ class Music(Cog):
         if isinstance(index_or_name, int):
             if index_or_name > len(data["playlist"]) or index_or_name < 1:
                 return await ctx.error(f"{ctx.author.mention} Invalid index")
-            col = self.bot.mongo.extra.user_misc
+            col = self.bot.user_collections_ind
             data = await col.find_one_and_update(
                 {
                     "_id": ctx.author.id,
@@ -754,7 +754,7 @@ class Music(Cog):
         if isinstance(track, str):
             track = wavelink.GenericTrack.search(track)
 
-        data: UpdateResult = await self.bot.mongo.extra.user_misc.update_one(
+        data: UpdateResult = await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id},
             {
                 "$addToSet": {
@@ -777,7 +777,7 @@ class Music(Cog):
     @myplaylist.command(name="clear", aliases=["deleteall", "delall"])
     async def myplaylist_clear(self, ctx: Context):
         """Clears the playlist"""
-        data: UpdateResult = await self.bot.mongo.extra.user_misc.update_one(
+        data: UpdateResult = await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id}, {"$set": {"playlist": []}}, upsert=True
         )
         if data.modified_count == 0:

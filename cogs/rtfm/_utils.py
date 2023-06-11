@@ -225,7 +225,7 @@ from ._pyright import validate_flag as pyright_validate_flag
 
 
 async def code_to_file(code: str) -> str:
-    filename = f"temp/runner_{int(datetime.now(timezone.utc).timestamp())}.py"
+    filename = f"temp/runner_{int(datetime.now(timezone.utc).timestamp()*1000)}.py"
     async with aiofiles.open(filename, "w") as f:
         await f.write(code)
 
@@ -289,7 +289,7 @@ class LintCode:
     def __init__(
         self,
         flag: Union[
-            Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, str
+            Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, PyrightConverter, str
         ],
     ) -> None:
         self.codeblock = flag if isinstance(flag, str) else flag.code
@@ -438,7 +438,7 @@ class LintCode:
                     message = f"{Fore.BLUE}{error['text']}"
                     physical_line = f"{Fore.CYAN}{error['physical_line']}"
                     await interface.add_line(
-                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n\t{physical_line}"
+                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n>>> {physical_line}"
                     )
 
         if data.get("stderr"):
@@ -498,7 +498,7 @@ class LintCode:
                 json_data["generated_at"], "%Y-%m-%dT%H:%M:%SZ"
             ).strftime("%d/%m/%Y %H:%M:%S")
             await interface.add_line(
-                f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}"
+                f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}\n"
             )
 
             confidence_high = json_data["metrics"]["_totals"]["CONFIDENCE.HIGH"]
@@ -509,7 +509,7 @@ class LintCode:
             ]
 
             await interface.add_line(
-                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High - {Fore.YELLOW}{confidence_medium} Medium - {Fore.GREEN}{confidence_low} Low - {Fore.CYAN}{confidence_undefined} Undefined"
+                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High {Fore.WHITE}- {Fore.YELLOW}{confidence_medium} Medium {Fore.WHITE}- {Fore.GREEN}{confidence_low} Low {Fore.WHITE}- {Fore.CYAN}{confidence_undefined} Undefined"
             )
 
             severity_high = json_data["metrics"]["_totals"]["SEVERITY.HIGH"]
@@ -518,7 +518,7 @@ class LintCode:
             severity_undefined = json_data["metrics"]["_totals"]["SEVERITY.UNDEFINED"]
 
             await interface.add_line(
-                f"{Fore.WHITE}Severity: {Fore.RED}{severity_high} High - {Fore.YELLOW}{severity_medium} Medium - {Fore.GREEN}{severity_low} Low - {Fore.CYAN}{severity_undefined} Undefined"
+                f"{Fore.WHITE}Severity  : {Fore.RED}{severity_high} High {Fore.WHITE}- {Fore.YELLOW}{severity_medium} Medium {Fore.WHITE}- {Fore.GREEN}{severity_low} Low {Fore.WHITE}- {Fore.CYAN}{severity_undefined} Undefined"
             )
 
             loc = json_data["metrics"]["_totals"]["loc"]
@@ -526,7 +526,7 @@ class LintCode:
             skipped_tests = json_data["metrics"]["_totals"]["skipped_tests"]
 
             await interface.add_line(
-                f"{Fore.WHITE}Lines of Code: {Fore.WHITE}{loc} - {Fore.RED}{nosec} Lines of Code (#NoSec) - {Fore.YELLOW}{skipped_tests} Skipped Tests"
+                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}{nosec} Lines of Code (#NoSec) - {Fore.YELLOW}{skipped_tests} Skipped Tests\n"
             )
 
             for result in json_data["results"]:
@@ -550,11 +550,11 @@ class LintCode:
 
                 await interface.add_line(
                     f"{Fore.YELLOW}>> Issue [{test_id:>4}:{test_name:<9}] {issue_text}\n"
-                    f"{Fore.WHITE}   Severity: {issue_severity:<6}  Confidence: {issue_confidence:<6}\n"
-                    f"{Fore.WHITE}   CWE ID: {issue_cwe_id:<6}  CWE Link: {issue_cwe_link}\n"
+                    f"{Fore.WHITE}   Severity : {issue_severity:<6}  Confidence: {issue_confidence:<6}\n"
+                    f"{Fore.WHITE}   CWE ID   : {issue_cwe_id:<6}  CWE Link: {issue_cwe_link}\n"
                     f"{Fore.WHITE}   More Info: {more_info}\n"
-                    f"{Fore.WHITE}   Location: {filename}{line_number:>2}:{col_offset:<2}\n"
-                    f"{Fore.WHITE}   Code:\n{code}\n"
+                    f"{Fore.WHITE}   Location : {filename}{line_number:>2}:{col_offset:<2}\n"
+                    f"{Fore.WHITE}   Code     :\n{code}\n"
                     f"{Fore.WHITE}{'-'*50}\n"
                 )
 

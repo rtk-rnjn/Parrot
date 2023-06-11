@@ -13,8 +13,8 @@ class PyLintConverter(
 ):
     code: str
     confidence: Literal[
-        "HIGH", "CONTROL_FLOW", "INFERENCE_FAILURE", "INTERENCE", "UNDEFINED"
-    ] = "HIGH"
+        "high", "control_flow", "inference_failure", "undefined", "inference"
+    ] = "HIGH CONTROL_FLOW INFERENCE_FAILURE UNDEFINED INFERENCE"
     disable: Optional[str] = None
     enable: Optional[str] = None
 
@@ -26,7 +26,7 @@ def validate_pylint_code(code: str) -> List[str]:
 def validate_flag(flag: PyLintConverter) -> str:
     cmd_str = "pylint"
     if flag.confidence:
-        cmd_str += f" --confidence={flag.confidence}"
+        cmd_str += f" --confidence={flag.confidence.upper()}"
     if flag.disable:
         if codes := validate_pylint_code(flag.disable):
             cmd_str += f" --disable={','.join(codes)}"

@@ -28,6 +28,7 @@ discord.py @ git+https://github.com/Rapptz/discord.py@e870bb1335e3f824c83a40df4e
 dnspython
 fastapi
 flake8
+flake8-json
 frozenlist
 gitdb
 GitPython

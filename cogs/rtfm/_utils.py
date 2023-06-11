@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import aiofiles
+import bandit
+import pylint
 from jishaku.paginators import PaginatorInterface
 
 import discord
@@ -21,6 +23,7 @@ try:
 except ImportError:
     import json
 
+import flake8
 import isort
 from black import FileMode, format_str
 from colorama import Fore
@@ -216,6 +219,8 @@ from ._mypy import MypyConverter
 from ._mypy import validate_flag as mypy_validate_flag
 from ._pylint import PyLintConverter
 from ._pylint import validate_flag as pylint_validate_flag
+from ._pyright import PyrightConverter
+from ._pyright import validate_flag as pyright_validate_flag
 
 
 async def code_to_file(code: str) -> str:
@@ -244,7 +249,28 @@ async def lint(cmd: str, filename: str) -> Dict[str, str]:
 
     stdout, stderr = await proc.communicate()
 
-    payload = {"main": f"{cmd} {filename} exited with {proc.returncode}"}
+    # some formatting
+    cmd = re.sub(" +", " ", cmd)  # remove extra spaces
+
+    args = cmd.split(" ")
+
+    command = args[0]
+    command = f"{Fore.GREEN}{command}"
+
+    rest = []
+    for arg in args[1:]:
+        if arg.startswith("-") or arg.startswith("--"):
+            arg = f"{Fore.BLUE}{arg}"
+        else:
+            arg = f"{Fore.YELLOW}{arg}"
+        rest.append(arg)
+
+    filename = f"{Fore.CYAN}{filename}"
+
+    complete_cmd_str = f"$ {command} {' '.join(rest)} {filename}"
+    payload = {
+        "main": f"{complete_cmd_str}\n\n{Fore.CYAN}Return Code: {Fore.RED}{proc.returncode}"
+    }
     if stdout:
         payload["stdout"] = stdout.decode()
     if stderr:
@@ -310,6 +336,8 @@ class LintCode:
             cmd_str = pylint_validate_flag(self.flag)
         elif self.linttype == "mypy":
             cmd_str = mypy_validate_flag(self.flag)
+        elif self.linttype == "pyright":
+            cmd_str = pyright_validate_flag(self.flag)
 
         data = await lint(cmd_str, filename) if cmd_str else {}
 
@@ -343,19 +371,21 @@ class LintCode:
         await ctx.reply(f"```ansi\n{data['main']}```")
 
         if data.get("stdout"):
-            data = json.loads(data["stdout"])
+            json_data = json.loads(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
-            pages.add_line(f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{data['version']}\n")
-            
             pages.add_line(
-                f"{Fore.RED}{data['summary']['errorCount']} errors - {Fore.YELLOW}{data['summary']['warningCount']} warnings - {Fore.BLUE}{data['summary']['informationCount']} information\n"
+                f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{data['version']}\n"
+            )
+
+            pages.add_line(
+                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information\n"
             )
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
 
-            if data["generalDiagnostics"]:
+            if json_data["generalDiagnostics"]:
                 await interface.add_line(f"{Fore.WHITE}General Diagnostics:\n")
-                for error in data["generalDiagnostics"]:
+                for error in json_data["generalDiagnostics"]:
                     file = f"{Fore.WHITE}{filename}"
                     line = f"{Fore.GREEN}{error['range']['start']['line']}:{error['range']['end']['line']}"
                     severity = error["severity"]
@@ -372,8 +402,10 @@ class LintCode:
                     await interface.add_line(
                         f"{file}:{line} - {severity} - {message} {rule}"
                     )
-                
-                await interface.add_line(f"\n{Fore.BLUE}Diagnosed completed in {data['summary']['timeInSec']} seconds")
+
+                await interface.add_line(
+                    f"\n{Fore.BLUE}Diagnosed completed in {data['summary']['timeInSec']} seconds"
+                )
 
         if data.get("stderr"):
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
@@ -382,6 +414,149 @@ class LintCode:
 
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
+
+    async def lint_with_flake8(self, ctx: Context) -> None:
+        filename = await code_to_file(self.sourse)
+        data = await lint("flake8 --format=json", filename)
+
+        await ctx.reply(f"```ansi\n{data['main']}```")
+
+        if data.get("stdout"):
+            json_data: dict = json.loads(data["stdout"])
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+            pages.add_line(
+                f"{Fore.WHITE}Flake8 Version - {Fore.WHITE}{flake8.__version__}\n"
+            )
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+            for result in json_data.values():
+                for error in result:
+                    line = f"{Fore.GREEN}{error['line_number']}"
+                    column = f"{Fore.GREEN}{error['column_number']}"
+                    code = f"{Fore.WHITE}{error['code']}"
+                    message = f"{Fore.BLUE}{error['text']}"
+                    physical_line = f"{Fore.CYAN}{error['physical_line']}"
+                    await interface.add_line(
+                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n\t{physical_line!r}"
+                    )
+
+        if data.get("stderr"):
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+            for line in data["stderr"].splitlines():
+                pages.add_line(f"{Fore.RED}{line}\n")
+
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+    async def lint_with_pylint(self, ctx: Context) -> None:
+        filename = await code_to_file(self.source)
+        data = await lint("pylint -f json", filename)
+
+        await ctx.reply(f"```ansi\n{data['main']}```")
+
+        if data.get("stdout"):
+            json_data = json.loads(data["stdout"])
+
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+
+            pages.add_line(
+                f"{Fore.WHITE}Pylint Version - {Fore.WHITE}{pylint.__version__}\n"
+            )
+
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+            for result in json_data:
+                line = f"{Fore.GREEN}{result['line']}"
+                column = f"{Fore.GREEN}{result['column']}"
+                message = f"{Fore.BLUE}{result['message']}"
+                message_id = f"{Fore.RED}{result['message-id']}"
+                symbol = f"{Fore.WHITE}({Fore.CYAN}{result['symbol']}{Fore.WHITE})"
+                await interface.add_line(
+                    f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {message_id} - {message:<13} {symbol}"
+                )
+
+    async def lint_with_bandit(self, ctx: Context) -> None:
+        filename = await code_to_file(self.source)
+        data = await lint("bandit -f json", filename)
+
+        await ctx.reply(f"```ansi\n{data['main']}```")
+
+        if data.get("stdout"):
+            json_data = json.loads(data["stdout"])
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+            pages.add_line(
+                f"{Fore.MAGENTA}Bandit Version - {Fore.MAGENTA}{bandit.__version__}\n"
+            )
+
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+            # Generated at: Ex format: 2023-06-11T17:51:53Z
+            generated_at = datetime.strptime(
+                json_data["generated_at"], "%Y-%m-%dT%H:%M:%SZ"
+            ).strftime("%d/%m/%Y %H:%M:%S")
+            await interface.add_item(
+                f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}"
+            )
+
+            confidence_high = json_data["metrics"]["_totals"]["CONFIDENCE.HIGH"]
+            confidence_low = json_data["metrics"]["_totals"]["CONFIDENCE.LOW"]
+            confidence_medium = json_data["metrics"]["_totals"]["CONFIDENCE.MEDIUM"]
+            confidence_undefined = json_data["metrics"]["_totals"][
+                "CONFIDENCE.UNDEFINED"
+            ]
+
+            await interface.add_item(
+                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High - {Fore.YELLOW}{confidence_medium} Medium - {Fore.GREEN}{confidence_low} Low - {Fore.CYAN}{confidence_undefined} Undefined"
+            )
+
+            severity_high = json_data["metrics"]["_totals"]["SEVERITY.HIGH"]
+            severity_low = json_data["metrics"]["_totals"]["SEVERITY.LOW"]
+            severity_medium = json_data["metrics"]["_totals"]["SEVERITY.MEDIUM"]
+            severity_undefined = json_data["metrics"]["_totals"]["SEVERITY.UNDEFINED"]
+
+            await interface.add_item(
+                f"{Fore.WHITE}Severity: {Fore.RED}{severity_high} High - {Fore.YELLOW}{severity_medium} Medium - {Fore.GREEN}{severity_low} Low - {Fore.CYAN}{severity_undefined} Undefined"
+            )
+
+            loc = json_data["metrics"]["_totals"]["loc"]
+            nosec = json_data["metrics"]["_totals"]["nosec"]
+            skipped_tests = json_data["metrics"]["_totals"]["skipped_tests"]
+
+            await interface.add_item(
+                f"{Fore.WHITE}Lines of Code: {Fore.WHITE}{loc} - {Fore.RED}{nosec} Lines of Code (#NoSec) - {Fore.YELLOW}{skipped_tests} Skipped Tests"
+            )
+
+            for result in json_data["results"]:
+                code = f"{Fore.CYAN}{result['code']}"
+                col_offset = f"{Fore.GREEN}{result['col_offset']}"
+                # end_col_offset = f"{Fore.GREEN}{result['end_col_offset']}"
+                issue_confidence = f"{Fore.WHITE}{result['issue_confidence']}"
+                issue_severity = f"{Fore.WHITE}{result['issue_severity']}"
+                issue_text = f"{Fore.BLUE}{result['issue_text']}"
+                line_number = f"{Fore.GREEN}{result['line_number']}"
+                # line_range = f"{Fore.WHITE}{result['line_range']}"
+                more_info = f"{Fore.WHITE}{result['more_info']}"
+                test_id = f"{Fore.RED}{result['test_id']}"
+                test_name = f"{Fore.WHITE}{result['test_name']}"
+                if result.get("issue_cwe"):
+                    issue_cwe_id = f"{Fore.WHITE}{result['issue_cwe']['id']}"
+                    issue_cwe_link = f"{Fore.WHITE}{result['issue_cwe']['link']}"
+                else:
+                    issue_cwe_id = f"{Fore.WHITE}None"
+                    issue_cwe_link = f"{Fore.WHITE}None"
+
+                await interface.add_line(
+                    f"{Fore.YELLOW}>> Issue [{test_id:>4}:{test_name:<9}] {issue_text}\n"
+                    f"{Fore.WHITE}   Severity: {issue_severity:<6}  Confidence: {issue_confidence:<6}\n"
+                    f"{Fore.WHITE}   CWE ID: {issue_cwe_id:<6}  CWE Link: {issue_cwe_link}\n"
+                    f"{Fore.WHITE}   More Info: {more_info}\n"
+                    f"{Fore.WHITE}   Location: {filename}{line_number:>2}:{col_offset:<2}\n"
+                    f"{Fore.WHITE}   Code:\n{code}\n"
+                    f"{Fore.WHITE}{'-'*50}\n"
+                )
 
     async def run_black(self, ctx: Context) -> None:
         ini = time.perf_counter()

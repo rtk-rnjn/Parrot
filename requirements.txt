@@ -83,6 +83,7 @@ pymongo
 PyNaCl
 pyparsing
 pypng
+pyright
 python-dateutil
 python-dotenv
 pytz

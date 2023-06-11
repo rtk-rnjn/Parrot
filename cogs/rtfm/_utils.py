@@ -345,21 +345,10 @@ class LintCode:
         if data.get("stdout"):
             data = json.loads(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
-            pages.add_line(f"{Fore.WHITE}Version : {Fore.WHITE}{data['version']}\n")
+            pages.add_line(f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{data['version']}\n")
+            
             pages.add_line(
-                f"{Fore.WHITE}Files   : {Fore.WHITE}{data['summary']['filesAnalyzed']}\n"
-            )
-            pages.add_line(
-                f"{Fore.WHITE}Errors  : {Fore.RED}{data['summary']['errorCount']}\n"
-            )
-            pages.add_line(
-                f"{Fore.WHITE}Warnings: {Fore.YELLOW}{data['summary']['warningCount']}\n"
-            )
-            pages.add_line(
-                f"{Fore.WHITE}Info(s) : {Fore.BLUE}{data['summary']['informationCount']}\n"
-            )
-            pages.add_line(
-                f"{Fore.WHITE}Time    : {Fore.WHITE}{data['summary']['timeInSec']}s\n\n"
+                f"{Fore.RED}{data['summary']['errorCount']} errors - {Fore.YELLOW}{data['summary']['warningCount']} warnings - {Fore.BLUE}{data['summary']['informationCount']} information\n"
             )
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
@@ -377,12 +366,14 @@ class LintCode:
                     elif severity.lower() == "information":
                         severity = f"{Fore.BLUE}{severity}"
 
-                    message = f"{Fore.WHITE}{error['message']}"
-                    rule = f"{Fore.CYAN}{error.get('rule', 'N/A')}"
+                    message = f"{Fore.BLUE}{error['message']}"
+                    rule = f"{Fore.WHITE}({Fore.CYAN}{error.get('rule', 'N/A')}{Fore.WHITE})"
 
                     await interface.add_line(
-                        f"{file}:{line} - {severity}\n    {message} ({rule})\n"
+                        f"{file}:{line} - {severity} - {message} {rule}"
                     )
+                
+                await interface.add_line(f"\n{Fore.BLUE}Diagnosed completed in {data['summary']['timeInSec']} seconds")
 
         if data.get("stderr"):
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)

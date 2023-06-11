@@ -1549,46 +1549,57 @@ class RTFM(Cog):
             await ctx.send_help(ctx.command)
 
     @lintcode.command(name="flake8", aliases=["f8", "flake"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def lintcode_flake8(self, ctx: Context, *, flag: Flake8Converter):
         """Lint code with flake8"""
         linter = LintCode(flag).set_linttype("flake8")
         await linter.lint(ctx)
 
     @lintcode.command(name="pylint", aliases=["pyl"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def lintcode_pylint(self, ctx: Context, *, flag: PyLintConverter):
         """Lint code with pylint"""
         linter = LintCode(flag).set_linttype("pylint")
         await linter.lint(ctx)
 
     @lintcode.command(name="mypy", aliases=["mp"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def lintcode_mypy(self, ctx: Context, *, flag: MypyConverter):
         """Lint code with mypy"""
         linter = LintCode(flag).set_linttype("mypy")
         await linter.lint(ctx)
 
     @lintcode.command(name="bandit", aliases=["bd"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def lintcode_bandit(self, ctx: Context, *, flag: BanditConverter):
         """Lint code with bandit"""
         linter = LintCode(flag).set_linttype("bandit")
         await linter.lint(ctx)
 
-    @commands.command(name="black", aliases=["fmt"])
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @lintcode.command(name="black", aliases=["fmt"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def black(self, ctx: Context, *, code: str):
         """Format code with black"""
         linter = LintCode(code)
         await linter.run_black(ctx)
 
-    @commands.command(name="black_isort", aliases=["fmt_isort"])
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @lintcode.command(name="black_isort", aliases=["fmt_isort"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def black_isort(self, ctx: Context, *, code: str):
         """Format code with black and isort"""
         linter = LintCode(code)
         await linter.run_isort_with_black(ctx)
 
-    @commands.command(name="isort", aliases=["is"])
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @lintcode.command(name="isort", aliases=["is"])
+    @commands.max_concurrency(1, commands.BucketType.user)
     async def isort(self, ctx: Context, *, code: str):
         """Format code with isort"""
         linter = LintCode(code)
         await linter.run_isort(ctx)
+
+    @lintcode.command(name="pyright", aliases=["pyr"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def pyright(self, ctx: Context, *, code: str):
+        """Lint code with pyright"""
+        linter = LintCode(code)
+        await linter.lint_with_pyright(ctx)

@@ -16,6 +16,15 @@ import discord
 from core import Context
 from discord.ext import commands
 
+try:
+    import orjson as json
+except ImportError:
+    import json
+
+import isort
+from black import FileMode, format_str
+from colorama import Fore
+
 languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
 API_ROOT_RP = "https://realpython.com/search/api/v1/"
@@ -235,7 +244,7 @@ async def lint(cmd: str, filename: str) -> Dict[str, str]:
 
     stdout, stderr = await proc.communicate()
 
-    payload = {"main": f"{cmd!r} {filename} exited with {proc.returncode}"}
+    payload = {"main": f"{cmd} {filename} exited with {proc.returncode}"}
     if stdout:
         payload["stdout"] = stdout.decode()
     if stderr:
@@ -313,7 +322,7 @@ class LintCode:
         if "stdout" in data:
             pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
             for line in data["stdout"].splitlines():
-                pages.add_line(line)
+                pages.add_line(f"{Fore.WHITE}{line}")
 
             interference = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interference.send_to(ctx)
@@ -321,31 +330,94 @@ class LintCode:
         if "stderr" in data:
             pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
             for line in data["stderr"].splitlines():
-                pages.add_line(line)
+                pages.add_line(f"{Fore.RED}{line}")
 
             interference = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interference.send_to(ctx)
 
-    async def run_black(self, ctx: Context) -> None:
-        from black import FileMode, format_str
+    async def lint_with_pyright(self, ctx: Context) -> None:
+        # sourcery skip: move-assign
+        filename = await code_to_file(self.source)
+        data = await lint("pyright --outputjson", filename)
 
+        await ctx.reply(f"```ansi\n{data['main']}```")
+
+        if data.get("stdout"):
+            data = json.loads(data["stdout"])
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+            pages.add_line(f"{Fore.WHITE}Version : {Fore.WHITE}{data['version']}\n")
+            pages.add_line(
+                f"{Fore.WHITE}Files   : {Fore.WHITE}{data['summary']['filesAnalyzed']}\n"
+            )
+            pages.add_line(
+                f"{Fore.WHITE}Errors  : {Fore.RED}{data['summary']['errorCount']}\n"
+            )
+            pages.add_line(
+                f"{Fore.WHITE}Warnings: {Fore.YELLOW}{data['summary']['warningCount']}\n"
+            )
+            pages.add_line(
+                f"{Fore.WHITE}Info(s) : {Fore.BLUE}{data['summary']['informationCount']}\n"
+            )
+            pages.add_line(
+                f"{Fore.WHITE}Time    : {Fore.WHITE}{data['summary']['timeInSec']}s\n\n"
+            )
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+            if data["generalDiagnostics"]:
+                await interface.add_line(f"{Fore.WHITE}General Diagnostics:\n")
+                for error in data["generalDiagnostics"]:
+                    file = f"{Fore.WHITE}{filename}"
+                    line = f"{Fore.GREEN}{error['range']['start']['line']}:{error['range']['end']['line']}"
+                    severity = error["severity"]
+                    if severity.lower() == "error":
+                        severity = f"{Fore.RED}{severity}"
+                    elif severity.lower() == "warning":
+                        severity = f"{Fore.YELLOW}{severity}"
+                    elif severity.lower() == "information":
+                        severity = f"{Fore.BLUE}{severity}"
+
+                    message = f"{Fore.WHITE}{error['message']}"
+                    rule = f"{Fore.CYAN}{error.get('rule', 'N/A')}"
+
+                    await interface.add_line(
+                        f"{file}:{line} - {severity}\n    {message} ({rule})\n"
+                    )
+
+        if data.get("stderr"):
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+            for line in data["stderr"].splitlines():
+                pages.add_line(f"{Fore.RED}{line}\n")
+
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+    async def run_black(self, ctx: Context) -> None:
         ini = time.perf_counter()
         res = await ctx.bot.func(format_str, self.source, mode=FileMode())
         end = time.perf_counter()
 
+        if res == self.source:
+            await ctx.reply(
+                f"```ansi\n{Fore.RED}[No Changes in the code, already formatted]```"
+            )
+            return
+
         await ctx.reply(
-            f"```css\n[Formated Code {int(end-ini)} seconds]``````py\n{res}```"
+            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
         )
 
     async def run_isort(self, ctx: Context) -> None:
-        import isort
-
         ini = time.perf_counter()
         res = await ctx.bot.func(isort.code, self.source)
         end = time.perf_counter()
 
+        if res == self.source:
+            await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
+            return
+
         await ctx.reply(
-            f"```css\n[Formated Code {int(end-ini)} seconds]``````py\n{res}```"
+            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
         )
 
     async def run_isort_with_black(self, ctx: Context) -> None:
@@ -357,6 +429,10 @@ class LintCode:
         res = await ctx.bot.func(format_str, res, mode=FileMode())
         end = time.perf_counter()
 
+        if res == self.source:
+            await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
+            return
+
         await ctx.reply(
-            f"```css\n[Formated Code {int(end-ini)} seconds]``````py\n{res}```"
+            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
         )

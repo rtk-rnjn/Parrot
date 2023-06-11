@@ -24,8 +24,8 @@ except ImportError:
     import json
 
 import flake8
-import pyright
 import isort
+import pyright
 from black import FileMode, format_str
 from colorama import Fore
 
@@ -379,10 +379,13 @@ class LintCode:
             )
 
             pages.add_line(
-                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information\n"
+                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information"
             )
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
+            await interface.add_line(
+                f"\n{Fore.BLUE}Diagnosed completed in {json_data['summary']['timeInSec']} seconds\n"
+            )
 
             if json_data["generalDiagnostics"]:
                 await interface.add_line(f"{Fore.WHITE}General Diagnostics:\n")
@@ -403,10 +406,6 @@ class LintCode:
                     await interface.add_line(
                         f"{file}:{line} - {severity} - {message} {rule}"
                     )
-
-                await interface.add_line(
-                    f"\n{Fore.BLUE}Diagnosed completed in {data['summary']['timeInSec']} seconds"
-                )
 
         if data.get("stderr"):
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
@@ -439,7 +438,7 @@ class LintCode:
                     message = f"{Fore.BLUE}{error['text']}"
                     physical_line = f"{Fore.CYAN}{error['physical_line']}"
                     await interface.add_line(
-                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n\t{physical_line!r}"
+                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n\t{physical_line}"
                     )
 
         if data.get("stderr"):

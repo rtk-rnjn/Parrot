@@ -74,6 +74,14 @@ class Linter(Cog):
         linter = LintCode(flag).set_linttype("pylint")
         await linter.lint(ctx)
 
+    @commands.command(name="pylint", aliases=["pyl"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def lintcode_pylint_shortcut(self, ctx: Context, *, code: str):
+        """Shortcut for `lintcode pylint` with no flags, just the code"""
+        linter = LintCode(code).set_linttype("pylint")
+        await linter.lint_with_pylint(ctx)
+
     @lintcode.command(name="mypy", aliases=["mp"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type

@@ -417,7 +417,7 @@ class LintCode:
             await interface.send_to(ctx)
 
     async def lint_with_flake8(self, ctx: Context) -> None:
-        filename = await code_to_file(self.sourse)
+        filename = await code_to_file(self.source)
         data = await lint("flake8 --format=json", filename)
 
         await ctx.reply(f"```ansi\n{data['main']}```")

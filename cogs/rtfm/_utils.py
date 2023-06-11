@@ -24,6 +24,7 @@ except ImportError:
     import json
 
 import flake8
+import pyright
 import isort
 from black import FileMode, format_str
 from colorama import Fore
@@ -374,7 +375,7 @@ class LintCode:
             json_data = json.loads(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
             pages.add_line(
-                f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{data['version']}\n"
+                f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{pyright.__version__}\n"
             )
 
             pages.add_line(
@@ -497,7 +498,7 @@ class LintCode:
             generated_at = datetime.strptime(
                 json_data["generated_at"], "%Y-%m-%dT%H:%M:%SZ"
             ).strftime("%d/%m/%Y %H:%M:%S")
-            await interface.add_item(
+            await interface.add_line(
                 f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}"
             )
 
@@ -508,7 +509,7 @@ class LintCode:
                 "CONFIDENCE.UNDEFINED"
             ]
 
-            await interface.add_item(
+            await interface.add_line(
                 f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High - {Fore.YELLOW}{confidence_medium} Medium - {Fore.GREEN}{confidence_low} Low - {Fore.CYAN}{confidence_undefined} Undefined"
             )
 
@@ -517,7 +518,7 @@ class LintCode:
             severity_medium = json_data["metrics"]["_totals"]["SEVERITY.MEDIUM"]
             severity_undefined = json_data["metrics"]["_totals"]["SEVERITY.UNDEFINED"]
 
-            await interface.add_item(
+            await interface.add_line(
                 f"{Fore.WHITE}Severity: {Fore.RED}{severity_high} High - {Fore.YELLOW}{severity_medium} Medium - {Fore.GREEN}{severity_low} Low - {Fore.CYAN}{severity_undefined} Undefined"
             )
 
@@ -525,7 +526,7 @@ class LintCode:
             nosec = json_data["metrics"]["_totals"]["nosec"]
             skipped_tests = json_data["metrics"]["_totals"]["skipped_tests"]
 
-            await interface.add_item(
+            await interface.add_line(
                 f"{Fore.WHITE}Lines of Code: {Fore.WHITE}{loc} - {Fore.RED}{nosec} Lines of Code (#NoSec) - {Fore.YELLOW}{skipped_tests} Skipped Tests"
             )
 

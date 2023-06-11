@@ -541,7 +541,7 @@ class Parrot(commands.AutoShardedBot):
         log.error("Ignoring exception in %s", event, exc_info=True)
         await self._execute_webhook(
             WEBHOOK_ERROR_LOGS,
-            content=f"```py\n{traceback.format_exc()}```",
+            content=f"```py\nIgnoring exception on {event}\n{traceback.format_exception()}```",
         )
         traceback.print_exc()
 

@@ -1,14 +1,14 @@
 ignore: []
 rule_settings:
   enable:
-  - default
+    - default
   disable:
-  - do-not-use-bare-except
+    - do-not-use-bare-except
   rule_types:
-  - refactoring
-  - suggestion
-  - comment
-  python_version: '3.11'
+    - refactoring
+    - suggestion
+    - comment
+  python_version: "3.11"
 
 rules: []
 

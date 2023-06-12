@@ -526,7 +526,7 @@ class LintCode:
             skipped_tests = json_data["metrics"]["_totals"]["skipped_tests"]
 
             await interface.add_line(
-                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}{nosec} Lines of Code (#NoSec) - {Fore.YELLOW}{skipped_tests} Skipped Tests\n"
+                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}Lines of Code (#NoSec) {nosec} {Fore.WHITE}- {Fore.YELLOW}Skipped Tests {skipped_tests}\n"
             )
 
             for result in json_data["results"]:

@@ -107,10 +107,10 @@ class MusicView(discord.ui.View):
         self.disable_all()
         await interaction.followup.send(
             "Running `loop` command from the context failed. Possible reasons:\n"
-            "• The bot is not in a voice channel.\n"
-            "• The bot is not in the same voice channel as you.\n"
-            "• The bot is not playing music.\n"
-            "• You are missing DJ role or Manage Channels permission.\n",
+            "- The bot is not in a voice channel.\n"
+            "- The bot is not in the same voice channel as you.\n"
+            "- The bot is not playing music.\n"
+            "- You are missing DJ role or Manage Channels permission.\n",
             ephemeral=True,
         )
         await self.on_timeout()

@@ -33,6 +33,6 @@ The reverse is also true:
 ```
 
 **More info**  
-• [Keyword only arguments](https://www.python.org/dev/peps/pep-3102/)  
-• [Positional only arguments](https://www.python.org/dev/peps/pep-0570/)  
-• `@Parrot python param-arg` (Parameters vs. Arguments)  
+- [Keyword only arguments](https://www.python.org/dev/peps/pep-3102/)  
+- [Positional only arguments](https://www.python.org/dev/peps/pep-0570/)  
+- `@Parrot python param-arg` (Parameters vs. Arguments)  

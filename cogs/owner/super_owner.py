@@ -102,7 +102,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.count = 0
-        self.owner = None
+
+        self.bot.get_user_data = self.get_user_data
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -150,7 +151,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def makefile(self, ctx: Context, name: str, *, text: str) -> None:
         """To make a file in ./temp/ directly"""
         try:
-            async with async_open(f"{name}", "w+") as f:
+            async with async_open(f"temp/{name}", "w+") as f:
                 await f.write(text)
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
@@ -274,7 +275,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             page = PaginationView(embed_list=ls)
             await page.start(ctx)
 
-    @commands.command()
+    @commands.command(name="delete-reference", aliases=["dr"])
     @commands.is_owner()
     async def dr(self, ctx: Context):
         """To delete the message reference"""
@@ -350,12 +351,17 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({f'<#{str(vc)}>' if vc else None})"
 
             if vc:
-                em.add_field(name="VC Channel ID", value=str(vc), inline=True)
-                em.add_field(name="Suppress?", value=suppress, inline=True)
-                em.add_field(name="Self Mute?", value=self_mute, inline=True)
-                em.add_field(name="Self Deaf?", value=self_deaf, inline=True)
-                em.add_field(name="Deaf?", value=deaf, inline=True)
-                em.add_field(name="Mute?", value=mute, inline=True)
+                em.add_field(
+                    name="VC Channel ID", value=str(vc), inline=True
+                ).add_field(name="Suppress?", value=suppress, inline=True).add_field(
+                    name="Self Mute?", value=self_mute, inline=True
+                ).add_field(
+                    name="Self Deaf?", value=self_deaf, inline=True
+                ).add_field(
+                    name="Deaf?", value=deaf, inline=True
+                ).add_field(
+                    name="Mute?", value=mute, inline=True
+                )
             em_list_member.append(em)
 
         if channel_member.lower() in ("channels",):
@@ -433,6 +439,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                         avatar_url=self.bot.user.display_avatar.url,
                         allowed_mentions=discord.AllowedMentions.none(),
                     )
+        await ctx.tick()
 
     @commands.command()
     async def python(self, ctx: Context, *, text: str):
@@ -555,67 +562,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         embed.set_footer(text=f"{issues} warnings")
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def force_spy(self, ctx: Context, *, user: discord.User):
-        """To spy someone, only meant for fun. I have no intention to fuck someone's privacy"""
-        API = "https://japi.rest/discord/v1/user/{}"
-        async with self.bot.http_session.get(API.format(user.id)) as resp:
-            data = await resp.json()
-
-        presence = data["presence"]
-        connections = data["connections"]
-        data = data["data"]
-        if "message" in data:
-            return await ctx.send(data["message"])
-
-        em = discord.Embed(title="User Info")
-        if data["bio"]:
-            em.description = data["bio"]
-        if data["avatarURL"]:
-            em.set_footer(
-                text=data["tag"],
-            )
-        em.add_field(name="ID", value=data["id"])
-        if data["banner_color"]:
-            em.color = discord.Color.from_str(data["banner_color"])
-        if data["bannerURL"]:
-            em.set_image(url=data["bannerURL"])
-        if data["premium_since"]:
-            date = data["premium_since"].replace("T", " ").replace("+00:00", " ")
-            em.add_field(name="Premium Since", value=date)
-        em.add_field(
-            name="Created At", value=discord.utils.format_dt(user.created_at, "R")
-        )
-        if data["public_flags_array"]:
-            em.add_field(
-                name="Public Flags Array",
-                value=f'{", ".join(i.replace("_", " ").title() for i in data["public_flags_array"])}',
-            )
-        if data["public_flags"]:
-            em.add_field(name="Public Flags", value=data["public_flags"])
-        if data["avatar"]:
-            em.add_field(name="Avatar", value=data["avatar"])
-        if presence.get("activities"):
-            __presence = ""
-            for i in presence["activities"]:
-                __presence = f"""[{i["type"].title()} {i["name"]}]({i["url"]}) {i.get("emoji", {}).get("name", "")} {i["state"]}
-
-"""
-            em.add_field(name="Presence", value=__presence)
-
-        if connections:
-            em.add_field(
-                name="Connections",
-                value=", ".join(
-                    f'[{i["type"].title()}]({i["url"] or ""})'
-                    for i in connections
-                    if i != "fetchError"
-                )
-                or "No connections",
-            )
-        await ctx.send(embed=em)
-
     @commands.command()
     @commands.is_owner()
     async def maintenance(
@@ -627,7 +573,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     ):
         """To toggle the bot maintenance"""
         ctx.bot.UNDER_MAINTENANCE = not ctx.bot.UNDER_MAINTENANCE
-        ctx.bot.UNDER_MAINTENANCE_OVER = till.dt
+        ctx.bot.UNDER_MAINTENANCE_OVER = till.dt if till is not None else till
         ctx.bot.UNDER_MAINTENANCE_REASON = reason
         await ctx.tick()
 
@@ -684,6 +630,16 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             )
         else:
             await ctx.send(f"{ctx.author.mention} cog ({cog}) does not exist")
+
+    async def get_user_data(self, *, user: discord.Object) -> typing.Any:
+        """Illegal way to get presence of a user"""
+        from utilities.object import objectify
+
+        url = f"https://japi.rest/discord/v1/user/{user.id}"
+        async with self.bot.http_session.get(url) as resp:
+            data = await resp.json()
+
+        return objectify(data)
 
 
 class SphinxObjectFileReader:
@@ -820,10 +776,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         cache = list(self._rtfm_cache[key].items())
 
-        def transform(tup):
-            return tup[0]
-
-        matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
+        matches = (await ctx.bot.func(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False))[:8]
 
         e = discord.Embed(
             title="Read the Fucking Documentation", timestamp=discord.utils.utcnow()
@@ -831,9 +784,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
-        e.set_thumbnail(
-            url="https://cdn.discordapp.com/attachments/894938379697913916/894938401294401576/3aa641b21acded468308a37eef43d7b3.png"
-        )
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
 
         e.set_footer(
@@ -843,7 +793,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(embed=e)
 
     @commands.group(invoke_without_command=True)
-    async def rtfd(self, ctx, *, obj: str = None):
+    async def rtfd(self, ctx: Context, *, obj: str = None):
         """Gives you a documentation link for a specified entity.
         Events, objects, and functions are all supported through
         a cruddy fuzzy algorithm.
@@ -906,7 +856,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         async with async_open(r"extra/docs_links.json") as f:
             data = json.loads(await f.read())
 
-        await ctx.send(json.dumps(data, indent=4))
+        await ctx.send(f"```json\n{json.dumps(data, indent=4)}```")
 
     @rtfd.command(name="add")
     @commands.is_owner()

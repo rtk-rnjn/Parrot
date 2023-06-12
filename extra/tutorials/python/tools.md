@@ -1,0 +1,1 @@
+The [Tools page](https://www.pythondiscord.com/resources/tools/) contains a couple of the most popular tools for programming in Python.

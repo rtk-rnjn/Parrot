@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
-import pathlib
 import re
 import sys
 import unicodedata
@@ -15,9 +14,11 @@ from io import BytesIO
 from random import choice
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
+from aiofile import async_open
 
 import aiohttp  # type: ignore
 import rapidfuzz  # type: ignore
+from rapidfuzz.process import extractOne
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 
@@ -134,6 +135,7 @@ class RTFM(Cog):
             callback=self._bookmark_context_menu_callback,
         )
         self.bot.tree.add_command(self.__bookmark_context_menu_callback)
+        self._python_cached: Dict[str, str] = {}
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:
@@ -334,6 +336,45 @@ class RTFM(Cog):
 
     async def get_package(self, url: str):
         return await self.session.get(url=url)
+
+    async def build_python_cache(self):
+        if not hasattr(self, "_python_cached"):
+            self._python_cached = {}
+        
+        for file in os.listdir("extra/tutorials/python"):
+            if file.endswith(".md"):
+                async with async_open(f"extra/tutorials/python/{file}") as f:
+                    self._python_cached[file.replace(".md", "")] = await f.read()
+
+    @commands.command()
+    @Context.with_type
+    async def python(self, ctx: Context, *, text: str):
+        if not getattr(self, "_python_cached", None):
+            await self.build_python_cache()
+
+        # get closest match
+        match = await self.bot.func(extractOne, text, self._python_cached.keys())
+        if match[1] < 50:
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="No such tutorial found in the search query.",
+                    color=self.bot.color,
+                )
+            )
+        if 70 < match[1] < 90:
+            val = await ctx.prompt(f"{ctx.author.mention} Did you mean `{match[0]}`?")
+            if val:
+                data = self._python_cached[match[0]]
+            else:
+                await ctx.send(
+                    f"{ctx.author.mention} No tag found with your query, you can ask the developer to create one.\n"
+                    f"Or consider contributing to the project by creating a tag yourself.\n"
+                    f"See {self.bot.github}"
+                )
+                return
+        else:
+            data = self._python_cached[match[0]]
+        await ctx.send(embed=discord.Embed(description=data))
 
     @commands.command(aliases=["pypi"])
     @commands.bot_has_permissions(embed_links=True)

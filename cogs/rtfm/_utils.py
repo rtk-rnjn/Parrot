@@ -489,7 +489,7 @@ class LintCode:
                 end_location_col = f'{Fore.YELLOW}{result["end_location"]["column"]}'
 
                 await interface.add_line(
-                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}"
+                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}:{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}"
                 )
                 if result["fix"]:
                     applicability = f'{Fore.CYAN}{result["fix"]["applicability"]}'
@@ -497,6 +497,8 @@ class LintCode:
                     await interface.add_line(
                         f"{Fore.WHITE}Fix: {fix_message} {Fore.WHITE}({applicability}{Fore.WHITE})\n"
                     )
+                else:
+                    await interface.add_line(f"{Fore.WHITE}Fix: {Fore.RED}No Fix available at this moment\n")
                 await interface.add_line(f'{Fore.WHITE}{"-" * 50}\n')
 
         if data.get("stderr"):

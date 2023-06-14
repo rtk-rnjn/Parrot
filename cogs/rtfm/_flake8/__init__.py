@@ -9,7 +9,7 @@ from utilities.converters import convert_bool
 # https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes
 # https://flake8.pycqa.org/en/latest/user/error-codes.html
 
-POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,3})")
+POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,4})")
 
 
 class Flake8Converter(

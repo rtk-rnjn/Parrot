@@ -225,7 +225,8 @@ from ._pylint import PyLintConverter
 from ._pylint import validate_flag as pylint_validate_flag
 from ._pyright import PyrightConverter
 from ._pyright import validate_flag as pyright_validate_flag
-
+from ._ruff import RuffConverter
+from ._ruff import validate_flag as ruff_validate_flag
 
 async def code_to_file(code: str) -> str:
     filename = f"temp/runner_{int(datetime.now(timezone.utc).timestamp()*1000)}.py"
@@ -297,6 +298,7 @@ class LintCode:
             PyLintConverter,
             BanditConverter,
             PyrightConverter,
+            RuffConverter,
             str,
         ],
     ) -> None:
@@ -347,6 +349,8 @@ class LintCode:
             cmd_str = mypy_validate_flag(self.flag)  # type: ignore
         elif self.linttype == "pyright":
             cmd_str = pyright_validate_flag(self.flag)  # type: ignore
+        elif self.linttype == "ruff":
+            cmd_str = ruff_validate_flag(self.flag)  # type: ignore
 
         data = await lint(cmd_str, filename) if cmd_str else {}
 
@@ -448,6 +452,52 @@ class LintCode:
                     await interface.add_line(
                         f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n>>> {physical_line}"
                     )
+
+        if data.get("stderr"):
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+            for line in data["stderr"].splitlines():
+                pages.add_line(f"{Fore.RED}{line}\n")
+
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+    async def lint_with_ruff(self, ctx: Context) -> None:
+        filename = await code_to_file(self.source)
+        data = await lint("ruff --format=json", filename)
+
+        await ctx.reply(f"```ansi\n{data['main']}```")
+
+        if data.get("stdout"):
+            json_data = json.loads(data["stdout"])
+
+            pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
+
+            pages.add_line(
+                f"{Fore.WHITE}Ruff Version - {Fore.WHITE}0.0.272\n"  # TODO: Get version from ruff
+            )
+
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+            for result in json_data:
+                code = f"{Fore.RED}{result['code']}"
+                message = f"{Fore.BLUE}{result['message']}"
+                location_row = Fore.YELLOW + result["location"]["row"]
+                location_col = Fore.YELLOW + result["location"]["column"]
+
+                end_location_row = Fore.YELLOW + result["end_location"]["row"]
+                end_location_col = Fore.YELLOW + result["end_location"]["column"]
+
+                await interface.add_line(
+                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}"
+                )
+                if result["fix"]:
+                    applicability = Fore.CYAN + result["fix"]["applicability"]
+                    fix_message = Fore.GREEN + result["fix"]["message"]
+                    await interface.add_line(
+                        f"{Fore.WHITE}Fix: {fix_message} {Fore.WHITE}({applicability}{Fore.WHITE})\n"
+                    )
+                await interface.add_line(Fore.WHITE + "-" * 50 + "\n")
 
         if data.get("stderr"):
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
@@ -637,7 +687,7 @@ class LintCode:
         await ctx.reply(
             f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
         )
-    
+
     async def run_yapf(self, ctx: Context) -> None:
         ini = time.perf_counter()
         res = await ctx.bot.func(yapf_format, self.source)

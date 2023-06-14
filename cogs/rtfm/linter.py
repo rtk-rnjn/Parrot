@@ -11,6 +11,7 @@ from ._utils import (
     MypyConverter,
     PyLintConverter,
     PyrightConverter,
+    
 )
 
 
@@ -180,3 +181,11 @@ class Linter(Cog):
         """Shortcut for `lintcode pyright` with no flags, just the code"""
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint_with_pyright(ctx)
+
+    @lintcode.command(name="ruff", aliases=["rf"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def ruff(self, ctx: Context, *, code: str):
+        """Lint code with ruff"""
+        linter = LintCode(code).set_linttype("ruff")
+        await linter.lint(ctx)

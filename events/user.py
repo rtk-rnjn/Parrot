@@ -6,7 +6,6 @@ import discord
 from core import Cog
 
 if TYPE_CHECKING:
-
     from core import Parrot
 
 

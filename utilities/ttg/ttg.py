@@ -28,6 +28,7 @@ OPERATIONS = {
 }
 # fmt: on
 
+
 def recursive_map(func, data):
     """Recursively applies a map function to a list and all sublists."""
     if isinstance(data, list):

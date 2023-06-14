@@ -147,7 +147,9 @@ class RTFM(Cog):
                 self.parse_readme(raw)
 
     @staticmethod
-    def build_bookmark_dm(target_message: discord.Message, title: Optional[str]) -> discord.Embed:
+    def build_bookmark_dm(
+        target_message: discord.Message, title: Optional[str]
+    ) -> discord.Embed:
         """Build the embed to DM the bookmark requester."""
         embed = discord.Embed(
             title=title or "Bookmark",
@@ -1040,7 +1042,11 @@ class RTFM(Cog):
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def realpython(
-        self, ctx: Context, amount: Optional[int] = 5, *, user_search: Optional[str] = None
+        self,
+        ctx: Context,
+        amount: Optional[int] = 5,
+        *,
+        user_search: Optional[str] = None,
     ) -> None:
         """
         Send some articles from RealPython that match the search terms.

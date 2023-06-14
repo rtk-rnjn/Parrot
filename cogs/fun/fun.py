@@ -35,9 +35,9 @@ from discord.ext import commands, tasks
 from emojis.db.db import EMOJI_DB, Emoji
 from utilities import spookifications
 from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
+from utilities.converters import from_bottom, to_bottom
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
-from utilities.converters import to_bottom, from_bottom
 
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
@@ -2629,7 +2629,7 @@ class Fun(Cog):
             await ctx.reply(text[:2000])
         else:
             await ctx.reply(text)
-    
+
     @commands.command(name="debottomify", aliases=["debottom"])
     async def _debottomify(self, ctx: Context, *, text: commands.clean_content):
         """Debottomify your text"""
@@ -2638,4 +2638,3 @@ class Fun(Cog):
             await ctx.reply(text[:2000])
         else:
             await ctx.reply(text)
-    

@@ -29,7 +29,6 @@ with open("extra/default_langs.yml", "r", encoding="utf-8", errors="ignore") as 
 
 
 def prepare_payload(payload: str):
-
     try:
         language, text = re.split(r"\s+", payload, maxsplit=1)
     except ValueError:

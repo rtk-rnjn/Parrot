@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import asyncio
-import socket
 import os
+import socket
 
 from aiohttp import AsyncResolver, ClientSession, TCPConnector  # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 from core import Parrot
-from utilities.config import TOKEN, VERSION, DATABASE_KEY, DATABASE_URI
+from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION
 
 bot: Parrot = Parrot()
 
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 
 async def main() -> None:
     async with ClientSession(

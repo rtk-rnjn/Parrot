@@ -33,8 +33,10 @@ __all__ = (
 
 _PY2 = sys.version_info < (3, 0)
 
+
 def identity(x):
     return x
+
 
 # u('string') replaces the forwards-incompatible u'string'
 if _PY2:

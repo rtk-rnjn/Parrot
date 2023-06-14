@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 
 from discord.ext import commands
 

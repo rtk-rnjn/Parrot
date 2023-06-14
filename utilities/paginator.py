@@ -1,15 +1,7 @@
 # AUTHOR: https://github.com/davidetacchini/
 
 from itertools import islice
-from typing import (
-    Awaitable,
-    Callable,
-    List,
-    NamedTuple,
-    Optional,
-    TypeVar,
-    Union,
-)
+from typing import Awaitable, Callable, List, NamedTuple, Optional, TypeVar, Union
 
 import discord
 from core import Context
@@ -483,7 +475,9 @@ class PaginationView(discord.ui.View):
         self.ctx = ctx
         await self.start(ctx)
 
-    async def add_item_to_embed_list(self, item: Union[str, discord.Embed, discord.File]):
+    async def add_item_to_embed_list(
+        self, item: Union[str, discord.Embed, discord.File]
+    ):
         self.embed_list.append(item)
         if hasattr(self, "message"):
             self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

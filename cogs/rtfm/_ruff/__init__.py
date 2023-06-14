@@ -18,6 +18,7 @@ class RuffConverter(
     max_doc_length: Optional[int] = None
     max_complexity: Optional[int] = None
 
+
 def validate_Ruff_code(code: str) -> List[str]:
     return POSSIBLE_RUFF_CODE.findall(code)
 

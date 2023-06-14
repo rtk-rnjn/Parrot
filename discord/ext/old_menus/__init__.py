@@ -332,7 +332,6 @@ class Menu(metaclass=_MenuMeta):
         check_embeds=False,
         message=None,
     ):
-
         self.timeout = timeout
         self.delete_message_after = delete_message_after
         self.clear_reactions_after = clear_reactions_after

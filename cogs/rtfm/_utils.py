@@ -228,6 +228,7 @@ from ._pyright import validate_flag as pyright_validate_flag
 from ._ruff import RuffConverter
 from ._ruff import validate_flag as ruff_validate_flag
 
+
 async def code_to_file(code: str) -> str:
     filename = f"temp/runner_{int(datetime.now(timezone.utc).timestamp()*1000)}.py"
     async with aiofiles.open(filename, "w") as f:
@@ -498,7 +499,9 @@ class LintCode:
                         f"{Fore.WHITE}Fix: {fix_message} {Fore.WHITE}({applicability}{Fore.WHITE})\n"
                     )
                 else:
-                    await interface.add_line(f"{Fore.WHITE}Fix: {Fore.RED}No Fix available at this moment\n")
+                    await interface.add_line(
+                        f"{Fore.WHITE}Fix: {Fore.RED}No Fix available at this moment\n"
+                    )
                 await interface.add_line(f'{Fore.WHITE}{"-" * 50}\n')
 
         if data.get("stderr"):

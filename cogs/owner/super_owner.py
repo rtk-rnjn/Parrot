@@ -125,7 +125,7 @@ class MongoCollectionView(discord.ui.View):
         index = 0
         async for data in collection.find():
             _id = data.pop("_id")
-            data['_id'] = str(_id)
+            data["_id"] = str(_id)
 
             data = json.dumps(data, indent=4).split("\n")
             new_data = []
@@ -204,8 +204,10 @@ class MongoView(discord.ui.View):
 
     async def init(self):
         names: list[str] = await self.ctx.bot.mongo.list_database_names()
+
         def to_emoji(c):
             return chr(127462 + c)
+
         embed = discord.Embed(
             title="MongoDB  - Database - Lookup",
         )
@@ -319,7 +321,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self,
         ctx: Context,
         *,
-        target: typing.Union[discord.User, discord.TextChannel, discord.Thread, None] = None,
+        target: typing.Union[
+            discord.User, discord.TextChannel, discord.Thread, None
+        ] = None,
     ):
         """Fun command"""
         await ctx.message.delete(delay=0)
@@ -736,7 +740,11 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         assert ctx.guild is not None
         GUILD_ID = getattr(guild, "id", ctx.guild.id)
         await ctx.send(
-            getattr(ctx.bot.get_guild(GUILD_ID), "member_count", "Member count not available")
+            getattr(
+                ctx.bot.get_guild(GUILD_ID),
+                "member_count",
+                "Member count not available",
+            )
         )
 
     @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
@@ -1073,7 +1081,9 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         Members without can search up to 25 messages.
         """
         strategy = self._basic_cleanup_strategy
-        assert isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
+        assert isinstance(ctx.author, discord.Member) and isinstance(
+            ctx.me, discord.Member
+        )
         is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
         if ctx.channel.permissions_for(ctx.me).manage_messages:
             if is_mod:

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import contextlib
-import discord
 
-from core import Parrot, Cog
+import discord
+from core import Cog, Parrot
 
 UPLOAD_CHANNEL_ID = 1021553838135713944
 RULES_CHANNEL_ID = 1021457186997682308

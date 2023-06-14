@@ -109,6 +109,7 @@ class Twenty48:
             return None
 
         board = [list(i) for i in self.board]
+
         def restore():
             return setattr(self, "board", board)
 

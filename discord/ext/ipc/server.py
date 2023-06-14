@@ -1,6 +1,7 @@
 import logging
 
 import aiohttp.web
+
 from core import Cog, Parrot
 
 from .errors import *
@@ -115,7 +116,8 @@ class Server:
         method_list = [
             getattr(cog, func)
             for func in dir(cog)
-            if callable(getattr(cog, func)) and getattr(getattr(cog, func), "__ipc_route__", None)
+            if callable(getattr(cog, func))
+            and getattr(getattr(cog, func), "__ipc_route__", None)
         ]
 
         # Reset endpoints for this class
@@ -176,7 +178,9 @@ class Server:
             headers = request.get("headers")
 
             if not headers or headers.get("Authorization") != self.secret_key:
-                log.info("Received unauthorized request (Invalid or no token provided).")
+                log.info(
+                    "Received unauthorized request (Invalid or no token provided)."
+                )
                 response = {"error": "Invalid or no token provided.", "code": 403}
             else:
                 if not endpoint or endpoint not in self.endpoints:

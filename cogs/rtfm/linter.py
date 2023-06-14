@@ -11,7 +11,7 @@ from ._utils import (
     MypyConverter,
     PyLintConverter,
     PyrightConverter,
-    
+    RuffConverter,
 )
 
 
@@ -142,7 +142,7 @@ class Linter(Cog):
         """Format code with isort"""
         linter = LintCode(code)
         await linter.run_isort(ctx)
-    
+
     @lintcode.command(name="yapf", aliases=["yf"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
@@ -150,7 +150,7 @@ class Linter(Cog):
         """Format code with yapf"""
         linter = LintCode(code)
         await linter.run_yapf(ctx)
-    
+
     @lintcode.command(name="autopep8", aliases=["ap8"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
@@ -185,7 +185,15 @@ class Linter(Cog):
     @lintcode.command(name="ruff", aliases=["rf"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def ruff(self, ctx: Context, *, code: str):
+    async def ruff(self, ctx: Context, *, flag: RuffConverter):
         """Lint code with ruff"""
-        linter = LintCode(code).set_linttype("ruff")
+        linter = LintCode(flag).set_linttype("ruff")
         await linter.lint(ctx)
+
+    @commands.command(name="ruff", aliases=["rf"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def ruff_shortcut(self, ctx: Context, *, code: str):
+        """Shortcut for `lintcode ruff` with no flags, just the code"""
+        linter = LintCode(code).set_linttype("ruff")
+        await linter.lint_with_ruff(ctx)

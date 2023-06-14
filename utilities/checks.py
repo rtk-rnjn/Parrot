@@ -143,7 +143,7 @@ def in_temp_channel() -> Check[Context]:
         if not ctx.author.voice:
             raise ex.InHubVoice()
 
-        if data := await ctx.bot.guild_configurations.find_one(
+        if _ := await ctx.bot.guild_configurations.find_one(
             {
                 "_id": ctx.guild.id,
                 "temp_channels.channel_id": ctx.author.voice.channel.id,

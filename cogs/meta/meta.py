@@ -323,7 +323,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
     ):
         embed_like.title = command.qualified_name.upper()
         if isinstance(embed_like, discord.Embed):
-            if syntax := self.get_command_signature(command):
+            if _ := self.get_command_signature(command):
                 embed_like.add_field(
                     name="Syntax",
                     value=f"`{self.get_command_signature(command)}`",

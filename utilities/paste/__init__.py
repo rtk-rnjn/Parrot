@@ -1,7 +1,7 @@
 from typing import Literal, NamedTuple
 
 from .client import Client as Client
-from .errors import *
+from .errors import *  # noqa: F401, F403  # pylint: disable=unused-wildcard-import
 from .paste import File as File
 from .paste import Paste as Paste
 

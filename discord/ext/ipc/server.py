@@ -4,7 +4,7 @@ import aiohttp.web
 
 from core import Cog, Parrot
 
-from .errors import *
+from .errors import *  # noqa: F401, F403  # pylint: disable=unused-wildcard-import
 
 log = logging.getLogger(__name__)
 
@@ -226,7 +226,7 @@ class Server:
                     await websocket.send_json(response)
                     log.debug("IPC Server > %r", response)
 
-                    raise JSONEncodeError(error_response)
+                    raise JSONEncodeError(error_response)  # noqa: F405
 
     async def handle_multicast(self, request):
         """Handles multicasting websocket requests from the client.

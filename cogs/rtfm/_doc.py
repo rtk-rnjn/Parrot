@@ -10,7 +10,7 @@ import discord
 from core import Context
 
 try:
-    import lxml
+    import lxml  # noqa: F401  # pylint: disable=unused-import
 
     HTML_PARSER = "lxml"
 except ImportError:

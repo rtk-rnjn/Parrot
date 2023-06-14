@@ -19,14 +19,6 @@ from core import Context, Parrot
 from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
-
-    Board: TypeAlias = list[list[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
-
-BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
-
-
-if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
 
     P = ParamSpec("P")
@@ -34,6 +26,10 @@ if TYPE_CHECKING:
 
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
+
+    Board: TypeAlias = list[list[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
+
+BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
 
 
 def chunk(iterable: list[int], *, count: int) -> list[list[int]]:

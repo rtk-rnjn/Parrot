@@ -7,7 +7,6 @@ all_extensions:
   - cogs.holidays.easter
   - cogs.ipc
   - cogs.love
-  - cogs.memegen
   - cogs.meta
   - cogs.mis
   - cogs.mod
@@ -18,7 +17,6 @@ all_extensions:
   - cogs.rtfm
   - cogs.sports
   - cogs.telephone
-  - cogs.twitter
   - cogs.ticket
   - cogs.utils
   - cogs.wolfram

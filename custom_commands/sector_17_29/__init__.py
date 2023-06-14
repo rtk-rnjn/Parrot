@@ -13,7 +13,7 @@ from discord.ext import commands, tasks
 from utilities.checks import in_support_server
 
 try:
-    import topgg
+    import topgg  # noqa: F401 # pylint: disable=import-error
 
     HAS_TOP_GG = True
 except ImportError:

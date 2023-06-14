@@ -32,6 +32,19 @@ from black import FileMode, format_str
 from colorama import Fore
 from yapf.yapflib.yapf_api import FormatCode as yapf_format
 
+from ._bandit import BanditConverter
+from ._bandit import validate_flag as bandit_validate_flag
+from ._flake8 import Flake8Converter
+from ._flake8 import validate_flag as flake8_validate_flag
+from ._mypy import MypyConverter
+from ._mypy import validate_flag as mypy_validate_flag
+from ._pylint import PyLintConverter
+from ._pylint import validate_flag as pylint_validate_flag
+from ._pyright import PyrightConverter
+from ._pyright import validate_flag as pyright_validate_flag
+from ._ruff import RuffConverter
+from ._ruff import validate_flag as ruff_validate_flag
+
 languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
 API_ROOT_RP = "https://realpython.com/search/api/v1/"
@@ -211,22 +224,6 @@ class InformationDropdown(discord.ui.Select):
         # The attribute is not set during initialization.
         result_embed = self.mapping_of_embeds[self.values[0]]
         await self.original_message.edit(embed=result_embed)
-
-
-# linting
-
-from ._bandit import BanditConverter
-from ._bandit import validate_flag as bandit_validate_flag
-from ._flake8 import Flake8Converter
-from ._flake8 import validate_flag as flake8_validate_flag
-from ._mypy import MypyConverter
-from ._mypy import validate_flag as mypy_validate_flag
-from ._pylint import PyLintConverter
-from ._pylint import validate_flag as pylint_validate_flag
-from ._pyright import PyrightConverter
-from ._pyright import validate_flag as pyright_validate_flag
-from ._ruff import RuffConverter
-from ._ruff import validate_flag as ruff_validate_flag
 
 
 async def code_to_file(code: str) -> str:

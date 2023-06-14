@@ -56,12 +56,12 @@ class Wordle:
 
     def parse_guess(self, guess: str) -> bool:
         self.guesses.append([])
-        for ind, l in enumerate(guess):
-            if l in self.word:
-                color = GREEN if self.word[ind] == l else ORANGE
+        for ind, letter in enumerate(guess):
+            if letter in self.word:
+                color = GREEN if self.word[ind] == letter else ORANGE
             else:
                 color = GRAY
-            self.guesses[-1].append({"letter": l, "color": color})
+            self.guesses[-1].append({"letter": letter, "color": color})
 
         return guess == self.word
 

@@ -101,7 +101,7 @@ class Twenty48:
 
     def number_to_emoji(self) -> str:
         board = self.board
-        emoji_array = [[self._conversion[str(l)] for l in row] for row in board]
+        emoji_array = [[self._conversion[str(i)] for i in row] for row in board]
         return "".join("".join(row) + "\n" for row in emoji_array)
 
     def lost(self) -> Optional[bool]:

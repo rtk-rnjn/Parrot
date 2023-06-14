@@ -222,7 +222,7 @@ class Love(Cog):
     async def partner_zodiac(self, ctx: Context, zodiac_sign: str) -> None:
         """Provides a random counter compatible zodiac sign to the given user's zodiac sign."""
         embed = discord.Embed(color=self.bot.color)
-        if zodiac_check := self.zodiacs.get(zodiac_sign.capitalize()):
+        if _ := self.zodiacs.get(zodiac_sign.capitalize()):
             compatible_zodiac = random.choice(self.zodiacs[zodiac_sign.capitalize()])
             emoji1 = random.choice(HEART_EMOJIS)
             emoji2 = random.choice(HEART_EMOJIS)

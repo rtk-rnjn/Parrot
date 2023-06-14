@@ -3,7 +3,7 @@ import logging
 
 import aiohttp
 
-from .errors import *
+from .errors import *  # noqa: F401, F403  # pylint: disable=unused-wildcard-import
 
 log = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class Client:
                 log.error(
                     "WebSocket connection unexpectedly closed. Multicast Server is unreachable."
                 )
-                raise NotConnected("Multicast server connection failed.")
+                raise NotConnected("Multicast server connection failed.")  # noqa: F405
 
             port_data = recv.json()
             self.port = port_data["port"]

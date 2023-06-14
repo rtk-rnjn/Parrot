@@ -693,6 +693,9 @@ class LintCode:
     async def run_yapf(self, ctx: Context) -> None:
         ini = time.perf_counter()
         res = await ctx.bot.func(yapf_format, self.source)
+        if isinstance(res, tuple):
+            res = res[0]
+
         end = time.perf_counter()
 
         if res == self.source:

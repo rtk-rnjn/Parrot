@@ -470,6 +470,7 @@ class PaginationView(discord.ui.View):
         self.ctx = ctx
         if not self.embed_list:
             self.message = await ctx.send("Loading...")
+            return
 
         if isinstance(self.embed_list[0], discord.Embed):
             self.message = await ctx.send(embed=self.embed_list[0], view=self)  # type: ignore
@@ -492,18 +493,19 @@ class PaginationView(discord.ui.View):
                 self._last.disabled = False
                 self.next.disabled = False
 
-            if isinstance(self.embed_list[self.current], discord.Embed):
-                await self.message.edit(
-                    embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
-                )
-            elif isinstance(self.embed_list[self.current], discord.File):
-                await self.message.edit(
-                    attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
-                )
-            else:
-                await self.message.edit(
-                    content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
-                    embed=None,
-                    attachments=[],
-                    view=self,
-                )
+    async def _update_message(self) -> None:
+        if isinstance(self.embed_list[self.current], discord.Embed):
+            await self.message.edit(
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+            )
+        elif isinstance(self.embed_list[self.current], discord.File):
+            await self.message.edit(
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+            )
+        else:
+            await self.message.edit(
+                content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
+                embed=None,
+                attachments=[],
+                view=self,
+            )

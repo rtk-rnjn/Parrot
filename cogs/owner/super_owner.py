@@ -123,8 +123,17 @@ class MongoCollectionView(discord.ui.View):
         view._str_suffix = "\n```"
         await view.start(self.ctx)
 
+        index = 0
         async for data in collection.find():
+            index += 1
             await view.add_item_to_embed_list(json.dumps(data, indent=4))
+            if index % 20 == 0:
+                await view._update_message()
+
+            if index == 100:
+                break
+
+        await view._update_message()
 
     async def disable_all(self):
         assert self.message is not None

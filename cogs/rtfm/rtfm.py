@@ -14,13 +14,13 @@ from io import BytesIO
 from random import choice
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
-from aiofile import async_open
 
 import aiohttp  # type: ignore
 import rapidfuzz  # type: ignore
-from rapidfuzz.process import extractOne
+from aiofile import async_open
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
+from rapidfuzz.process import extractOne
 
 import discord
 from cogs.meta.robopage import SimplePages
@@ -88,6 +88,7 @@ class BookmarkForm(discord.ui.Modal):
         """Sends the bookmark embed to the user with the newly chosen title."""
         title = self.bookmark_title.value or self.bookmark_title.default
         try:
+            interaction.guild
             await self.dm_bookmark(interaction, self.message, title)
         except discord.Forbidden:
             await interaction.response.send_message(
@@ -107,7 +108,7 @@ class BookmarkForm(discord.ui.Modal):
         self,
         interaction: discord.Interaction,
         target_message: discord.Message,
-        title: str,
+        title: Optional[str],
     ) -> None:
         """
         Sends the target_message as a bookmark to the interaction user's DMs.
@@ -146,10 +147,10 @@ class RTFM(Cog):
                 self.parse_readme(raw)
 
     @staticmethod
-    def build_bookmark_dm(target_message: discord.Message, title: str) -> discord.Embed:
+    def build_bookmark_dm(target_message: discord.Message, title: Optional[str]) -> discord.Embed:
         """Build the embed to DM the bookmark requester."""
         embed = discord.Embed(
-            title=title,
+            title=title or "Bookmark",
             description=target_message.content,
         )
         if target_message.attachments and target_message.attachments[0].url.endswith(
@@ -183,6 +184,9 @@ class RTFM(Cog):
         self, interaction: discord.Interaction, message: discord.Message
     ) -> None:
         """The callback that will be invoked upon using the bookmark's context menu command."""
+        assert isinstance(interaction.user, discord.Member) and isinstance(
+            interaction.channel, discord.abc.GuildChannel
+        )
         permissions = interaction.channel.permissions_for(interaction.user)
         if not permissions.read_messages:
             embed = self.build_error_embed(
@@ -195,8 +199,16 @@ class RTFM(Cog):
         await interaction.response.send_modal(bookmark_title_form)
 
     @staticmethod
-    def build_error_embed(user: Union[discord.Member, discord.User]) -> discord.Embed:
+    def build_error_embed(
+        user: Union[discord.Member, discord.User, str]
+    ) -> discord.Embed:
         """Builds an error embed for when a bookmark requester has DMs disabled."""
+        if isinstance(user, str):
+            return discord.Embed(
+                title="You DM(s) are closed!",
+                description=user,
+            )
+
         return discord.Embed(
             title="You DM(s) are closed!",
             description=f"{user.mention}, please enable your DMs to receive the bookmark.",
@@ -340,15 +352,19 @@ class RTFM(Cog):
     async def build_python_cache(self):
         if not hasattr(self, "_python_cached"):
             self._python_cached = {}
-        
+
         for file in os.listdir("extra/tutorials/python"):
             if file.endswith(".md"):
                 async with async_open(f"extra/tutorials/python/{file}") as f:
                     self._python_cached[file.replace(".md", "")] = await f.read()
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @Context.with_type
     async def python(self, ctx: Context, *, text: str):
+        if ctx.invoked_subcommand is None:
+            await ctx.bot.invoke_help_command(ctx)
+            return
+
         if not getattr(self, "_python_cached", None):
             await self.build_python_cache()
 
@@ -369,12 +385,23 @@ class RTFM(Cog):
                 await ctx.send(
                     f"{ctx.author.mention} No tag found with your query, you can ask the developer to create one.\n"
                     f"Or consider contributing to the project by creating a tag yourself.\n"
-                    f"See {self.bot.github}"
+                    f"See <{self.bot.github}> | `{ctx.prefix}python list` for a list of available tags."
                 )
                 return
         else:
             data = self._python_cached[match[0]]
         await ctx.send(embed=discord.Embed(description=data))
+
+    @python.command(name="list")
+    @Context.with_type
+    async def python_list(self, ctx: Context):
+        await ctx.send(
+            embed=discord.Embed(
+                title="List of available tutorials",
+                description="`" + "`, `".join(self._python_cached.keys()) + "`",
+                color=self.bot.color,
+            )
+        )
 
     @commands.command(aliases=["pypi"])
     @commands.bot_has_permissions(embed_links=True)
@@ -1013,7 +1040,7 @@ class RTFM(Cog):
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     async def realpython(
-        self, ctx: Context, amount: Optional[int] = 5, *, user_search: str = None
+        self, ctx: Context, amount: Optional[int] = 5, *, user_search: Optional[str] = None
     ) -> None:
         """
         Send some articles from RealPython that match the search terms.

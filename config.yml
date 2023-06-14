@@ -18,6 +18,7 @@ all_extensions:
   - cogs.rtfm
   - cogs.sports
   - cogs.telephone
+  - cogs.twitter
   - cogs.ticket
   - cogs.utils
   - cogs.wolfram

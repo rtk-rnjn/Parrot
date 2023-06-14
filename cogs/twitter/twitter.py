@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import os
 
-import tweepy  # type: ignore
+import tweepy
+import tweepy.asynchronous
 
 from core import Cog, Context, Parrot
+from discord.ext import commands
 
 
 class Twitter(Cog):
@@ -19,7 +21,7 @@ class Twitter(Cog):
         )
         self.api = tweepy.API(self.auth)
         if not hasattr(bot, "twitter"):
-            bot.twitter = self.api
+            setattr(self.bot, "twitter", self.api)
         self.client = tweepy.Client(
             bearer_token=os.environ["BEARER"],
             consumer_key=os.environ["API_KEY"],
@@ -36,4 +38,11 @@ class Twitter(Cog):
         )
 
     async def cog_check(self, ctx: Context):
-        return ctx.author.id in ctx.bot.owner_ids
+        return ctx.author.id in ctx.bot.owner_ids  # type: ignore
+    
+    @commands.command()
+    async def tweet(self, ctx: Context, *, text: str):
+        """Tweet something"""
+        await self.bot.func(self.api.update_status, text)
+        await ctx.send("Tweeted!")
+

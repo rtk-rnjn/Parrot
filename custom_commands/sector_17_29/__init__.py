@@ -199,7 +199,7 @@ class Sector1729(Cog):
                 "$inc": {"topgg_votes": 1},
             },
             upsert=True,
-        )
+        ) # type: ignore
 
     @tasks.loop(minutes=5)
     async def vote_reseter(self):
@@ -209,13 +209,13 @@ class Sector1729(Cog):
 
             async for doc in col.find(
                 {"topgg_vote_expires": {"$lte": now_plus_12_hours}}
-            ):
+            ): # type: ignore
                 guild = self.bot.server
                 role = discord.Object(id=VOTER_ROLE_ID)
 
                 await col.update_one(
                     {"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}}
-                )
+                ) # type: ignore
                 if member := guild.get_member(doc["_id"]):
                     await member.remove_roles(role, reason="Top.gg vote expired")
 

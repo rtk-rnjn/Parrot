@@ -4,6 +4,7 @@ aiofiles
 aiohttp
 aioredis
 aiosignal
+async_lru
 anyio
 arrow
 astroid

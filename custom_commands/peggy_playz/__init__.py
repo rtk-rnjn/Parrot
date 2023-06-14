@@ -24,10 +24,15 @@ class PeggyPlayZ(Cog):
             with contextlib.suppress(discord.HTTPException):
                 await message.publish()
                 await message.add_reaction("\N{EYES}")
+            self.bot.dispatch("upload", message)
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
         if member.guild.id == PEGGY_PLAYZ:
             channel = self.bot.get_channel(RULES_CHANNEL_ID)
             if channel is not None:
-                await channel.send(member.mention, delete_after=1)
+                await channel.send(member.mention, delete_after=1)  # type: ignore
+
+    @Cog.listener()
+    async def on_upload(self, message: discord.Message) -> None:
+        await message.add_reaction("\N{EYES}")

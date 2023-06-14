@@ -482,22 +482,22 @@ class LintCode:
             for result in json_data:
                 code = f"{Fore.RED}{result['code']}"
                 message = f"{Fore.BLUE}{result['message']}"
-                location_row = Fore.YELLOW + result["location"]["row"]
-                location_col = Fore.YELLOW + result["location"]["column"]
+                location_row = f'{Fore.YELLOW}{result["location"]["row"]}'
+                location_col = f'{Fore.YELLOW}{result["location"]["column"]}'
 
-                end_location_row = Fore.YELLOW + result["end_location"]["row"]
-                end_location_col = Fore.YELLOW + result["end_location"]["column"]
+                end_location_row = f'{Fore.YELLOW}{result["end_location"]["row"]}'
+                end_location_col = f'{Fore.YELLOW}{result["end_location"]["column"]}'
 
                 await interface.add_line(
                     f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}"
                 )
                 if result["fix"]:
-                    applicability = Fore.CYAN + result["fix"]["applicability"]
-                    fix_message = Fore.GREEN + result["fix"]["message"]
+                    applicability = f'{Fore.CYAN}{result["fix"]["applicability"]}'
+                    fix_message = f'{Fore.GREEN}{result["fix"]["message"]}'
                     await interface.add_line(
                         f"{Fore.WHITE}Fix: {fix_message} {Fore.WHITE}({applicability}{Fore.WHITE})\n"
                     )
-                await interface.add_line(Fore.WHITE + "-" * 50 + "\n")
+                await interface.add_line(f'{Fore.WHITE}{"-" * 50}\n')
 
         if data.get("stderr"):
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)

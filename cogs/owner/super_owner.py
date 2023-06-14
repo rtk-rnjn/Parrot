@@ -10,7 +10,7 @@ import re
 import string
 import traceback
 import typing
-import urllib
+import urllib.parse
 import zlib
 from collections import Counter
 from typing import Optional
@@ -36,16 +36,16 @@ class AuditFlag(
     action: typing.Optional[str] = None
     before: typing.Optional[ShortTime] = None
     after: typing.Optional[ShortTime] = None
-    oldest_first: typing.Optional[convert_bool] = False
-    user: typing.Union[discord.User, discord.Member] = None
+    oldest_first: typing.Union[convert_bool, bool] = False  # type: ignore
+    user: typing.Union[discord.User, discord.Member, None] = None
 
 
 class BanFlag(
     commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
 ):
     reason: typing.Optional[str] = None
-    _global: typing.Optional[convert_bool] = commands.flag(name="global", default=False)
-    command: typing.Optional[convert_bool] = False
+    _global: typing.Union[convert_bool, bool] = commands.flag(name="global", default=False)  # type: ignore
+    command: typing.Union[convert_bool, bool] = False  # type: ignore
 
 
 class SubscriptionFlag(
@@ -80,7 +80,7 @@ class nitro(discord.ui.View):
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
-        button.label = (
+        button.label = (  # type: ignore
             "\N{BRAILLE PATTERN BLANK}" * 16
             + "Claimed"
             + "\N{BRAILLE PATTERN BLANK}" * 16,
@@ -92,8 +92,8 @@ class nitro(discord.ui.View):
         )
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
-            await interaction.message.edit(embed=ni, view=self)
-        except Exception:
+            await interaction.message.edit(embed=ni, view=self)  # type: ignore
+        except AttributeError:
             pass
 
 
@@ -125,14 +125,21 @@ class MongoCollectionView(discord.ui.View):
 
         index = 0
         async for data in collection.find():
-            index += 1
-            await view.add_item_to_embed_list(json.dumps(data, indent=4))
-            if index % 20 == 0:
+            data = json.dumps(data, indent=4).split("\n")
+            new_data = []
+            for ind, line in enumerate(data):
+                if ind == 40:
+                    break
+                new_data.append(line)
+
+            await view.add_item_to_embed_list("\n".join(new_data))
+            if index and index % 20 == 0:
                 await view._update_message()
 
             if index == 100:
                 break
 
+            index += 1
         await view._update_message()
 
     async def disable_all(self):
@@ -157,7 +164,7 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         self.timeout = timeout
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        assert self.view is not None
+        assert self.view is not None and self.view.message is not None
 
         embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
         await interaction.response.defer()
@@ -250,7 +257,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
         self.count = 0
 
-        self.bot.get_user_data = self.get_user_data
+        setattr(self.bot, "get_user_data", self.get_user_data)
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -281,7 +288,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
 
         try:
-            self.bot.load_extension(f"{name_cog}")
+            await self.bot.load_extension(f"{name_cog}")
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
@@ -314,12 +321,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self,
         ctx: Context,
         *,
-        target: typing.Union[discord.User, discord.TextChannel, discord.Thread] = None,
+        target: typing.Union[discord.User, discord.TextChannel, discord.Thread, None] = None,
     ):
         """Fun command"""
         await ctx.message.delete(delay=0)
-        target = target or ctx.channel
-        await target.send(
+        target = target or ctx.channel  # type: ignore
+        await target.send(  # type: ignore
             embed=discord.Embed(
                 title="You've been gifted a subscription!",
                 description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
@@ -428,15 +435,15 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     async def dr(self, ctx: Context):
         """To delete the message reference"""
         await ctx.message.delete(delay=0)
-        await ctx.message.reference.resolved.delete(delay=0)
+        await ctx.message.reference.resolved.delete(delay=0)  # type: ignore
 
     @commands.command()
     @commands.is_owner()
     async def spy_server(
         self,
         ctx: Context,
-        guild: typing.Union[discord.Guild, int] = None,
-        channel_member: str = None,
+        guild: typing.Union[discord.Guild, int, None] = None,
+        channel_member: Optional[str] = None,
     ):  # sourcery skip: low-code-quality
         """This is not really a spy command"""
         guild = guild or ctx.guild
@@ -560,6 +567,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if args.oldest_first:
             kwargs["oldest_first"] = args.oldest_first
 
+        assert guild is not None
+
         async for entry in guild.audit_logs(**kwargs):
             st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
 > Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
@@ -596,6 +605,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         PAYLOAD = {}
         BASIC = list(string.ascii_letters + string.digits)
         random.shuffle(BASIC)
+        assert ctx.guild is not None
 
         if args.code:
             PAYLOAD["hash"] = hashlib.sha256(args.code.encode()).hexdigest()
@@ -706,7 +716,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ctx: Context,
         till: typing.Optional[ShortTime] = None,
         *,
-        reason: str = None,
+        reason: Optional[str] = None,
     ):
         """To toggle the bot maintenance"""
         ctx.bot.UNDER_MAINTENANCE = not ctx.bot.UNDER_MAINTENANCE
@@ -725,9 +735,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         return ctx.bot.get_guild(GUILD or ctx.guild.id).member_count
         ```
         """
+        assert ctx.guild is not None
         GUILD_ID = getattr(guild, "id", ctx.guild.id)
         await ctx.send(
-            ctx.bot.get_guild(GUILD_ID).member_count or "Member count not available"
+            getattr(ctx.bot.get_guild(GUILD_ID), "member_count", "Member count not available")
         )
 
     @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
@@ -743,17 +754,18 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         """
         p_types = {"playing": 0, "streaming": 1, "listening": 2, "watching": 3}
         await ctx.bot.change_presence(
-            discord.Activity(name=media, type=p_types[ctx.invoked_with])
+            activity=discord.Activity(name=media, type=p_types[ctx.invoked_with])
         )
         await ctx.tick()
 
     @commands.command()
     @commands.is_owner()
     async def toggle_testing(
-        self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]
+        self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]  # type: ignore
     ) -> None:
         """Update the cog setting to toggle testing mode"""
-        cog: Cog = self.bot.get_cog(cog)
+        cog: Optional[Cog] = self.bot.get_cog(cog)  # type: ignore
+        assert cog is not None
         if hasattr(cog, "ON_TESTING"):
             true_false = toggle if toggle is not None else not cog.ON_TESTING
             cog.ON_TESTING = true_false
@@ -950,7 +962,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(embed=e)
 
     @commands.group(invoke_without_command=True)
-    async def rtfd(self, ctx: Context, *, obj: str = None):
+    async def rtfd(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a specified entity.
         Events, objects, and functions are all supported through
         a cruddy fuzzy algorithm.
@@ -959,47 +971,47 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             return await self.do_rtfm(ctx, "discord", obj)
 
     @rtfd.command(name="python", aliases=["py"])
-    async def rtfm_python(self, ctx: Context, *, obj: str = None):
+    async def rtfm_python(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a Python entity."""
         await self.do_rtfm(ctx, "python", obj)
 
     @rtfd.command(name="aiohttp")
-    async def rtfd_aiohttp(self, ctx: Context, *, obj: str = None):
+    async def rtfd_aiohttp(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a aiohttp entity"""
         await self.do_rtfm(ctx, "aiohttp", obj)
 
     @rtfd.command(name="requests", aliases=["request", "req"])
-    async def rtfd_request(self, ctx: Context, *, obj: str = None):
+    async def rtfd_request(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a request entity"""
         await self.do_rtfm(ctx, "requests", obj)
 
     @rtfd.command(name="flask")
-    async def rtfd_flask(self, ctx: Context, *, obj: str = None):
+    async def rtfd_flask(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a flask entity"""
         await self.do_rtfm(ctx, "flask", obj)
 
     @rtfd.command(name="numpy", aliases=["np"])
-    async def rtfd_numpy(self, ctx: Context, *, obj: str = None):
+    async def rtfd_numpy(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a numpy entity"""
         await self.do_rtfm(ctx, "numpy", obj)
 
     @rtfd.command(name="pil")
-    async def rtfd_pil(self, ctx: Context, *, obj: str = None):
+    async def rtfd_pil(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a PIL entity"""
         await self.do_rtfm(ctx, "pil", obj)
 
     @rtfd.command(name="matplotlib", aliases=["matlab", "plt", "mat"])
-    async def rtfd_matplotlib(self, ctx: Context, *, obj: str = None):
+    async def rtfd_matplotlib(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a matplotlib entity"""
         await self.do_rtfm(ctx, "matplotlib", obj)
 
     @rtfd.command(name="pandas", aliases=["pd"])
-    async def rtfd_pandas(self, ctx: Context, *, obj: str = None):
+    async def rtfd_pandas(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a pandas entity"""
         await self.do_rtfm(ctx, "pandas", obj)
 
     @rtfd.command(name="pymongo", aliases=["mongo", "pym"])
-    async def rtfd_pymongo(self, ctx: Context, *, obj: str = None):
+    async def rtfd_pymongo(self, ctx: Context, *, obj: Optional[str] = None):
         """Gives you a documentation link for a pymongo entity"""
         await self.do_rtfm(ctx, "pymongo", obj)
 
@@ -1063,6 +1075,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         Members without can search up to 25 messages.
         """
         strategy = self._basic_cleanup_strategy
+        assert isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
         is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
         if ctx.channel.permissions_for(ctx.me).manage_messages:
             if is_mod:
@@ -1090,6 +1103,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         return {"Bot": count}
 
     async def _complex_cleanup_strategy(self, ctx: Context, search: int):
+        assert ctx.guild is not None and isinstance(ctx.channel, discord.TextChannel)
         prefixes = tuple(
             await self.bot.get_guild_prefixes(ctx.guild)
         )  # thanks startswith
@@ -1101,6 +1115,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         return Counter(m.author.display_name for m in deleted)
 
     async def _regular_user_cleanup_strategy(self, ctx: Context, search: int):
+        assert ctx.guild is not None and isinstance(ctx.channel, discord.TextChannel)
+
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m: discord.Message):

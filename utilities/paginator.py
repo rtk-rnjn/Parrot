@@ -469,7 +469,7 @@ class PaginationView(discord.ui.View):
     async def start(self, ctx: Context):
         self.ctx = ctx
         if not self.embed_list:
-            self.message = await ctx.send("Loading...")
+            self.message = await ctx.send("Loading...")  # type: ignore
             return
 
         if isinstance(self.embed_list[0], discord.Embed):
@@ -485,7 +485,7 @@ class PaginationView(discord.ui.View):
         self.ctx = ctx
         await self.start(ctx)
 
-    async def add_item_to_embed_list(self, item: PageT):
+    async def add_item_to_embed_list(self, item: Union[str, discord.Embed, discord.File]):
         self.embed_list.append(item)
         if hasattr(self, "message"):
             self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

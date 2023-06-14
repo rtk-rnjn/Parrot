@@ -17,7 +17,7 @@ KT = TypeVar("KT", bound=Any)
 VT = TypeVar("VT", bound=Any)
 
 
-def convert_bool(text: Union[str, bool]) -> bool:
+def convert_bool(text: Union[str, bool, Any]) -> bool:
     """True/False converter"""
     return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o"}
 
@@ -25,7 +25,7 @@ def convert_bool(text: Union[str, bool]) -> bool:
 class ActionReason(commands.Converter):
     """Action reason converter"""
 
-    async def convert(self, ctx: Context, argument: str = None) -> str:
+    async def convert(self, ctx: Context, argument: Optional[str] = None) -> str:
         """Convert the argument to a action string"""
         ret = f"Action requested by {ctx.author} (ID: {ctx.author.id}) | Reason: {argument or 'no reason provided'}"
 

@@ -118,15 +118,13 @@ class MongoCollectionView(discord.ui.View):
 
         collection = self.ctx.bot.mongo[self.db][self.collection]
 
-        pages = []
-        async for data in collection.find():
-            data = json.dumps(data, indent=4)
-            pages.append(data)
-        view = PaginationView(embed_list=pages)
+        view = PaginationView()
         view._str_prefix = "```json\n"
         view._str_suffix = "\n```"
-
         await view.start(self.ctx)
+
+        async for data in collection.find():
+            await view.add_item_to_embed_list(json.dumps(data, indent=4))
 
     async def disable_all(self):
         assert self.message is not None
@@ -155,9 +153,12 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
         await interaction.response.defer()
 
-        await self.view.message.edit(
+        view = MongoCollectionView(
+            collection=self.values[0], ctx=self.ctx, db=self.db_name
+        )
+        view.message = await self.view.message.edit(
             embed=embed,
-            view=MongoCollectionView(collection=self.values[0], ctx=self.ctx, db=self.db_name),
+            view=view,
         )
         self.view.stop()
 
@@ -180,9 +181,7 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
 class MongoView(discord.ui.View):
     message: typing.Optional[discord.Message] = None
 
-    def __init__(
-        self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs
-    ):
+    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs):
         super().__init__(timeout=timeout)
 
         self.ctx = ctx

@@ -18,7 +18,6 @@ from typing import (
 import discord
 from core import Context
 
-
 PageT = TypeVar("PageT", bound=Union[str, int, discord.File, discord.Embed])
 Callback = Callable[[discord.Interaction, discord.ui.Button, PageT], Awaitable[None]]
 
@@ -273,8 +272,7 @@ class PaginationView(discord.ui.View):
         last_function: Optional[Callback] = None,
     ) -> None:
         super().__init__(timeout=300)
-        if not embed_list:
-            raise ValueError("No embeds provided")
+
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
@@ -469,6 +467,10 @@ class PaginationView(discord.ui.View):
             )
 
     async def start(self, ctx: Context):
+        self.ctx = ctx
+        if not self.embed_list:
+            self.message = await ctx.send("Loading...")
+
         if isinstance(self.embed_list[0], discord.Embed):
             self.message = await ctx.send(embed=self.embed_list[0], view=self)  # type: ignore
         elif isinstance(self.embed_list[0], discord.File):
@@ -476,9 +478,32 @@ class PaginationView(discord.ui.View):
         else:
             self.message = await ctx.send(f"{self._str_prefix}{self.embed_list[0]}{self._str_suffix}", view=self)  # type: ignore
         self.user = ctx.author
-        self.ctx = ctx
         return self.message
 
     async def paginate(self, ctx: Context):
         self.ctx = ctx
         await self.start(ctx)
+
+    async def add_item_to_embed_list(self, item: PageT):
+        self.embed_list.append(item)
+        if hasattr(self, "message"):
+            self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
+            if len(self.embed_list) >= 1 and self.current < len(self.embed_list) - 1:
+                self._last.disabled = False
+                self.next.disabled = False
+
+            if isinstance(self.embed_list[self.current], discord.Embed):
+                await self.message.edit(
+                    embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+                )
+            elif isinstance(self.embed_list[self.current], discord.File):
+                await self.message.edit(
+                    attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+                )
+            else:
+                await self.message.edit(
+                    content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
+                    embed=None,
+                    attachments=[],
+                    view=self,
+                )

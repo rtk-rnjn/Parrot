@@ -157,7 +157,7 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
 
         await self.view.message.edit(
             embed=embed,
-            view=MongoCollectionView(collection=self.values[0], ctx=self.ctx),
+            view=MongoCollectionView(collection=self.values[0], ctx=self.ctx, db=self.db_name),
         )
         self.view.stop()
 
@@ -181,7 +181,7 @@ class MongoView(discord.ui.View):
     message: typing.Optional[discord.Message] = None
 
     def __init__(
-        self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs
+        self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs
     ):
         super().__init__(timeout=timeout)
 
@@ -782,7 +782,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if db and collection:
             view = MongoCollectionView(db=db, collection=collection, ctx=ctx)
             embed = await MongoViewSelect.build_embed(ctx, db, collection)
-            await ctx.send(embed=embed, view=view)
+            view.message = await ctx.send(embed=embed, view=view)
             return
 
         view = MongoView(ctx)

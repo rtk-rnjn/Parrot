@@ -13,6 +13,7 @@ import typing
 import urllib
 import zlib
 from collections import Counter
+from typing import Optional
 
 from aiofile import async_open  # type: ignore
 
@@ -96,6 +97,144 @@ class nitro(discord.ui.View):
             pass
 
 
+class MongoCollectionView(discord.ui.View):
+    message: typing.Optional[discord.Message] = None
+
+    def __init__(self, *, timeout: float = 20, db: str, collection: str, ctx: Context):
+        super().__init__(timeout=timeout)
+        self.collection = collection
+        self.db = db
+        self.ctx = ctx
+
+    @discord.ui.button(
+        label="Paginate", style=discord.ButtonStyle.blurple, emoji="\N{BOOKS}"
+    )
+    async def paginate(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        assert self.message is not None
+        await interaction.response.defer()
+        await self.message.edit(view=None)
+
+        collection = self.ctx.bot.mongo[self.db][self.collection]
+
+        pages = []
+        async for data in collection.find():
+            data = json.dumps(data, indent=4)
+            pages.append(data)
+        view = PaginationView(embed_list=pages)
+        view._str_prefix = "```json\n"
+        view._str_suffix = "\n```"
+
+        await view.start(self.ctx)
+
+    async def disable_all(self):
+        assert self.message is not None
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
+                child.style = discord.ButtonStyle.grey
+        await self.message.edit(view=self)
+
+    async def on_timeout(self) -> None:
+        await self.disable_all()
+
+
+class MongoViewSelect(discord.ui.Select["MongoView"]):
+    def __init__(
+        self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs
+    ):
+        self.db_name = kwargs.pop("db_name", "")
+        super().__init__(min_values=1, max_values=1, **kwargs)
+        self.ctx = ctx
+        self.timeout = timeout
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        assert self.view is not None
+
+        embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
+        await interaction.response.defer()
+
+        await self.view.message.edit(
+            embed=embed,
+            view=MongoCollectionView(collection=self.values[0], ctx=self.ctx),
+        )
+        self.view.stop()
+
+    @staticmethod
+    async def build_embed(
+        ctx: Context, db_name: str, collection_name: str
+    ) -> discord.Embed:
+        db = ctx.bot.mongo[db_name][collection_name]
+        document_count = await db.count_documents({})
+        full_name = f"{db_name}.{collection_name}"
+        name = f"{collection_name} ({document_count} documents)"
+        return (
+            discord.Embed(title="MongoDB - Collection - Lookup")
+            .add_field(name=name, value="\u200b")
+            .add_field(name="Full Name", value=full_name, inline=False)
+            .add_field(name="Database", value=db_name, inline=False)
+        )
+
+
+class MongoView(discord.ui.View):
+    message: typing.Optional[discord.Message] = None
+
+    def __init__(
+        self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs
+    ):
+        super().__init__(timeout=timeout)
+
+        self.ctx = ctx
+
+    async def init(self):
+        names: list[str] = await self.ctx.bot.mongo.list_database_names()
+        to_emoji = lambda c: chr(0x1F1E6 + c)
+        embed = discord.Embed(
+            title="MongoDB  - Database - Lookup",
+        )
+
+        names.remove("admin")
+        names.remove("local")
+
+        for i, name in enumerate(names):
+            embed.add_field(name=f"{to_emoji(i)} {name}", value="\u200b")
+            collections = await self.ctx.bot.mongo[name].list_collection_names()
+            if not collections:
+                continue
+
+            options = [
+                discord.SelectOption(
+                    label=collection,
+                    value=collection,
+                    emoji=chr(0x1F1E6 + j),
+                )
+                for j, collection in enumerate(collections)
+            ]
+            self.add_item(
+                MongoViewSelect(
+                    self.ctx,
+                    timeout=60.0,
+                    options=options,
+                    row=i,
+                    placeholder=f"Database - {name}",
+                    db_name=name,
+                )
+            )
+
+        self.message = await self.ctx.send(embed=embed, view=self)
+
+    async def disable_all(self) -> None:
+        assert self.message is not None
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
+                child.style = discord.ButtonStyle.grey
+
+    async def on_timeout(self) -> None:
+        await self.disable_all()
+
+
 class Owner(Cog, command_attrs=dict(hidden=True)):
     """You can not use these commands"""
 
@@ -116,6 +255,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @Context.with_type
     async def gitload(self, ctx: Context, *, link: str) -> None:
         """To load the cog extension from github"""
+        ctx.author.display_name
         r = await self.bot.http_session.get(link)
         data = await r.read()
         name = f"temp/temp{self.count}"
@@ -630,6 +770,24 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         return objectify(data)
 
+    @commands.command()
+    @commands.is_owner()
+    async def mongo(
+        self,
+        ctx: Context,
+        db: typing.Optional[str] = None,
+        collection: typing.Optional[str] = None,
+    ):
+        """MongoDB query"""
+        if db and collection:
+            view = MongoCollectionView(db=db, collection=collection, ctx=ctx)
+            embed = await MongoViewSelect.build_embed(ctx, db, collection)
+            await ctx.send(embed=embed, view=view)
+            return
+
+        view = MongoView(ctx)
+        await view.init()
+
 
 class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader
@@ -765,7 +923,9 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         cache = list(self._rtfm_cache[key].items())
 
-        matches = (await ctx.bot.func(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False))[:8]
+        matches = (
+            await ctx.bot.func(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False)
+        )[:8]
 
         e = discord.Embed(
             title="Read the Fucking Documentation", timestamp=discord.utils.utcnow()

@@ -11,21 +11,22 @@ from prettytable import PrettyTable
 from tabulate import tabulate
 
 # dict of boolean operations
+# fmt: off
 OPERATIONS = {
-    "not": (lambda x: not x),
-    "-": (lambda x: not x),
-    "~": (lambda x: not x),
-    "or": (lambda x, y: x or y),
-    "nor": (lambda x, y: not (x or y)),
-    "xor": (lambda x, y: x != y),
-    "and": (lambda x, y: x and y),
-    "nand": (lambda x, y: not (x and y)),
-    "=>": (lambda x, y: (not x) or y),
+    "not"    : (lambda x: not x),
+    "-"      : (lambda x: not x),
+    "~"      : (lambda x: not x),
+    "or"     : (lambda x, y: x or y),
+    "nor"    : (lambda x, y: not (x or y)),
+    "xor"    : (lambda x, y: x != y),
+    "and"    : (lambda x, y: x and y),
+    "nand"   : (lambda x, y: not (x and y)),
+    "=>"     : (lambda x, y: (not x) or y),
     "implies": (lambda x, y: (not x) or y),
-    "=": (lambda x, y: x == y),
-    "!=": (lambda x, y: x != y),
+    "="      : (lambda x, y: x == y),
+    "!="     : (lambda x, y: x != y),
 }
-
+# fmt: on
 
 def recursive_map(func, data):
     """Recursively applies a map function to a list and all sublists."""

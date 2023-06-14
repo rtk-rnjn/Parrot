@@ -45,7 +45,6 @@ class _Captcha(object):
     if TYPE_CHECKING:
         generate_image: Callable[[str], Image.Image]
 
-    @ToAsync()
     def generate(self, chars: str, format: str = "png") -> bytes:
         """Generate an Image Captcha of the given characters.
         :param chars: text to be generated.
@@ -57,7 +56,6 @@ class _Captcha(object):
         out.seek(0)
         return out
 
-    @ToAsync()
     def write(self, chars: str, output: str, format: str = "png"):
         """Generate and write an image CAPTCHA data to the output.
         :param chars: text to be generated.

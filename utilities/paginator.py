@@ -3,6 +3,7 @@
 from itertools import islice
 from typing import (
     TYPE_CHECKING,
+    Any,
     Awaitable,
     Callable,
     Generic,
@@ -17,17 +18,9 @@ from typing import (
 import discord
 from core import Context
 
-if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
 
-    P = ParamSpec("P")
-    MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]  # type: ignore
-
-T = TypeVar("T")
 PageT = TypeVar("PageT", bound=Union[str, int, discord.File, discord.Embed])
-MaybeAwaitable = Union[T, Awaitable[T]]
-
-Callback: TypeAlias = MaybeAwaitable
+Callback = Callable[[discord.Interaction, discord.ui.Button, PageT], Awaitable[None]]
 
 
 def get_chunks(iterable, size):
@@ -89,8 +82,8 @@ class ParrotPaginator:
         timeout=60.0,
         title=None,
         show_page_count=True,
-        embed_url: str = None,
-        check_other_ids: list = None,
+        embed_url: Optional[str] = None,
+        check_other_ids: Optional[list] = None,
     ):
         self.ctx = ctx
         self.per_page = per_page
@@ -155,7 +148,7 @@ class PaginatorView(discord.ui.View):
         timeout,
         show_page_count,
         *,
-        check_other_ids: list = None,
+        check_other_ids: Optional[list] = None,
     ):
         super().__init__(timeout=timeout)
 
@@ -194,7 +187,7 @@ class PaginatorView(discord.ui.View):
             self.embed.description = page.content
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id in self.check_other_ids:
+        if self.check_other_ids and interaction.user.id in self.check_other_ids:
             return True
         if interaction.user.id != self.ctx.author.id:
             await interaction.response.send_message(
@@ -266,13 +259,13 @@ class PaginatorView(discord.ui.View):
         await interaction.response.edit_message(embed=self.embed, view=self)
 
 
-class PaginationView(discord.ui.View, Generic[PageT]):
+class PaginationView(discord.ui.View):
     message: discord.Message
     current: int = 0
 
     def __init__(
         self,
-        embed_list: List[Union[str, discord.Embed, discord.File]],
+        embed_list: List[PageT],
         *,
         first_function: Optional[Callback] = None,
         next_function: Optional[Callback] = None,
@@ -289,6 +282,9 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         self.next_function = next_function
         self.previous_function = previous_function
         self.last_function = last_function
+
+        self._str_prefix = ""
+        self._str_suffix = ""
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if self.user == interaction.user:
@@ -335,7 +331,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current],
+                content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
                 embed=None,
                 attachments=[],
                 view=self,
@@ -382,7 +378,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current],
+                content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
                 embed=None,
                 attachments=[],
                 view=self,
@@ -429,7 +425,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current],
+                content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
                 embed=None,
                 attachments=[],
                 view=self,
@@ -466,7 +462,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
             )
         else:
             await interaction.response.edit_message(
-                content=self.embed_list[self.current],
+                content=f"{self._str_prefix}{self.embed_list[self.current]}{self._str_suffix}",
                 embed=None,
                 attachments=[],
                 view=self,
@@ -478,9 +474,11 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         elif isinstance(self.embed_list[0], discord.File):
             self.message = await ctx.send(file=self.embed_list[0], view=self)  # type: ignore
         else:
-            self.message = await ctx.send(self.embed_list[0], view=self)  # type: ignore
+            self.message = await ctx.send(f"{self._str_prefix}{self.embed_list[0]}{self._str_suffix}", view=self)  # type: ignore
         self.user = ctx.author
+        self.ctx = ctx
         return self.message
 
     async def paginate(self, ctx: Context):
+        self.ctx = ctx
         await self.start(ctx)

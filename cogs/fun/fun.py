@@ -37,6 +37,7 @@ from utilities import spookifications
 from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
+from utilities.converters import to_bottom, from_bottom
 
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
@@ -2620,3 +2621,22 @@ class Fun(Cog):
             },
             upsert=True,
         )
+
+    @commands.command(name="bottomify", aliases=["bottom"])
+    async def _bottomify(self, ctx: Context, *, text: commands.clean_content):
+        """Bottomify your text"""
+        text = await self.bot.func(to_bottom, text)
+        if len(text) > 2000:
+            await ctx.reply(text[:2000])
+        else:
+            await ctx.reply(text)
+    
+    @commands.command(name="debottomify", aliases=["debottom"])
+    async def _debottomify(self, ctx: Context, *, text: commands.clean_content):
+        """Debottomify your text"""
+        text = await self.bot.func(from_bottom, text)
+        if len(text) > 2000:
+            await ctx.reply(text[:2000])
+        else:
+            await ctx.reply(text)
+    

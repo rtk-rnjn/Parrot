@@ -199,17 +199,7 @@ class PfpEffects:
         x_frac = width // xy
         y_frac = heigth // xy
 
-        (
-            left,
-            top,
-            right,
-            bottom,
-        ) = (
-            0,
-            0,
-            x_frac,
-            y_frac,
-        )
+        (left, top, right, bottom) = (0, 0, x_frac, y_frac)
 
         new_imgs = []
 

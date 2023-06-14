@@ -285,10 +285,10 @@ class PaginationView(discord.ui.View):
         self._str_suffix = ""
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if self.user == interaction.user:
+        if self.ctx.author == interaction.user:
             return True
         await interaction.response.send_message(
-            f"Only **{self.user}** can interact. Run the command if you want to.",
+            f"Only **{self.ctx.author}** can interact. Run the command if you want to.",
             ephemeral=True,
         )
         return False
@@ -478,7 +478,7 @@ class PaginationView(discord.ui.View):
             self.message = await ctx.send(file=self.embed_list[0], view=self)  # type: ignore
         else:
             self.message = await ctx.send(f"{self._str_prefix}{self.embed_list[0]}{self._str_suffix}", view=self)  # type: ignore
-        self.user = ctx.author
+
         return self.message
 
     async def paginate(self, ctx: Context):

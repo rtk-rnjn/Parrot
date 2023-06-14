@@ -110,7 +110,7 @@ class MongoCollectionView(discord.ui.View):
         label="Paginate", style=discord.ButtonStyle.blurple, emoji="\N{BOOKS}"
     )
     async def paginate(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         assert self.message is not None
         await interaction.response.defer()
@@ -171,9 +171,9 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         name = f"{collection_name} ({document_count} documents)"
         return (
             discord.Embed(title="MongoDB - Collection - Lookup")
-            .add_field(name=name, value="\u200b")
-            .add_field(name="Full Name", value=full_name, inline=False)
-            .add_field(name="Database", value=db_name, inline=False)
+            .add_field(name="Total documents", value=document_count)
+            .add_field(name="Full Name", value=full_name)
+            .add_field(name="Database", value=db_name)
         )
 
 

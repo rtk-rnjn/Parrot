@@ -1544,7 +1544,7 @@ class RTFM(Cog):
         kata_information = await self.kata_information(first_kata_id)
         if isinstance(kata_information, discord.Embed):
             # Something went wrong when trying to fetch the kata information
-            await ctx.d(embed=kata_information)
+            await ctx.send(embed=kata_information)
             return
 
         kata_embed = self.main_embed(kata_information)

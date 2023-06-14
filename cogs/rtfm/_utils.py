@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import io
 import os
 import pathlib
 import re
@@ -23,11 +24,13 @@ try:
 except ImportError:
     import json
 
+import autopep8
 import flake8
 import isort
 import pyright
 from black import FileMode, format_str
 from colorama import Fore
+from yapf.yapflib.yapf_api import FormatCode as yapf_format
 
 languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
@@ -289,7 +292,12 @@ class LintCode:
     def __init__(
         self,
         flag: Union[
-            Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, PyrightConverter, str
+            Flake8Converter,
+            MypyConverter,
+            PyLintConverter,
+            BanditConverter,
+            PyrightConverter,
+            str,
         ],
     ) -> None:
         self.codeblock = flag if isinstance(flag, str) else flag.code
@@ -330,15 +338,15 @@ class LintCode:
 
         cmd_str = ""
         if self.linttype == "flake8":
-            cmd_str = flake8_validate_flag(self.flag)
+            cmd_str = flake8_validate_flag(self.flag)  # type: ignore
         elif self.linttype == "bandit":
-            cmd_str = bandit_validate_flag(self.flag)
+            cmd_str = bandit_validate_flag(self.flag)  # type: ignore
         elif self.linttype == "pylint":
-            cmd_str = pylint_validate_flag(self.flag)
+            cmd_str = pylint_validate_flag(self.flag)  # type: ignore
         elif self.linttype == "mypy":
-            cmd_str = mypy_validate_flag(self.flag)
+            cmd_str = mypy_validate_flag(self.flag)  # type: ignore
         elif self.linttype == "pyright":
-            cmd_str = pyright_validate_flag(self.flag)
+            cmd_str = pyright_validate_flag(self.flag)  # type: ignore
 
         data = await lint(cmd_str, filename) if cmd_str else {}
 
@@ -568,6 +576,16 @@ class LintCode:
                 f"```ansi\n{Fore.RED}[No Changes in the code, already formatted]```"
             )
             return
+        if len(res) > 2000:
+            await ctx.reply(
+                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
+            )
+            await ctx.send(
+                file=discord.File(
+                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
+                )
+            )
+            return
 
         await ctx.reply(
             f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
@@ -575,11 +593,68 @@ class LintCode:
 
     async def run_isort(self, ctx: Context) -> None:
         ini = time.perf_counter()
-        res = await ctx.bot.func(isort.code, self.source)
+        res: str = await ctx.bot.func(isort.code, self.source)
         end = time.perf_counter()
 
         if res == self.source:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
+            return
+
+        if len(res) > 2000:
+            await ctx.reply(
+                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
+            )
+            await ctx.send(
+                file=discord.File(
+                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
+                )
+            )
+            return
+
+        await ctx.reply(
+            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
+        )
+
+    async def run_autopep8(self, ctx: Context) -> None:
+        ini = time.perf_counter()
+        res = await ctx.bot.func(autopep8.fix_code, self.source)
+        end = time.perf_counter()
+
+        if res == self.source:
+            await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
+            return
+        if len(res) > 2000:
+            await ctx.reply(
+                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
+            )
+            await ctx.send(
+                file=discord.File(
+                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
+                )
+            )
+            return
+
+        await ctx.reply(
+            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
+        )
+    
+    async def run_yapf(self, ctx: Context) -> None:
+        ini = time.perf_counter()
+        res = await ctx.bot.func(yapf_format, self.source)
+        end = time.perf_counter()
+
+        if res == self.source:
+            await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
+            return
+        if len(res) > 2000:
+            await ctx.reply(
+                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
+            )
+            await ctx.send(
+                file=discord.File(
+                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
+                )
+            )
             return
 
         await ctx.reply(
@@ -597,6 +672,17 @@ class LintCode:
 
         if res == self.source:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
+            return
+
+        if len(res) > 2000:
+            await ctx.reply(
+                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
+            )
+            await ctx.send(
+                file=discord.File(
+                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
+                )
+            )
             return
 
         await ctx.reply(

@@ -10,6 +10,7 @@ arrow
 astroid
 astunparse
 async-timeout
+autopep8
 attrs
 bandit
 beautifulsoup4
@@ -119,4 +120,5 @@ wheezy.captcha
 wrapt
 wsproto
 yarl
+yapf
 youtube-dl

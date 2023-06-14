@@ -141,6 +141,22 @@ class Linter(Cog):
         """Format code with isort"""
         linter = LintCode(code)
         await linter.run_isort(ctx)
+    
+    @lintcode.command(name="yapf", aliases=["yf"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def yapf(self, ctx: Context, *, code: str):
+        """Format code with yapf"""
+        linter = LintCode(code)
+        await linter.run_yapf(ctx)
+    
+    @lintcode.command(name="autopep8", aliases=["ap8"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def autopep8(self, ctx: Context, *, code: str):
+        """Format code with autopep8"""
+        linter = LintCode(code)
+        await linter.run_autopep8(ctx)
 
     @lintcode.command(name="pyright", aliases=["pyr"])
     @commands.max_concurrency(1, commands.BucketType.user)

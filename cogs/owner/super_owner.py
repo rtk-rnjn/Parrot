@@ -210,9 +210,6 @@ class MongoView(discord.ui.View):
             title="MongoDB  - Database - Lookup",
         )
 
-        names.remove("admin")
-        names.remove("local")
-
         for i, name in enumerate(names):
             embed.add_field(name=f"{to_emoji(i)} {name}", value="\u200b")
             collections = await self.ctx.bot.mongo[name].list_collection_names()

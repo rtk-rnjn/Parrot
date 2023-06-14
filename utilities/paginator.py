@@ -264,13 +264,13 @@ class PaginationView(discord.ui.View):
 
     def __init__(
         self,
-        embed_list: List[PageT],
+        embed_list: List[PageT] = [],
         *,
         first_function: Optional[Callback] = None,
         next_function: Optional[Callback] = None,
         previous_function: Optional[Callback] = None,
         last_function: Optional[Callback] = None,
-    ) -> None:
+    ) -> None:  # sourcery skip: default-mutable-arg
         super().__init__(timeout=300)
 
         self.embed_list = embed_list

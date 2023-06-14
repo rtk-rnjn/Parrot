@@ -171,10 +171,10 @@ class PaginatorView(discord.ui.View):
 
     # TODO Rename this here and in `lock_bro`
     def _extracted_from_lock_bro_4(self):
-        self.children[0].disabled = False
-        self.children[1].disabled = False
-        self.children[2].disabled = False
-        self.children[3].disabled = False
+        self.children[0].disabled = False  # type: ignore
+        self.children[1].disabled = False  # type: ignore
+        self.children[2].disabled = False  # type: ignore
+        self.children[3].disabled = False  # type: ignore
 
     def update_embed(self, page: Page):
         if self.show_page_count:
@@ -264,7 +264,7 @@ class PaginationView(discord.ui.View):
 
     def __init__(
         self,
-        embed_list: List[PageT] = [],
+        embed_list: Optional[List[Union[str, discord.File, discord.Embed]]] = None,
         *,
         first_function: Optional[Callback] = None,
         next_function: Optional[Callback] = None,
@@ -272,6 +272,8 @@ class PaginationView(discord.ui.View):
         last_function: Optional[Callback] = None,
     ) -> None:  # sourcery skip: default-mutable-arg
         super().__init__(timeout=300)
+        if embed_list is None:
+            embed_list = []
 
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

@@ -114,11 +114,10 @@ class MongoCollectionView(discord.ui.View):
     ):
         assert self.message is not None
         await interaction.response.defer()
-        await self.message.edit(view=None)
 
         collection = self.ctx.bot.mongo[self.db][self.collection]
 
-        view = PaginationView()
+        view = PaginationView([])
         view._str_prefix = "```json\n"
         view._str_suffix = "\n```"
         await view.start(self.ctx)
@@ -133,8 +132,6 @@ class MongoCollectionView(discord.ui.View):
                 new_data.append(line)
 
             await view.add_item_to_embed_list("\n".join(new_data))
-            if index and index % 20 == 0:
-                await view._update_message()
 
             if index == 100:
                 break

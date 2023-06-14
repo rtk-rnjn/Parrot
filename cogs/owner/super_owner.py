@@ -124,12 +124,16 @@ class MongoCollectionView(discord.ui.View):
 
         index = 0
         async for data in collection.find():
+            _id = data.pop("_id")
+            data['_id'] = str(_id)
+
             data = json.dumps(data, indent=4).split("\n")
             new_data = []
             for ind, line in enumerate(data):
-                if ind == 40:
+                if ind == 20:
                     break
                 new_data.append(line)
+            new_data.append("...")
 
             await view.add_item_to_embed_list("\n".join(new_data))
 

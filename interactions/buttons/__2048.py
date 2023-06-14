@@ -109,7 +109,8 @@ class Twenty48:
             return None
 
         board = [list(i) for i in self.board]
-        restore = lambda: setattr(self, "board", board)
+        def restore():
+            return setattr(self, "board", board)
 
         self.move_up()
         if self.board != board:
@@ -127,7 +128,7 @@ class Twenty48:
         self.board[random.randrange(4)][random.randrange(4)] = 2
         self.board[random.randrange(4)][random.randrange(4)] = 2
 
-        board_string = self.number_to_emoji()
+        self.number_to_emoji()
 
 
 class Twenty48_Button(discord.ui.View):

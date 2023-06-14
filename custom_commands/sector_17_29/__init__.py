@@ -4,7 +4,7 @@ import asyncio
 from contextlib import suppress
 import unicodedata
 from time import time
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
 from core import Cog

@@ -436,7 +436,7 @@ class NASA(Cog):
             source_location = data["sourceLocation"]
             active_region_num = data["activeRegionNum"]
             link = data["link"]
-            note = data["note"]
+            data["note"]
             instruments = ", ".join(
                 i["displayName"] for i in data.get("instruments", [])
             )

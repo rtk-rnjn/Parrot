@@ -33,7 +33,8 @@ __all__ = (
 
 _PY2 = sys.version_info < (3, 0)
 
-identity = lambda x: x
+def identity(x):
+    return x
 
 # u('string') replaces the forwards-incompatible u'string'
 if _PY2:
@@ -160,7 +161,7 @@ class Object(dict):
         except AttributeError:
             try:
                 return self[k]
-            except KeyError as e:
+            except KeyError:
                 return NULL()
 
     def __setattr__(self, k: KT, v: VT) -> None:
@@ -209,7 +210,7 @@ class Object(dict):
         except AttributeError:
             try:
                 del self[k]
-            except KeyError as e:
+            except KeyError:
                 return NULL()
         else:
             object.__delattr__(self, k)

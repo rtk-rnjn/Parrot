@@ -76,7 +76,8 @@ def _extraction_generator(query, choices, scorer=quick_ratio, score_cutoff=0):
 
 def extract(query, choices, *, scorer=quick_ratio, score_cutoff=0, limit=10):
     it = _extraction_generator(query, choices, scorer, score_cutoff)
-    key = lambda t: t[1]
+    def key(t):
+        return t[1]
     if limit is not None:
         return heapq.nlargest(limit, it, key=key)
     return sorted(it, key=key, reverse=True)
@@ -84,7 +85,8 @@ def extract(query, choices, *, scorer=quick_ratio, score_cutoff=0, limit=10):
 
 def extract_one(query, choices, *, scorer=quick_ratio, score_cutoff=0):
     it = _extraction_generator(query, choices, scorer, score_cutoff)
-    key = lambda t: t[1]
+    def key(t):
+        return t[1]
     try:
         return max(it, key=key)
     except Exception:

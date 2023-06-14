@@ -2,15 +2,11 @@
 
 from itertools import islice
 from typing import (
-    TYPE_CHECKING,
-    Any,
     Awaitable,
     Callable,
-    Generic,
     List,
     NamedTuple,
     Optional,
-    TypeAlias,
     TypeVar,
     Union,
 )

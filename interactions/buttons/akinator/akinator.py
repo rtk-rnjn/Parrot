@@ -1,6 +1,5 @@
 import json
 import re
-import time
 
 import discord
 

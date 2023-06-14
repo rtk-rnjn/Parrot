@@ -51,7 +51,7 @@ class EmbedCancel(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> T.Any:
         await interaction.response.send_message(
-            f"\N{CROSS MARK} | Embed sending cancelled.", ephemeral=True
+            "\N{CROSS MARK} | Embed sending cancelled.", ephemeral=True
         )
         await self.view.on_timeout()
 

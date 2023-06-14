@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Container, Iterable
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias
 
 from discord.ext.commands import Command  # type: ignore
 from discord.ext.commands import (
@@ -14,7 +14,6 @@ from discord.ext.commands import (
 )
 from pymongo.collection import Collection
 
-import discord
 from core import Context, Parrot
 from discord.ext import commands
 from utilities import exceptions as ex

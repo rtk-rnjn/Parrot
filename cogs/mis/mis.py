@@ -640,8 +640,8 @@ class Misc(Cog):
 
         embed: discord.Embed = discord.Embed()
 
-        lat = res["coord"]["lat"]
-        lon = res["coord"]["lon"]
+        res["coord"]["lat"]
+        res["coord"]["lon"]
 
         if res["weather"]:
             weather = res["weather"][0]["main"]

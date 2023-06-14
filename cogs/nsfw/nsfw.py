@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from random import choice, random
 from typing import Dict, List, Literal, Optional, Set
 

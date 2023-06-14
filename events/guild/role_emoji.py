@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import io
-import json
-from contextlib import suppress
-from typing import List, Sequence, Tuple, Union
+from typing import Sequence
 
 import discord
 from core import Cog, Parrot

@@ -2353,7 +2353,6 @@ class Fun(Cog):
         """Make a cat say something"""
         m: discord.Message = await ctx.reply("starting")
         text = text or "Hi..."
-        BLANK = ""
         list = (
             """ຸ 　　　＿＿_＿＿
     　　／　／　  ／|"

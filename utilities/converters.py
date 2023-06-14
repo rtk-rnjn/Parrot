@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, Callable, Dict, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union
 
 from lru import LRU
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import suppress
 
 import discord
 from core import Cog, Parrot

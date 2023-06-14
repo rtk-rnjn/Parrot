@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
 
-import discord
 from core import Context
 from discord.ext import commands
 
@@ -119,7 +118,7 @@ class Time(HumanTime):
     ):
         try:
             o = ShortTime(argument, now=now, tzinfo=tzinfo)
-        except Exception as e:
+        except Exception:
             super().__init__(argument, now=now, tzinfo=tzinfo)
         else:
             self.dt = o.dt

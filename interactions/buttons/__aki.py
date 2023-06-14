@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
 
 import discord
 from core import Context, Parrot
-from discord.ext import commands
 
 from .akinator import CantGoBackAnyFurther
 from .akinator.async_aki import Akinator as AkinatorGame

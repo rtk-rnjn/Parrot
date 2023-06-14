@@ -186,7 +186,6 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         db = ctx.bot.mongo[db_name][collection_name]
         document_count = await db.count_documents({})
         full_name = f"{db_name}.{collection_name}"
-        name = f"{collection_name} ({document_count} documents)"
         return (
             discord.Embed(title="MongoDB - Collection - Lookup")
             .add_field(name="Total documents", value=document_count)
@@ -205,7 +204,8 @@ class MongoView(discord.ui.View):
 
     async def init(self):
         names: list[str] = await self.ctx.bot.mongo.list_database_names()
-        to_emoji = lambda c: chr(0x1F1E6 + c)
+        def to_emoji(c):
+            return chr(127462 + c)
         embed = discord.Embed(
             title="MongoDB  - Database - Lookup",
         )
@@ -908,7 +908,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     async def build_rtfm_lookup_table(self, page_types):
         cache = {}
         for key, page in page_types.items():
-            sub = cache[key] = {}
+            cache[key] = {}
             resp = await self.bot.http_session.get(f"{page}/objects.inv")
             if resp.status != 200:
                 raise RuntimeError("Cannot build rtfm lookup table, try again later.")

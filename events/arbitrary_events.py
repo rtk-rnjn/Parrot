@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import asyncio
 
-import discord
-from core import Cog, Context, Parrot
+from core import Cog, Parrot
 from discord.ext import tasks
 
 

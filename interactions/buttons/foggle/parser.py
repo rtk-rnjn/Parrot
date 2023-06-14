@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 OPS: Dict[str, Callable[[int, int], Optional[int]]] = {
     "^": lambda x, y: x**y,

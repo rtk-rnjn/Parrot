@@ -24,7 +24,6 @@ from PIL import Image, ImageDraw
 
 import discord
 from core import Context, Parrot
-from discord.ext import commands
 from utilities.converters import ToAsync
 
 from .__wordle import WordInputButton

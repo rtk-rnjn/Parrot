@@ -4,7 +4,6 @@ import asyncio
 import math
 import pathlib
 import random
-from contextlib import suppress
 from typing import TYPE_CHECKING, Optional
 
 import discord

@@ -14,7 +14,6 @@ import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.constants import Colours
-from utilities.deco import seasonal_task
 
 ALL_VIDS: dict = loads(Path(r"extra/easter/april_fools_vids.json").read_text("utf-8"))
 BUNNY_NAMES: dict = loads(Path(r"extra/easter/bunny_names.json").read_text("utf8"))

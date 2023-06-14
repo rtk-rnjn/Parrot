@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import re
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 from discord.ext import commands
-from utilities.converters import convert_bool
 
 POSSIBLE_RUFF_CODE = re.compile(r"([A-Z]\d{2,4})")
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, List, TypeVar
 
 import discord
 

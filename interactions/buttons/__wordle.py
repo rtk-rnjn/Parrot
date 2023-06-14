@@ -15,7 +15,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 import discord
 from core import Context, Parrot
-from discord.ext import commands
 from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
@@ -173,7 +172,7 @@ class Wordle:
 
 class WordInput(discord.ui.Modal, title="Word Input"):
     word: discord.ui.TextInput = discord.ui.TextInput(
-        label=f"Input your guess",
+        label="Input your guess",
         style=discord.TextStyle.short,
         required=True,
         min_length=5,

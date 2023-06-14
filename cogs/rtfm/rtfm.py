@@ -12,7 +12,7 @@ from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore

@@ -7,7 +7,7 @@ from asyncio import Lock
 from collections.abc import Container, Iterable
 from datetime import datetime
 from functools import wraps
-from typing import Callable, Dict, Optional, Set, Union
+from typing import Callable, Optional, Set, Union
 from weakref import WeakValueDictionary
 
 from discord.ext.commands import Command  # type: ignore

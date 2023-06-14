@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import urllib.parse
 from functools import partial
-from string import ascii_uppercase
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from bs4 import BeautifulSoup
 
@@ -27,7 +26,6 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     text = text.strip("`")
 
     url = "https://docs.python.org/3/genindex-all.html"
-    alphabet = f"_{ascii_uppercase}"
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:

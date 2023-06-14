@@ -4,7 +4,7 @@ import asyncio
 import io
 import logging
 from itertools import zip_longest
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 from pymongo import ReturnDocument  # type: ignore
 from pymongo.collection import Collection  # type: ignore

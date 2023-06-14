@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 
 import discord
 from core import Context, Parrot

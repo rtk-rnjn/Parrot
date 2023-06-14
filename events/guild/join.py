@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-from typing import Any, Dict
 
 import discord
 from core import Cog, Parrot

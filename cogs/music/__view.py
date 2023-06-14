@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, List, Literal, Optional, Union
+from typing import Optional, Union
 
 import wavelink
 
@@ -124,7 +124,7 @@ class MusicView(discord.ui.View):
         cmd: commands.Command = self.bot.get_command("loop")
         try:
             await self.ctx.invoke(cmd)
-        except commands.CommandError as e:
+        except commands.CommandError:
             return await self.__send_interal_error_response(interaction)
         await interaction.response.send_message(
             "Invoked `loop` command.", ephemeral=True
@@ -141,7 +141,7 @@ class MusicView(discord.ui.View):
         cmd: commands.Command = self.bot.get_command("loop")
         try:
             await self.ctx.invoke(cmd, "current")
-        except commands.CommandError as e:
+        except commands.CommandError:
             return await self.__send_interal_error_response(interaction)
         await interaction.response.send_message(
             "Invoked `loop current` command.", ephemeral=True
@@ -160,7 +160,7 @@ class MusicView(discord.ui.View):
         cmd: commands.Command = self.bot.get_command("shuffle")
         try:
             await self.ctx.invoke(cmd)
-        except commands.CommandError as e:
+        except commands.CommandError:
             return await self.__send_interal_error_response(interaction)
         await interaction.response.send_message(
             "Invoked `shuffle` command.", ephemeral=True
@@ -189,7 +189,7 @@ class MusicView(discord.ui.View):
             cmd: commands.Command = self.bot.get_command("pause")
             try:
                 await self.ctx.invoke(cmd)
-            except commands.CommandError as e:
+            except commands.CommandError:
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message(
                 "Invoked `pause` command.", ephemeral=True
@@ -208,7 +208,7 @@ class MusicView(discord.ui.View):
             cmd: commands.Command = self.bot.get_command("resume")
             try:
                 await self.ctx.invoke(cmd)
-            except commands.CommandError as e:
+            except commands.CommandError:
                 return await self.__send_interal_error_response(interaction)
             await interaction.response.send_message(
                 "Invoked `resume` command.", ephemeral=True
@@ -226,7 +226,7 @@ class MusicView(discord.ui.View):
         ini = time.perf_counter()
         try:
             await self.ctx.invoke(cmd)
-        except commands.CommandError as e:
+        except commands.CommandError:
             return await self.__send_interal_error_response(interaction)
 
         await interaction.response.edit_message(
@@ -249,7 +249,7 @@ class MusicView(discord.ui.View):
                 "There is no music to skip.", ephemeral=True
             )
         cmd: commands.Command = self.bot.get_command("skip")
-        ini = time.perf_counter()
+        time.perf_counter()
         try:
             await self.ctx.invoke(cmd)
             await interaction.response.edit_message(
@@ -257,7 +257,7 @@ class MusicView(discord.ui.View):
                 ephemeral=True,
             )
             await self.on_timeout()
-        except commands.CommandError as e:
+        except commands.CommandError:
             return await self.__send_interal_error_response(interaction)
 
     @discord.ui.button(custom_id="LOVE", emoji="\N{HEAVY BLACK HEART}", row=1)

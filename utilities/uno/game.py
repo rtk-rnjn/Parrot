@@ -22,7 +22,6 @@ from typing import (
 
 import discord
 from core import Context
-from discord.ext import commands
 
 from .cards import Card, create_deck
 from .emojis import COLORS

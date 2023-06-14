@@ -18,7 +18,6 @@ try:
 except ImportError:
     wheezy_captcha = None
 
-from utilities.converters import ToAsync
 
 DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
 DEFAULT_FONTS = [os.path.join(DATA_DIR, "DroidSansMono.ttf")]

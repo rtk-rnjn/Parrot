@@ -9,7 +9,7 @@ import random
 from datetime import datetime
 from pathlib import Path
 from random import choice
-from typing import Coroutine, List, Optional, Tuple, Union
+from typing import Coroutine, Optional, Tuple, Union
 
 from discord.ext.commands import clean_content  # type: ignore
 

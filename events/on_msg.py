@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import asyncio
-import io
 import json
 import random
 import re
 import textwrap
 import urllib.parse
 from contextlib import suppress
-from time import time
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -18,10 +16,8 @@ from typing import (
     Coroutine,
     Dict,
     List,
-    Match,
     Optional,
     Pattern,
-    Set,
     Tuple,
     Union,
 )
@@ -29,17 +25,14 @@ from urllib.parse import quote_plus
 
 import aiohttp  # type: ignore
 from aiohttp import ClientResponseError  # type: ignore
-from discord.utils import MISSING  # type: ignore
 from pymongo import ReturnDocument, UpdateOne
 
 import discord
 import emojis
 from cogs.fun.fun import replace_many
-from discord import Webhook
-from discord.ext import commands, tasks
-from utilities.chat_exporter.construct.transcript import Transcript
+from discord.ext import commands
 from utilities.rankcard import rank_card
-from utilities.regex import EQUATION_REGEX, INVITE_RE, LINKS_NO_PROTOCOLS
+from utilities.regex import EQUATION_REGEX, LINKS_NO_PROTOCOLS
 
 if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping

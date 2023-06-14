@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import io
-import json
-from contextlib import suppress
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import discord
 from core import Cog, Parrot

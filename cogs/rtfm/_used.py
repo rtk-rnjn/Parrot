@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 from yaml import safe_load as yaml_load  # type: ignore
 
@@ -29,7 +29,6 @@ with open("extra/default_langs.yml", "r", encoding="utf-8", errors="ignore") as 
 
 
 def prepare_payload(payload: str):
-    no_code = False
 
     try:
         language, text = re.split(r"\s+", payload, maxsplit=1)

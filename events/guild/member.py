@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import time
 from contextlib import suppress
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, Optional, Set, Union
 
 from pymongo import UpdateOne
 

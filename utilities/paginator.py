@@ -259,7 +259,7 @@ class PaginationView(discord.ui.View):
         previous_function: Optional[Callback] = None,
         last_function: Optional[Callback] = None,
     ) -> None:  # sourcery skip: default-mutable-arg
-        super().__init__(timeout=300)
+        super().__init__(timeout=30)
         if embed_list is None:
             embed_list = []
 
@@ -285,8 +285,13 @@ class PaginationView(discord.ui.View):
 
     async def on_timeout(self):
         self.stop()
-        if hasattr(self, "message"):
-            await self.message.edit(view=None)
+        assert self.message is not None
+
+        for button in self.children:
+            if isinstance(button, discord.ui.Button):
+                button.disabled = True
+                button.style = discord.ButtonStyle.grey
+        await self.message.edit(view=self)
 
     @discord.ui.button(label="First", style=discord.ButtonStyle.red, disabled=True)
     async def first(self, interaction: discord.Interaction, button: discord.ui.Button):

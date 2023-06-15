@@ -22,8 +22,7 @@ class ArbitraryEvents(Cog):
         except asyncio.TimeoutError:
             self.bot.dispatch("bot_idle")
 
-        else:
-            self.bot_activity.restart()
+        self.bot_activity.restart()
 
     async def cog_unload(self) -> None:
         if self.bot_activity.is_running():

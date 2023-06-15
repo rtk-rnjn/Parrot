@@ -363,40 +363,42 @@ class RTFM(Cog):
     @commands.group(invoke_without_command=True)
     @Context.with_type
     async def python(self, ctx: Context, *, text: str):
+        # sourcery skip: last-if-guard
+        """Search for a python tutorial."""
         if ctx.invoked_subcommand is None:
-            await ctx.bot.invoke_help_command(ctx)
-            return
+            if not getattr(self, "_python_cached", None):
+                await self.build_python_cache()
 
-        if not getattr(self, "_python_cached", None):
-            await self.build_python_cache()
-
-        # get closest match
-        match = await self.bot.func(extractOne, text, self._python_cached.keys())
-        if match[1] < 50:
-            return await ctx.send(
-                embed=discord.Embed(
-                    description="No such tutorial found in the search query.",
-                    color=self.bot.color,
+            # get closest match
+            match = await self.bot.func(extractOne, text, self._python_cached.keys())
+            if match[1] < 50:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description="No such tutorial found in the search query.",
+                        color=self.bot.color,
+                    )
                 )
-            )
-        if 70 < match[1] < 90:
-            val = await ctx.prompt(f"{ctx.author.mention} Did you mean `{match[0]}`?")
-            if val:
-                data = self._python_cached[match[0]]
+            if 70 < match[1] < 90:
+                val = await ctx.prompt(f"{ctx.author.mention} Did you mean `{match[0]}`?")
+                if val:
+                    data = self._python_cached[match[0]]
+                else:
+                    await ctx.send(
+                        f"{ctx.author.mention} No tag found with your query, you can ask the developer to create one.\n"
+                        f"Or consider contributing to the project by creating a tag yourself.\n"
+                        f"See <{self.bot.github}> | `{ctx.prefix}python list` for a list of available tags."
+                    )
+                    return
             else:
-                await ctx.send(
-                    f"{ctx.author.mention} No tag found with your query, you can ask the developer to create one.\n"
-                    f"Or consider contributing to the project by creating a tag yourself.\n"
-                    f"See <{self.bot.github}> | `{ctx.prefix}python list` for a list of available tags."
-                )
-                return
-        else:
-            data = self._python_cached[match[0]]
-        await ctx.send(embed=discord.Embed(description=data))
+                data = self._python_cached[match[0]]
+            await ctx.send(embed=discord.Embed(description=data))
 
     @python.command(name="list")
     @Context.with_type
     async def python_list(self, ctx: Context):
+        if not getattr(self, "_python_cached", None):
+            await self.build_python_cache()
+
         await ctx.send(
             embed=discord.Embed(
                 title="List of available tutorials",

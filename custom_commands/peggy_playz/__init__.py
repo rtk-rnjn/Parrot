@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import contextlib
 
 import discord
@@ -24,7 +25,6 @@ class PeggyPlayZ(Cog):
             with contextlib.suppress(discord.HTTPException):
                 await message.publish()
                 await message.add_reaction("\N{EYES}")
-            self.bot.dispatch("upload", message)
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
@@ -33,6 +33,16 @@ class PeggyPlayZ(Cog):
             if channel is not None:
                 await channel.send(member.mention, delete_after=1)  # type: ignore
 
-    @Cog.listener()
-    async def on_upload(self, message: discord.Message) -> None:
-        await message.add_reaction("\N{EYES}")
+    @Cog.listener("on_message")
+    async def on_announcement_message(self, message: discord.Message) -> None:
+        await asyncio.sleep(5)
+        if (
+            message.guild
+            and message.guild.id == PEGGY_PLAYZ
+            and (
+                isinstance(message.channel, discord.TextChannel)
+                and message.channel.is_news()
+            )
+            and message.channel.id != UPLOAD_CHANNEL_ID
+        ):
+            await message.publish()

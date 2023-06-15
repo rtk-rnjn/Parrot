@@ -298,7 +298,7 @@ class Misc(Cog):
     async def latex(self, ctx: Context, *, query: str) -> None:
         """Renders the text in latex and sends the image."""
         query = _prepare_input(query)
-        query_hash = hashlib.md5(query.encode()).hexdigest()
+        query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec
         image_path = CACHE_DIRECTORY / f"{query_hash}.png"
         async with ctx.typing():
             if not image_path.exists():

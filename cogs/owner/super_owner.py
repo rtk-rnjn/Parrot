@@ -167,8 +167,8 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None and self.view.message is not None
 
-        embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
         await interaction.response.defer()
+        embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
 
         view = MongoCollectionView(
             collection=self.values[0], ctx=self.ctx, db=self.db_name
@@ -1021,7 +1021,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         """Gives you a documentation link for a pymongo entity"""
         await self.do_rtfm(ctx, "pymongo", obj)
 
-    @rtfd.command(name="showall")
+    @rtfd.command(name="showall", aliases=["show"])
     @commands.is_owner()
     async def rtfd_showall(
         self,

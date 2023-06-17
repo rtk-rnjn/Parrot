@@ -1179,10 +1179,10 @@ class Parrot(commands.AutoShardedBot):
                     "Received timers: %s",
                     timers,
                 )
-                now = discord.utils.utcnow().timestamp()
-
                 if timers is None:
                     continue
+
+                now = discord.utils.utcnow().timestamp()
 
                 if timers["expires_at"] > now:
                     log.info(

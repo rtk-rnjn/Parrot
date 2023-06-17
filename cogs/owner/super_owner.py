@@ -108,7 +108,7 @@ class MongoCollectionView(discord.ui.View):
         self.ctx = ctx
     
     async def interaction_check(self, interaction: Interaction[Parrot]) -> bool:
-        return interaction.user.id == self.ctx.bot.owner_ids
+        return interaction.user.id in self.ctx.bot.owner_ids
 
     @discord.ui.button(
         label="Paginate", style=discord.ButtonStyle.blurple, emoji="\N{BOOKS}"

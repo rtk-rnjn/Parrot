@@ -9,6 +9,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Union
+import pkg_resources
 
 import aiofiles
 import bandit
@@ -470,8 +471,14 @@ class LintCode:
 
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
 
+            # Thanks `AAA3A#1157` (829612600059887649)
+            try:
+                ruff_version = pkg_resources.get_distribution("ruff").version
+            except pkg_resources.DistributionNotFound:
+                ruff_version = "0.0.272"
+
             pages.add_line(
-                f"{Fore.WHITE}Ruff Version - {Fore.WHITE}0.0.272\n"  # TODO: Get version from ruff
+                f"{Fore.WHITE}Ruff Version - {Fore.WHITE}{ruff_version}\n"  # TODO: Get version from ruff
             )
 
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)

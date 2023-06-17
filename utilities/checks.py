@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 from collections.abc import Container, Iterable
 from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias
+import discord
 
 from discord.ext.commands import Command  # type: ignore
 from discord.ext.commands import (
@@ -47,6 +48,8 @@ __all__ = (
 
 def in_server(guild_id: int) -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
+        assert ctx.guild is not None
+
         guild = ctx.bot.get_guild(guild_id)
         if not guild:
             return False
@@ -58,17 +61,19 @@ def in_server(guild_id: int) -> Check[Context]:
             f"You must be in server: `{guild.name}`, to use the command"
         )
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def in_support_server() -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
+
+        assert ctx.guild is not None
         if ctx.guild.id == getattr(ctx.bot.server, "id"):
             return True
         raise ex.NotInSupportServer()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def voter_only() -> Check[Context]:
@@ -79,7 +84,7 @@ def voter_only() -> Check[Context]:
 
         raise ex.NotVoter()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def is_guild_owner() -> Check[Context]:
@@ -88,7 +93,7 @@ def is_guild_owner() -> Check[Context]:
             return True
         raise ex.NotGuildOwner()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def is_me() -> Check[Context]:
@@ -97,12 +102,14 @@ def is_me() -> Check[Context]:
             return True
         raise ex.NotMe()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def has_verified_role_ticket() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        data = await ctx.bot.guild_configurations_cache[ctx.guild.id]
+        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
+
+        data = ctx.bot.guild_configurations_cache[ctx.guild.id]
         data = data["ticket_config"]
         roles = data["verified_roles"]
         if not roles:
@@ -113,11 +120,13 @@ def has_verified_role_ticket() -> Check[Context]:
 
         raise ex.NoVerifiedRoleTicket()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
     async def predicate(ctx: Context) -> Optional[bool]:
+        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
+
         bot: Parrot = ctx.bot
         try:
             role = (
@@ -135,19 +144,20 @@ def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
             return True
         raise ex.NoModRole()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def in_temp_channel() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
+        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         if not ctx.author.voice:
             raise ex.InHubVoice()
 
         if _ := await ctx.bot.guild_configurations.find_one(
             {
                 "_id": ctx.guild.id,
-                "temp_channels.channel_id": ctx.author.voice.channel.id,
-                "temp_channels.author": ctx.author.id,
+                "hub_temp_channels.channel_id": ctx.author.voice.channel.id,
+                "hub_temp_channels.author": ctx.author.id,
             }
         ):
             return True
@@ -171,7 +181,7 @@ def _can_run(ctx: Context) -> Optional[bool]:  # sourcery skip: use-next
 
 
 def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
-    # sourcery skip: assign-if-exp, boolean-if-exp-identity, reintroduce-else, remove-redundant-if, remove-unnecessary-cast
+    assert isinstance(ctx.author, discord.Member)
     roles = set(ctx.author.roles)
     if ctx.channel.id in data["channel_in"]:
         return True
@@ -181,11 +191,7 @@ def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
         return False
     if ctx.channel.id in data["channel_out"]:
         return False
-    if data["cmd_enable"]:
-        return False
-    if not data["cmd_enable"]:
-        return True
-    return True
+    return not data["cmd_enable"]
 
 
 def guild_premium() -> Check[Context]:
@@ -198,31 +204,34 @@ def guild_premium() -> Check[Context]:
 
         raise ex.NotPremiumServer()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def is_dj() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the user is a DJ."""
+        assert isinstance(ctx.author, discord.Member)
         if role := await ctx.dj_role():
             return role in ctx.author.roles
 
         raise ex.NoDJRole()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def in_voice() -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
+        assert isinstance(ctx.author, discord.Member)
         if ctx.author.voice is None:
             raise ex.NotInVoice()
         return True
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def same_voice() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
+        assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
         if ctx.me.voice is None:
             raise ex.NotBotInVoice()
         if ctx.author.voice is None:
@@ -232,7 +241,7 @@ def same_voice() -> Check[Context]:
 
         return True
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def cooldown_with_role_bypass(
@@ -265,6 +274,9 @@ def cooldown_with_role_bypass(
             tzinfo=datetime.timezone.utc
         ).timestamp()
         bucket = buckets.get_bucket(ctx.message)
+        if bucket is None:
+            return
+
         retry_after = bucket.update_rate_limit(current)
         if retry_after:
             raise CommandOnCooldown(bucket, retry_after)
@@ -289,14 +301,15 @@ def cooldown_with_role_bypass(
 
 def without_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user does not have any of the roles in role_ids."""
-    if not ctx.guild:
-        return False
+    assert isinstance(ctx.guild, discord.Guild) and isinstance(ctx.author, discord.Member)
     author_roles = [role.id for role in ctx.author.roles]
     return all(role not in author_roles for role in role_ids)
 
 
 def with_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user has any one of the roles in role_ids."""
+    assert isinstance(ctx.guild, discord.Guild) and isinstance(ctx.author, discord.Member)
+
     return any(role.id in role_ids for role in ctx.author.roles) if ctx.guild else False
 
 

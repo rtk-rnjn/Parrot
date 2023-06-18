@@ -4,7 +4,7 @@ import asyncio
 import datetime
 import logging
 import re
-from typing import Dict, List, Literal, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import pymongo
 from pymongo import UpdateMany, UpdateOne
@@ -17,7 +17,8 @@ from utilities.formats import plural
 log = logging.getLogger("cogs.highlight.highlight")
 
 CACHED_WORDS_HINT = Dict[int, List[Dict[str, Union[str, int]]]]
-CACHED_SETTINGS_HINT = Dict[int, Dict[str, Union[str, int, List[int]]]]
+_CACHED_SETTINGS_HINT = Dict[str, Union[str, int, List[Any]]]
+CACHED_SETTINGS_HINT = Dict[int, _CACHED_SETTINGS_HINT]
 ENTITY_HINT = Union[
     discord.Member, discord.User, discord.TextChannel, discord.CategoryChannel
 ]
@@ -50,7 +51,7 @@ class Highlight(Cog):
         self.cached_settings: CACHED_SETTINGS_HINT = {}
         self.bulk_insert_loop.start()
 
-    async def get_user_settings(self, user_id: int) -> CACHED_SETTINGS_HINT:
+    async def get_user_settings(self, user_id: int) -> _CACHED_SETTINGS_HINT:
         try:
             return self.cached_settings[user_id]
         except KeyError:
@@ -152,12 +153,15 @@ class Highlight(Cog):
         self, message: discord.Message, word: Dict[str, Union[str, int]], text: str
     ):
         # sourcery skip: low-code-quality
-        member = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
+        assert message.guild is not None
 
-        if not member:
+        member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
+
+        if member is None:
             log.info(
                 "Unknown user ID %s (guild ID %s)", word["user_id"], word["guild_id"]
             )
+            return
 
         # Wait for any activity
         try:
@@ -165,7 +169,7 @@ class Highlight(Cog):
                 "user_activity",
                 check=lambda channel, user: message.channel == channel
                 and user == member,
-                timeout=10,
+                timeout=15,
             )
             return
         except asyncio.TimeoutError:
@@ -176,7 +180,7 @@ class Highlight(Cog):
         # Don't highlight if it's a command
         if (
             member in message.mentions
-            or member not in message.channel.members
+            or member not in getattr(message.channel, "members", [])
             or (await self.bot.get_context(message)).valid
         ):
             return
@@ -186,16 +190,19 @@ class Highlight(Cog):
         # Don't highlight if the user themsel
         # Don't highlight if they blocked the trigger author or channel
         # Don't highlight if they blocked the entire category
+
+        assert isinstance(message.channel, discord.abc.GuildChannel)
+
         if (
             member.id == message.author.id
             or settings["disabled"]
             or (
-                message.channel.id in settings.get("blocked_channels", [])
-                or message.author.id in settings.get("blocked_users", [])
+                message.channel.id in settings.get("blocked_channels", [])  # type: ignore
+                or message.author.id in settings.get("blocked_users", [])  # type: ignore
                 or (
                     message.channel.category
                     and message.channel.category.id
-                    in settings.get("blocked_channels", [])
+                    in settings.get("blocked_channels", [])  # type: ignore
                 )
             )
         ):
@@ -220,30 +227,26 @@ class Highlight(Cog):
             .set_footer(text="Triggered")
         )
 
-        # Add trigger message
-        span = re.search(re.escape(word["word"]), message.content.lower()).span()
+        def esc(string: str) -> str:
+            st = discord.utils.escape_markdown(discord.utils.escape_mentions(string))
+            st = st.replace(f"{word['word']}", f"**{word['word']}**")
+            return st
 
         if len(message.content) > 2000:
-            if span[1] > 2000:
-                end = min(200, span[0] - 1)
-                content = f"{discord.utils.escape_markdown(message.content[:end])}... **{discord.utils.escape_mentions(message.content)}** ..."
-            else:
-                content = discord.utils.escape_markdown(message.content[:2000])
+            content = esc(message.content)[:2000]
         else:
-            content = discord.utils.escape_markdown(message.content[: span[0]])
-            content += f"**{text}**"
-            content += discord.utils.escape_markdown(message.content[span[1] :])
+            content = esc(message.content)
 
-        timestamp = message.created_at.timestamp()
-        em.description = f"<t:{int(timestamp)}:T> {message.author.mention}: {content}"
+        timestamp = int(message.created_at.timestamp())
+        em.description = f"<t:{timestamp}:T> {message.author.mention}: {content}"
 
         # Add some history
         try:
             async for ms in message.channel.history(limit=3, before=message):
-                content = f"{ms.content[:50]}{'...' if len(ms.content) > 50 else ''}"
-                timestamp = ms.created_at.timestamp()
+                content = esc(ms.clean_content)
+                timestamp = int(ms.created_at.timestamp())
 
-                text = f"<t:{int(timestamp)}:T> {ms.author.mention}: {discord.utils.escape_markdown(content)}\n"
+                text = f"<t:{timestamp}:T> {ms.author.mention}: {esc(content)}\n"
 
                 if len(initial_description + em.description + text) <= 4096:
                     em.description = text + em.description
@@ -458,7 +461,6 @@ class Highlight(Cog):
                 "You cannot import words from this guild, it must be another guild.",
                 delete_after=5,
             )
-        # json data
         # {
         #   "_id": ...,
         #   "highlight_words": [
@@ -582,8 +584,8 @@ class Highlight(Cog):
             )
             return f":white_check_mark: Unblocked {entity.mention}."
 
-    async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> ENTITY_HINT:
-        converters: List[commands.Converter] = [
+    async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> Optional[ENTITY_HINT]:
+        converters: List = [
             commands.MemberConverter,
             commands.UserConverter,
             commands.TextChannelConverter,

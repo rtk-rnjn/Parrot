@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pymongo.collection import Collection
 
@@ -26,7 +26,7 @@ class EventCustom(Cog):
     async def mod_parser(
         self,
         *,
-        mod_action: Dict[str, Any] = None,
+        mod_action: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         if mod_action is None:
@@ -34,12 +34,12 @@ class EventCustom(Cog):
 
         kw = mod_action
 
-        action: str = kw.get("action")
-        guild: discord.Guild = self.bot.get_guild(kw.get("guild"))
+        action: str = kw.get("action")  # type: ignore
+        guild: Optional[discord.Guild] = self.bot.get_guild(kw.get("guild", 0))
         if guild is None:
             return
 
-        target: int = kw.get("member") or kw.get("target")
+        target: int = kw.get("member") or kw.get("target") or kw.get("user")  # type: ignore
 
         if action.upper() == "UNBAN":
             with contextlib.suppress(
@@ -52,7 +52,9 @@ class EventCustom(Cog):
             ):
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
         if action.upper() == "KICK":
-            member: discord.Member = self.bot.get_or_fetch_member(guild, target)
+            member: Optional[
+                Union[discord.Member, discord.User]
+            ] = await self.bot.get_or_fetch_member(guild, target)
             if member is None:
                 return
             with contextlib.suppress(
@@ -64,22 +66,24 @@ class EventCustom(Cog):
     async def normal_parser(
         self,
         *,
-        embed: Dict[str, Any] = None,
-        content: str = None,
+        embed: Optional[Dict[str, Any]] = None,
+        content: Optional[str] = None,
         dm_notify: bool = False,
         is_todo: bool = False,
-        messageChannel: int = None,
-        messageAuthor: int = None,
-        messageURL: str = None,
+        messageChannel: Optional[int] = None,
+        messageAuthor: Optional[int] = None,
+        messageURL: Optional[str] = None,
         **kwargs: Any,
     ):
         if not content:
             return
         if embed is None:
             embed = {}
-        embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
+        embed: Union[discord.utils.MISSING, discord.Embed] = (
+            discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
+        )
 
-        if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor)):
+        if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor or 0)):
             with contextlib.suppress(discord.Forbidden):
                 await user.send(
                     content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}",
@@ -87,7 +91,8 @@ class EventCustom(Cog):
                 )
             return
 
-        if channel := self.bot.get_channel(messageChannel):
+        if channel := self.bot.get_channel(messageChannel or 0):
+            assert isinstance(channel, discord.abc.Messageable)
             with contextlib.suppress(discord.Forbidden):
                 await channel.send(
                     content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}",
@@ -96,21 +101,22 @@ class EventCustom(Cog):
             return
 
     @Cog.listener("on_timer_complete")
-    async def extra_parser(self, extra: Dict[str, Any] = None, **kw: Any) -> None:
-        if extra is None:
+    async def extra_parser(
+        self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any
+    ) -> None:
+        if not extra:
             return
 
-        name = extra.get("name")
+        name: str = extra.get("name")  # type: ignore
         if name == "SET_TIMER_LOOP":
             return await self._parse_timer(**kw)
 
-        main = extra.get("main")
-
-        await self.extra_action_parser(name, **main)
+        if main := extra.get("main"):
+            await self.extra_action_parser(name, **main)
 
     @Cog.listener("on_set_afk_timer_complete")
     async def extra_parser_set_afk(
-        self, extra: Dict[str, Any] = None, **kw: Any
+        self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any
     ) -> None:
         if not extra:
             return
@@ -118,11 +124,11 @@ class EventCustom(Cog):
         name = extra.get("name")
         if name == "SET_AFK":
             await self.bot.extra_collections.insert_one(kw)
-            self.bot.afk.add(kw.get("messageAuthor"))
+            self.bot.afk.add(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_remove_afk_timer_complete")
     async def extra_parser_remove_afk(
-        self, extra: Dict[str, Any] = None, **kw: Any
+        self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any
     ) -> None:
         if not extra:
             return
@@ -130,11 +136,11 @@ class EventCustom(Cog):
         name = extra.get("name")
         if name == "REMOVE_AFK":
             await self.bot.extra_collections.delete_one(kw)
-            self.bot.afk.remove(kw.get("messageAuthor"))
+            self.bot.afk.remove(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_giveaway_timer_complete")
     async def extra_parser_giveaway(
-        self, extra: Dict[str, Any] = None, **kw: Any
+        self, extra: Optional[Dict[str, Any]] = None, **kw: Any
     ) -> None:
         if not extra:
             return
@@ -155,11 +161,11 @@ class EventCustom(Cog):
 
     async def _parse_db_execute(self, **kw: Any) -> None:
         collection: Collection = self.bot.mongo[kw["database"]][kw["collection"]]
-        if kw.get("action") == "delete_one":
+        if kw.get("action") == "delete_one" and kw.get("filter"):
             await collection.delete_one(kw["filter"])
 
     async def _parse_timer(self, **kw: Any):
-        age: str = kw["extra"]["main"].get("age")
+        age: str = kw["extra"]["main"].get("age")  # type: ignore
         if age is None:
             return
         age: ShortTime = ShortTime(age)
@@ -188,7 +194,8 @@ class EventCustom(Cog):
             return
         msg_link = f"https://discord.com/channels/{kw.get('guild_id')}/{kw.get('giveaway_channel')}/{kw.get('message_id')}"
         if not member_ids:
-            return await channel.send(f"No winners!\n> {msg_link}")
+            await channel.send(f"No winners!\n> {msg_link}")
+            return
 
         joiner = ">, <@".join([str(i) for i in member_ids])
 

@@ -878,7 +878,7 @@ class Parrot(commands.AutoShardedBot):
     async def get_or_fetch_member(
         self,
         guild: discord.Guild,
-        member_id: Union[int, discord.Object],
+        member_id: Union[int, str, discord.Object],
         in_guild: bool = True,
     ) -> Union[discord.Member, discord.User, None]:
         """|coro|
@@ -897,13 +897,13 @@ class Parrot(commands.AutoShardedBot):
         Optional[Member]
             The member or None if not found.
         """
-        if not in_guild:
-            return await self.getch(self.get_user, self.fetch_user, member_id)
 
         member_id = (
             member_id.id if isinstance(member_id, discord.Object) else int(member_id)
         )
 
+        if not in_guild:
+            return await self.getch(self.get_user, self.fetch_user, int(member_id))
         member = guild.get_member(member_id)
         if member is not None:
             return member

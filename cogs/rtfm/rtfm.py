@@ -14,6 +14,7 @@ from io import BytesIO
 from random import choice
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
+import aiofiles
 
 import aiohttp  # type: ignore
 import rapidfuzz  # type: ignore
@@ -137,6 +138,7 @@ class RTFM(Cog):
         )
         self.bot.tree.add_command(self.__bookmark_context_menu_callback)
         self._python_cached: Dict[str, str] = {}
+        self._roadmap_cached: Dict[str, str] = {}
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:

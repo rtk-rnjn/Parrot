@@ -56,6 +56,8 @@ class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild"""
 
     async def convert(self, ctx: Context, argument: str) -> Optional[discord.User]:
+        assert ctx.guild is not None
+
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
@@ -96,7 +98,7 @@ def can_execute_action(
 ) -> bool:
     return (
         user.id in ctx.bot.owner_ids  # type: ignore # owner_ids can not be None
-        or user == ctx.guild.owner
+        or user == ctx.guild.owner  # type: ignore # guild can not be None and owner can not be None
         or user.top_role > target.top_role
     )
 
@@ -104,10 +106,11 @@ def can_execute_action(
 class MemberID(commands.Converter):
     """A converter that handles user mentions and user IDs."""
 
-    async def convert(self, ctx: Context, argument: str) -> discord.Member:
+    async def convert(self, ctx: Context, argument: str) -> Optional[discord.Member]:
         """Convert a user mention or ID to a member object."""
+        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         try:
-            m: discord.Member = await commands.MemberConverter().convert(ctx, argument)
+            m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
@@ -116,12 +119,12 @@ class MemberID(commands.Converter):
                     f"{argument} is not a valid member or member ID."
                 ) from None
             else:
-                m: Optional[discord.Member] = await ctx.bot.get_or_fetch_member(
+                m: Optional[Union[discord.Member, discord.User]] = await ctx.bot.get_or_fetch_member(
                     ctx.guild, member_id
                 )
                 if m is None:
                     # hackban case
-                    return type(
+                    return type(  # type: ignore
                         "_Hackban",
                         (),
                         {"id": member_id, "__str__": lambda s: f"Member ID {s.id}"},

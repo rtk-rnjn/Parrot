@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Container, Iterable
-from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias
+from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias, Union
 import discord
 
 from discord.ext.commands import Command  # type: ignore
@@ -149,6 +149,7 @@ def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
 
 def in_temp_channel() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
+
         assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         if not ctx.author.voice:
             raise ex.InHubVoice()
@@ -156,7 +157,7 @@ def in_temp_channel() -> Check[Context]:
         if _ := await ctx.bot.guild_configurations.find_one(
             {
                 "_id": ctx.guild.id,
-                "hub_temp_channels.channel_id": ctx.author.voice.channel.id,
+                "hub_temp_channels.channel_id": getattr(ctx.author.voice.channel, "id", 0),
                 "hub_temp_channels.author": ctx.author.id,
             }
         ):
@@ -164,11 +165,13 @@ def in_temp_channel() -> Check[Context]:
 
         raise ex.InHubVoice()
 
-    return commands.check(predicate)
+    return commands.check(predicate)  # type: ignore
 
 
 def _can_run(ctx: Context) -> Optional[bool]:  # sourcery skip: use-next
     """Return True is the command is whitelisted in specific channel, also with specific role"""
+    assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
+
     for cmd in ctx.bot.guild_configurations_cache[ctx.guild.id]["cmd_config"]:
         if (
             cmd["cmd"] == ctx.command.qualified_name
@@ -249,7 +252,7 @@ def cooldown_with_role_bypass(
     per: float,
     _type: BucketType = BucketType.default,
     *,
-    bypass_roles: Iterable[int],
+    bypass_roles: Iterable[Union[int, str]],
 ) -> Callable:
     """
     Applies a cooldown to a command, but allows members with certain roles to be ignored.
@@ -259,14 +262,14 @@ def cooldown_with_role_bypass(
     bypass = set(bypass_roles)
 
     # This handles the actual cooldown logic.
-    buckets = CooldownMapping(Cooldown(rate, per, _type))
+    buckets = CooldownMapping(Cooldown(rate, per), _type)
 
     # Will be called after the command has been parse but before it has been invoked, ensures that
     # the cooldown won't be updated if the user screws up their input to the command.
     async def predicate(cog: Cog, ctx: Context) -> None:
         nonlocal bypass, buckets
-
-        if any(role.id in bypass for role in ctx.author.roles):
+        assert isinstance(ctx.author, discord.Member)
+        if any((role.id in bypass or role.name in bypass) for role in ctx.author.roles):
             return
 
         # Cooldown logic, taken from discord.py internals.
@@ -279,7 +282,7 @@ def cooldown_with_role_bypass(
 
         retry_after = bucket.update_rate_limit(current)
         if retry_after:
-            raise CommandOnCooldown(bucket, retry_after)
+            raise CommandOnCooldown(bucket, retry_after, _type)
 
     def wrapper(command: Command) -> Command:
         # NOTE: this could be changed if a subclass of Command were to be used. I didn't see the need for it

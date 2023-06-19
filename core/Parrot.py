@@ -34,11 +34,11 @@ from typing import (
 )
 
 import aiohttp
-from colorama import Fore
 import jishaku  # type: ignore  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
 from aiohttp import ClientSession
+from colorama import Fore
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
 
 import discord
@@ -110,7 +110,6 @@ DEFAULT_PREFIX: Literal["$"] = "$"
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logging.getLogger("discord.http").setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
     filename=".discord.log",
@@ -119,11 +118,41 @@ handler = logging.handlers.RotatingFileHandler(
     backupCount=1,  # Rotate through 1 files
 )
 DT_FMT = "%Y-%m-%d %H:%M:%S"
-formatter = logging.Formatter(
-    "[{asctime}] [{levelname:<8}] {name:<10}: {module}.{funcName} - {message}",
-    DT_FMT,
-    style="{",
-)
+
+
+class CustomFormatter(logging.Formatter):
+    GRAY = f"{Fore.LIGHTBLACK_EX}"
+    GREY = GRAY
+
+    RED = f"{Fore.RED}"
+    YELLOW = f"{Fore.YELLOW}"
+    GREEN = f"{Fore.GREEN}"
+    WHITE = f"{Fore.WHITE}"
+    BLUE = f"{Fore.BLUE}"
+    CYAN = f"{Fore.CYAN}"
+
+    RESET = f"{Fore.RESET}"
+
+    fmt = "%s %(asctime)s %s - %s %(name)s %s - %s %(levelname)s %s - %s %(message)s %s (%s%(filename)s%s:%s%(lineno)d%s)"  # WHITE        WHITE YELLOW     WHITE %VAR%          WHITE  BLUE         WHITE CYAN       YELLOW GREEN   WHITE
+
+    # fmt: off
+    formats = {
+        logging.DEBUG    : fmt % (WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
+        logging.INFO     : fmt % (WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
+        logging.WARNING  : fmt % (WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
+        logging.ERROR    : fmt % (WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
+        logging.CRITICAL : fmt % (WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
+    }
+    # fmt: on
+
+    def format(self, record: logging.LogRecord) -> str:
+        log_fmt = self.formats.get(record.levelno)
+        formatter = logging.Formatter(log_fmt, DT_FMT)
+        return formatter.format(record)
+
+
+formatter = CustomFormatter()
+
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 handler.setFormatter(formatter)

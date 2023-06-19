@@ -44,6 +44,8 @@ if TYPE_CHECKING:
 
     DocumentType: TypeAlias = _DocumentType
 
+    from cogs.utils import Utils
+
 from core import Cog
 
 with open("extra/profanity.json", encoding="utf-8", errors="ignore") as f:
@@ -92,6 +94,8 @@ DISCORD_PY_ID = 336642139381301249
 
 
 class Delete(discord.ui.View):
+    message: Optional[discord.Message]
+
     def __init__(self, user: Union[discord.Member, discord.User]):
         super().__init__(timeout=30.0)
         self.user = user
@@ -100,13 +104,24 @@ class Delete(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True if self.user.bot else self.user.id == interaction.user.id
 
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
+    @discord.ui.button(
+        label="Delete", style=discord.ButtonStyle.red, emoji="\N{WASTEBASKET}"
+    )
     async def confirm(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         assert interaction.message is not None
 
         await interaction.message.delete()
+        self.stop()
+
+    async def on_timeout(self) -> None:
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
+                child.style = discord.ButtonStyle.grey
+        if self.message:
+            await self.message.edit(view=self)
         self.stop()
 
 
@@ -449,7 +464,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
-        # sourcery skip: low-code-quality
         await self.bot.wait_until_ready()
 
         if message.guild is None:
@@ -461,7 +475,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         async def __internal_snippets_parser():
             message_to_send = await self._parse_snippets(message.content)
             if 0 < len(message_to_send) <= 2000 and self._check_gitlink_req(message):
-                await message.channel.send(message_to_send, view=Delete(message.author))
+                view = Delete(message.author)
+                view.message = await message.channel.send(message_to_send, view=view)
                 try:
                     await message.edit(suppress=True)
                 except discord.NotFound:
@@ -576,15 +591,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 pass
 
         await message.delete(delay=2)
-        __function: list = []
+        __functions: list = []
         async for webhook in self.bot.guild_configurations.find(
             {"global_chat.enable": True}
         ):
             if hook := webhook["global_chat"]["webhook"]:
-                __function.append(__internal_funtion(hook=hook, message=message))
+                __functions.append(__internal_funtion(hook=hook, message=message))
 
-        if __function:
-            await asyncio.gather(*__function, return_exceptions=False)
+        if __functions:
+            await asyncio.gather(*__functions, return_exceptions=False)
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -605,13 +620,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if not message.guild or message.author.bot:
             return
 
-        bucket: commands.Cooldown = self.message_cooldown.get_bucket(message)
+        bucket: Optional[commands.Cooldown] = self.message_cooldown.get_bucket(message)
         if bucket is None:
             return
 
-        retry_after: float = bucket.update_rate_limit()
-
-        if retry_after:
+        if bucket.update_rate_limit():
             return
 
         try:
@@ -679,7 +692,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     return_document=ReturnDocument.AFTER,
                 )
             ):
-                cog = self.bot.get_cog("Utils")
+                cog: Utils = self.bot.get_cog("Utils")  # type: ignore
                 level = int((data["xp"] // 42) ** 0.55)
                 xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
                 rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore
@@ -816,28 +829,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                             },
                         ]
                     },
-                    {
-                        "afk.ignoreChannel": {"$nin": [message.channel.id]},
-                    },
+                    {"afk.ignoreChannel": {"$nin": [message.channel.id]}},
                 ]
             },
-            {
-                "$pull": {
-                    "afk": {
-                        "messageAuthor": message.author.id,
-                    },
-                }
-            },
-            {
-                "afk": {
-                    "$elemMatch": {
-                        "messageAuthor": message.author.id,
-                    }
-                }
-            },
+            {"$pull": {"afk": {"messageAuthor": message.author.id}}},
+            {"afk": {"$elemMatch": {"messageAuthor": message.author.id}}},
             return_document=ReturnDocument.BEFORE,
         )
-        if message.author.id not in self.bot.afk or not (data) or "afk" not in data:
+        if message.author.id not in self.bot.afk or not data or "afk" not in data:
             return
         data = data["afk"][0]
         await message.channel.send(f"{message.author.mention} welcome back!")
@@ -876,18 +875,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                                     },
                                 ]
                             },
-                            {
-                                "afk.ignoreChannel": {"$nin": [message.channel.id]},
-                            },
+                            {"afk.ignoreChannel": {"$nin": [message.channel.id]}},
                         ]
                     },
-                    {
-                        "afk": {
-                            "$elemMatch": {
-                                "messageAuthor": user.id,
-                            }
-                        }
-                    },
+                    {"afk": {"$elemMatch": {"messageAuthor": user.id}}},
                 )
             ):
                 if "afk" not in data:

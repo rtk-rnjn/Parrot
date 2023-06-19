@@ -133,15 +133,15 @@ class CustomFormatter(logging.Formatter):
 
     RESET = f"{Fore.RESET}"
 
-    fmt = "%s %(asctime)s %s - %s %(name)s %s - %s %(levelname)s %s - %s %(message)s %s (%s%(filename)s%s:%s%(lineno)d%s)"  # WHITE        WHITE YELLOW     WHITE %VAR%          WHITE  BLUE         WHITE CYAN       YELLOW GREEN   WHITE
+    fmt = "{} %(asctime)s {} - {} %(name)s {} - {} %(levelname)s {} - {} %(message)s {} ({}%(filename)s{}:{}%(lineno)d{})"
 
     # fmt: off
     formats = {
-        logging.DEBUG    : fmt % (WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
-        logging.INFO     : fmt % (WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
-        logging.WARNING  : fmt % (WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
-        logging.ERROR    : fmt % (WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
-        logging.CRITICAL : fmt % (WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RESET),
+        logging.DEBUG    : fmt.format(WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
+        logging.INFO     : fmt.format(WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
+        logging.WARNING  : fmt.format(WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
+        logging.ERROR    : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
+        logging.CRITICAL : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
     }
     # fmt: on
 

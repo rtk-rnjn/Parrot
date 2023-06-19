@@ -19,7 +19,7 @@ def parse_content(content: str) -> dict:
 
 
 def roadmap_pdf(self, endpoint: str) -> discord.File:
-    with open(f"{ROOT_DIR}-pdf/{endpoint}", "rb") as f:
+    with open(f"{ROOT_DIR}-pdf/{endpoint}.pdf", "rb") as f:
         return discord.File(f, filename=f"{endpoint}.pdf")
 
 
@@ -41,7 +41,7 @@ def get_roadmap_select_view(ls: List[str]) -> discord.ui.Select:
         async def callback(self, interaction: discord.Interaction) -> None:
             await interaction.response.defer()
             async with aiofiles.open(
-                f"{ROOT_DIR}/{self.values[0]}",
+                f"{ROOT_DIR}/{self.values[0]}/{self.values[0]}.md",
             ) as f:
                 content = await f.read()
             data = parse_content(content)

@@ -417,7 +417,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if all(i not in message.content for i in OP):
             return
 
-        if self._check_equation_req(message):
+        if not self._check_equation_req(message):
             return
 
         def check(r: discord.Reaction, u: discord.User) -> bool:
@@ -460,7 +460,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         async def __internal_snippets_parser():
             message_to_send = await self._parse_snippets(message.content)
-            if 0 < len(message_to_send) <= 2000 and self._check_gitlink_req(message):
+            if 0 < len(message_to_send) <= 2000 and not self._check_gitlink_req(message):
                 await message.channel.send(message_to_send, view=Delete(message.author))
                 try:
                     await message.edit(suppress=True)

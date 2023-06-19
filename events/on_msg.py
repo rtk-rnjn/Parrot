@@ -92,7 +92,7 @@ DISCORD_PY_ID = 336642139381301249
 
 
 class Delete(discord.ui.View):
-    def __init__(self, user: discord.Member):
+    def __init__(self, user: Union[discord.Member, discord.User]):
         super().__init__(timeout=30.0)
         self.user = user
         self.value = None
@@ -460,7 +460,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         async def __internal_snippets_parser():
             message_to_send = await self._parse_snippets(message.content)
-            if 0 < len(message_to_send) <= 2000 and not self._check_gitlink_req(message):
+            if 0 < len(message_to_send) <= 2000 and self._check_gitlink_req(message):
                 await message.channel.send(message_to_send, view=Delete(message.author))
                 try:
                     await message.edit(suppress=True)

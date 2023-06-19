@@ -142,7 +142,7 @@ def lru_callback(key: KT, value: VT) -> None:
     print(f"[Cached] Key: {key} | Value: {value}...")
 
 
-class Cache(dict, Generic[KT, VT]):
+class Cache(Generic[KT, VT]):
     def __init__(
         self,
         bot: Parrot,

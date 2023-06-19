@@ -236,7 +236,7 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin: Client = Client()
 
         # caching variables
-        self.guild_configurations_cache: Dict[int, Dict[str, Any]] = Cache(self)
+        self.guild_configurations_cache: Cache[int, Dict[str, Any]] = Cache(self)
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk: "Set[int]" = set()

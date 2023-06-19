@@ -34,6 +34,7 @@ from typing import (
 )
 
 import aiohttp
+from colorama import Fore
 import jishaku  # type: ignore  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink

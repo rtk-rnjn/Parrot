@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import unicodedata
 from contextlib import suppress
 from datetime import datetime
 from time import time
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import discord
 from core import Cog
@@ -40,7 +41,7 @@ MEMBER_ROLE_ID = 1022216700650868916
 class Sector1729(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self._cache: Dict[int, int] = {}
+        self._cache: Dict[int, Union[int, float]] = {}
         self.vote_reseter.start()
         self.ON_TESTING = False
 
@@ -71,22 +72,23 @@ class Sector1729(Cog):
             self.bot.get_user, self.bot.fetch_user, user_id
         )
 
-        channel: Optional[discord.TextChannel] = self.bot.get_channel(
+        channel: Optional[discord.TextChannel] = self.bot.get_channel(  # type: ignore
             payload.channel_id
         )
 
         if channel is None:
             return
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)  # type: ignore
 
         async def __remove_reaction(msg: discord.Message) -> None:
             for reaction in msg.reactions:
-                try:
-                    await msg.remove_reaction(reaction.emoji, user)
-                except discord.HTTPException:
-                    pass
-                return
+                if user:
+                    try:
+                        await msg.remove_reaction(reaction.emoji, user)
+                    except discord.HTTPException:
+                        pass
+                    return
 
         if then := self._cache.get(payload.user_id):
             if abs(time() - then) < 60:
@@ -94,8 +96,9 @@ class Sector1729(Cog):
                     f"<@{payload.user_id}> You can only use the emoji once every minute.",
                     delete_after=7,
                 )
-                await __remove_reaction(msg)
-                return
+                if msg:
+                    await __remove_reaction(msg)
+                    return
 
         self._cache[payload.user_id] = time() + 60
 
@@ -118,7 +121,8 @@ class Sector1729(Cog):
                     content=f"<@{payload.user_id}> deleting messages - {i}/50"
                 )
 
-        await __remove_reaction(msg)
+        if msg:
+            await __remove_reaction(msg)
         await _msg.edit(
             content=f"<@{payload.user_id}> deleting messages - 50/50! Done!",
             delete_after=2,
@@ -126,17 +130,18 @@ class Sector1729(Cog):
 
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):
-        member: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-            self.bot.server, data.user
-        )
+        assert self.bot.server is not None
+        member: Optional[
+            Union[discord.Member, discord.User]
+        ] = await self.bot.get_or_fetch_member(self.bot.server, data.user)
 
-        if member is None:
+        if member is None and not isinstance(member, discord.Member):
             return
 
-        await member.add_roles(
+        await member.add_roles(  # type: ignore
             discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg"
         )
-        await self.__add_to_db(member)
+        await self.__add_to_db(member)  # type: ignore
 
     @Cog.listener("on_member_join")
     async def on_member_join(self, member: discord.Member):
@@ -155,6 +160,7 @@ class Sector1729(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @in_support_server()
     async def claim_vote(self, ctx: Context):
+        assert isinstance(ctx.author, discord.Member)
         if ctx.author._roles.has(VOTER_ROLE_ID):
             return await ctx.error("You already have the vote role.")
 
@@ -216,7 +222,7 @@ class Sector1729(Cog):
                 await col.update_one(
                     {"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}}
                 )  # type: ignore
-                if member := guild.get_member(doc["_id"]):
+                if guild and (member := guild.get_member(doc["_id"])):
                     await member.remove_roles(role, reason="Top.gg vote expired")
 
     @vote_reseter.before_loop
@@ -228,17 +234,26 @@ class Sector1729(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.guild is not None and message.guild.id == SUPPORT_SERVER_ID:
-            created: datetime = getattr(message.author, "created_at", None)
-            joined: datetime = getattr(message.author, "joined_at", None)
-            if joined and created:
-                seconds = (created - joined).total_seconds()
-                if seconds >= 86400 and message.author._roles.has(QU_ROLE):
-                    with suppress(discord.HTTPException):
-                        await message.author.remove_roles(
-                            discord.Object(id=QU_ROLE),
-                            reason="Account age crosses 1d",
-                        )
+        if message.guild is not None and message.guild.id != SUPPORT_SERVER_ID:
+            return
+
+        created: Optional[datetime] = getattr(message.author, "created_at", None)
+        joined: Optional[datetime] = getattr(message.author, "joined_at", None)
+
+        if not (joined and created):
+            return
+
+        seconds = (created - joined).total_seconds()
+        if (
+            seconds >= 86400
+            and isinstance(message.author, discord.Member)
+            and message.author._roles.has(QU_ROLE)
+        ):
+            with suppress(discord.HTTPException):
+                await message.author.remove_roles(
+                    discord.Object(id=QU_ROLE),
+                    reason="Account age crosses 1d",
+                )
 
     @commands.group(
         name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True
@@ -266,6 +281,8 @@ class Sector1729(Cog):
         if not color:
             return
 
+        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
+
         role = discord.utils.get(
             ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}"
         )
@@ -285,6 +302,8 @@ class Sector1729(Cog):
         """Unassign yourself color role"""
         if not color:
             return
+
+        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
 
         role = discord.utils.get(
             ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}"
@@ -308,6 +327,8 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
 
+        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
+
         if not role.name.startswith("[SELF]"):
             await ctx.error(
                 f"{ctx.author.roles} you don't have permission to assign yourself that role"
@@ -329,6 +350,8 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
 
+        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
+
         if role.id not in self.__assignable_roles:
             await ctx.error(
                 f"{ctx.author.mention} you don't have permission to unassign yourself that role"
@@ -341,3 +364,38 @@ class Sector1729(Cog):
 
         await ctx.author.remove_roles(role, reason="Self role - Unrole")
         await ctx.tick()
+
+    @Cog.listener("on_message")
+    async def extra_parser_on_message(self, message: discord.Message) -> None:
+        if message.guild and self.bot.server and message.guild.id == self.bot.server.id:
+            await self.nickname_parser(message)
+
+        if self.bot.owner_ids and message.author.id not in self.bot.owner_ids:
+            ls = message.content.split("\n")
+            inside_code_block = False
+            for line in ls:
+                if line.startswith("```"):
+                    inside_code_block = not inside_code_block
+                if (
+                    line.startswith("# ") and not inside_code_block
+                ):  # dont let user use markdown syntax
+                    await message.delete(delay=0)
+
+    async def nickname_parser(self, message: discord.Message) -> None:
+        regex = re.compile(r"^[a-zA-Z0-9_ \[\]\(\)]+$")
+
+        ctx: Context[Parrot] = await self.bot.get_context(message)  # type: ignore
+
+        assert isinstance(ctx.author, discord.Member) and ctx.guild is not None
+
+        if not regex.match(ctx.author.display_name):
+            try:
+                await ctx.author.edit(
+                    nick="Moderated Nickname", reason="Nickname moderated"
+                )
+                await ctx.author.send(
+                    f"Your nickname in {ctx.guild.name} has been moderated because it contained invalid characters",
+                    view=ctx.send_view(),
+                )
+            except discord.HTTPException:
+                pass

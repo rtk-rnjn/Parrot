@@ -133,15 +133,15 @@ class CustomFormatter(logging.Formatter):
 
     RESET = f"{Fore.RESET}"
 
-    fmt = "{} %(asctime)s {} - {} %(name)s {} - {} %(levelname)s {} - {} %(message)s {} ({}%(filename)s{}:{}%(lineno)d{})"
+    fmt = "{} %(asctime)s {} - {} %(name)s {} - {} %(levelname)s {} - {} %(message)s {} ({}%(filename)s/%(module)s.%(funcName)s{}:{}%(lineno)d{}){}"
 
     # fmt: off
     formats = {
-        logging.DEBUG    : fmt.format(WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
-        logging.INFO     : fmt.format(WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
-        logging.WARNING  : fmt.format(WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
-        logging.ERROR    : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
-        logging.CRITICAL : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE),
+        logging.DEBUG    : fmt.format(WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.INFO     : fmt.format(WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.WARNING  : fmt.format(WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.ERROR    : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.CRITICAL : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
     }
     # fmt: on
 
@@ -571,7 +571,7 @@ class Parrot(commands.AutoShardedBot):
         log.error("Ignoring exception in %s", event, exc_info=True)
         await self._execute_webhook(
             WEBHOOK_ERROR_LOGS,
-            content=f"```py\nIgnoring exception on {event}\n{traceback.format_exception()}```",
+            content=f"```py\nIgnoring exception on {event}\n{traceback.format_exc()}```",
         )
         traceback.print_exc()
 

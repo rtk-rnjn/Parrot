@@ -31,6 +31,7 @@ all_extensions:
   - events.on_msg
   - events.on_rexn
   - events.user
+  - events.arbitrary_events
   - interactions.buttons
   - interactions.buttons.foggle
   - interactions.buttons.snakes

@@ -237,7 +237,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                     (
                         "Bot don't have either Embed Links/Send Messages permission in that channel. "
                         "Please give sufficient permissions to the bot."
-                    )
+                    ),
+                    view=self.send_view()
                 )
                 return None
         if bold:

@@ -372,7 +372,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await self.bot.update_banned_members.start()
         try:
             await user.send(
-                f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban."
+                f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban.",
+                view=ctx.send_view(),
             )
             await ctx.send("User banned and DM-ed")
         except discord.Forbidden:
@@ -399,7 +400,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await self.bot.update_banned_members.start()
         try:
             await user.send(
-                f"{user.mention} you are unbanned. You can now use Parrot bot."
+                f"{user.mention} you are unbanned. You can now use Parrot bot.",
+                view=ctx.send_view(),
             )
             await ctx.send("User unbanned and DM-ed")
         except discord.Forbidden:

@@ -810,7 +810,7 @@ class Utils(Cog):
             f"> {message.jump_url}"
         )
         try:
-            await user.send(content)
+            await user.send(content, view=ctx.send_view(),)
         except discord.Forbidden:
             pass
 

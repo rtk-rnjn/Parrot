@@ -221,7 +221,7 @@ class Parrot(commands.AutoShardedBot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=1,
             max_messages=5000,
-            chunk_guilds_at_startup=False,
+            chunk_guilds_at_startup=True,
             enable_debug_events=True,
             **kwargs,
         )

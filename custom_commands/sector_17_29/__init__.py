@@ -399,7 +399,7 @@ class Sector1729(Cog):
                     nick="Moderated Nickname", reason="Nickname moderated"
                 )
                 await ctx.author.send(
-                    f"Your nickname in {ctx.guild.name} has been moderated because it contained invalid characters",
+                    f"Your nickname in {ctx.guild.name} has been moderated because it contained invalid characters, you can still change your nickname.",
                     view=ctx.send_view(),
                 )
             except discord.HTTPException:

@@ -234,6 +234,7 @@ class Sector1729(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         if message.guild is not None and message.guild.id != SUPPORT_SERVER_ID:
             return
 
@@ -367,6 +368,7 @@ class Sector1729(Cog):
 
     @Cog.listener("on_message")
     async def extra_parser_on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         if message.guild is not None and self.bot.server and message.guild.id != self.bot.server.id:
             return
 
@@ -386,7 +388,7 @@ class Sector1729(Cog):
     async def nickname_parser(self, message: discord.Message) -> None:
         regex = re.compile(r"^[a-zA-Z0-9_ \[\]\(\)]+$")
 
-        ctx: Context[Parrot] = await self.bot.get_context(message)  # type: ignore
+        ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
 
         if not isinstance(ctx.author, discord.Member):
             return

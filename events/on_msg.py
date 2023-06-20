@@ -176,7 +176,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         return ref, file_path
 
     async def _fetch_github_snippet(
-        self, repo: str, path: str, start_line: str, end_line: str
+        self, repo: str, path: str, start_line: Optional[Union[str, int]], end_line: Optional[Union[str, int]]
     ) -> str:
         """Fetches a snippet from a GitHub repo."""
         # Search the GitHub API for the specified branch
@@ -205,8 +205,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         gist_id: str,
         revision: str,
         file_path: str,
-        start_line: str,
-        end_line: str,
+        start_line: Optional[Union[str, int]],
+        end_line: Optional[Union[str, int]],
     ) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json = await self._fetch_response(
@@ -214,6 +214,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "json",
             headers=GITHUB_HEADERS,
         )
+
+        if gist_json is None:
+            return ""
 
         # Check each file in the gist for the specified file
         for gist_file in gist_json["files"]:
@@ -228,7 +231,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         return ""
 
     async def _fetch_gitlab_snippet(
-        self, repo: str, path: str, start_line: str, end_line: str
+        self, repo: str, path: str, start_line: Optional[Union[str, int]], end_line: Optional[Union[str, int]]
     ) -> str:
         """Fetches a snippet from a GitLab repo."""
         enc_repo = quote_plus(repo)
@@ -266,7 +269,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
 
     def _snippet_to_codeblock(
-        self, file_contents: str, file_path: str, start_line: str, end_line: str
+        self, file_contents: Optional[Any], file_path: str, start_line: Optional[Union[str, int]], end_line: Optional[Union[str, int]]
     ) -> str:
         """
         Given the entire file contents and target lines, creates a code block.
@@ -283,7 +286,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             start_line = int(start_line)
             end_line = int(end_line)
 
-        split_file_contents = file_contents.splitlines()
+        split_file_contents = file_contents.splitlines() if file_contents else []
 
         # Make sure that the specified lines are in range
         if start_line > end_line:
@@ -765,7 +768,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     await asyncio.sleep(0)
                 return True
 
-    async def __add_xp(self, *, member: discord.Member, xp: int, msg: discord.Message):
+    async def __add_xp(self, *, member: Union[discord.Member, discord.User], xp: int, msg: discord.Message):
         assert isinstance(msg.author, discord.Member) and msg.guild is not None
 
         collection: Collection = self.bot.guild_level_db[f"{member.guild.id}"]
@@ -844,7 +847,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         data = data["afk"][0]
         await message.channel.send(f"{message.author.mention} welcome back!")
         try:
-            if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")):
+            if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")) and (
+                isinstance(message.author, discord.Member)
+            ):
                 name = message.author.display_name[5:]
                 if len(name) != 0 or name not in (" ", ""):
                     await message.author.edit(
@@ -853,7 +858,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         except discord.Forbidden:
             pass
 
-        await self.bot.timers.delete_one({"_id": data["_id"]})
+        await self.bot.delete_timer(**{"_id": data["_id"]})
         self.bot.afk = set(
             await self.bot.extra_collections.distinct("afk.messageAuthor")
         )

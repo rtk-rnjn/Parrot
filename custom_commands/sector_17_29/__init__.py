@@ -397,7 +397,7 @@ class Sector1729(Cog):
         if not isinstance(ctx.author, discord.Member):
             return
 
-        if not regex.match(ctx.author.display_name):
+        if not regex.match(ctx.author.display_name) and ctx.guild:
             try:
                 await ctx.author.edit(
                     nick="Moderated Nickname", reason="Nickname moderated"

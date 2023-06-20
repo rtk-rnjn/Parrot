@@ -238,7 +238,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                         "Bot don't have either Embed Links/Send Messages permission in that channel. "
                         "Please give sufficient permissions to the bot."
                     ),
-                    view=self.send_view()
+                    view=self.send_view(),
                 )
                 return None
         if bold:
@@ -861,9 +861,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         update_result_cmd_user: UpdateResult = (
             await self.bot.command_collections.update_one(
-                {
-                    "_id": self.author.id,
-                },
+                {"_id": self.author.id},
                 {
                     "$inc": {
                         f"command_{cmd}_used": 1,
@@ -878,9 +876,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         update_result_cmd_guild: UpdateResult = (
             await self.bot.command_collections.update_one(
-                {
-                    "_id": self.guild.id,
-                },
+                {"_id": self.guild.id},
                 {
                     "$inc": {
                         f"command_{cmd}_used": 1,

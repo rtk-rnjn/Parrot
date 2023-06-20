@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Optional
 
 import discord
 from discord.ext import commands
 
 __all__ = ("Cog",)
 
-T = TypeVar("T")
 
-
-class Cog(commands.Cog, Generic[T]):
+class Cog(commands.Cog):
     """A custom implementation of commands.Cog class."""
 
     app_commands: Optional[discord.app_commands.Group]

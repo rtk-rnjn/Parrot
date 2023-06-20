@@ -4,12 +4,12 @@ import asyncio
 import io
 import logging
 from itertools import zip_longest
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from pymongo import ReturnDocument  # type: ignore
-from pymongo.collection import Collection  # type: ignore
+from motor.motor_asyncio import AsyncIOMotorCollection  # type: ignore
 from typing_extensions import Annotated
-
+Collection = Type[AsyncIOMotorCollection]
 import discord
 from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt

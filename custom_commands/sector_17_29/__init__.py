@@ -367,8 +367,10 @@ class Sector1729(Cog):
 
     @Cog.listener("on_message")
     async def extra_parser_on_message(self, message: discord.Message) -> None:
-        if message.guild and self.bot.server and message.guild.id == self.bot.server.id:
-            await self.nickname_parser(message)
+        if message.guild is not None and self.bot.server and message.guild.id != self.bot.server.id:
+            return
+
+        await self.nickname_parser(message)
 
         if self.bot.owner_ids and message.author.id not in self.bot.owner_ids:
             ls = message.content.split("\n")
@@ -386,7 +388,8 @@ class Sector1729(Cog):
 
         ctx: Context[Parrot] = await self.bot.get_context(message)  # type: ignore
 
-        assert isinstance(ctx.author, discord.Member) and ctx.guild is not None
+        if not isinstance(ctx.author, discord.Member):
+            return
 
         if not regex.match(ctx.author.display_name):
             try:

@@ -757,7 +757,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     + (
                         f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
                         if len(data["matches"]) < 10
-                        else len(data["matches"])
+                        else str(len(data["matches"]))
                     )
                 )
                 for match in data["matches"]:
@@ -837,6 +837,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return_document=ReturnDocument.BEFORE,
         )
         if message.author.id not in self.bot.afk or not data or "afk" not in data:
+            self.bot.afk = set(
+                await self.bot.extra_collections.distinct("afk.messageAuthor")
+            )
             return
         data = data["afk"][0]
         await message.channel.send(f"{message.author.mention} welcome back!")
@@ -887,6 +890,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 await message.channel.send(
                     f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                 )
+        self.bot.afk = set(
+            await self.bot.extra_collections.distinct("afk.messageAuthor")
+        )
 
     async def _what_is_this(
         self, message: Union[discord.Message, str], *, channel: discord.TextChannel

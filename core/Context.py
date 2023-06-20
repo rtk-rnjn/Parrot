@@ -96,13 +96,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
 
     async def ok(self) -> None:
-        log.info("Adding ok reaction to message %s", self.message.id)
+        log.debug("Adding ok reaction to message %s", self.message.id)
         return await self.tick()
 
     async def wrong(
         self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None
     ) -> None:
-        log.info("Adding wrong reaction to message %s", self.message.id)
+        log.debug("Adding wrong reaction to message %s", self.message.id)
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
 
     async def cross(self) -> None:
@@ -270,7 +270,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             if isinstance(embeds, discord.Embed):
                 __set_embed_defaults(embeds)
 
-        log.info("Sending message to channel `%s` (%s)", self.channel, self.channel.id)
+        log.debug("Sending message to channel `%s` (%s)", self.channel, self.channel.id)
         return await super().send(str(content)[:1990] if content else None, **kwargs)
 
     async def reply(

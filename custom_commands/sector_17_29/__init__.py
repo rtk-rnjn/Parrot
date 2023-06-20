@@ -21,10 +21,10 @@ except ImportError:
     HAS_TOP_GG = False
 
 
+from core import Context, Parrot
+
 if TYPE_CHECKING:
     from pymongo.collection import Collection
-
-    from core import Context, Parrot
 
     if HAS_TOP_GG:
         from topgg.types import BotVoteData
@@ -369,7 +369,11 @@ class Sector1729(Cog):
     @Cog.listener("on_message")
     async def extra_parser_on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
-        if message.guild is not None and self.bot.server and message.guild.id != self.bot.server.id:
+        if (
+            message.guild is not None
+            and self.bot.server
+            and message.guild.id != self.bot.server.id
+        ):
             return
 
         await self.nickname_parser(message)

@@ -20,7 +20,7 @@ def format_list(
     plural: str = "have",
     oxford_comma: bool = True,
 ) -> str:
-    if len(ls) == 0:
+    if not ls:
         return string.format("no-one", singular)
     if len(ls) == 1:
         return string.format(ls[0], singular)
@@ -547,14 +547,7 @@ class PlayerToBeExecuted(SelectGameState[T, Player[T]]):
 
     @property
     def selectable(self) -> List[Player[T]]:
-        players = []
-
-        for player in self.game.players:
-            if player.dead:
-                continue
-            players.append(player)
-
-        return players
+        return [player for player in self.game.players if not player.dead]
 
     def next_state(self) -> GameState[T]:
         return PlayerWasExecuted[T](self.game, self.item)

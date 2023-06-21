@@ -548,38 +548,37 @@ class Music(Cog):
         ctx: Context,
         *,
         search: Union[wavelink.SoundCloudTrack, str],
-    ):  # sourcery skip: last-if-guard
+    ):
         """Play a song with the given search query. If not connected, connect to your voice channel."""
-        if ctx.invoked_subcommand is None:
-            if ctx.voice_client is None:
-                vc: wavelink.Player = await ctx.author.voice.channel.connect(
-                    cls=wavelink.Player
-                )
-            else:
-                vc: wavelink.Player = ctx.voice_client  # type: ignore
-
-            if isinstance(search, str):
-                if search.startswith("https://open.spotify.com/"):
-                    return await self.play_spotify(ctx, link=search)
-                search = wavelink.GenericTrack.search(search, return_first=True)
-
-            if vc.is_playing():
-                vc.queue.put(search)
-                await ctx.send(
-                    f"{ctx.author.mention} added **{search.title}** to the queue"
-                )
-                return
-
-            await vc.play(search)
-            view = MusicView(
-                ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx
+        if ctx.invoked_subcommand is not None:
+            return
+        if ctx.voice_client is None:
+            vc: wavelink.Player = await ctx.author.voice.channel.connect(
+                cls=wavelink.Player
             )
-            view.message = await ctx.send(
-                f"{ctx.author.mention} Now playing",
-                embed=await self.make_final_embed(ctx=ctx, track=vc.current),
-                view=view,
+        else:
+            vc: wavelink.Player = ctx.voice_client  # type: ignore
+
+        if isinstance(search, str):
+            if search.startswith("https://open.spotify.com/"):
+                return await self.play_spotify(ctx, link=search)
+            search = wavelink.GenericTrack.search(search, return_first=True)
+
+        if vc.is_playing():
+            vc.queue.put(search)
+            await ctx.send(
+                f"{ctx.author.mention} added **{search.title}** to the queue"
             )
-            self._cache[ctx.guild.id] = view
+            return
+
+        await vc.play(search)
+        view = MusicView(ctx.author.voice.channel, timeout=vc.current.duration, ctx=ctx)
+        view.message = await ctx.send(
+            f"{ctx.author.mention} Now playing",
+            embed=await self.make_final_embed(ctx=ctx, track=vc.current),
+            view=view,
+        )
+        self._cache[ctx.guild.id] = view
 
     @play.command(name="spotify")
     async def play_spotify(self, ctx: Context, *, link: str):

@@ -47,7 +47,7 @@ async def execute_run(
     bot: Parrot,
     language: str,
     code: str,  # type: ignore
-) -> str:  # sourcery skip: low-code-quality
+) -> str:
     # Powered by tio.run
 
     options = {"--stats": False, "--wrapped": False}

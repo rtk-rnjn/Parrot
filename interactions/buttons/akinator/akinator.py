@@ -169,7 +169,7 @@ class Akinator:
         self._update(resp, True)
         return self.question
 
-    def answer(self, ans):  # sourcery skip: class-extract-method
+    def answer(self, ans):
         """Answer the current question, which you can find with "Akinator.question". Returns a string containing the next question
         The "ans" parameter must be one of these (case-insensitive):
             - "yes" OR "y" OR "0" for YES

@@ -258,7 +258,7 @@ class PaginationView(discord.ui.View):
         next_function: Optional[Callback] = None,
         previous_function: Optional[Callback] = None,
         last_function: Optional[Callback] = None,
-    ) -> None:  # sourcery skip: default-mutable-arg
+    ) -> None:
         super().__init__(timeout=30)
         if embed_list is None:
             embed_list = []

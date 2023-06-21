@@ -123,7 +123,7 @@ def has_verified_role_ticket() -> Check[Context]:
     return commands.check(predicate)  # type: ignore
 
 
-def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
+def is_mod() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
         assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
 
@@ -169,7 +169,7 @@ def in_temp_channel() -> Check[Context]:
     return commands.check(predicate)  # type: ignore
 
 
-def _can_run(ctx: Context) -> Optional[bool]:  # sourcery skip: use-next
+def _can_run(ctx: Context) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
     assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
 

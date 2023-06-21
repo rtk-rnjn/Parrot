@@ -105,7 +105,7 @@ class MessageConstruct:
 
     async def build_reference(
         self,
-    ):  # sourcery skip: or-if-exp-identity, replace-interpolation-with-fstring
+    ):
         if not self.message.reference:
             self.message.reference = ""
             return
@@ -137,11 +137,7 @@ class MessageConstruct:
         if message_edited_at:
             message_edited_at = _set_edit_at(message_edited_at)
 
-        avatar_url = (
-            message.author.display_avatar
-            if message.author.display_avatar
-            else DiscordUtils.default_avatar
-        )
+        avatar_url = message.author.display_avatar or DiscordUtils.default_avatar
         self.message.reference = await fill_out(
             self.guild,
             message_reference,
@@ -150,7 +146,7 @@ class MessageConstruct:
                 ("BOT_TAG", is_bot, PARSE_MODE_NONE),
                 (
                     "NAME_TAG",
-                    "%s#%s" % (message.author.name, message.author.discriminator),
+                    f"{message.author.name}#{message.author.discriminator}",
                     PARSE_MODE_NONE,
                 ),
                 ("NAME", str(html.escape(message.author.display_name))),
@@ -158,7 +154,11 @@ class MessageConstruct:
                 ("CONTENT", message.content, PARSE_MODE_REFERENCE),
                 ("EDIT", message_edited_at, PARSE_MODE_NONE),
                 ("ATTACHMENT_ICON", attachment_icon, PARSE_MODE_NONE),
-                ("MESSAGE_ID", str(self.message.reference.message_id), PARSE_MODE_NONE),
+                (
+                    "MESSAGE_ID",
+                    str(self.message.reference.message_id),
+                    PARSE_MODE_NONE,
+                ),
             ],
         )
 
@@ -216,7 +216,6 @@ class MessageConstruct:
         return self.message_html
 
     def _generate_message_divider_check(self):
-        # sourcery skip: remove-unnecessary-cast
         return bool(
             self.previous_message is None
             or self.message.reference != ""
@@ -227,7 +226,6 @@ class MessageConstruct:
         )
 
     async def generate_message_divider(self, channel_audit=False):
-        # sourcery skip: or-if-exp-identity, replace-interpolation-with-fstring
         if channel_audit or self._generate_message_divider_check():
             if self.previous_message is not None:
                 self.message_html += await fill_out(self.guild, end_message, [])
@@ -237,9 +235,7 @@ class MessageConstruct:
 
             is_bot = _gather_user_bot(self.message.author)
             avatar_url = (
-                self.message.author.display_avatar
-                if self.message.author.display_avatar
-                else DiscordUtils.default_avatar
+                self.message.author.display_avatar or DiscordUtils.default_avatar
             )
 
             self.message_html += await fill_out(
@@ -250,8 +246,7 @@ class MessageConstruct:
                     ("AVATAR_URL", str(avatar_url), PARSE_MODE_NONE),
                     (
                         "NAME_TAG",
-                        "%s#%s"
-                        % (self.message.author.name, self.message.author.discriminator),
+                        f"{self.message.author.name}#{self.message.author.discriminator}",
                         PARSE_MODE_NONE,
                     ),
                     ("USER_ID", str(self.message.author.id)),
@@ -271,18 +266,19 @@ class MessageConstruct:
             )
 
     async def build_pin_template(self):
-        # sourcery skip: replace-interpolation-with-fstring
         self.message_html += await fill_out(
             self.guild,
             message_pin,
             [
                 ("PIN_URL", DiscordUtils.pinned_message_icon, PARSE_MODE_NONE),
-                ("USER_COLOUR", await self._gather_user_colour(self.message.author)),
+                (
+                    "USER_COLOUR",
+                    await self._gather_user_colour(self.message.author),
+                ),
                 ("NAME", str(html.escape(self.message.author.display_name))),
                 (
                     "NAME_TAG",
-                    "%s#%s"
-                    % (self.message.author.name, self.message.author.discriminator),
+                    f"{self.message.author.name}#{self.message.author.discriminator}",
                     PARSE_MODE_NONE,
                 ),
                 ("MESSAGE_ID", str(self.message.id), PARSE_MODE_NONE),
@@ -295,19 +291,20 @@ class MessageConstruct:
         )
 
     async def build_thread_template(self):
-        # sourcery skip: replace-interpolation-with-fstring
         self.message_html += await fill_out(
             self.guild,
             message_thread,
             [
                 ("THREAD_URL", DiscordUtils.thread_channel_icon, PARSE_MODE_NONE),
                 ("THREAD_NAME", self.message.content, PARSE_MODE_NONE),
-                ("USER_COLOUR", await self._gather_user_colour(self.message.author)),
+                (
+                    "USER_COLOUR",
+                    await self._gather_user_colour(self.message.author),
+                ),
                 ("NAME", str(html.escape(self.message.author.display_name))),
                 (
                     "NAME_TAG",
-                    "%s#%s"
-                    % (self.message.author.name, self.message.author.discriminator),
+                    f"{self.message.author.name}#{self.message.author.discriminator}",
                     PARSE_MODE_NONE,
                 ),
                 ("MESSAGE_ID", str(self.message.id), PARSE_MODE_NONE),
@@ -315,10 +312,7 @@ class MessageConstruct:
         )
 
     async def _gather_member(self, author: discord.Member):
-        # sourcery skip: use-named-expression
-        member = self.guild.get_member(author.id)
-
-        if member:
+        if member := self.guild.get_member(author.id):
             return member
 
         try:

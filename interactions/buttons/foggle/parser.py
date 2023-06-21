@@ -11,7 +11,7 @@ OPS: Dict[str, Callable[[int, int], Optional[int]]] = {
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
     "*": lambda x, y: x * y,
-    "/": lambda x, y: x // y if not x % y else None,
+    "/": lambda x, y: None if x % y else x // y,
 }
 
 
@@ -86,6 +86,4 @@ class View:
     def parse_full(self) -> Optional[int]:
         self.strip_ws()
         e = self.parse_expr()
-        if self.idx < len(self.string):
-            return None
-        return e
+        return None if self.idx < len(self.string) else e

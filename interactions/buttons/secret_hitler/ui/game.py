@@ -145,18 +145,12 @@ class GameUI(discord.ui.View):
         self.stop()
 
     async def send_view(self) -> None:
-        if isinstance(self.view, SelectUI):
-            if isinstance(self.view, PeekUI):
-                interaction = self.interactions.pop(self.view.target.identifier)
-                await interaction.followup.send(
-                    self.view.tooltip, view=self.view, ephemeral=True
-                )
-            else:
-                await self.channel.send(
-                    self.view.tooltip, reference=self.message, view=self.view
-                )
-
-        elif isinstance(self.view, VoteUI):
+        if isinstance(self.view, SelectUI) and isinstance(self.view, PeekUI):
+            interaction = self.interactions.pop(self.view.target.identifier)
+            await interaction.followup.send(
+                self.view.tooltip, view=self.view, ephemeral=True
+            )
+        elif isinstance(self.view, (SelectUI, VoteUI)):
             await self.channel.send(
                 self.view.tooltip, reference=self.message, view=self.view
             )
@@ -178,22 +172,17 @@ class GameUI(discord.ui.View):
                 self.view = PeekUI(self, target, state.policies)
             elif isinstance(state, PlayerWasInvestigated):
                 self.view = PeekUI(self, target, [state.player.party])
+            elif isinstance(state.selectable[0], Player):
+                self.view = PlayerUI(self, target, state.selectable)
             else:
-                if isinstance(state.selectable[0], Player):
-                    self.view = PlayerUI(self, target, state.selectable)
-                else:
-                    self.view = DiscardUI(self, target, state.selectable)
+                self.view = DiscardUI(self, target, state.selectable)
 
         elif isinstance(state, VoteGameState):
             self.view = VoteUI(self, state.voters)
         else:
             self.view = None
 
-        if isinstance(self.view, PeekUI):
-            self.resend_view.disabled = False
-        else:
-            self.resend_view.disabled = True
-
+        self.resend_view.disabled = not isinstance(self.view, PeekUI)
         await self.message.edit(content=self.game.message, view=self)
         if self.view is not None:
             await self.send_view()

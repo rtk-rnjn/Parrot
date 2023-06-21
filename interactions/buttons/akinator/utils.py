@@ -13,21 +13,15 @@ def ans_to_id(ans):
     """Convert an input answer string into an Answer ID for Akinator"""
 
     ans = str(ans).lower()
-    if ans == "yes" or ans == "y" or ans == "0":
+    if ans in {"yes", "y", "0"}:
         return "0"
-    elif ans == "no" or ans == "n" or ans == "1":
+    elif ans in {"no", "n", "1"}:
         return "1"
-    elif (
-        ans == "i"
-        or ans == "idk"
-        or ans == "i dont know"
-        or ans == "i don't know"
-        or ans == "2"
-    ):
+    elif ans in {"i", "idk", "i dont know", "i don't know", "2"}:
         return "2"
-    elif ans == "probably" or ans == "p" or ans == "3":
+    elif ans in {"probably", "p", "3"}:
         return "3"
-    elif ans == "probably not" or ans == "pn" or ans == "4":
+    elif ans in {"probably not", "pn", "4"}:
         return "4"
     else:
         raise InvalidAnswerError(
@@ -52,58 +46,58 @@ def get_lang_and_theme(lang=None):
         return {"lang": "en", "theme": "c"}
 
     lang = str(lang).lower()
-    if lang == "en" or lang == "english":
+    if lang == "en":
         return {"lang": "en", "theme": "c"}
-    elif lang == "en_animals" or lang == "english_animals":
+    elif lang == "english":
+        return {"lang": "en", "theme": "c"}
+    elif lang in {"en_animals", "english_animals"}:
         return {"lang": "en", "theme": "a"}
-    elif lang == "en_objects" or lang == "english_objects":
+    elif lang in {"en_objects", "english_objects"}:
         return {"lang": "en", "theme": "o"}
-    elif lang == "ar" or lang == "arabic":
+    elif lang in {"ar", "arabic"}:
         return {"lang": "ar", "theme": "c"}
-    elif lang == "cn" or lang == "chinese":
+    elif lang in {"cn", "chinese"}:
         return {"lang": "cn", "theme": "c"}
-    elif lang == "de" or lang == "german":
+    elif lang in {"de", "german"}:
         return {"lang": "de", "theme": "c"}
-    elif lang == "de_animals" or lang == "german_animals":
+    elif lang in {"de_animals", "german_animals"}:
         return {"lang": "de", "theme": "a"}
-    elif lang == "es" or lang == "spanish":
+    elif lang in {"es", "spanish"}:
         return {"lang": "es", "theme": "c"}
-    elif lang == "es_animals" or lang == "spanish_animals":
+    elif lang in {"es_animals", "spanish_animals"}:
         return {"lang": "es", "theme": "a"}
-    elif lang == "fr" or lang == "french":
+    elif lang in {"fr", "french"}:
         return {"lang": "fr", "theme": "c"}
-    elif lang == "fr_animals" or lang == "french_animals":
+    elif lang in {"fr_animals", "french_animals"}:
         return {"lang": "fr", "theme": "a"}
-    elif lang == "fr_objects" or lang == "french_objects":
+    elif lang in {"fr_objects", "french_objects"}:
         return {"lang": "fr", "theme": "o"}
-    elif lang == "il" or lang == "hebrew":
+    elif lang in {"il", "hebrew"}:
         return {"lang": "il", "theme": "c"}
-    elif lang == "it" or lang == "italian":
+    elif lang in {"it", "italian"}:
         return {"lang": "it", "theme": "c"}
-    elif lang == "it_animals" or lang == "italian_animals":
+    elif lang in {"it_animals", "italian_animals"}:
         return {"lang": "it", "theme": "a"}
-    elif lang == "jp" or lang == "japanese":
+    elif lang in {"jp", "japanese"}:
         return {"lang": "jp", "theme": "c"}
-    elif lang == "jp_animals" or lang == "japanese_animals":
+    elif lang in {"jp_animals", "japanese_animals"}:
         return {"lang": "jp", "theme": "a"}
-    elif lang == "kr" or lang == "korean":
+    elif lang in {"kr", "korean"}:
         return {"lang": "kr", "theme": "c"}
-    elif lang == "nl" or lang == "dutch":
+    elif lang in {"nl", "dutch"}:
         return {"lang": "nl", "theme": "c"}
-    elif lang == "pl" or lang == "polish":
+    elif lang in {"pl", "polish"}:
         return {"lang": "pl", "theme": "c"}
-    elif lang == "pt" or lang == "portuguese":
+    elif lang in {"pt", "portuguese"}:
         return {"lang": "pt", "theme": "c"}
-    elif lang == "ru" or lang == "russian":
+    elif lang in {"ru", "russian"}:
         return {"lang": "ru", "theme": "c"}
-    elif lang == "tr" or lang == "turkish":
+    elif lang in {"tr", "turkish"}:
         return {"lang": "tr", "theme": "c"}
-    elif lang == "id" or lang == "indonesian":
+    elif lang in {"id", "indonesian"}:
         return {"lang": "id", "theme": "c"}
     else:
-        raise InvalidLanguageError(
-            'You put "{}", which is an invalid language.'.format(lang)
-        )
+        raise InvalidLanguageError(f'You put "{lang}", which is an invalid language.')
 
 
 def raise_connection_error(response):
@@ -119,9 +113,9 @@ def raise_connection_error(response):
         )
     elif response == "KO - TIMEOUT":
         raise AkiTimedOut("Your Akinator session has timed out")
-    elif response == "KO - ELEM LIST IS EMPTY" or response == "WARN - NO QUESTION":
+    elif response in ["KO - ELEM LIST IS EMPTY", "WARN - NO QUESTION"]:
         raise AkiNoQuestions('"Akinator.step" reached 79. No more questions')
     else:
         raise AkiConnectionFailure(
-            "An unknown error has occured. Server response: {}".format(response)
+            f"An unknown error has occured. Server response: {response}"
         )

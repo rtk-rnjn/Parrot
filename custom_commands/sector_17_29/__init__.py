@@ -60,7 +60,7 @@ class Sector1729(Cog):
     @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(
         self, payload: discord.RawReactionActionEvent
-    ) -> None:  # sourcery skip: use-contextlib-suppress
+    ) -> None:
         if (
             payload.message_id != MESSAGE_ID
             or str(payload.emoji) != EMOJI

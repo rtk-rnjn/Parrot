@@ -34,10 +34,9 @@ def clielement():
     print()
     if args.propositions is None:
         propositions = []
-        print(ttg.Truths(variables, propositions, ints, asc))
     else:
         propositions = ast.literal_eval(args.propositions)
-        print(ttg.Truths(variables, propositions, ints, asc))
+    print(ttg.Truths(variables, propositions, ints, asc))
     print()
 
 

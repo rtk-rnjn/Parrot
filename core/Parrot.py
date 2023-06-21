@@ -642,8 +642,6 @@ class Parrot(commands.AutoShardedBot):
         return await super().close()
 
     async def on_ready(self) -> None:
-        # sourcery skip: assign-if-exp, hoist-similar-statement-from-if
-        # sourcery skip: merge-assign-and-aug-assign, remove-redundant-fstring, swap-nested-ifs
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
@@ -670,12 +668,11 @@ class Parrot(commands.AutoShardedBot):
         if ls:
             self.afk_users = set(ls)  # type: ignore
 
-        content = "```css\n"
-        if self.WAVELINK_NODE_READY:
-            content += "- Wavelink Node is ready and running"
-        else:
-            content += "- Wavelink Node is not running"
-
+        content = "```css\n" + (
+            "- Wavelink Node is ready and running"
+            if self.WAVELINK_NODE_READY
+            else "- Wavelink Node is not running"
+        )
         if self.HAS_TOP_GG:
             if self.DBL_SERVER_RUNNING:
                 content += "\n- Top.gg server is running"

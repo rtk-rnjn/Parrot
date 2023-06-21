@@ -513,8 +513,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
-        # sourcery skip: low-code-quality
-
         if not message.content:
             return
 
@@ -824,7 +822,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             await member.add_roles(role, reason=reason)
 
     async def _on_message_passive(self, message: discord.Message):
-        # sourcery skip: low-code-quality
         if message.guild is None or message.author.bot:
             return
 

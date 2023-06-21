@@ -86,7 +86,7 @@ class BoardBoogle:
 
     def board_contains(
         self, word: str, pos: Position = None, passed: List[Position] = None
-    ) -> bool:  # sourcery skip: use-itertools-product
+    ) -> bool:
         if passed is None:
             passed = []
         # Empty words
@@ -101,7 +101,6 @@ class BoardBoogle:
                     if self.board_contains(word, Position(col, row)):
                         return True
 
-        # Checking new squares
         elif pos not in passed:
             # Check if letter matches current start of word
             letter = self.columns[pos.col][pos.row]
@@ -110,27 +109,26 @@ class BoardBoogle:
 
             if word[: len(letter)] == letter:
                 # Check adjacent for next letter
-                for x in range(-1, 2):
-                    for y in range(-1, 2):
-                        # don't check yourself
-                        if x == 0 and y == 0:
-                            continue
+                for x, y in itertools.product(range(-1, 2), range(-1, 2)):
+                    # don't check yourself
+                    if x == 0 and y == 0:
+                        continue
 
-                        new_pos = Position(pos.col + x, pos.row + y)
+                    new_pos = Position(pos.col + x, pos.row + y)
 
-                        # don't check out of bounds
-                        if (
-                            new_pos.col < 0
-                            or new_pos.col >= self.size
-                            or new_pos.row < 0
-                            or new_pos.row >= self.size
-                        ):
-                            continue
+                    # don't check out of bounds
+                    if (
+                        new_pos.col < 0
+                        or new_pos.col >= self.size
+                        or new_pos.row < 0
+                        or new_pos.row >= self.size
+                    ):
+                        continue
 
-                        if self.board_contains(
-                            word[len(letter) :], new_pos, [*passed, pos]
-                        ):
-                            return True
+                    if self.board_contains(
+                        word[len(letter) :], new_pos, [*passed, pos]
+                    ):
+                        return True
 
         # Otherwise cannot find word
         return False

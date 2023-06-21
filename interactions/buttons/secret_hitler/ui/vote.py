@@ -24,7 +24,7 @@ def format_list(
     plural: str = "have",
     oxford_comma: bool = True,
 ) -> str:
-    if len(ls) == 0:
+    if not ls:
         return string.format("no-one", singular)
     if len(ls) == 1:
         return string.format(ls[0], singular)

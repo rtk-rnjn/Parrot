@@ -123,7 +123,7 @@ _SEACH_FLAG_CONVERTERS = {
 }
 
 
-def get_country_code(country: str) -> Optional[str]:  # sourcery skip: use-next
+def get_country_code(country: str) -> Optional[str]:
     for c, n in COUNTRY_CODES.items():
         if country.lower() in (c.lower(), n.lower()):
             return c

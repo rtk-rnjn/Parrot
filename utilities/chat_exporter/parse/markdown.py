@@ -56,7 +56,7 @@ class ParseMarkdown:
 
     async def parse_emoji(
         self,
-    ):  # sourcery skip: identity-comprehension, use-getitem-for-re-match-groups
+    ):
         holder = (
             [
                 r"&lt;:.*?:(\d*)&gt;",
@@ -76,13 +76,13 @@ class ParseMarkdown:
             ],
         )
 
-        self.content = await convert_emoji([word for word in self.content])
+        self.content = await convert_emoji(list(self.content))
 
         for x in holder:
             p, r = x
             match = re.search(p, self.content)
             while match is not None:
-                emoji_id = match.group(1)
+                emoji_id = match[1]
                 self.content = self.content.replace(
                     self.content[match.start() : match.end()], r % emoji_id
                 )
@@ -90,7 +90,7 @@ class ParseMarkdown:
 
     def parse_normal_markdown(
         self,
-    ):  # sourcery skip: class-extract-method, identity-comprehension, use-fstring-for-concatenation, use-getitem-for-re-match-groups
+    ):
         holder = (
             [r"__(.*?)__", '<span style="text-decoration: underline">%s</span>'],
             [r"\*\*(.*?)\*\*", "<strong>%s</strong>"],
@@ -109,7 +109,7 @@ class ParseMarkdown:
             pattern = re.compile(p)
             match = re.search(pattern, self.content)
             while match is not None:
-                affected_text = match.group(1)
+                affected_text = match[1]
                 self.content = self.content.replace(
                     self.content[match.start() : match.end()], r % affected_text
                 )
@@ -130,25 +130,23 @@ class ParseMarkdown:
 
         for x in self.content:
             if re.search(pattern, x) and y:
-                y = y + "<br>" + x[5:]
+                y = f"{y}<br>{x[5:]}"
             elif not y:
                 if re.search(pattern, x):
                     y = x[5:]
                 else:
                     new_content = new_content + x + "<br>"
             else:
-                new_content = new_content + f'<div class="quote">{y}</div>'
+                new_content = f'{new_content}<div class="quote">{y}</div>'
                 new_content = new_content + x
                 y = ""
 
         if y:
-            new_content = new_content + f'<div class="quote">{y}</div>'
+            new_content = f'{new_content}<div class="quote">{y}</div>'
 
         self.content = new_content
 
-    def parse_code_block_markdown(
-        self, reference=False
-    ):  # sourcery skip: assign-if-exp, identity-comprehension, swap-if-expression, use-getitem-for-re-match-groups
+    def parse_code_block_markdown(self, reference=False):
         markdown_languages = [
             "asciidoc",
             "autohotkey",
@@ -179,7 +177,7 @@ class ParseMarkdown:
         match = re.search(pattern, self.content)
         while match is not None:
             language_class = "nohighlight"
-            affected_text = match.group(1)
+            affected_text = match[1]
 
             for language in markdown_languages:
                 if affected_text.lower().startswith(language):
@@ -198,13 +196,12 @@ class ParseMarkdown:
             if not reference:
                 self.content = self.content.replace(
                     self.content[match.start() : match.end()],
-                    '<div class="pre pre--multiline %s">%s</div>'
-                    % (language_class, affected_text),
+                    f'<div class="pre pre--multiline {language_class}">{affected_text}</div>',
                 )
             else:
                 self.content = self.content.replace(
                     self.content[match.start() : match.end()],
-                    '<span class="pre pre-inline">%s</span>' % affected_text,
+                    f'<span class="pre pre-inline">{affected_text}</span>',
                 )
 
             match = re.search(pattern, self.content)
@@ -213,11 +210,11 @@ class ParseMarkdown:
         pattern = re.compile(r"``(.*?)``")
         match = re.search(pattern, self.content)
         while match is not None:
-            affected_text = match.group(1)
+            affected_text = match[1]
             affected_text = self.return_to_markdown(affected_text)
             self.content = self.content.replace(
                 self.content[match.start() : match.end()],
-                '<span class="pre pre-inline">%s</span>' % affected_text,
+                f'<span class="pre pre-inline">{affected_text}</span>',
             )
             match = re.search(pattern, self.content)
 
@@ -225,27 +222,26 @@ class ParseMarkdown:
         pattern = re.compile(r"`(.*?)`")
         match = re.search(pattern, self.content)
         while match is not None:
-            affected_text = match.group(1)
+            affected_text = match[1]
             affected_text = self.return_to_markdown(affected_text)
             self.content = self.content.replace(
                 self.content[match.start() : match.end()],
-                '<span class="pre pre-inline">%s</span>' % affected_text,
+                f'<span class="pre pre-inline">{affected_text}</span>',
             )
             match = re.search(pattern, self.content)
 
         self.content = re.sub(r"<br>", "\n", self.content)
 
     def parse_embed_markdown(self):
-        # sourcery skip: use-fstring-for-concatenation, use-getitem-for-re-match-groups
         # [Message](Link)
         pattern = re.compile(r"\[(.+?)]\((.+?)\)")
         match = re.search(pattern, self.content)
         while match is not None:
-            affected_text = match.group(1)
-            affected_url = match.group(2)
+            affected_text = match[1]
+            affected_url = match[2]
             self.content = self.content.replace(
                 self.content[match.start() : match.end()],
-                '<a href="%s">%s</a>' % (affected_url, affected_text),
+                f'<a href="{affected_url}">{affected_text}</a>',
             )
             match = re.search(pattern, self.content)
 
@@ -270,18 +266,17 @@ class ParseMarkdown:
                 else:
                     new_content = new_content + x + "\n"
             else:
-                new_content = new_content + f'<div class="quote">{y}</div>'
+                new_content = f'{new_content}<div class="quote">{y}</div>'
                 new_content = new_content + x
                 y = ""
 
         if y:
-            new_content = new_content + f'<div class="quote">{y}</div>'
+            new_content = f'{new_content}<div class="quote">{y}</div>'
 
         self.content = new_content
 
     @staticmethod
     def return_to_markdown(content):
-        # sourcery skip: replace-interpolation-with-fstring, use-getitem-for-re-match-groups
         holders = (
             [r"<strong>(.*?)</strong>", "**%s**"],
             [r"<em>([^<>]+)</em>", "*%s*"],
@@ -301,7 +296,7 @@ class ParseMarkdown:
             pattern = re.compile(p)
             match = re.search(pattern, content)
             while match is not None:
-                affected_text = match.group(1)
+                affected_text = match[1]
                 content = content.replace(
                     content[match.start() : match.end()], r % affected_text
                 )
@@ -310,16 +305,16 @@ class ParseMarkdown:
         pattern = re.compile(r'<a href="(.*?)">(.*?)</a>')
         match = re.search(pattern, content)
         while match is not None:
-            affected_url = match.group(1)
-            affected_text = match.group(2)
+            affected_url = match[1]
+            affected_text = match[2]
             if affected_url != affected_text:
                 content = content.replace(
                     content[match.start() : match.end()],
-                    "[%s](%s)" % (affected_text, affected_url),
+                    f"[{affected_text}]({affected_url})",
                 )
             else:
                 content = content.replace(
-                    content[match.start() : match.end()], "%s" % affected_url
+                    content[match.start() : match.end()], f"{affected_url}"
                 )
             match = re.search(pattern, content)
 
@@ -327,11 +322,11 @@ class ParseMarkdown:
 
     def https_http_links(
         self,
-    ):  # sourcery skip: assign-if-exp, reintroduce-else, use-getitem-for-re-match-groups
+    ):
         def remove_silent_link(url: str):
-            if url.startswith("&lt;<") and url.endswith(">&gt;"):
-                return url[1:-1]
-            return url
+            return (
+                url[1:-1] if url.startswith("&lt;<") and url.endswith(">&gt;") else url
+            )
 
         # Escaping < >
         self.content = self.content.replace("<", "&lt;").replace(">", "&gt;")
@@ -342,7 +337,7 @@ class ParseMarkdown:
             for word in content.replace("<br>", " <br>").split():
                 if word.startswith("&lt;") and word.endswith("&gt;"):
                     pattern = r"&lt;(.*)&gt;"
-                    url = re.search(pattern, word).group(1)
+                    url = re.search(pattern, word)[1]
                     url = f'<a href="{url}">{url}</a>'
                     output.append(url)
                 elif "https://" in word:

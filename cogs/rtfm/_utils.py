@@ -376,7 +376,6 @@ class LintCode:
             await interference.send_to(ctx)
 
     async def lint_with_pyright(self, ctx: Context) -> None:
-        # sourcery skip: move-assign
         filename = await code_to_file(self.source)
         data = await lint("pyright --outputjson", filename)
 

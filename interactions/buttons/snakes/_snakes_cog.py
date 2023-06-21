@@ -398,15 +398,12 @@ class Snakes(Cog):
                 _, _, filename = image["title"].partition(":")
                 filename = filename.replace(" ", "%20")  # Wikipedia returns good data!
 
-                if not filename.startswith("Map"):
-                    if any(ban in filename for ban in banned):
-                        pass
-                    else:
-                        image_list.append(f"{i_url}{filename}")
-                        thumb_list.append(f"{i_url}{filename}?width=100")
-                else:
+                if filename.startswith("Map"):
                     map_list.append(f"{i_url}{filename}")
 
+                elif all(ban not in filename for ban in banned):
+                    image_list.append(f"{i_url}{filename}")
+                    thumb_list.append(f"{i_url}{filename}?width=100")
         snake_info["image_list"] = image_list
         snake_info["map_list"] = map_list
         snake_info["thumb_list"] = thumb_list
@@ -529,7 +526,7 @@ class Snakes(Cog):
         antidote_answer.pop()
 
         # Begin initial board building
-        for i in range(0, 10):
+        for i in range(10):
             page_guess_list.append(
                 f"{HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI}"
             )
@@ -566,7 +563,7 @@ class Snakes(Cog):
                     page_guess_list[antidote_tries] = " ".join(antidote_guess_list)
 
                     # Now check guess
-                    for i in range(0, len(antidote_answer)):
+                    for i in range(len(antidote_answer)):
                         if antidote_guess_list[i] == antidote_answer[i]:
                             guess_result.append(TICK_EMOJI)
                         elif antidote_guess_list[i] in antidote_answer:
@@ -578,7 +575,7 @@ class Snakes(Cog):
 
                     # Rebuild the board
                     board = []
-                    for i in range(0, 10):
+                    for i in range(10):
                         board.append(
                             f"`{i+1:02d}` "
                             f"{page_guess_list[i]} - "
@@ -606,7 +603,7 @@ class Snakes(Cog):
                     await board_id.edit(embed=antidote_embed)
 
         # Winning / Ending Screen
-        if win is True:
+        if win:
             antidote_embed = Embed(color=SNAKE_COLOR, title="Antidote")
             antidote_embed.set_author(
                 name=ctx.author.name, icon_url=ctx.author.display_avatar.url
@@ -687,11 +684,7 @@ class Snakes(Cog):
             if name is None:
                 name = await Snake.random()
 
-            if isinstance(name, dict):
-                data = name
-            else:
-                data = await self._get_snek(name)
-
+            data = name if isinstance(name, dict) else await self._get_snek(name)
             if data.get("error"):
                 await ctx.send("Could not fetch data from Wikipedia.")
                 return
@@ -856,11 +849,7 @@ class Snakes(Cog):
             snake_name = snake_name.split()[-1]
 
         # If no name is provided, use whoever called the command.
-        if name:
-            user_name = name
-        else:
-            user_name = ctx.author.display_name
-
+        user_name = name or ctx.author.display_name
         # Get the index of the vowel to slice the username at
         user_slice_index = len(user_name)
         for index, char in enumerate(reversed(user_name)):

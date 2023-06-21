@@ -250,7 +250,7 @@ class MemoryGame:
         ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        items: List[str] = [],
+        items: List[str] = None,
         pause_time: float = 0.7,
         button_style: discord.ButtonStyle = discord.ButtonStyle.gray,
         timeout: Optional[float] = None,
@@ -276,6 +276,8 @@ class MemoryGame:
         discord.Message
             returns the game message
         """
+        if items is None:
+            items = []
         self.embed_color = embed_color
         self.embed = discord.Embed(
             description="**Memory Game**", color=self.embed_color

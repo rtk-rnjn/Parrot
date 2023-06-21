@@ -239,9 +239,6 @@ class HTTPClient:
                     continue
 
             if response is not None:
-                if response.status >= 500:
-                    raise APIException(response=response, status_code=response.status)
-
                 raise APIException(response=response, status_code=response.status)
 
             raise RuntimeError("Unreachable code in HTTP handling.")
@@ -297,10 +294,10 @@ class HTTPClient:
 
         json_: dict[str, Any] = {}
 
-        if new_content is not MISSING:
+        if new_content != MISSING:
             json_["new_content"] = new_content
 
-        if new_filename is not MISSING:
+        if new_filename != MISSING:
             json_["new_filename"] = new_filename
 
         if new_expires is not MISSING:

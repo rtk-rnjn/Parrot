@@ -4,8 +4,6 @@ import datetime
 from time import time
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
 
-import pymongo
-
 import discord
 from core import Cog
 

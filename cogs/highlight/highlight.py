@@ -152,7 +152,6 @@ class Highlight(Cog):
     async def on_highlight(
         self, message: discord.Message, word: Dict[str, Union[str, int]], text: str
     ):
-        # sourcery skip: low-code-quality
         assert message.guild is not None
 
         member: Optional[

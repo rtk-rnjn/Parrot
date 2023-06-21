@@ -300,13 +300,12 @@ class StackCardButton(discord.ui.Button["StackView"]):
         self.card: Card = card
 
     async def callback(self, interaction: discord.Interaction, /) -> None:
-        # sourcery skip: invert-any-all
         self.view.cards.append(self.card)
 
         if total := sum(
             self.card.stackable_with(card)
             for card in self.view.hand._cards
-            if not any(inner is card for inner in self.view.cards)
+            if all(inner is not card for inner in self.view.cards)
         ):
             term = "another card" if total == 1 else "more cards"
             view = StackView(self.view.game, self.view.hand, self.view.cards)
@@ -885,7 +884,6 @@ class UNO:
     async def play(
         self, interaction: discord.Interaction, hand: Hand, card: Card
     ) -> None:
-        # sourcery skip: low-code-quality
         if self.current_player != hand.player:
             if self.rule_set.jump_in and self.current == card:
                 await self.handle_jump_in(hand, card)

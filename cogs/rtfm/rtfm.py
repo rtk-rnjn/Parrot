@@ -364,7 +364,6 @@ class RTFM(Cog):
     @commands.group(invoke_without_command=True)
     @Context.with_type
     async def python(self, ctx: Context, *, text: str):
-        # sourcery skip: last-if-guard
         """Search for a python tutorial."""
         if ctx.invoked_subcommand is None:
             if not getattr(self, "_python_cached", None):

@@ -64,8 +64,7 @@ class LinePaginator(Paginator):
         """
         if len(line) > self.max_size - len(self.prefix) - 2:
             raise RuntimeError(
-                "Line exceeds maximum page size %s"
-                % (self.max_size - len(self.prefix) - 2)
+                f"Line exceeds maximum page size {self.max_size - len(self.prefix) - 2}"
             )
 
         if self.max_lines is not None:
@@ -286,7 +285,7 @@ async def disambiguate(
     This will raise a BadArgument if entries is empty, if the disambiguation event times out,
     or if the user makes an invalid choice.
     """
-    if len(entries) == 0:
+    if not entries:
         raise BadArgument("No matches found.")
 
     if len(entries) == 1:

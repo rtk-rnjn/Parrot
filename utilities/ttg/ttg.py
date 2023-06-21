@@ -117,11 +117,7 @@ class Truths:
         self.ints = ints
 
         # generate the sets of booleans for the bases
-        if ascending:
-            order = [False, True]
-        else:
-            order = [True, False]
-
+        order = [False, True] if ascending else [True, False]
         self.base_conditions = list(itertools.product(order, repeat=len(bases)))
 
         # regex to match whole words defined in self.bases
@@ -189,7 +185,7 @@ class Truths:
         """
         Returns table using tabulate package
         """
-        table = tabulate(
+        return tabulate(
             Truths.as_pandas(self),
             headers="keys",
             tablefmt=table_format,
@@ -197,7 +193,6 @@ class Truths:
             colalign=[align]
             * (len(Truths.as_pandas(self).columns) + index),  # NOQA long
         )
-        return table
 
     def valuation(self, col_number=-1):
         """
@@ -213,12 +208,11 @@ class Truths:
             col_number = col_number - 1
 
         if sum(df.iloc[:, col_number]) == len(df):
-            val = "Tautology"
+            return "Tautology"
         elif sum(df.iloc[:, col_number]) == 0:
-            val = "Contradiction"
+            return "Contradiction"
         else:
-            val = "Contingency"
-        return val
+            return "Contingency"
 
     def __str__(self):
         table = Truths.as_tabulate(self, index=False)

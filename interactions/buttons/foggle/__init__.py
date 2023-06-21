@@ -204,7 +204,7 @@ class Board:
         if passed is None:
             passed = []
         # Empty numberss
-        if len(numbers) == 0:
+        if not numbers:
             return True
 
         # When starting out
@@ -282,18 +282,18 @@ class Game(menus.Menu):
         state = ""
 
         for row in range(self.board.size):
-            emoji = []
-            for column in range(self.board.size):
-                emoji.append(NUMBER_EMOJI[self.board.columns[column][row]])
-
+            emoji = [
+                NUMBER_EMOJI[self.board.columns[column][row]]
+                for column in range(self.board.size)
+            ]
             state = " ".join(emoji) + "\n" + state
 
         number = self.board.number
-        if self.board.base == 2:
-            number = bin(number)
-        elif self.board.base == 16:
+        if self.board.base == 16:
             number = hex(number)
 
+        elif self.board.base == 2:
+            number = bin(number)
         state += f"\n\n The magic number is **{number}**!"
 
         return discord.Embed(title=self.name, description=state).set_footer(

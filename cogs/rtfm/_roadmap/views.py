@@ -7,7 +7,6 @@ import yaml
 
 import discord
 from core import Context
-from discord.ext import commands
 
 from .endpoints import FIRST_HALF_ENDPOINTS, SECOND_HALF_ENDPOINTS
 

@@ -78,8 +78,8 @@ class MusicView(discord.ui.View):
                 "$addToSet": {
                     "playlist": {
                         "id": self.player.current.identifier,
-                        "song_name": getattr(self.player.current, "title"),
-                        "url": getattr(self.player.current, "uri"),
+                        "song_name": getattr(self.player.current, "title", None),
+                        "url": getattr(self.player.current, "uri", None),
                     }
                 }
             },

@@ -14,7 +14,6 @@ from io import BytesIO
 from random import choice
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 from urllib.parse import quote, quote_plus
-import aiofiles
 
 import aiohttp  # type: ignore
 import rapidfuzz  # type: ignore

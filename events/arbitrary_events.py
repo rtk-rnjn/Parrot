@@ -4,7 +4,7 @@ import asyncio
 
 import discord
 from core import Cog, Parrot
-from discord.ext import commands, tasks
+from discord.ext import tasks
 
 
 class ArbitraryEvents(Cog):

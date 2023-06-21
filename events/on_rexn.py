@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import datetime
 from time import time
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
+
+import pymongo
 
 import discord
 from core import Cog
@@ -27,8 +29,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> None:
-        log.info("Reaction adding sequence started, %s", payload)
+    async def _factory_reactor(
+        self, payload: discord.RawReactionActionEvent, *, tp: Literal["add", "remove"]
+    ) -> None:
+        log.info("Reaction %sing sequence started, %s", tp, payload)
         if not payload.guild_id:
             return
 
@@ -92,61 +96,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self.edit_starbord_post(payload, **data)
             return
 
-        await self.__on_star_reaction_add(payload)
-        return
-
-    async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> None:
-        if not payload.guild_id:
-            return
-
-        CURRENT_TIME = time()
-        DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
-        if (
-            payload.channel_id
-            in self.bot.guild_configurations_cache[payload.guild_id][
-                "starboard_config"
-            ]["ignore_channel"]
-        ):
-            return
-        max_duration = (
-            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                "max_duration"
-            ]
-            or TWO_WEEK
-        )
-        if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
-            return
-
-        self_star = self.bot.guild_configurations_cache[payload.guild_id][
-            "starboard_config"
-        ].get("can_self_star", False)
-
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
-            payload.channel_id, payload.message_id
-        )
-        if not msg:
-            return  # rare case
-
-        if payload.user_id == msg.author.id and not self_star:
-            log.info("Self star not allowed %s", payload.user_id)
-            return
-
-        collection: Collection = self.bot.starboards
-        data = await collection.find_one_and_update(
-            {
-                "$or": [
-                    {"message_id.bot": payload.message_id},
-                    {"message_id.author": payload.message_id},
-                ]
-            },
-            {"$pull": {"starrer": payload.user_id}, "$inc": {"number_of_stars": -1}},
-            return_document=True,
-        )
-        if data:
-            await self.edit_starbord_post(payload, **data)
-            return
-
-        await self.__on_star_reaction_remove(payload)
+        func = getattr(self, f"__on_star_reaction_{tp}")
+        await func(payload)
         return
 
     async def __make_starboard_post(
@@ -181,8 +132,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def get_star_count(
         self, message: Optional[discord.Message] = None, *, from_db: bool = True
     ) -> int:
+        stars = 0
         if message is None:
-            return 0
+            return stars
 
         if data := await self.bot.starboards.find_one(
             {
@@ -192,16 +144,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 ]
             }
         ):
-            return len(data["starrer"])
+            stars = len(data["starrer"])
 
-        return next(
-            (
-                reaction.count
-                for reaction in message.reactions
-                if str(reaction.emoji) == "\N{WHITE MEDIUM STAR}"
-            ),
-            0,
-        )
+        count = 0
+        for reaction in message.reactions:
+            if str(reaction.emoji) == "\N{WHITE MEDIUM STAR}":
+                count = reaction.count
+                break
+
+        return max(stars, count)
 
     def star_gradient_colour(self, stars: int) -> int:
         p = stars / 13
@@ -379,7 +330,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             channel: int = data[payload.guild_id]["starboard_config"]["channel"]  # type: ignore
         except KeyError:
             return False
-        
+
         channel: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, channel
         )
@@ -447,7 +398,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-            await self._add_reactor(payload)
+            await self._factory_reactor(payload, tp="add")
 
     @Cog.listener()
     async def on_reaction_remove(
@@ -489,7 +440,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 return
 
         if str(payload.emoji) == "\N{WHITE MEDIUM STAR}":
-            await self._remove_reactor(payload)
+            await self._factory_reactor(payload, tp="remove")
 
     @Cog.listener()
     async def on_reaction_clear(

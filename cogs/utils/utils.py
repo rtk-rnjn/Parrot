@@ -10,7 +10,6 @@ from motor.motor_asyncio import AsyncIOMotorCollection  # type: ignore
 from pymongo import ReturnDocument  # type: ignore
 from typing_extensions import Annotated
 
-Collection = Type[AsyncIOMotorCollection]
 import discord
 from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
@@ -23,6 +22,8 @@ from utilities.rankcard import rank_card
 from utilities.time import FriendlyTimeResult, ShortTime, UserFriendlyTime
 
 log = logging.getLogger("cogs.utils.utils")
+
+Collection = Type[AsyncIOMotorCollection]
 
 
 class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):

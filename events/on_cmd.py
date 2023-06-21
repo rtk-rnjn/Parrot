@@ -21,7 +21,7 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 class ErrorView(discord.ui.View):
     def __init__(
-        self, author_id, *, ctx: Context = None, error: commands.CommandError = None
+        self, author_id, *, ctx: Optional[Context] = None, error: Optional[commands.CommandError] = None
     ):
         super().__init__(timeout=300.0)
         self.author_id = author_id
@@ -116,11 +116,11 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ctx.command.reset_cooldown(ctx)
 
         elif isinstance(error, commands.MissingRole):
-            missing = list(error.missing_role)
+            missing = [error.missing_role]
             if len(missing) > 2:
-                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'  # type: ignore
             else:
-                fmt = " and ".join(missing)
+                fmt = " and ".join(missing)  # type: ignore
             ERROR_EMBED.description = (
                 f"You need the the following role(s) to use the command```\n{fmt}```"
             )
@@ -130,9 +130,9 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
         elif isinstance(error, commands.MissingAnyRole):
             missing = list(error.missing_roles)
             if len(missing) > 2:
-                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'  # type: ignore
             else:
-                fmt = " and ".join(missing)
+                fmt = " and ".join(missing)  # type: ignore
             ERROR_EMBED.description = (
                 f"You need the the following role(s) to use the command```\n{fmt}```"
             )

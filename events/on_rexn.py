@@ -16,7 +16,9 @@ if TYPE_CHECKING:
 
     DocumentType: TypeAlias = _DocumentType
 
+import logging
 
+log = logging.getLogger("events.on_rexn")
 TWO_WEEK = 1209600
 # 60 * 60 * 24 * 7 * 2
 
@@ -26,6 +28,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
 
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> None:
+        if not payload.guild_id:
+            return
+
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
@@ -46,20 +51,19 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
             return
 
-        self_star = (
-            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                "can_self_star"
-            ]
-            or False
-        )
+        self_star = self.bot.guild_configurations_cache[payload.guild_id][
+            "starboard_config"
+        ].get("can_self_star", False)
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             payload.channel_id, payload.message_id
         )
         if not msg:
+            log.info("Message not found %s-%s", payload.channel_id, payload.message_id)
             return  # rare case
 
         if payload.user_id == msg.author.id and not self_star:
+            log.info("Self star not allowed %s", payload.user_id)
             return
 
         collection: Collection = self.bot.starboards
@@ -74,6 +78,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return_document=True,
         )
         if data:
+            log.info("Starboard post found %s", data)
             await self.edit_starbord_post(payload, **data)
             return
 
@@ -99,12 +104,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if (CURRENT_TIME - DATETIME.utcnow().timestamp()) > max_duration:
             return
 
-        self_star = (
-            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                "can_self_star"
-            ]
-            or False
-        )
+        self_star = self.bot.guild_configurations_cache[payload.guild_id][
+            "starboard_config"
+        ].get("can_self_star", False)
 
         msg: discord.Message = await self.bot.get_or_fetch_message(
             payload.channel_id, payload.message_id
@@ -113,6 +115,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return  # rare case
 
         if payload.user_id == msg.author.id and not self_star:
+            log.info("Self star not allowed %s", payload.user_id)
             return
 
         collection: Collection = self.bot.starboards
@@ -254,8 +257,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if ch is None:
             return False
 
-        bot_message_id = data["message_id"]["bot"]
-        main_message = data["message_id"]["author"]
         try:
             starboard_channel: int = (
                 self.bot.guild_configurations_cache[payload.guild_id][
@@ -270,11 +271,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 self.bot.get_channel, self.bot.fetch_channel, starboard_channel
             )
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(
-            starchannel, bot_message_id
+        msg: discord.Message = await self.bot.get_or_fetch_message(  # type: ignore
+            starchannel, data["message_id"]["bot"]
         )
-        main_message: discord.Message = await self.bot.get_or_fetch_message(
-            ch, main_message
+        main_message: discord.Message = await self.bot.get_or_fetch_message(  # type: ignore
+            ch, data["message_id"]["author"]
         )
         if not msg.embeds:
             # moderators removed the embeds
@@ -346,6 +347,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
+        if not payload.guild_id:
+            return False
+
         data = self.bot.guild_configurations_cache
 
         try:
@@ -371,10 +375,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ch: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
             )
-            msg: discord.Message = await self.bot.get_or_fetch_message(
+            msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
                 ch, payload.message_id
             )
-            if msg.author.bot:
+            if msg and msg.author.bot:
                 return False
 
             count = await self.get_star_count(msg)

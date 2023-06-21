@@ -96,7 +96,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self.edit_starbord_post(payload, **data)
             return
 
-        func = getattr(self, f"__on_star_reaction_{tp}")
+        func = getattr(self, f"_on_star_reaction_{tp}")
         await func(payload)
         return
 
@@ -266,7 +266,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         return True
 
-    async def __on_star_reaction_remove(
+    async def _on_star_reaction_remove(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
         if not payload.guild_id:
@@ -313,7 +313,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return True
         return False
 
-    async def __on_star_reaction_add(
+    async def _on_star_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
         if not payload.guild_id:

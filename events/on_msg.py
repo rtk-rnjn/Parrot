@@ -176,7 +176,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         return ref, file_path
 
     async def _fetch_github_snippet(
-        self, repo: str, path: str, start_line: Optional[Union[str, int]], end_line: Optional[Union[str, int]]
+        self,
+        repo: str,
+        path: str,
+        start_line: Optional[Union[str, int]],
+        end_line: Optional[Union[str, int]],
     ) -> str:
         """Fetches a snippet from a GitHub repo."""
         # Search the GitHub API for the specified branch
@@ -231,7 +235,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         return ""
 
     async def _fetch_gitlab_snippet(
-        self, repo: str, path: str, start_line: Optional[Union[str, int]], end_line: Optional[Union[str, int]]
+        self,
+        repo: str,
+        path: str,
+        start_line: Optional[Union[str, int]],
+        end_line: Optional[Union[str, int]],
     ) -> str:
         """Fetches a snippet from a GitLab repo."""
         enc_repo = quote_plus(repo)
@@ -269,7 +277,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
 
     def _snippet_to_codeblock(
-        self, file_contents: Optional[Any], file_path: str, start_line: Optional[Union[str, int]], end_line: Optional[Union[str, int]]
+        self,
+        file_contents: Optional[Any],
+        file_path: str,
+        start_line: Optional[Union[str, int]],
+        end_line: Optional[Union[str, int]],
     ) -> str:
         """
         Given the entire file contents and target lines, creates a code block.
@@ -768,7 +780,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     await asyncio.sleep(0)
                 return True
 
-    async def __add_xp(self, *, member: Union[discord.Member, discord.User], xp: int, msg: discord.Message):
+    async def __add_xp(
+        self,
+        *,
+        member: Union[discord.Member, discord.User],
+        xp: int,
+        msg: discord.Message,
+    ):
         assert isinstance(msg.author, discord.Member) and msg.guild is not None
 
         collection: Collection = self.bot.guild_level_db[f"{member.guild.id}"]
@@ -817,34 +835,30 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
     async def _on_message_passive_afk_user_message(self, message: discord.Message):
         # code - when the AFK user messages
-        data = await self.bot.extra_collections.find_one_and_update(
+        if message.author.id not in self.bot.afk_users:
+            return
+
+        data = await self.bot.afk_collection.find_one_and_delete(
             {
                 "$and": [
                     {
                         "$or": [
                             {
-                                "afk.messageAuthor": message.author.id,
-                                "afk.guild": message.guild.id,
+                                "messageAuthor": message.author.id,
+                                "guild": message.guild.id,
                             },
                             {
-                                "afk.messageAuthor": message.author.id,
-                                "afk.global": True,
+                                "messageAuthor": message.author.id,
+                                "global": True,
                             },
                         ]
                     },
-                    {"afk.ignoreChannel": {"$nin": [message.channel.id]}},
+                    {"ignoreChannel": {"$nin": [message.channel.id]}},
                 ]
             },
-            {"$pull": {"afk": {"messageAuthor": message.author.id}}},
-            {"afk": {"$elemMatch": {"messageAuthor": message.author.id}}},
-            return_document=ReturnDocument.BEFORE,
         )
-        if message.author.id not in self.bot.afk or not data or "afk" not in data:
-            self.bot.afk = set(
-                await self.bot.extra_collections.distinct("afk.messageAuthor")
-            )
+        if not data:
             return
-        data = data["afk"][0]
         await message.channel.send(f"{message.author.mention} welcome back!")
         try:
             if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")) and (
@@ -859,44 +873,40 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             pass
 
         await self.bot.delete_timer(**{"_id": data["_id"]})
-        self.bot.afk = set(
-            await self.bot.extra_collections.distinct("afk.messageAuthor")
+        self.bot.afk_users = set(
+            await self.bot.afk_collection.distinct("messageAuthor")
         )
 
     async def _on_message_passive_afk_user_mention(self, message: discord.Message):
         if message.guild is None:
             return
         for user in message.mentions:
-            if (user.id in self.bot.afk) and (
-                data := await self.bot.extra_collections.find_one(
+            if (user.id in self.bot.afk_users) and (
+                data := await self.bot.afk_collection.find_one(
                     {
                         "$and": [
                             {
                                 "$or": [
                                     {
-                                        "afk.messageAuthor": user.id,
-                                        "afk.guild": message.guild.id,
+                                        "messageAuthor": user.id,
+                                        "guild": message.guild.id,
                                     },
                                     {
-                                        "afk.messageAuthor": user.id,
-                                        "afk.global": True,
+                                        "messageAuthor": user.id,
+                                        "global": True,
                                     },
                                 ]
                             },
-                            {"afk.ignoreChannel": {"$nin": [message.channel.id]}},
+                            {"ignoreChannel": {"$nin": [message.channel.id]}},
                         ]
                     },
-                    {"afk": {"$elemMatch": {"messageAuthor": user.id}}},
                 )
             ):
-                if "afk" not in data:
-                    return
-                data = data["afk"][0]
                 await message.channel.send(
                     f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
                 )
-        self.bot.afk = set(
-            await self.bot.extra_collections.distinct("afk.messageAuthor")
+        self.bot.afk_users = set(
+            await self.bot.afk_collection.distinct("messageAuthor")
         )
 
     async def _what_is_this(

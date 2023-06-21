@@ -269,7 +269,7 @@ class Parrot(commands.AutoShardedBot):
         self.guild_configurations_cache: Cache[int, Dict[str, Any]] = Cache(self)
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
-        self.afk: "Set[int]" = set()
+        self.afk_users: "Set[int]" = set()
 
         self.func: Callable[..., Any] = func
 
@@ -319,6 +319,7 @@ class Parrot(commands.AutoShardedBot):
         self.guild_collections_ind: MongoCollection = self.main_db["guildCollections"]
         self.extra_collections: MongoCollection = self.main_db["extraCollections"]
         self.dictionary: MongoCollection = self.main_db["dictionary"]
+        self.afk_collection: MongoCollection = self.main_db["afkCollection"]
 
         # User Message DB
         self.user_message_db: MongoDatabase = self.mongo["userMessageDB"]
@@ -386,7 +387,7 @@ class Parrot(commands.AutoShardedBot):
             try:
                 await self.load_extension(ext)
                 self._successfully_loaded.append(ext)
-                log.debug("Loaded extension %s", ext)
+                log.info("Loaded extension %s", ext)
             except (commands.ExtensionFailed, commands.ExtensionNotFound) as e:
                 self._failed_to_load[ext] = str(e)
                 traceback.print_exc()
@@ -662,12 +663,12 @@ class Parrot(commands.AutoShardedBot):
         log.debug("Ready: %s (ID: %s)", self.user, self.user.id)
 
         log.debug("Getting all afk users from database")
-        ls: List[Optional[int]] = await self.extra_collections.distinct(
+        ls: List[Optional[int]] = await self.afk_collection.distinct(
             "afk.messageAuthor"
         )
         log.debug("Got all afk users from database: %s", ls)
         if ls:
-            self.afk = set(ls)  # type: ignore
+            self.afk_users = set(ls)  # type: ignore
 
         content = "```css\n"
         if self.WAVELINK_NODE_READY:

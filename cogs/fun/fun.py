@@ -2345,7 +2345,7 @@ class Fun(Cog):
             await ctx.send(file=file, embed=embed)
 
     @commands.command(
-        name="cathi",
+        name="cathi"
     )
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
@@ -2395,7 +2395,7 @@ class Fun(Cog):
         m: discord.Message = await ctx.send("...")
         ls = ("(   ' - ')", "' - ')", "- ')", "')", ")", "*poofness*")
         for i in ls:
-            await m.edit(content=i)
+            await m.edit(content=discord.utils.escape_markdown(i))
             await ctx.release(1.5)
 
     @commands.command(name="virus", hidden=True)

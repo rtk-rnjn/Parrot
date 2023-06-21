@@ -6,9 +6,10 @@ import logging
 from itertools import zip_longest
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
-from pymongo import ReturnDocument  # type: ignore
 from motor.motor_asyncio import AsyncIOMotorCollection  # type: ignore
+from pymongo import ReturnDocument  # type: ignore
 from typing_extensions import Annotated
+
 Collection = Type[AsyncIOMotorCollection]
 import discord
 from cogs.meta.robopage import SimplePages
@@ -430,10 +431,8 @@ class Utils(Cog):
                 "ignoredChannel": [],
             }
             await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
-            await self.bot.extra_collections.update_one(
-                {"_id": "afk"}, {"$addToSet": {"afk": post}}, upsert=True
-            )
-            self.bot.afk.add(ctx.author.id)
+            await self.bot.afk_collection.insert_one(post)
+            self.bot.afk_users.add(ctx.author.id)
 
     @afk.command(name="global")
     async def _global(self, ctx: Context, *, text: commands.clean_content = None):
@@ -450,11 +449,9 @@ class Utils(Cog):
             "text": text or "AFK",
             "ignoredChannel": [],
         }
-        await self.bot.extra_collections.update_one(
-            {"_id": "afk"}, {"$addToSet": {"afk": post}}, upsert=True
-        )
+        await self.bot.afk_collection.insert_one(post)
         await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
-        self.bot.afk.add(ctx.author.id)
+        self.bot.afk_users.add(ctx.author.id)
 
     @afk.command(name="for")
     async def afk_till(
@@ -475,10 +472,8 @@ class Utils(Cog):
             "text": text or "AFK",
             "ignoredChannel": [],
         }
-        await self.bot.extra_collections.update_one(
-            {"_id": "afk"}, {"$addToSet": {"afk": post}}, upsert=True
-        )
-        self.bot.afk.add(ctx.author.id)
+        await self.bot.afk_collection.insert_one(post)
+        self.bot.afk_users.add(ctx.author.id)
         await ctx.send(
             f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
         )
@@ -563,18 +558,14 @@ class Utils(Cog):
                 extra={"name": "REMOVE_AFK", "main": {**payload}},
                 message=ctx.message,
             )
-            await self.bot.extra_collections.update_one(
-                {"_id": "afk"}, {"$addToSet": {"afk": payload}}, upsert=True
-            )
-            self.bot.afk.add(ctx.author.id)
+            await self.bot.afk_collection.insert_one(payload)
+            self.bot.afk_users.add(ctx.author.id)
             await ctx.send(
                 f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
             )
             return
-        await self.bot.extra_collections.update_one(
-            {"_id": "afk"}, {"$addToSet": {"afk": payload}}, upsert=True
-        )
-        self.bot.afk.add(ctx.author.id)
+        await self.bot.afk_collection.insert_one(payload)
+        self.bot.afk_users.add(ctx.author.id)
         await ctx.send(f"{ctx.author.mention} AFK: {flags.text or 'AFK'}")
 
     async def cog_unload(self):
@@ -810,7 +801,10 @@ class Utils(Cog):
             f"> {message.jump_url}"
         )
         try:
-            await user.send(content, view=ctx.send_view(),)
+            await user.send(
+                content,
+                view=ctx.send_view(),
+            )
         except discord.Forbidden:
             pass
 

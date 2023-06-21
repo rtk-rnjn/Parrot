@@ -184,16 +184,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if message is None:
             return 0
 
-        if from_db:
-            if data := await self.bot.starboards.find_one(
-                {
-                    "$or": [
-                        {"message_id.bot": message.id},
-                        {"message_id.author": message.id},
-                    ]
-                }
-            ):
-                return len(data["starrer"])
+        if data := await self.bot.starboards.find_one(
+            {
+                "$or": [
+                    {"message_id.bot": message.id},
+                    {"message_id.author": message.id},
+                ]
+            }
+        ):
+            return len(data["starrer"])
 
         return next(
             (
@@ -291,7 +290,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         main_message: discord.Message = await self.bot.get_or_fetch_message(  # type: ignore
             ch, data["message_id"]["author"]
         )
-        if not msg.embeds:
+        if msg and not msg.embeds:
             log.info("Message has no embeds")
             return False
 

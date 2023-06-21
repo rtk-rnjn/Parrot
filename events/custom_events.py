@@ -66,7 +66,7 @@ class EventCustom(Cog):
     async def normal_parser(
         self,
         *,
-        embed: Optional[Dict[str, Any]] = None,
+        embed: Optional[Dict[str, Any]] = None,  # type: ignore
         content: Optional[str] = None,
         dm_notify: bool = False,
         is_todo: bool = False,
@@ -123,8 +123,8 @@ class EventCustom(Cog):
 
         name = extra.get("name")
         if name == "SET_AFK":
-            await self.bot.extra_collections.insert_one(kw)
-            self.bot.afk.add(kw.get("messageAuthor", 0))
+            await self.bot.afk_collection.insert_one(kw)
+            self.bot.afk_users.add(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_remove_afk_timer_complete")
     async def extra_parser_remove_afk(
@@ -135,8 +135,8 @@ class EventCustom(Cog):
 
         name = extra.get("name")
         if name == "REMOVE_AFK":
-            await self.bot.extra_collections.delete_one(kw)
-            self.bot.afk.remove(kw.get("messageAuthor", 0))
+            await self.bot.afk_collection.delete_one(kw)
+            self.bot.afk_users.remove(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_giveaway_timer_complete")
     async def extra_parser_giveaway(

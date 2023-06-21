@@ -28,6 +28,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
 
     async def _add_reactor(self, payload: discord.RawReactionActionEvent) -> None:
+        log.info("Reaction adding sequence started, %s", payload)
         if not payload.guild_id:
             return
 
@@ -39,6 +40,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "starboard_config"
             ]["ignore_channel"]
         ):
+            log.info("Channel ignored %s", payload.channel_id)
             return
 
         max_duration = (
@@ -49,11 +51,19 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
 
         if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
+            log.info("Message too old %s", DATETIME)
             return
 
         self_star = self.bot.guild_configurations_cache[payload.guild_id][
             "starboard_config"
         ].get("can_self_star", False)
+
+        log.info(
+            "Configurations loaded, CURRENT_TIME=%s MAX_DURATION=%s SELF_STAR=%s",
+            CURRENT_TIME,
+            max_duration,
+            self_star,
+        )
 
         msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             payload.channel_id, payload.message_id
@@ -86,6 +96,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         return
 
     async def _remove_reactor(self, payload: discord.RawReactionActionEvent) -> None:
+        if not payload.guild_id:
+            return
+
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if (
@@ -108,7 +121,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             "starboard_config"
         ].get("can_self_star", False)
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             payload.channel_id, payload.message_id
         )
         if not msg:
@@ -255,6 +268,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             data["channel_id"],
         )
         if ch is None:
+            log.info("Channel not found %s", data["channel_id"])
             return False
 
         try:
@@ -278,7 +292,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             ch, data["message_id"]["author"]
         )
         if not msg.embeds:
-            # moderators removed the embeds
+            log.info("Message has no embeds")
             return False
 
         embed: discord.Embed = msg.embeds[0]
@@ -287,6 +301,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         if count == 0:
             await self.bot.starboards.delete_one({"message_id.bot": msg.id})
+            log.info("Deleted starboard post %s", msg.id)
             await msg.delete(delay=0)
             return False
 
@@ -304,6 +319,9 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def __on_star_reaction_remove(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
+        if not payload.guild_id:
+            return False
+
         server_config = self.bot.guild_configurations_cache
         ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
@@ -312,7 +330,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not ch:
             return False
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             ch, payload.message_id
         )
         try:
@@ -337,10 +355,11 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             starboard_channel: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, channel
             )
-            bot_msg: discord.Message = await self.bot.get_or_fetch_message(
+            bot_msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
                 starboard_channel, data["message_id"]["bot"], partial=True
             )
-            await bot_msg.delete(delay=0)
+            if bot_msg:
+                await bot_msg.delete(delay=0)
             return True
         return False
 
@@ -358,13 +377,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return False
 
         try:
-            channel = data[payload.guild_id]["starboard_config"]["channel"]
+            channel: int = data[payload.guild_id]["starboard_config"]["channel"]  # type: ignore
         except KeyError:
             return False
-        else:
-            channel: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, channel
-            )
+        
+        channel: discord.TextChannel = await self.bot.getch(
+            self.bot.get_channel, self.bot.fetch_channel, channel
+        )
 
         if not locked:
             try:
@@ -386,7 +405,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             if not limit:
                 return False
 
-            if count >= limit:
+            if count >= limit and msg:
                 await self.star_post(starboard_channel=channel, message=msg)
                 return True
         return False
@@ -395,13 +414,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_reaction_add(
         self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
     ):
+        if isinstance(user, discord.User):
+            return
         if (
             str(reaction.emoji)
             in {
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
             }
-            and user.id in self.bot.owner_ids
+            and user.id in self.bot.owner_ids  # type: ignore
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
 
@@ -410,8 +431,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
-        guild = self.bot.get_guild(payload.guild_id)
-        member = await self.bot.get_or_fetch_member(guild, payload.user_id)
+        if guild := self.bot.get_guild(payload.guild_id):
+            member = await self.bot.get_or_fetch_member(guild, payload.user_id)
+        else:
+            member = None
 
         if member is not None and member.bot:
             return
@@ -431,13 +454,15 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def on_reaction_remove(
         self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
     ):
+        if isinstance(user, discord.User):
+            return
         if (
             str(reaction.emoji)
             in {
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
             }
-            and user.id in self.bot.owner_ids
+            and user.id in self.bot.owner_ids  # type: ignore
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
 
@@ -446,9 +471,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
-        guild = self.bot.get_guild(payload.guild_id)
-        member = await self.bot.get_or_fetch_member(guild, payload.user_id)
-
+        if guild := self.bot.get_guild(payload.guild_id):
+            member = await self.bot.get_or_fetch_member(guild, payload.user_id)
+        else:
+            member = None
         if member is None:
             return
 

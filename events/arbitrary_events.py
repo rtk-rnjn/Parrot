@@ -53,7 +53,7 @@ class ArbitraryEvents(Cog):
                 continue
             await self.bot.wait_until_ready()
             await guild.chunk(cache=True)
-        
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(ArbitraryEvents(bot))

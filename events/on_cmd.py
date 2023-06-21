@@ -21,7 +21,11 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 class ErrorView(discord.ui.View):
     def __init__(
-        self, author_id, *, ctx: Optional[Context] = None, error: Optional[commands.CommandError] = None
+        self,
+        author_id,
+        *,
+        ctx: Optional[Context] = None,
+        error: Optional[commands.CommandError] = None,
     ):
         super().__init__(timeout=300.0)
         self.author_id = author_id

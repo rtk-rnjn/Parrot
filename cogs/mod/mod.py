@@ -1690,7 +1690,8 @@ class Moderator(Cog):
         """To warn the user"""
         try:
             await user.send(
-                f"{user.mention} you are being in **{ctx.guild.name}** warned for: **{reason}**", view=ctx.send_view()
+                f"{user.mention} you are being in **{ctx.guild.name}** warned for: **{reason}**",
+                view=ctx.send_view(),
             )
         except discord.Forbidden:
             pass

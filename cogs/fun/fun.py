@@ -63,25 +63,37 @@ from ._fun_utils import AnagramGame, file_safe_name, replace_many, suppress_link
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"
 
-with open(Path("extra/truth.txt"), "r", encoding="utf-8", errors="ignore") as f:  # noqa: E741
+with open(
+    Path("extra/truth.txt"), "r", encoding="utf-8", errors="ignore"
+) as f:  # noqa: E741
     _truth = f.read()
 
-with open(Path("extra/dare.txt"), "r", encoding="utf-8", errors="ignore") as g:  # noqa: E741
+with open(
+    Path("extra/dare.txt"), "r", encoding="utf-8", errors="ignore"
+) as g:  # noqa: E741
     _dare = g.read()
 
 with open(Path("extra/lang.json"), "r", encoding="utf-8", errors="ignore") as lang:
     lg = json.load(lang)
 
-with open(Path("extra/wyr.txt"), "r", encoding="utf-8", errors="ignore") as h:  # noqa: E741
+with open(
+    Path("extra/wyr.txt"), "r", encoding="utf-8", errors="ignore"
+) as h:  # noqa: E741
     _wyr = h.read()
 
-with open(Path("extra/nhi.txt"), "r", encoding="utf-8", errors="ignore") as i:  # noqa: E741
+with open(
+    Path("extra/nhi.txt"), "r", encoding="utf-8", errors="ignore"
+) as i:  # noqa: E741
     _nhi = i.read()
 
-with open(Path("extra/twister.txt"), "r", encoding="utf-8", errors="ignore") as k:  # noqa: E741
+with open(
+    Path("extra/twister.txt"), "r", encoding="utf-8", errors="ignore"
+) as k:  # noqa: E741
     _twister = k.read()
 
-with open(Path("extra/anagram.json"), "r", encoding="utf-8", errors="ignore") as l:  # noqa: E741
+with open(
+    Path("extra/anagram.json"), "r", encoding="utf-8", errors="ignore"
+) as l:  # noqa: E741
     ANAGRAMS_ALL = json.load(l)
 
 with open(
@@ -2344,9 +2356,7 @@ class Fun(Cog):
 
             await ctx.send(file=file, embed=embed)
 
-    @commands.command(
-        name="cathi"
-    )
+    @commands.command(name="cathi")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(self, ctx: Context, text: str = None):

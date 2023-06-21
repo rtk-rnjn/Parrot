@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 from collections.abc import Container, Iterable
 from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias, Union
-import discord
 
 from discord.ext.commands import Command  # type: ignore
 from discord.ext.commands import (
@@ -15,6 +14,7 @@ from discord.ext.commands import (
 )
 from pymongo.collection import Collection
 
+import discord
 from core import Context, Parrot
 from discord.ext import commands
 from utilities import exceptions as ex
@@ -149,7 +149,6 @@ def is_mod() -> Check[Context]:  # sourcery skip: use-contextlib-suppress
 
 def in_temp_channel() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-
         assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         if not ctx.author.voice:
             raise ex.InHubVoice()
@@ -157,7 +156,9 @@ def in_temp_channel() -> Check[Context]:
         if _ := await ctx.bot.guild_configurations.find_one(
             {
                 "_id": ctx.guild.id,
-                "hub_temp_channels.channel_id": getattr(ctx.author.voice.channel, "id", 0),
+                "hub_temp_channels.channel_id": getattr(
+                    ctx.author.voice.channel, "id", 0
+                ),
                 "hub_temp_channels.author": ctx.author.id,
             }
         ):
@@ -234,7 +235,11 @@ def in_voice() -> Check[Context]:
 
 def same_voice() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
+        assert (
+            ctx.guild is not None
+            and isinstance(ctx.author, discord.Member)
+            and isinstance(ctx.me, discord.Member)
+        )
         if ctx.me.voice is None:
             raise ex.NotBotInVoice()
         if ctx.author.voice is None:
@@ -304,14 +309,18 @@ def cooldown_with_role_bypass(
 
 def without_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user does not have any of the roles in role_ids."""
-    assert isinstance(ctx.guild, discord.Guild) and isinstance(ctx.author, discord.Member)
+    assert isinstance(ctx.guild, discord.Guild) and isinstance(
+        ctx.author, discord.Member
+    )
     author_roles = [role.id for role in ctx.author.roles]
     return all(role not in author_roles for role in role_ids)
 
 
 def with_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user has any one of the roles in role_ids."""
-    assert isinstance(ctx.guild, discord.Guild) and isinstance(ctx.author, discord.Member)
+    assert isinstance(ctx.guild, discord.Guild) and isinstance(
+        ctx.author, discord.Member
+    )
 
     return any(role.id in role_ids for role in ctx.author.roles) if ctx.guild else False
 

@@ -3,8 +3,6 @@ from __future__ import annotations
 from core import Cog, Parrot
 
 
-
-
 class Roadmap(Cog):
     """Roadmap.sh scraper. Please visit https://roadmap.sh/ for more information."""
 

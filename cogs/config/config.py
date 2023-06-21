@@ -6,8 +6,8 @@ import json
 import re
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from tabulate import tabulate
 
 import discord
@@ -1584,5 +1584,8 @@ class Configuration(Cog):
     async def on_command(self, ctx: Context):
         assert ctx.guild is not None
 
-        if ctx.cog and ctx.cog.qualified_name.lower() == self.__class__.__name__.lower():
+        if (
+            ctx.cog
+            and ctx.cog.qualified_name.lower() == self.__class__.__name__.lower()
+        ):
             self.bot.update_server_config_cache.start(ctx.guild.id)

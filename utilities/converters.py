@@ -110,7 +110,9 @@ class MemberID(commands.Converter):
         """Convert a user mention or ID to a member object."""
         assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         try:
-            m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)
+            m: Optional[discord.Member] = await commands.MemberConverter().convert(
+                ctx, argument
+            )
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
@@ -119,9 +121,9 @@ class MemberID(commands.Converter):
                     f"{argument} is not a valid member or member ID."
                 ) from None
             else:
-                m: Optional[Union[discord.Member, discord.User]] = await ctx.bot.get_or_fetch_member(
-                    ctx.guild, member_id
-                )
+                m: Optional[
+                    Union[discord.Member, discord.User]
+                ] = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:
                     # hackban case
                     return type(  # type: ignore

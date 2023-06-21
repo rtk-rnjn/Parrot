@@ -16,9 +16,9 @@ from collections import Counter
 from typing import Optional
 
 from aiofile import async_open  # type: ignore
+from discord.interactions import Interaction
 
 import discord
-from discord.interactions import Interaction
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -106,7 +106,7 @@ class MongoCollectionView(discord.ui.View):
         self.collection = collection
         self.db = db
         self.ctx = ctx
-    
+
     async def interaction_check(self, interaction: Interaction[Parrot]) -> bool:
         return interaction.user.id in self.ctx.bot.owner_ids
 
@@ -252,7 +252,7 @@ class MongoView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         await self.disable_all()
-    
+
     async def interaction_check(self, interaction: Interaction[Parrot]) -> bool:
         return interaction.user.id in self.ctx.bot.owner_ids
 

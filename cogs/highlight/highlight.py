@@ -155,7 +155,9 @@ class Highlight(Cog):
         # sourcery skip: low-code-quality
         assert message.guild is not None
 
-        member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
+        member: Optional[
+            Union[discord.Member, discord.User]
+        ] = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
 
         if member is None:
             log.info(
@@ -584,7 +586,9 @@ class Highlight(Cog):
             )
             return f":white_check_mark: Unblocked {entity.mention}."
 
-    async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> Optional[ENTITY_HINT]:
+    async def get_entity(
+        self, ctx: Context, entity: ENTITY_HINT
+    ) -> Optional[ENTITY_HINT]:
         converters: List = [
             commands.MemberConverter,
             commands.UserConverter,

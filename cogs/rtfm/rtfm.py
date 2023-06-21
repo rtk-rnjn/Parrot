@@ -380,7 +380,9 @@ class RTFM(Cog):
                     )
                 )
             if 70 < match[1] < 90:
-                val = await ctx.prompt(f"{ctx.author.mention} Did you mean `{match[0]}`?")
+                val = await ctx.prompt(
+                    f"{ctx.author.mention} Did you mean `{match[0]}`?"
+                )
                 if val:
                     data = self._python_cached[match[0]]
                 else:

@@ -9,10 +9,10 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Union
-import pkg_resources
 
 import aiofiles
 import bandit
+import pkg_resources
 import pylint
 from jishaku.paginators import PaginatorInterface
 

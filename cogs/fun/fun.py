@@ -2436,7 +2436,7 @@ class Fun(Cog):
         user = user or ctx.author
         DARK_SHADE = "\N{DARK SHADE}"
 
-        PREFIX = "```\nasni"
+        PREFIX = "```asni\n"
         SUFFIX = "\n```"
 
         SHIFTER = 24

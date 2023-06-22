@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import re
 from typing import Dict, List, Optional, Tuple, Union
 
 import discord
-from core import Cog, Context, Parrot
+from core import Cog, Parrot
 from utilities.time import ShortTime
 
 OWO_BOT = 408785106942164992
 BOT_SPAM_CHANNEL = 1022374324511985715
+
+log = logging.getLogger("custom_commands.sector_17_29.listeners")
 
 
 class Sector17Listeners(Cog):
@@ -56,6 +59,7 @@ class Sector17Listeners(Cog):
     @Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
         if message.guild and message.guild.id == self.bot.server.id:  # type: ignore
+            log.info("Dispatching sector_17_19_message %s", message)
             self.bot.dispatch("sector_17_19_message", message)
 
     @Cog.listener("on_sector_17_19_message")  # why not?
@@ -65,7 +69,8 @@ class Sector17Listeners(Cog):
 
         await asyncio.gather(
             self.change_owo_prefix(message, content),
-            self.owo_hunt_battle(message, content),
+            self.owo_hunt(message, content),
+            self.owo_battle(message, content),
             self.owo_hunt_bot(message, content),
             self.owo_pray_curse(message, content),
         )
@@ -104,30 +109,43 @@ class Sector17Listeners(Cog):
                 )
             )
 
+        log.debug("Command list: %s", ls)
         return tuple(set(ls))
 
     async def change_owo_prefix(self, message: discord.Message, content: str) -> bool:
         if content.startswith(self._get_command_list({"prefix": "prefix"})):
-            owo_message = await self.wait_for_owo(message, startswith="\N{GEAR}")
+            owo_message = await self.wait_for_owo(message, startswith="**\N{GEAR}")
 
             if owo_message is not None and (
                 ls := re.findall(r"`(.+)`", owo_message.content)
             ):
                 self.__current_owo_prefix = ls[0]
+                log.info("owo prefix changed to %s", self.__current_owo_prefix)
                 await owo_message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
                 return True
 
         return False
 
-    async def owo_hunt_battle(self, message: discord.Message, content: str):
-        if content.startswith(self._get_command_list({"hunt": "h", "battle": "b"})):
-            owo_message = await self.wait_for_owo(message, startswith="\N{SEEDLING}")
-
+    async def owo_battle(self, message: discord.Message, content: str):
+        if content.startswith(self._get_command_list({"battle": "b"})):
+            owo_message = await self.wait_for_owo(message)
+            log.info("owo battle message: %s", owo_message)
             if owo_message is not None:
-                await asyncio.sleep(15)
+                await asyncio.sleep(14.5)
 
                 await message.channel.send(
-                    f"{message.author.mention} Hunt/Battle", reference=owo_message
+                    f"{message.author.mention} Battle", reference=owo_message
+                )
+
+    async def owo_hunt(self, message: discord.Message, content: str):
+        if content.startswith(self._get_command_list({"hunt": "h"})):
+            owo_message = await self.wait_for_owo(message, startswith="**\N{SEEDLING}")
+            log.info("owo hunt message: %s", owo_message)
+            if owo_message is not None:
+                await asyncio.sleep(14.5)
+
+                await message.channel.send(
+                    f"{message.author.mention} Hunt", reference=owo_message
                 )
 
     async def owo_hunt_bot(self, message: discord.Message, content: str):
@@ -160,7 +178,7 @@ class Sector17Listeners(Cog):
     async def owo_pray_curse(self, message: discord.Message, content: str):
         if content.startswith(self._get_command_list({"pray": "curse"})):
             owo_message = await self.wait_for_owo(
-                message, startswith=("\N{GHOST}", "\N{PERSON WITH FOLDED HANDS}")
+                message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}")
             )
 
             if owo_message is not None:

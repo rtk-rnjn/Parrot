@@ -70,6 +70,12 @@ class ShortTime:
         tzinfo = datetime.timezone.utc
         return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} dt={self.dt}>"
+
+    def __str__(self) -> str:
+        return self.dt.isoformat()
+
 
 class HumanTime:
     calendar = pdt.Calendar(version=pdt.VERSION_CONTEXT_STYLE)
@@ -106,6 +112,12 @@ class HumanTime:
     async def convert(cls, ctx: Context, argument: str) -> Self:
         tzinfo = datetime.timezone.utc
         return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} dt={self.dt}>"
+
+    def __str__(self) -> str:
+        return self.dt.isoformat()
 
 
 class Time(HumanTime):

@@ -31,11 +31,15 @@ if TYPE_CHECKING:
 
 from utilities.config import SUPPORT_SERVER_ID
 
+from .listeners import Sector17Listeners
+
 EMOJI = "\N{WASTEBASKET}"
 MESSAGE_ID = 1025455601398075535
 VOTER_ROLE_ID = 836492413312040990
 QU_ROLE = 851837681688248351
 MEMBER_ROLE_ID = 1022216700650868916
+
+__all__ = ("Sector1729", "Sector17Listeners")
 
 
 class Sector1729(Cog):

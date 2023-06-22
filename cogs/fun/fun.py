@@ -27,6 +27,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 import aiohttp
 import rapidfuzz  # type: ignore
 from aiohttp import request  # type: ignore
+from colorama import Fore
 from PIL import Image, ImageColor
 
 import discord
@@ -2359,24 +2360,34 @@ class Fun(Cog):
     @commands.command(name="cathi")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def fun_animation_cathi(self, ctx: Context, text: str = None):
+    async def fun_animation_cathi(self, ctx: Context, text: Optional[str] = None):
         """Make a cat say something"""
         m: discord.Message = await ctx.reply("starting")
         text = text or "Hi..."
-        list = (
-            """ຸ 　　　＿＿_＿＿
-    　　／　／　  ／|"
-    　　|￣￣￣￣|　|
-    　　|　　　　|／
-    　　￣￣￣￣""",
-            f"""ຸ 　　　{text}
-    　   　 ∧＿∧＿_
-    　　／(´･ω･`)  ／＼
-    　／|￣￣￣￣|＼／
-    　　|　　　　|／
-    　　￣￣￣￣""",
-        )
-        for _, cat in itertools.product(range(3), list):
+
+        FWLL = "\N{FULLWIDTH LOW LINE}"
+        LL = "\N{LOW LINE}"
+        IGS = "\N{IDEOGRAPHIC SPACE}"
+        FWS = "\N{FULLWIDTH SOLIDUS}"
+        FWRS = "\N{FULLWIDTH REVERSE SOLIDUS}"
+        FM = "\N{FULLWIDTH MACRON}"
+        LA = "\N{LOGICAL AND}"
+
+        FACE = "\N{ACUTE ACCENT}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GREEK SMALL LETTER OMEGA}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GRAVE ACCENT}"
+        ls = [
+            f". {IGS}{IGS}{IGS}{FWLL}{FWLL}{LL}{FWLL}{FWLL}\n"
+            f"{IGS}{IGS}{FWS}{IGS}{FWS}{IGS}  {FWS}|\n"
+            f"{IGS}{IGS}|{FM}{FM}{FM}{FM}|{IGS}|\n"
+            f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
+            f"{IGS}{IGS}{FM}{FM}{FM}{FM}",
+            f". {IGS}{IGS}{IGS}{text}\n"
+            f"{IGS}   {IGS} {LA}{FWLL}{LA}{FWLL}_\n"
+            f"{IGS}{IGS}{FWS}({FACE})  {FWS}{FWRS}\n"
+            f"{IGS}{FWS}|{FM}{FM}{FM}{FM}|{FWRS}{FWS}\n"
+            f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
+            f"{IGS}{IGS}{FM}{FM}{FM}{FM}",
+        ]
+        for _, cat in itertools.product(range(3), ls):
             await m.edit(content=cat)
             await ctx.release(1)
 
@@ -2386,12 +2397,18 @@ class Fun(Cog):
     async def fun_animation_flop(self, ctx: Context):
         """Flop"""
         m = await ctx.send("Starting...")
+        DEGREE_SIGN = "\N{DEGREE SIGN}"
+        WHITE_SQUARE = "\N{WHITE SQUARE}"
+        EM_DASH = "\N{EM DASH}"
+        HAND_UP = "\N{BOX DRAWINGS LIGHT ARC UP AND LEFT}"
+        CURVE_DOWN = "\N{PRESENTATION FORM FOR VERTICAL LEFT PARENTHESIS}"
+
         ls = (
-            "(   ° - °) (' - '   )",
-            r"(\° - °)\ (' - '   )",
-            "(—°□°)— (' - '   )",
-            "(╯°□°)╯(' - '   )",
-            r"(╯°□°)╯︵(\\ .o.)\\",
+            rf"(   {DEGREE_SIGN} - {DEGREE_SIGN}) (' - '   )",
+            rf"(\{DEGREE_SIGN} - {DEGREE_SIGN})\ (' - '   )",
+            rf"({EM_DASH}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){EM_DASH} (' - '   )",
+            rf"({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}(' - '   )",
+            rf"({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}{CURVE_DOWN}(\\ .o.)\\",
         )
         for i in ls:
             await m.edit(content=i)
@@ -2403,7 +2420,7 @@ class Fun(Cog):
     async def fun_animation_poof(self, ctx: Context):
         """Poof"""
         m: discord.Message = await ctx.send("...")
-        ls = ("(   ' - ')", "' - ')", "- ')", "')", ")", "*poofness*")
+        ls = ("(   ' - ')", r"' \- ')", r"\- ')", "')", ")", "*poofness*")
         for i in ls:
             await m.edit(content=discord.utils.escape_markdown(i))
             await ctx.release(1.5)
@@ -2417,19 +2434,35 @@ class Fun(Cog):
         """Insert a virus to yourself or someone else"""
         m = await ctx.send("...")
         user = user or ctx.author
-        ls = (
-            f"`[▓▓▓                    ] / {virus}-virus.exe Packing files.`",
-            f"`[▓▓▓▓▓▓▓                ] - {virus}-virus.exe Packing files..`",
-            rf"`[▓▓▓▓▓▓▓▓▓▓▓▓           ] \ {virus}-virus.exe Packing files..`",
-            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓         ] | {virus}-virus.exe Packing files..`",
-            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓      ] / {virus}-virus.exe Packing files..`",
-            f"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   ] - {virus}-virus.exe Packing files..`",
-            rf"`[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ ] \ {virus}-virus.exe Packing files..`",
-            f"`[Successfully downloaded] | {virus}-virus.exe`",
-            "`[Injecting virus.       ] /`",
-            "`[Injecting virus..      ] -`",
-            r"`[Injecting virus...     ] \`",
-            f"`Successfully Injected {virus}-virus.exe into {user.name}`",
+        DARK_SHADE = "\N{DARK SHADE}"
+
+        PREFIX = "```\nasni"
+        SUFFIX = "\n```"
+
+        SHIFTER = 24
+
+        def D(n: int) -> str:
+            return DARK_SHADE * n + " " * (SHIFTER - n)
+
+        rotator = itertools.cycle(["/", "-", "\\", "|"])
+        dot_rotator = itertools.cycle([".", "..", "..."])
+
+        ls = [
+            rf"{PREFIX}{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} "
+            rf"{Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}{SUFFIX}"
+            for i in range(3, SHIFTER, 3)
+        ]
+        ls.append(
+            f"{PREFIX}{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] "
+            rf"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe{SUFFIX}"
+        )
+        for _ in range(3):
+            ls.append(
+                f"{PREFIX}{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] "
+                f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe{SUFFIX}"
+            )
+        ls.append(
+            f"{PREFIX}{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}{SUFFIX}",
         )
         for i in ls:
             await m.edit(content=i)
@@ -2459,20 +2492,28 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
-        m: discord.Message = await ctx.send(r"`(\°-°)\  ┬─┬`")
+        m: discord.Message = await ctx.send(r"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\  ┬─┬`")
         # Thanks `CutieRei#5211`(830248412904947753)
-        # ㅠㅕㅛㅑ
+        DEGREE_SIGN = "\N{DEGREE SIGN}"
+        WHITE_SQUARE = "\N{WHITE SQUARE}"
+        HAND_UP = "\N{BOX DRAWINGS LIGHT ARC UP AND LEFT}"
+
+        TOP = "\N{HANGUL LETTER YU}"
+        RIGHT = "\N{HANGUL LETTER YEO}"
+        DOWN = "\N{HANGUL LETTER YO}"
+        LEFT = "\N{HANGUL LETTER YA}"
+
         lst = (
-            r"`(\°□°)\  ㅠ`",
-            "`(-°□°)-  ㅠ`",
-            "`(╯°□°)╯  ㅕ`",
-            "`(╯°□°)╯    ㅛ`",
-            "`(╯°□°)╯      ㅑ`",
-            "`(╯°□°)╯        ㅠ`",
-            "`(╯°□°)╯          ㅕ`",
-            "`(╯°□°)╯            ㅛ`",
-            "`(╯°□°)╯              ㅑ`",
-            r"`(\°-°)\                 ㅠ`",
+            rf"`(\{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})\  {TOP}`",
+            rf"`(-{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})-  {TOP}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}  {RIGHT}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}    {DOWN}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}      {LEFT}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}        {TOP}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}          {RIGHT}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}            {DOWN}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}              {LEFT}`",
+            rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\                 {TOP}`",
         )
 
         for k in lst:
@@ -2484,6 +2525,13 @@ class Fun(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_warning(self, ctx: Context):
         msg = await ctx.send("...")
+        IDEA_GRAPHIC_FULL_STOP = "\N{HALFWIDTH IDEOGRAPHIC FULL STOP}"
+        IDEA_GRAPHIC = "\N{CJK UNIFIED IDEOGRAPH-76CA}"
+        KATAKANA_MIDDLE_DOT = "\N{HALFWIDTH KATAKANA MIDDLE DOT}"
+        MACRON = "\N{MACRON}"
+
+        FACE = f"{MACRON}\\({IDEA_GRAPHIC_FULL_STOP}{KATAKANA_MIDDLE_DOT}{IDEA_GRAPHIC}{KATAKANA_MIDDLE_DOT})/{MACRON}"
+
         ls = (
             "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
             "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
@@ -2499,7 +2547,7 @@ class Fun(Cog):
             "```diff\n- IMMINENT SHUT-DOWN IN 0.2 SEC! -\n```",
             "```diff\n- SYSTEM OVERLOAD !! WARNING !!  -\n```",
             "```diff\n- IMMINENT SHUT-DOWN IN 0.01 SEC! -\n```",
-            "```diff\n- SHUT-DOWN EXIT ERROR ¯\\(｡･益･)/¯ -\n```",
+            f"```diff\n- SHUT-DOWN EXIT ERROR {FACE} -\n```",
             "```diff\n- CTRL + R FOR MANUAL OVERRIDE... -\n```",
         )
 

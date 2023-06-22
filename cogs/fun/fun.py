@@ -2436,7 +2436,7 @@ class Fun(Cog):
         user = user or ctx.author
         DARK_SHADE = "\N{DARK SHADE}"
 
-        PREFIX = "```asni\n"
+        PREFIX = "```ansi\n"
         SUFFIX = "\n```"
 
         SHIFTER = 24
@@ -2448,24 +2448,24 @@ class Fun(Cog):
         dot_rotator = itertools.cycle([".", "..", "..."])
 
         ls = [
-            rf"{PREFIX}{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} "
-            rf"{Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}{SUFFIX}"
+            f"{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} "
+            f"{Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}"
             for i in range(3, SHIFTER, 3)
         ]
         ls.append(
-            f"{PREFIX}{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] "
-            rf"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe{SUFFIX}"
+            f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] "
+            f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
         )
         for _ in range(3):
             ls.append(
-                f"{PREFIX}{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] "
-                f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe{SUFFIX}"
+                f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] "
+                f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
             )
         ls.append(
-            f"{PREFIX}{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}{SUFFIX}",
+            f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}",
         )
         for i in ls:
-            await m.edit(content=i)
+            await m.edit(content=f"{PREFIX}{i}{SUFFIX}")
             await ctx.release(1)
 
     @commands.command(name="boom", hidden=True)

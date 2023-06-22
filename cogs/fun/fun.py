@@ -2492,7 +2492,6 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context):
-        m: discord.Message = await ctx.send(r"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\  ┬─┬`")
         # Thanks `CutieRei#5211`(830248412904947753)
         DEGREE_SIGN = "\N{DEGREE SIGN}"
         WHITE_SQUARE = "\N{WHITE SQUARE}"
@@ -2503,6 +2502,7 @@ class Fun(Cog):
         DOWN = "\N{HANGUL LETTER YO}"
         LEFT = "\N{HANGUL LETTER YA}"
 
+        m: discord.Message = await ctx.send(rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\  {TOP}`")
         lst = (
             rf"`(\{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})\  {TOP}`",
             rf"`(-{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})-  {TOP}`",
@@ -2518,7 +2518,7 @@ class Fun(Cog):
 
         for k in lst:
             await m.edit(content=k)
-            await ctx.release(1)
+            await ctx.release(0.5)
 
     @commands.command(name="funwarn", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)

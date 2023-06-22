@@ -103,3 +103,5 @@ REDIS_DATABASE = ""
 REDIS_ENDPOINT = ""
 REDIS_PASSWORD = ""
 
+# https://api.jeyy.xyz/
+JEYY_API = ""

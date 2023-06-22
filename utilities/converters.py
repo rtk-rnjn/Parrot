@@ -4,12 +4,26 @@ import asyncio
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
+from aiohttp import ClientSession
 from lru import LRU
 
 import discord
-from core import Context, Parrot
+
+if TYPE_CHECKING:
+    from core import Context, Parrot
+
 from discord.ext import commands
 from utilities.config import LRU_CACHE
 
@@ -132,15 +146,15 @@ class MemberID(commands.Converter):
                         {"id": member_id, "__str__": lambda s: f"Member ID {s.id}"},
                     )()
 
-        if not can_execute_action(ctx, ctx.author, m):
+        if not can_execute_action(ctx, ctx.author, m):  # type: ignore
             raise commands.BadArgument(
                 f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
             )
-        return m
+        return m  # type: ignore
 
 
-def lru_callback(key: KT, value: VT) -> None:
-    value = str(value)[:20]
+def lru_callback(key: KT, value: VT) -> None:  # type: ignore
+    value = str(value)[:20]  # type: ignore
     print(f"[Cached] Key: {key} | Value: {value}...")
 
 
@@ -265,3 +279,49 @@ def from_bottom(text: str) -> str:
         out += sub.to_bytes(1, "big")
 
     return out.decode()
+
+
+class ToImage(commands.Converter):
+    async def convert(self, ctx: Context, argument):
+        if argument is None:
+            converted_union = None
+        else:
+            converted_union = await commands.run_converters(
+                ctx,
+                Union[
+                    discord.PartialEmoji,
+                    discord.Emoji,
+                    discord.Member,
+                    discord.User,
+                    str,
+                ],
+                argument,
+                ctx.current_parameter,  # type: ignore
+            )
+
+        return await ctx.to_image(converted_union)
+
+    @staticmethod
+    async def none(ctx: Context):
+        return await ctx.to_image(None)
+
+
+async def valid_src(url: str, session: ClientSession):
+    async with session.head(url) as resp:
+        status = resp.status
+    return status == 200
+
+
+async def emoji_to_url(char, include_check: bool = True, session: ClientSession = None):
+    try:
+        url = f"https://twemoji.maxcdn.com/v/latest/72x72/{ord(char[0]):x}.png"
+        if not include_check:
+            return url
+
+        _session = session or ClientSession()
+        is_valid = await valid_src(url, _session)
+        if not session:
+            await _session.close()
+        return url if is_valid else char
+    except TypeError:
+        return char

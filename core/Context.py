@@ -7,7 +7,9 @@ import datetime
 import functools
 import io
 import logging
+import re
 from contextlib import suppress
+from io import BytesIO
 from operator import attrgetter
 from typing import (
     TYPE_CHECKING,
@@ -28,15 +30,21 @@ from typing import (
 )
 
 import aiohttp
+import humanize
+import PIL
+from bs4 import BeautifulSoup
+from PIL import Image
 
 import discord
 from discord.ext import commands
+from utilities.converters import ToAsync
 from utilities.emotes import emojis
 
 CONFIRM_REACTIONS: Tuple = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
+from utilities.regex import LINKS_RE
 
 if TYPE_CHECKING:
     from motor.motor_asyncio import AsyncIOMotorCollection as Collection
@@ -57,6 +65,13 @@ Callback = MaybeAwaitable
 
 # VOTER_ROLE_ID = 836492413312040990
 log = logging.getLogger("core.context")
+
+try:
+    import lxml
+
+    HTML_PARSER = "lxml"
+except ImportError:
+    HTML_PARSER = "html.parser"
 
 
 class Context(commands.Context[commands.Bot], Generic[T]):
@@ -896,6 +911,100 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     def send_view(self, **kw: Any) -> SentFromView:
         return SentFromView(self, **kw)
+
+    def check_buffer(self, buffer: BytesIO) -> BytesIO:
+        if (size := buffer.getbuffer().nbytes) > 15000000:
+            raise commands.BadArgument(
+                f"Provided image size ({humanize.naturalsize(size)}) is larger than 15 MB size limit."
+            )
+
+        try:
+            Image.open(buffer)
+        except PIL.UnidentifiedImageError as e:
+            raise commands.BadArgument(
+                "Could not open provided image. Make sure it is a valid image types"
+            ) from e
+        finally:
+            buffer.seek(0)
+
+        return buffer
+
+    async def to_image(self, entity: Any = None) -> BytesIO:
+        from utilities.converters import ToImage, emoji_to_url
+
+        if self.message.attachments:
+            buf = BytesIO(await self.message.attachments[0].read())
+            buf.seek(0)
+            return self.check_buffer(buf)
+
+        if self.message.reference and self.message.reference.resolved.attachments:  # type: ignore
+            buf = BytesIO(await self.message.reference.resolved.attachments[0].read())  # type: ignore
+            buf.seek(0)
+            return self.check_buffer(buf)
+
+        if (
+            (ref := self.message.reference)
+            and (embeds := ref.resolved.embeds)  # type: ignore
+            and (image := embeds[0].image)
+            and entity is None
+        ):
+            return await ToImage().convert(self, image.url)  # type: ignore
+
+        if (
+            (ref := self.message.reference)
+            and (content := ref.resolved.content)  # type: ignore
+            and entity is None
+        ):
+            return await ToImage().convert(self, content)
+
+        if (stickers := self.message.stickers) and stickers[
+            0
+        ].format != discord.StickerFormatType.lottie:
+            response = await self.bot.http_session.get(self.message.stickers[0].url)
+            buf = BytesIO(await response.read())
+            buf.seek(0)
+            return buf
+
+        if entity is None:
+            entity = BytesIO(await self.author.display_avatar.read())
+            entity.seek(0)
+        elif isinstance(entity, int):
+            return await ToImage().convert(self, str(entity))
+        elif isinstance(entity, (discord.Emoji, discord.PartialEmoji)):
+            entity = BytesIO(await entity.read())
+            entity.seek(0)
+        elif isinstance(entity, (discord.User, discord.Member)):
+            entity = BytesIO(await entity.display_avatar.read())
+            entity.seek(0)
+        else:
+            url = LINKS_RE.findall(entity)
+            if not url:
+                url = await emoji_to_url(entity)
+                url = LINKS_RE.findall(url)
+            if not url:
+                raise commands.BadArgument(
+                    "Could not convert input to Emoji, Member, or Image URL"
+                )
+
+            url = url[0]
+
+            response = await self.bot.http_session.get(url)
+            if "https://tenor.com" in url or "https://media.tenor" in url:
+                html = await response.read()
+                url_tenor = await self.__scrape_tenor(html)
+                resp = await self.bot.http_session.get(url_tenor)
+                entity = BytesIO(await resp.read())
+            else:
+                entity = BytesIO(await response.read())
+            entity.seek(0)
+
+        return self.check_buffer(entity)
+
+    @ToAsync()
+    def __scrape_tenor(self, html: str) -> str:
+        soup = BeautifulSoup(html, features=HTML_PARSER)
+        find = soup.find("div", {"class": "Gif"})
+        return find.img["src"]  # type: ignore
 
 
 class ConfirmationView(discord.ui.View):

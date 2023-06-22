@@ -20,9 +20,8 @@ class Sector17Listeners(Cog):
         self.allowed_channels = {BOT_SPAM_CHANNEL}
         self.allowed_guilds = set()
 
-    async def cog_load(self, ctx: Context) -> None:
-        await ctx.bot.wait_until_ready()
-        self.allowed_guilds.add(ctx.guild.id)  # type: ignore
+    async def cog_load(self) -> None:
+        self.allowed_guilds.add(self.bot.server.id)  # type: ignore
 
     async def wait_for_owo(
         self,

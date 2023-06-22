@@ -340,7 +340,15 @@ class Parrot(commands.AutoShardedBot):
     def server(self) -> Optional[discord.Guild]:
         assert isinstance(SUPPORT_SERVER_ID, int)
 
-        return self.get_guild(SUPPORT_SERVER_ID)  # Main server
+        guild = self.get_guild(SUPPORT_SERVER_ID)
+        if guild is None:
+
+            class A:
+                id = SUPPORT_SERVER_ID
+                name = "SECTOR 17-29"
+
+            return A()  # type: ignore
+        return guild
 
     @property
     def invite(self) -> str:

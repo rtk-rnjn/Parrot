@@ -31,6 +31,7 @@ from typing import (
     Tuple,
     Type,
     Union,
+    overload,
 )
 
 import aiohttp
@@ -304,6 +305,9 @@ class Parrot(commands.AutoShardedBot):
         self.UNDER_MAINTENANCE: bool = False
         self.UNDER_MAINTENANCE_REASON: Optional[str] = None
         self.UNDER_MAINTENANCE_OVER: Optional[datetime.datetime] = None
+
+        self.__app_commands_global: Dict[int, app_commands.AppCommand] = {}
+        self.__app_commands_guild: Dict[int, Dict[int, app_commands.AppCommand]] = {}
 
     def init_db(self) -> None:
         # MongoDB Database variables
@@ -720,6 +724,31 @@ class Parrot(commands.AutoShardedBot):
         if channel is not None:
             await channel.connect(self_deaf=True, reconnect=True)
 
+        self.loop.create_task(self.__cache_app_commands(None))
+
+    async def __cache_app_commands(
+        self, guild: Optional[Union[discord.Object, discord.Guild]] = None
+    ) -> None:
+        """To cache all application commands"""
+        if guild is None:
+            commands = await self.tree.fetch_commands()
+            log.debug("Fetched all global commands")
+            for command in commands:
+                self.__app_commands_global[command.id] = command
+            log.info("Cached all global commands. Total: %s", len(commands))
+        else:
+            commands = await self.tree.fetch_commands(guild=guild)
+            if guild.id not in self.__app_commands_guild:
+                self.__app_commands_guild[guild.id] = {}
+            for command in commands:
+                self.__app_commands_guild[guild.id][command.id] = command
+
+    async def update_app_commands_cache(
+        self, guild: Optional[discord.Guild] = None
+    ) -> None:
+        """To update the application commands cache"""
+        await self.__cache_app_commands(guild)
+
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
         log.debug("Wavelink node %s is ready", node.id)
@@ -956,9 +985,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_or_fetch_message(
         self,
-        channel: Union[  # type: ignore
-            discord.Object, int, discord.abc.Messageable, discord.PartialMessageable
-        ],
+        channel: Union[discord.Object, int, discord.PartialMessageable],  # type: ignore
         message: Union[int, str],
         *,
         fetch: bool = True,
@@ -1356,3 +1383,94 @@ class Parrot(commands.AutoShardedBot):
             self.timer_task.cancel()
             self.timer_task = self.loop.create_task(self.dispatch_timers())
         return data
+
+    @overload
+    async def get_app_command(
+        self,
+        cmd: str,
+        *,
+        guild: ...,
+        fetch: bool = ...,
+    ) -> Optional[app_commands.AppCommand]:
+        ...
+
+    @overload
+    async def get_app_command(
+        self,
+        cmd: int,
+        *,
+        guild: ...,
+        fetch: bool = ...,
+    ) -> Optional[app_commands.AppCommand]:
+        ...
+
+    @overload
+    async def get_app_command(
+        self,
+        cmd: ...,
+        **kwargs: Any,
+    ) -> Optional[app_commands.AppCommand]:
+        ...
+
+    async def get_app_command(
+        self,
+        cmd: Optional[Union[str, int]],
+        *,
+        guild: Optional[Union[discord.Object, discord.Guild]],
+        fetch: bool = False,
+        **kwargs: Any,
+    ) -> Optional[app_commands.AppCommand]:
+        """Get an application command by name or ID from the cache.
+
+        If the command is not found, then it will fetch the commands from the API and try again.
+
+        Parameters
+        ----------
+        cmd: Union[:class:`str`, :class:`int`]
+            The command name or ID to get.
+        guild: Optional[Union[:class:`discord.abc.Snowflake`, :class:`discord.Object`, :class:`discord.Guild`]]
+            The guild to get the command from. If ``None`` then it will get the command from the global commands.
+        fetch: :class:`bool`
+            Whether to fetch the commands from the API or not. Defaults to ``False``.
+        """
+        if self.__app_commands_global and guild is None:
+            commands = self.__app_commands_global
+            if fetch:
+                await self.__cache_app_commands()
+            if not commands:
+                await self.__cache_app_commands()
+                commands = self.__app_commands_global
+            return self.__get_app_commands(cmd, commands, **kwargs)
+
+        if guild is not None:
+            guild_id = guild.id
+
+            if fetch:
+                await self.__cache_app_commands(guild)
+
+            if guild_id not in self.__app_commands_guild:
+                # Needs to be fetched
+                # this wiil not trigger if fetch is True
+                await self.__cache_app_commands(guild)
+
+            commands = self.__app_commands_guild[guild_id]
+            return self.__get_app_commands(cmd, commands, **kwargs)
+
+        return None
+
+    def __get_app_commands(
+        self,
+        cmd: Optional[Union[str, int]],
+        commands: Dict[int, app_commands.AppCommand],
+        **kwargs: Any,
+    ) -> Optional[app_commands.AppCommand]:
+        if isinstance(cmd, int):
+            return commands.get(cmd)
+
+        if isinstance(cmd, str):
+            return discord.utils.get(commands.values(), name=cmd)
+
+        if cmd is None and kwargs:
+            return discord.utils.get(commands.values(), **kwargs)
+
+        return None

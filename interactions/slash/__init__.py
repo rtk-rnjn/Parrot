@@ -73,20 +73,22 @@ class ContextMenu(Cog):
             await ctx.send(
                 f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced {len(fmt)} commands {'globally' if spec is None else 'to the current guild.'}"
             )
-            return
 
-        fmt = 0
-        for guild in guilds:
-            try:
-                await ctx.bot.tree.sync(guild=guild)
-            except discord.HTTPException:
-                pass
-            else:
-                fmt += 1
+        else:
+            fmt = 0
+            for guild in guilds:
+                try:
+                    await ctx.bot.tree.sync(guild=guild)
+                except discord.HTTPException:
+                    pass
+                else:
+                    fmt += 1
 
-        await ctx.send(
-            f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds."
-        )
+            await ctx.send(
+                f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced the tree to {fmt}/{len(guilds)} guilds."
+            )
+        
+        await self.bot.update_app_commands_cache()
 
 
 async def setup(bot: Parrot) -> None:

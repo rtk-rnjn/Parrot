@@ -59,7 +59,6 @@ class Sector17Listeners(Cog):
     @Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
         if message.guild and message.guild.id == self.bot.server.id:  # type: ignore
-            log.info("Dispatching sector_17_19_message %s", message)
             self.bot.dispatch("sector_17_19_message", message)
 
     @Cog.listener("on_sector_17_19_message")  # why not?
@@ -112,41 +111,43 @@ class Sector17Listeners(Cog):
         log.debug("Command list: %s", ls)
         return tuple(set(ls))
 
-    async def change_owo_prefix(self, message: discord.Message, content: str) -> bool:
-        if content.startswith(self._get_command_list({"prefix": "prefix"})):
-            owo_message = await self.wait_for_owo(message, startswith="**\N{GEAR}")
+    async def change_owo_prefix(self, message: discord.Message, content: str) -> Optional[bool]:
+        if not content.startswith(self._get_command_list({"prefix": "prefix"})):
+            return
 
-            if owo_message is not None and (
-                ls := re.findall(r"`(.+)`", owo_message.content)
-            ):
-                self.__current_owo_prefix = ls[0]
-                log.info("owo prefix changed to %s", self.__current_owo_prefix)
-                await owo_message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-                return True
+        owo_message = await self.wait_for_owo(message, startswith="**\N{GEAR}")
+
+        if owo_message is not None and (
+            ls := re.findall(r"`(.+)`", owo_message.content)
+        ):
+            self.__current_owo_prefix = ls[0]
+            log.info("owo prefix changed to %s", self.__current_owo_prefix)
+            await owo_message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+            return True
 
         return False
 
     async def owo_battle(self, message: discord.Message, content: str):
-        if content.startswith(self._get_command_list({"battle": "b"})):
-            owo_message = await self.wait_for_owo(message)
-            log.info("owo battle message: %s", owo_message)
-            if owo_message is not None:
-                await asyncio.sleep(14.5)
+        if not content.startswith(self._get_command_list({"battle": "b"})):
+            return
+        owo_message = await self.wait_for_owo(message)
+        if owo_message is not None:
+            await asyncio.sleep(14.5)
 
-                await message.channel.send(
-                    f"{message.author.mention} Battle", reference=owo_message
-                )
+            await message.channel.send(
+                f"{message.author.mention} Battle", reference=owo_message
+            )
 
     async def owo_hunt(self, message: discord.Message, content: str):
-        if content.startswith(self._get_command_list({"hunt": "h"})):
-            owo_message = await self.wait_for_owo(message, startswith="**\N{SEEDLING}")
-            log.info("owo hunt message: %s", owo_message)
-            if owo_message is not None:
-                await asyncio.sleep(14.5)
+        if not content.startswith(self._get_command_list({"hunt": "h"})):
+            return
+        owo_message = await self.wait_for_owo(message, startswith="**\N{SEEDLING}")
+        if owo_message is not None:
+            await asyncio.sleep(14.5)
 
-                await message.channel.send(
-                    f"{message.author.mention} Hunt", reference=owo_message
-                )
+            await message.channel.send(
+                f"{message.author.mention} Hunt", reference=owo_message
+            )
 
     async def owo_hunt_bot(self, message: discord.Message, content: str):
         if not content.startswith(
@@ -195,14 +196,15 @@ class Sector17Listeners(Cog):
             await owo_message.add_reaction("\N{ALARM CLOCK}")
 
     async def owo_pray_curse(self, message: discord.Message, content: str):
-        if content.startswith(self._get_command_list({"pray": "curse"})):
-            owo_message = await self.wait_for_owo(
-                message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}")
+        if not content.startswith(self._get_command_list({"pray": "curse"})):
+            return
+        owo_message = await self.wait_for_owo(
+            message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}")
+        )
+
+        if owo_message is not None:
+            await asyncio.sleep(300)
+
+            await message.channel.send(
+                f"{message.author.mention} Pray/Curse", reference=owo_message
             )
-
-            if owo_message is not None:
-                await asyncio.sleep(300)
-
-                await message.channel.send(
-                    f"{message.author.mention} Pray/Curse", reference=owo_message
-                )

@@ -900,7 +900,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 )
             ):
                 await message.channel.send(
-                    f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}"
+                    f"{message.author.mention} {self.bot.get_user(data['messageAuthor'])} is AFK: {data['text']}",
+                    delete_after=5,
+                    # Thanks `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
                 )
         self.bot.afk_users = set(
             await self.bot.afk_collection.distinct("messageAuthor")

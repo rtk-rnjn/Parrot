@@ -149,31 +149,46 @@ class Sector17Listeners(Cog):
                 )
 
     async def owo_hunt_bot(self, message: discord.Message, content: str):
-        if content.startswith(
+        if not content.startswith(
             self._get_command_list({"huntbot": ["autohunt", "hb", "ah"]})
         ):
-            owo_message = await self.wait_for_owo(message)
+            return
+        owo_message = await self.wait_for_owo(message)
 
-            if owo_message is not None and "BEEP BOOP" not in owo_message.content:
-                return
+        if owo_message is not None and "BEEP BOOP" not in owo_message.content:
+            return
 
-            main = content.split("\n")[1].split(" ")[
-                7
-            ]  # get time # TODO: fix this temp solution
-            if main == "0M":
-                return
-            shottime = ShortTime(main.lower())
+        if owo_message is not None and owo_message.embeds:
+            return
 
+        try:
             if owo_message is not None:
-                await self.bot.create_timer(
-                    expires_at=shottime.dt.timestamp(),
-                    created_at=message.created_at.timestamp(),
-                    content=f"{message.author.mention} your HuntBot is ready!",
-                    message=message,
-                    dm_notify=True,
-                )
+                main = owo_message.content.split("\n")[1].split(" ")[
+                    7
+                ]  # get time # TODO: fix this temp solution
+            else:
+                main = "0M"
+        except IndexError:
+            return
 
-                await owo_message.add_reaction("\N{ALARM CLOCK}")
+        if main == "0M":
+            return
+
+        try:
+            shottime = ShortTime(main.lower())
+        except ValueError:
+            return
+
+        if owo_message is not None:
+            await self.bot.create_timer(
+                expires_at=shottime.dt.timestamp(),
+                created_at=message.created_at.timestamp(),
+                content=f"{message.author.mention} your HuntBot is ready!",
+                message=message,
+                dm_notify=True,
+            )
+
+            await owo_message.add_reaction("\N{ALARM CLOCK}")
 
     async def owo_pray_curse(self, message: discord.Message, content: str):
         if content.startswith(self._get_command_list({"pray": "curse"})):

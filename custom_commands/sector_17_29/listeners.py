@@ -155,7 +155,11 @@ class Sector17Listeners(Cog):
             return
         owo_message = await self.wait_for_owo(message)
 
-        if owo_message is not None and "BEEP BOOP" not in owo_message.content:
+        if (
+            owo_message is not None
+            and "BEEP BOOP" not in owo_message.content
+            and "YOU SPENT" not in owo_message.content
+        ):
             return
 
         if owo_message is not None and owo_message.embeds:

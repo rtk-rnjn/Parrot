@@ -100,7 +100,7 @@ mdurl
 motor
 multidict
 mypy
-mypy-extsions
+mypy-extensions
 numpy
 oauthlib
 opuslib
@@ -159,7 +159,6 @@ tomlkit
 topggpy
 tornado
 tryceratops
-tweepy @ git+https://github.com/tweepy/tweepy
 typing_extensions
 tzdata
 urllib3

@@ -124,7 +124,7 @@ class Akinator:
         ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        remove_reaction_after: bool = False,
+        remove_reaction_after: bool = True,
         win_at: int = 80,
         timeout: Optional[float] = None,
         back_button: bool = False,

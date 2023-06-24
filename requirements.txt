@@ -30,7 +30,6 @@ dill
 discord.py @ git+https://github.com/Rapptz/discord.py
 dnspython
 english-words
-PyGithub
 eradicate
 fastapi
 flake8
